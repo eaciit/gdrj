@@ -10,6 +10,10 @@ vm.menu = ko.observableArray([
 		{ title: 'File Browser', href: '#', submenu: [] }
 	] }
 ])
+vm.breadcrumb = ko.observableArray([
+	{ title: 'Godrej', href: '#' },
+	{ title: 'Dashboard', href: '#' }
+])
 
 vm.menuIcon = (data) => ko.computed(() => `fa fa-${data.icon}`)
 

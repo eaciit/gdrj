@@ -112,3 +112,44 @@ a {
     .app-container .app-content .panel .panel-body .panel-filter {
       display: none;
       margin-bottom: 15px; }
+
+.avatar {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  display: block;
+  border-radius: 500px;
+  white-space: nowrap; }
+  .avatar img {
+    border-radius: 500px;
+    height: 40px;
+    width: 40px;
+    vertical-align: middle; }
+  .avatar .navbar-brand {
+    font-family: "Open Sans";
+    font-weight: bold;
+    color: #000; }
+
+.nav-user {
+  margin: 0px; }
+  .nav-user .dropdown-toggle {
+    height: 60px; }
+  .nav-user .avatar {
+    width: 40px;
+    height: 50px;
+    margin-top: -5px;
+    margin-right: 5px; }
+
+.breadcrumb {
+  font-size: 18px;
+  padding: 0px;
+  margin-bottom: 0px; }
+  .breadcrumb li > a {
+    color: #337ab7; }
+
+.form-label {
+  line-height: 25px;
+  text-align: left;
+  font-size: 12px; }
+  .form-label:after {
+    content: ":";
+    position: absolute;
+    right: 5px; }
