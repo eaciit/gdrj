@@ -44,3 +44,17 @@ ul.dropdown-menu {
 .row {
   margin-right: -10px;
   margin-left: -10px; }
+
+.form-control {
+  border-color: #F0F3F4;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none; }
+
+.input-group-addon {
+  background-color: #F0F3F4;
+  border-color: #F0F3F4; }
+
+[style="font:12px Arial,Helvetica,sans-serif;"] {
+  font: 12px 'Source Sans Pro' !important;
+  opacity: 0.8; }
