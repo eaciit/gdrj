@@ -80,12 +80,15 @@ a
 		ul.nav.navbar-nav
 			> li
 				> a
-					padding-left: 0px
-					padding-right: 30px
+					padding: 15px
 
 					&:hover, &:active, &:focus
 						background-color: transparent
 						color: $color-base-green
+
+					&.active
+						background-color: #74B841
+						color: white
 
 				a.dropdown-toggle
 					background-color: transparent
@@ -155,15 +158,23 @@ a
 				display: table
 				width: 100%
 				padding: 10px 0px
+				min-height: 100px
 
 				.wrapper
 					display: table-cell
 					text-align: center
 					vertical-align: middle
 
-					p.value
-						font-size: 46px
+					p
 						margin: 0px
+
+					.value
+						font-size: 46px
+
+					.description
+						font-size: 14px
+						font-weight: 100
+						padding-bottom: 12px
 
 .nav-user
 	margin: 0px
@@ -190,12 +201,11 @@ a
 			vertical-align: middle
 
 		.navbar-brand
-			font-family: "Open Sans"
 			font-weight: bold
 			color: #000
 
 	.name
-		margin-top: 14px
+		margin-top: 15px
 
 .breadcrumb
 	font-size: 18px
@@ -203,7 +213,7 @@ a
 	margin-bottom: 0px
 
 	li > a
-		color: $color-base-blue
+		color: $color-base-green
 
 .form-label
 	line-height: 25px

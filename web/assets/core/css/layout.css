@@ -76,11 +76,13 @@ a {
       margin-top: 13px;
       height: 30px; }
   .app-top .app-menu ul.nav.navbar-nav > li > a {
-    padding-left: 0px;
-    padding-right: 30px; }
+    padding: 15px; }
     .app-top .app-menu ul.nav.navbar-nav > li > a:hover, .app-top .app-menu ul.nav.navbar-nav > li > a:active, .app-top .app-menu ul.nav.navbar-nav > li > a:focus {
       background-color: transparent;
       color: #74B841; }
+    .app-top .app-menu ul.nav.navbar-nav > li > a.active {
+      background-color: #74B841;
+      color: white; }
   .app-top .app-menu ul.nav.navbar-nav > li a.dropdown-toggle {
     background-color: transparent; }
 
@@ -132,14 +134,20 @@ a {
         text-align: center;
         display: table;
         width: 100%;
-        padding: 10px 0px; }
+        padding: 10px 0px;
+        min-height: 100px; }
         .app-container .app-content .panel-headline .panel-body .wrapper {
           display: table-cell;
           text-align: center;
           vertical-align: middle; }
-          .app-container .app-content .panel-headline .panel-body .wrapper p.value {
-            font-size: 46px;
+          .app-container .app-content .panel-headline .panel-body .wrapper p {
             margin: 0px; }
+          .app-container .app-content .panel-headline .panel-body .wrapper .value {
+            font-size: 46px; }
+          .app-container .app-content .panel-headline .panel-body .wrapper .description {
+            font-size: 14px;
+            font-weight: 100;
+            padding-bottom: 12px; }
 
 .nav-user {
   margin: 0px; }
@@ -162,18 +170,17 @@ a {
       width: 30px;
       vertical-align: middle; }
     .nav-user .avatar .navbar-brand {
-      font-family: "Open Sans";
       font-weight: bold;
       color: #000; }
   .nav-user .name {
-    margin-top: 14px; }
+    margin-top: 15px; }
 
 .breadcrumb {
   font-size: 18px;
   padding: 0px;
   margin-bottom: 0px; }
   .breadcrumb li > a {
-    color: #3b79c2; }
+    color: #74B841; }
 
 .form-label {
   line-height: 25px;

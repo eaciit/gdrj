@@ -8,7 +8,8 @@ vm.menu = ko.observableArray([
 		{ title: 'Data Serializer', href: '#', submenu: [] },
 		{ title: 'Web Grabber', href: '#', submenu: [] },
 		{ title: 'File Browser', href: '#', submenu: [] }
-	] }
+	] },
+	{ title: 'Admin', icon: 'gear', href: '#', submenu: [] }
 ])
 vm.breadcrumb = ko.observableArray([
 	{ title: 'Godrej', href: '#' },
