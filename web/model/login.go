@@ -1,4 +1,4 @@
-package gdrj
+package gocore
 
 import (
 	"errors"

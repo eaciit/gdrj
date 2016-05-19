@@ -12,7 +12,6 @@ import (
 
 var _db *orm.DataContext
 var _conn dbox.IConnection
-var ConfigPath string
 var _dbErr error
 
 func SetDb(conn dbox.IConnection) error {

@@ -1,4 +1,4 @@
-package gdrj
+package gocore
 
 import (
 	"github.com/eaciit/orm/v1"
@@ -38,7 +38,7 @@ func (a *Configuration) RecordID() interface{} {
 
 func GetConfig(key string, args ...string) interface{} {
 	data := new(Configuration)
-	if err := GetCtx(data, key); err != nil {
+	if err := Get(data, key); err != nil {
 		return err
 	}
 	return data.Value
@@ -48,7 +48,7 @@ func SetConfig(key string, value interface{}) {
 	o := new(Configuration)
 	o.ID = key
 	o.Value = value
-	SaveCtx(o)
+	Save(o)
 }
 
 func (p *Ports) TableName() string {
@@ -60,7 +60,7 @@ func (p *Ports) RecordID() interface{} {
 }
 
 func (p *Ports) GetPort() error {
-	if err := GetCtx(p, p.ID); err != nil {
+	if err := Get(p, p.ID); err != nil {
 		return err
 	}
 
@@ -69,7 +69,7 @@ func (p *Ports) GetPort() error {
 
 func SetPort(_port *Ports, value interface{}) error {
 	_port.Port = toolkit.ToInt(value, toolkit.RoundingAuto)
-	if err := SaveCtx(_port); err != nil {
+	if err := Save(_port); err != nil {
 		return err
 	}
 
@@ -86,7 +86,7 @@ func (a *Databases) RecordID() interface{} {
 
 func GetDB(key string) interface{} {
 	data := new(Databases)
-	if err := GetCtx(data, key); err != nil {
+	if err := Get(data, key); err != nil {
 		return err
 	}
 
@@ -96,5 +96,5 @@ func GetDB(key string) interface{} {
 func SetDB(value interface{}) {
 	o := new(Databases)
 	o.Data = value
-	SaveCtx(o)
+	Save(o)
 }

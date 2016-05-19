@@ -1,4 +1,4 @@
-package gdrj
+package gocore
 
 import (
 	"errors"
@@ -7,6 +7,8 @@ import (
 	"github.com/eaciit/toolkit"
 	"os"
 )
+
+var ConfigPath string
 
 func validateConfig() error {
 	if ConfigPath == "" {

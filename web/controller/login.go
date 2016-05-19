@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"eaciit/gdrj/helper"
-	"eaciit/gdrj/model"
+	"eaciit/gdrj/web/helper"
+	"eaciit/gdrj/web/model"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -25,7 +25,7 @@ func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, "", err.Error())
 	}
 
-	sessid, err := new(gdrj.Login).LoginProcess(payload)
+	sessid, err := new(gocore.Login).LoginProcess(payload)
 	if err != nil {
 		return helper.CreateResult(false, "", err.Error())
 	}
@@ -48,7 +48,7 @@ func (l *LoginController) ResetPassword(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	if err = new(gdrj.Login).ResetPassword(payload); err != nil {
+	if err = new(gocore.Login).ResetPassword(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -64,7 +64,7 @@ func (l *LoginController) SavePassword(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if err = new(gdrj.Login).SavePassword(payload); err != nil {
+	if err = new(gocore.Login).SavePassword(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -80,7 +80,7 @@ func (l *LoginController) Authenticate(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	result, err := new(gdrj.Login).Authenticate(payload)
+	result, err := new(gocore.Login).Authenticate(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

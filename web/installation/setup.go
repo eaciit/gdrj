@@ -1,7 +1,7 @@
 package setup
 
 import (
-	"eaciit/gdrj/model"
+	"eaciit/gdrj/web/model"
 	"fmt"
 	"github.com/eaciit/toolkit"
 )
@@ -34,10 +34,10 @@ func Database() {
 	config.Set("pass", pass)
 
 	fmt.Println("Database Configuration saved!")
-	gdrj.SetDB(config)
+	gocore.SetDB(config)
 }
 
-func Port(_port *gdrj.Ports) error {
+func Port(_port *gocore.Ports) error {
 	var port string
 
 	fmt.Println("Port Setup ==============")
@@ -45,7 +45,7 @@ func Port(_port *gdrj.Ports) error {
 	fmt.Print("  port : ")
 	fmt.Scanln(&port)
 
-	if err := gdrj.SetPort(_port, port); err != nil {
+	if err := gocore.SetPort(_port, port); err != nil {
 		return err
 	}
 	fmt.Println("Port Configuration saved!")
