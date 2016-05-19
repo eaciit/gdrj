@@ -25,11 +25,12 @@ a
 	border-radius: 3px
 	padding: 2px 4px
 	font-size: 12px
-.tag-red
+
+.bg-red
 	background-color: $color-base-red
-.tag-green
+.bg-green
 	background-color: $color-base-green
-.tag-blue
+.bg-blue
 	background-color: $color-base-blue
 
 .align-center
@@ -104,9 +105,14 @@ a
 			border-bottom: 1px solid #F0F3F4
 			padding-bottom: 7px
 
-		.panel
+		.panel-ez, .panel-headline
+			box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02)
+			border-radius: 0px
+			padding: 8px 5px
+
 			.panel-heading
 				position: relative
+				padding-bottom: 0px
 
 				.filter-toggle
 					position: absolute
@@ -130,42 +136,74 @@ a
 					display: none
 					margin-bottom: 15px
 
-.avatar
-	border: 1px solid rgba(255,255,255,0.35)
-	display: block
-	border-radius: 500px
-	white-space: nowrap
+		.panel-headline
+			padding: 0px
+			border: none
 
-	img
-		border-radius: 500px
-		height: 40px
-		width: 40px
-		vertical-align: middle
+			.panel-heading
+				border: none
+				padding: 15px
+				background-color: white
 
-	.navbar-brand
-		font-family: "Open Sans"
-		font-weight: bold
-		color: #000
+				h3
+					border: none
+					padding: 0px
+
+			.panel-body
+				color: white
+				text-align: center
+				display: table
+				width: 100%
+				padding: 10px 0px
+
+				.wrapper
+					display: table-cell
+					text-align: center
+					vertical-align: middle
+
+					p.value
+						font-size: 46px
+						margin: 0px
 
 .nav-user
 	margin: 0px
 
 	.dropdown-toggle
-		height: 60px
+		height: 50px
+		padding-bottom: 0px
+		padding-top: 0px
+		padding-right: 0px
 
 	.avatar
-		width: 40px
-		height: 50px
-		margin-top: -5px
-		margin-right: 5px
+		width: 30px
+		height: 30px
+		margin-top: 10px
+		margin-right: 8px
+		display: block
+		border-radius: 50%
+		white-space: nowrap
+		overflow: hidden
+
+		img
+			height: 30px
+			width: 30px
+			vertical-align: middle
+
+		.navbar-brand
+			font-family: "Open Sans"
+			font-weight: bold
+			color: #000
+
+	.name
+		margin-top: 14px
 
 .breadcrumb
 	font-size: 18px
 	padding: 0px
 	margin-bottom: 0px
 
-	li>a
-		color: #337ab7
+	li > a
+		color: $color-base-blue
 
 .form-label
 	line-height: 25px

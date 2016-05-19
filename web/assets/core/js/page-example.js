@@ -7,7 +7,7 @@ idx.prepareGrid1 = function () {
 	var data = [{ id: 'n001', name: 'Noval Agung', gender: 'male', address: 'Margorejo Indah B920, Wonocolo' }, { id: 'n002', name: 'Arfian Bagus', gender: 'male', address: 'Imam Bonjol 120, Dr. Soetomo' }, { id: 'n003', name: 'Alip Sidik', gender: 'male', address: 'Margorejo Indah B920, Wonocolo' }, { id: 'n004', name: 'Rino Sukmandityo', gender: 'male', address: 'Imam Bonjol 120, Dr. Soetomo' }, { id: 'n005', name: 'Adinda Martha', gender: 'female', address: 'Margorejo Indah B920, Wonocolo' }, { id: 'n006', name: 'Ainurrochman', gender: 'male', address: 'Imam Bonjol 120, Dr. Soetomo' }, { id: 'n007', name: 'Aris Meika', gender: 'male', address: 'Margorejo Indah B920, Wonocolo' }];
 	var columns = [{ title: 'ID', field: 'id', width: 80 }, { title: 'Name', field: 'name', attributes: { class: 'bold' } }, { title: 'Gender', field: 'gender', width: 100, attributes: { class: 'align-center' }, template: function template(d) {
 			var color = d.gender == 'male' ? 'blue' : 'green';
-			return '<span class=\'tag tag-' + color + '\'>' + d.gender + '</span>';
+			return '<span class=\'tag bg-' + color + '\'>' + d.gender + '</span>';
 		} }, { title: 'Address', field: 'address' }];
 
 	$('.grid-1').kendoGrid({

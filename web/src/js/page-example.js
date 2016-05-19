@@ -16,7 +16,7 @@ idx.prepareGrid1 = () => {
 		{ title: 'Name', field: 'name', attributes: { class: 'bold' } },
 		{ title: 'Gender', field: 'gender', width: 100, attributes: { class: 'align-center' }, template: (d) => {
 			let color = (d.gender == 'male') ? 'blue' : 'green'
-			return `<span class='tag tag-${color}'>${d.gender}</span>`
+			return `<span class='tag bg-${color}'>${d.gender}</span>`
 		} },
 		{ title: 'Address', field: 'address' }
 	]
