@@ -1,4 +1,4 @@
-package gdrj
+package gocore
 
 import (
 	"errors"
@@ -27,7 +27,7 @@ func ctx() *orm.DataContext {
 	return _ctx
 }
 
-func DeleteCtx(o orm.IModel) error {
+func Delete(o orm.IModel) error {
 	e := ctx().Delete(o)
 	if e != nil {
 		return errors.New("Core.Delete: " + e.Error())
@@ -36,7 +36,7 @@ func DeleteCtx(o orm.IModel) error {
 
 }
 
-func SaveCtx(o orm.IModel) error {
+func Save(o orm.IModel) error {
 	e := ctx().Save(o)
 	if e != nil {
 		return errors.New("Core.Save: " + e.Error())
@@ -44,7 +44,7 @@ func SaveCtx(o orm.IModel) error {
 	return e
 }
 
-func GetCtx(o orm.IModel, id interface{}) error {
+func Get(o orm.IModel, id interface{}) error {
 	e := ctx().GetById(o, id)
 	if e != nil {
 		return errors.New("Core.Get: " + e.Error())
@@ -52,7 +52,7 @@ func GetCtx(o orm.IModel, id interface{}) error {
 	return e
 }
 
-func FindCtx(o orm.IModel, filter *dbox.Filter) (dbox.ICursor, error) {
+func Find(o orm.IModel, filter *dbox.Filter) (dbox.ICursor, error) {
 	var filters []*dbox.Filter
 	if filter != nil {
 		filters = append(filters, filter)
