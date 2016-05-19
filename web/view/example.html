@@ -15,6 +15,15 @@
 		<script src="../assets/jquery/jquery-2.1.0.min.js"></script>
 		<script src="../assets/jquery/jquery-ui.min.js"></script>
 
+		<!-- pace -->
+		<link rel="stylesheet" href="../assets/pace/pace.css" />
+		<script src="../assets/pace/pace.min.js"></script>
+		<script>
+			Pace.on('done', function () {
+				$('.is-loading').removeClass('is-loading');
+			});
+		</script>
+
 		<!-- knockout -->
 		<script src="../assets/knockout/knockout-3.4.0.js"></script>
 		<script src="../assets/knockout/knockout.mapping.js"></script>
@@ -41,7 +50,7 @@
 		<!-- <link href="../assets/kendo-ui/styles/kendo.bootstrap.min.css" rel="stylesheet"> -->
 		<link href="../assets/kendo-ui/styles/kendo.dataviz.min.css" rel="stylesheet">
 		<!-- <link href="../assets/kendo-ui/styles/kendo.dataviz.bootstrap.min.css" rel="stylesheet"> -->
-		<link rel="stylesheet" href="../assets/core/css/kendo.bootstrap.css" />
+		<link rel="stylesheet" href="../assets/core/css/kendo.ez.css" />
 		<script src="../assets/kendo-ui/js/kendo.all.min.js"></script>
 
 		<!-- knockout-kendo -->
@@ -69,7 +78,7 @@
 		<link rel="stylesheet" href="../assets/core/css/bootstrap-ext.css" />
 		<link rel="stylesheet" href="../assets/core/css/layout.css" />
 	</head>
-	<body>
+	<body class="is-loading">
 		<div class="app" data-bind="with: vm">
 			<header class="navbar navbar-fixed-top app-top">
 				<div class="app-wrapper">
@@ -79,11 +88,11 @@
 					<div class="app-menu">
 						<ul class="nav navbar-nav" data-bind="foreach: menu">
 							<li data-bind="css: { 'dropdown': ($data.submenu.length > 0) }">
-								<a data-bind="css: { 'dropdown-toggle': ($data.submenu.length > 0) }, attr: { href: $data.href }">
+								<a data-bind="css: { 'dropdown-toggle': ($data.submenu.length > 0), 'active': (vm.pageTitle() == $data.title) }, attr: { href: $data.href }">
 									<i data-bind="css: vm.menuIcon($data)"></i> <span data-bind="text: $data.title"></span>
 								</a>
 								<ul class="dropdown-menu" data-bind="foreach: $data.submenu, visible: ($data.submenu.length > 0)">
-									<li><a data-bind="attr: { href: $data.href }, text: $data.title">Data Browser</a></li>
+									<li><a data-bind="attr: { href: $data.href }, text: $data.title"></a></li>
 								</ul>
 							</li>
 						</ul>
@@ -95,8 +104,10 @@
 								<span class="thumb-sm avatar pull-left">
 									<img src="../assets/img/Leonard_Jayamohan.jpg" />
 								</span>
-								<span class="thumb-sm title-user">Leonard Jayamohan</span>
-								<b class="caret"></b>
+								<div class="pull-right name">
+									<span class="thumb-sm title-user">Leonard Jayamohan</span>
+									<b class="caret"></b>
+								</div>
 							</a>
 							<ul class="dropdown-menu animated fadeInRight">
 								<span class="arrow top"></span>
@@ -118,6 +129,51 @@
 					</div>
 
 					<div class="app-content">
+						<div class="col-md-4">
+							<div class="panel panel-headline bg-blue">
+								<div class="panel-heading">
+									<h3>
+										<i class="fa fa-user"></i> Total User
+									</h3>
+								</div>
+								<div class="panel-body" style="height: 120px;">
+									<div class="wrapper">
+										<p class="value">1.240</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="panel panel-headline bg-green">
+								<div class="panel-heading">
+									<h3>
+										<i class="fa fa-gratipay"></i> Average Visit / Day
+									</h3>
+								</div>
+								<div class="panel-body" style="height: 120px;">
+									<div class="wrapper">
+										<p class="value">440</p>
+										<p class="description">Global average visits each day</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="panel panel-headline bg-red">
+								<div class="panel-heading">
+									<h3>
+										<i class="fa fa-caret-up"></i> Total Revenue (USD)
+									</h3>
+								</div>
+								<div class="panel-body" style="height: 120px;">
+									<div class="wrapper">
+										<p class="value">$1,200</p>
+									</div>
+								</div>
+							</div>
+						</div>
+
+
 						<div class="col-md-6">
 							<div class="panel panel-ez">
 								<div class="panel-heading">
@@ -155,10 +211,22 @@
 								</div>
 								<div class="panel-body">
 									<div class="panel-filter">
-										<div class="row col-md-3">
+										<div class="col-md-3">
 											<div class="input-group input-group-sm">
 												<span class="input-group-addon">Search</span>
 												<input type="text" class="form-control" placeholder="Type something here ..." />
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="input-group input-group-sm">
+												<span class="input-group-addon">Category</span>
+												<select data-bind="kendoDropDownList: { data: ['a', 'b', 'c', 'd', 'e'], optionLabel: 'Click to select one ...' }" style="width: 100%"></select>
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="input-group input-group-sm">
+												<span class="input-group-addon">Category</span>
+												<select data-bind="kendoMultiSelect: { data: ['a', 'b', 'c', 'd', 'e'], placeholder: 'Click to select one ...' }" style="width: 100%"></select>
 											</div>
 										</div>
 										<div class="clearfix"></div>

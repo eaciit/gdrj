@@ -1,0 +1,232 @@
+@import 'colors'
+
+html, body
+	height: 100%
+	width: 100%
+	padding: 0px
+	margin: 0px
+	box-sizing: border-box
+	color: $color-base
+	font-family: 'Source Sans Pro', 'Lato', 'Open Sans', 'Helvetica Neue', Arial, sans-serif
+	font-size: 12px
+
+*, *:before, *:after
+	box-sizing: inherit
+
+a
+	color: $color-base
+
+	&:hover
+		color: $color-base
+		text-decoration: none
+
+.tag
+	color: white
+	border-radius: 3px
+	padding: 2px 4px
+	font-size: 12px
+
+.bg-red
+	background-color: $color-base-red
+.bg-green
+	background-color: $color-base-green
+.bg-blue
+	background-color: $color-base-blue
+
+.align-center
+	text-align: center
+.align-left
+	text-align: left
+.align-right
+	text-align: right
+
+.bold
+	font-weight: bold
+.italic
+	font-style: italic
+.underline
+	text-decoration: underline
+
+.clear
+	clear: both
+
+.is-loading
+	.app
+
+		opacity: 0.4
+
+.app
+	background-color: #f0f3f4
+	transition: 600ms ease-in-out opacity
+
+.app-wrapper
+	margin: 0px 20px
+
+.app-top
+	position: fixed
+	top: 0
+	left: 0
+	right: 0
+	background-color: white
+	box-shadow: 0 2px 2px rgba(0,0,0,0.05),0 1px 0 rgba(0,0,0,0.05)
+	z-index: 2
+
+	> .app-wrapper > div
+		float: left
+
+	.app-identity
+		width: 90px
+		text-align: left
+
+		img
+			margin-top: 13px
+			height: 30px
+
+	.app-menu
+		ul.nav.navbar-nav
+			> li
+				> a
+					padding: 15px
+
+					&:hover, &:active, &:focus
+						background-color: transparent
+						color: $color-base-green
+
+					&.active
+						background-color: #74B841
+						color: white
+
+				a.dropdown-toggle
+					background-color: transparent
+
+.app-container
+	position: relative
+	z-index: 1
+	margin-top: 50px
+
+	.app-title
+		padding: 20px 0px
+
+	.app-content
+		margin: 0px -10px
+
+		h3
+			border-bottom: 1px solid #F0F3F4
+			padding-bottom: 7px
+
+		.panel-ez, .panel-headline
+			box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02)
+			border-radius: 0px
+			padding: 8px 5px
+
+			.panel-heading
+				position: relative
+				padding-bottom: 0px
+
+				.filter-toggle
+					position: absolute
+					right: 15px
+					top: 12px
+
+					> label
+						float: left
+						margin-right: 15px
+						font-weight: normal
+
+					> div
+						float: left
+
+					.material-switch
+						padding-top: 1px
+
+
+			.panel-body
+				.panel-filter
+					display: none
+					margin-bottom: 15px
+
+		.panel-headline
+			padding: 0px
+			border: none
+
+			.panel-heading
+				border: none
+				padding: 15px
+				background-color: white
+
+				h3
+					border: none
+					padding: 0px
+
+			.panel-body
+				color: white
+				text-align: center
+				display: table
+				width: 100%
+				padding: 10px 0px
+				min-height: 100px
+
+				.wrapper
+					display: table-cell
+					text-align: center
+					vertical-align: middle
+
+					p
+						margin: 0px
+
+					.value
+						font-size: 46px
+
+					.description
+						font-size: 14px
+						font-weight: 100
+						padding-bottom: 12px
+
+.nav-user
+	margin: 0px
+
+	.dropdown-toggle
+		height: 50px
+		padding-bottom: 0px
+		padding-top: 0px
+		padding-right: 0px
+
+	.avatar
+		width: 30px
+		height: 30px
+		margin-top: 10px
+		margin-right: 8px
+		display: block
+		border-radius: 50%
+		white-space: nowrap
+		overflow: hidden
+
+		img
+			height: 30px
+			width: 30px
+			vertical-align: middle
+
+		.navbar-brand
+			font-weight: bold
+			color: #000
+
+	.name
+		margin-top: 15px
+
+.breadcrumb
+	font-size: 18px
+	padding: 0px
+	margin-bottom: 0px
+
+	li > a
+		color: $color-base-green
+
+.form-label
+	line-height: 25px
+	text-align: left
+	font-size: 12px
+
+	&:after
+		content: ":"
+		position: absolute
+		right: 5px

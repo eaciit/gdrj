@@ -11,7 +11,7 @@
 
 .material-switch > label::before {
     background: rgb(0, 0, 0);
-    box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     content: '';
     height: 16px;
@@ -24,7 +24,7 @@
 .material-switch > label::after {
     background: rgb(255, 255, 255);
     border-radius: 16px;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
     content: '';
     height: 24px;
     left: -4px;
@@ -36,7 +36,7 @@
 }
 .material-switch > input[type="checkbox"]:checked + label::before {
     background: inherit;
-    opacity: 0.5;
+    opacity: 0.6;
 }
 .material-switch > input[type="checkbox"]:checked + label::after {
     background: inherit;

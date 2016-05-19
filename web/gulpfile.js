@@ -8,17 +8,18 @@ const less  = require('gulp-less')
 const path  = require('path')
 const del   = require('del')
 
-const basePathPublic = 'assets/core'
-const sourcePathJS   = 'assets_core_src/js/**'
-const sourcePathSASS = 'assets_core_src/sass/**'
-const sourcePathLESS = 'assets_core_src/less/**'
-const destPathJS     = `${basePathPublic}/js`
-const destPathCSS    = `${basePathPublic}/css`
+const baseSourcePath = 'src'
+const baseDestPath   = 'assets/core'
+const sourcePathJS   = `${baseSourcePath}/js/**`
+const sourcePathSASS = `${baseSourcePath}/sass/**`
+const sourcePathLESS = `${baseSourcePath}/less/**`
+const destPathJS     = `${baseDestPath}/js`
+const destPathCSS    = `${baseDestPath}/css`
 
 const noop = (() => {})
 
 gulp.task('clean', () => {
-	del([`${basePathPublic}/*/*`])
+	del([`${baseDestPath}/*/*`])
 })
 
 gulp.task('babel', () => {
@@ -27,7 +28,7 @@ gulp.task('babel', () => {
 		.pipe(gulp.dest(destPathJS))
 })
 
-gulp.task('babel:watch', () => {
+gulp.task('babel:watch', ['babel'], () => {
 	gulp.watch(sourcePathJS, ['babel'])
 })
 
@@ -37,12 +38,12 @@ gulp.task('sass', () => {
 		.pipe(gulp.dest(destPathCSS))
 })
 
-gulp.task('sass:watch', () => {
+gulp.task('sass:watch', ['sass'], () => {
 	gulp.watch(sourcePathSASS, ['sass'])
 })
 
 gulp.task('less', function () {
-	let sourcePathBootstrapLESS = sourcePathLESS.replace('**', 'kendo.bootstrap.less')
+	let sourcePathBootstrapLESS = sourcePathLESS.replace('**', 'kendo.ez.less')
 
 	gulp.src(sourcePathBootstrapLESS)
 		.pipe(less({ paths: [path.join(__dirname, 'less', 'includes')] })
@@ -50,9 +51,9 @@ gulp.task('less', function () {
 		.pipe(gulp.dest(destPathCSS))
 });
 
-gulp.task('less:watch', () => {
+gulp.task('less:watch', ['less'], () => {
 	gulp.watch(sourcePathLESS, ['less'])
 })
 
-let tasks = ['clean', 'babel', 'babel:watch', 'sass', 'sass:watch', 'less', 'less:watch']
+let tasks = ['clean', 'babel:watch', 'sass:watch', 'less:watch']
 gulp.task('default', tasks, noop)

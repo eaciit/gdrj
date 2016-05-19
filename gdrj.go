@@ -1,9 +1,9 @@
 package main
 
 import (
-	"eaciit/gdrj/controller"
-	"eaciit/gdrj/installation"
-	"eaciit/gdrj/model"
+	"eaciit/gdrj/web/controller"
+	"eaciit/gdrj/web/installation"
+	"eaciit/gdrj/web/model"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	"net/http"
@@ -17,12 +17,11 @@ var (
 
 func main() {
 	runtime.GOMAXPROCS(4)
-	// setup.ConfigPath = controller.GDRJ_CONFIG_PATH
-	gdrj.ConfigPath = controller.GDRJ_CONFIG_PATH
+	gocore.ConfigPath = controller.GDRJ_CONFIG_PATH
 
 	server = new(knot.Server)
 
-	port := new(gdrj.Ports)
+	port := new(gocore.Ports)
 	port.ID = "port"
 	if err := port.GetPort(); err != nil {
 		toolkit.Printf("Error get port: %s \n", err.Error())
@@ -63,16 +62,16 @@ func main() {
 }
 
 func setAclDatabase() error {
-	if err := gdrj.InitialSetDatabase(); err != nil {
+	if err := gocore.InitialSetDatabase(); err != nil {
 		return err
 	}
 
-	if gdrj.GetConfig("default_username") == nil {
-		gdrj.SetConfig("default_username", "eaciit")
-		gdrj.SetConfig("default_password", "Password.1")
+	if gocore.GetConfig("default_username") == nil {
+		gocore.SetConfig("default_username", "eaciit")
+		gocore.SetConfig("default_password", "Password.1")
 	}
 
-	if err := gdrj.PrepareDefaultUser(); err != nil {
+	if err := gocore.PrepareDefaultUser(); err != nil {
 		return err
 	}
 	return nil
