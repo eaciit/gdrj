@@ -1,0 +1,178 @@
+@import 'colors'
+
+html, body
+	height: 100%
+	width: 100%
+	padding: 0px
+	margin: 0px
+	box-sizing: border-box
+	color: $color-base
+	font-family: 'Source Sans Pro'
+	font-size: 12px
+
+*, *:before, *:after
+	box-sizing: inherit
+
+a
+	color: $color-base
+
+	&:hover
+		color: $color-base
+		text-decoration: none
+
+.tag
+	color: white
+	border-radius: 3px
+	padding: 2px 4px
+	font-size: 12px
+.tag-red
+	background-color: $color-base-red
+.tag-green
+	background-color: $color-base-green
+.tag-blue
+	background-color: $color-base-blue
+
+.align-center
+	text-align: center
+.align-left
+	text-align: left
+.align-right
+	text-align: right
+
+.bold
+	font-weight: bold
+.italic
+	font-style: italic
+.underline
+	text-decoration: underline
+
+.clear
+	clear: both
+
+.app
+	background-color: #f0f3f4
+
+.app-wrapper
+	margin: 0px 20px
+
+.app-top
+	position: fixed
+	top: 0
+	left: 0
+	right: 0
+	background-color: white
+	box-shadow: 0 2px 2px rgba(0,0,0,0.05),0 1px 0 rgba(0,0,0,0.05)
+	z-index: 2
+
+	> .app-wrapper > div
+		float: left
+
+	.app-identity
+		width: 90px
+		text-align: left
+
+		img
+			margin-top: 13px
+			height: 30px
+
+	.app-menu
+		ul.nav.navbar-nav
+			> li
+				> a
+					padding-left: 0px
+					padding-right: 30px
+
+					&:hover, &:active, &:focus
+						background-color: transparent
+						color: $color-base-green
+
+				a.dropdown-toggle
+					background-color: transparent
+
+.app-container
+	position: relative
+	z-index: 1
+	margin-top: 50px
+
+	.app-title
+		padding: 20px 0px
+
+	.app-content
+		margin: 0px -10px
+
+		h3
+			border-bottom: 1px solid #F0F3F4
+			padding-bottom: 7px
+
+		.panel
+			.panel-heading
+				position: relative
+
+				.filter-toggle
+					position: absolute
+					right: 15px
+					top: 12px
+
+					> label
+						float: left
+						margin-right: 15px
+						font-weight: normal
+
+					> div
+						float: left
+
+					.material-switch
+						padding-top: 1px
+
+
+			.panel-body
+				.panel-filter
+					display: none
+					margin-bottom: 15px
+
+.avatar
+	border: 1px solid rgba(255,255,255,0.35)
+	display: block
+	border-radius: 500px
+	white-space: nowrap
+
+	img
+		border-radius: 500px
+		height: 40px
+		width: 40px
+		vertical-align: middle
+
+	.navbar-brand
+		font-family: "Open Sans"
+		font-weight: bold
+		color: #000
+
+.nav-user
+	margin: 0px
+
+	.dropdown-toggle
+		height: 60px
+
+	.avatar
+		width: 40px
+		height: 50px
+		margin-top: -5px
+		margin-right: 5px
+
+.breadcrumb
+	font-size: 18px
+	padding: 0px
+	margin-bottom: 0px
+
+	li>a
+		color: #337ab7
+
+.form-label
+	line-height: 25px
+	text-align: left
+	font-size: 12px
+
+	&:after
+		content: ":"
+		position: absolute
+		right: 5px
