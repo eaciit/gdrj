@@ -53,8 +53,12 @@ a {
 .clear {
   clear: both; }
 
+.is-loading .app {
+  opacity: 0.4; }
+
 .app {
-  background-color: #f0f3f4; }
+  background-color: #f0f3f4;
+  transition: 600ms ease-in-out opacity; }
 
 .app-wrapper {
   margin: 0px 20px; }

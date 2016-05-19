@@ -15,6 +15,15 @@
 		<script src="../assets/jquery/jquery-2.1.0.min.js"></script>
 		<script src="../assets/jquery/jquery-ui.min.js"></script>
 
+		<!-- pace -->
+		<link rel="stylesheet" href="../assets/pace/pace.css" />
+		<script src="../assets/pace/pace.min.js"></script>
+		<script>
+			Pace.on('done', function () {
+				$('.is-loading').removeClass('is-loading');
+			});
+		</script>
+
 		<!-- knockout -->
 		<script src="../assets/knockout/knockout-3.4.0.js"></script>
 		<script src="../assets/knockout/knockout.mapping.js"></script>
@@ -69,7 +78,7 @@
 		<link rel="stylesheet" href="../assets/core/css/bootstrap-ext.css" />
 		<link rel="stylesheet" href="../assets/core/css/layout.css" />
 	</head>
-	<body>
+	<body class="is-loading">
 		<div class="app" data-bind="with: vm">
 			<header class="navbar navbar-fixed-top app-top">
 				<div class="app-wrapper">
