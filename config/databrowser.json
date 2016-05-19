@@ -1,0 +1,123 @@
+[
+    {
+        "TableNames": "customer",
+        "_id": "browsecustomer",
+        "MetaData": [
+            {
+                "DataType": "string",
+                "Field": "_id",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "Name",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "KeyAccount",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "float64",
+                "Field": "Channel",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "Group",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "National",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "Zone",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "Region",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "Area",
+                "SimpleFilter": true,
+                "Sortable": true
+            }
+        ]
+    },
+    {
+        "TableNames": "branch",
+        "_id": "browsebranch",
+        "MetaData": [
+            {
+                "DataType": "string",
+                "Field": "_id",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "Name",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "Location",
+                "SimpleFilter": true,
+                "Sortable": true
+            }
+        ]
+    },
+    {
+        "TableNames": "product",
+        "_id": "browseproduct",
+        "MetaData": [
+            {
+                "DataType": "string",
+                "Field": "_id",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "Name",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "Field": "Config",
+                "Format": "",
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "Brand",
+                "ShowIndex": 0,
+                "SimpleFilter": true,
+                "Sortable": true
+            },
+            {
+                "DataType": "string",
+                "Field": "LongName",
+                "SimpleFilter": true,
+                "Sortable": true
+            }
+        ]
+    }
+]

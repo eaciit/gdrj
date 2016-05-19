@@ -1,10 +1,10 @@
 package gocore
 
 import (
+	"eaciit/gdrj/model"
 	"errors"
 	"github.com/eaciit/acl"
 	"github.com/eaciit/dbox"
-	"github.com/eaciit/efs"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 	"gopkg.in/gomail.v2"
@@ -69,12 +69,12 @@ func InitialSetDatabase() error {
 		return err
 	}
 
-	conn_efs, err := prepareconnection(CONF_DB_GDRJ)
+	conn_godrej, err := prepareconnection(CONF_DB_GDRJ)
 	if err != nil {
 		return err
 	}
 
-	if err := efs.SetDb(conn_efs); err != nil {
+	if err := gdrj.SetDb(conn_godrej); err != nil {
 		toolkit.Printf("Error set database to efs: %s \n", err.Error())
 	}
 	return nil

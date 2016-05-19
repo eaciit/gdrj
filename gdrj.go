@@ -37,6 +37,7 @@ func main() {
 	server.RouteStatic("image", filepath.Join(controller.AppBasePath, "web", "assets", "img"))
 	server.Register(controller.CreateWebController(server), "")
 	server.Register(controller.CreateLoginController(server), "")
+	server.Register(controller.CreateDataBrowserController(server), "")
 
 	// server.Route("/", func(r *knot.WebContext) interface{} {
 	// 	http.Redirect(r.Writer, r.Request, "/web/index", 301)
