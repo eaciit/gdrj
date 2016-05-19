@@ -68,7 +68,7 @@ a {
   top: 0;
   left: 0;
   right: 0;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.8);
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
   z-index: 2; }
   .app-top > .app-wrapper > div {
@@ -101,57 +101,6 @@ a {
     .app-container .app-content h3 {
       border-bottom: 1px solid #F0F3F4;
       padding-bottom: 7px; }
-    .app-container .app-content .panel-ez, .app-container .app-content .panel-headline {
-      box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02);
-      border-radius: 0px;
-      padding: 8px 5px; }
-      .app-container .app-content .panel-ez .panel-heading, .app-container .app-content .panel-headline .panel-heading {
-        position: relative;
-        padding-bottom: 0px; }
-        .app-container .app-content .panel-ez .panel-heading .filter-toggle, .app-container .app-content .panel-headline .panel-heading .filter-toggle {
-          position: absolute;
-          right: 15px;
-          top: 12px; }
-          .app-container .app-content .panel-ez .panel-heading .filter-toggle > label, .app-container .app-content .panel-headline .panel-heading .filter-toggle > label {
-            float: left;
-            margin-right: 15px;
-            font-weight: normal; }
-          .app-container .app-content .panel-ez .panel-heading .filter-toggle > div, .app-container .app-content .panel-headline .panel-heading .filter-toggle > div {
-            float: left; }
-          .app-container .app-content .panel-ez .panel-heading .filter-toggle .material-switch, .app-container .app-content .panel-headline .panel-heading .filter-toggle .material-switch {
-            padding-top: 1px; }
-      .app-container .app-content .panel-ez .panel-body .panel-filter, .app-container .app-content .panel-headline .panel-body .panel-filter {
-        display: none;
-        margin-bottom: 15px; }
-    .app-container .app-content .panel-headline {
-      padding: 0px;
-      border: none; }
-      .app-container .app-content .panel-headline .panel-heading {
-        border: none;
-        padding: 15px;
-        background-color: white; }
-        .app-container .app-content .panel-headline .panel-heading h3 {
-          border: none;
-          padding: 0px; }
-      .app-container .app-content .panel-headline .panel-body {
-        color: white;
-        text-align: center;
-        display: table;
-        width: 100%;
-        padding: 10px 0px;
-        min-height: 100px; }
-        .app-container .app-content .panel-headline .panel-body .wrapper {
-          display: table-cell;
-          text-align: center;
-          vertical-align: middle; }
-          .app-container .app-content .panel-headline .panel-body .wrapper p {
-            margin: 0px; }
-          .app-container .app-content .panel-headline .panel-body .wrapper .value {
-            font-size: 46px; }
-          .app-container .app-content .panel-headline .panel-body .wrapper .description {
-            font-size: 14px;
-            font-weight: 100;
-            padding-bottom: 12px; }
 
 .nav-user {
   margin: 0px; }
