@@ -8,25 +8,12 @@ import (
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	"os"
 )
 
 var _db *orm.DataContext
 var _conn dbox.IConnection
 var ConfigPath string
 var _dbErr error
-
-func validateConfig() error {
-
-	if ConfigPath == "" {
-		return errors.New("validateConfig: ConfigPath is empty")
-	}
-	_, e := os.Stat(ConfigPath)
-	if e != nil {
-		return errors.New("validateConfig: " + e.Error())
-	}
-	return nil
-}
 
 func SetDb(conn dbox.IConnection) error {
 	CloseDb()

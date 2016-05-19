@@ -1,0 +1,26 @@
+[{
+    "_id": "db_acl",
+    "data": {
+        "db": "godrej",
+        "driver": "mongo",
+        "host": "192.168.0.200:27017",
+        "pass": "",
+        "user": "",
+        "setting": {
+        	"timeout":3
+        }
+    }
+},
+{
+    "_id": "db_godrej",
+    "data": {
+        "db": "godrej",
+        "driver": "mongo",
+        "host": "192.168.0.200:27017",
+        "pass": "",
+        "user": "",
+        "setting": {
+        	"timeout":3
+        }
+    }
+}]
