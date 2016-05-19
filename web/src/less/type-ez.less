@@ -141,7 +141,7 @@
 @pager-text-color: darken(@base, 27%);
 @draghandle-selected-background: @darkenBase12;
 @upload-status-color: @normal-text-color;
-@form-widgets-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+@form-widgets-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.01);
 @menu-active-background: darken(@base, 1%);
 @concave-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.125);
 @primary-button-text-color: @background;
@@ -1237,6 +1237,17 @@ div.k-filebrowser-dropzone em
     border-color: @hover-border-color;
 }
 
+.k-textbox>input,
+.k-autocomplete .k-input,
+.k-picker-wrap .k-input,
+.k-numeric-wrap .k-input,
+.k-dropdown-wrap .k-input,
+.k-selectbox .k-input
+{
+    padding: .18em 0;
+}
+
+
 .k-tiles li.k-state-selected
 {
     border-color: @selected-border-color;
@@ -1616,6 +1627,16 @@ div.k-filebrowser-dropzone em
 .k-multiselect.k-state-border-up .k-multiselect-wrap
 {
     border-radius: 0 0 @main-border-radius @main-border-radius;
+}
+
+.k-widget.k-multiselect.k-header,
+.k-widget.k-multiselect.k-header .k-multiselect-wrap.k-floatwrap
+{
+    height: 28px
+}
+.k-multiselect-wrap .k-input
+{
+    padding-top: 5px;
 }
 
 .k-window-titlebar,

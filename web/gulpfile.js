@@ -43,7 +43,7 @@ gulp.task('sass:watch', ['sass'], () => {
 })
 
 gulp.task('less', function () {
-	let sourcePathBootstrapLESS = sourcePathLESS.replace('**', 'kendo.bootstrap.less')
+	let sourcePathBootstrapLESS = sourcePathLESS.replace('**', 'kendo.ez.less')
 
 	gulp.src(sourcePathBootstrapLESS)
 		.pipe(less({ paths: [path.join(__dirname, 'less', 'includes')] })
