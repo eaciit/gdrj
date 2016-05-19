@@ -89,12 +89,31 @@
 						</ul>
 						<div class="clear"></div>
 					</div>
+					<ul class="nav navbar-nav navbar-right m-n hidden-xs nav-user">
+						<li class="dropdown hidden-xs">
+							<a class="dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="true">
+								<span class="thumb-sm avatar pull-left">
+									<img src="../assets/img/Leonard_Jayamohan.jpg" />
+								</span>
+								<span class="thumb-sm title-user">Leonard Jayamohan</span>
+								<b class="caret"></b>
+							</a>
+							<ul class="dropdown-menu animated fadeInRight">
+								<span class="arrow top"></span>
+								<li ><a href="#">Setting</a></li>
+								<li data-bind="click:app.Logout"><a href="#">Logout</a></li>
+							</ul>
+						</li>
+					</ul>
+					<div class="clear"></div>
 				</div>
 			</header>
 
 			<div class="app-container">
 				<div class="app-wrapper">
 					<div class="app-title">
+						<ol class="breadcrumb pull-right" data-bind="template:{name:'breadcrumbTemplate', foreach:vm.breadcrumb}">
+						</ol>
 						<h2 data-bind="text: pageTitle">Dashboard</h2>
 					</div>
 
@@ -148,13 +167,37 @@
 								</div>
 							</div>
 						</div>
+						<!-- <div class="col-md-6">
+							<div class="panel panel-ez">
+								<div class="panel-heading">
+									<h3>Form Element</h3>
+								</div>
+								<div class="panel-body" style="height: 250px">
+									<form class="form-horizontal">
+										<div class="form-group">
+											<label class="col-md-2 form-label">Email</label>
+											<div class="col-md-10">
+												<input type="text" class="form-control input-sm" placeholder="Email"/>
+											</div>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div> -->
 
 						<div class="clearfix"></div>
 					</div>
 				</div>
 			</div>
 		</div>
-
+		<script id="breadcrumbTemplate" type="text/html">
+			<!-- ko if: (vm.breadcrumb().length-1)!=$index() -->
+			<li><a data-bind="text: title, attr: {href: href}"></a></li>
+			<!-- /ko -->
+			<!-- ko if: (vm.breadcrumb().length-1)==$index() -->
+			<li class="active" data-bind="text: title"></li>
+			<!-- /ko -->
+		</script>
 		<script>ko.applyBindings(viewModel)</script>
 	</body>
 </html>
