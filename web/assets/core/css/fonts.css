@@ -15,3 +15,9 @@
   src: url("../../fonts/SourceSansPro-Bold.otf");
   font-weight: bold;
   font-style: normal; }
+
+@font-face {
+  font-family: 'Source Sans Pro';
+  src: url("../../fonts/SourceSansPro-Light.otf");
+  font-weight: 100;
+  font-style: normal; }
