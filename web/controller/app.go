@@ -12,8 +12,8 @@ type App struct {
 }
 
 var (
-	LayoutFile       string   = "views/layout.html"
-	IncludeFiles     []string = []string{"views/_head.html", "views/_loader.html", "views/_miniloader.html"}
+	LayoutFile       string   = "web/view/layout.html"
+	IncludeFiles     []string = []string{"web/view/_head.html"}
 	AppBasePath      string   = func(dir string, err error) string { return dir }(os.Getwd())
 	GDRJ_DATA_PATH   string   = filepath.Join(AppBasePath, "data")
 	GDRJ_CONFIG_PATH string   = filepath.Join(AppBasePath, "config")
