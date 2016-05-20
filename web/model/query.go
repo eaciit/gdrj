@@ -64,16 +64,11 @@ func ConnectToDatabase(payload toolkit.M) (int, []toolkit.M, *DataBrowser, error
 	}
 	_id := toolkit.ToString(payload.Get("tablename", ""))
 	sort := payload.Get("sort")
-	search := payload.Get("search")
-	_ = search
-
 	TblName := toolkit.M{}
-	payload.Unset("browserid")
 	var sorter string
-	_ = sorter
+
 	if sort != nil {
 		tmsort, _ := toolkit.ToM(sort.([]interface{})[0])
-		toolkit.Printf("====== sort %#v\n", tmsort["dir"])
 		if tmsort["dir"] == "asc" {
 			sorter = tmsort["field"].(string)
 		} else if tmsort["dir"] == "desc" {
@@ -81,6 +76,7 @@ func ConnectToDatabase(payload toolkit.M) (int, []toolkit.M, *DataBrowser, error
 		} else if tmsort["dir"] == nil {
 			sorter = " "
 		}
+		payload.Set("order", sorter)
 	} else {
 		sorter = " "
 	}
@@ -89,17 +85,6 @@ func ConnectToDatabase(payload toolkit.M) (int, []toolkit.M, *DataBrowser, error
 	if err := Get(dataDS, _id); err != nil {
 		return 0, nil, nil, err
 	}
-
-	/*filterDB := dbox.Contains("TableNames", tablename)
-	cursorDB, err := Find(new(DataBrowser), filterDB)
-	if err != nil {
-		return 0, nil, nil, err
-	}
-
-	dataDS := new(DataBrowser)
-	if err = cursorDB.Fetch(dataDS, 1, false); err != nil {
-		return 0, nil, nil, err
-	}*/
 
 	driver, ci := new(Login).GetConnectionInfo(CONF_DB_GDRJ)
 	connection, err := dbox.NewConnection(driver, ci)
@@ -223,15 +208,8 @@ func parseQuery(query dbox.IQuery, queryInfo toolkit.M) (dbox.IQuery, MetaSave) 
 		}
 	}
 	if qOrder := queryInfo.Get("order", "").(string); qOrder != "" {
-		orderAll := map[string]string{}
-		err := json.Unmarshal([]byte(qOrder), &orderAll)
-		if err == nil {
-			orderString := []string{}
-			for key, val := range orderAll {
-				orderString = append(orderString, key)
-				orderString = append(orderString, val)
-			}
-			query = query.Order(orderString...)
+		if qOrder != "" {
+			query = query.Order(qOrder)
 		}
 	}
 

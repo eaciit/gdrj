@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -65,21 +66,22 @@ func ImageUploadHandler(r *knot.WebContext, filename, dstpath string) (error, st
 	return nil, newImageName
 }
 
-func UploadFileHandler(r *knot.WebContext, tempfile, dstpath, filename string) (error, string, string) {
+func UploadFileHandler(r *knot.WebContext, tempfile, dstpath, filename string) (error, string, string, string) {
 	file, handler, err := r.Request.FormFile(tempfile)
 	if err != nil {
-		return err, "", ""
+		return err, "", "", ""
 	}
 	defer file.Close()
 
-	newFileName := filename + filepath.Ext(handler.Filename)
+	ext := filepath.Ext(handler.Filename)
+	newFileName := filename + ext
 	dstSource := dstpath + toolkit.PathSeparator + newFileName
 	f, err := os.OpenFile(dstSource, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		return err, "", ""
+		return err, "", "", ""
 	}
 	defer f.Close()
 	io.Copy(f, file)
 
-	return nil, handler.Filename, newFileName
+	return nil, handler.Filename, newFileName, strings.Split(ext, ".")[1]
 }
