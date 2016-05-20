@@ -6,6 +6,7 @@ viewModel.app = new Object();
 var app = viewModel.app;
 
 app.noop = function () {};
+app.miniloader = ko.observable(false);
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
     var callbackScheduler = function callbackScheduler(callback) {
@@ -75,4 +76,12 @@ app.randomRange = function (min, max) {
 };
 app.capitalize = function (d) {
     return "" + d[0].toUpperCase() + d.slice(1);
+};
+app.isFine = function (res) {
+    if (!res.success) {
+        sweetAlert("Oops...", res.message, "error");
+        return false;
+    }
+
+    return true;
 };
