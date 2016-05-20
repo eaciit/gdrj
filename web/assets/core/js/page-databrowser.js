@@ -3,45 +3,12 @@
 vm.pageTitle("Data Browser");
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Data Browser', href: '/databrowser' }]);
 
-// ======================
-
 viewModel.dataBrowser = new Object();
 var db = viewModel.dataBrowser;
 
-db.section = ko.observable("");
 db.masterDataBrowser = ko.observableArray([]);
-db.templateConfig = {
-	dataModel: "",
-	filters: [],
-	fields: []
-};
-db.config = ko.mapping.fromJS(db.templateConfig);
-db.dropDownConfigDataModel = {
-	data: ko.computed(function () {
-		return db.masterDataBrowser().map(function (d) {
-			return { text: d.TableNames, value: d._id };
-		});
-	}),
-	dataValueField: 'value',
-	dataTextField: 'text',
-	value: db.config.dataModel,
-	optionLabel: 'Select one',
-	select: function select(d) {
-		console.log(d);
-	}
-};
-db.gridConfigDataModel = {
-	data: db.masterDataBrowser,
-	dataSource: {
-		pageSize: 10
-	},
-	columns: [{ field: "Field" }, { title: "Field" }, { field: "Field" }],
-	pageable: true,
-	sortable: true,
-	filterable: false
-};
 
-db.getMasterDataBrowser = function (callback) {
+db.getMasterDataBrowser = function () {
 	db.masterDataBrowser([]);
 
 	app.ajaxPost('/databrowser/getdatabrowsers', {}, function (res) {
@@ -50,22 +17,53 @@ db.getMasterDataBrowser = function (callback) {
 		}
 
 		db.masterDataBrowser(res.data);
-		if (callback) {
-			callback();
-		}
 	}, function (err) {
 		app.showError(err.responseText);
 	}, {
 		timeout: 5000
 	});
 };
-db.renderGridConfig = function () {};
-db.init = function () {
-	db.getMasterDataBrowser(function () {
-		return db.renderGridConfig();
+db.createDataBrowser = function (dataItem) {
+	var table = dataItem._id;
+
+	app.ajaxPost("/databrowser/getdatabrowser", { tablename: table }, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		if (!res.data) {
+			res.data = [];
+		}
+
+		$('#grid-databrowser-decription').ecDataBrowser({
+			title: "",
+			widthPerColumn: 6,
+			showFilter: "Simple",
+			dataSource: {
+				url: "/databrowser/getdatabrowser",
+				type: "post",
+				callData: { tablename: table },
+				fieldTotal: "DataCount",
+				fieldData: "DataValue",
+				serverPaging: true,
+				pageSize: 10,
+				serverSorting: true,
+				callOK: function callOK(res) {
+					console.log(res);
+				}
+			},
+			metadata: res.data.dataresult.MetaData
+		});
+	}, {
+		timeout: 10 * 1000
 	});
 };
 
+db.selectTableName = function (e) {
+	var dataItem = this.dataItem(e.item);
+	db.createDataBrowser(dataItem);
+};
+
 $(function () {
-	db.init();
+	db.getMasterDataBrowser();
 });
