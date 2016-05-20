@@ -2,8 +2,8 @@ package gdrj
 
 import (
 	"errors"
-	// "github.com/eaciit/dbox"
-	// _ "github.com/eaciit/dbox/dbc/csv"
+	"github.com/eaciit/dbox"
+	_ "github.com/eaciit/dbox/dbc/csv"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 	// "strings"
@@ -22,7 +22,7 @@ type UploadData struct {
 	PhysicalName  string    `json:"physicalname" bson:"physicalname"`
 	Desc          string    `json:"desc" bson:"desc"`
 	DataType      string    `json:"datatype" bson:"datatype"`
-	TableName     string    `json:"tablename" bson:"tablename"`
+	DocName       string    `json:"tablename" bson:"tablename"`
 	Date          time.Time `json:"date" bson:"date"`
 	Account       []string  `json:"account" bson:"account"`
 	Datacount     float64   `json:"datacount" bson:"datacount"`
@@ -97,16 +97,16 @@ func (u *UploadData) ProcessData(loc string) (err error) {
 	}
 	defer c.Close()
 
-	arrlt := make([]*LedgerTrans, 0, 0)
-	err = c.Fetch(&arrlt, 0, false)
-	if err != nil {
-		if strings.Contains(err.Error(), "Not found") {
-			err = nil
-			return
-		}
-		err = errors.New(toolkit.Sprintf("Process File error found : %v", err.Error()))
-		return
-	}
+	// arrlt := make([]*LedgerTrans, 0, 0)
+	// err = c.Fetch(&arrlt, 0, false)
+	// if err != nil {
+	// 	if strings.Contains(err.Error(), "Not found") {
+	// 		err = nil
+	// 		return
+	// 	}
+	// 	err = errors.New(toolkit.Sprintf("Process File error found : %v", err.Error()))
+	// 	return
+	// }
 
 	// go func(arrlt []*LedgerTrans, ltf *LedgerTransFile) {
 	// 	ci := 0
