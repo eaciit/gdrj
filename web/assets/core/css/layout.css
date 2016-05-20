@@ -11,48 +11,6 @@ html, body {
 *, *:before, *:after {
   box-sizing: inherit; }
 
-a {
-  color: #58666e; }
-  a:hover {
-    color: #58666e;
-    text-decoration: none; }
-
-.tag {
-  color: white;
-  border-radius: 3px;
-  padding: 2px 4px;
-  font-size: 12px; }
-
-.bg-red {
-  background-color: #e7505a; }
-
-.bg-green {
-  background-color: #74B841; }
-
-.bg-blue {
-  background-color: #3b79c2; }
-
-.align-center {
-  text-align: center; }
-
-.align-left {
-  text-align: left; }
-
-.align-right {
-  text-align: right; }
-
-.bold {
-  font-weight: bold; }
-
-.italic {
-  font-style: italic; }
-
-.underline {
-  text-decoration: underline; }
-
-.clear {
-  clear: both; }
-
 .is-loading .app {
   opacity: 0.4; }
 

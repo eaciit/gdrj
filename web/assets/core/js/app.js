@@ -5,8 +5,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 viewModel.app = new Object();
 var app = viewModel.app;
 
-app.noop = function () {};
 app.miniloader = ko.observable(false);
+app.noop = function () {};
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
     var callbackScheduler = function callbackScheduler(callback) {
@@ -25,12 +25,14 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         callbackError = app.noop;
     }
 
+    var params = typeof data === 'undefined' ? {} : ko.mapping.toJSON(data);
+
     var config = {
         url: url,
         type: 'post',
         dataType: 'json',
         contentType: 'application/json charset=utf-8',
-        data: ko.mapping.toJSON(data),
+        data: params,
         success: function success(a) {
             callbackScheduler(function () {
                 if (callbackSuccess) {
@@ -76,6 +78,15 @@ app.randomRange = function (min, max) {
 };
 app.capitalize = function (d) {
     return "" + d[0].toUpperCase() + d.slice(1);
+};
+app.is = function (observable, comparator) {
+    var a = typeof observable === 'function' ? observable() : observable;
+    var b = typeof comparator === 'function' ? comparator() : comparator;
+
+    return a === b;
+};
+app.showError = function (message) {
+    return sweetAlert("Oops...", message, "error");
 };
 app.isFine = function (res) {
     if (!res.success) {

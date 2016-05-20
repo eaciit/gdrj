@@ -37,3 +37,24 @@ func (d *DataBrowserController) GetDataBrowser(r *knot.WebContext) interface{} {
 
 	return helper.CreateResult(true, result, "")
 }
+
+func (d *DataBrowserController) GetDataBrowsers(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	result := make([]gocore.DataBrowser, 0)
+
+	cursor, err := gocore.Find(new(gocore.DataBrowser), nil)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	err = cursor.Fetch(&result, 0, false)
+	if cursor != nil {
+		cursor.Close()
+	}
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, result, "")
+}
