@@ -14,24 +14,20 @@ ul.dropdown-menu {
       background-color: transparent;
       color: #74B841; }
 
-.panel-ez .panel-heading {
-  position: relative;
-  padding-bottom: 0px;
-  border-radius: 0px; }
-  .panel-ez .panel-heading .filter-toggle {
-    position: absolute;
-    right: 15px;
-    top: 12px; }
-    .panel-ez .panel-heading .filter-toggle > label {
-      float: left;
-      margin-right: 15px;
-      font-weight: normal; }
-    .panel-ez .panel-heading .filter-toggle > div {
-      float: left; }
-    .panel-ez .panel-heading .filter-toggle .material-switch {
-      padding-top: 1px; }
+.panel.ez .panel-heading .filter-toggle {
+  position: absolute;
+  right: 15px;
+  top: 12px; }
+  .panel.ez .panel-heading .filter-toggle > label {
+    float: left;
+    margin-right: 15px;
+    font-weight: normal; }
+  .panel.ez .panel-heading .filter-toggle > div {
+    float: left; }
+  .panel.ez .panel-heading .filter-toggle .material-switch {
+    padding-top: 1px; }
 
-.panel-ez .panel-body .panel-filter {
+.panel.ez .panel-body .panel-filter {
   display: none;
   margin-bottom: 15px; }
 

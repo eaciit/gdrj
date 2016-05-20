@@ -27,7 +27,7 @@ db.getMasterDataBrowser = () => {
 db.createDataBrowser = (dataItem) => {
 	let table = dataItem._id
 	
-	app.ajaxPost("/databrowser/getdatabrowser", { tablename: dataItem }, (res) => {
+	app.ajaxPost("/databrowser/getdatabrowser", { tablename: table }, (res) => {
 		if (!app.isFine(res)) {
 			return;
 		}
