@@ -2,7 +2,6 @@ package helper
 
 import (
 	"errors"
-	"github.com/eaciit/colony-core/v0"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/csv"
 	_ "github.com/eaciit/dbox/dbc/csvs"
@@ -54,10 +53,6 @@ func Query(driver string, host string, other ...interface{}) *queryWrapper {
 	}
 
 	return &wrapper
-}
-
-func ConnectUsingDataConn(dataConn *colonycore.Connection) *queryWrapper {
-	return Query(dataConn.Driver, dataConn.Host, dataConn.Database, dataConn.UserName, dataConn.Password, dataConn.Settings)
 }
 
 func (c *queryWrapper) CheckIfConnected() error {
@@ -189,29 +184,6 @@ func (c *queryWrapper) Save(tableName string, payload map[string]interface{}, cl
 	}
 
 	return errors.New("nothing changes")
-}
-
-func GetDataSourceQuery() ([]colonycore.DataSource, error) {
-	var query *dbox.Filter
-	cursor, err := colonycore.Find(new(colonycore.DataSource), query)
-	if err != nil {
-		return nil, err
-	}
-
-	data := []colonycore.DataSource{}
-	err = cursor.Fetch(&data, 0, false)
-	if err != nil {
-		return nil, err
-	}
-	newdata := []colonycore.DataSource{}
-	for _, val := range data {
-		if val.QueryInfo.Has("select") {
-			newdata = append(newdata, val)
-		}
-	}
-	defer cursor.Close()
-
-	return newdata, nil
 }
 
 func FilterParse(where toolkit.M) *dbox.Filter {
