@@ -11,7 +11,7 @@ type Sales struct {
 	orm.ModelBase       `json:"-" bson:"-"`
 	ID                  string `json:"_id" bson:"_id"`
 	Date                time.Time
-	CustomerID          string
+	OutletID            string
 	SKUID               string
 	SalesQty            int
 	SalesGrossAmount    float64

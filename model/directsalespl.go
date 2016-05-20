@@ -12,7 +12,7 @@ type DirectSalesPL struct {
 	ID            string `json:"_id" bson:"_id"`
 	Year          int
 	Month         time.Month
-	CustomerID    string
+	OutletID      string
 	SKUID         string
 	PCID          string
 	CCID          string
