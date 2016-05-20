@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
@@ -14,13 +14,13 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         callback();
     };
 
-    if ((typeof callbackSuccess === "undefined" ? "undefined" : _typeof(callbackSuccess)) == "object") {
+    if ((typeof callbackSuccess === 'undefined' ? 'undefined' : _typeof(callbackSuccess)) == 'object') {
         otherConfig = callbackSuccess;
         callbackSuccess = app.noop;
         callbackError = app.noop;
     }
 
-    if ((typeof callbackError === "undefined" ? "undefined" : _typeof(callbackError)) == "object") {
+    if ((typeof callbackError === 'undefined' ? 'undefined' : _typeof(callbackError)) == 'object') {
         otherConfig = callbackError;
         callbackError = app.noop;
     }
@@ -62,7 +62,7 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         config = $.extend(true, config, otherConfig);
     }
 
-    if (config.hasOwnProperty("withLoader")) {
+    if (config.hasOwnProperty('withLoader')) {
         if (config.withLoader) {
             app.miniloader(true);
         }
@@ -77,7 +77,7 @@ app.randomRange = function (min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 app.capitalize = function (d) {
-    return "" + d[0].toUpperCase() + d.slice(1);
+    return '' + d[0].toUpperCase() + d.slice(1);
 };
 app.is = function (observable, comparator) {
     var a = typeof observable === 'function' ? observable() : observable;
@@ -86,13 +86,29 @@ app.is = function (observable, comparator) {
     return a === b;
 };
 app.showError = function (message) {
-    return sweetAlert("Oops...", message, "error");
+    return sweetAlert('Oops...', message, 'error');
 };
 app.isFine = function (res) {
     if (!res.success) {
-        sweetAlert("Oops...", res.message, "error");
+        sweetAlert('Oops...', res.message, 'error');
         return false;
     }
 
     return true;
+};
+app.isFormValid = function (selector) {
+    app.resetValidation(selector);
+    var $validator = $(selector).data('kendoValidator');
+    return $validator.validate();
+};
+app.resetValidation = function (selectorID) {
+    var $form = $(selectorID).data('kendoValidator');
+    if (!$form) {
+        $(selectorID).kendoValidator();
+        $form = $(selectorID).data('kendoValidator');
+    }
+
+    try {
+        $form.hideMessages();
+    } catch (err) {}
 };

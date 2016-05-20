@@ -10,13 +10,13 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
         callback()
     }
 
-    if (typeof callbackSuccess == "object") {
+    if (typeof callbackSuccess == 'object') {
         otherConfig = callbackSuccess
         callbackSuccess = app.noop
         callbackError = app.noop
     } 
 
-    if (typeof callbackError == "object") {
+    if (typeof callbackError == 'object') {
         otherConfig = callbackError
         callbackError = app.noop
     } 
@@ -58,7 +58,7 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
         config = $.extend(true, config, otherConfig)
     }
 
-    if (config.hasOwnProperty("withLoader")) {
+    if (config.hasOwnProperty('withLoader')) {
         if (config.withLoader) {
             app.miniloader(true)
         }
@@ -77,12 +77,30 @@ app.is = (observable, comparator) => {
 
     return a === b
 }
-app.showError = (message) => sweetAlert("Oops...", message, "error")
+app.showError = (message) => sweetAlert('Oops...', message, 'error')
 app.isFine = (res) => {
     if (!res.success) {
-        sweetAlert("Oops...", res.message, "error")
+        sweetAlert('Oops...', res.message, 'error')
         return false
     }
 
     return true
+}
+app.isFormValid = (selector) => {
+    app.resetValidation(selector)
+    let $validator = $(selector).data('kendoValidator')
+    return ($validator.validate())
+}
+app.resetValidation = (selectorID) => {
+    var $form = $(selectorID).data('kendoValidator')
+    if (!$form) {
+        $(selectorID).kendoValidator()
+        $form = $(selectorID).data('kendoValidator')
+    }
+
+    try {
+        $form.hideMessages()
+    } catch (err) {
+        
+    }
 }

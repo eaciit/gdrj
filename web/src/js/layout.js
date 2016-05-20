@@ -32,8 +32,13 @@ vm.prepareFilterToggle = () => {
 		}
 	}).trigger('click')
 }
+vm.adjustLayout = () => {
+	var height = window.innerHeight - $('.app-top').height()
+	$('.app-container').css('min-height', height)
+}
 
 $(() => {
 	vm.prepareDropDownMenu()
 	vm.prepareFilterToggle()
+	vm.adjustLayout()
 })

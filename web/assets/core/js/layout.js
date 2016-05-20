@@ -31,8 +31,13 @@ vm.prepareFilterToggle = function () {
 		}
 	}).trigger('click');
 };
+vm.adjustLayout = function () {
+	var height = window.innerHeight - $('.app-top').height();
+	$('.app-container').css('min-height', height);
+};
 
 $(function () {
 	vm.prepareDropDownMenu();
 	vm.prepareFilterToggle();
+	vm.adjustLayout();
 });
