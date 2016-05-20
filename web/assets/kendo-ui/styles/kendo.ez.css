@@ -7409,6 +7409,7 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
   box-shadow: none;
+  border-radius: 0;
 }
 .ez.panel {
   box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02);
@@ -7444,6 +7445,9 @@ a.ez:hover {
 }
 .bg-grey {
   background-color: #F0F3F4;
+}
+.bg-yellow {
+  background-color: yellow;
 }
 .align-center {
   text-align: center;
@@ -7519,4 +7523,114 @@ a.ez:hover {
 }
 .width-half {
   width: 50%;
+}
+/* Button Concept by Chris Deacy http://codepen.io/chrisdothtml/pen/xbmddV */
+.btn.ez {
+  border-radius: 0px;
+  border-color: transparent;
+}
+.btn.ez.btn-primary {
+  background-color: #3b79c2;
+}
+.btn.ez.btn-success {
+  background-color: #74B841;
+}
+.btn.ez.btn-danger {
+  background-color: #e7505a;
+}
+.btn.ez.btn-warning {
+  background-color: yellow;
+}
+.btn.ez.ez-animate {
+  box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02);
+  color: #ffffff;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.btn.ez.ez-animate:after {
+  content: " ";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.btn.ez.ez-animate span {
+  -webkit-transition: all 0.25s cubic-bezier(0.31, -0.105, 0.43, 1.4);
+  transition: all 0.25s cubic-bezier(0.31, -0.105, 0.43, 1.4);
+  display: block;
+  left: 0;
+  position: absolute;
+  text-align: center;
+  text-transform: uppercase;
+  top: 4px;
+  width: 66%;
+  font-size: 13px;
+  font-weight: 100;
+}
+.btn.ez.ez-animate span:after {
+  background-color: rgba(255, 255, 255, 0.5);
+  content: '';
+  height: 70%;
+  position: absolute;
+  right: -1px;
+  top: 15%;
+  width: 1px;
+}
+.btn.ez.ez-animate .icon {
+  -webkit-transition: all 0.25s cubic-bezier(0.31, -0.105, 0.43, 1.4);
+  display: block;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  top: 4px;
+  transition: all 0.25s cubic-bezier(0.31, -0.105, 0.43, 1.4);
+  width: 33%;
+}
+.btn.ez.ez-animate .icon .fa {
+  -webkit-transition: all 0.25s cubic-bezier(0.31, -0.105, 0.43, 1.4), height 0.25s ease;
+  transition: all 0.25s cubic-bezier(0.31, -0.105, 0.43, 1.4), height 0.25s ease;
+  vertical-align: middle;
+}
+.btn.ez.ez-animate .icon .fa-remove {
+  height: 36px;
+}
+.btn.ez.ez-animate .icon .fa-check {
+  display: none;
+}
+.btn.ez.ez-animate:hover {
+  box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02);
+}
+.btn.ez.ez-animate:hover span {
+  left: -72%;
+  opacity: 0;
+}
+.btn.ez.ez-animate:hover .icon {
+  width: 100%;
+}
+.btn.ez.ez-animate:hover .icon .fa {
+  font-size: 22px;
+}
+.btn.ez.ez-animate:active {
+  opacity: 1;
+}
+.btn.ezs.success {
+  background-color: #27ae60;
+}
+.btn.ezs.success span {
+  left: -72%;
+  opacity: 0;
+}
+.btn.ezs.success .icon {
+  width: 100%;
+}
+.btn.ezs.success .icon .fa {
+  font-size: 45px;
+}
+.btn.ezs.success .icon .fa-remove {
+  display: none;
+}
+.btn.ezs.success .icon .fa-check {
+  display: inline-block;
 }

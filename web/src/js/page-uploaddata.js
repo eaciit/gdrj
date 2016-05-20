@@ -39,9 +39,9 @@ ud.gridUploadedFiles = {
 		},
 		{ title: 'Action', width: 50, template: (d) => {
 			return `
-			<button class="btn btn-sm btn-primary">
+			<!--button class="btn btn-sm btn-primary">
 				<i class='fa fa-play'></i>
-			</button>
+			</button-->
 			`
 		} }
 	],

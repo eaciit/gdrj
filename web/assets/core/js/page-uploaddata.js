@@ -33,7 +33,7 @@ ud.gridUploadedFiles = {
 			return moment(d.date).format('DD-MM-YYYY HH:mm:ss');
 		}
 	}, { title: 'Action', width: 50, template: function template(d) {
-			return '\n\t\t\t<button class="btn btn-sm btn-primary">\n\t\t\t\t<i class=\'fa fa-play\'></i>\n\t\t\t</button>\n\t\t\t';
+			return '\n\t\t\t<!--button class="btn btn-sm btn-primary">\n\t\t\t\t<i class=\'fa fa-play\'></i>\n\t\t\t</button-->\n\t\t\t';
 		} }],
 	filterable: false,
 	sortable: false,
