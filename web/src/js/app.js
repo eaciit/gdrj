@@ -1,6 +1,7 @@
 viewModel.app = new Object()
 var app = viewModel.app
 
+app.miniloader = ko.observable(false)
 app.noop = (() => {})
 app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
     var startReq = moment()
@@ -20,12 +21,14 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
         callbackError = app.noop
     } 
 
+    var params = (typeof data === 'undefined') ? {} : ko.mapping.toJSON(data)
+
     var config = {
         url: url,
         type: 'post',
         dataType: 'json',
         contentType: 'application/json charset=utf-8',
-        data: ko.mapping.toJSON(data),
+        data: params,
         success: (a) => {
             callbackScheduler(() => {
                 if (callbackSuccess) {
@@ -68,3 +71,18 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
 app.seriesColorsGodrej = ['#e7505a', '#66b23c', '#3b79c2']
 app.randomRange = (min, max) => (Math.floor(Math.random() * (max - min + 1)) + min)
 app.capitalize = (d) => `${d[0].toUpperCase()}${d.slice(1)}`
+app.is = (observable, comparator) => {
+    let a = (typeof observable === 'function') ? observable() : observable
+    let b = (typeof comparator === 'function') ? comparator() : comparator
+
+    return a === b
+}
+app.showError = (message) => sweetAlert("Oops...", message, "error")
+app.isFine = (res) => {
+    if (!res.success) {
+        sweetAlert("Oops...", res.message, "error")
+        return false
+    }
+
+    return true
+}
