@@ -65,6 +65,10 @@ db.selectTableName = function (e) {
 	db.createDataBrowser(dataItem)
 }
 
+db.refreshDataBrowser = () => {
+	$('#grid-databrowser-decription').ecDataBrowser("postDataFilter")
+}
+
 $(() => {
 	db.getMasterDataBrowser()
 })
