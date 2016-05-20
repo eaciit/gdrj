@@ -15,7 +15,7 @@ ud.masterDataBrowser = ko.observableArray([])
 ud.dropDownModel = {
 	data: ko.computed(() => 
 		ud.masterDataBrowser().map(
-			(d) => { return { text: d.TableNames, value: d._id } }
+			(d) => { return { text: d.TableNames, value: d.TableNames } }
 		)
 	),
 	dataValueField: 'value',

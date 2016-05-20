@@ -14,7 +14,7 @@ ud.masterDataBrowser = ko.observableArray([]);
 ud.dropDownModel = {
 	data: ko.computed(function () {
 		return ud.masterDataBrowser().map(function (d) {
-			return { text: d.TableNames, value: d._id };
+			return { text: d.TableNames, value: d.TableNames };
 		});
 	}),
 	dataValueField: 'value',
