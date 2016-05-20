@@ -64,6 +64,10 @@ db.selectTableName = function (e) {
 	db.createDataBrowser(dataItem);
 };
 
+db.refreshDataBrowser = function () {
+	$('#grid-databrowser-decription').ecDataBrowser("postDataFilter");
+};
+
 $(function () {
 	db.getMasterDataBrowser();
 });

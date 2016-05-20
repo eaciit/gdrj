@@ -164,6 +164,7 @@ var methodsDataBrowser = {
 				callData['page'] = 1;
 				callData['pageSize'] = 10;
 				callData['haslookup'] = true;
+				callData['tablename'] = id.data('ecDataBrowser').mapdatabrowser.dataSource.callData.tablename;
 				$('input[idfilter=filter-'+filterchoose+'-'+index+']').ecLookupDD({
 					dataSource:{
 						url: id.data('ecDataBrowser').mapdatabrowser.dataSource.url,
