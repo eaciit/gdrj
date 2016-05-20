@@ -1,0 +1,37 @@
+<div class="app-wrapper">
+	<div class="app-identity">
+		<img src="{{.BaseUrl}}/res/img/logo.png" />
+	</div>
+	<div class="app-menu">
+		<ul class="nav navbar-nav" data-bind="foreach: menu">
+			<li data-bind="css: { 'dropdown': ($data.submenu.length > 0) }">
+				<a data-bind="css: { 'dropdown-toggle': ($data.submenu.length > 0), 'active': (vm.pageTitle() == $data.title) }, attr: { href: $data.href }">
+					<i data-bind="css: vm.menuIcon($data)"></i> <span data-bind="text: $data.title"></span>
+				</a>
+				<ul class="dropdown-menu" data-bind="foreach: $data.submenu, visible: ($data.submenu.length > 0)">
+					<li><a data-bind="attr: { href: $data.href }, text: $data.title"></a></li>
+				</ul>
+			</li>
+		</ul>
+		<div class="clear"></div>
+	</div>
+	<ul class="nav navbar-nav navbar-right m-n hidden-xs nav-user">
+		<li class="dropdown hidden-xs">
+			<a class="dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="true">
+				<span class="thumb-sm avatar pull-left">
+					<img src="{{.BaseUrl}}/res/img/Leonard_Jayamohan.jpg" />
+				</span>
+				<div class="pull-right name">
+					<span class="thumb-sm title-user">Leonard Jayamohan</span>
+					<b class="caret"></b>
+				</div>
+			</a>
+			<ul class="dropdown-menu animated fadeInRight">
+				<span class="arrow top"></span>
+				<li ><a href="#">Setting</a></li>
+				<li data-bind="click:app.Logout"><a href="#">Logout</a></li>
+			</ul>
+		</li>
+	</ul>
+	<div class="clear"></div>
+</div>
