@@ -70,13 +70,15 @@ func (d *DataBrowserController) UploadFile(r *knot.WebContext) interface{} {
 
 	uploadData := new(gdrj.UploadData)
 	uploadData.ID = toolkit.RandomString(32)
-	err, oldName, newName := helper.UploadFileHandler(r, "userfile", fileLocation, uploadData.ID)
+	err, oldName, newName, ext := helper.UploadFileHandler(r, "userfile", fileLocation, uploadData.ID)
 	if err != nil {
 		return helper.CreateResult(false, "", err.Error())
 	}
 	uploadData.Filename = oldName
 	uploadData.PhysicalName = newName
 	uploadData.Desc = r.Request.FormValue("desc")
+	uploadData.DataType = ext
+	uploadData.DocName = r.Request.FormValue("model")
 	uploadData.Date = time.Now().UTC()
 	uploadData.Datacount = 0 /*task to do*/
 	uploadData.Process = 0
