@@ -6,7 +6,7 @@ import (
 	"eaciit/gdrj/web/model"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
-	"net/http"
+	// "net/http"
 	"path/filepath"
 	"runtime"
 )
@@ -44,16 +44,16 @@ func main() {
 	// 	return true
 	// })
 
-	server.Route("/", func(r *knot.WebContext) interface{} {
-		sessionid := r.Session("sessionid", "")
-		if sessionid == "" {
-			http.Redirect(r.Writer, r.Request, "/web/login", 301)
-		} else {
-			http.Redirect(r.Writer, r.Request, "/web/index", 301)
-		}
+	// server.Route("/", func(r *knot.WebContext) interface{} {
+	// 	sessionid := r.Session("sessionid", "")
+	// 	if sessionid == "" {
+	// 		http.Redirect(r.Writer, r.Request, "/web/login", 301)
+	// 	} else {
+	// 		http.Redirect(r.Writer, r.Request, "/web/index", 301)
+	// 	}
 
-		return true
-	})
+	// 	return true
+	// })
 
 	if err := setAclDatabase(); err != nil {
 		toolkit.Printf("Error set database to efs: %s \n", err.Error())
