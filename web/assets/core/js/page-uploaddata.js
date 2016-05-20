@@ -58,7 +58,7 @@ ud.getMasterDataBrowser = function () {
 ud.getUploadedFiles = function () {
 	ud.dataUploadedFiles([]);
 
-	app.ajaxPost('/uploaddata/getuploadedfiles', {}, function (res) {
+	app.ajaxPost('/databrowser/getuploadedfiles', {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -77,10 +77,10 @@ ud.doUpload = function () {
 
 	var payload = new FormData();
 	payload.append('model', ud.inputModel());
-	payload.append('description', ud.inputDescription());
-	payload.append('file', $('#file')[0].files[0]);
+	payload.append('desc', ud.inputDescription());
+	payload.append('userfile', $('[name=file]')[0].files[0]);
 
-	app.ajaxPost('/uploaddata/uploadfile', {}, function (res) {
+	app.ajaxPost('/databrowser/uploadfile', payload, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}

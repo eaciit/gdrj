@@ -63,7 +63,7 @@ func (d *DataBrowserController) GetTableList(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, result, "")
 }
 
-func (d *DataBrowserController) UploadFileBrowser(r *knot.WebContext) interface{} {
+func (d *DataBrowserController) UploadFile(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	fileLocation := filepath.Join(GDRJ_DATA_PATH, "file")
@@ -92,7 +92,7 @@ func (d *DataBrowserController) UploadFileBrowser(r *knot.WebContext) interface{
 	return helper.CreateResult(true, nil, "")
 }
 
-func (d *DataBrowserController) GetFileBrowser(r *knot.WebContext) interface{} {
+func (d *DataBrowserController) GetUploadedFiles(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := toolkit.M{}

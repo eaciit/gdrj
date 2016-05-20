@@ -68,7 +68,7 @@ ud.getMasterDataBrowser = () => {
 ud.getUploadedFiles = () => {
 	ud.dataUploadedFiles([])
 
-	app.ajaxPost('/uploaddata/getuploadedfiles', {}, (res) => {
+	app.ajaxPost('/databrowser/getuploadedfiles', {}, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}
@@ -87,10 +87,10 @@ ud.doUpload = () => {
 
 	var payload = new FormData()
 	payload.append('model', ud.inputModel())
-	payload.append('description', ud.inputDescription())
-	payload.append('file', $('#file')[0].files[0])
+	payload.append('desc', ud.inputDescription())
+	payload.append('userfile', $('[name=file]')[0].files[0])
 
-	app.ajaxPost('/uploaddata/uploadfile', {}, (res) => {
+	app.ajaxPost('/databrowser/uploadfile', payload, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}
