@@ -50,7 +50,8 @@
 		<!-- <link href="../assets/kendo-ui/styles/kendo.bootstrap.min.css" rel="stylesheet"> -->
 		<link href="../assets/kendo-ui/styles/kendo.dataviz.min.css" rel="stylesheet">
 		<!-- <link href="../assets/kendo-ui/styles/kendo.dataviz.bootstrap.min.css" rel="stylesheet"> -->
-		<link rel="stylesheet" href="../assets/core/css/kendo.ez.css" />
+		<!-- <link rel="stylesheet" href="../assets/core/css/kendo.ez.css" /> -->
+		<link rel="stylesheet" href="../assets/kendo-ui/styles/kendo.ez.css" />
 		<script src="../assets/kendo-ui/js/kendo.all.min.js"></script>
 
 		<!-- knockout-kendo -->
@@ -129,7 +130,7 @@
 					</div>
 
 					<div class="app-content">
-						<div class="col-md-4">
+						<div class="col-md-4 col-sm-4">
 							<div class="panel panel-headline bg-blue">
 								<div class="panel-heading">
 									<h3>
@@ -143,7 +144,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="col-md-4">
+						<div class="col-md-4 col-sm-4">
 							<div class="panel panel-headline bg-green">
 								<div class="panel-heading">
 									<h3>
@@ -158,7 +159,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="col-md-4">
+						<div class="col-md-4 col-sm-4">
 							<div class="panel panel-headline bg-red">
 								<div class="panel-heading">
 									<h3>
@@ -173,6 +174,7 @@
 							</div>
 						</div>
 
+						<div class="clearfix"></div>
 
 						<div class="col-md-6">
 							<div class="panel panel-ez">
@@ -212,19 +214,19 @@
 								<div class="panel-body">
 									<div class="panel-filter">
 										<div class="col-md-3">
-											<div class="input-group input-group-sm">
+											<div class="input-group input-group-ez input-group-sm">
 												<span class="input-group-addon">Search</span>
 												<input type="text" class="form-control" placeholder="Type something here ..." />
 											</div>
 										</div>
 										<div class="col-md-3">
-											<div class="input-group input-group-sm">
+											<div class="input-group input-group-ez input-group-sm">
 												<span class="input-group-addon">Category</span>
 												<select data-bind="kendoDropDownList: { data: ['a', 'b', 'c', 'd', 'e'], optionLabel: 'Click to select one ...' }" style="width: 100%"></select>
 											</div>
 										</div>
 										<div class="col-md-3">
-											<div class="input-group input-group-sm">
+											<div class="input-group input-group-ez input-group-sm">
 												<span class="input-group-addon">Category</span>
 												<select data-bind="kendoMultiSelect: { data: ['a', 'b', 'c', 'd', 'e'], placeholder: 'Click to select one ...' }" style="width: 100%"></select>
 											</div>

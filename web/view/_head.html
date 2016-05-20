@@ -1,57 +1,75 @@
+<title>EACIIT Web Template</title>
+
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- <link rel="shortcut icon" href="{{.BaseUrl}}/res/img/logo.png" type="image/x-icon" /> -->
+<!-- <link rel="icon" href="{{.BaseUrl}}/res/img/logo.png" type="image/x-icon" /> -->
+
 <!-- jquery -->
-<script src="/res/jquery/jquery-2.1.0.min.js"></script>
-<script src="/res/jquery/jquery-ui.min.js"></script>
+<script src="{{.BaseUrl}}/res/jquery/jquery-2.1.0.min.js"></script>
+<script src="{{.BaseUrl}}/res/jquery/jquery-ui.min.js"></script>
+
+<!-- pace -->
+<link rel="stylesheet" href="{{.BaseUrl}}/res/pace/pace.css" />
+<script src="{{.BaseUrl}}/res/pace/pace.min.js"></script>
+<script>
+	Pace.on('done', function () {
+		$('.is-loading').removeClass('is-loading');
+	});
+</script>
 
 <!-- knockout -->
-<script src="/res/knockout/knockout-3.4.0.js"></script>
-<script src="/res/knockout/knockout.mapping.js"></script>
+<script src="{{.BaseUrl}}/res/knockout/knockout-3.4.0.js"></script>
+<script src="{{.BaseUrl}}/res/knockout/knockout.mapping.js"></script>
 
 <!-- lazyjs -->
-<script src="/res/lazyjs/lazy.min.js"></script>
+<script src="{{.BaseUrl}}/res/lazyjs/lazy.min.js"></script>
 
 <!-- underscore -->
-<script src="/res/js/underscore.min.js"></script>
+<script src="{{.BaseUrl}}/res/js/underscore.min.js"></script>
 
 <!-- bootstrap -->
-<script src="/res/bootstrap/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="/res/bootstrap/css/bootstrap.min.css" />
+<script src="{{.BaseUrl}}/res/bootstrap/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="{{.BaseUrl}}/res/bootstrap/css/bootstrap.min.css" />
 
 <!-- font-awesome -->
-<link rel="stylesheet" href="/res/font-awesome/css/font-awesome.min.css" />
+<link rel="stylesheet" href="{{.BaseUrl}}/res/font-awesome/css/font-awesome.min.css" />
 
 <!-- material-switch -->
-<link rel="stylesheet" href="/res/material-switch/style.css" />
+<link rel="stylesheet" href="{{.BaseUrl}}/res/material-switch/style.css" />
 
 <!-- kendo-ui -->
-<!-- <link href="../assets/kendo-ui/styles/kendo.default.min.css" rel="stylesheet"> -->
-<link href="/res/kendo-ui/styles/kendo.common-bootstrap.min.css" rel="stylesheet">
-<!-- <link href="../assets/kendo-ui/styles/kendo.bootstrap.min.css" rel="stylesheet"> -->
-<link href="/res/kendo-ui/styles/kendo.dataviz.min.css" rel="stylesheet">
-<!-- <link href="../assets/kendo-ui/styles/kendo.dataviz.bootstrap.min.css" rel="stylesheet"> -->
-<link rel="stylesheet" href="/res/core/css/kendo.bootstrap.css" />
-<script src="/res/kendo-ui/js/kendo.all.min.js"></script>
+<!-- <link href="{{.BaseUrl}}/res/kendo-ui/styles/kendo.default.min.css" rel="stylesheet"> -->
+<link href="{{.BaseUrl}}/res/kendo-ui/styles/kendo.common-bootstrap.min.css" rel="stylesheet">
+<!-- <link href="{{.BaseUrl}}/res/kendo-ui/styles/kendo.bootstrap.min.css" rel="stylesheet"> -->
+<link href="{{.BaseUrl}}/res/kendo-ui/styles/kendo.dataviz.min.css" rel="stylesheet">
+<!-- <link href="{{.BaseUrl}}/res/kendo-ui/styles/kendo.dataviz.bootstrap.min.css" rel="stylesheet"> -->
+<!-- <link rel="stylesheet" href="{{.BaseUrl}}/res/core/css/kendo.ez.css" /> -->
+<link rel="stylesheet" href="{{.BaseUrl}}/res/kendo-ui/styles/kendo.ez.css" />
+<script src="{{.BaseUrl}}/res/kendo-ui/js/kendo.all.min.js"></script>
 
 <!-- knockout-kendo -->
-<script src="/res/knockout-kendo/knockout-kendo.min.js"></script>
+<script src="{{.BaseUrl}}/res/knockout-kendo/knockout-kendo.min.js"></script>
 
 <!-- moment -->
-<script src="/res/moment/moment.min.js"></script>
+<script src="{{.BaseUrl}}/res/moment/moment.min.js"></script>
 
 <!-- sweetalert -->
-<script src="/res/sweetalert/sweetalert.min.js"></script>
-<link href="/res/sweetalert/sweetalert.min.css" rel="stylesheet"/>
+<script src="{{.BaseUrl}}/res/sweetalert/sweetalert.min.js"></script>
+<link href="{{.BaseUrl}}/res/sweetalert/sweetalert.min.css" rel="stylesheet"/>
 
 <!-- tooltipster -->
-<link rel="stylesheet" href="/res/tooltipster/css/tooltipster.css" />
-<link rel="stylesheet" href="/res/tooltipster/css/tooltipster-val.css" />
-<script src="/res/tooltipster/js/jquery.tooltipster.min.js"></script>
+<link rel="stylesheet" href="{{.BaseUrl}}/res/tooltipster/css/tooltipster.css" />
+<link rel="stylesheet" href="{{.BaseUrl}}/res/tooltipster/css/tooltipster-val.css" />
+<script src="{{.BaseUrl}}/res/tooltipster/js/jquery.tooltipster.min.js"></script>
 
 <!-- fonts -->
-<link rel="stylesheet" href="/res/core/css/fonts.css" />
+<link rel="stylesheet" href="{{.BaseUrl}}/res/core/css/fonts.css" />
 
 <!-- core -->
-<script src="/res/core/js/layout.js"></script>
-<script src="/res/core/js/app.js"></script>
-<script src="/res/core/js/page-example.js"></script>
-<link rel="stylesheet" href="/res/core/css/bootstrap-ext.css" />
-<link rel="stylesheet" href="/res/core/css/layout.css" />
+<script src="{{.BaseUrl}}/res/core/js/layout.js"></script>
+<script src="{{.BaseUrl}}/res/core/js/app.js"></script>
+<link rel="stylesheet" href="{{.BaseUrl}}/res/core/css/bootstrap-ext.css" />
+<link rel="stylesheet" href="{{.BaseUrl}}/res/core/css/layout.css" />

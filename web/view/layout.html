@@ -1,81 +1,28 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Godrej</title>
-		<meta charset="UTF-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-
 		<script>var viewModel = new Object()</script>
-
-		<!-- <link rel="shortcut icon" href="../assets/img/logo.png" type="image/x-icon" /> -->
-		<!-- <link rel="icon" href="../assets/img/logo.png" type="image/x-icon" /> -->
-
 		{{template "_head.html"}}
 	</head>
-	<body>
+	<body class="is-loading">
 		<div class="app" data-bind="with: vm">
 			<header class="navbar navbar-fixed-top app-top">
-				<div class="app-wrapper">
-					<div class="app-identity">
-						<img src="/res/img/logo.png" />
-					</div>
-					<div class="app-menu">
-						<ul class="nav navbar-nav" data-bind="foreach: menu">
-							<li data-bind="css: { 'dropdown': ($data.submenu.length > 0) }">
-								<a data-bind="css: { 'dropdown-toggle': ($data.submenu.length > 0) }, attr: { href: $data.href }">
-									<i data-bind="css: vm.menuIcon($data)"></i> <span data-bind="text: $data.title"></span>
-								</a>
-								<ul class="dropdown-menu" data-bind="foreach: $data.submenu, visible: ($data.submenu.length > 0)">
-									<li><a data-bind="attr: { href: $data.href }, text: $data.title">Data Browser</a></li>
-								</ul>
-							</li>
-						</ul>
-						<div class="clear"></div>
-					</div>
-					<ul class="nav navbar-nav navbar-right m-n hidden-xs nav-user">
-						<li class="dropdown hidden-xs">
-							<a class="dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="true">
-								<span class="thumb-sm avatar pull-left">
-									<img src="/res/img/Leonard_Jayamohan.jpg" />
-								</span>
-								<span class="thumb-sm title-user">Leonard Jayamohan</span>
-								<b class="caret"></b>
-							</a>
-							<ul class="dropdown-menu animated fadeInRight">
-								<span class="arrow top"></span>
-								<li ><a href="#">Setting</a></li>
-								<li data-bind="click:app.Logout"><a href="#">Logout</a></li>
-							</ul>
-						</li>
-					</ul>
-					<div class="clear"></div>
-				</div>
+				{{template "_menu.html"}}
 			</header>
 
 			<div class="app-container">
 				<div class="app-wrapper">
 					<div class="app-title">
-						<ol class="breadcrumb pull-right" data-bind="template:{name:'breadcrumbTemplate', foreach:vm.breadcrumb}">
-						</ol>
+						<ol class="breadcrumb pull-right" data-bind="template:{name:'breadcrumbTemplate', foreach:vm.breadcrumb}"></ol>
 						<h2 data-bind="text: pageTitle">Dashboard</h2>
 					</div>
 
-					<div class="app-content">
-						{{.Content}}
-						<div class="clearfix"></div>
-					</div>
+					<div class="app-content">{{.Content}}</div>
 				</div>
 			</div>
 		</div>
-		<script id="breadcrumbTemplate" type="text/html">
-			<!-- ko if: (vm.breadcrumb().length-1)!=$index() -->
-			<li><a data-bind="text: title, attr: {href: href}"></a></li>
-			<!-- /ko -->
-			<!-- ko if: (vm.breadcrumb().length-1)==$index() -->
-			<li class="active" data-bind="text: title"></li>
-			<!-- /ko -->
-		</script>
+
+		{{template "_script_template.html"}}
 		<script>ko.applyBindings(viewModel)</script>
 	</body>
 </html>

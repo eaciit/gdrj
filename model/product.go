@@ -8,7 +8,7 @@ import (
 
 type Product struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	SKUID         string `json:"_id" bson:"_id"`
+	SKUID         string `bson:"_id" json:"_id"`
 	Name          string
 	Config        string
 	Brand         string
@@ -32,7 +32,7 @@ func ProductGetBySKUID(id string) *Product {
 func (p *Product) Save() error {
 	e := Save(p)
 	if e != nil {
-		return errors.New(toolkit.Sprintf("[%v-%v] Error found : ", p.TableName(), "save", e.Error()))
+		return errors.New(toolkit.Sprintf("[%v-%v] Error found : %v", p.TableName(), "save", e.Error()))
 	}
 	return e
 }
@@ -40,7 +40,7 @@ func (p *Product) Save() error {
 func (p *Product) Delete() error {
 	e := Delete(p)
 	if e != nil {
-		return errors.New(toolkit.Sprintf("[%v-%v] Error found : ", p.TableName(), "delete", e.Error()))
+		return errors.New(toolkit.Sprintf("[%v-%v] Error found : %v", p.TableName(), "delete", e.Error()))
 	}
 	return e
 }

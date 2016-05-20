@@ -19,7 +19,9 @@ const (
 
 type Customer struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	CustomerID    string `json:"_id" bson:"_id"`
+	OutletID      string `json:"_id" bson:"_id"`
+	CustomerID    string
+	Plant         string
 	Name          string
 	KeyAccount    string
 	Channel       ChannelTypeEnum

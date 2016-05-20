@@ -12,12 +12,24 @@ type App struct {
 }
 
 var (
-	LayoutFile       string   = "web/view/layout.html"
-	IncludeFiles     []string = []string{"web/view/_head.html"}
-	AppBasePath      string   = func(dir string, err error) string { return dir }(os.Getwd())
-	GDRJ_DATA_PATH   string   = filepath.Join(AppBasePath, "data")
-	GDRJ_CONFIG_PATH string   = filepath.Join(AppBasePath, "config")
+	ViewPath         = "web/view"
+	LayoutFile       = fmt.Sprintf("%s/layout.html", ViewPath)
+	IncludeFiles     = includeFiles("_head", "_menu", "_script_template")
+	AppBasePath      = func(dir string, err error) string { return dir }(os.Getwd())
+	GDRJ_DATA_PATH   = filepath.Join(AppBasePath, "data")
+	GDRJ_CONFIG_PATH = filepath.Join(AppBasePath, "config")
 )
+
+func includeFiles(files ...string) []string {
+	for i := 0; i < len(files); i++ {
+		files[i] = fmt.Sprintf("%s/%s.html", ViewPath, files[i])
+	}
+	return files
+}
+
+func View(file string) string {
+	return fmt.Sprintf("%s/%s", ViewPath, file)
+}
 
 func init() {
 	fmt.Println("Base Path ===> ", AppBasePath)

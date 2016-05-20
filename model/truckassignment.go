@@ -15,7 +15,7 @@ type TruckAssignment struct {
 	Date          time.Time
 	Driver        []string //name, not mandatory
 	BranchID      string
-	CustomerID    string
+	OutletID      string
 }
 
 func (t *TruckAssignment) RecordID() interface{} {

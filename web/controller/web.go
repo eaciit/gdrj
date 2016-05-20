@@ -18,16 +18,16 @@ func (w *WebController) Index(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "web/view/page-index.html"
+	r.Config.ViewName = View("page-index.html")
 
 	return true
 }
 
 func (w *WebController) Login(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
-	// r.Config.LayoutTemplate = LayoutFile
+	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "web/view/page-login.html"
+	r.Config.ViewName = View("page-login.html")
 
 	return true
 }
@@ -36,7 +36,7 @@ func (w *WebController) DataBrowser(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "web/view/page-databrowser.html"
+	r.Config.ViewName = View("page-databrowser.html")
 
 	return true
 }
@@ -45,7 +45,7 @@ func (w *WebController) UploadData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = "web/view/page-uploaddata.html"
+	r.Config.ViewName = View("page-uploaddata.html")
 
 	return true
 }
