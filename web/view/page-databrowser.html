@@ -87,7 +87,7 @@
 		</div>
 		<div class="panel-body">
 			<div class="panel-filter">
-				<div class="col-md-3">
+				<!-- <div class="col-md-3">
 					<div class="input-group input-group-ez input-group-sm">
 						<span class="input-group-addon">Search</span>
 						<input type="text" class="form-control" placeholder="Type something here ..." />
@@ -104,6 +104,15 @@
 						<span class="input-group-addon">Category</span>
 						<select data-bind="kendoMultiSelect: { data: ['a', 'b', 'c', 'd', 'e'], placeholder: 'Click to select one ...' }" style="width: 100%"></select>
 					</div>
+				</div> -->
+				<div class="col-md-3">
+					<div class="input-group input-group-ez input-group-sm">
+						<span class="input-group-addon">Table Name</span>
+						<select data-bind="kendoDropDownList: { data: ['a', 'b', 'c', 'd', 'e'], optionLabel: 'Click to select one ...', select: db.selectTableName }" style="width: 100%"></select>
+					</div>
+				</div>
+				<div class="col-md-12">
+					<div id="tabledatabrowser"></div>
 				</div>
 				<div class="clearfix"></div>
 			</div>
