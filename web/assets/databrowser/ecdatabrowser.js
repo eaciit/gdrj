@@ -307,7 +307,10 @@ var methodsDataBrowser = {
 		return res;
 	},
 	postDataFilter: function(){
-		$(this).data('ecDataBrowser').refreshDataGrid();
+		var $dataBrowser = $(this).data('ecDataBrowser');
+		if (typeof $dataBrowser !== "undefined") {
+			$dataBrowser.refreshDataGrid(); 
+		}
 	},
 	setDataGrid: function(res){
 		// var mapNewGrid = $.extend({}, $(this).data("ecDataBrowser").mapdatabrowser, res || {});
@@ -351,7 +354,7 @@ $.ecDataBrowserSetting = function(element,options){
 			dataTemp = $(element).data('ecDataBrowser').dataAdvance;
 		}
 		for (var i in dataTemp){
-			$elem = $(element).find('input[idfilter='+dataTemp[i]+']');
+			$elem = $('input[idfilter='+dataTemp[i]+']');
 			field = $elem.attr('fielddata');
 			if ($elem.val() != '' || $elem.attr('haslookup') == "true"){
 				if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "int" || $elem.attr("typedata") == "number"){

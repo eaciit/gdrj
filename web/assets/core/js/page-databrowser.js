@@ -11,7 +11,7 @@ db.masterDataBrowser = ko.observableArray([]);
 db.getMasterDataBrowser = function () {
 	db.masterDataBrowser([]);
 
-	app.ajaxPost('/databrowser/gettablelist', {}, function (res) {
+	app.ajaxPost('/databrowser/getdatabrowsers', {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -54,6 +54,21 @@ db.createDataBrowser = function (dataItem) {
 			},
 			metadata: res.data.dataresult.MetaData
 		});
+
+		// hack the position
+		// return
+		var $filter = $('.ecdatabrowser-filtersimple').insertAfter($('.form-group-table-name')).removeClass('col-md-12').addClass('form-group on-left').children().each(function (i, e) {
+			var $inputGroup = $(e).removeClass('col-md-6').addClass('input-group input-group-sm ez width-full');
+
+			var $label = $inputGroup.find('.ecdatabrowser-filter');
+			var $newLabel = $('<span />').addClass('input-group-addon ecdatabrowser-filter align-right width-100').html($label.text());
+
+			$label.replaceWith($newLabel);
+
+			$(e).find('.filter-form').removeClass('col-md-9');
+		});
+
+		$filter.append($('<div />').addClass('clearfix'));
 	}, {
 		timeout: 10 * 1000
 	});
