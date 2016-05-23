@@ -138,47 +138,47 @@ html, body {
     margin-left: 10px; }
   .ecdatabrowser-filtersimple.on-left .filter-form .k-widget.k-numerictextbox {
     width: 100px; }
-  .ecdatabrowser-filtersimple .input-group {
-    overflow: hidden; }
-    .ecdatabrowser-filtersimple .input-group .ecdatabrowser-filter {
-      line-height: inherit;
-      padding-top: 5px;
-      font-weight: normal; }
-    .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container {
-      border-color: #F0F3F4; }
-      .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list {
+  .ecdatabrowser-filtersimple .input-group .ecdatabrowser-filter {
+    line-height: inherit;
+    padding-top: 5px;
+    font-weight: normal; }
+  .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container {
+    border-color: #F0F3F4; }
+    .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list {
+      padding: 0;
+      margin: 0;
+      font-family: inherit;
+      font-size: inherit;
+      width: 100%; }
+      .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list .eclookup-item {
+        padding: 2px 10px;
+        margin-top: 2px;
+        border-radius: 2px;
+        margin-left: 2px; }
+      .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list .eclookup-txt {
+        color: inherit;
         padding: 0;
         margin: 0;
-        font-family: inherit;
-        font-size: inherit;
-        width: 100%; }
-        .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list .eclookup-item {
-          padding: 2px 10px;
-          margin-top: 2px;
-          border-radius: 2px;
-          margin-left: 2px; }
-        .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list .eclookup-txt {
-          color: inherit;
-          padding: 0;
+        height: 28px;
+        padding: 5px 10px;
+        line-height: 1.5; }
+        .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list .eclookup-txt input {
           margin: 0;
-          height: 28px;
-          padding: 5px 10px;
-          line-height: 1.5; }
-          .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list .eclookup-txt input {
-            margin: 0;
-            padding: 0; }
-    .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown {
-      border-color: #F0F3F4;
-      border-top: none;
-      border-bottom: none;
-      right: 10px;
-      left: 10px;
-      width: auto; }
-      .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown .eclookup-listsearch {
-        font-size: inherit; }
-        .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown .eclookup-listsearch .eclookup-itemsearch {
-          border-color: #F0F3F4;
-          background-color: #fcfcfc; }
-          .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown .eclookup-listsearch .eclookup-itemsearch:hover {
-            background-color: #74B841;
-            color: white; }
+          padding: 0; }
+  .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown {
+    border-color: #74B841;
+    border-top: none;
+    border-bottom: none;
+    right: 0px;
+    left: 100px;
+    width: auto; }
+    .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown .eclookup-listsearch {
+      font-size: inherit; }
+      .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown .eclookup-listsearch .eclookup-itemsearch {
+        border-color: #F0F3F4;
+        background-color: white; }
+        .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown .eclookup-listsearch .eclookup-itemsearch:hover {
+          background-color: #74B841;
+          color: white; }
+        .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown .eclookup-listsearch .eclookup-itemsearch:last-child {
+          border-color: #74B841; }

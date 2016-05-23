@@ -188,7 +188,7 @@ html, body
 				width: 100px
 
 	.input-group
-		overflow: hidden
+		// overflow: hidden
 
 		.ecdatabrowser-filter
 			line-height: inherit
@@ -225,11 +225,11 @@ html, body
 							padding: 0
 
 			.eclookup-dropdown
-				border-color: $color-base-grey
+				border-color: $color-base-green
 				border-top: none
 				border-bottom: none
-				right: 10px
-				left: 10px
+				right: 0px
+				left: 100px
 				width: auto
 
 				.eclookup-listsearch
@@ -237,8 +237,11 @@ html, body
 
 					.eclookup-itemsearch
 						border-color: $color-base-grey
-						background-color: darken(white, 1%)
+						background-color: white
 
 						&:hover
 							background-color: $color-base-green
 							color: white
+
+						&:last-child
+							border-color: $color-base-green
