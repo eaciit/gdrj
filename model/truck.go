@@ -9,14 +9,14 @@ import (
 
 type Truck struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	TruckID       string `json:"_id" bson:"_id"`
+	ID            string `json:"_id" bson:"_id"` //TruckID
 	BranchID      string
 	PlateNo       string
 	Year          int
 }
 
 func (t *Truck) RecordID() interface{} {
-	return t.TruckID
+	return t.ID
 }
 
 func (t *Truck) TableName() string {

@@ -8,7 +8,7 @@ import (
 
 type ProfitCenter struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	PCID          string `json:"_id" bson:"_id"`
+	ID            string `json:"_id" bson:"_id"` //PCID
 	Name          string
 	Brand         string
 	BranchID      string
@@ -16,7 +16,7 @@ type ProfitCenter struct {
 }
 
 func (p *ProfitCenter) RecordID() interface{} {
-	return p.PCID
+	return p.ID
 }
 
 func (p *ProfitCenter) TableName() string {
