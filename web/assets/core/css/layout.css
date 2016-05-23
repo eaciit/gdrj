@@ -66,7 +66,10 @@ html, body {
     height: 50px;
     padding-bottom: 0px;
     padding-top: 0px;
-    padding-right: 0px; }
+    padding-right: 5px;
+    padding-left: 5px; }
+    .nav-user .dropdown-toggle:hover, .nav-user .dropdown-toggle:focus {
+      background-color: transparent; }
   .nav-user .avatar {
     width: 30px;
     height: 30px;
@@ -92,7 +95,7 @@ html, body {
   margin-bottom: 0px;
   margin-top: 2px; }
   .breadcrumb li > a {
-    color: #74B841; }
+    font-weight: bold; }
 
 .form-label {
   line-height: 25px;
@@ -103,8 +106,18 @@ html, body {
     position: absolute;
     right: 5px; }
 
+.btn-toggle-filter {
+  background-color: transparent;
+  border: none; }
+
+.btn-toggle-filter .fa {
+  transition: color ease-in-out 200ms; }
+
 .form-group {
   margin-bottom: 10px; }
+
+.loader .wrapper .sk-cube-grid .sk-cube {
+  background-color: #74B841; }
 
 .ecdatabrowser-filtersimple {
   padding: 0; }
@@ -112,6 +125,8 @@ html, body {
     margin-top: 30px; }
   .ecdatabrowser-filtersimple.on-left > div:not(.clearfix) {
     min-height: 30px !important; }
+  .ecdatabrowser-filtersimple.on-left > div.clearfix {
+    min-height: 0px !important; }
   .ecdatabrowser-filtersimple.on-left .ecdatabrowser-filter {
     text-align: right; }
     .ecdatabrowser-filtersimple.on-left .ecdatabrowser-filter:after {
@@ -119,45 +134,51 @@ html, body {
   .ecdatabrowser-filtersimple.on-left .filter-form .eclookup-dropdown {
     right: 0px;
     left: 100px; }
-  .ecdatabrowser-filtersimple .ecdatabrowser-filter {
+  .ecdatabrowser-filtersimple.on-left .filter-form .ecdatabrowser-ckcrange {
+    margin-left: 10px; }
+  .ecdatabrowser-filtersimple.on-left .filter-form .k-widget.k-numerictextbox {
+    width: 100px; }
+  .ecdatabrowser-filtersimple .input-group .ecdatabrowser-filter {
     line-height: inherit;
     padding-top: 5px;
     font-weight: normal; }
-  .ecdatabrowser-filtersimple .filter-form .eclookup-container {
+  .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container {
     border-color: #F0F3F4; }
-    .ecdatabrowser-filtersimple .filter-form .eclookup-container .eclookup-list {
+    .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list {
       padding: 0;
       margin: 0;
       font-family: inherit;
       font-size: inherit;
       width: 100%; }
-      .ecdatabrowser-filtersimple .filter-form .eclookup-container .eclookup-list .eclookup-item {
+      .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list .eclookup-item {
         padding: 2px 10px;
         margin-top: 2px;
         border-radius: 2px;
         margin-left: 2px; }
-      .ecdatabrowser-filtersimple .filter-form .eclookup-container .eclookup-list .eclookup-txt {
+      .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list .eclookup-txt {
         color: inherit;
         padding: 0;
         margin: 0;
         height: 28px;
         padding: 5px 10px;
         line-height: 1.5; }
-        .ecdatabrowser-filtersimple .filter-form .eclookup-container .eclookup-list .eclookup-txt input {
+        .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-container .eclookup-list .eclookup-txt input {
           margin: 0;
           padding: 0; }
-  .ecdatabrowser-filtersimple .filter-form .eclookup-dropdown {
-    border-color: #F0F3F4;
+  .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown {
+    border-color: #74B841;
     border-top: none;
     border-bottom: none;
-    right: 10px;
-    left: 10px;
+    right: 0px;
+    left: 100px;
     width: auto; }
-    .ecdatabrowser-filtersimple .filter-form .eclookup-dropdown .eclookup-listsearch {
+    .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown .eclookup-listsearch {
       font-size: inherit; }
-      .ecdatabrowser-filtersimple .filter-form .eclookup-dropdown .eclookup-listsearch .eclookup-itemsearch {
+      .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown .eclookup-listsearch .eclookup-itemsearch {
         border-color: #F0F3F4;
-        background-color: #fcfcfc; }
-        .ecdatabrowser-filtersimple .filter-form .eclookup-dropdown .eclookup-listsearch .eclookup-itemsearch:hover {
+        background-color: white; }
+        .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown .eclookup-listsearch .eclookup-itemsearch:hover {
           background-color: #74B841;
           color: white; }
+        .ecdatabrowser-filtersimple .input-group .filter-form .eclookup-dropdown .eclookup-listsearch .eclookup-itemsearch:last-child {
+          border-color: #74B841; }

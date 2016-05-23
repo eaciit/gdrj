@@ -14,7 +14,7 @@ type App struct {
 var (
 	ViewPath         = "web/view"
 	LayoutFile       = fmt.Sprintf("%s/layout.html", ViewPath)
-	IncludeFiles     = includeFiles("_head", "_menu", "_script_template")
+	IncludeFiles     = includeFiles("_head", "_menu", "_script_template", "_loader")
 	AppBasePath      = func(dir string, err error) string { return dir }(os.Getwd())
 	GDRJ_DATA_PATH   = filepath.Join(AppBasePath, "data")
 	GDRJ_CONFIG_PATH = filepath.Join(AppBasePath, "config")

@@ -7398,6 +7398,11 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
 .k-grid-header th.k-header > .k-link {
   font-weight: bold;
 }
+.k-link:link,
+.k-link:visited,
+.k-nav-current.k-state-hover .k-link {
+  color: #58666e;
+}
 [style="font:12px Arial,Helvetica,sans-serif;"] {
   font: 12px 'Source Sans Pro', 'Lato', 'Open Sans', 'Helvetica Neue', Arial, sans-serif !important;
   opacity: 0.8;
@@ -7428,7 +7433,7 @@ a.ez {
   color: #58666e;
 }
 a.ez:hover {
-  color: #141719;
+  color: #6f808a;
   text-decoration: none;
 }
 .tag {
@@ -7436,6 +7441,9 @@ a.ez:hover {
   border-radius: 3px;
   padding: 2px 4px;
   font-size: 12px;
+}
+.bg-base {
+  background-color: #e7505a;
 }
 .bg-red {
   background-color: #e7505a;
@@ -7449,8 +7457,26 @@ a.ez:hover {
 .bg-grey {
   background-color: #F0F3F4;
 }
-.bg-yellow {
-  background-color: yellow;
+.bg-orange {
+  background-color: #E67E22;
+}
+.color-base {
+  color: #58666e;
+}
+.color-red {
+  color: #e7505a;
+}
+.color-green {
+  color: #74B841;
+}
+.color-blue {
+  color: #3b79c2;
+}
+.color-grey {
+  color: #F0F3F4;
+}
+.color-orange {
+  color: #E67E22;
 }
 .align-center {
   text-align: center;
@@ -7489,22 +7515,22 @@ a.ez:hover {
   margin-bottom: 0px;
 }
 .no-padding {
-  margin: 0px;
+  padding: 0px;
 }
 .no-padding.hardcore {
   padding: 0px !important;
 }
 .no-padding-left {
-  margin-left: 0px;
+  padding-left: 0px;
 }
 .no-padding-top {
-  margin-top: 0px;
+  padding-top: 0px;
 }
 .no-padding-right {
-  margin-left: 0px;
+  padding-left: 0px;
 }
 .no-padding-bottom {
-  margin-bottom: 0px;
+  padding-bottom: 0px;
 }
 .clear {
   clear: both;
@@ -7551,7 +7577,7 @@ a.ez:hover {
   background-color: #e7505a;
 }
 .btn.ez.btn-warning {
-  background-color: yellow;
+  background-color: #E67E22;
 }
 .btn.ez.ez-animate {
   box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02);
