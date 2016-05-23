@@ -68,7 +68,7 @@ html, body
 	margin-top: 50px
 
 	.app-title
-		padding: 20px 0px
+		padding: 15px 0px 10px
 
 	.app-content
 		margin: 0px -10px
@@ -127,61 +127,79 @@ html, body
 		position: absolute
 		right: 5px
 
-.form-databrowser
-	margin-top: 30px
+.form-group
+	margin-bottom: 10px
 
-	.ecdatabrowser-filtersimple
-		padding: 0
+.ecdatabrowser-filtersimple
+	padding: 0
+
+	&:not(.on-left).first-child
+		margin-top: 30px
+
+	&.on-left
+		> div:not(.clearfix)
+			min-height: 30px !important
 
 		.ecdatabrowser-filter
-			line-height: inherit
-			padding-top: 5px
-			font-weight: normal
+			text-align: right
+
+			&:after
+				content: ""
 
 		.filter-form
-			.eclookup-container
-				border-color: $color-base-grey
+			.eclookup-dropdown
+				right: 0px
+				left: 100px
 
-				.eclookup-list
+	.ecdatabrowser-filter
+		line-height: inherit
+		padding-top: 5px
+		font-weight: normal
+
+	.filter-form
+		.eclookup-container
+			border-color: $color-base-grey
+
+			.eclookup-list
+				padding: 0
+				margin: 0
+				font-family: inherit
+				font-size: inherit
+				width: 100%
+
+				.eclookup-item
+					padding: 2px 10px
+					margin-top: 2px
+					border-radius: 2px
+					margin-left: 2px
+
+				.eclookup-txt
+					color: inherit
 					padding: 0
 					margin: 0
-					font-family: inherit
-					font-size: inherit
-					width: 100%
+					height: 28px
+					padding: 5px 10px
+					line-height: 1.5
 
-					.eclookup-item
-						padding: 2px 10px
-						margin-top: 2px
-						border-radius: 2px
-						margin-left: 2px
-
-					.eclookup-txt
-						color: inherit
-						padding: 0
+					input
 						margin: 0
-						height: 28px
-						padding: 5px 10px
-						line-height: 1.5
+						padding: 0
 
-						input
-							margin: 0
-							padding: 0
+		.eclookup-dropdown
+			border-color: $color-base-grey
+			border-top: none
+			border-bottom: none
+			right: 10px
+			left: 10px
+			width: auto
 
-			.eclookup-dropdown
-				border-color: $color-base-grey
-				border-top: none
-				border-bottom: none
-				right: 10px
-				left: 10px
-				width: auto
+			.eclookup-listsearch
+				font-size: inherit
 
-				.eclookup-listsearch
-					font-size: inherit
+				.eclookup-itemsearch
+					border-color: $color-base-grey
+					background-color: darken(white, 1%)
 
-					.eclookup-itemsearch
-						border-color: $color-base-grey
-						background-color: darken(white, 1%)
-
-						&:hover
-							background-color: $color-base-green
-							color: white
+					&:hover
+						background-color: $color-base-green
+						color: white

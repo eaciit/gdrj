@@ -6,7 +6,7 @@ import (
 	"eaciit/gdrj/web/model"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
-	// "net/http"
+	"net/http"
 	"path/filepath"
 	"runtime"
 )
@@ -39,10 +39,10 @@ func main() {
 	server.Register(controller.CreateLoginController(server), "")
 	server.Register(controller.CreateDataBrowserController(server), "")
 
-	// server.Route("/", func(r *knot.WebContext) interface{} {
-	// 	http.Redirect(r.Writer, r.Request, "/web/index", 301)
-	// 	return true
-	// })
+	server.Route("/", func(r *knot.WebContext) interface{} {
+		http.Redirect(r.Writer, r.Request, "/web/databrowser", 301)
+		return true
+	})
 
 	// server.Route("/", func(r *knot.WebContext) interface{} {
 	// 	sessionid := r.Session("sessionid", "")

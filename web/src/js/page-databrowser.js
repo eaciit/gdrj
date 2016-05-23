@@ -55,6 +55,31 @@ db.createDataBrowser = (dataItem) => {
             },
 			metadata: res.data.dataresult.MetaData,
 		});
+
+		// hack the position
+		// return
+		let $filter = $('.ecdatabrowser-filtersimple')
+			.insertAfter($('.form-group-table-name'))
+			.removeClass('col-md-12')
+			.addClass('form-group on-left')
+			.children()
+			.each((i, e) => {
+				let $inputGroup = $(e)
+					.removeClass('col-md-6')
+					.addClass('input-group input-group-sm ez width-full')
+
+				let $label = $inputGroup.find('.ecdatabrowser-filter')
+				let $newLabel = $('<span />')
+					.addClass('input-group-addon ecdatabrowser-filter align-right width-100')
+					.html($label.text())
+
+				$label.replaceWith($newLabel)
+
+				$(e).find('.filter-form')
+					.removeClass('col-md-9')
+			})
+
+		$filter.append($('<div />').addClass('clearfix'))
 	}, {
 		timeout: 10 * 1000
 	});

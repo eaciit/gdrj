@@ -7473,6 +7473,9 @@ a.ez:hover {
 .no-margin {
   margin: 0px;
 }
+.no-margin.hardcore {
+  margin: 0px !important;
+}
 .no-margin-left {
   margin-left: 0px;
 }
@@ -7487,6 +7490,9 @@ a.ez:hover {
 }
 .no-padding {
   margin: 0px;
+}
+.no-padding.hardcore {
+  padding: 0px !important;
 }
 .no-padding-left {
   margin-left: 0px;
@@ -7526,6 +7532,9 @@ a.ez:hover {
 }
 .width-half {
   width: 50%;
+}
+.relative {
+  position: relative;
 }
 /* Button Concept by Chris Deacy http://codepen.io/chrisdothtml/pen/xbmddV */
 .btn.ez {
@@ -7618,22 +7627,22 @@ a.ez:hover {
 .btn.ez.ez-animate:active {
   opacity: 1;
 }
-.btn.ezs.success {
+.btn.ez.success {
   background-color: #27ae60;
 }
-.btn.ezs.success span {
+.btn.ez.success span {
   left: -72%;
   opacity: 0;
 }
-.btn.ezs.success .icon {
+.btn.ez.success .icon {
   width: 100%;
 }
-.btn.ezs.success .icon .fa {
+.btn.ez.success .icon .fa {
   font-size: 45px;
 }
-.btn.ezs.success .icon .fa-remove {
+.btn.ez.success .icon .fa-remove {
   display: none;
 }
-.btn.ezs.success .icon .fa-check {
+.btn.ez.success .icon .fa-check {
   display: inline-block;
 }
