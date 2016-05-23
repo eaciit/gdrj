@@ -1,6 +1,6 @@
 let vm = viewModel
 
-vm.pageTitle = ko.observable('Dashboard');
+vm.pageTitle = ko.observable('Dashboard')
 vm.menu = ko.observableArray([
 	{ title: 'Dashboard', icon: 'home', href: '#', submenu: [] },
 	{ title: 'Data Browser', icon: 'list', href: '/web/databrowser', submenu: [] },
@@ -18,7 +18,7 @@ vm.prepareDropDownMenu = () => {
 		$(this).find('.dropdown-menu').stop(true, true).fadeIn(200)
 	}, function() {
 		$(this).find('.dropdown-menu').stop(true, true).fadeOut(200)
-	});
+	})
 }
 
 vm.prepareFilterToggle = () => {
@@ -56,6 +56,38 @@ vm.prepareToggleFilter = () => {
 		}
 	})
 }
+vm.prepareLoader = () => {
+	app.loader(true)
+	$('.loader canvas').each((i, cvs) => {
+		let ctx = cvs.getContext("2d")
+		let sA = (Math.PI / 180) * 45
+		let sE = (Math.PI / 180) * 90
+		let ca = canvas.width
+		let ch = canvas.height
+
+		ctx.clearRect(0, 0, ca, ch)
+		ctx.lineWidth = 15
+
+		ctx.beginPath()
+		ctx.strokeStyle = "#ffffff"     
+		ctx.shadowColor = "#eeeeee"
+		ctx.shadowOffsetX = 2
+		ctx.shadowOffsetY = 2
+		ctx.shadowBlur = 5
+		ctx.arc(50, 50, 25, 0, 360, false)
+		ctx.stroke()
+		ctx.closePath()
+
+		sE += 0.05 
+		sA += 0.05
+		    
+		ctx.beginPath()
+		ctx.strokeStyle = "#aaaaaa"
+		ctx.arc(50, 50, 25, sA, sE, false)
+		ctx.stroke()
+		ctx.closePath()
+	})
+}
 
 $(() => {
 	vm.prepareDropDownMenu()
@@ -63,4 +95,5 @@ $(() => {
 	vm.adjustLayout()
 	vm.prepareToggleFilter()
 	app.prepareTooltipster()
+	vm.prepareLoader()
 })

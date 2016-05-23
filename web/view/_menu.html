@@ -5,11 +5,11 @@
 	<div class="app-menu">
 		<ul class="nav navbar-nav" data-bind="foreach: menu">
 			<li data-bind="css: { 'dropdown': ($data.submenu.length > 0) }">
-				<a data-bind="css: { 'dropdown-toggle': ($data.submenu.length > 0), 'active': (vm.pageTitle() == $data.title) }, attr: { href: $data.href }">
+				<a class="color-base" data-bind="css: { 'dropdown-toggle': ($data.submenu.length > 0), 'active': (vm.pageTitle() == $data.title) }, attr: { href: $data.href }">
 					<i data-bind="css: vm.menuIcon($data)"></i> <span data-bind="text: $data.title"></span>
 				</a>
 				<ul class="dropdown-menu" data-bind="foreach: $data.submenu, visible: ($data.submenu.length > 0)">
-					<li><a data-bind="attr: { href: $data.href }, text: $data.title"></a></li>
+					<li><a class="color-base" data-bind="attr: { href: $data.href }, text: $data.title"></a></li>
 				</ul>
 			</li>
 		</ul>
@@ -22,8 +22,8 @@
 					<img src="{{.BaseUrl}}/res/img/Leonard_Jayamohan.jpg" />
 				</span>
 				<div class="pull-right name">
-					<span class="thumb-sm title-user">Leonard Jayamohan</span>
-					<b class="caret"></b>
+					<span class="thumb-sm title-user color-base">Leonard Jayamohan</span>
+					<b class="caret color-base"></b>
 				</div>
 			</a>
 			<ul class="dropdown-menu animated fadeInRight">

@@ -5,12 +5,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 viewModel.app = new Object();
 var app = viewModel.app;
 
-app.miniloader = ko.observable(false);
+app.loader = ko.observable(false);
 app.noop = function () {};
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
     var callbackScheduler = function callbackScheduler(callback) {
-        app.miniloader(false);
+        app.loader(false);
         callback();
     };
 
@@ -64,10 +64,10 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
 
     if (config.hasOwnProperty('withLoader')) {
         if (config.withLoader) {
-            app.miniloader(true);
+            app.loader(true);
         }
     } else {
-        app.miniloader(true);
+        app.loader(true);
     }
 
     return $.ajax(config);

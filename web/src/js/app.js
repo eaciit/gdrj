@@ -1,12 +1,12 @@
 viewModel.app = new Object()
 var app = viewModel.app
 
-app.miniloader = ko.observable(false)
+app.loader = ko.observable(false)
 app.noop = (() => {})
 app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
     var startReq = moment()
     var callbackScheduler = (callback) => {
-        app.miniloader(false)
+        app.loader(false)
         callback()
     }
 
@@ -60,10 +60,10 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
 
     if (config.hasOwnProperty('withLoader')) {
         if (config.withLoader) {
-            app.miniloader(true)
+            app.loader(true)
         }
     } else {
-        app.miniloader(true)
+        app.loader(true)
     }
 
     return $.ajax(config)

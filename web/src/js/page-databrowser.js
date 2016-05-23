@@ -97,6 +97,9 @@ db.renderLeftFilter = () => {
 	$('<p />').text('Filter shown data.').prependTo($filter)
 	$('<div />').addClass('clearfix').appendTo($filter)
 }
+db.renderRightFilter = () => {
+	
+}
 
 db.selectedTableName = ko.computed(() => {
 	if (db.masterDataBrowser().length == 0) {

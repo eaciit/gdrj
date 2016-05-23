@@ -39,18 +39,21 @@
 		<div class="panel ez no-padding hardcore">
 			<div class="panel-heading">
 				<h3 class="no-margin">
-					<button class="btn-toggle-filter">
+					<button class="btn-toggle-filter no-padding">
 						<i class="fa fa-filter tooltipster color-grey" title="Toggle filter pane visibility"></i>
 					</button>
 					Data
 				</h3>
 			</div>
 			<div class="panel-body">
-				<p data-bind="visible: db.selectedTableID() != ''">
-					Data on table <span class="tag bg-blue" data-bind="text: db.selectedTableName"></span>.
-				</p>
-				<div id="grid-databrowser-decription"></div>
-				<div class="no-grid" data-bind="visible: app.is(db.selectedTableID, '')">No data to be shown. Select table name on the filter side first.</div>
+				{{template "_loader.html"}}
+				<div data-bind="visible: !app.loader()">
+					<p data-bind="visible: db.selectedTableID() != ''">
+						Data on table <span class="tag bg-orange" data-bind="text: db.selectedTableName"></span>.
+					</p>
+					<div id="grid-databrowser-decription"></div>
+					<div class="no-grid" data-bind="visible: app.is(db.selectedTableID, '')">No data to be shown. Select table name on the filter side first.</div>
+				</div>
 			</div>
 		</div>
 	</div>

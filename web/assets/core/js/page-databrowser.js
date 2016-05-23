@@ -85,6 +85,7 @@ db.renderLeftFilter = function () {
 	$('<p />').text('Filter shown data.').prependTo($filter);
 	$('<div />').addClass('clearfix').appendTo($filter);
 };
+db.renderRightFilter = function () {};
 
 db.selectedTableName = ko.computed(function () {
 	if (db.masterDataBrowser().length == 0) {
