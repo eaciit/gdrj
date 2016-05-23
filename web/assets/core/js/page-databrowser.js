@@ -11,7 +11,7 @@ db.masterDataBrowser = ko.observableArray([]);
 db.getMasterDataBrowser = function () {
 	db.masterDataBrowser([]);
 
-	app.ajaxPost('/databrowser/gettablelist', {}, function (res) {
+	app.ajaxPost('/databrowser/getdatabrowsers', {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
