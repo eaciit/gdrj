@@ -68,7 +68,7 @@ html, body
 	margin-top: 50px
 
 	.app-title
-		padding: 20px 0px
+		padding: 15px 0px 10px
 
 	.app-content
 		margin: 0px -10px
@@ -127,6 +127,9 @@ html, body
 		position: absolute
 		right: 5px
 
+.form-group
+	margin-bottom: 10px
+
 .ecdatabrowser-filtersimple
 	padding: 0
 
@@ -134,7 +137,7 @@ html, body
 		margin-top: 30px
 
 	&.on-left
-		> div
+		> div:not(.clearfix)
 			min-height: 30px !important
 
 		.ecdatabrowser-filter

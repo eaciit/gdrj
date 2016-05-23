@@ -5,9 +5,9 @@
 
 <script src="/res/core/js/page-databrowser.js"></script>
 
-<div class="col-md-12">
-	<div class="col-md-4 col-sm-4">
-		<div class="panel ez">
+<div>
+	<div class="col-md-4 col-sm-4 ez">
+		<div class="panel ez no-padding hardcore">
 			<div class="panel-heading">
 				<h3 class="no-margin">Filter</h3>
 			</div>
@@ -20,7 +20,7 @@
 							<select data-bind="kendoDropDownList: { data: db.masterDataBrowser, dataTextField: 'TableNames', dataValueField: '_id', optionLabel: 'Click to select one ...', select: db.selectTableName }" style="width: 100%"></select>
 						</div>
 					</div>
-					<div class="form-group relative align-right">
+					<div class="form-group relative align-right no-margin no-padding hardcore">
 						<button class="btn btn-sm btn-primary ez ez-animate width-100" data-bind="click: db.refreshDataBrowser">&nbsp;
 							<span>Refresh</span>
 							<div class="icon">
@@ -35,8 +35,8 @@
 		</div>
 	</div>
 
-	<div class="col-md-8 col-sm-8">
-		<div class="panel ez">
+	<div class="col-md-8 col-sm-8 ez">
+		<div class="panel ez no-padding hardcore">
 			<div class="panel-heading">
 				<h3 class="no-margin">Data Browser</h3>
 			</div>

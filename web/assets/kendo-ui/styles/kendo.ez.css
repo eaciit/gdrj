@@ -7473,6 +7473,9 @@ a.ez:hover {
 .no-margin {
   margin: 0px;
 }
+.no-margin.hardcore {
+  margin: 0px !important;
+}
 .no-margin-left {
   margin-left: 0px;
 }
@@ -7487,6 +7490,9 @@ a.ez:hover {
 }
 .no-padding {
   margin: 0px;
+}
+.no-padding.hardcore {
+  padding: 0px !important;
 }
 .no-padding-left {
   margin-left: 0px;

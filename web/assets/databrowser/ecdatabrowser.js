@@ -102,7 +102,7 @@ var methodsDataBrowser = {
 		$(element).data("ecDataBrowser").dataSimple = dataSimple;
 		$(element).data("ecDataBrowser").dataAdvance = dataAdvance;
 
-		$divContainerGrid = $('<div class="col-md-12 ecdatabrowser-gridview"></div>');
+		$divContainerGrid = $('<div class="ecdatabrowser-gridview" style="width: 100%;"></div>');
 		$divContainerGrid.appendTo($o);
 
 		$divGrid = $('<div class="ecdatabrowser-grid"></div>');
@@ -110,6 +110,7 @@ var methodsDataBrowser = {
 
 		methodsDataBrowser.createGrid($divGrid, options, $o);
 
+		$("<div class='clearfix'></div>").appendTo($o);
 		$(element).data("ecDataBrowser").ChangeViewFilter(options.showFilter);
 
 	},
