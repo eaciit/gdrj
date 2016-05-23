@@ -35,9 +35,64 @@ vm.adjustLayout = function () {
 	var height = window.innerHeight - $('.app-top').height();
 	$('.app-container').css('min-height', height);
 };
+vm.prepareToggleFilter = function () {
+	var btnToggleFilter = $('.btn-toggle-filter');
+	var panelFilterContainer = $('.panel-filter').parent();
+
+	btnToggleFilter.on('click', function () {
+		if (panelFilterContainer.hasClass('minimized')) {
+			panelFilterContainer.removeClass('minimized');
+			btnToggleFilter.find('.fa').removeClass('color-blue').addClass('color-grey');
+
+			$('.panel-filter').show(300);
+			$('.panel-content').animate({ 'width': 'auto' }, 300);
+		} else {
+			panelFilterContainer.addClass('minimized');
+			btnToggleFilter.find('.fa').removeClass('color-grey').addClass('color-blue');
+
+			$('.panel-filter').hide(300);
+			$('.panel-content').animate({ 'width': '100%' }, 300);
+		}
+	});
+};
+vm.prepareLoader = function () {
+	app.loader(true);
+	$('.loader canvas').each(function (i, cvs) {
+		var ctx = cvs.getContext("2d");
+		var sA = Math.PI / 180 * 45;
+		var sE = Math.PI / 180 * 90;
+		var ca = canvas.width;
+		var ch = canvas.height;
+
+		ctx.clearRect(0, 0, ca, ch);
+		ctx.lineWidth = 15;
+
+		ctx.beginPath();
+		ctx.strokeStyle = "#ffffff";
+		ctx.shadowColor = "#eeeeee";
+		ctx.shadowOffsetX = 2;
+		ctx.shadowOffsetY = 2;
+		ctx.shadowBlur = 5;
+		ctx.arc(50, 50, 25, 0, 360, false);
+		ctx.stroke();
+		ctx.closePath();
+
+		sE += 0.05;
+		sA += 0.05;
+
+		ctx.beginPath();
+		ctx.strokeStyle = "#aaaaaa";
+		ctx.arc(50, 50, 25, sA, sE, false);
+		ctx.stroke();
+		ctx.closePath();
+	});
+};
 
 $(function () {
 	vm.prepareDropDownMenu();
 	vm.prepareFilterToggle();
 	vm.adjustLayout();
+	vm.prepareToggleFilter();
+	app.prepareTooltipster();
+	vm.prepareLoader();
 });

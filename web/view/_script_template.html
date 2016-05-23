@@ -1,6 +1,6 @@
 <script id="breadcrumbTemplate" type="text/html">
 	<!-- ko if: (vm.breadcrumb().length-1)!=$index() -->
-	<li><a data-bind="text: title, attr: {href: href}"></a></li>
+	<li><a data-bind="text: title, attr: {href: href}" class="ez"></a></li>
 	<!-- /ko -->
 	<!-- ko if: (vm.breadcrumb().length-1)==$index() -->
 	<li class="active" data-bind="text: title"></li>

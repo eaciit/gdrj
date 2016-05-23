@@ -84,7 +84,11 @@ html, body
 		height: 50px
 		padding-bottom: 0px
 		padding-top: 0px
-		padding-right: 0px
+		padding-right: 5px
+		padding-left: 5px
+
+		&:hover, &:focus
+			background-color: transparent
 
 	.avatar
 		width: 30px
@@ -115,7 +119,7 @@ html, body
 	margin-top: 2px
 
 	li > a
-		color: $color-base-green
+		font-weight: bold
 
 .form-label
 	line-height: 25px
@@ -127,8 +131,31 @@ html, body
 		position: absolute
 		right: 5px
 
+.btn-toggle-filter
+	background-color: transparent
+	border: none
+
+.btn-toggle-filter
+	.fa
+		transition: color ease-in-out 200ms
+
 .form-group
 	margin-bottom: 10px
+
+.loader
+	.wrapper
+		.sk-cube-grid .sk-cube
+			background-color: $color-base-green
+		// position: relative
+		// width: 100%
+		// height: 100%
+
+		// .center
+		// 	display: table
+		// 	vertical-align: middle
+
+		// 	canvas
+		// 		margin: 0px auto
 
 .ecdatabrowser-filtersimple
 	padding: 0
@@ -139,6 +166,9 @@ html, body
 	&.on-left
 		> div:not(.clearfix)
 			min-height: 30px !important
+
+		> div.clearfix
+			min-height: 0px !important
 
 		.ecdatabrowser-filter
 			text-align: right
@@ -151,55 +181,67 @@ html, body
 				right: 0px
 				left: 100px
 
-	.ecdatabrowser-filter
-		line-height: inherit
-		padding-top: 5px
-		font-weight: normal
+			.ecdatabrowser-ckcrange
+				margin-left: 10px
 
-	.filter-form
-		.eclookup-container
-			border-color: $color-base-grey
+			.k-widget.k-numerictextbox
+				width: 100px
 
-			.eclookup-list
-				padding: 0
-				margin: 0
-				font-family: inherit
-				font-size: inherit
-				width: 100%
+	.input-group
+		// overflow: hidden
 
-				.eclookup-item
-					padding: 2px 10px
-					margin-top: 2px
-					border-radius: 2px
-					margin-left: 2px
+		.ecdatabrowser-filter
+			line-height: inherit
+			padding-top: 5px
+			font-weight: normal
 
-				.eclookup-txt
-					color: inherit
+		.filter-form
+			.eclookup-container
+				border-color: $color-base-grey
+
+				.eclookup-list
 					padding: 0
 					margin: 0
-					height: 28px
-					padding: 5px 10px
-					line-height: 1.5
+					font-family: inherit
+					font-size: inherit
+					width: 100%
 
-					input
-						margin: 0
+					.eclookup-item
+						padding: 2px 10px
+						margin-top: 2px
+						border-radius: 2px
+						margin-left: 2px
+
+					.eclookup-txt
+						color: inherit
 						padding: 0
+						margin: 0
+						height: 28px
+						padding: 5px 10px
+						line-height: 1.5
 
-		.eclookup-dropdown
-			border-color: $color-base-grey
-			border-top: none
-			border-bottom: none
-			right: 10px
-			left: 10px
-			width: auto
+						input
+							margin: 0
+							padding: 0
 
-			.eclookup-listsearch
-				font-size: inherit
+			.eclookup-dropdown
+				border-color: $color-base-green
+				border-top: none
+				border-bottom: none
+				right: 0px
+				left: 100px
+				width: auto
 
-				.eclookup-itemsearch
-					border-color: $color-base-grey
-					background-color: darken(white, 1%)
+				.eclookup-listsearch
+					font-size: inherit
 
-					&:hover
-						background-color: $color-base-green
-						color: white
+					.eclookup-itemsearch
+						border-color: $color-base-grey
+						background-color: white
+
+						&:hover
+							background-color: $color-base-green
+							color: white
+
+						&:last-child
+							border-color: $color-base-green
