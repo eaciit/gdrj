@@ -23,7 +23,7 @@ input[type=checkbox].ecdatabrowser-ckcrange {
 
 .ecdatabrowser-spacerange {
   margin: 0px 3px 0px 3px;
-  font-size: 18px;
+  // font-size: 18px;
   display: none; }
 
 .ecdatabrowser-filterto {

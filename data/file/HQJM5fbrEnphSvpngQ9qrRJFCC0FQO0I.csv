@@ -1,0 +1,3 @@
+Company,JournalNo,TransDate,Amount,Account,ProfitCenter,CostCenter
+100,J001,2016/05/15,10000,AC001,PC001,
+100,J002,2016/05/15,-100.10,AC002,,CC001
