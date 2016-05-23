@@ -8,7 +8,7 @@ import (
 
 type Product struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	SKUID         string `bson:"_id" json:"_id"`
+	ID            string `bson:"_id" json:"_id"` //SKUID
 	Name          string
 	Config        string
 	Brand         string
@@ -16,7 +16,7 @@ type Product struct {
 }
 
 func (p *Product) RecordID() interface{} {
-	return p.SKUID
+	return p.ID
 }
 
 func (p *Product) TableName() string {

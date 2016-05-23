@@ -19,7 +19,7 @@ const (
 
 type Customer struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	OutletID      string `json:"_id" bson:"_id"`
+	ID            string `json:"_id" bson:"_id"` //OutletID
 	CustomerID    string
 	Plant         string
 	Name          string
@@ -33,7 +33,7 @@ type Customer struct {
 }
 
 func (c *Customer) RecordID() interface{} {
-	return c.CustomerID
+	return c.ID
 }
 
 func (c *Customer) TableName() string {
@@ -80,4 +80,22 @@ func (c ChannelTypeEnum) String() string {
 	}
 
 	return "unknown"
+}
+
+func ToChannelEnum(d int) ChannelTypeEnum {
+	switch d {
+	case 1:
+		return ExportChannel
+	case 2:
+		return GeneralTradeChannel
+	case 3:
+		return ModernTradeChannel
+	case 4:
+		return IndustrialTradeChannel
+	case 5:
+		return MotoristChannel
+	case 6:
+		return RegionalDistributorChannel
+	}
+	return 0
 }

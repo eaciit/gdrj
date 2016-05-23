@@ -8,7 +8,7 @@ import (
 
 type CostCenter struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	CCID          string `json:"_id" bson:"_id"`
+	ID            string `json:"_id" bson:"_id"` //CCID
 	Name          string
 	CostGroup01   string
 	CostGroup02   string
@@ -18,7 +18,7 @@ type CostCenter struct {
 }
 
 func (c *CostCenter) RecordID() interface{} {
-	return c.CCID
+	return c.ID
 }
 
 func (c *CostCenter) TableName() string {

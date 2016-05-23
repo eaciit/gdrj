@@ -16,13 +16,13 @@ const (
 
 type Branch struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	BranchID      string `json:"_id" bson:"_id"`
+	ID            string `json:"_id" bson:"_id"` //BranchID
 	Name          string
 	Location      string
 }
 
 func (b *Branch) RecordID() interface{} {
-	return b.BranchID
+	return b.ID
 }
 
 func (b *Branch) TableName() string {
