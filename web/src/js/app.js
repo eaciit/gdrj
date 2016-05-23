@@ -77,6 +77,12 @@ app.is = (observable, comparator) => {
 
     return a === b
 }
+app.isNot = (observable, comparator) => {
+    let a = (typeof observable === 'function') ? observable() : observable
+    let b = (typeof comparator === 'function') ? comparator() : comparator
+
+    return a !== b
+}
 app.showError = (message) => sweetAlert('Oops...', message, 'error')
 app.isFine = (res) => {
     if (!res.success) {
@@ -103,4 +109,17 @@ app.resetValidation = (selectorID) => {
     } catch (err) {
         
     }
+}
+app.prepareTooltipster = ($o) => {
+    var $tooltipster = ($o == undefined) ? $('.tooltipster') : $o;
+
+    $tooltipster.tooltipster({
+        theme: 'tooltipster-val',
+        animation: 'grow',
+        delay: 0,
+        offsetY: -5,
+        touchDevices: false,
+        trigger: 'hover',
+        position: "top"
+    })
 }

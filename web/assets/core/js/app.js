@@ -85,6 +85,12 @@ app.is = function (observable, comparator) {
 
     return a === b;
 };
+app.isNot = function (observable, comparator) {
+    var a = typeof observable === 'function' ? observable() : observable;
+    var b = typeof comparator === 'function' ? comparator() : comparator;
+
+    return a !== b;
+};
 app.showError = function (message) {
     return sweetAlert('Oops...', message, 'error');
 };
@@ -111,4 +117,17 @@ app.resetValidation = function (selectorID) {
     try {
         $form.hideMessages();
     } catch (err) {}
+};
+app.prepareTooltipster = function ($o) {
+    var $tooltipster = $o == undefined ? $('.tooltipster') : $o;
+
+    $tooltipster.tooltipster({
+        theme: 'tooltipster-val',
+        animation: 'grow',
+        delay: 0,
+        offsetY: -5,
+        touchDevices: false,
+        trigger: 'hover',
+        position: "top"
+    });
 };

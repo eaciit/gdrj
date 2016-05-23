@@ -35,9 +35,31 @@ vm.adjustLayout = function () {
 	var height = window.innerHeight - $('.app-top').height();
 	$('.app-container').css('min-height', height);
 };
+vm.prepareToggleFilter = function () {
+	var btnToggleFilter = $('.btn-toggle-filter');
+	var panelFilterContainer = $('.panel-filter').parent();
+
+	btnToggleFilter.on('click', function () {
+		if (panelFilterContainer.hasClass('minimized')) {
+			panelFilterContainer.removeClass('minimized');
+			btnToggleFilter.find('.fa').removeClass('color-blue').addClass('color-grey');
+
+			$('.panel-filter').show(300);
+			$('.panel-content').animate({ 'width': 'auto' }, 300);
+		} else {
+			panelFilterContainer.addClass('minimized');
+			btnToggleFilter.find('.fa').removeClass('color-grey').addClass('color-blue');
+
+			$('.panel-filter').hide(300);
+			$('.panel-content').animate({ 'width': '100%' }, 300);
+		}
+	});
+};
 
 $(function () {
 	vm.prepareDropDownMenu();
 	vm.prepareFilterToggle();
 	vm.adjustLayout();
+	vm.prepareToggleFilter();
+	app.prepareTooltipster();
 });

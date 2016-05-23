@@ -7452,6 +7452,21 @@ a.ez:hover {
 .bg-yellow {
   background-color: yellow;
 }
+.color-red {
+  color: #e7505a;
+}
+.color-green {
+  color: #74B841;
+}
+.color-blue {
+  color: #3b79c2;
+}
+.color-grey {
+  color: #F0F3F4;
+}
+.color-yellow {
+  color: yellow;
+}
 .align-center {
   text-align: center;
 }

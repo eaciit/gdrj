@@ -1,4 +1,4 @@
-var vm = viewModel
+let vm = viewModel
 
 vm.pageTitle = ko.observable('Dashboard');
 vm.menu = ko.observableArray([
@@ -33,12 +33,34 @@ vm.prepareFilterToggle = () => {
 	}).trigger('click')
 }
 vm.adjustLayout = () => {
-	var height = window.innerHeight - $('.app-top').height()
+	let height = window.innerHeight - $('.app-top').height()
 	$('.app-container').css('min-height', height)
+}
+vm.prepareToggleFilter = () => {
+	let btnToggleFilter = $('.btn-toggle-filter')
+	let panelFilterContainer = $('.panel-filter').parent()
+
+	btnToggleFilter.on('click', () => {
+		if (panelFilterContainer.hasClass('minimized')) {
+			panelFilterContainer.removeClass('minimized')
+			btnToggleFilter.find('.fa').removeClass('color-blue').addClass('color-grey')
+
+			$('.panel-filter').show(300)
+			$('.panel-content').animate({ 'width': 'auto' }, 300)
+		} else {
+			panelFilterContainer.addClass('minimized')
+			btnToggleFilter.find('.fa').removeClass('color-grey').addClass('color-blue')
+
+			$('.panel-filter').hide(300)
+			$('.panel-content').animate({ 'width': '100%' }, 300)
+		}
+	})
 }
 
 $(() => {
 	vm.prepareDropDownMenu()
 	vm.prepareFilterToggle()
 	vm.adjustLayout()
+	vm.prepareToggleFilter()
+	app.prepareTooltipster()
 })
