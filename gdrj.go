@@ -40,22 +40,21 @@ func main() {
 	server.Register(controller.CreateDataBrowserController(server), "")
 	server.Register(controller.CreateUploadDataController(server), "")
 	server.Register(controller.CreateReportController(server), "")
+	server.Register(controller.CreateAdminisrationController(server), "")
+	server.Register(controller.CreateSessionController(server), "")
+	server.Register(controller.CreateUserController(server), "")
+	server.Register(controller.CreateGroupController(server), "")
 
 	server.Route("/", func(r *knot.WebContext) interface{} {
-		http.Redirect(r.Writer, r.Request, "/web/databrowser", 301)
+		sessionid := r.Session("sessionid", "")
+		if sessionid == "" {
+			http.Redirect(r.Writer, r.Request, "/web/login", 301)
+		} else {
+			http.Redirect(r.Writer, r.Request, "/web/databrowser", 301)
+		}
+
 		return true
 	})
-
-	// server.Route("/", func(r *knot.WebContext) interface{} {
-	// 	sessionid := r.Session("sessionid", "")
-	// 	if sessionid == "" {
-	// 		http.Redirect(r.Writer, r.Request, "/web/login", 301)
-	// 	} else {
-	// 		http.Redirect(r.Writer, r.Request, "/web/index", 301)
-	// 	}
-
-	// 	return true
-	// })
 
 	if err := setAclDatabase(); err != nil {
 		toolkit.Printf("Error set database to efs: %s \n", err.Error())

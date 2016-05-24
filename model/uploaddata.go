@@ -22,20 +22,20 @@ var (
 type UploadData struct {
 	orm.ModelBase `bson:"-" json:"-"`
 	ID            string `json:"_id" bson:"_id"`
-	Filename      string `json:"filename" bson:"filename"`
-	PhysicalName  string `json:"physicalname" bson:"physicalname"`
-	Desc          string `json:"desc" bson:"desc"`
-	DataType      string `json:"datatype" bson:"datatype"`
-	FieldId       string `json:"fieldid" bson:"fieldid"`
+	Filename      string
+	PhysicalName  string
+	Desc          string
+	DataType      string
+	FieldId       string
 	DocName       string
-	Date          time.Time `json:"date" bson:"date"`
-	Account       []string  `json:"account" bson:"account"`
-	Datacount     float64   `json:"datacount" bson:"datacount"`
-	Process       float64   `json:"process" bson:"process"` // 0
-	Status        string    `json:"status" bson:"status"`   // ready, done, failed, onprocess, rollback
-	Note          string    `json:"note" bson:"note"`
-	Pid           string    `json:"pid" bson:"pid"`
-	Other         string    `json:"other" bson:"other"`
+	Date          time.Time
+	Account       []string
+	Datacount     float64
+	Process       float64 // 0
+	Status        string  // ready, done, failed, onprocess, rollback
+	Note          string
+	Pid           string
+	Other         string
 }
 
 func (u *UploadData) RecordID() interface{} {
@@ -80,10 +80,11 @@ func (u *UploadData) Delete() error {
 func (u *UploadData) ProcessData(loc string) (err error) {
 	var wg sync.WaitGroup
 
-	// if u.Status != "ready" {
-	// 	err = errors.New("Process status is not ready")
-	// 	return
-	// }
+	if u.Status != "ready" {
+		err = errors.New("Process status is not ready")
+		return
+	}
+
 	//Pre check before run
 	mutex.Lock()
 	u.Status = "onprocess"
@@ -92,7 +93,6 @@ func (u *UploadData) ProcessData(loc string) (err error) {
 
 	wg.Add(1)
 	go func(loc string, u *UploadData) {
-		toolkit.Printfn("Enter Goroutine")
 		ci := 0
 		f := flat.New(loc, true, false)
 		f.Delimeter = ','
@@ -107,7 +107,6 @@ func (u *UploadData) ProcessData(loc string) (err error) {
 
 		isEOF := false
 		for !isEOF {
-			toolkit.Printfn("First loop")
 			m, e := f.ReadM()
 			if e == io.EOF {
 				isEOF = true
@@ -131,10 +130,8 @@ func (u *UploadData) ProcessData(loc string) (err error) {
 					m.Set("_id", id)
 				}
 
-				toolkit.Printfn("Data M : %v \n", m)
-				mapautotype(m)
-				// mapstructtype(m, omod)
-				toolkit.Printfn("Data M : %v \n", m)
+				Mapautotype(m)
+				Mapstructtype(m, omod)
 
 				e = toolkit.Serde(m, omod, "json")
 				if e != nil {
@@ -144,8 +141,6 @@ func (u *UploadData) ProcessData(loc string) (err error) {
 					u.Save()
 					return
 				}
-
-				toolkit.Printfn("Data Structure : %v \n", omod)
 
 				e = Save(omod)
 				if e != nil {
@@ -166,12 +161,10 @@ func (u *UploadData) ProcessData(loc string) (err error) {
 		}
 
 		mutex.Lock()
-		// u.Process += float64(ci)
 		u.Process = u.Datacount
-		// if u.Process == u.Datacount {
 		u.Status = "done"
-		// }
 		_ = u.Save()
+
 		mutex.Unlock()
 		wg.Done()
 	}(loc, u)
@@ -221,7 +214,6 @@ func GetModelData(docname string) orm.IModel {
 		return oim
 	case "truck":
 		oim := new(Truck)
-		toolkit.Println(oim)
 		return oim
 	case "truckassignment":
 		oim := new(TruckAssignment)
@@ -234,7 +226,7 @@ func GetModelData(docname string) orm.IModel {
 	return nil
 }
 
-func mapstructtype(m toolkit.M, omod orm.IModel) {
+func Mapstructtype(m toolkit.M, omod orm.IModel) {
 	tv := reflect.ValueOf(omod)
 
 	for i := 0; i < tv.NumField(); i++ {
@@ -264,7 +256,7 @@ func mapstructtype(m toolkit.M, omod orm.IModel) {
 	return
 }
 
-func mapautotype(m toolkit.M) {
+func Mapautotype(m toolkit.M) {
 	for k, v := range m {
 		str := toolkit.ToString(v)
 
@@ -296,7 +288,7 @@ func mapautotype(m toolkit.M) {
 			tstr = strings.Replace(tstr, ".", "", 1)
 		}
 
-		if matchNumber, _ := regexp.MatchString("^\\d+$", tstr); matchNumber {
+		if matchNumber, _ := regexp.MatchString("^\\d+$", tstr); matchNumber && string(tstr[0]) != "0" {
 			if x > 0 {
 				m.Set(k, toolkit.ToFloat64(str, x, toolkit.RoundingAuto))
 			} else {
