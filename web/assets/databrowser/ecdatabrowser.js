@@ -246,7 +246,7 @@ var methodsDataBrowser = {
 			headerAttributes: { style: "font-weight: bold;"},
 			template: function (d) {
 	    		return [
-	    			"<button class='btn btn-xs btn-warning tooltipster' title='Edit data' onclick='db.selectEditData("+JSON.stringify(d)+")'><span class='glyphicon glyphicon-pencil'></span></button>",
+	    			"<button class='btn btn-xs btn-warning tooltipster' title='Edit data' onclick='db.editData("+JSON.stringify(d)+")'><span class='glyphicon glyphicon-pencil'></span></button>",
 	    		].join(" ");
 			}
 		}

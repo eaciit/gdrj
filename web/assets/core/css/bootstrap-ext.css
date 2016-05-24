@@ -27,6 +27,11 @@ ul.dropdown-menu {
   .panel.ez .panel-heading .filter-toggle .material-switch {
     padding-top: 1px; }
 
+.panel.ez .panel-heading .panel-nav-button {
+  position: absolute;
+  right: 15px;
+  top: 6px; }
+
 .panel.ez .panel-body .panel-filter {
   display: none;
   margin-bottom: 15px; }
