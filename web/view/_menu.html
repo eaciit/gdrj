@@ -11,7 +11,7 @@
 					<i data-bind="css: vm.menuIcon($data)"></i> <span data-bind="text: $data.title"></span>
 				</a>
 				<ul class="dropdown-menu" data-bind="foreach: $data.submenu, visible: ($data.submenu.length > 0)">
-					<li><a class="color-base" data-bind="attr: { href: $data.href }, text: $data.title"></a></li>
+					<li><a class="color-base" data-bind="attr: { href: $data.href },css: vm.menuIcon($data)"><span data-bind="text: $data.title"></a></li>
 				</ul>
 			</li>
 		</ul>
