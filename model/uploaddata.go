@@ -2,12 +2,15 @@ package gdrj
 
 import (
 	"errors"
-	// "github.com/ariefdarmawan/flat"
+	"github.com/ariefdarmawan/flat"
 	// "github.com/eaciit/dbox"
 	// _ "github.com/eaciit/dbox/dbc/csv"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	// "strings"
+	"io"
+	"reflect"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 )
@@ -18,12 +21,13 @@ var (
 
 type UploadData struct {
 	orm.ModelBase `bson:"-" json:"-"`
-	ID            string    `json:"_id" bson:"_id"`
-	Filename      string    `json:"filename" bson:"filename"`
-	PhysicalName  string    `json:"physicalname" bson:"physicalname"`
-	Desc          string    `json:"desc" bson:"desc"`
-	DataType      string    `json:"datatype" bson:"datatype"`
-	DocName       string    `json:"tablename" bson:"tablename"`
+	ID            string `json:"_id" bson:"_id"`
+	Filename      string `json:"filename" bson:"filename"`
+	PhysicalName  string `json:"physicalname" bson:"physicalname"`
+	Desc          string `json:"desc" bson:"desc"`
+	DataType      string `json:"datatype" bson:"datatype"`
+	FieldId       string `json:"fieldid" bson:"fieldid"`
+	DocName       string
 	Date          time.Time `json:"date" bson:"date"`
 	Account       []string  `json:"account" bson:"account"`
 	Datacount     float64   `json:"datacount" bson:"datacount"`
@@ -48,10 +52,18 @@ func UploadDataGetByID(id string) *UploadData {
 	return u
 }
 
+func (u *UploadData) PreSave() error {
+	return nil
+}
+
+func (u *UploadData) PostSave() error {
+	return nil
+}
+
 func (u *UploadData) Save() error {
 	e := Save(u)
 	if e != nil {
-		return errors.New(toolkit.Sprintf("[%v-%v] Error found : ", u.TableName(), "save", e.Error()))
+		return errors.New(toolkit.Sprintf("[%v-%v] Error found : %v", u.TableName(), "save", e.Error()))
 	}
 	return e
 }
@@ -59,192 +71,238 @@ func (u *UploadData) Save() error {
 func (u *UploadData) Delete() error {
 	e := Delete(u)
 	if e != nil {
-		return errors.New(toolkit.Sprintf("[%v-%v] Error found : ", u.TableName(), "delete", e.Error()))
+		return errors.New(toolkit.Sprintf("[%v-%v] Error found : %v", u.TableName(), "delete", e.Error()))
 	}
 	return e
 }
 
 //Location will be fullpath
 func (u *UploadData) ProcessData(loc string) (err error) {
-	if u.Status != "ready" {
-		return
-	}
+	var wg sync.WaitGroup
 
-	// conn, err := dbox.NewConnection(u.DataType,
-	// 	&dbox.ConnectionInfo{loc, "", "", "", toolkit.M{}.Set("useheader", true)})
-	// if err != nil {
-	// 	err = errors.New(toolkit.Sprintf("Process File error found : %v", err.Error()))
+	// if u.Status != "ready" {
+	// 	err = errors.New("Process status is not ready")
 	// 	return
 	// }
-
-	// err = conn.Connect()
-	// if err != nil {
-	// 	err = errors.New(toolkit.Sprintf("Process File error found : %v", err.Error()))
-	// 	return
-	// }
-
-	// //next
-	// for _, v := range ltf.Account {
-	// var c dbox.ICursor
-
+	//Pre check before run
 	mutex.Lock()
 	u.Status = "onprocess"
 	_ = u.Save()
 	mutex.Unlock()
 
-	// c, err = conn.NewQuery().Select().Cursor(nil)
-	// if err != nil {
-	// 	return
-	// }
-	// defer c.Close()
-
-	// arrlt := make([]*LedgerTrans, 0, 0)
-	// err = c.Fetch(&arrlt, 0, false)
-	// if err != nil {
-	// 	if strings.Contains(err.Error(), "Not found") {
-	// 		err = nil
-	// 		return
-	// 	}
-	// 	err = errors.New(toolkit.Sprintf("Process File error found : %v", err.Error()))
-	// 	return
-	// }
-
+	wg.Add(1)
 	go func(loc string, u *UploadData) {
+		toolkit.Printfn("Enter Goroutine")
 		ci := 0
-		// for i, v := range arrlt {
-		// 	ci += 1
-		// 	// ltf.Process = float64(i) / float64(len(arrlt)) * 100
-		// 	err := v.Save()
-		// 	if err != nil {
-		// 		mutex.Lock()
-		// 		ltf.Status = "failed"
-		// 		ltf.Process += float64(ci)
-		// 		ltf.Note = toolkit.Sprintf("Account %v process-%d error found : %v", v.Account, i, err.Error())
-		// 		_ = ltf.Save()
-		// 		mutex.Unlock()
-		// 		return
-		// 	}
+		f := flat.New(loc, true, false)
+		f.Delimeter = ','
+		f.Config = toolkit.M{}.Set("useheader", true)
+		err := f.Open()
+		if err != nil {
+			u.Status = "failed"
+			u.Note = toolkit.Sprintf("[process-upload] Found : %v", err.Error())
+			u.Save()
+			return
+		}
 
-		// 	if ci%5 == 0 {
-		// 		mutex.Lock()
-		// 		ltf.Process += float64(ci)
-		// 		_ = ltf.Save()
-		// 		mutex.Unlock()
-		// 		ci = 0
-		// 	}
+		isEOF := false
+		for !isEOF {
+			toolkit.Printfn("First loop")
+			m, e := f.ReadM()
+			if e == io.EOF {
+				isEOF = true
+			} else if e != nil {
+				u.Process = float64(ci)
+				u.Status = "failed"
+				u.Note = toolkit.Sprintf("[process-upload-%d] Found : %v", ci, e.Error())
+				u.Save()
+				return
+			} else {
+				ci++
+				omod := GetModelData(u.DocName)
+				toolkit.Println(toolkit.TypeName(omod))
 
-		// }
+				var id interface{}
+				if u.FieldId == "" {
+					id = toolkit.RandomString(32)
+					m.Set("_id", id)
+				} else {
+					id = m.Get(u.FieldId, "")
+					m.Set("_id", id)
+				}
+
+				toolkit.Printfn("Data M : %v \n", m)
+				mapautotype(m)
+				// mapstructtype(m, omod)
+				toolkit.Printfn("Data M : %v \n", m)
+
+				e = toolkit.Serde(m, omod, "json")
+				if e != nil {
+					u.Status = "failed"
+					u.Process = float64(ci)
+					u.Note = toolkit.Sprintf("[process-upload-%d] Found : %v", ci, e.Error())
+					u.Save()
+					return
+				}
+
+				toolkit.Printfn("Data Structure : %v \n", omod)
+
+				e = Save(omod)
+				if e != nil {
+					u.Status = "failed"
+					u.Process = float64(ci)
+					u.Note = toolkit.Sprintf("[process-upload-%d] Found : %v", ci, e.Error())
+					u.Save()
+					return
+				}
+
+				if ci%5 == 0 {
+					mutex.Lock()
+					u.Process = float64(ci)
+					_ = u.Save()
+					mutex.Unlock()
+				}
+			}
+		}
 
 		mutex.Lock()
-		u.Process += float64(ci)
-		if u.Process == u.Datacount {
-			u.Status = "done"
-		}
+		// u.Process += float64(ci)
+		u.Process = u.Datacount
+		// if u.Process == u.Datacount {
+		u.Status = "done"
+		// }
 		_ = u.Save()
 		mutex.Unlock()
-
+		wg.Done()
 	}(loc, u)
 	// }
+	wg.Wait()
+	return
+}
+
+func GetModelData(docname string) orm.IModel {
+
+	switch docname {
+	case "branch":
+		oim := new(Branch)
+		return oim
+	case "costcenter":
+		oim := new(CostCenter)
+		return oim
+	case "customer":
+		oim := new(Customer)
+		return oim
+	case "directsalespl":
+		oim := new(DirectSalesPL)
+		return oim
+	case "inventorylevel":
+		oim := new(InventoryLevel)
+		return oim
+	case "plstructure":
+		oim := new(PLStructure)
+		return oim
+	case "product":
+		oim := new(Product)
+		return oim
+	case "profitcenter":
+		oim := new(ProfitCenter)
+		return oim
+	case "promotionpl":
+		oim := new(PromotionPL)
+		return oim
+	case "sales":
+		oim := new(Sales)
+		return oim
+	case "salesresource":
+		oim := new(SalesResource)
+		return oim
+	case "sgapl":
+		oim := new(SGAPL)
+		return oim
+	case "truck":
+		oim := new(Truck)
+		toolkit.Println(oim)
+		return oim
+	case "truckassignment":
+		oim := new(TruckAssignment)
+		return oim
+	case "truckcost":
+		oim := new(TruckCost)
+		return oim
+	}
+
+	return nil
+}
+
+func mapstructtype(m toolkit.M, omod orm.IModel) {
+	tv := reflect.ValueOf(omod)
+
+	for i := 0; i < tv.NumField(); i++ {
+		ttype := tv.Field(i).Kind()
+		str := ""
+
+		if m.Has(tv.Field(i).Type().Name()) {
+			str = tv.Field(i).Type().Name()
+		} else if m.Has(strings.ToLower(tv.Field(i).Type().Name())) {
+			str = strings.ToLower(tv.Field(i).Type().Name())
+		}
+
+		if str != "" {
+			switch ttype {
+			case reflect.Int:
+				m.Set(str, toolkit.ToInt(m[str], toolkit.RoundingAuto))
+			case reflect.String:
+				m.Set(str, toolkit.ToString(m[str]))
+			case reflect.Float64:
+				tstr := toolkit.ToString(m[str])
+				decimalPoint := len(tstr) - (strings.Index(tstr, ".") + 1)
+				m.Set(str, toolkit.ToFloat64(tstr, decimalPoint, toolkit.RoundingAuto))
+			}
+		}
+	}
 
 	return
 }
 
-//Add convert data file base on data type in struct(*every struct)
-//will be modify with every data model
-// func import2db(fullpath, idFieldName, docname string, o orm.IModel) (err error) {
-// 	// filename := path + name + ".txt"
-// 	// toolkit.Println("Reading file", filename)
-// 	f := flat.New(fullpath, true, false)
-// 	f.Delimeter = ','
-// 	checkX(f.Open(), "Import")
-// 	defer f.Close()
-// 	c := DB().(orm.DataContext).Connection
-// 	// c, e := connection()
-// 	// checkX(e, "Connection")
-// 	// defer c.Close()
+func mapautotype(m toolkit.M) {
+	for k, v := range m {
+		str := toolkit.ToString(v)
 
-// 	c.NewQuery().From(docname).Delete().Exec(nil)
+		F1 := "(^(0[0-9]|[0-9]|(1|2)[0-9]|3[0-1])(\\.|\\/|-)(0[0-9]|[0-9]|1[0-2])(\\.|\\/|-)[\\d]{4}$)"
+		F2 := "(^[\\d]{4}(\\.|\\/|-)(0[0-9]|[0-9]|1[0-2])(\\.|\\/|-)(0[0-9]|[0-9]|(1|2)[0-9]|3[0-1])$)"
+		if matchF1, _ := regexp.MatchString(F1, str); matchF1 {
+			tstr := strings.Replace(str, ".", "/", -1)
+			tstr = strings.Replace(str, "-", "/", -1)
+			tdate := toolkit.String2Date(tstr, "dd/MM/YYYY")
+			if !tdate.IsZero() {
+				m.Set(k, tdate)
+			}
+			continue
+		}
 
-// 	q := c.NewQuery().SetConfig("multiexec", true).From(docname).Save()
-// 	defer q.Close()
+		if matchF2, _ := regexp.MatchString(F2, str); matchF2 {
+			tstr := strings.Replace(str, ".", "/", -1)
+			tstr = strings.Replace(str, "-", "/", -1)
+			tdate := toolkit.String2Date(tstr, "YYYY/MM/dd")
+			if !tdate.IsZero() {
+				m.Set(k, tdate)
+			}
+			continue
+		}
 
-// 	isEOF := false
-// 	i := 0
-// 	for !isEOF {
-// 		i++
-// 		m, e := f.ReadM()
-// 		if e == io.EOF {
-// 			isEOF = true
-// 		} else if e != nil {
-// 			err = errors.New(toolkit.Sprintf("[process-upload] Found : %v", e.Error()))
-// 			return
-// 		} else {
-// 			var id interface{}
-// 			if idFieldName == "" {
-// 				id = toolkit.RandomString(32)
-// 				m.Set("_id", id)
-// 			} else {
-// 				id = m.Get(idFieldName, "")
-// 				m.Set("_id", id)
-// 			}
+		x := strings.Index(str, ".")
+		tstr := str
+		if x > 0 {
+			tstr = strings.Replace(tstr, ".", "", 1)
+		}
 
-// 			if m.Has("search_keyword") {
-// 				keywords := strings.Split(m.GetString("search_keyword"), ",")
-// 				newkeywords := []string{}
-// 				for _, keyword := range keywords {
-// 					keyword = strings.ToLower(strings.Trim(keyword, " "))
-// 					if keyword != "" {
-// 						newkeywords = append(newkeywords, keyword)
-// 					}
-// 				}
-// 				m.Set("popularity", 0)
-// 				m.Set("search_keyword", newkeywords)
-// 			}
-// 			toolkit.Printf("Saving %s record no: %d ID: %v \n", name, i, id)
-// 			// checkX(q.Exec(toolkit.M{}.Set("data", m)), toolkit.Sprintf("Saving %s data: %v", id, m))
-// 			e = q.Exec(toolkit.M{}.Set("data", m)
-// 			if e != nil {
-// 				err = errors.New(toolkit.Sprintf("[process-upload] Found : %v", e.Error()))
-// 				return
-// 			}
-// 		}
-// 	}
-// }
-
-func (u *UploadData) GetModelData() (oim orm.IModel) {
-
-	switch u.DocName {
-	case "branch":
-		oim = new(Branch)
-	case "costcenter":
-		oim = new(CostCenter)
-	case "customer":
-		oim = new(Customer)
-	case "directsalespl":
-		oim = new(DirectSalesPL)
-	case "inventorylevel":
-		oim = new(InventoryLevel)
-	case "plstructure":
-		oim = new(PLStructure)
-	case "product":
-		oim = new(Product)
-	case "profitcenter":
-		oim = new(ProfitCenter)
-	case "promotionpl":
-		oim = new(PromotionPL)
-	case "sales":
-		oim = new(Sales)
-	case "salesresource":
-		oim = new(SalesResource)
-	case "sgapl":
-		oim = new(SGAPL)
-	case "truck":
-		oim = new(Truck)
-	case "truckassignment":
-		oim = new(TruckAssignment)
-	case "truckcost":
-		oim = new(TruckCost)
+		if matchNumber, _ := regexp.MatchString("^\\d+$", tstr); matchNumber {
+			if x > 0 {
+				m.Set(k, toolkit.ToFloat64(str, x, toolkit.RoundingAuto))
+			} else {
+				m.Set(k, toolkit.ToInt(str, toolkit.RoundingAuto))
+			}
+		}
 	}
-
 	return
 }
