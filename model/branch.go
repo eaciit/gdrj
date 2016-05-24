@@ -2,7 +2,6 @@ package gdrj
 
 import (
 	"errors"
-	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 )
 
@@ -16,9 +15,9 @@ const (
 
 type Branch struct {
 	GDRJModel `json:"-" bson:"-"`
-	ID            string `json:"_id" bson:"_id"` //BranchID
-	Name          string
-	Location      string
+	ID        string `json:"_id" bson:"_id"` //BranchID
+	Name      string
+	Location  string
 }
 
 func (b *Branch) RecordID() interface{} {

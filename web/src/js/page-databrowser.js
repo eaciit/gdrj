@@ -189,7 +189,7 @@ db.saveChanges = () => {
 		data: data
 	}
 
-	app.ajaxPost('/uploaddata/savedata', param, (res) => {
+	app.ajaxPost('/databrowser/savedata', param, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}

@@ -48,3 +48,20 @@
 		</div>
 	</div>
 </script>
+
+<script id="template-menu" type="text/html">
+	<li data-bind="css: { 'dropdown': ($data.submenu.length > 0) }">
+		<a class="color-base" data-bind="css: { 'dropdown-toggle': ($data.submenu.length > 0), 'active': (vm.pageTitle() == $data.title) }, attr: { href: $data.href }">
+			<i data-bind="css: vm.menuIcon($data)"></i>&nbsp;
+			<span data-bind="text: $data.title"></span>
+		</a>
+		<ul class="dropdown-menu" data-bind="foreach: $data.submenu, visible: ($data.submenu.length > 0)">
+			<li>
+				<a class="color-base" data-bind="attr: { href: $data.href }">
+					<i data-bind="css: vm.menuIcon($data)"></i>&nbsp;
+					<span data-bind="text: $data.title"></span>	
+				</a>
+			</li>
+		</ul>
+	</li>
+</script>

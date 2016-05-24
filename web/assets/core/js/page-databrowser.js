@@ -169,7 +169,7 @@ db.saveChanges = function () {
 		data: data
 	};
 
-	app.ajaxPost('/uploaddata/savedata', param, function (res) {
+	app.ajaxPost('/databrowser/savedata', param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}

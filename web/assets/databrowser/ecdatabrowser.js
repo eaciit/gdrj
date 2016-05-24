@@ -344,8 +344,8 @@ $.ecDataBrowserSetting = function(element,options){
 		}
 	};
 	this.CheckRangeData = function(findElem, typeData){
-		$elemfrom = $(element).find(findElem+'.ecdatabrowser-filterfrom');
-		$elemto = $(element).find(findElem+'.ecdatabrowser-filterto');
+		$elemfrom = $(findElem+'.ecdatabrowser-filterfrom');
+		$elemto = $(findElem+'.ecdatabrowser-filterto');
 		if ($elemfrom.closest('.filter-form').find('.ecdatabrowser-ckcrange').prop("checked")){
 			return $elemfrom.val() + '..' + $elemto.val();
 		} else {
@@ -376,7 +376,7 @@ $.ecDataBrowserSetting = function(element,options){
 					// valtype = parseFloat($elem.val());
 					valtype = this.CheckRangeData('input[idfilter='+dataTemp[i]+']', 'float');
 				} else if ($elem.attr("typedata") == "bool"){
-					valtype = $(element).find('input[idfilter='+dataTemp[i]+']')[0].checked;
+					valtype = $('input[idfilter='+dataTemp[i]+']')[0].checked;
 				} else if ($elem.attr("typedata") == "date"){
 					valtype = this.CheckRangeData('input[idfilter='+dataTemp[i]+']', 'date');
 				} else {
@@ -402,8 +402,8 @@ $.ecDataBrowserSetting = function(element,options){
 		return resFilter;
 	};
 	this.refreshDataGrid = function(){
-		$(element).find('div[idfilter=gridFilterBrowser]').data('kendoGrid').dataSource.read();
-		$(element).find('div[idfilter=gridFilterBrowser]').data('kendoGrid').refresh();
+		$('div[idfilter=gridFilterBrowser]').data('kendoGrid').dataSource.read();
+		$('div[idfilter=gridFilterBrowser]').data('kendoGrid').refresh();
 	}
 }
 
