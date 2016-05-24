@@ -68,14 +68,12 @@ ud.getMasterDataBrowser = () => {
 ud.getUploadedFiles = () => {
 	ud.dataUploadedFiles([])
 
-	app.ajaxPost('/databrowser/getuploadedfiles', {}, (res) => {
+	app.ajaxPost('/uploaddata/getuploadedfiles', {}, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}
 
 		ud.dataUploadedFiles(res.data)
-	}, (err) => {
-		app.showError(err.responseText)
 	}, {
 		timeout: 5000
 	})
@@ -90,7 +88,7 @@ ud.doUpload = () => {
 	payload.append('desc', ud.inputDescription())
 	payload.append('userfile', $('[name=file]')[0].files[0])
 
-	app.ajaxPost('/databrowser/uploadfile', payload, (res) => {
+	app.ajaxPost('/uploaddata/uploadfile', payload, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}

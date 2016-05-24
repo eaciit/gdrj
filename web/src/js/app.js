@@ -111,7 +111,7 @@ app.resetValidation = (selectorID) => {
     }
 }
 app.prepareTooltipster = ($o) => {
-    var $tooltipster = ($o == undefined) ? $('.tooltipster') : $o;
+    var $tooltipster = ($o == undefined) ? $('.tooltipster') : $o
 
     $tooltipster.tooltipster({
         theme: 'tooltipster-val',
@@ -120,6 +120,12 @@ app.prepareTooltipster = ($o) => {
         offsetY: -5,
         touchDevices: false,
         trigger: 'hover',
-        position: "top"
+        position: 'top'
     })
 }
+app.gridBoundTooltipster = (selector) => {
+    return () => {
+        app.prepareTooltipster($(selector).find(".tooltipster"))
+    }
+}
+app.capitalize = (s) => (s.length == 0 ? '' : (s[0].toUpperCase() + s.slice(1)))

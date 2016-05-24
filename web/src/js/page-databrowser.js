@@ -10,7 +10,8 @@ let db = viewModel.dataBrowser
 db.masterDataBrowser = ko.observableArray([])
 db.metaData = ko.observableArray([])
 db.indexMetaData = ko.observable(0)
-db.titleData = ko.observable("")
+db.tableName = ko.observable("")
+db.isNew = ko.observable(false)
 db.configData = ko.mapping.fromJS({})
 
 db.getMasterDataBrowser = () => {
@@ -29,11 +30,9 @@ db.getMasterDataBrowser = () => {
 	})
 }
 db.createDataBrowser = (dataItem) => {
-	// let table = dataItem._id
-	
 	app.ajaxPost("/databrowser/getdatabrowser", { tablename: dataItem }, (res) => {
 		if (!app.isFine(res)) {
-			return;
+			return
 		}
 
 		if (!res.data) {
@@ -58,13 +57,13 @@ db.createDataBrowser = (dataItem) => {
 				}
             },
 			metadata: res.data.dataresult.MetaData,
-		});
-		let metadata = res.data.dataresult.MetaData;
+		})
+		let metadata = res.data.dataresult.MetaData
 		for (var i in metadata){
 			metadata[i]['value'] = ''
 			db.metaData.push(ko.mapping.fromJS(metadata[i]))
 		}
-		db.titleData(res.data.dataresult.TableNames)
+		db.tableName(res.data.dataresult.TableNames)
 
 		// hack the position
 		db.cleanLeftFilter()
@@ -72,11 +71,21 @@ db.createDataBrowser = (dataItem) => {
 
 	}, {
 		timeout: 10 * 1000
-	});
+	})
 }
-
-db.selectEditData = (data) => {
-	$('#modalUpdate').modal('show');
+db.newData = () => {
+	db.isNew(true)
+	$('#modalUpdate').modal('show')
+	// $('#modalUpdate').find('input:eq(0)').focus()
+	db.metaData().forEach((d) => {
+		d.value('')
+	})
+	ko.mapping.fromJS({}, db.configData)
+}
+db.editData = (data) => {
+	db.isNew(false)
+	$('#modalUpdate').modal('show')
+	// $('#modalUpdate').find('input:eq(0)').focus()
 	$.each( data, function( key, value ) {
 		for (var a in db.metaData()){
 			if (db.metaData()[a].Field() == key)
@@ -85,19 +94,18 @@ db.selectEditData = (data) => {
 	})
 	ko.mapping.fromJS(data, db.configData)
 }
-
 db.editDataBrowser = () => {
 	let postdata = {}
-	postdata['tablename'] = db.titleData()
+	postdata['tablename'] = db.tableName()
 	for (var a in db.metaData()){
 		postdata[db.metaData()[a].Field()] = db.metaData()[a].value()
 	}
 	app.ajaxPost("/databrowser/editdatabrowser", postdata, (res) => {
 		if (!app.isFine(res)) {
-			return;
+			return
 		}
-		$('#modalUpdate').modal('hide');
-		db.createDataBrowser(db.titleData())
+		$('#modalUpdate').modal('hide')
+		db.createDataBrowser(db.tableName())
 	})
 }
 db.cleanRightGrid = () => {
@@ -162,7 +170,29 @@ db.selectTable = function (e) {
 		db.createDataBrowser(dataItem._id)
 	}
 }
+db.saveChanges = () => {
+	let data = {}
+	ko.mapping.toJS(db.metaData()).map((d) => {
+		data[d.Field] = d.value
+	})
 
+	let param = {
+		tableName: db.tableName(),
+		data: data
+	}
+
+	app.ajaxPost('/databrowser/savechanges', param, (res) => {
+		if (!app.isFine(res)) {
+			return
+		}
+
+		db.refreshDataBrowser()
+	}, (err) => {
+		app.showError(err.responseText)
+	}, {
+		timeout: 5000
+	})
+}
 db.refreshDataBrowser = () => {
 	$('#grid-databrowser-decription').ecDataBrowser("postDataFilter")
 }

@@ -7538,6 +7538,9 @@ a.ez:hover {
 .width-50 {
   width: 50px;
 }
+.width-80 {
+  width: 80px;
+}
 .width-100 {
   width: 100px;
 }
@@ -7566,6 +7569,9 @@ a.ez:hover {
 .btn.ez {
   border-radius: 0px;
   border-color: transparent;
+}
+.btn.ez.btn-default {
+  background-color: #F0F3F4;
 }
 .btn.ez.btn-primary {
   background-color: #3b79c2;
