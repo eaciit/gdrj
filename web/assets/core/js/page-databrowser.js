@@ -59,7 +59,8 @@ db.createDataBrowser = function (dataItem) {
 		});
 		var metadata = res.data.dataresult.MetaData;
 		for (var i in metadata) {
-			metadata[i]['value'] = '';
+			console.log(metadata[i].DataType);
+			if (metadata[i].DataType != 'string' && metadata[i].DataType != 'bool' && metadata[i].DataType != 'date') metadata[i]['value'] = 0;else metadata[i]['value'] = '';
 			db.metaData.push(ko.mapping.fromJS(metadata[i]));
 		}
 		db.tableName(res.data.dataresult.TableNames);
@@ -76,7 +77,7 @@ db.newData = function () {
 	$('#modalUpdate').modal('show');
 	// $('#modalUpdate').find('input:eq(0)').focus()
 	db.metaData().forEach(function (d) {
-		d.value('');
+		if (d.DataType() != 'string' && d.DataType() != 'bool' && d.DataType() != 'date') d.value(0);else d.value('');
 	});
 	ko.mapping.fromJS({}, db.configData);
 };
