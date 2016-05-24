@@ -128,6 +128,14 @@ app.prepareTooltipster = function ($o) {
         offsetY: -5,
         touchDevices: false,
         trigger: 'hover',
-        position: "top"
+        position: 'top'
     });
+};
+app.gridBoundTooltipster = function (selector) {
+    return function () {
+        app.prepareTooltipster($(selector).find(".tooltipster"));
+    };
+};
+app.capitalize = function (s) {
+    return s.length == 0 ? '' : s[0].toUpperCase() + s.slice(1);
 };
