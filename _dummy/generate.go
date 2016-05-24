@@ -42,17 +42,29 @@ func main() {
 	// genproductdata()
 	// fmt.Printf("Done : Generate Product Data \n")
 
+	fmt.Printf("Start : Generate Entity Data \n")
+	genentitydata()
+	fmt.Printf("Done : Generate Entity Data \n")
+
 	fmt.Printf("Start : Generate Branch Data \n")
 	genbranchdata()
 	fmt.Printf("Done : Generate Branch Data \n")
 
-	fmt.Printf("Start : Generate Profit Center Data \n")
-	genprofitcenterdata()
-	fmt.Printf("Done : Generate Profit Center Data \n")
+	// fmt.Printf("Start : Generate Profit Center Data \n")
+	// genprofitcenterdata()
+	// fmt.Printf("Done : Generate Profit Center Data \n")
 
-	fmt.Printf("Start : Generate Cost Center Data \n")
-	gencostcenterdata()
-	fmt.Printf("Done : Generate Cost Center Data \n")
+	// fmt.Printf("Start : Generate Cost Center Data \n")
+	// gencostcenterdata()
+	// fmt.Printf("Done : Generate Cost Center Data \n")
+
+	fmt.Printf("Start : Generate Brand Data \n")
+	genbranddata()
+	fmt.Printf("Done : Generate Brand Data \n")
+
+	fmt.Printf("Start : Generate Brand Category Data \n")
+	genbrandcategorydata()
+	fmt.Printf("Done : Generate Brand Category Data \n")
 
 	// fmt.Printf("Start : Generate Truck Master Data \n")
 	// gentruckmasterdata()
@@ -76,6 +88,35 @@ func genproductdata() {
 		gproduct.LongName = fmt.Sprintf("[%v] %v - %v", toolkit.Sprintf("SKU%06d", i), arrstrbrand[i%5], arrconfig[i%3])
 
 		err := gproduct.Save()
+		if err != nil {
+			fmt.Printf("%v \n", err.Error())
+		}
+	}
+
+	return
+}
+
+func genentitydata() {
+	loc := filepath.Join(wd, "data", "entitydata.csv")
+	conn, err := preparecsvconn(loc)
+
+	if err != nil {
+		fmt.Printf("Error connecting to database: %s \n", err.Error())
+		os.Exit(1)
+	}
+
+	c, err := conn.NewQuery().Select().Cursor(nil)
+	if err != nil {
+		return
+	}
+
+	defer c.Close()
+
+	arrentity := make([]*gdrj.Entity, 0, 0)
+	err = c.Fetch(&arrentity, 0, false)
+
+	for _, v := range arrentity {
+		err := v.Save()
 		if err != nil {
 			fmt.Printf("%v \n", err.Error())
 		}
@@ -138,20 +179,6 @@ func genprofitcenterdata() {
 			fmt.Printf("%v \n", err.Error())
 		}
 	}
-
-	// for i := 1; i <= 100; i++ {
-	// 	gprofitcenter := new(gdrj.ProfitCenter)
-	// 	gprofitcenter.ID = toolkit.Sprintf("PC%06d", i)
-	// 	gprofitcenter.Name = toolkit.Sprintf("PC%06d", i)
-	// 	gprofitcenter.Brand = arrstrbrand[i%5]
-	// 	gprofitcenter.BranchID = arrbranch[i%15]
-	// 	gprofitcenter.BranchType = 1
-
-	// 	err := gprofitcenter.Save()
-	// 	if err != nil {
-	// 		fmt.Printf("%v \n", err.Error())
-	// 	}
-	// }
 }
 
 func gencostcenterdata() {
@@ -174,6 +201,60 @@ func gencostcenterdata() {
 	err = c.Fetch(&arrcostcenter, 0, false)
 
 	for _, v := range arrcostcenter {
+		err := v.Save()
+		if err != nil {
+			fmt.Printf("%v \n", err.Error())
+		}
+	}
+}
+
+func genbranddata() {
+	loc := filepath.Join(wd, "data", "brand.csv")
+	conn, err := preparecsvconn(loc)
+
+	if err != nil {
+		fmt.Printf("Error connecting to database: %s \n", err.Error())
+		os.Exit(1)
+	}
+
+	c, err := conn.NewQuery().Select().Cursor(nil)
+	if err != nil {
+		return
+	}
+
+	defer c.Close()
+
+	arrbrand := make([]*gdrj.Brand, 0, 0)
+	err = c.Fetch(&arrbrand, 0, false)
+
+	for _, v := range arrbrand {
+		err := v.Save()
+		if err != nil {
+			fmt.Printf("%v \n", err.Error())
+		}
+	}
+}
+
+func genbrandcategorydata() {
+	loc := filepath.Join(wd, "data", "brandcategory.csv")
+	conn, err := preparecsvconn(loc)
+
+	if err != nil {
+		fmt.Printf("Error connecting to database: %s \n", err.Error())
+		os.Exit(1)
+	}
+
+	c, err := conn.NewQuery().Select().Cursor(nil)
+	if err != nil {
+		return
+	}
+
+	defer c.Close()
+
+	arrbrand := make([]*gdrj.HBrandCategory, 0, 0)
+	err = c.Fetch(&arrbrand, 0, false)
+
+	for _, v := range arrbrand {
 		err := v.Save()
 		if err != nil {
 			fmt.Printf("%v \n", err.Error())

@@ -99,10 +99,10 @@ func TestRandomCode(t *testing.T) {
 }
 
 func TestCreateProduct(t *testing.T) {
-	// t.Skip("Skip : Comment this line to do test")
+	t.Skip("Skip : Comment this line to do test")
 	gproduct := new(gdrj.Product)
 	// gproduct.ID = toolkit.RandomString(32)
-	gproduct.SKUID = "P001"
+	gproduct.ID = "P001"
 	gproduct.Name = "HIT"
 	gproduct.Config = "HIT Merah"
 	gproduct.Brand = "HIT"
@@ -123,5 +123,26 @@ func TestDeleteProduct(t *testing.T) {
 	err := p.Delete()
 	toolkit.Println(err)
 
+	return
+}
+
+func TestCreateUpload(t *testing.T) {
+	t.Skip("Skip : Comment this line to do test")
+	tupload := new(gdrj.UploadData)
+	tupload.ID = toolkit.RandomString(32)
+	tupload.Filename = "truckcostsample.csv"
+	tupload.Status = "ready"
+	tupload.Datacount = 3
+
+	tupload.Save()
+
+	return
+}
+
+func TestProcessTruck(t *testing.T) {
+	// t.Skip("Skip : Comment this line to do test")
+	tupload := gdrj.UploadDataGetByID("efs30813RaqSOG5bW7s3aD2xOr-fL7Xm")
+	err := tupload.ProcessData(toolkit.Sprintf("%v/truckcostsample.csv", wd))
+	toolkit.Println(err)
 	return
 }
