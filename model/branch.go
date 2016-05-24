@@ -15,7 +15,7 @@ const (
 )
 
 type Branch struct {
-	orm.ModelBase `json:"-" bson:"-"`
+	GDRJModel `json:"-" bson:"-"`
 	ID            string `json:"_id" bson:"_id"` //BranchID
 	Name          string
 	Location      string
