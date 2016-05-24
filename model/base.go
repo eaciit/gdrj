@@ -8,11 +8,17 @@ import (
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
+	"time"
 )
 
 var _db *orm.DataContext
 var _conn dbox.IConnection
 var _dbErr error
+
+type GDRJModel struct{
+	orm.ModelBase
+	LastUpdate time.Time
+}
 
 func SetDb(conn dbox.IConnection) error {
 	CloseDb()
