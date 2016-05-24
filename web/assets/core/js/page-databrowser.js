@@ -9,7 +9,8 @@ var db = viewModel.dataBrowser;
 db.masterDataBrowser = ko.observableArray([]);
 db.metaData = ko.observableArray([]);
 db.indexMetaData = ko.observable(0);
-db.titleData = ko.observable("");
+db.tableName = ko.observable("");
+db.isNew = ko.observable(false);
 db.configData = ko.mapping.fromJS({});
 
 db.getMasterDataBrowser = function () {
@@ -28,8 +29,6 @@ db.getMasterDataBrowser = function () {
 	});
 };
 db.createDataBrowser = function (dataItem) {
-	// let table = dataItem._id
-
 	app.ajaxPost("/databrowser/getdatabrowser", { tablename: dataItem }, function (res) {
 		if (!app.isFine(res)) {
 			return;
@@ -63,7 +62,7 @@ db.createDataBrowser = function (dataItem) {
 			metadata[i]['value'] = '';
 			db.metaData.push(ko.mapping.fromJS(metadata[i]));
 		}
-		db.titleData(res.data.dataresult.TableNames);
+		db.tableName(res.data.dataresult.TableNames);
 
 		// hack the position
 		db.cleanLeftFilter();
@@ -72,9 +71,19 @@ db.createDataBrowser = function (dataItem) {
 		timeout: 10 * 1000
 	});
 };
-
-db.selectEditData = function (data) {
+db.newData = function () {
+	db.isNew(true);
 	$('#modalUpdate').modal('show');
+	// $('#modalUpdate').find('input:eq(0)').focus()
+	db.metaData().forEach(function (d) {
+		d.value('');
+	});
+	ko.mapping.fromJS({}, db.configData);
+};
+db.editData = function (data) {
+	db.isNew(false);
+	$('#modalUpdate').modal('show');
+	// $('#modalUpdate').find('input:eq(0)').focus()
 	$.each(data, function (key, value) {
 		for (var a in db.metaData()) {
 			if (db.metaData()[a].Field() == key) db.metaData()[a].value(value);
@@ -82,10 +91,9 @@ db.selectEditData = function (data) {
 	});
 	ko.mapping.fromJS(data, db.configData);
 };
-
 db.editDataBrowser = function () {
 	var postdata = {};
-	postdata['tablename'] = db.titleData();
+	postdata['tablename'] = db.tableName();
 	for (var a in db.metaData()) {
 		postdata[db.metaData()[a].Field()] = db.metaData()[a].value();
 	}
@@ -94,7 +102,7 @@ db.editDataBrowser = function () {
 			return;
 		}
 		$('#modalUpdate').modal('hide');
-		db.createDataBrowser(db.titleData());
+		db.createDataBrowser(db.tableName());
 	});
 };
 db.cleanRightGrid = function () {
@@ -149,7 +157,29 @@ db.selectTable = function (e) {
 		db.createDataBrowser(dataItem._id);
 	}
 };
+db.saveChanges = function () {
+	var data = {};
+	ko.mapping.toJS(db.metaData()).map(function (d) {
+		data[d.Field] = d.value;
+	});
 
+	var param = {
+		tableName: db.tableName(),
+		data: data
+	};
+
+	app.ajaxPost('/databrowser/savechanges', param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		db.refreshDataBrowser();
+	}, function (err) {
+		app.showError(err.responseText);
+	}, {
+		timeout: 5000
+	});
+};
 db.refreshDataBrowser = function () {
 	$('#grid-databrowser-decription').ecDataBrowser("postDataFilter");
 };

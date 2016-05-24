@@ -58,14 +58,12 @@ ud.getMasterDataBrowser = function () {
 ud.getUploadedFiles = function () {
 	ud.dataUploadedFiles([]);
 
-	app.ajaxPost('/databrowser/getuploadedfiles', {}, function (res) {
+	app.ajaxPost('/uploaddata/getuploadedfiles', {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
 		ud.dataUploadedFiles(res.data);
-	}, function (err) {
-		app.showError(err.responseText);
 	}, {
 		timeout: 5000
 	});
@@ -80,7 +78,7 @@ ud.doUpload = function () {
 	payload.append('desc', ud.inputDescription());
 	payload.append('userfile', $('[name=file]')[0].files[0]);
 
-	app.ajaxPost('/databrowser/uploadfile', payload, function (res) {
+	app.ajaxPost('/uploaddata/uploadfile', payload, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
