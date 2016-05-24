@@ -9,6 +9,7 @@ import (
 type ProfitCenter struct {
 	orm.ModelBase `json:"-" bson:"-"`
 	ID            string `json:"_id" bson:"_id"` //PCID
+	EntityID      string
 	Name          string
 	Brand         string
 	BranchID      string

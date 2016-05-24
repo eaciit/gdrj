@@ -9,6 +9,7 @@ import (
 type CostCenter struct {
 	orm.ModelBase `json:"-" bson:"-"`
 	ID            string `json:"_id" bson:"_id"` //CCID
+	EntityID      string
 	Name          string
 	CostGroup01   string
 	CostGroup02   string
