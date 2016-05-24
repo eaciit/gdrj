@@ -1,7 +1,7 @@
 'use strict';
 
-vm.pageTitle("Data Browser");
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Data Browser', href: '/databrowser' }]);
+vm.pageTitle("Data Manager");
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Data Manager', href: '#' }, { title: 'Data Browser', href: '/databrowser' }]);
 
 viewModel.dataBrowser = new Object();
 var db = viewModel.dataBrowser;

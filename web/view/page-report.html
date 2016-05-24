@@ -1,11 +1,161 @@
+<script src="/res/core/js/page-report.js"></script>
+
 <div>
-	{{if eq .subreport "page-report-distributor.html"}}
-		{{template "page-report-distributor.html"}}
-	{{else if eq .subreport "page-report-general-trade.html"}}
-		{{template "page-report-general-trade.html"}}
-	{{else if eq .subreport "page-report-market-efficiency.html"}}
-		{{template "page-report-market-efficiency.html"}}
-	{{else if eq .subreport "page-report-sgna.html"}}
-		{{template "page-report-sgna.html"}}
-	{{end}}
+	<div class="col-md-4 col-sm-4 ez panel-filter">
+		<div class="panel ez no-padding hardcore">
+			<div class="panel-heading">
+				<h3 class="no-margin">Filter</h3>
+				<div class="panel-nav-button">
+					<div class="form-group relative align-right no-margin no-padding hardcore">
+						<button class="btn btn-sm btn-warning">
+							<i class="fa fa-eraser"></i> Reset
+						</button>
+						<button class="btn btn-sm btn-primary">
+							<i class="fa fa-refresh"></i> Reload Report
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="panel-body">
+				<div id="from-filter">
+					<p>Click each section below to show respective filter.</p>
+					<div class="wrapper">
+						<div class="panel-group ez-collapse" role="tablist" aria-multiselectable="true" data-bind="template: { name: 'template-report-filter', foreach: rpt.filter }">
+							<div class="panel">
+								<div class="panel-heading" role="tab" id="h-1">
+									<h4 class="panel-title">
+										<a class="collapsed tooltipster" role="button" data-toggle="collapse" href="#c-2" title="Toggle filter common">Common</a>
+							  		</h4>
+								</div>
+								<div id="c-1" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="h-1">
+									<div class="panel-body">
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon width-100 align-right">Branch</span>
+												<div class="width-full">
+													<select data-bind="kendoMultiSelect: { data: [], placeholder: 'Click to select one ...' }" style="width: 100%"></select>
+												</div>
+											</div>
+										</div>
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon width-100 align-right">Brand</span>
+												<div class="width-full">
+													<select data-bind="kendoMultiSelect: { data: [], placeholder: 'Click to select one ...' }" style="width: 100%"></select>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="panel">
+								<div class="panel-heading" role="tab" id="h-2">
+									<h4 class="panel-title">
+										<a class="collapsed tooltipster" role="button" data-toggle="collapse" href="#c-2" title="Toggle filter geo location">Geo Location</a>
+								  	</h4>
+								</div>
+								<div id="c-2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="h-2">
+									<div class="panel-body">
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon width-100 align-right">Region</span>
+												<div class="width-full">
+													<select data-bind="kendoMultiSelect: { data: [], placeholder: 'Click to select one ...' }" style="width: 100%"></select>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="panel">
+								<div class="panel-heading" role="tab" id="h-3">
+									<h4 class="panel-title">
+										<a class="collapsed tooltipster" role="button" data-toggle="collapse" href="#c-3" title="Toggle filter sales trend">Sales Trend</a>
+								  </h4>
+								</div>
+								<div id="c-3" class="panel-collapse collapse" role="tabpanel" aria-labelledby="h-3">
+									<div class="panel-body">
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon width-100 align-right">Region</span>
+												<div class="width-full">
+													<select data-bind="kendoMultiSelect: { data: [], placeholder: 'Click to select one ...' }" style="width: 100%"></select>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="panel">
+								<div class="panel-heading" role="tab" id="h-4">
+									<h4 class="panel-title">
+										<a class="collapsed tooltipster" role="button" data-toggle="collapse" href="#c-4" title="Toggle filter cost center">Cost Center</a>
+								  </h4>
+								</div>
+								<div id="c-4" class="panel-collapse collapse" role="tabpanel" aria-labelledby="h-4">
+									<div class="panel-body">
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon width-100 align-right">Region</span>
+												<div class="width-full">
+													<select data-bind="kendoMultiSelect: { data: [], placeholder: 'Click to select one ...' }" style="width: 100%"></select>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="panel">
+								<div class="panel-heading" role="tab" id="h-5">
+									<h4 class="panel-title">
+										<a class="collapsed tooltipster" role="button" data-toggle="collapse" href="#c-5" title="Toggle filter ledger">Ledger</a>
+								  </h4>
+								</div>
+								<div id="c-5" class="panel-collapse collapse" role="tabpanel" aria-labelledby="h-5">
+									<div class="panel-body">
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon width-100 align-right">Region</span>
+												<div class="width-full">
+													<select data-bind="kendoMultiSelect: { data: [], placeholder: 'Click to select one ...' }" style="width: 100%"></select>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-8 col-sm-8 ez panel-content">
+		<div class="panel ez no-padding hardcore">
+			<div class="panel-heading">
+				<h3 class="no-margin">
+					<button class="btn-toggle-filter no-padding">
+						<i class="fa fa-filter tooltipster tooltipster-right align-center color-grey" title="Toggle filter pane visibility"></i>
+					</button>
+					Report
+				</h3>
+			</div>
+			<div class="panel-body">
+				{{if eq .subreport "page-report-distributor.html"}}
+					{{template "page-report-distributor.html"}}
+				{{else if eq .subreport "page-report-general-trade.html"}}
+					{{template "page-report-general-trade.html"}}
+				{{else if eq .subreport "page-report-market-efficiency.html"}}
+					{{template "page-report-market-efficiency.html"}}
+				{{else if eq .subreport "page-report-sgna.html"}}
+					{{template "page-report-sgna.html"}}
+				{{end}}
+			</div>
+		</div>
+	</div>
 </div>
+
+<div class="clearfix"></div>

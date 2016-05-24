@@ -46,8 +46,6 @@ html, body {
     .app-top .app-menu ul.nav.navbar-nav > li > a.active {
       background-color: #74B841;
       color: white; }
-  .app-top .app-menu ul.nav.navbar-nav > li a.dropdown-toggle {
-    background-color: transparent; }
 
 .app-container {
   position: relative;

@@ -26,3 +26,25 @@
 		</div>
 	</div>	
 </script>
+
+<script id="template-report-filter" type="text/html">
+	<div class="panel">
+		<div class="panel-heading" role="tab" data-bind="attr: { 'id': 'h-' + $index() }">
+			<h4 class="panel-title">
+				<a class="collapsed tooltipster" role="button" data-toggle="collapse" title="Toggle filter common" data-bind="attr: { 'href': '#c-' + $index() }, text: $data.group">Common</a>
+	  		</h4>
+		</div>
+		<div class="panel-collapse collapse" role="tabpanel" data-bind="attr: { 'id': 'c-' + $index() }, css: { 'in': ($index() == 0) }">
+			<div class="panel-body" data-bind="foreach: $data.sub">
+				<div class="form-group">
+					<div class="input-group input-group-sm ez width-full">
+						<span class="input-group-addon width-100 align-right" data-bind="text: $data.title">Branch</span>
+						<div class="width-full">
+							<select data-bind="kendoMultiSelect: { data: rpt.masterData[$data._id], placeholder: 'Click to select one ...' }" style="width: 100%"></select>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</script>
