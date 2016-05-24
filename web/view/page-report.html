@@ -1,0 +1,11 @@
+<div>
+	{{if eq .subreport "page-report-distributor.html"}}
+		{{template "page-report-distributor.html"}}
+	{{else if eq .subreport "page-report-general-trade.html"}}
+		{{template "page-report-general-trade.html"}}
+	{{else if eq .subreport "page-report-market-efficiency.html"}}
+		{{template "page-report-market-efficiency.html"}}
+	{{else if eq .subreport "page-report-sgna.html"}}
+		{{template "page-report-sgna.html"}}
+	{{end}}
+</div>

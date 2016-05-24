@@ -3,7 +3,7 @@
 var vm = viewModel;
 
 vm.pageTitle = ko.observable('Dashboard');
-vm.menu = ko.observableArray([{ title: 'Dashboard', icon: 'home', href: '#', submenu: [] }, { title: 'Data Browser', icon: 'list', href: '/web/databrowser', submenu: [] }, { title: 'Upload Data', icon: 'list', href: '/web/uploaddata', submenu: [] }]);
+vm.menu = ko.observableArray([{ title: 'Data Browser', icon: 'list', href: '/web/databrowser', submenu: [] }, { title: 'Upload Data', icon: 'upload', href: '/web/uploaddata', submenu: [] }]);
 vm.breadcrumb = ko.observableArray([{ title: 'Godrej', href: '#' }, { title: 'Dashboard', href: '#' }]);
 
 vm.menuIcon = function (data) {
