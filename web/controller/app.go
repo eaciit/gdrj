@@ -5,6 +5,7 @@ import (
 	"github.com/eaciit/knot/knot.v1"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type App struct {
@@ -14,16 +15,28 @@ type App struct {
 var (
 	ViewPath         = "web/view"
 	LayoutFile       = fmt.Sprintf("%s/layout.html", ViewPath)
-	IncludeFiles     = includeFiles("_head", "_menu", "_script_template", "_loader")
+	IncludeFiles     = includeFiles()
 	AppBasePath      = func(dir string, err error) string { return dir }(os.Getwd())
 	GDRJ_DATA_PATH   = filepath.Join(AppBasePath, "data")
 	GDRJ_CONFIG_PATH = filepath.Join(AppBasePath, "config")
 )
 
-func includeFiles(files ...string) []string {
-	for i := 0; i < len(files); i++ {
-		files[i] = fmt.Sprintf("%s/%s.html", ViewPath, files[i])
-	}
+func includeFiles() []string {
+	files := []string{}
+	basePath, _ := os.Getwd()
+
+	filepath.Walk(filepath.Join(basePath, ViewPath), func(path string, info os.FileInfo, err error) error {
+		ok1 := strings.HasPrefix(info.Name(), "_")
+		ok2 := strings.HasPrefix(info.Name(), "page-report-")
+
+		if ok1 || ok2 {
+			viewFile := filepath.Join(ViewPath, info.Name())
+			files = append(files, viewFile)
+		}
+
+		return nil
+	})
+
 	return files
 }
 

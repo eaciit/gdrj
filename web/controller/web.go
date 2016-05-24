@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/toolkit"
 )
 
 type WebController struct {
@@ -46,6 +47,51 @@ func (w *WebController) UploadData(r *knot.WebContext) interface{} {
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
 	r.Config.ViewName = View("page-uploaddata.html")
+
+	return true
+}
+
+func (w *WebController) ReportDistributor(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-report.html")
+
+	return toolkit.M{"subreport": "page-report-distributor.html"}
+}
+
+func (w *WebController) ReportGeneralTrade(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-report.html")
+
+	return toolkit.M{"subreport": "page-report-general-trade.html"}
+}
+
+func (w *WebController) ReportMarketEfficiency(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-report.html")
+
+	return toolkit.M{"subreport": "page-report-market-efficiency.html"}
+}
+
+func (w *WebController) ReportSGNA(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-report.html")
+
+	return toolkit.M{"subreport": "page-report-sgna.html"}
+}
+
+func (w *WebController) AllocationFlow(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-allocation-flow.html")
 
 	return true
 }
