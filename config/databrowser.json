@@ -2,6 +2,8 @@
     {
         "TableNames": "customer",
         "_id": "browsecustomer",
+        "IsAdd": true,
+        "IsEdit": true,
         "MetaData": [
             {
                 "AdvanceFilter": false,
@@ -11,11 +13,45 @@
                 "Field": "_id",
                 "Format": "",
                 "HiddenField": false,
-                "Label": "CustomerID",
+                "Label": "Outlet ID",
                 "Lookup": true,
                 "ShowIndex": 1,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "customerid",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Customer ID",
+                "Lookup": true,
+                "ShowIndex": 2,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "plant",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Plant",
+                "Lookup": true,
+                "ShowIndex": 3,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -27,9 +63,11 @@
                 "HiddenField": false,
                 "Label": "Name",
                 "Lookup": true,
-                "ShowIndex": 2,
+                "ShowIndex": 4,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -39,25 +77,29 @@
                 "Field": "keyaccount",
                 "Format": "",
                 "HiddenField": false,
-                "Label": "KeyAccount",
+                "Label": "Key Account",
                 "Lookup": true,
-                "ShowIndex": 3,
+                "ShowIndex": 5,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
                 "Aggregate": "",
                 "Align": "Left",
-                "DataType": "float64",
+                "DataType": "int",
                 "Field": "channel",
                 "Format": "",
                 "HiddenField": false,
                 "Label": "Channel",
                 "Lookup": true,
-                "ShowIndex": 4,
+                "ShowIndex": 6,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -69,9 +111,11 @@
                 "HiddenField": false,
                 "Label": "Group",
                 "Lookup": true,
-                "ShowIndex": 5,
+                "ShowIndex": 7,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -83,9 +127,11 @@
                 "HiddenField": false,
                 "Label": "National",
                 "Lookup": true,
-                "ShowIndex": 6,
+                "ShowIndex": 8,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -97,9 +143,11 @@
                 "HiddenField": false,
                 "Label": "Zone",
                 "Lookup": true,
-                "ShowIndex": 7,
+                "ShowIndex": 9,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -111,9 +159,11 @@
                 "HiddenField": false,
                 "Label": "Region",
                 "Lookup": true,
-                "ShowIndex": 8,
+                "ShowIndex": 10,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -125,15 +175,19 @@
                 "HiddenField": false,
                 "Label": "Area",
                 "Lookup": true,
-                "ShowIndex": 9,
+                "ShowIndex": 11,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             }
         ]
     },
     {
         "TableNames": "branch",
         "_id": "browsebranch",
+        "IsAdd": true,
+        "IsEdit": true,
         "MetaData": [
             {
                 "AdvanceFilter": false,
@@ -143,11 +197,13 @@
                 "Field": "_id",
                 "Format": "",
                 "HiddenField": false,
-                "Label": "BranchID",
+                "Label": "Branch ID",
                 "Lookup": true,
                 "ShowIndex": 1,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -161,7 +217,9 @@
                 "Lookup": true,
                 "ShowIndex": 2,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -175,13 +233,17 @@
                 "Lookup": true,
                 "ShowIndex": 3,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             }
         ]
     },
     {
         "TableNames": "product",
         "_id": "browseproduct",
+        "IsAdd": true,
+        "IsEdit": true,
         "MetaData": [
             {
                 "AdvanceFilter": false,
@@ -195,7 +257,9 @@
                 "Lookup": true,
                 "ShowIndex": 1,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -209,7 +273,9 @@
                 "Lookup": true,
                 "ShowIndex": 2,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -223,7 +289,9 @@
                 "Lookup": true,
                 "ShowIndex": 3,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -237,7 +305,9 @@
                 "Lookup": true,
                 "ShowIndex": 4,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             },
             {
                 "AdvanceFilter": false,
@@ -247,11 +317,325 @@
                 "Field": "longname",
                 "Format": "",
                 "HiddenField": false,
-                "Label": "LongName",
+                "Label": "Long Name",
                 "Lookup": true,
                 "ShowIndex": 5,
                 "SimpleFilter": true,
-                "Sortable": true
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            }
+        ]
+    },
+    {
+        "TableNames": "costcenter",
+        "_id": "browsecostcenterr",
+        "IsAdd": true,
+        "IsEdit": true,
+        "MetaData": [
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "_id",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "ID",
+                "Lookup": true,
+                "ShowIndex": 1,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "entityid",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Entity ID",
+                "Lookup": true,
+                "ShowIndex": 2,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "name",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Name",
+                "Lookup": true,
+                "ShowIndex": 3,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "costgroup01",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Cost Group 01",
+                "Lookup": true,
+                "ShowIndex": 4,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "costgroup02",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Cost Group 02",
+                "Lookup": true,
+                "ShowIndex": 5,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "costgroup03",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Cost Group 03",
+                "Lookup": true,
+                "ShowIndex": 6,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "branchid",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Branch ID",
+                "Lookup": true,
+                "ShowIndex": 7,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "int",
+                "Field": "branchtype",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Branch Type",
+                "Lookup": true,
+                "ShowIndex": 8,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            }
+        ]
+    },
+    {
+        "TableNames": "profitcenter",
+        "_id": "browseprofitcenter",
+        "IsAdd": true,
+        "IsEdit": true,
+        "MetaData": [
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "_id",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "ID",
+                "Lookup": true,
+                "ShowIndex": 1,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "entityid",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Entity ID",
+                "Lookup": true,
+                "ShowIndex": 2,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "name",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Name",
+                "Lookup": true,
+                "ShowIndex": 3,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "brand",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Brand",
+                "Lookup": true,
+                "ShowIndex": 4,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "branchid",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Branch ID",
+                "Lookup": true,
+                "ShowIndex": 5,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "int",
+                "Field": "branchtype",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Branch Type",
+                "Lookup": true,
+                "ShowIndex": 6,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            }
+        ]
+    },
+    {
+        "TableNames": "truck",
+        "_id": "browsetruck",
+        "IsAdd": true,
+        "IsEdit": true,
+        "MetaData": [
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "_id",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "ID",
+                "Lookup": true,
+                "ShowIndex": 1,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "branchid",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Branch ID",
+                "Lookup": true,
+                "ShowIndex": 2,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "plateno",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Plate No",
+                "Lookup": true,
+                "ShowIndex": 3,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "int",
+                "Field": "year",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Year",
+                "Lookup": true,
+                "ShowIndex": 4,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             }
         ]
     }

@@ -12,6 +12,8 @@ type DataBrowser struct {
 	orm.ModelBase
 	ID         string `json:"_id",bson:"_id"`
 	TableNames string
+	IsAdd      bool
+	IsEdit     bool
 	MetaData   []*StructInfo
 }
 
@@ -28,6 +30,8 @@ type StructInfo struct {
 	SimpleFilter  bool
 	AdvanceFilter bool
 	Aggregate     string
+	IsAdd         bool
+	IsEdit        bool
 }
 
 func (b *DataBrowser) TableName() string {

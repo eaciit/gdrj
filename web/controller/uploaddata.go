@@ -8,6 +8,7 @@ import (
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	"path/filepath"
+	// "strings"
 	"time"
 )
 
@@ -66,4 +67,23 @@ func (d *UploadDataController) GetUploadedFiles(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	return helper.CreateResult(true, data, "")
+}
+
+func (d *UploadDataController) SaveData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := toolkit.M{}
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	imodel := gdrj.GetModelData(payload.GetString("tableName"))
+	if err := toolkit.Serde(payload["data"], imodel, ""); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	if err := gdrj.Save(imodel); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, imodel, "")
 }
