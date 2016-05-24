@@ -12,7 +12,7 @@
 				<h3 class="no-margin">Filter</h3>
 			</div>
 			<div class="panel-body">
-				<div>
+				<div id="from-filter">
 					<p>Select table you want to show the data.</p>
 					<div class="form-group form-group-table-name">
 						<div class="input-group input-group-sm ez width-full">
@@ -59,4 +59,44 @@
 	</div>
 </div>
 
+<div class="modal fade" id="modalUpdate" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document" style="width: 700px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel" data-bind="text: db.titleData()"></h4>
+      </div>
+      <div class="modal-body">
+	    <form class="wrapper form-upload-file" novalidate data-bind="template:{name:'templateModal', foreach:db.metaData()}">
+		</form>
+        <div class="clearfix"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" data-bind="click: db.editDataBrowser">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="clearfix"></div>
+
+<script id="templateModal" type="text/html">
+	<div class="form-group">
+		<div class="input-group input-group-sm ez width-full">
+			<span class="input-group-addon align-right width-100" data-bind="text: Label"></span>
+			<!-- ko if: DataType() == 'string' -->
+			<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="attr: {name: Field()}, value: value" />
+			<!-- /ko -->
+			<!-- ko if: DataType() == 'bool' -->
+			<input type="checkbox" data-bind="attr: {name: Field()}, checked: value" />
+			<!-- /ko -->
+			<!-- ko if: DataType() == 'date' -->
+			<input type="text" class="form-control" data-bind="attr: {name: Field()}, kendoDatePicker: {format: 'mm ddd yyyy', value: value}" />
+			<!-- /ko -->
+			<!-- ko if: DataType() != 'string' && DataType() != 'bool' && DataType() != 'date' -->
+			<input type="text" class="form-control" data-bind="attr: {name: Field()}, kendoNumericTextBox: {value: value}" />
+			<!-- /ko -->
+		</div>
+	</div>	
+</script>

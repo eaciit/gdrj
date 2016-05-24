@@ -241,6 +241,16 @@ var methodsDataBrowser = {
 				colums.push(column);
 			}
 		}
+		column = {
+			title: "Action", width: 100, attributes: { style: "text-align: center; cursor: pointer;"}, 
+			headerAttributes: { style: "font-weight: bold;"},
+			template: function (d) {
+	    		return [
+	    			"<button class='btn btn-sm btn-warning' onclick='db.selectEditData("+JSON.stringify(d)+")'><span class='glyphicon glyphicon-pencil'></span></button>",
+	    		].join(" ");
+			}
+		}
+		colums.push(column);
 
 		// colums = Lazy(colums).map(function (e, i) {
 		// 	if (colums.length > 5) {
