@@ -58,8 +58,9 @@ db.createDataBrowser = function (dataItem) {
 			metadata: res.data.dataresult.MetaData
 		});
 		var metadata = res.data.dataresult.MetaData;
+		db.metaData([]);
 		for (var i in metadata) {
-			metadata[i]['value'] = '';
+			if (metadata[i].DataType != 'string' && metadata[i].DataType != 'bool' && metadata[i].DataType != 'date') metadata[i]['value'] = 0;else metadata[i]['value'] = '';
 			db.metaData.push(ko.mapping.fromJS(metadata[i]));
 		}
 		db.tableName(res.data.dataresult.TableNames);
@@ -76,7 +77,7 @@ db.newData = function () {
 	$('#modalUpdate').modal('show');
 	// $('#modalUpdate').find('input:eq(0)').focus()
 	db.metaData().forEach(function (d) {
-		d.value('');
+		if (d.DataType() != 'string' && d.DataType() != 'bool' && d.DataType() != 'date') d.value(0);else d.value('');
 	});
 	ko.mapping.fromJS({}, db.configData);
 };
@@ -97,7 +98,7 @@ db.editDataBrowser = function () {
 	for (var a in db.metaData()) {
 		postdata[db.metaData()[a].Field()] = db.metaData()[a].value();
 	}
-	app.ajaxPost("/databrowser/editdatabrowser", postdata, function (res) {
+	app.ajaxPost("upload/savedata", postdata, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -168,11 +169,12 @@ db.saveChanges = function () {
 		data: data
 	};
 
-	app.ajaxPost('/databrowser/savechanges', param, function (res) {
+	app.ajaxPost('/uploaddata/savedata', param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
+		$('#modalUpdate').modal('hide');
 		db.refreshDataBrowser();
 	}, function (err) {
 		app.showError(err.responseText);

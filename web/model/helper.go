@@ -42,6 +42,15 @@ func prepareconnection(db_type string) (conn dbox.IConnection, err error) {
 }
 
 func InitialSetDatabase() error {
+	conn_godrej, err := prepareconnection(CONF_DB_GDRJ)
+	if err != nil {
+		return err
+	}
+
+	if err := gdrj.SetDb(conn_godrej); err != nil {
+		return err
+	}
+
 	conn_acl, err := prepareconnection(CONF_DB_ACL)
 	if err != nil {
 		return err
@@ -51,13 +60,5 @@ func InitialSetDatabase() error {
 		return err
 	}
 
-	conn_godrej, err := prepareconnection(CONF_DB_GDRJ)
-	if err != nil {
-		return err
-	}
-
-	if err := gdrj.SetDb(conn_godrej); err != nil {
-		toolkit.Printf("Error set database to efs: %s \n", err.Error())
-	}
 	return nil
 }

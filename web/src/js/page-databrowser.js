@@ -59,8 +59,12 @@ db.createDataBrowser = (dataItem) => {
 			metadata: res.data.dataresult.MetaData,
 		})
 		let metadata = res.data.dataresult.MetaData
+		db.metaData([])
 		for (var i in metadata){
-			metadata[i]['value'] = ''
+			if (metadata[i].DataType != 'string' && metadata[i].DataType != 'bool' && metadata[i].DataType != 'date')
+				metadata[i]['value'] = 0
+			else
+				metadata[i]['value'] = ''
 			db.metaData.push(ko.mapping.fromJS(metadata[i]))
 		}
 		db.tableName(res.data.dataresult.TableNames)
@@ -78,7 +82,10 @@ db.newData = () => {
 	$('#modalUpdate').modal('show')
 	// $('#modalUpdate').find('input:eq(0)').focus()
 	db.metaData().forEach((d) => {
-		d.value('')
+		if (d.DataType() != 'string' && d.DataType() != 'bool' && d.DataType() != 'date')
+			d.value(0)
+		else
+			d.value('')
 	})
 	ko.mapping.fromJS({}, db.configData)
 }
@@ -100,7 +107,7 @@ db.editDataBrowser = () => {
 	for (var a in db.metaData()){
 		postdata[db.metaData()[a].Field()] = db.metaData()[a].value()
 	}
-	app.ajaxPost("/databrowser/editdatabrowser", postdata, (res) => {
+	app.ajaxPost("upload/savedata", postdata, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}
@@ -181,11 +188,12 @@ db.saveChanges = () => {
 		data: data
 	}
 
-	app.ajaxPost('/databrowser/savechanges', param, (res) => {
+	app.ajaxPost('/uploaddata/savedata', param, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}
 
+		$('#modalUpdate').modal('hide')
 		db.refreshDataBrowser()
 	}, (err) => {
 		app.showError(err.responseText)
