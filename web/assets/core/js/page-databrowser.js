@@ -98,7 +98,7 @@ db.editDataBrowser = function () {
 	for (var a in db.metaData()) {
 		postdata[db.metaData()[a].Field()] = db.metaData()[a].value();
 	}
-	app.ajaxPost("/databrowser/editdatabrowser", postdata, function (res) {
+	app.ajaxPost("upload/savedata", postdata, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -169,11 +169,12 @@ db.saveChanges = function () {
 		data: data
 	};
 
-	app.ajaxPost('/databrowser/savechanges', param, function (res) {
+	app.ajaxPost('/uploaddata/savedata', param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
+		$('#modalUpdate').modal('hide');
 		db.refreshDataBrowser();
 	}, function (err) {
 		app.showError(err.responseText);

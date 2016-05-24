@@ -107,7 +107,7 @@ db.editDataBrowser = () => {
 	for (var a in db.metaData()){
 		postdata[db.metaData()[a].Field()] = db.metaData()[a].value()
 	}
-	app.ajaxPost("/databrowser/editdatabrowser", postdata, (res) => {
+	app.ajaxPost("upload/savedata", postdata, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}
@@ -188,11 +188,12 @@ db.saveChanges = () => {
 		data: data
 	}
 
-	app.ajaxPost('/databrowser/savechanges', param, (res) => {
+	app.ajaxPost('/uploaddata/savedata', param, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}
-
+		
+		$('#modalUpdate').modal('hide')
 		db.refreshDataBrowser()
 	}, (err) => {
 		app.showError(err.responseText)
