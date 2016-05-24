@@ -40,7 +40,7 @@
 					<div class="input-group input-group-sm ez width-full">
 						<span class="input-group-addon width-100 align-right" data-bind="text: $data.title">Branch</span>
 						<div class="width-full">
-							<select data-bind="kendoMultiSelect: { data: rpt.masterData[$data._id], placeholder: 'Click to select one ...' }" style="width: 100%"></select>
+							<select data-bind="kendoMultiSelect: rpt.filterMultiSelect($data)" style="width: 100%"></select>
 						</div>
 					</div>
 				</div>
