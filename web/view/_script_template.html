@@ -6,3 +6,23 @@
 	<li class="active" data-bind="text: title"></li>
 	<!-- /ko -->
 </script>
+
+<script id="templateModal" type="text/html">
+	<div class="form-group">
+		<div class="input-group input-group-sm ez width-full">
+			<span class="input-group-addon align-right width-100" data-bind="text: Label"></span>
+			<!-- ko if: DataType() == 'string' -->
+			<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="attr: {name: Field()}, value: value" placeholder="Type value here ..." />
+			<!-- /ko -->
+			<!-- ko if: DataType() == 'bool' -->
+			<input type="checkbox" data-bind="attr: {name: Field()}, checked: value" />
+			<!-- /ko -->
+			<!-- ko if: DataType() == 'date' -->
+			<input type="text" class="form-control" data-bind="attr: {name: Field()}, kendoDatePicker: {format: 'mm ddd yyyy', value: value, placeholder='Type value here ...'}" />
+			<!-- /ko -->
+			<!-- ko if: DataType() != 'string' && DataType() != 'bool' && DataType() != 'date' -->
+			<input type="text" class="form-control" data-bind="attr: {name: Field()}, kendoNumericTextBox: {value: value}" />
+			<!-- /ko -->
+		</div>
+	</div>	
+</script>
