@@ -58,8 +58,8 @@ db.createDataBrowser = function (dataItem) {
 			metadata: res.data.dataresult.MetaData
 		});
 		var metadata = res.data.dataresult.MetaData;
+		db.metaData([]);
 		for (var i in metadata) {
-			console.log(metadata[i].DataType);
 			if (metadata[i].DataType != 'string' && metadata[i].DataType != 'bool' && metadata[i].DataType != 'date') metadata[i]['value'] = 0;else metadata[i]['value'] = '';
 			db.metaData.push(ko.mapping.fromJS(metadata[i]));
 		}

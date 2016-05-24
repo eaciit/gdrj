@@ -59,8 +59,8 @@ db.createDataBrowser = (dataItem) => {
 			metadata: res.data.dataresult.MetaData,
 		})
 		let metadata = res.data.dataresult.MetaData
+		db.metaData([])
 		for (var i in metadata){
-			console.log(metadata[i].DataType)
 			if (metadata[i].DataType != 'string' && metadata[i].DataType != 'bool' && metadata[i].DataType != 'date')
 				metadata[i]['value'] = 0
 			else
@@ -192,7 +192,7 @@ db.saveChanges = () => {
 		if (!app.isFine(res)) {
 			return
 		}
-		
+
 		$('#modalUpdate').modal('hide')
 		db.refreshDataBrowser()
 	}, (err) => {
