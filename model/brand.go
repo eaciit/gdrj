@@ -26,6 +26,21 @@ func BrandGetByID(id string) *Brand {
 	return b
 }
 
+func BrandGetAll() ([]*Brand, error) {
+	cursor, err := DB().Find(new(Brand), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*Brand{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (b *Brand) Save() error {
 	err := Save(b)
 	if err != nil {

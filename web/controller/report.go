@@ -1,7 +1,7 @@
 package controller
 
 import (
-	// "eaciit/gdrj/web/helper"
+	"eaciit/gdrj/model"
 	"fmt"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
@@ -20,13 +20,23 @@ func CreateReportController(s *knot.Server) *ReportController {
 func (m *ReportController) GetDataBranch(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	return GenerateTempDataWithPrefix("Branch")
+	res, err := gdrj.BranchGetAll()
+	if err != nil {
+		return []*gdrj.Branch{}
+	}
+
+	return res
 }
 
 func (m *ReportController) GetDataBrand(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	return GenerateTempDataWithPrefix("brand")
+	res, err := gdrj.BrandGetAll()
+	if err != nil {
+		return []*gdrj.Brand{}
+	}
+
+	return res
 }
 
 func (m *ReportController) GetDataSKU(r *knot.WebContext) interface{} {
@@ -36,8 +46,6 @@ func (m *ReportController) GetDataSKU(r *knot.WebContext) interface{} {
 	if err := r.GetForms(&forms); err != nil {
 		return []string{}
 	}
-
-	fmt.Printf("--- %#v\n", forms)
 
 	return GenerateTempDataWithPrefix("SKU")
 }

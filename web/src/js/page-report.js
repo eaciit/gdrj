@@ -72,6 +72,11 @@ rpt.filterMultiSelect = (d) => {
 	}
 
 	if (['Branch', 'Brand'].indexOf(d._id) > -1) {
+		config = $.extend(true, config, {
+			dataValueField: '_id',
+			dataTextField: 'Name'
+		})
+		
 		app.ajaxPost(`/report/getdata${d._id.toLowerCase()}`, {}, (res) => {
 			rpt.masterData[d._id](res)
 		})
