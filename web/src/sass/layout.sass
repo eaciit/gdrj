@@ -68,7 +68,7 @@ html, body
 	margin-top: 50px
 
 	.app-title
-		padding: 20px 0px
+		padding: 15px 0px 10px
 
 	.app-content
 		margin: 0px -10px
@@ -84,7 +84,11 @@ html, body
 		height: 50px
 		padding-bottom: 0px
 		padding-top: 0px
-		padding-right: 0px
+		padding-right: 5px
+		padding-left: 5px
+
+		&:hover, &:focus
+			background-color: transparent
 
 	.avatar
 		width: 30px
@@ -115,7 +119,7 @@ html, body
 	margin-top: 2px
 
 	li > a
-		color: $color-base-green
+		font-weight: bold
 
 .form-label
 	line-height: 25px
@@ -127,11 +131,64 @@ html, body
 		position: absolute
 		right: 5px
 
-.form-databrowser
-	margin-top: 30px
+.btn-toggle-filter
+	background-color: transparent
+	border: none
 
-	.ecdatabrowser-filtersimple
-		padding: 0
+.btn-toggle-filter
+	.fa
+		transition: color ease-in-out 200ms
+
+.form-group
+	margin-bottom: 10px
+
+.loader
+	.wrapper
+		.sk-cube-grid .sk-cube
+			background-color: $color-base-green
+		// position: relative
+		// width: 100%
+		// height: 100%
+
+		// .center
+		// 	display: table
+		// 	vertical-align: middle
+
+		// 	canvas
+		// 		margin: 0px auto
+
+.ecdatabrowser-filtersimple
+	padding: 0
+
+	&:not(.on-left).first-child
+		margin-top: 30px
+
+	&.on-left
+		> div:not(.clearfix)
+			min-height: 30px !important
+
+		> div.clearfix
+			min-height: 0px !important
+
+		.ecdatabrowser-filter
+			text-align: right
+
+			&:after
+				content: ""
+
+		.filter-form
+			.eclookup-dropdown
+				right: 0px
+				left: 100px
+
+			.ecdatabrowser-ckcrange
+				margin-left: 10px
+
+			.k-widget.k-numerictextbox
+				width: 100px
+
+	.input-group
+		// overflow: hidden
 
 		.ecdatabrowser-filter
 			line-height: inherit
@@ -168,11 +225,11 @@ html, body
 							padding: 0
 
 			.eclookup-dropdown
-				border-color: $color-base-grey
+				border-color: $color-base-green
 				border-top: none
 				border-bottom: none
-				right: 10px
-				left: 10px
+				right: 0px
+				left: 100px
 				width: auto
 
 				.eclookup-listsearch
@@ -180,8 +237,11 @@ html, body
 
 					.eclookup-itemsearch
 						border-color: $color-base-grey
-						background-color: darken(white, 1%)
+						background-color: white
 
 						&:hover
 							background-color: $color-base-green
 							color: white
+
+						&:last-child
+							border-color: $color-base-green

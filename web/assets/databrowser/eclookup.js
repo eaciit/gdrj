@@ -257,6 +257,9 @@ $.ecDataSourceDDLookup = function(element,options){
 
 		if (data.length > 0 && query !== ''){
 			for (var key in data){
+				if (key > 9) {
+					break
+				}
 				var changeElemSearch = $(elementLookup).data('ecLookupDDSettings').displayTemplate();
 				$liContentSearch = $('<li class="eclookup-itemsearch" idfield="'+ data[key][$(elementLookup).data('ecLookupDDSettings').idField] +'" valueDisplay="'+data[key][$(elementLookup).data('ecLookupDDSettings').displayFields]+'"></li>');
 				if (changeElemSearch == ''){

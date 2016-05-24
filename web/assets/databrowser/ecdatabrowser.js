@@ -102,7 +102,7 @@ var methodsDataBrowser = {
 		$(element).data("ecDataBrowser").dataSimple = dataSimple;
 		$(element).data("ecDataBrowser").dataAdvance = dataAdvance;
 
-		$divContainerGrid = $('<div class="col-md-12 ecdatabrowser-gridview"></div>');
+		$divContainerGrid = $('<div class="ecdatabrowser-gridview" style="width: 100%;"></div>');
 		$divContainerGrid.appendTo($o);
 
 		$divGrid = $('<div class="ecdatabrowser-grid"></div>');
@@ -110,6 +110,7 @@ var methodsDataBrowser = {
 
 		methodsDataBrowser.createGrid($divGrid, options, $o);
 
+		$("<div class='clearfix'></div>").appendTo($o);
 		$(element).data("ecDataBrowser").ChangeViewFilter(options.showFilter);
 
 	},
@@ -240,6 +241,16 @@ var methodsDataBrowser = {
 				colums.push(column);
 			}
 		}
+		column = {
+			title: "Action", width: 100, attributes: { style: "text-align: center; cursor: pointer;"}, 
+			headerAttributes: { style: "font-weight: bold;"},
+			template: function (d) {
+	    		return [
+	    			"<button class='btn btn-sm btn-warning' onclick='db.selectEditData("+JSON.stringify(d)+")'><span class='glyphicon glyphicon-pencil'></span></button>",
+	    		].join(" ");
+			}
+		}
+		colums.push(column);
 
 		// colums = Lazy(colums).map(function (e, i) {
 		// 	if (colums.length > 5) {
@@ -307,7 +318,10 @@ var methodsDataBrowser = {
 		return res;
 	},
 	postDataFilter: function(){
-		$(this).data('ecDataBrowser').refreshDataGrid();
+		var $dataBrowser = $(this).data('ecDataBrowser');
+		if (typeof $dataBrowser !== "undefined") {
+			$dataBrowser.refreshDataGrid(); 
+		}
 	},
 	setDataGrid: function(res){
 		// var mapNewGrid = $.extend({}, $(this).data("ecDataBrowser").mapdatabrowser, res || {});
@@ -351,7 +365,7 @@ $.ecDataBrowserSetting = function(element,options){
 			dataTemp = $(element).data('ecDataBrowser').dataAdvance;
 		}
 		for (var i in dataTemp){
-			$elem = $(element).find('input[idfilter='+dataTemp[i]+']');
+			$elem = $('input[idfilter='+dataTemp[i]+']');
 			field = $elem.attr('fielddata');
 			if ($elem.val() != '' || $elem.attr('haslookup') == "true"){
 				if ($elem.attr("typedata") == "integer" || $elem.attr("typedata") == "int" || $elem.attr("typedata") == "number"){
