@@ -242,11 +242,11 @@ var methodsDataBrowser = {
 			}
 		}
 		column = {
-			title: "Action", width: 100, attributes: { style: "text-align: center; cursor: pointer;"}, 
+			headerTemplate: "<center>Action</center>", width: 100, attributes: { style: "text-align: center; cursor: pointer;"}, 
 			headerAttributes: { style: "font-weight: bold;"},
 			template: function (d) {
 	    		return [
-	    			"<button class='btn btn-sm btn-warning' onclick='db.selectEditData("+JSON.stringify(d)+")'><span class='glyphicon glyphicon-pencil'></span></button>",
+	    			"<button class='btn btn-xs btn-warning tooltipster' title='Edit data' onclick='db.selectEditData("+JSON.stringify(d)+")'><span class='glyphicon glyphicon-pencil'></span></button>",
 	    		].join(" ");
 			}
 		}
@@ -271,7 +271,7 @@ var methodsDataBrowser = {
 			id.find('div[idfilter=gridFilterBrowser]').kendoGrid({
 				dataSource: {data: options.dataSource.data},
 				sortable: true,
-				columns: colums,
+				columns: colums
 			});
 		} else {
 			id.find('div[idfilter=gridFilterBrowser]').kendoGrid({
@@ -307,6 +307,7 @@ var methodsDataBrowser = {
 	            pageable: true,
 	            scrollable: true,
 				columns: colums,
+				dataBound: app.gridBoundTooltipster('div[idfilter=gridFilterBrowser]')
 			});
 		}
 	},

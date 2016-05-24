@@ -64,7 +64,9 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel" data-bind="text: db.titleData()"></h4>
+        <h4 class="modal-title" id="myModalLabel">
+        	Edit data <span data-bind="text: app.capitalize(db.titleData())"></span>
+        </h4>
       </div>
       <div class="modal-body">
 	    <form class="wrapper form-upload-file" novalidate data-bind="template:{name:'templateModal', foreach:db.metaData()}">
