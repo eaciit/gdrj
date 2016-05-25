@@ -1,10 +1,11 @@
 let vm = viewModel
 
-vm.pageTitle = ko.observable('Dashboard')
+vm.currentMenu = ko.observable('Dashboard')
+vm.currentTitle = ko.observable('Dashboard')
 vm.menu = ko.observableArray([
 	{ title: 'Dashboard', icon: 'home', href: '#', submenu: [] },
 	{ title: 'Report', icon: 'file-text-o', href: '#', submenu: [
-		{ title: 'Distributor', icon: 'user', href: '/web/reportdistributor', submenu: [] },
+		{ title: 'Distribution', icon: 'user', href: '/web/reportdistribution', submenu: [] },
 		{ title: 'General Trade', icon: 'list', href: '/web/reportgeneraltrade', submenu: [] },
 		{ title: 'Market Efficiency', icon: 'shopping-basket', href: '/web/reportmarketefficiency', submenu: [] },
 		{ title: 'SG & A', icon: 'list', href: '/web/reportsgna', submenu: [] }
@@ -14,7 +15,7 @@ vm.menu = ko.observableArray([
 		{ title: 'Upload Data', icon: 'upload', href: '/web/uploaddata', submenu: [] }
 	] },
 	{ title: 'Administration', icon: 'gear', href: '#', submenu: [
-		{ title: 'Allocation Flow', icon: 'arrows', href: '#', submenu: [] },
+		{ title: 'Allocation Flow', icon: 'arrows', href: '/web/allocationflow', submenu: [] },
 		{ title: 'Access', icon: 'unlock-alt', href: '#', submenu: [] },
 		{ title: 'Group', icon: 'users', href: '#', submenu: [] },
 		{ title: 'User', icon: 'user', href: '#', submenu: [] },
@@ -39,7 +40,7 @@ vm.prepareDropDownMenu = () => {
 vm.prepareFilterToggle = () => {
 	$('.material-switch input[type="checkbox"]').on('change', function() {
 		let show = $(this).is(':checked')
-		let $target = $(this).closest(".panel").find(".panel-filter")
+		let $target = $(this).closest('.panel').find('.panel-filter')
 		if (show) {
 			$target.show(200)
 		} else {
@@ -55,16 +56,24 @@ vm.prepareToggleFilter = () => {
 	let btnToggleFilter = $('.btn-toggle-filter')
 	let panelFilterContainer = $('.panel-filter').parent()
 
+
+	$('<i class="fa fa-angle-double-left tooltipster align-center color-orange" title="Toggle filter pane visibility"></i>').appendTo(btnToggleFilter)
+	app.prepareTooltipster($(btnToggleFilter).find('.fa'))
+
 	btnToggleFilter.on('click', () => {
 		if (panelFilterContainer.hasClass('minimized')) {
 			panelFilterContainer.removeClass('minimized')
-			btnToggleFilter.find('.fa').removeClass('color-blue').addClass('color-grey')
+			btnToggleFilter.find('.fa')
+				.removeClass('color-blue').addClass('color-orange')
+				.removeClass('fa-angle-double-right').addClass('fa-angle-double-left')
 
 			$('.panel-filter').show(300)
 			$('.panel-content').animate({ 'width': 'auto' }, 300)
 		} else {
 			panelFilterContainer.addClass('minimized')
-			btnToggleFilter.find('.fa').removeClass('color-grey').addClass('color-blue')
+			btnToggleFilter.find('.fa')
+				.removeClass('color-orange').addClass('color-blue')
+				.removeClass('fa-angle-double-left').addClass('fa-angle-double-right')
 
 			$('.panel-filter').hide(300)
 			$('.panel-content').animate({ 'width': '100%' }, 300)
@@ -101,6 +110,22 @@ vm.prepareLoader = () => {
 		ctx.arc(50, 50, 25, sA, sE, false)
 		ctx.stroke()
 		ctx.closePath()
+	})
+}
+vm.logout = () => {
+	app.ajaxPost('/login/logout', { }, (res) => {
+		if (!app.isFine(res)) {
+			return;
+		}
+		swal({
+			title: 'Logout Success',
+			text: 'Will automatically redirect to login page in 3 seconds',
+			type: 'success',
+			timer: 3000,
+			showConfirmButton: false
+		}, () => {
+			location.href = '/web/login'
+		});
 	})
 }
 

@@ -7449,6 +7449,7 @@ a.ez:hover {
 .panel-group.ez-collapse .panel .panel-heading {
   color: white;
   cursor: pointer;
+  background-color: #6194cf;
 }
 .panel-group.ez-collapse .panel .panel-heading .panel-title {
   font-size: 12px;
@@ -7456,15 +7457,59 @@ a.ez:hover {
 .panel-group.ez-collapse .panel .panel-heading .panel-title a {
   display: block;
   width: 100%;
-  padding: 10px;
+  padding: 6px 6px 7px;
 }
 .panel-group.ez-collapse .panel .panel-heading .panel-title a:hover,
 .panel-group.ez-collapse .panel .panel-heading .panel-title a:active,
 .panel-group.ez-collapse .panel .panel-heading .panel-title a:focus {
   text-decoration: none;
 }
-.panel-group.ez-collapse .panel .panel-heading:hover {
+.panel-group.ez-collapse .panel .panel-body {
+  padding: 4px;
+}
+.panel-group.ez-collapse .panel .panel-body .form-group {
+  margin-bottom: 2px;
+}
+.panel-group.ez-collapse .panel .panel-body .form-group .input-group .k-widget {
+  box-sizing: border-box;
+}
+.list-group.ez {
+  list-style: none;
+}
+.list-group.ez .list-group-item {
+  cursor: move;
+}
+.list-group.ez .list-group-item:hover .wrapper .text {
   background-color: #6194cf;
+  color: white;
+}
+.list-group.ez .list-group-item .wrapper {
+  display: table;
+  width: 100%;
+  height: 30px;
+}
+.list-group.ez .list-group-item .wrapper .icon-drag {
+  display: table-cell;
+  width: 30px;
+  vertical-align: middle;
+  padding: 0px 10px;
+  color: white;
+  opacity: 0.8;
+}
+.list-group.ez .list-group-item .wrapper .text {
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 10px;
+}
+.list-group.ez .sortable-placeholder {
+  height: 30px;
+  background-color: rgba(51, 122, 183, 0.18);
+  border-left: 1px dotted #ffffff;
+  border-right: 1px dotted #ffffff;
+  content: ' ';
+  margin-bottom: -1px;
+  height: 32px;
+  border-type: dashed;
 }
 .bg-base {
   background-color: #e7505a;
@@ -7476,7 +7521,7 @@ a.ez:hover {
   background-color: #74B841;
 }
 .bg-blue,
-.panel-group.ez-collapse .panel .panel-heading {
+.list-group.ez .list-group-item .wrapper .icon-drag {
   background-color: #3b79c2;
 }
 .bg-grey {
@@ -7495,7 +7540,8 @@ a.ez:hover {
   border-color: #74B841;
 }
 .border-blue,
-.panel-group.ez-collapse .panel {
+.panel-group.ez-collapse .panel,
+.list-group.ez .list-group-item {
   border-color: #3b79c2;
 }
 .border-grey {
@@ -7540,7 +7586,8 @@ a.ez:hover {
 .underline {
   text-decoration: underline;
 }
-.no-margin {
+.no-margin,
+.list-group.ez {
   margin: 0px;
 }
 .no-margin.hardcore {
@@ -7559,7 +7606,8 @@ a.ez:hover {
   margin-bottom: 0px;
 }
 .no-padding,
-.panel-group.ez-collapse .panel .panel-heading {
+.panel-group.ez-collapse .panel .panel-heading,
+.list-group.ez .list-group-item {
   padding: 0px;
 }
 .no-padding.hardcore {
@@ -7582,7 +7630,8 @@ a.ez:hover {
   border: none;
 }
 .no-border-radius,
-.panel-group.ez-collapse .panel {
+.panel-group.ez-collapse .panel,
+.list-group.ez .list-group-item {
   border-radius: 0px;
 }
 .panel-heading {

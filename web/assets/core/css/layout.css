@@ -48,6 +48,9 @@ html, body {
       color: white; }
   .app-top .app-menu ul.nav.navbar-nav > li > ul.dropdown-menu li a {
     font-size: 12px; }
+    .app-top .app-menu ul.nav.navbar-nav > li > ul.dropdown-menu li a.active {
+      background-color: #74B841;
+      color: white; }
 
 .app-container {
   position: relative;
