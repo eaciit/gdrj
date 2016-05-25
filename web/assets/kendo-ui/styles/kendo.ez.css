@@ -7362,7 +7362,8 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
 }
 .k-widget.k-multiselect.k-header,
 .k-widget.k-multiselect.k-header .k-multiselect-wrap.k-floatwrap {
-  height: 28px;
+  min-height: 28px;
+  height: auto;
 }
 .k-multiselect-wrap .k-input {
   padding-top: 5px;
@@ -7442,6 +7443,29 @@ a.ez:hover {
   padding: 2px 4px;
   font-size: 12px;
 }
+.panel-group.ez-collapse {
+  margin-bottom: 0px;
+}
+.panel-group.ez-collapse .panel .panel-heading {
+  color: white;
+  cursor: pointer;
+}
+.panel-group.ez-collapse .panel .panel-heading .panel-title {
+  font-size: 12px;
+}
+.panel-group.ez-collapse .panel .panel-heading .panel-title a {
+  display: block;
+  width: 100%;
+  padding: 10px;
+}
+.panel-group.ez-collapse .panel .panel-heading .panel-title a:hover,
+.panel-group.ez-collapse .panel .panel-heading .panel-title a:active,
+.panel-group.ez-collapse .panel .panel-heading .panel-title a:focus {
+  text-decoration: none;
+}
+.panel-group.ez-collapse .panel .panel-heading:hover {
+  background-color: #6194cf;
+}
 .bg-base {
   background-color: #e7505a;
 }
@@ -7451,7 +7475,8 @@ a.ez:hover {
 .bg-green {
   background-color: #74B841;
 }
-.bg-blue {
+.bg-blue,
+.panel-group.ez-collapse .panel .panel-heading {
   background-color: #3b79c2;
 }
 .bg-grey {
@@ -7459,6 +7484,25 @@ a.ez:hover {
 }
 .bg-orange {
   background-color: #E67E22;
+}
+.border-base {
+  border-color: #e7505a;
+}
+.border-red {
+  border-color: #e7505a;
+}
+.border-green {
+  border-color: #74B841;
+}
+.border-blue,
+.panel-group.ez-collapse .panel {
+  border-color: #3b79c2;
+}
+.border-grey {
+  border-color: #F0F3F4;
+}
+.border-orange {
+  border-color: #E67E22;
 }
 .color-base {
   color: #58666e;
@@ -7514,7 +7558,8 @@ a.ez:hover {
 .no-margin-bottom {
   margin-bottom: 0px;
 }
-.no-padding {
+.no-padding,
+.panel-group.ez-collapse .panel .panel-heading {
   padding: 0px;
 }
 .no-padding.hardcore {
@@ -7531,6 +7576,20 @@ a.ez:hover {
 }
 .no-padding-bottom {
   padding-bottom: 0px;
+}
+.no-border,
+.panel-group.ez-collapse .panel .panel-body {
+  border: none;
+}
+.no-border-radius,
+.panel-group.ez-collapse .panel {
+  border-radius: 0px;
+}
+.panel-heading {
+  padding: 10px;
+}
+.panel-body {
+  padding: 10px;
 }
 .clear {
   clear: both;

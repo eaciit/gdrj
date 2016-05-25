@@ -60,8 +60,13 @@ html, body
 						background-color: #74B841
 						color: white
 
-				a.dropdown-toggle
-					background-color: transparent
+				// a.dropdown-toggle
+				// 	background-color: transparent
+
+				> ul.dropdown-menu
+					li
+						a
+							font-size: 12px
 
 .app-container
 	position: relative
@@ -118,9 +123,6 @@ html, body
 	padding: 0px
 	margin-bottom: 0px
 	margin-top: 2px
-
-	li > a
-		font-weight: bold
 
 .form-label
 	line-height: 25px
@@ -246,3 +248,31 @@ html, body
 
 						&:last-child
 							border-color: $color-base-green
+
+.login-bg
+	background: #007dba url('/res/img/bg_city.JPG') no-repeat center top
+	background-size: cover
+	height: 100vh
+	z-index: 99
+
+.login-logo
+	background: url('/res/img/logo.png') no-repeat center top
+	width: 150px
+	height: 90px
+	background-size: 145px 74px
+	margin-bottom: 30px
+
+.login-logo-reset
+	background: url('/res/img/logo.png') no-repeat center top
+	width: 99px
+	height: 90px
+	background-size: 99px 90px
+	margin-bottom: 30px
+
+.form-login-forgot
+	margin-top: 10%
+	text-align: center
+
+.fh
+	margin: auto
+	padding: 15%

@@ -121,14 +121,24 @@ app.resetValidation = function (selectorID) {
 app.prepareTooltipster = function ($o) {
     var $tooltipster = $o == undefined ? $('.tooltipster') : $o;
 
-    $tooltipster.tooltipster({
-        theme: 'tooltipster-val',
-        animation: 'grow',
-        delay: 0,
-        offsetY: -5,
-        touchDevices: false,
-        trigger: 'hover',
-        position: 'top'
+    $tooltipster.each(function (i, e) {
+        var position = 'top';
+
+        if ($(e).attr('class').search('tooltipster-') > -1) {
+            position = $(e).attr('class').split(' ').find(function (d) {
+                return d.search('tooltipster-') > -1;
+            }).replace(/tooltipster\-/g, '');
+        }
+
+        $(e).tooltipster({
+            theme: 'tooltipster-val',
+            animation: 'grow',
+            delay: 0,
+            offsetY: -5,
+            touchDevices: false,
+            trigger: 'hover',
+            position: position
+        });
     });
 };
 app.gridBoundTooltipster = function (selector) {
@@ -138,4 +148,9 @@ app.gridBoundTooltipster = function (selector) {
 };
 app.capitalize = function (s) {
     return s.length == 0 ? '' : s[0].toUpperCase() + s.slice(1);
+};
+app.repeatAlphabetically = function (prefix) {
+    return 'abcdefghijklmnopqrstuvwxyz'.split('').map(function (d) {
+        return prefix + ' ' + d.toUpperCase();
+    });
 };

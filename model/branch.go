@@ -2,7 +2,7 @@ package gdrj
 
 import (
 	"errors"
-	"github.com/eaciit/orm/v1"
+	// "github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 )
 
@@ -16,9 +16,9 @@ const (
 
 type Branch struct {
 	GDRJModel `json:"-" bson:"-"`
-	ID            string `json:"_id" bson:"_id"` //BranchID
-	Name          string
-	Location      string
+	ID        string `json:"_id" bson:"_id"` //BranchID
+	Name      string
+	Location  string
 }
 
 func (b *Branch) RecordID() interface{} {
@@ -33,6 +33,21 @@ func BranchGetByID(id string) *Branch {
 	b := new(Branch)
 	DB().GetById(b, id)
 	return b
+}
+
+func BranchGetAll() ([]*Branch, error) {
+	cursor, err := DB().Find(new(Branch), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*Branch{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (b *Branch) Save() error {

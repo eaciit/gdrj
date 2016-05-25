@@ -1,6 +1,7 @@
-vm.pageTitle("Data Browser")
+vm.pageTitle("Data Manager")
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
+	{ title: 'Data Manager', href: '#' },
 	{ title: 'Data Browser', href: '/databrowser' }
 ])
 
@@ -188,7 +189,7 @@ db.saveChanges = () => {
 		data: data
 	}
 
-	app.ajaxPost('/uploaddata/savedata', param, (res) => {
+	app.ajaxPost('/databrowser/savedata', param, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}
