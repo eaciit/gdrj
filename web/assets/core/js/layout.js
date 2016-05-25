@@ -39,7 +39,7 @@ vm.prepareToggleFilter = function () {
 	var btnToggleFilter = $('.btn-toggle-filter');
 	var panelFilterContainer = $('.panel-filter').parent();
 
-	$('<i class="fa fa-angle-double-left tooltipster tooltipster-right align-center color-orange" title="Toggle filter pane visibility"></i>').appendTo(btnToggleFilter);
+	$('<i class="fa fa-angle-double-left tooltipster align-center color-orange" title="Toggle filter pane visibility"></i>').appendTo(btnToggleFilter);
 	app.prepareTooltipster($(btnToggleFilter).find('.fa'));
 
 	btnToggleFilter.on('click', function () {
