@@ -47,3 +47,14 @@ func (m *ReportController) GetDataHCostCenterGroup(r *knot.WebContext) interface
 
 	return res
 }
+
+func (m *ReportController) GetDataEntity(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.EntityGetAll()
+	if err != nil {
+		return []*gdrj.HCostCenterGroup{}
+	}
+
+	return res
+}

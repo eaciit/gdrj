@@ -51,13 +51,13 @@ func (w *WebController) UploadData(r *knot.WebContext) interface{} {
 	return true
 }
 
-func (w *WebController) ReportDistributor(r *knot.WebContext) interface{} {
+func (w *WebController) ReportDistribution(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
 	r.Config.ViewName = View("page-report.html")
 
-	return toolkit.M{"subreport": "page-report-distributor.html"}
+	return toolkit.M{"subreport": "page-report-distribution.html"}
 }
 
 func (w *WebController) ReportGeneralTrade(r *knot.WebContext) interface{} {
