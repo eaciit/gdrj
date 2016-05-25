@@ -110,7 +110,6 @@ ud.doUpload = function () {
 };
 
 ud.init = function () {
-	app.prepareTooltipster();
 	ud.getMasterDataBrowser();
 	ud.getUploadedFiles();
 };

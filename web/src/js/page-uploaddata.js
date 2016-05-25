@@ -117,7 +117,6 @@ ud.doUpload = () => {
 }
 
 ud.init = () => {
-	app.prepareTooltipster();
 	ud.getMasterDataBrowser()
 	ud.getUploadedFiles()
 }
