@@ -35,7 +35,9 @@ ud.gridUploadedFiles = {
 			return '<input type="checkbox" />'
 		} },
 		{ title: 'File Name', field: 'Filename', attributes: { class: 'bold' } },
-		{ title: 'Model', field: 'DocName' },
+		{ title: 'Model', field: 'DocName', template: (d) => {
+			return `<span class="tag bg-green">${d.DocName}</span>`
+		} },
 		{ title: 'Description', field: 'Note' },
 		{ title: 'Date', template: (d) =>
 			moment(d.date).format('DD-MM-YYYY HH:mm:ss')

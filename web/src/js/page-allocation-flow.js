@@ -9,6 +9,12 @@ vm.breadcrumb([
 viewModel.allocationFlow = new Object()
 let af = viewModel.allocationFlow
 
+af.templateModuleConfig = {
+	Name: '',
+	Description: ''
+}
+af.moduleConfig = ko.mapping.fromJS(af.templateModuleConfig)
+af.isNew = ko.observable(false)
 af.modules = ko.observableArray([
 	{ _id: "n001", Name: "Module Lorem" },
 	{ _id: "n002", Name: "Module Ipsum" },
@@ -23,6 +29,9 @@ af.prepareDrag = () => {
 	$('.applied-module').sortable({
 	    connectWith: '.list-group.module'
 	})
+}
+af.doUpload = () => {
+	
 }
 
 $(() => {

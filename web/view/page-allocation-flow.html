@@ -1,5 +1,4 @@
 <script src="/res/core/js/page-allocation-flow.js"></script>
-<script src="/res/jquery.sortable/jquery.sortable.min.js"></script>
 
 <div>
 	<div class="col-md-4 col-sm-4 ez panel-filter">
@@ -66,6 +65,56 @@
 			</div>
 		</div>
 	</div>
+</div>
+
+<div class="modal fade" id="modal-module" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document" style="width: 700px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">
+        			<span data-bind="text: af.isNew() ? 'Upload new' : 'Edit'"></span> module
+        		</h4>
+            </div>
+            <div class="modal-body">
+
+				<form class="wrapper form-upload-file" novalidate data-bind="with: af.moduleConfig">
+					<div class="form-group">
+						<div class="input-group input-group-sm ez width-full">
+							<span class="input-group-addon align-right width-100">Name</span>
+							<input type="text" class="form-control input-sm width-full" required data-required-msg="Name cannot be empty" data-bind="value: Name" />
+						</div>
+						<span class="k-invalid-msg" data-for="model"></span>
+					</div>
+					<div class="form-group">
+						<div class="input-group input-group-sm ez width-full">
+							<span class="input-group-addon align-right width-100">Description</span>
+							<input type="text" class="form-control input-sm width-full" required data-required-msg="Description cannot be empty" data-bind="value: Description" />
+						</div>
+						<span class="k-invalid-msg" data-for="model"></span>
+					</div>
+
+					<div class="form-group">
+						<div class="input-group input-group-sm ez width-full">
+							<span class="input-group-addon align-right width-100">Archive</span>
+							<input type="file" name="file" class="form-control" required data-required-msg="Archive cannot be empty" placeholder="Select file" accept=".zip" />
+						</div>
+						<span class="k-invalid-msg" data-for="file"></span>
+					</div>
+				</form>
+
+                <div class="clearfix"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
+		        	Cancel
+		        </button>
+                <button class="btn btn-sm btn-primary" data-bind="click: af.doUpload">
+					<i class="fa fa-upload"></i> Submit
+				</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="clearfix"></div>
