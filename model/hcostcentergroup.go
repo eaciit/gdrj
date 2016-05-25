@@ -8,7 +8,7 @@ import (
 
 type HCostCenterGroup struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	ID            string `json:"_id" bson:"_id"` //BrandID
+	ID            string `json:"_id" bson:"_id"` //HCCGroupID
 	CCTypeID      string
 	Name          string
 }
