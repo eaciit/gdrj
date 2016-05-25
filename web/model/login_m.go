@@ -24,117 +24,7 @@ func (l *Login) RecordID() interface{} {
 	return l.ID
 }
 
-func GetUserName(sessionId interface{}) (tUser acl.User, err error) {
-	userid, err := acl.FindUserBySessionID(toolkit.ToString(sessionId))
-	if err != nil {
-		return
-	}
-
-	err = acl.FindByID(&tUser, userid)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func GetAccessMenu(sessionId interface{}) ([]toolkit.M, error) {
-	cursor, err := Find(new(Menu), nil)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close()
-
-	menus := []Menu{}
-	results := make([]toolkit.M, 0, 0)
-
-	cursor.Fetch(&menus, 0, false)
-
-	/*if IsDevMode {
-		for _, m := range menus {
-			result, _ := toolkit.ToM(m)
-			results = append(results, result)
-		}
-		return results, nil
-	}*/
-
-	if toolkit.ToString(sessionId) == "" {
-		return nil, errors.New("Session Not Found")
-	}
-
-	stat := acl.IsSessionIDActive(toolkit.ToString(sessionId))
-	if !stat {
-		return nil, errors.New("Session Expired")
-	}
-
-	if cursor.Count() > 0 {
-		for _, m := range menus {
-			result := toolkit.M{}
-
-			acc := acl.HasAccess(toolkit.ToString(sessionId), acl.IDTypeSession, m.AccessId, acl.AccessRead)
-			result, err = toolkit.ToM(m)
-			if err != nil {
-				return nil, err
-			}
-
-			userid, err := acl.FindUserBySessionID(toolkit.ToString(sessionId))
-			if err != nil {
-				return nil, errors.New("Get username failed")
-			}
-			tUser := new(acl.User)
-			err = acl.FindByID(tUser, userid)
-			if err != nil {
-				return nil, errors.New("Get username failed")
-			}
-
-			result.Set("detail", 7)
-
-			if tUser.LoginID == "eaciit" {
-				results = append(results, result)
-			} else {
-				if acc {
-					result.Set("childrens", "")
-					if len(m.Childrens) > 0 {
-						childs, err := GetChildMenu(sessionId, m.Childrens)
-						if err != nil {
-							return nil, err
-						}
-						result.Set("childrens", childs)
-					}
-					results = append(results, result)
-				}
-			}
-		}
-	}
-
-	return results, nil
-}
-
-func GetChildMenu(sessionId interface{}, childMenu []Menu) (interface{}, error) {
-	results := make([]toolkit.M, 0, 0)
-	for _, m := range childMenu {
-		result := toolkit.M{}
-		acc := acl.HasAccess(toolkit.ToString(sessionId), acl.IDTypeSession, m.AccessId, acl.AccessRead)
-		result, err := toolkit.ToM(m)
-		if err != nil {
-			return nil, err
-		}
-		if acc {
-			if len(m.Childrens) > 0 {
-				childs, err := GetChildMenu(sessionId, m.Childrens)
-				if err != nil {
-					return nil, err
-				}
-				result.Set("childrens", childs)
-			}
-			result.Set("detail", 7)
-			results = append(results, result)
-		}
-	}
-	return results, nil
-}
-
-func ResetPassword(payload toolkit.M) error {
+func (l *Login) ResetPassword(payload toolkit.M) error {
 	if !payload.Has("email") || !payload.Has("baseurl") {
 		errors.New("Data is not complete")
 	}
@@ -169,7 +59,7 @@ func ResetPassword(payload toolkit.M) error {
 	return nil
 }
 
-func SavePassword(payload toolkit.M) error {
+func (l *Login) SavePassword(payload toolkit.M) error {
 	if !payload.Has("newpassword") || !payload.Has("userid") {
 		return errors.New("Data is not complete")
 	}
@@ -192,7 +82,7 @@ func SavePassword(payload toolkit.M) error {
 	return nil
 }
 
-func Authenticate(payload toolkit.M) (toolkit.M, error) {
+func (l *Login) Authenticate(payload toolkit.M) (toolkit.M, error) {
 	var iaccenum acl.AccessTypeEnum
 	result := toolkit.M{}
 	result.Set("hasaccess", false)
@@ -255,7 +145,7 @@ func PrepareDefaultUser() (err error) {
 	return
 }
 
-func LoginProcess(payload toolkit.M) (string, error) {
+func (l *Login) LoginProcess(payload toolkit.M) (string, error) {
 	switch {
 	case !payload.Has("username") || !payload.Has("password"):
 		return "", errors.New("username or password not found")
