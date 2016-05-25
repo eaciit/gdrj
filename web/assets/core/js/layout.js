@@ -39,16 +39,19 @@ vm.prepareToggleFilter = function () {
 	var btnToggleFilter = $('.btn-toggle-filter');
 	var panelFilterContainer = $('.panel-filter').parent();
 
+	$('<i class="fa fa-angle-double-left tooltipster tooltipster-right align-center color-orange" title="Toggle filter pane visibility"></i>').appendTo(btnToggleFilter);
+	app.prepareTooltipster($(btnToggleFilter).find('.fa'));
+
 	btnToggleFilter.on('click', function () {
 		if (panelFilterContainer.hasClass('minimized')) {
 			panelFilterContainer.removeClass('minimized');
-			btnToggleFilter.find('.fa').removeClass('color-blue').addClass('color-grey');
+			btnToggleFilter.find('.fa').removeClass('color-blue').addClass('color-orange').removeClass('fa-angle-double-right').addClass('fa-angle-double-left');
 
 			$('.panel-filter').show(300);
 			$('.panel-content').animate({ 'width': 'auto' }, 300);
 		} else {
 			panelFilterContainer.addClass('minimized');
-			btnToggleFilter.find('.fa').removeClass('color-grey').addClass('color-blue');
+			btnToggleFilter.find('.fa').removeClass('color-orange').addClass('color-blue').removeClass('fa-angle-double-left').addClass('fa-angle-double-right');
 
 			$('.panel-filter').hide(300);
 			$('.panel-content').animate({ 'width': '100%' }, 300);
