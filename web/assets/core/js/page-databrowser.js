@@ -1,7 +1,7 @@
 'use strict';
 
-vm.pageTitle("Data Browser");
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Data Browser', href: '/databrowser' }]);
+vm.pageTitle("Data Manager");
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Data Manager', href: '#' }, { title: 'Data Browser', href: '/databrowser' }]);
 
 viewModel.dataBrowser = new Object();
 var db = viewModel.dataBrowser;
@@ -169,7 +169,7 @@ db.saveChanges = function () {
 		data: data
 	};
 
-	app.ajaxPost('/uploaddata/savedata', param, function (res) {
+	app.ajaxPost('/databrowser/savedata', param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}

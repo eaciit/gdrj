@@ -1,11 +1,57 @@
+<script src="/res/core/js/page-report.js"></script>
+
 <div>
-	{{if eq .subreport "page-report-distributor.html"}}
-		{{template "page-report-distributor.html"}}
-	{{else if eq .subreport "page-report-general-trade.html"}}
-		{{template "page-report-general-trade.html"}}
-	{{else if eq .subreport "page-report-market-efficiency.html"}}
-		{{template "page-report-market-efficiency.html"}}
-	{{else if eq .subreport "page-report-sgna.html"}}
-		{{template "page-report-sgna.html"}}
-	{{end}}
+	<div class="col-md-4 col-sm-4 ez panel-filter">
+		<div class="panel ez no-padding hardcore">
+			<div class="panel-heading">
+				<h3 class="no-margin">Filter</h3>
+				<div class="panel-nav-button">
+					<div class="form-group relative align-right no-margin no-padding hardcore">
+						<button class="btn btn-sm btn-warning">
+							<i class="fa fa-eraser"></i> Reset
+						</button>
+						<button class="btn btn-sm btn-primary" data-bind="click: rpt.refreshData">
+							<i class="fa fa-refresh"></i> Reload Report
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="panel-body">
+				<div id="from-filter">
+					<p>Click each section below to show respective filter.</p>
+					<div class="wrapper">
+						<div class="panel-group ez-collapse" role="tablist" aria-multiselectable="true" data-bind="template: { name: 'template-report-filter', foreach: rpt.filter }"></div>
+					</div>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-8 col-sm-8 ez panel-content">
+		<div class="panel ez no-padding hardcore">
+			<div class="panel-heading">
+				<h3 class="no-margin">
+					<button class="btn-toggle-filter no-padding">
+						<i class="fa fa-angle-double-left tooltipster tooltipster-right align-center color-grey" title="Toggle filter pane visibility"></i>
+					</button>
+					Report
+				</h3>
+			</div>
+			<div class="panel-body">
+				{{if eq .subreport "page-report-distributor.html"}}
+					{{template "page-report-distributor.html"}}
+				{{else if eq .subreport "page-report-general-trade.html"}}
+					{{template "page-report-general-trade.html"}}
+				{{else if eq .subreport "page-report-market-efficiency.html"}}
+					{{template "page-report-market-efficiency.html"}}
+				{{else if eq .subreport "page-report-sgna.html"}}
+					{{template "page-report-sgna.html"}}
+				{{end}}
+			</div>
+		</div>
+	</div>
 </div>
+
+<div class="clearfix"></div>

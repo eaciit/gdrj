@@ -5,16 +5,7 @@
 		</a>
 	</div>
 	<div class="app-menu">
-		<ul class="nav navbar-nav" data-bind="foreach: menu">
-			<li data-bind="css: { 'dropdown': ($data.submenu.length > 0) }">
-				<a class="color-base" data-bind="css: { 'dropdown-toggle': ($data.submenu.length > 0), 'active': (vm.pageTitle() == $data.title) }, attr: { href: $data.href }">
-					<i data-bind="css: vm.menuIcon($data)"></i> <span data-bind="text: $data.title"></span>
-				</a>
-				<ul class="dropdown-menu" data-bind="foreach: $data.submenu, visible: ($data.submenu.length > 0)">
-					<li><a class="color-base" data-bind="attr: { href: $data.href }, text: $data.title"></a></li>
-				</ul>
-			</li>
-		</ul>
+		<ul class="nav navbar-nav" data-bind="template: { name: 'template-menu', foreach: menu }"></ul>
 		<div class="clear"></div>
 	</div>
 	<ul class="nav navbar-nav navbar-right m-n hidden-xs nav-user">

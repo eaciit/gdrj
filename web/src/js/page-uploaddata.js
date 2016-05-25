@@ -1,6 +1,7 @@
-vm.pageTitle('Upload Data')
+vm.pageTitle("Data Manager")
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
+	{ title: 'Data Manager', href: '#' },
 	{ title: 'Upload Data', href: '/uploaddata' }
 ])
 
