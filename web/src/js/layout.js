@@ -39,7 +39,7 @@ vm.prepareDropDownMenu = () => {
 vm.prepareFilterToggle = () => {
 	$('.material-switch input[type="checkbox"]').on('change', function() {
 		let show = $(this).is(':checked')
-		let $target = $(this).closest(".panel").find(".panel-filter")
+		let $target = $(this).closest('.panel').find('.panel-filter')
 		if (show) {
 			$target.show(200)
 		} else {
@@ -109,6 +109,22 @@ vm.prepareLoader = () => {
 		ctx.arc(50, 50, 25, sA, sE, false)
 		ctx.stroke()
 		ctx.closePath()
+	})
+}
+vm.logout = () => {
+	app.ajaxPost('/login/logout', { }, (res) => {
+		if (!app.isFine(res)) {
+			return;
+		}
+		swal({
+			title: 'Logout Success',
+			text: 'Will automatically redirect to login page in 3 seconds',
+			type: 'success',
+			timer: 3000,
+			showConfirmButton: false
+		}, () => {
+			location.href = '/web/login'
+		});
 	})
 }
 

@@ -23,7 +23,7 @@ vm.prepareDropDownMenu = function () {
 vm.prepareFilterToggle = function () {
 	$('.material-switch input[type="checkbox"]').on('change', function () {
 		var show = $(this).is(':checked');
-		var $target = $(this).closest(".panel").find(".panel-filter");
+		var $target = $(this).closest('.panel').find('.panel-filter');
 		if (show) {
 			$target.show(200);
 		} else {
@@ -88,6 +88,22 @@ vm.prepareLoader = function () {
 		ctx.arc(50, 50, 25, sA, sE, false);
 		ctx.stroke();
 		ctx.closePath();
+	});
+};
+vm.logout = function () {
+	app.ajaxPost('/login/logout', {}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+		swal({
+			title: 'Logout Success',
+			text: 'Will automatically redirect to login page in 3 seconds',
+			type: 'success',
+			timer: 3000,
+			showConfirmButton: false
+		}, function () {
+			location.href = '/web/login';
+		});
 	});
 };
 
