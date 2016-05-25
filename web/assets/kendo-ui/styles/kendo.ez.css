@@ -7456,7 +7456,7 @@ a.ez:hover {
 .panel-group.ez-collapse .panel .panel-heading .panel-title a {
   display: block;
   width: 100%;
-  padding: 10px;
+  padding: 6px 6px 7px;
 }
 .panel-group.ez-collapse .panel .panel-heading .panel-title a:hover,
 .panel-group.ez-collapse .panel .panel-heading .panel-title a:active,
@@ -7465,6 +7465,15 @@ a.ez:hover {
 }
 .panel-group.ez-collapse .panel .panel-heading:hover {
   background-color: #6194cf;
+}
+.panel-group.ez-collapse .panel .panel-body {
+  padding: 4px;
+}
+.panel-group.ez-collapse .panel .panel-body .form-group {
+  margin-bottom: 2px;
+}
+.panel-group.ez-collapse .panel .panel-body .form-group .input-group .k-widget {
+  box-sizing: border-box;
 }
 .bg-base {
   background-color: #e7505a;

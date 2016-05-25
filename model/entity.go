@@ -26,6 +26,21 @@ func EntityGetByID(id string) *Entity {
 	return e
 }
 
+func EntityGetAll() ([]*Entity, error) {
+	cursor, err := DB().Find(new(Entity), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*Entity{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (e *Entity) Save() error {
 	err := Save(e)
 	if err != nil {
