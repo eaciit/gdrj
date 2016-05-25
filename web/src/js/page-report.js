@@ -8,7 +8,6 @@ vm.breadcrumb([
 	{ title: 'Report', href: '#' },
 	{ title: currentReportMenu.title, href: currentReportMenu.href }
 ])
-vm.pageTitle(currentReportMenu.title)
 
 viewModel.report = new Object()
 let rpt = viewModel.report

@@ -9,7 +9,6 @@ var currentReportMenu = vm.menu().find(function (d) {
 vm.currentMenu('Report');
 vm.currentTitle(currentReportMenu.title);
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Report', href: '#' }, { title: currentReportMenu.title, href: currentReportMenu.href }]);
-vm.pageTitle(currentReportMenu.title);
 
 viewModel.report = new Object();
 var rpt = viewModel.report;

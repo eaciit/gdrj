@@ -30,11 +30,24 @@ ud.gridUploadedFiles = {
 	},
 	columns: [{ title: '&nbsp;', width: 40, attributes: { class: 'align-center' }, template: function template(d) {
 			return '<input type="checkbox" />';
-		} }, { title: 'File Name', field: 'filename', attributes: { class: 'bold' } }, { title: 'Description', field: 'description' }, { title: 'Date', template: function template(d) {
+		} }, { title: 'File Name', field: 'Filename', attributes: { class: 'bold' } }, { title: 'Model', field: 'DocName' }, { title: 'Description', field: 'Note' }, { title: 'Date', template: function template(d) {
 			return moment(d.date).format('DD-MM-YYYY HH:mm:ss');
 		}
 	}, { title: 'Action', width: 50, template: function template(d) {
-			return '\n\t\t\t<!--button class="btn btn-sm btn-primary">\n\t\t\t\t<i class=\'fa fa-play\'></i>\n\t\t\t</button-->\n\t\t\t';
+			switch (d.Status) {
+				case 'ready':
+					return '\n\t\t\t\t\t<button class="btn btn-xs btn-warning tooltipster" title="Ready" onclick="ud.processData(`' + d.Filename + '`,this)">\n\t\t\t\t\t\t<i class="fa fa-play"></i> Run process\n\t\t\t\t\t</button>\n\t\t\t\t';
+				case 'rollback':
+					return '\n\t\t\t\t\t<button class="btn btn-xs btn-warning tooltipster" title="Ready"">\n\t\t\t\t\t\t<i class="fa fa-refresh"></i> Rollback\n\t\t\t\t\t</button>\n\t\t\t\t';
+				case 'done':
+					return '<span class=\'tag bg-green\'>Done</span>';
+				case 'failed':
+					return '<span class=\'tag bg-green\'>Failed</span>';
+				case 'onprocess':
+					return '<span class=\'tag bg-green\'>On Process</span>';
+			}
+
+			return '';
 		} }],
 	filterable: false,
 	sortable: false,
