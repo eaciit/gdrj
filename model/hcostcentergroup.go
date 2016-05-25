@@ -27,6 +27,21 @@ func HCostCenterGroupGetByID(id string) *HCostCenterGroup {
 	return b
 }
 
+func HCostCenterGroupGetAll() ([]*HCostCenterGroup, error) {
+	cursor, err := DB().Find(new(HCostCenterGroup), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*HCostCenterGroup{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (h *HCostCenterGroup) Save() error {
 	err := Save(h)
 	if err != nil {
