@@ -1,13 +1,7 @@
 'use strict';
 
 vm.pageTitle('Upload Data');
-vm.breadcrumb([{
-	title: 'Godrej',
-	href: '#'
-}, {
-	title: 'Upload Data',
-	href: '/uploaddata'
-}]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Upload Data', href: '/uploaddata' }]);
 
 viewModel.uploadData = new Object();
 var ud = viewModel.uploadData;
@@ -18,12 +12,9 @@ ud.inputModel = ko.observable('');
 ud.dataUploadedFiles = ko.observableArray([]);
 ud.masterDataBrowser = ko.observableArray([]);
 ud.dropDownModel = {
-	data: ko.computed(function() {
-		return ud.masterDataBrowser().map(function(d) {
-			return {
-				text: d.TableNames,
-				value: d.TableNames
-			};
+	data: ko.computed(function () {
+		return ud.masterDataBrowser().map(function (d) {
+			return { text: d.TableNames, value: d.TableNames };
 		});
 	}),
 	dataValueField: 'value',
@@ -36,67 +27,56 @@ ud.gridUploadedFiles = {
 	dataSource: {
 		pageSize: 10
 	},
-	columns: [{
-		title: '&nbsp;',
-		width: 40,
-		attributes: {
-			class: 'align-center'
-		},
-		template: function template(d) {
+	columns: [{ title: '&nbsp;', width: 40, attributes: { class: 'align-center' }, template: function template(d) {
 			return '<input type="checkbox" />';
-		}
-	}, {
-		title: 'File Name',
-		field: 'filename',
-		attributes: {
-			class: 'bold'
-		}
-	}, {
-		title: 'Description',
-		field: 'description'
-	}, {
-		title: 'Date',
-		template: function template(d) {
+		} }, { title: 'File Name', field: 'filename', attributes: { class: 'bold' } }, { title: 'Description', field: 'description' }, { title: 'Date', template: function template(d) {
 			return moment(d.date).format('DD-MM-YYYY HH:mm:ss');
 		}
-	}, {
-		title: 'Action',
-		width: 50,
-		template: function template(d) {
-			 return '<button onclick="ud.processData(\''+d.filename+'\')" class="btn btn-sm btn-primary"/><i class=\'fa fa-play\'></i></button>';
-		}
-	}],
+	}, { title: 'Action', width: 50, template: function template(d) {
+			return '<button class="btn btn-sm btn-primary tooltipster" title="Ready" onclick="ud.processData(`' + d.filename + '`,`' + d._id + '`) "><i class="fa fa-play"></i></button>';
+		} }],
 	filterable: false,
 	sortable: false,
 	resizable: false
 };
-ud.processData = function(filename) {
-	app.ajaxPost('/uploaddata/processdata', {filename:filename}, function(res) {
-		 if (!app.isFine(res)) {
+ud.processData = function (filename, id) {
+	var $grid = $(".grid-uploadData").data("kendoGrid");
+	var row = Lazy($grid.dataSource.data()).find({ _id: id });
+	var $tr = $(".grid-uploadData").find("tr[data-uid='" + row.uid + "']");
+	var $tdButon = $tr.find("td:eq(4)");
+
+	$tdButon.find(".tooltipster").attr("title", 'Onprocess');
+	$tdButon.find("i").attr("class", "fa fa-hourglass-half");
+
+	app.ajaxPost('/uploaddata/processdata', { filename: filename }, function (res) {
+		if (!app.isFine(res)) {
 			return;
-		 }
-		
+		}
+
+		$tdButon.find(".tooltipster").attr("title", "Done");
+		$tdButon.find("i").attr("class", "fa fa-check");
 	});
-}
-ud.getMasterDataBrowser = function() {
+};
+
+ud.getMasterDataBrowser = function () {
 	ud.masterDataBrowser([]);
 
-	app.ajaxPost('/databrowser/getdatabrowsers', {}, function(res) {
+	app.ajaxPost('/databrowser/getdatabrowsers', {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
 		ud.masterDataBrowser(res.data);
-	}, function(err) {
+	}, function (err) {
 		app.showError(err.responseText);
 	}, {
 		timeout: 5000
 	});
 };
-ud.getUploadedFiles = function() {
+ud.getUploadedFiles = function () {
 	ud.dataUploadedFiles([]);
 
-	app.ajaxPost('/uploaddata/getuploadedfiles', {}, function(res) {
+	app.ajaxPost('/uploaddata/getuploadedfiles', {}, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -106,7 +86,7 @@ ud.getUploadedFiles = function() {
 		timeout: 5000
 	});
 };
-ud.doUpload = function() {
+ud.doUpload = function () {
 	if (!app.isFormValid('.form-upload-file')) {
 		return;
 	}
@@ -116,24 +96,25 @@ ud.doUpload = function() {
 	payload.append('desc', ud.inputDescription());
 	payload.append('userfile', $('[name=file]')[0].files[0]);
 
-	app.ajaxPost('/uploaddata/uploadfile', payload, function(res) {
+	app.ajaxPost('/uploaddata/uploadfile', payload, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
 
 		ud.getUploadedFiles();
-	}, function(err) {
+	}, function (err) {
 		app.showError(err.responseText);
 	}, {
 		timeout: 5000
 	});
 };
 
-ud.init = function() {
+ud.init = function () {
+	app.prepareTooltipster();
 	ud.getMasterDataBrowser();
 	ud.getUploadedFiles();
 };
 
-$(function() {
+$(function () {
 	ud.init();
 });

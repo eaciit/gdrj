@@ -9,7 +9,7 @@ import (
 	"github.com/eaciit/toolkit"
 	"path/filepath"
 	// "strings"
-	"fmt"
+	// "fmt"
 	"time"
 )
 
@@ -96,7 +96,7 @@ func (d *UploadDataController) ProcessData(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	locFile := filepath.Join(GDRJ_DATA_PATH, "file", toolkit.ToString(payload["filename"]))
-	fmt.Println(locFile)
+	// fmt.Println(locFile)
 	uploadData := new(gdrj.UploadData)
 	err := uploadData.ProcessData(locFile)
 	if err != nil {

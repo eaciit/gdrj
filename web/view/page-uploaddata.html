@@ -52,8 +52,8 @@
 			</div>
 			<div class="panel-body">
 				<div class="wrapper">
-					<div class="grid grid-uploadData" data-bind="visible: ud.dataUploadedFiles().length > 0">
-						<div data-bind="kendoGrid: gridUploadedFiles"></div>
+					<div  data-bind="visible: ud.dataUploadedFiles().length > 0">
+						<div class="grid grid-uploadData" data-bind="kendoGrid: gridUploadedFiles"></div>
 					</div>
 					<div class="no-grid" data-bind="visible: ud.dataUploadedFiles().length == 0">No data uploaded yet.</div>
 				</div>
