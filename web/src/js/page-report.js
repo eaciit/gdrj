@@ -12,31 +12,30 @@ vm.pageTitle(currentReportMenu.title)
 viewModel.report = new Object()
 let rpt = viewModel.report
 
-rpt.masterData = {
-	// common
-	Branch: ko.observableArray([]),//app.repeatAlphabetically('Branch')),
-	Brand: ko.observableArray([]),//app.repeatAlphabetically('Brand')),
-	SKU: ko.observableArray([]),//app.repeatAlphabetically('SKU')),
-	Outlet: ko.observableArray([]),//app.repeatAlphabetically('Outlet')),
+rpt.masterData = {}
+// common
+rpt.masterData.Branch = ko.observableArray([])
+rpt.masterData.Brand = ko.observableArray([])
+rpt.masterData.SKU = ko.observableArray([])
+rpt.masterData.Outlet = ko.observableArray([])
 
-	// geo
-	Region: ko.observableArray([]),//app.repeatAlphabetically('Region')),
-	Area: ko.observableArray([]),//app.repeatAlphabetically('Area')),
+// geo
+rpt.masterData.Region = ko.observableArray([])
+rpt.masterData.Area = ko.observableArray([])
 
-	// sales 
-	Group: ko.observableArray([]),//app.repeatAlphabetically('Group')),
-	KeyAccount: ko.observableArray([]),//app.repeatAlphabetically('Key Account')),
-	Channel: ko.observableArray([]),//app.repeatAlphabetically('Channel')),
+// customer 
+rpt.masterData.Group = ko.observableArray([])
+rpt.masterData.KeyAccount = ko.observableArray([])
+rpt.masterData.Channel = ko.observableArray([])
 
-	// cost
-	CC: ko.observableArray([]),//app.repeatAlphabetically('CC')),
-	Function: ko.observableArray([]),//app.repeatAlphabetically('Function')),
+// cost
+rpt.masterData.CC = ko.observableArray([])
+rpt.masterData.HCostCenterGroup = ko.observableArray([])
 
-	// ledger
-	Group1: ko.observableArray([]),//app.repeatAlphabetically('Group 1')),
-	Group2: ko.observableArray([]),//app.repeatAlphabetically('Group 2')),
-	GLAccount: ko.observableArray([]),//app.repeatAlphabetically('GL Account')),
-}
+// ledger
+rpt.masterData.Group1 = ko.observableArray([])
+rpt.masterData.Group2 = ko.observableArray([])
+rpt.masterData.GLAccount = ko.observableArray([])
 
 rpt.filter = [
 	{ _id: 'common', group: 'Common', sub: [
@@ -49,14 +48,14 @@ rpt.filter = [
 		{ _id: 'Region', title: 'Region' },
 		{ _id: 'Area', title: 'Area' }
 	] },
-	{ _id: 'sales_center', group: 'Sales Center', sub: [
+	{ _id: 'customer', group: 'Customer', sub: [
 		{ _id: 'Group', title: 'Group' },
 		{ _id: 'KeyAccount', title: 'Key Account' },
 		{ _id: 'Channel', title: 'Channel' }
 	] },
 	{ _id: 'cost_center', group: 'Cost Center', sub: [
 		{ _id: 'CC', title: 'CC' },
-		{ _id: 'Function', title: 'Function' }
+		{ _id: 'HCostCenterGroup', title: 'Function' }
 	] },
 	{ _id: 'ledger', group: 'Ledger', sub: [
 		{ _id: 'Group1', title: 'Group 1' },
@@ -71,8 +70,13 @@ rpt.filterMultiSelect = (d) => {
 		placeholder: 'Choose items ...'
 	}
 
-	if (['Branch', 'Brand'].indexOf(d._id) > -1) {
+	if (['Branch', 'Brand', 'HCostCenterGroup'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
+			data: ko.computed(() => {
+				return rpt.masterData[d._id]().map((d) => {
+					return { _id: d._id, Name: `${d._id} - ${d.Name}` }
+				})
+			}, rpt),
 			dataValueField: '_id',
 			dataTextField: 'Name'
 		})
