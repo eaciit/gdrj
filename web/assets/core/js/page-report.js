@@ -77,6 +77,8 @@ rpt.filterMultiSelect = function (d) {
 };
 
 rpt.refreshData = function () {
+	$('.grid').append($('<p />').text('Still under development.'));
+	return;
 	$('.grid').kendoGrid({
 		columns: [{ title: "ID" }],
 		dataSource: {
