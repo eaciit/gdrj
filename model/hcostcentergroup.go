@@ -8,7 +8,7 @@ import (
 
 type HCostCenterGroup struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	ID            string `json:"_id" bson:"_id"` //BrandID
+	ID            string `json:"_id" bson:"_id"` //HCCGroupID
 	CCTypeID      string
 	Name          string
 }
@@ -25,6 +25,21 @@ func HCostCenterGroupGetByID(id string) *HCostCenterGroup {
 	b := new(HCostCenterGroup)
 	DB().GetById(b, id)
 	return b
+}
+
+func HCostCenterGroupGetAll() ([]*HCostCenterGroup, error) {
+	cursor, err := DB().Find(new(HCostCenterGroup), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*HCostCenterGroup{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (h *HCostCenterGroup) Save() error {

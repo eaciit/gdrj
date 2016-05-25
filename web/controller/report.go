@@ -2,9 +2,7 @@ package controller
 
 import (
 	"eaciit/gdrj/model"
-	"fmt"
 	"github.com/eaciit/knot/knot.v1"
-	"github.com/eaciit/toolkit"
 )
 
 type ReportController struct {
@@ -39,33 +37,23 @@ func (m *ReportController) GetDataBrand(r *knot.WebContext) interface{} {
 	return res
 }
 
-func (m *ReportController) GetDataSKU(r *knot.WebContext) interface{} {
+func (m *ReportController) GetDataHCostCenterGroup(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	forms := toolkit.M{}
-	if err := r.GetForms(&forms); err != nil {
-		return []string{}
+	res, err := gdrj.HCostCenterGroupGetAll()
+	if err != nil {
+		return []*gdrj.HCostCenterGroup{}
 	}
 
-	return GenerateTempDataWithPrefix("SKU")
+	return res
 }
 
-func (m *ReportController) GetDataOutlet(r *knot.WebContext) interface{} {
+func (m *ReportController) GetDataEntity(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	forms := toolkit.M{}
-	if err := r.GetForms(&forms); err != nil {
-		return []string{}
-	}
-
-	return GenerateTempDataWithPrefix("Outlet")
-}
-
-func GenerateTempDataWithPrefix(prefix string) []string {
-	res := []string{}
-	alphabet := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	for _, char := range alphabet {
-		res = append(res, fmt.Sprintf("%s %v", prefix, string(char)))
+	res, err := gdrj.EntityGetAll()
+	if err != nil {
+		return []*gdrj.HCostCenterGroup{}
 	}
 
 	return res

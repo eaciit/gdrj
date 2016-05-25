@@ -1,67 +1,73 @@
 let currentReportMenu = vm.menu().find((d) => d.title === 'Report')
 	.submenu.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
 
-vm.pageTitle('Report')
+vm.currentMenu('Report')
+vm.currentTitle(currentReportMenu.title)
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
 	{ title: 'Report', href: '#' },
 	{ title: currentReportMenu.title, href: currentReportMenu.href }
 ])
-vm.pageTitle(currentReportMenu.title)
 
 viewModel.report = new Object()
 let rpt = viewModel.report
 
-rpt.masterData = {
-	// common
-	Branch: ko.observableArray([]),//app.repeatAlphabetically('Branch')),
-	Brand: ko.observableArray([]),//app.repeatAlphabetically('Brand')),
-	SKU: ko.observableArray([]),//app.repeatAlphabetically('SKU')),
-	Outlet: ko.observableArray([]),//app.repeatAlphabetically('Outlet')),
-
-	// geo
-	Region: ko.observableArray([]),//app.repeatAlphabetically('Region')),
-	Area: ko.observableArray([]),//app.repeatAlphabetically('Area')),
-
-	// sales 
-	Group: ko.observableArray([]),//app.repeatAlphabetically('Group')),
-	KeyAccount: ko.observableArray([]),//app.repeatAlphabetically('Key Account')),
-	Channel: ko.observableArray([]),//app.repeatAlphabetically('Channel')),
-
-	// cost
-	CC: ko.observableArray([]),//app.repeatAlphabetically('CC')),
-	Function: ko.observableArray([]),//app.repeatAlphabetically('Function')),
-
-	// ledger
-	Group1: ko.observableArray([]),//app.repeatAlphabetically('Group 1')),
-	Group2: ko.observableArray([]),//app.repeatAlphabetically('Group 2')),
-	GLAccount: ko.observableArray([]),//app.repeatAlphabetically('GL Account')),
-}
+rpt.masterData = {}
+rpt.masterData.Branch = ko.observableArray([])
+rpt.masterData.Brand = ko.observableArray([])
+rpt.masterData.Region = ko.observableArray([])
+rpt.masterData.Channel = ko.observableArray([])
+rpt.masterData.From = ko.observableArray([])
+rpt.masterData.Area = ko.observableArray([])
+rpt.masterData.Zone = ko.observableArray([])
+rpt.masterData.Accounts = ko.observableArray([])
+rpt.masterData.Outlet = ko.observableArray([])
+rpt.masterData.Group = ko.observableArray([])
+rpt.masterData.SKU = ko.observableArray([])
+rpt.masterData.Entity = ko.observableArray([])
+rpt.masterData.Type = ko.observableArray([])
+rpt.masterData.HQ = ko.observableArray([])
+rpt.masterData.Group1 = ko.observableArray([])
+rpt.masterData.Group2 = ko.observableArray([])
+rpt.masterData.HCostCenterGroup = ko.observableArray([])
+rpt.masterData.GLCode = ko.observableArray([])
 
 rpt.filter = [
-	{ _id: 'common', group: 'Common', sub: [
+	{ _id: 'common', group: 'Base Filter', sub: [
 		{ _id: 'Branch', title: 'Branch' },
 		{ _id: 'Brand', title: 'Brand' },
-		{ _id: 'SKU', title: 'SKU' },
+		{ _id: 'Region', title: 'Region' },
+		{ _id: 'Channel', title: 'Channel' },
+		{ _id: 'From', title: 'From' },
+	] },
+	{ _id: 'geo', group: 'Geographical', sub: [
+		{ _id: 'Region', title: 'Region' },
+		{ _id: 'Area', title: 'Area' },
+		{ _id: 'Zone', title: 'Zone' }
+	] },
+	{ _id: 'customer', group: 'Customer', sub: [
+		{ _id: 'Channel', title: 'Channel' },
+		{ _id: 'Accounts', title: 'Accounts' },
 		{ _id: 'Outlet', title: 'Outlet' }
 	] },
-	{ _id: 'geo', group: 'Geo', sub: [
-		{ _id: 'Region', title: 'Region' },
-		{ _id: 'Area', title: 'Area' }
-	] },
-	{ _id: 'sales_center', group: 'Sales Center', sub: [
+	{ _id: 'product', group: 'Product', sub: [
 		{ _id: 'Group', title: 'Group' },
-		{ _id: 'KeyAccount', title: 'Key Account' },
-		{ _id: 'Channel', title: 'Channel' }
+		{ _id: 'Brand', title: 'Brand' },
+		{ _id: 'SKU', title: 'SKU' }
+	] },
+	{ _id: 'profit_center', group: 'Profit Center', sub: [
+		{ _id: 'Entity', title: 'Entity' },
+		{ _id: 'Type', title: 'Type' },
+		{ _id: 'Branch', title: 'Branch' },
+		{ _id: 'HQ', title: 'HQ' }
 	] },
 	{ _id: 'cost_center', group: 'Cost Center', sub: [
-		{ _id: 'CC', title: 'CC' },
-		{ _id: 'Function', title: 'Function' }
-	] },
-	{ _id: 'ledger', group: 'Ledger', sub: [
 		{ _id: 'Group1', title: 'Group 1' },
 		{ _id: 'Group2', title: 'Group 2' },
-		{ _id: 'GLAccount', title: 'GL Account' }
+		{ _id: 'HCostCenterGroup', title: 'Function' }
+	] },
+	{ _id: 'ledger', group: 'Ledger', sub: [
+		{ _id: 'GLCode', title: 'GL Code' }
 	] },
 ]
 
@@ -71,8 +77,13 @@ rpt.filterMultiSelect = (d) => {
 		placeholder: 'Choose items ...'
 	}
 
-	if (['Branch', 'Brand'].indexOf(d._id) > -1) {
+	if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
+			data: ko.computed(() => {
+				return rpt.masterData[d._id]().map((d) => {
+					return { _id: d._id, Name: `${d._id} - ${d.Name}` }
+				})
+			}, rpt),
 			dataValueField: '_id',
 			dataTextField: 'Name'
 		})
@@ -102,6 +113,8 @@ rpt.filterMultiSelect = (d) => {
 }
 
 rpt.refreshData = () => {
+	$('.grid').append($('<p />').text('Still under development.'))
+	return
 	$('.grid').kendoGrid({
 		columns: [
 			{ title: "ID" }
