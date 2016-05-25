@@ -38,29 +38,26 @@ ud.gridUploadedFiles = {
 			moment(d.date).format('DD-MM-YYYY HH:mm:ss')
 		},
 		{ title: 'Action', width: 50, template: (d) => {
-			return `<button class="btn btn-sm btn-primary tooltipster" title="Ready" onclick="ud.processData(\`${d.filename}\`,\`${d._id}\`) "><i class="fa fa-play"></i></button>`
+			return `<button class="btn btn-sm btn-primary tooltipster" title="Ready" onclick="ud.processData(\`${d.Filename}\`,this)"><i class="fa fa-play"></i></button>`
 		} }
 	],
 	filterable: false,
 	sortable: false,
 	resizable: false
 }
-ud.processData = (filename,id)=>{
-	var $grid = $(".grid-uploadData").data("kendoGrid")
-	var row = Lazy($grid.dataSource.data()).find({ _id: id })
-	var $tr = $(".grid-uploadData").find("tr[data-uid='" + row.uid + "']")
-	var $tdButon = $tr.find("td:eq(4)")
-	
-	$tdButon.find(".tooltipster").attr("title",'Onprocess')
-	$tdButon.find("i").attr("class","fa fa-hourglass-half")
+ud.processData = (filename,butonProp)=>{
+	var $button = $(butonProp)
+
+	$button.attr("title",'Onprocess')
+	$button.find("i").attr("class","fa fa-hourglass-half")
 
 	app.ajaxPost('/uploaddata/processdata', {filename:filename}, (res) => {
 		if (!app.isFine(res)) {
 	 		return
 	 	}
-	 	
-	 	$tdButon.find(".tooltipster").attr("title","Done")
-	 	$tdButon.find("i").attr("class","fa fa-check")
+
+	 	$button.attr("title","Done")
+	 	$button.find("i").attr("class","fa fa-check")
 	});
 }
 
