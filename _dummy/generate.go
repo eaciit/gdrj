@@ -42,9 +42,9 @@ func main() {
 	// genproductdata()
 	// fmt.Printf("Done : Generate Product Data \n")
 
-	fmt.Printf("Start : Generate Entity Data \n")
-	genentitydata()
-	fmt.Printf("Done : Generate Entity Data \n")
+	// fmt.Printf("Start : Generate Entity Data \n")
+	// genentitydata()
+	// fmt.Printf("Done : Generate Entity Data \n")
 
 	fmt.Printf("Start : Generate Branch Data \n")
 	genbranchdata()

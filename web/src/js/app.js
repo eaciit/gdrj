@@ -1,11 +1,11 @@
 viewModel.app = new Object()
-var app = viewModel.app
+let app = viewModel.app
 
 app.loader = ko.observable(false)
 app.noop = (() => {})
 app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
-    var startReq = moment()
-    var callbackScheduler = (callback) => {
+    let startReq = moment()
+    let callbackScheduler = (callback) => {
         app.loader(false)
         callback()
     }
@@ -21,9 +21,9 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
         callbackError = app.noop
     } 
 
-    var params = (typeof data === 'undefined') ? {} : ko.mapping.toJSON(data)
+    let params = (typeof data === 'undefined') ? {} : ko.mapping.toJSON(data)
 
-    var config = {
+    let config = {
         url: url,
         type: 'post',
         dataType: 'json',
@@ -98,7 +98,7 @@ app.isFormValid = (selector) => {
     return ($validator.validate())
 }
 app.resetValidation = (selectorID) => {
-    var $form = $(selectorID).data('kendoValidator')
+    let $form = $(selectorID).data('kendoValidator')
     if (!$form) {
         $(selectorID).kendoValidator()
         $form = $(selectorID).data('kendoValidator')
@@ -111,16 +111,24 @@ app.resetValidation = (selectorID) => {
     }
 }
 app.prepareTooltipster = ($o) => {
-    var $tooltipster = ($o == undefined) ? $('.tooltipster') : $o
+    let $tooltipster = ($o == undefined) ? $('.tooltipster') : $o
 
-    $tooltipster.tooltipster({
-        theme: 'tooltipster-val',
-        animation: 'grow',
-        delay: 0,
-        offsetY: -5,
-        touchDevices: false,
-        trigger: 'hover',
-        position: 'top'
+    $tooltipster.each((i, e) => {
+        let position = 'top'
+
+        if ($(e).attr('class').search('tooltipster-') > -1) {
+            position = $(e).attr('class').split(' ').find((d) => d.search('tooltipster-') > -1).replace(/tooltipster\-/g, '')
+        }
+
+        $(e).tooltipster({
+            theme: 'tooltipster-val',
+            animation: 'grow',
+            delay: 0,
+            offsetY: -5,
+            touchDevices: false,
+            trigger: 'hover',
+            position: position
+        })
     })
 }
 app.gridBoundTooltipster = (selector) => {
@@ -129,3 +137,6 @@ app.gridBoundTooltipster = (selector) => {
     }
 }
 app.capitalize = (s) => (s.length == 0 ? '' : (s[0].toUpperCase() + s.slice(1)))
+app.repeatAlphabetically = (prefix) => {
+    return 'abcdefghijklmnopqrstuvwxyz'.split('').map((d) => `${prefix} ${d.toUpperCase()}`)
+}

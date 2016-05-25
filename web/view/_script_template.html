@@ -26,3 +26,42 @@
 		</div>
 	</div>	
 </script>
+
+<script id="template-report-filter" type="text/html">
+	<div class="panel">
+		<div class="panel-heading" role="tab" data-bind="attr: { 'id': 'h-' + $index() }">
+			<h4 class="panel-title">
+				<a class="collapsed tooltipster" role="button" data-toggle="collapse" title="Toggle filter common" data-bind="attr: { 'href': '#c-' + $index() }, text: $data.group">Common</a>
+	  		</h4>
+		</div>
+		<div class="panel-collapse collapse" role="tabpanel" data-bind="attr: { 'id': 'c-' + $index() }, css: { 'in': ($index() == 0) }">
+			<div class="panel-body" data-bind="foreach: $data.sub">
+				<div class="form-group">
+					<div class="input-group input-group-sm ez width-full">
+						<span class="input-group-addon width-100 align-right" data-bind="text: $data.title">Branch</span>
+						<div class="width-full">
+							<select data-bind="kendoMultiSelect: rpt.filterMultiSelect($data)" style="width: 100%"></select>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</script>
+
+<script id="template-menu" type="text/html">
+	<li data-bind="css: { 'dropdown': ($data.submenu.length > 0) }">
+		<a class="color-base" data-bind="css: { 'dropdown-toggle': ($data.submenu.length > 0), 'active': (vm.pageTitle() == $data.title) }, attr: { href: $data.href }">
+			<i data-bind="css: vm.menuIcon($data)"></i>&nbsp;
+			<span data-bind="text: $data.title"></span>
+		</a>
+		<ul class="dropdown-menu" data-bind="foreach: $data.submenu, visible: ($data.submenu.length > 0)">
+			<li>
+				<a class="color-base" data-bind="attr: { href: $data.href }">
+					<i data-bind="css: vm.menuIcon($data)"></i>&nbsp;
+					<span data-bind="text: $data.title"></span>	
+				</a>
+			</li>
+		</ul>
+	</li>
+</script>

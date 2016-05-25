@@ -35,6 +35,21 @@ func BranchGetByID(id string) *Branch {
 	return b
 }
 
+func BranchGetAll() ([]*Branch, error) {
+	cursor, err := DB().Find(new(Branch), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*Branch{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (b *Branch) Save() error {
 	e := Save(b)
 	if e != nil {

@@ -46,8 +46,8 @@ html, body {
     .app-top .app-menu ul.nav.navbar-nav > li > a.active {
       background-color: #74B841;
       color: white; }
-  .app-top .app-menu ul.nav.navbar-nav > li a.dropdown-toggle {
-    background-color: transparent; }
+  .app-top .app-menu ul.nav.navbar-nav > li > ul.dropdown-menu li a {
+    font-size: 12px; }
 
 .app-container {
   position: relative;
@@ -95,8 +95,6 @@ html, body {
   padding: 0px;
   margin-bottom: 0px;
   margin-top: 2px; }
-  .breadcrumb li > a {
-    font-weight: bold; }
 
 .form-label {
   line-height: 25px;
