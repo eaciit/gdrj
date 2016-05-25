@@ -11,6 +11,7 @@ type Module struct {
 	orm.ModelBase `json:"-" bson:"-"`
 	ID            string `json:"_id" bson:"_id"`
 	Name          string
+	Description   string
 	ExePath       string
 	LastCompiled  time.Time
 }
