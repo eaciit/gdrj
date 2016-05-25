@@ -3,6 +3,7 @@ package controller
 import (
 	"eaciit/gdrj/web/helper"
 	"eaciit/gdrj/web/model"
+	"errors"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -17,6 +18,45 @@ func CreateLoginController(s *knot.Server) *LoginController {
 	return controller
 }
 
+func (l *LoginController) GetSession(r *knot.WebContext) interface{} {
+
+	r.Config.OutputType = knot.OutputJson
+	sessionId := r.Session("sessionid", "")
+
+	return helper.CreateResult(true, toolkit.M{}.Set("sessionid", sessionId), "")
+
+}
+
+func (l *LoginController) GetUserName(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	sessionId := r.Session("sessionid", "")
+
+	if toolkit.ToString(sessionId) == "" {
+		err := error(errors.New("Sessionid is not found"))
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	tUser, err := gocore.GetUserName(sessionId)
+
+	if err != nil {
+		return helper.CreateResult(false, nil, "Get username failed")
+	}
+
+	return helper.CreateResult(true, toolkit.M{}.Set("username", tUser.LoginID), "")
+}
+
+func (l *LoginController) GetAccessMenu(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	sessionId := r.Session("sessionid", "")
+
+	results, err := gocore.GetAccessMenu(sessionId)
+	if err != nil {
+		helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, results, "Success")
+}
+
 func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -25,7 +65,7 @@ func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, "", err.Error())
 	}
 
-	sessid, err := new(gocore.Login).LoginProcess(payload)
+	sessid, err := gocore.LoginProcess(payload)
 	if err != nil {
 		return helper.CreateResult(false, "", err.Error())
 	}
@@ -48,7 +88,7 @@ func (l *LoginController) ResetPassword(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	if err = new(gocore.Login).ResetPassword(payload); err != nil {
+	if err = gocore.ResetPassword(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -64,7 +104,7 @@ func (l *LoginController) SavePassword(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if err = new(gocore.Login).SavePassword(payload); err != nil {
+	if err = gocore.SavePassword(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -80,7 +120,7 @@ func (l *LoginController) Authenticate(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	result, err := new(gocore.Login).Authenticate(payload)
+	result, err := gocore.Authenticate(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
