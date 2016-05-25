@@ -1,4 +1,5 @@
-vm.pageTitle("Data Manager")
+vm.currentMenu('Data Manager')
+vm.currentTitle('Upload Data')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
 	{ title: 'Data Manager', href: '#' },

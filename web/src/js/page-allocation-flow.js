@@ -1,6 +1,8 @@
-vm.pageTitle('Allocation Flow')
+vm.currentMenu('Administration')
+vm.currentTitle('Allocation Flow')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
+	{ title: 'Administration', href: '#' },
 	{ title: 'Allocation Flow', href: '/allocationflow' }
 ])
 

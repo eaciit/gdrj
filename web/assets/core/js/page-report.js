@@ -6,7 +6,8 @@ var currentReportMenu = vm.menu().find(function (d) {
 	return d.href == '/' + document.URL.split('/').slice(3).join('/');
 });
 
-vm.pageTitle('Report');
+vm.currentMenu('Report');
+vm.currentTitle(currentReportMenu.title);
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Report', href: '#' }, { title: currentReportMenu.title, href: currentReportMenu.href }]);
 vm.pageTitle(currentReportMenu.title);
 
