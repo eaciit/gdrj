@@ -11,7 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
+	// "strings"
 )
 
 var (
@@ -50,13 +50,21 @@ func main() {
 	genbranchdata()
 	fmt.Printf("Done : Generate Branch Data \n")
 
-	// fmt.Printf("Start : Generate Profit Center Data \n")
-	// genprofitcenterdata()
-	// fmt.Printf("Done : Generate Profit Center Data \n")
+	fmt.Printf("Start : Generate Profit Center Data \n")
+	genprofitcenterdata()
+	fmt.Printf("Done : Generate Profit Center Data \n")
 
-	// fmt.Printf("Start : Generate Cost Center Data \n")
-	// gencostcenterdata()
-	// fmt.Printf("Done : Generate Cost Center Data \n")
+	fmt.Printf("Start : Generate Cost Center Data \n")
+	gencostcenterdata()
+	fmt.Printf("Done : Generate Cost Center Data \n")
+
+	fmt.Printf("Start : Generate Cost Center Group Data \n")
+	gencostcentergroupdata()
+	fmt.Printf("Done : Generate Cost Center Group Data \n")
+
+	fmt.Printf("Start : Generate Cost Center Type Data \n")
+	gencostcentertypedata()
+	fmt.Printf("Done : Generate Cost Center Type Data \n")
 
 	fmt.Printf("Start : Generate Brand Data \n")
 	genbranddata()
@@ -76,23 +84,23 @@ func main() {
 }
 
 func genproductdata() {
-	arrconfig := []string{"big", "medium", "small"}
+	// arrconfig := []string{"big", "medium", "small"}
 
-	for i := 1; i <= 10000; i++ {
+	// for i := 1; i <= 10000; i++ {
 
-		gproduct := new(gdrj.Product)
-		gproduct.ID = toolkit.Sprintf("SKU%06d", i)
-		gproduct.Name = fmt.Sprintf("%v - %v", arrstrbrand[i%5], arrconfig[i%3])
-		gproduct.Config = arrconfig[i%3]
-		gproduct.Brand = arrstrbrand[i%5]
-		gproduct.LongName = fmt.Sprintf("[%v] %v - %v", toolkit.Sprintf("SKU%06d", i), arrstrbrand[i%5], arrconfig[i%3])
+	// 	gproduct := new(gdrj.Product)
+	// 	gproduct.ID = toolkit.Sprintf("SKU%06d", i)
+	// 	gproduct.Name = fmt.Sprintf("%v - %v", arrstrbrand[i%5], arrconfig[i%3])
+	// 	gproduct.Config = arrconfig[i%3]
+	// 	gproduct.Brand = arrstrbrand[i%5]
+	// 	gproduct.LongName = fmt.Sprintf("[%v] %v - %v", toolkit.Sprintf("SKU%06d", i), arrstrbrand[i%5], arrconfig[i%3])
 
-		err := gproduct.Save()
-		if err != nil {
-			fmt.Printf("%v \n", err.Error())
-		}
-	}
-
+	// 	err := gproduct.Save()
+	// 	if err != nil {
+	// 		fmt.Printf("%v \n", err.Error())
+	// 	}
+	// }
+	fmt.Println("SKIP -")
 	return
 }
 
@@ -262,50 +270,108 @@ func genbrandcategorydata() {
 	}
 }
 
-func gentruckmasterdata() {
-	for i := 1; i <= 1000; i++ {
-		gtruck := new(gdrj.Truck)
-		gtruck.ID = toolkit.Sprintf("T%04d", i)
-		gtruck.PlateNo = toolkit.Sprintf("TNO%04d", i)
-		gtruck.BranchID = arrbranch[i%15]
-		gtruck.Year = 2016
+func gencostcentergroupdata() {
+	loc := filepath.Join(wd, "data", "costcentergroupdata.csv")
+	conn, err := preparecsvconn(loc)
 
-		err := gtruck.Save()
+	if err != nil {
+		fmt.Printf("Error connecting to database: %s \n", err.Error())
+		os.Exit(1)
+	}
+
+	c, err := conn.NewQuery().Select().Cursor(nil)
+	if err != nil {
+		return
+	}
+
+	defer c.Close()
+
+	arrccgroup := make([]*gdrj.HCostCenterGroup, 0, 0)
+	err = c.Fetch(&arrccgroup, 0, false)
+
+	for _, v := range arrccgroup {
+		err := v.Save()
 		if err != nil {
 			fmt.Printf("%v \n", err.Error())
 		}
 	}
 }
 
-func gencustomerdata() {
-	for i := 1; i <= 10000; i++ {
-		gcust := new(gdrj.Customer)
-		gcust.ID = toolkit.Sprintf("O%04d", i)
-		gcust.CustomerID = toolkit.Sprintf("C%04d", i)
-		gcust.Plant = arrbranch[i%15]
-		gcust.Name = toolkit.Sprintf("Cust - %v", gcust.ID)
-		gcust.KeyAccount = ""
-		if i%6 == 3 {
-			gcust.KeyAccount = arrbranch[(i/6)%5]
-		}
-		gcust.Channel = gdrj.ToChannelEnum(i % 6)
-		gcust.Group = "1"
-		gcust.National = "Indonesia"
-		tzone := strings.Split(arrzone[i%8], "|")
-		gcust.Zone = tzone[0]
-		gcust.Region = tzone[1]
-		gcust.Area = tzone[2]
+func gencostcentertypedata() {
+	loc := filepath.Join(wd, "data", "costcentertypedata.csv")
+	conn, err := preparecsvconn(loc)
 
-		err := gcust.Save()
+	if err != nil {
+		fmt.Printf("Error connecting to database: %s \n", err.Error())
+		os.Exit(1)
+	}
+
+	c, err := conn.NewQuery().Select().Cursor(nil)
+	if err != nil {
+		return
+	}
+
+	defer c.Close()
+
+	arrcctype := make([]*gdrj.CostCenterType, 0, 0)
+	err = c.Fetch(&arrcctype, 0, false)
+
+	for _, v := range arrcctype {
+		err := v.Save()
 		if err != nil {
 			fmt.Printf("%v \n", err.Error())
 		}
 	}
+}
+
+func gentruckmasterdata() {
+	// for i := 1; i <= 1000; i++ {
+	// 	gtruck := new(gdrj.Truck)
+	// 	gtruck.ID = toolkit.Sprintf("T%04d", i)
+	// 	gtruck.PlateNo = toolkit.Sprintf("TNO%04d", i)
+	// 	gtruck.BranchID = arrbranch[i%15]
+	// 	gtruck.Year = 2016
+
+	// 	err := gtruck.Save()
+	// 	if err != nil {
+	// 		fmt.Printf("%v \n", err.Error())
+	// 	}
+	// }
+	fmt.Println("SKIP -")
+	return
+}
+
+func gencustomerdata() {
+	// for i := 1; i <= 10000; i++ {
+	// 	gcust := new(gdrj.Customer)
+	// 	gcust.ID = toolkit.Sprintf("O%04d", i)
+	// 	gcust.CustomerID = toolkit.Sprintf("C%04d", i)
+	// 	gcust.Plant = arrbranch[i%15]
+	// 	gcust.Name = toolkit.Sprintf("Cust - %v", gcust.ID)
+	// 	gcust.KeyAccount = ""
+	// 	if i%6 == 3 {
+	// 		gcust.KeyAccount = arrbranch[(i/6)%5]
+	// 	}
+	// 	gcust.Channel = gdrj.ToChannelEnum(i % 6)
+	// 	gcust.Group = "1"
+	// 	gcust.National = "Indonesia"
+	// 	tzone := strings.Split(arrzone[i%8], "|")
+	// 	gcust.Zone = tzone[0]
+	// 	gcust.Region = tzone[1]
+	// 	gcust.Area = tzone[2]
+
+	// 	err := gcust.Save()
+	// 	if err != nil {
+	// 		fmt.Printf("%v \n", err.Error())
+	// 	}
+	// }
+	fmt.Println("SKIP -")
+	return
 }
 
 func prepareConnection() (dbox.IConnection, error) {
 	var config = toolkit.M{}.Set("timeout", 5)
-	ci := &dbox.ConnectionInfo{"localhost:27017", "godrej", "", "", config}
+	ci := &dbox.ConnectionInfo{"cloud.eaciit.com:27017", "ecgodrej", "", "", config}
 	c, e := dbox.NewConnection("mongo", ci)
 	if e != nil {
 		return nil, e

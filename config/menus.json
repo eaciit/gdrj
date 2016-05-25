@@ -1,0 +1,92 @@
+[
+   {
+      "_id":"gdrj.dashboard",
+      "accessId":"GDRJ.DASHBOARD",
+      "title":"Dashboard",
+      "childrens":[],
+      "link":"/web/index"
+   },
+   {
+      "_id": "gdrj.distributor",
+      "accessId":"GDRJ.DISTRIBUTOR",
+      "title":"Distributor",
+      "childrens":[
+      	{
+      		"_id": "gdrj.reportdistributor",
+      		"title":"Report Distributor",
+      		"childrens":[],
+      		"link":"/web/reportdistributor"
+      	}
+      ],
+      "link":""
+   },
+   {
+      "_id":"gdrj.generaltrade",
+      "accessId":"GDRJ.GENERALTRADE",
+      "title":"General Trade",
+      "childrens":[
+      	{
+      		"_id":"gdrj.reportgeneraltrade",
+      		"title":"Report General Trade",
+      		"childrens":[],
+      		"link":"/web/reportgeneraltrade"
+   		}
+      ],
+      "link":""
+   },
+   {
+      "_id":"gdrj.marketefficiency",
+      "accessId":"GDRJ.MARKETEFFICIENCY",
+      "title":"Market Efficiency",
+      "childrens":[
+      	{
+      		"_id":"gdrj.reportmarketefficiency",
+      		"title":"Market Efficiency",
+      		"childrens":[],
+      		"link":"/web/reportmarketefficiency"
+	   }
+      ],
+      "link":"/web/marketefficiency"
+   },
+   {
+      "_id":"gdrj.sgna",
+      "accessId":"GDRJ.SGNA",
+      "title":"SG & A",
+      "childrens":[
+      	{
+      		"_id":"gdrj.reportsgna",
+      		"title":"SG & A",
+      		"childrens":[],
+      		"link":"/web/reportsgna"
+	   }
+      ],
+      "link":""
+   },
+   {
+      "_id":"gdrj.datamanager",
+      "accessId":"GDRJ.DATAMANAGER",
+      "title":"Data Manager",
+      "childrens":[
+      	 {
+            "id":"databrowser",
+            "title":"Data Browser",
+            "childrens":[],
+            "link":"/web/databrowser"
+         },
+         {
+            "id":"uploaddata",
+            "title":"Upload Data",
+            "childrens":[],
+            "link":"/web/uploaddata"
+         }
+      ],
+      "link":""
+   },
+   {
+      "_id":"gdrj.administration",
+      "accessId":"GDRJ.ADMINISTRATION",
+      "title":"Administration",
+      "childrens":[],
+      "link":"/web/administration"
+   }
+]
