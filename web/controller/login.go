@@ -65,7 +65,7 @@ func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, "", err.Error())
 	}
 
-	sessid, err := new(gocore.Login).LoginProcess(payload)
+	sessid, err := gocore.LoginProcess(payload)
 	if err != nil {
 		return helper.CreateResult(false, "", err.Error())
 	}
@@ -88,7 +88,7 @@ func (l *LoginController) ResetPassword(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	if err = new(gocore.Login).ResetPassword(payload); err != nil {
+	if err = gocore.ResetPassword(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -104,7 +104,7 @@ func (l *LoginController) SavePassword(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	if err = new(gocore.Login).SavePassword(payload); err != nil {
+	if err = gocore.SavePassword(payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -120,7 +120,7 @@ func (l *LoginController) Authenticate(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	result, err := new(gocore.Login).Authenticate(payload)
+	result, err := gocore.Authenticate(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
