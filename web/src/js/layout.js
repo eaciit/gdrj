@@ -16,10 +16,10 @@ vm.menu = ko.observableArray([
 	] },
 	{ title: 'Administration', icon: 'gear', href: '#', submenu: [
 		{ title: 'Allocation Flow', icon: 'arrows', href: '/web/allocationflow', submenu: [] },
-		{ title: 'Access', icon: 'unlock-alt', href: '#', submenu: [] },
-		{ title: 'Group', icon: 'users', href: '#', submenu: [] },
+		{ title: 'Access', icon: 'unlock-alt', href: '/web/access', submenu: [] },
+		{ title: 'Group', icon: 'users', href: '/web/group', submenu: [] },
 		{ title: 'User', icon: 'user', href: '#', submenu: [] },
-		{ title: 'Session', icon: 'clock-o', href: '#', submenu: [] }
+		{ title: 'Session', icon: 'clock-o', href: '/web/session', submenu: [] }
 	] }
 ])
 vm.breadcrumb = ko.observableArray([

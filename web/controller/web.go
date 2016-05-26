@@ -95,3 +95,30 @@ func (w *WebController) AllocationFlow(r *knot.WebContext) interface{} {
 
 	return true
 }
+
+func (w *WebController) Access(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-access.html")
+
+	return true
+}
+
+func (w *WebController) Group(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-group.html")
+
+	return true
+}
+
+func (w *WebController) Session(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-session.html")
+
+	return true
+}
