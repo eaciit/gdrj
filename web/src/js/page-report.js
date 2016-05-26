@@ -1,12 +1,26 @@
-let currentReportMenu = vm.menu().find((d) => d.title === 'Report')
-	.submenu.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
-
-vm.currentMenu('Report')
-vm.currentTitle(currentReportMenu.title)
+let menuLink = ('/' + document.URL.split('/').slice(3).join('/'));
+let menuTitle;
+switch (menuLink){
+	case '/web/reportdistribution':
+		menuTitle = 'Distribution'
+	break;
+	case '/web/reportgeneraltrade':
+		menuTitle = 'General Trade'
+	break;
+	case '/web/reportmarketefficiency':
+		menuTitle = 'Market Efficiency'
+	break;
+	case '/web/reportsgna':
+		menuTitle = 'SG & A'
+	break;
+}
+// let currentReportMenu = vm.menu().find((d) => d.title === menuTitle)
+// 	find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
+vm.currentMenu(menuTitle)
+vm.currentTitle(menuTitle)
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'Report', href: '#' },
-	{ title: currentReportMenu.title, href: currentReportMenu.href }
+	{ title: menuTitle, href:menuLink }
 ])
 
 viewModel.report = new Object()
