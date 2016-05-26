@@ -57,7 +57,7 @@ func main() {
 	})
 
 	if err := setAclDatabase(); err != nil {
-		toolkit.Printf("Error set database to efs: %s \n", err.Error())
+		toolkit.Printf("Error set acl database : %s \n", err.Error())
 	}
 
 	server.Listen()
