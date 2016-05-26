@@ -48,7 +48,7 @@ rpt.filterMultiSelect = function (d) {
 		placeholder: 'Choose items ...'
 	};
 
-	if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity'].indexOf(d._id) > -1) {
+	if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'HGeographi'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
 			data: ko.computed(function () {
 				return rpt.masterData[d._id]().map(function (d) {
@@ -83,7 +83,7 @@ rpt.filterMultiSelect = function (d) {
 		});
 	}
 
-	console.log('filter', d, config);
+	// console.log('filter', d, config)
 
 	return config;
 };

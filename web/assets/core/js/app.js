@@ -91,6 +91,9 @@ app.isNot = function (observable, comparator) {
 
     return a !== b;
 };
+app.isUndefined = function (o) {
+    return typeof o === 'undefined';
+};
 app.showError = function (message) {
     return sweetAlert('Oops...', message, 'error');
 };
@@ -147,7 +150,6 @@ app.prepareTooltipster = function ($o, argConfig) {
             config = $.extend(true, config, argConfig);
         }
 
-        console.log("=====", e, config);
         $(e).tooltipster(config);
     });
 };
