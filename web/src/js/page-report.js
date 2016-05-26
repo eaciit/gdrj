@@ -32,73 +32,89 @@ rpt.masterData.GLCode = ko.observableArray([])
 rpt.commonBranch = ko.observableArray([]),
 
 rpt.value ={}
-rpt.value.Branch = ko.observableArray([])
-rpt.value.Brand = ko.observableArray([])
-rpt.value.Region = ko.observableArray([])
-rpt.value.Channel = ko.observableArray([])
-rpt.value.From = ko.observableArray([])
-rpt.value.Area = ko.observableArray([])
-rpt.value.Zone = ko.observableArray([])
-rpt.value.Accounts = ko.observableArray([])
-rpt.value.Outlet = ko.observableArray([])
-rpt.value.Group = ko.observableArray([])
-rpt.value.SKU = ko.observableArray([])
-rpt.value.Entity = ko.observableArray([])
-rpt.value.Type = ko.observableArray([])
-rpt.value.HQ = ko.observableArray([])
-rpt.value.Group1 = ko.observableArray([])
-rpt.value.Group2 = ko.observableArray([])
-rpt.value.HCostCenterGroup = ko.observableArray([])
-rpt.value.GLCode = ko.observableArray([])
+rpt.value.commonBranch = ko.observableArray([])
+rpt.value.commonBrand = ko.observableArray([])
+rpt.value.commonRegion= ko.observableArray([])
+rpt.value.commonChannel= ko.observableArray([])
+rpt.value.commonFrom= ko.observableArray([])
+
+rpt.value.geoRegion= ko.observableArray([])
+rpt.value.geoArea= ko.observableArray([])
+rpt.value.geoZone= ko.observableArray([])
+
+rpt.value.customerChannel= ko.observableArray([])
+rpt.value.customerAccounts= ko.observableArray([])
+rpt.value.customerOutlet= ko.observableArray([])
+
+rpt.value.customerChannel= ko.observableArray([])
+rpt.value.customerAccounts= ko.observableArray([])
+rpt.value.customerOutlet= ko.observableArray([])
+
+rpt.value.productGroup= ko.observableArray([])
+rpt.value.productBrand= ko.observableArray([])
+rpt.value.productSKU= ko.observableArray([])
+
+rpt.value.profit_centerEntity = ko.observableArray([])
+rpt.value.profit_centerType= ko.observableArray([])
+rpt.value.profit_centerBranch= ko.observableArray([])
+rpt.value.profit_centerHQ= ko.observableArray([])
+
+rpt.value.cost_centerGroup1 = ko.observableArray([])
+rpt.value.cost_centerGroup2 = ko.observableArray([])
+rpt.value.cost_centerHCostCenterGroup= ko.observableArray([])
+
+rpt.value.ledgerGLCode = ko.observableArray([])
+
 
 rpt.filter = [
 	{ _id: 'common', group: 'Base Filter', sub: [
-		{ _id: 'Branch', title: 'Branch' },
-		{ _id: 'Brand', title: 'Brand' },
-		{ _id: 'Region', title: 'Region' },
-		{ _id: 'Channel', title: 'Channel' },
-		{ _id: 'From', title: 'From' },
+		{ _id: 'Branch', title: 'Branch', value:'commonBranch'},
+		{ _id: 'Brand', title: 'Brand', value:'commonBrand'},
+		{ _id: 'Region', title: 'Region', value:'commonRegion'},
+		{ _id: 'Channel', title: 'Channel', value:'commonChannel'},
+		{ _id: 'From', title: 'From', value:'commonFrom'},
 	] },
 	{ _id: 'geo', group: 'Geographical', sub: [
-		{ _id: 'Region', title: 'Region' },
-		{ _id: 'Area', title: 'Area' },
-		{ _id: 'Zone', title: 'Zone' }
+		{ _id: 'Region', title: 'Region', value:'geoRegion' },
+		{ _id: 'Area', title: 'Area', value:'geoArea' },
+		{ _id: 'Zone', title: 'Zone', value:'geoZone' }
 	] },
 	{ _id: 'customer', group: 'Customer', sub: [
-		{ _id: 'Channel', title: 'Channel' },
-		{ _id: 'Accounts', title: 'Accounts' },
-		{ _id: 'Outlet', title: 'Outlet' }
+		{ _id: 'Channel', title: 'Channel', value:'customerChannel' },
+		{ _id: 'Accounts', title: 'Accounts', value:'customerAccounts' },
+		{ _id: 'Outlet', title: 'Outlet', value:'customerOutlet' }
 	] },
 	{ _id: 'product', group: 'Product', sub: [
-		{ _id: 'Group', title: 'Group' },
-		{ _id: 'Brand', title: 'Brand' },
-		{ _id: 'SKU', title: 'SKU' }
+		{ _id: 'Group', title: 'Group', value:'productGroup' },
+		{ _id: 'Brand', title: 'Brand', value:'productBrand' },
+		{ _id: 'SKU', title: 'SKU', value:'', value:'productSKU' }
 	] },
 	{ _id: 'profit_center', group: 'Profit Center', sub: [
-		{ _id: 'Entity', title: 'Entity' },
-		{ _id: 'Type', title: 'Type' },
-		{ _id: 'Branch', title: 'Branch' },
-		{ _id: 'HQ', title: 'HQ' }
+		{ _id: 'Entity', title: 'Entity', value:'profit_centerEntity' },
+		{ _id: 'Type', title: 'Type', value:'profit_centerType' },
+		{ _id: 'Branch', title: 'Branch', value:'profit_centerBranch' },
+		{ _id: 'HQ', title: 'HQ', value:'profit_centerHQ' }
 	] },
 	{ _id: 'cost_center', group: 'Cost Center', sub: [
-		{ _id: 'Group1', title: 'Group 1' },
-		{ _id: 'Group2', title: 'Group 2' },
-		{ _id: 'HCostCenterGroup', title: 'Function' }
+		{ _id: 'Group1', title: 'Group 1', value:'cost_centerGroup1' },
+		{ _id: 'Group2', title: 'Group 2', value:'cost_centerGroup2' },
+		{ _id: 'HCostCenterGroup', title: 'Function', value:'cost_centerHCostCenterGroup'}
 	] },
 	{ _id: 'ledger', group: 'Ledger', sub: [
-		{ _id: 'GLCode', title: 'GL Code' }
+		{ _id: 'GLCode', title: 'GL Code', value:'ledgerGLCode' }
 	] },
+	{ _id: 'ledger', group: 'Ledger', sub: [] },
 ]
 
 rpt.filterMultiSelect = (d) => {
 	let config = {
-		value:rpt.value[d._id],
+		value:rpt.value[d.value],
 		data: rpt.masterData[d._id],
 		placeholder: 'Choose items ...'
 	}
 
 	if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity'].indexOf(d._id) > -1) {
-		config = $.extend(true, config, {
+				config = $.extend(true, config, {
 			data: ko.computed(() => {
 				return rpt.masterData[d._id]().map((d) => {
 					return { _id: d._id, Name: `${d._id} - ${d.Name}` }
