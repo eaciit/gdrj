@@ -139,4 +139,5 @@ rpt.refreshData = () => {
 
 $(() => {
 	rpt.refreshData()
+	pvt.init()
 })

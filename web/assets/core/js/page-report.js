@@ -95,4 +95,5 @@ rpt.refreshData = function () {
 
 $(function () {
 	rpt.refreshData();
+	pvt.init();
 });
