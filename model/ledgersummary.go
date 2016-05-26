@@ -27,12 +27,22 @@ func (s *LedgerSummary) TableName() string {
 	return "LedgerSummary"
 }
 
+/*
+[
+    {_id:{col1:"D1",col2:"D2",col3:"D3"},SalesAmount:10,Qty:5,Value:2},
+    {_id:{col1:"D1",col2:"D2",col3:"D4"},SalesAmount:10,Qty:3.2,Value:3},
+]
+
+row: _id.col1, _id.col2
+col: _id.col3
+
+*/
 func SummarizeLedgerSum(
     filter *dbox.Filter,
     columns []string, 
     datapoints []string, 
+        // misal: ["sum:Value1:SalesAmount","sum:Value2:Qty","avg:Value3"]
     fnTransform func(m *toolkit.M)error)([]toolkit.M, error){
-        
     sum := new(LedgerSummary)
     conn := DB().Connection
     q := conn.NewQuery().From(sum.TableName())
