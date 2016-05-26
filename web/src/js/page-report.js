@@ -124,7 +124,7 @@ rpt.filterMultiSelect = (d) => {
 }
 
 rpt.refreshData = () => {
-	$('.grid').append($('<p />').text('Still under development.'))
+	// $('.grid').append($('<p />').text('Still under development.'))
 	return
 	$('.grid').kendoGrid({
 		columns: [

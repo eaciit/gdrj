@@ -7453,9 +7453,13 @@ a.ez:hover {
   margin-bottom: 0px;
 }
 .panel-group.ez-collapse .panel .panel-heading {
+  margin: -1px -1px 0px -1px;
   color: white;
   cursor: pointer;
   background-color: #6194cf;
+}
+.panel-group.ez-collapse .panel .panel-heading:hover {
+  background-color: #3b79c2;
 }
 .panel-group.ez-collapse .panel .panel-heading .panel-title {
   font-size: 12px;
@@ -7465,10 +7469,35 @@ a.ez:hover {
   width: 100%;
   padding: 6px 6px 7px;
 }
+.panel-group.ez-collapse .panel .panel-heading .panel-title a span.pull-right {
+  font-size: 13px;
+  display: block;
+  width: 15px;
+  text-align: center;
+}
 .panel-group.ez-collapse .panel .panel-heading .panel-title a:hover,
 .panel-group.ez-collapse .panel .panel-heading .panel-title a:active,
 .panel-group.ez-collapse .panel .panel-heading .panel-title a:focus {
   text-decoration: none;
+}
+.panel-group.ez-collapse .panel .panel-heading .panel-title a.collapsed .fa-angle-left {
+  display: block;
+}
+.panel-group.ez-collapse .panel .panel-heading .panel-title a.collapsed .fa-angle-down {
+  display: none;
+  width: 0px;
+  overflow: hidden;
+}
+.panel-group.ez-collapse .panel .panel-heading .panel-title a:not(.collapsed) {
+  background-color: #3b79c2;
+}
+.panel-group.ez-collapse .panel .panel-heading .panel-title a:not(.collapsed) span.pull-right .fa-angle-left {
+  display: none;
+  width: 0px;
+  overflow: hidden;
+}
+.panel-group.ez-collapse .panel .panel-heading .panel-title a:not(.collapsed) span.pull-right .fa-angle-down {
+  display: block;
 }
 .panel-group.ez-collapse .panel .panel-body {
   padding: 4px;
@@ -7562,11 +7591,11 @@ input[type="text"].ez {
   border-color: #74B841;
 }
 .border-blue,
-.panel-group.ez-collapse .panel,
 .list-group.ez .list-group-item {
   border-color: #3b79c2;
 }
-.border-grey {
+.border-grey,
+.panel-group.ez-collapse .panel {
   border-color: #F0F3F4;
 }
 .border-orange {
