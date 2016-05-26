@@ -7420,6 +7420,12 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
   box-shadow: none;
   border-radius: 0;
 }
+.ez.input-group .form-control[type=checkbox],
+.ez.input-group .form-control[type=radio] {
+  margin-top: 0px;
+  margin-left: 5px;
+  height: 30px;
+}
 .ez.panel {
   box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02);
   border-radius: 0px;
