@@ -57,7 +57,7 @@ ac.AccessColumns = ko.observableArray([{ headerTemplate: "<center><input type='c
 }, {
     headerTemplate: "<center>Action</center>", width: 100,
     template: function template(d) {
-        return ["<button class='btn btn-sm btn-warning'><span class='fa fa-calculator' onclick='ec.editData(" + JSON.stringify(d) + ")'></span></button>"].
+        return ["<button class='btn btn-sm btn-warning' onclick='ac.editData(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>"].
         // "<div onclick='ed.showFormulaEditor("+d.Index+", "+d+")'>"+d.FormulaText.join('')+"</div>",
         join(" ");
     }
@@ -69,16 +69,53 @@ ac.selectedTableID = ko.observable("");
 ac.tempCheckIdDelete = ko.observableArray([]);
 ac.isNew = ko.observable(false);
 
+ac.checkDeleteData = function (elem, e) {
+    if (e === 'delete') {
+        if ($(elem).prop('checked') === true) ac.tempCheckIdDelete.push($(elem).attr('idcheck'));else ac.tempCheckIdDelete.remove(function (item) {
+            return item === $(elem).attr('idcheck');
+        });
+    }
+    if (e === 'deleteall') {
+        if ($(elem).prop('checked') === true) {
+            $('.deletecheck').each(function (index) {
+                $(this).prop("checked", true);
+                ac.tempCheckIdDelete.push($(this).attr('idcheck'));
+            });
+        } else {
+            (function () {
+                var idtemp = '';
+                $('.deletecheck').each(function (index) {
+                    $(this).prop("checked", false);
+                    idtemp = $(this).attr('idcheck');
+                    ac.tempCheckIdDelete.remove(function (item) {
+                        return item === idtemp;
+                    });
+                });
+            })();
+        }
+    }
+};
+
 ac.newData = function () {
     ac.isNew(true);
     $('#modalUpdate').modal('show');
     ko.mapping.fromJS(ac.templateAccess, ac.config);
 };
 
-ac.editData = function (data) {
+ac.editData = function (id) {
     ac.isNew(false);
-    $('#modalUpdate').modal('show');
-    ko.mapping.fromJS(data, ac.config);
+    app.ajaxPost('/administration/editaccess', { _id: id }, function (res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+
+        $('#modalUpdate').modal('show');
+        ko.mapping.fromJS(res.data, ac.config);
+    }, function (err) {
+        app.showError(err.responseText);
+    }, {
+        timeout: 5000
+    });
 };
 
 ac.saveChanges = function () {
@@ -152,7 +189,11 @@ ac.generateGrid = function () {
                 }
             },
             schema: {
-                data: "data.Datas",
+                data: function data(res) {
+                    ac.selectedTableID("show");
+                    app.loader(false);
+                    return res.data.Datas;
+                },
                 total: "data.total"
             },
 
