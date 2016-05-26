@@ -1,6 +1,6 @@
-viewModel.report = new Object()
+viewModel.pivot = new Object()
 let pvt = viewModel.pivot
 
 pvt.init = () => {
-	
+
 }

@@ -1,6 +1,6 @@
 "use strict";
 
-viewModel.report = new Object();
+viewModel.pivot = new Object();
 var pvt = viewModel.pivot;
 
 pvt.init = function () {};
