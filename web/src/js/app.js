@@ -113,8 +113,8 @@ app.resetValidation = (selectorID) => {
 app.resetForm = ($o) => {
     $o.trigger('reset')
 }
-app.prepareTooltipster = ($o) => {
-    let $tooltipster = ($o == undefined) ? $('.tooltipster') : $o
+app.prepareTooltipster = ($o, argConfig) => {
+    let $tooltipster = (typeof $o === 'undefined') ? $('.tooltipster') : $o
 
     $tooltipster.each((i, e) => {
         let position = 'top'
@@ -123,15 +123,22 @@ app.prepareTooltipster = ($o) => {
             position = $(e).attr('class').split(' ').find((d) => d.search('tooltipster-') > -1).replace(/tooltipster\-/g, '')
         }
 
-        $(e).tooltipster({
+        let config = {
             theme: 'tooltipster-val',
             animation: 'grow',
             delay: 0,
             offsetY: -5,
             touchDevices: false,
             trigger: 'hover',
-            position: position
-        })
+            position: position,
+            content: $('<div />').html($(e).attr('title'))
+        }
+        if (typeof argConfig !== 'undefined') {
+            config = $.extend(true, config, argConfig)
+        }
+
+    console.log("=====", e, config)
+        $(e).tooltipster(config)
     })
 }
 app.gridBoundTooltipster = (selector) => {

@@ -78,7 +78,15 @@ rpt.filter = [
 
 rpt.filterMultiSelect = (d) => {
 	let config = {
-		data: rpt.masterData[d._id],
+		data: ko.computed(() => {
+			return rpt.masterData[d._id]().map((f) => {
+				if (!f.hasOwnProperty('Name')) {
+					return f
+				}
+
+				return { _id: f._id, Name: app.capitalize(f.Name) }
+			})
+		}, rpt.masterData[d._id]),
 		filter: 'contains',
 		placeholder: 'Choose items ...'
 	}
@@ -87,9 +95,9 @@ rpt.filterMultiSelect = (d) => {
 		config = $.extend(true, config, {
 			data: ko.computed(() => {
 				return rpt.masterData[d._id]().map((d) => {
-					return { _id: d._id, Name: `${d._id} - ${d.Name}` }
+					return { _id: d._id, Name: `${d._id} - ${app.capitalize(d.Name)}` }
 				})
-			}, rpt),
+			}, rpt.masterData[d._id]),
 			dataValueField: '_id',
 			dataTextField: 'Name'
 		})
@@ -118,25 +126,23 @@ rpt.filterMultiSelect = (d) => {
 		})
 	}
 
-	// console.log('filter', d, config)
+	console.log('filter', d, config)
 
 	return config
 }
-
-rpt.refreshData = () => {
-	$('.grid').append($('<p />').text('Still under development.'))
-	return
-	$('.grid').kendoGrid({
-		columns: [
-			{ title: "ID" }
-		],
-		dataSource: {
-			data: []
-		}
+rpt.titleFor = (data) => {
+	return 'asdfasdfasdfa'
+}
+rpt.prepareDrag = () => {
+	$('.pivot-section').sortable({
+	    connectWith: '.pivot-section'
 	})
+}
+rpt.refreshData = () => {
+	pvt.refreshData()
 }
 
 $(() => {
-	rpt.refreshData()
+	rpt.prepareDrag()
 	pvt.init()
 })
