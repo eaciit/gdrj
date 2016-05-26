@@ -103,7 +103,6 @@ rpt.filter = [
 	{ _id: 'ledger', group: 'Ledger', sub: [
 		{ _id: 'GLCode', title: 'GL Code', value:'ledgerGLCode' }
 	] },
-	{ _id: 'ledger', group: 'Ledger', sub: [] },
 ]
 
 rpt.filterMultiSelect = (d) => {
