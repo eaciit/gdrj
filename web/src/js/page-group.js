@@ -1,4 +1,5 @@
-vm.pageTitle("Group")
+vm.currentMenu('Administration')
+vm.currentTitle("Group")
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
 	{ title: 'Administration', href: '#' },
