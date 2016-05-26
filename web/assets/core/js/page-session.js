@@ -1,6 +1,7 @@
 'use strict';
 
-vm.pageTitle("Session");
+vm.currentMenu('Administration');
+vm.currentTitle("Session");
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Administration', href: '#' }, { title: 'Session', href: '/session' }]);
 
 viewModel.Session = new Object();
