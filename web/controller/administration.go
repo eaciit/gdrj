@@ -21,7 +21,7 @@ func (a *AdministrationController) GetAccess(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := toolkit.M{}
-	if err := r.GetForms(&payload); err != nil {
+	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -42,7 +42,7 @@ func (a *AdministrationController) Getaccessdropdown(r *knot.WebContext) interfa
 
 	return helper.CreateResult(true, data, "")
 }
-func (a *AdministrationController) FindAccess(r *knot.WebContext) interface{} {
+func (a *AdministrationController) EditAccess(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := toolkit.M{}
@@ -55,21 +55,6 @@ func (a *AdministrationController) FindAccess(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, data["tAccess"], "success")
-}
-
-func (a *AdministrationController) Search(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	payload := toolkit.M{}
-	if err := r.GetPayload(&payload); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	data, err := gocore.SearchAccess(payload)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	return helper.CreateResult(true, data, "success")
 }
 
 func (a *AdministrationController) DeleteAccess(r *knot.WebContext) interface{} {

@@ -11,12 +11,12 @@ import (
 func GetAccess(payload toolkit.M) (toolkit.M, error) {
 	var filter *dbox.Filter
 
-	if strings.Contains(toolkit.TypeName(payload["find"]), "float") {
-		payload["find"] = toolkit.ToInt(payload["find"], toolkit.RoundingAuto)
-	}
-
 	tAccess := new(acl.Access)
-	if find := toolkit.ToString(payload["find"]); find != "" {
+	if find := payload.GetString("search"); find != "" {
+		var bfind bool
+		if strings.Contains(toolkit.TypeName(payload["search"]), "bool") {
+			bfind, _ = strconv.ParseBool(find)
+		}
 		filter = new(dbox.Filter)
 		filter = dbox.Or(dbox.Contains("id", find),
 			dbox.Contains("title", find),
@@ -26,7 +26,8 @@ func GetAccess(payload toolkit.M) (toolkit.M, error) {
 			dbox.Contains("specialaccess1", find),
 			dbox.Contains("specialaccess2", find),
 			dbox.Contains("specialaccess3", find),
-			dbox.Contains("specialaccess4", find))
+			dbox.Contains("specialaccess4", find),
+			dbox.Eq("enable", bfind))
 	}
 
 	data := toolkit.M{}
@@ -46,7 +47,7 @@ func GetAccess(payload toolkit.M) (toolkit.M, error) {
 
 	c.Close()
 
-	c, err = acl.Find(tAccess, filter, nil)
+	c, err = acl.Find(tAccess, filter, nil) /*for counting all the data*/
 	if err != nil {
 		return nil, err
 	}
@@ -85,39 +86,16 @@ func FindAccess(payload toolkit.M) (toolkit.M, error) {
 	return result, nil
 }
 
-func SearchAccess(payload toolkit.M) ([]toolkit.M, error) {
-	find := payload.GetString("search")
-	bfind, err := strconv.ParseBool(find)
-	if err != nil {
-		return nil, err
-	}
-	tAccess := new(acl.Access)
-	arrm := make([]toolkit.M, 0, 0)
-	filter := dbox.Or(dbox.Contains("_id", find), dbox.Contains("id", find), dbox.Contains("title", find), dbox.Contains("group1", find),
-		dbox.Contains("group2", find), dbox.Contains("group3", find), dbox.Contains("specialaccess1", find), dbox.Contains("specialaccess2", find),
-		dbox.Contains("specialaccess3", find), dbox.Contains("specialaccess4", find), dbox.Eq("enable", bfind))
-	c, e := acl.Find(tAccess, filter, nil)
-	if e != nil {
-		return nil, e
-	}
-	if e := c.Fetch(&arrm, 0, false); e != nil {
-		return nil, e
-	}
-
-	return arrm, nil
-}
-
 func DeleteAccess(payload toolkit.M) error {
-	tAccess := new(acl.Access)
+	idArray := payload.Get("_id").([]interface{})
 
-	if err := acl.FindByID(tAccess, payload.GetString("_id")); err != nil {
-		return err
+	for _, id := range idArray {
+		o := new(acl.Access)
+		o.ID = toolkit.ToString(id)
+		if err := acl.Delete(o); err != nil {
+			return err
+		}
 	}
-
-	if err := acl.Delete(tAccess); err != nil {
-		return err
-	}
-
 	return nil
 }
 

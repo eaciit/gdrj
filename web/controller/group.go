@@ -27,7 +27,7 @@ func (a *GroupController) GetGroup(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, data, "success")
 
 }
-func (a *GroupController) FindGroup(r *knot.WebContext) interface{} {
+func (a *GroupController) EditGroup(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := toolkit.M{}
@@ -36,19 +36,21 @@ func (a *GroupController) FindGroup(r *knot.WebContext) interface{} {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	data, err := gocore.FindGroup(payload)
+	data, err := gocore.EditGroup(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, data, "success")
+	return helper.CreateResult(true, data["tGroup"], "success")
 
 }
 
 func (a *GroupController) Search(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
 	payload := toolkit.M{}
 
-	if err := r.GetForms(&payload); err != nil {
+	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
@@ -58,10 +60,11 @@ func (a *GroupController) Search(r *knot.WebContext) interface{} {
 	}
 
 	return helper.CreateResult(true, data, "success")
-
 }
 
 func (a *GroupController) GetAccessGroup(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
 	payload := toolkit.M{}
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())

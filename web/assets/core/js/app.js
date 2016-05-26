@@ -118,6 +118,9 @@ app.resetValidation = function (selectorID) {
         $form.hideMessages();
     } catch (err) {}
 };
+app.resetForm = function ($o) {
+    $o.trigger('reset');
+};
 app.prepareTooltipster = function ($o) {
     var $tooltipster = $o == undefined ? $('.tooltipster') : $o;
 
@@ -153,4 +156,16 @@ app.repeatAlphabetically = function (prefix) {
     return 'abcdefghijklmnopqrstuvwxyz'.split('').map(function (d) {
         return prefix + ' ' + d.toUpperCase();
     });
+};
+app.arrRemoveByIndex = function (arr, index) {
+    arr.splice(index, 1);
+};
+app.arrRemoveByItem = function (arr, item) {
+    var index = arr.indexOf(item);
+    if (index > -1) {
+        app.arrRemoveByIndex(arr, index);
+    }
+};
+app.clone = function (o) {
+    return $.extend(true, {}, o);
 };

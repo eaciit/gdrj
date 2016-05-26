@@ -1,4 +1,5 @@
-vm.pageTitle("Data Manager")
+vm.currentMenu('Data Manager')
+vm.currentTitle('Upload Data')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
 	{ title: 'Data Manager', href: '#' },
@@ -33,17 +34,32 @@ ud.gridUploadedFiles = {
 		{ title: '&nbsp;', width: 40, attributes: { class: 'align-center' }, template: (d) => {
 			return '<input type="checkbox" />'
 		} },
-		{ title: 'File Name', field: 'filename', attributes: { class: 'bold' } },
-		{ title: 'Description', field: 'description' },
+		{ title: 'File Name', field: 'Filename', attributes: { class: 'bold' } },
+		{ title: 'Model', field: 'DocName', template: (d) => {
+			return `<span class="tag bg-green">${d.DocName}</span>`
+		} },
+		{ title: 'Description', field: 'Note' },
 		{ title: 'Date', template: (d) =>
 			moment(d.date).format('DD-MM-YYYY HH:mm:ss')
 		},
 		{ title: 'Action', width: 50, template: (d) => {
-			return `
-			<!--button class="btn btn-sm btn-primary">
-				<i class='fa fa-play'></i>
-			</button-->
-			`
+			switch (d.Status) {
+				case 'ready': return `
+					<button class="btn btn-xs btn-warning tooltipster" title="Ready" onclick="ud.processData(\`${d.Filename}\`,this)">
+						<i class="fa fa-play"></i> Run process
+					</button>
+				`
+				case 'rollback': return `
+					<button class="btn btn-xs btn-warning tooltipster" title="Ready"">
+						<i class="fa fa-refresh"></i> Rollback
+					</button>
+				`
+				case 'done'     : return `<span class='tag bg-green'>Done</span>`
+				case 'failed'   : return `<span class='tag bg-green'>Failed</span>`
+				case 'onprocess': return `<span class='tag bg-green'>On Process</span>`
+			}
+
+			return ``
 		} }
 	],
 	filterable: false,

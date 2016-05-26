@@ -7,10 +7,10 @@
 				<h3 class="no-margin">Available Modules</h3>
 				<div class="panel-nav-button">
 					<div class="form-group relative align-right no-margin no-padding hardcore">
-						<button class="btn btn-sm btn-danger">
+						<button class="btn btn-sm btn-danger tooltipster" title="Delete checked modules">
 							<i class="fa fa-trash"></i> Delete
 						</button>
-						<button class="btn btn-sm btn-primary">
+						<button class="btn btn-sm btn-primary tooltipster" title="Add new module" data-bind="click: af.showModuleForm">
 							<i class="fa fa-plus"></i> Add
 						</button>
 					</div>
@@ -18,8 +18,17 @@
 			</div>
 			<div class="panel-body">
 				<p>List available modules. Click to add it onto applied modules.</p>
-				<div class="wrapper">
-					empty
+				<div class="wrapper bg-grey" style="min-height: 300px;">
+					<ul class="list-group ez module available-module" data-bind="foreach: af.dataModules" style="min-height: 300px;">
+						<li class="list-group-item">
+							<div class="wrapper">
+								<span class="icon-drag">
+									<i class="fa fa-arrows"></i>
+								</span>
+								<span class="text" data-bind="text: Name"></span>
+							</div>
+						</li>
+					</ul>
 				</div>
 
 				<div class="clearfix"></div>
@@ -33,7 +42,7 @@
 				<h3 class="no-margin">Applied Modules</h3>
 				<div class="panel-nav-button">
 					<div class="form-group relative align-right no-margin no-padding hardcore">
-						<button class="btn btn-sm btn-primary">
+						<button class="btn btn-sm btn-primary tooltipster" title="Run current">
 							<i class="fa fa-play"></i> Run
 						</button>
 					</div>
@@ -41,12 +50,107 @@
 			</div>
 			<div class="panel-body">
 				<p>List of modules to execute.</p>
-				<div class="wrapper">
-					empty
+				<div class="wrapper bg-grey" style="min-height: 300px;">
+					<ul class="list-group ez module applied-module" data-bind="foreach: af.dataAppliedModules" style="min-height: 300px;">
+						<li class="list-group-item">
+							<div class="wrapper">
+								<span class="icon-drag">
+									<i class="fa fa-arrows"></i>
+								</span>
+								<span class="text" data-bind="text: Name"></span>
+							</div>
+						</li>
+					</ul>
 				</div>
 			</div>
 		</div>
 	</div>
+</div>
+
+<div class="modal fade" id="modal-module" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document" style="width: 500px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">
+        			<span data-bind="text: af.isNew() ? 'Upload new' : 'Edit'"></span> module
+        		</h4>
+            </div>
+            <div class="modal-body">
+				<form class="wrapper form-upload-file" novalidate data-bind="with: af.moduleConfig">
+					<h3 class="ez-section">General</h3>
+
+					<div class="form-group">
+						<div class="input-group input-group-sm ez width-full">
+							<span class="input-group-addon align-right width-100">Name</span>
+							<input type="text" class="form-control input-sm width-full" required name="Name" data-required-msg="Name cannot be empty" placeholder="Type name here ..." data-bind="value: Name" />
+						</div>
+						<span class="k-invalid-msg" data-for="Name"></span>
+					</div>
+					<div class="form-group">
+						<div class="input-group input-group-sm ez width-full">
+							<span class="input-group-addon align-right width-100">Description</span>
+							<input type="text" class="form-control input-sm width-full" required name="Description" data-required-msg="Description cannot be empty" placeholder="Type description here ..." data-bind="value: Description" />
+						</div>
+						<span class="k-invalid-msg" data-for="Description"></span>
+					</div>
+
+					<div class="form-group">
+						<div class="input-group input-group-sm ez width-full">
+							<span class="input-group-addon align-right width-100">Archive</span>
+							<input type="file" name="file" class="form-control" required data-required-msg="Archive cannot be empty" placeholder="Select file" accept=".zip" />
+						</div>
+						<span class="k-invalid-msg" data-for="file"></span>
+					</div>
+
+					<h3 class="ez-section">Parameters</h3>
+
+					<div class="form-group">
+						<div class="wrapper">
+							<div class="form-group">
+								<button class="btn btn-sm btn-primary" data-bind="click: af.addParam">
+									<i class="fa fa-plus"></i> Add more param
+								</button>
+							</div>
+
+							<table class="table ez">
+								<tr>
+									<th>Param</th>
+									<th>Default Value</th>
+									<th>&nbsp;</th>
+								</tr>
+								<tbody data-bind="foreach: Params">
+									<tr>
+										<td>
+		<input type="text" class="form-control ez input-sm" placeholder="Type param name ..." data-bind="value: Key" />
+										</td>
+										<td>
+		<input type="text" class="form-control ez input-sm" placeholder="Type param value ..." data-bind="value: Value" />
+										</td>
+										<td class="width-50 align-center">
+		<button class="btn btn-sm btn-warning" data-bind="click: af.removeParam($index())">
+			<i class="fa fa-trash"></i>
+		</button>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</form>
+
+                <div class="clearfix"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
+		        	Cancel
+		        </button>
+                <button class="btn btn-sm btn-primary" data-bind="click: af.doUpload">
+					<i class="fa fa-upload"></i> Submit
+				</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="clearfix"></div>

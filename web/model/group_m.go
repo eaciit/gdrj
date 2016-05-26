@@ -1,10 +1,11 @@
 package gocore
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"github.com/eaciit/acl"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
+	"strconv"
 	"strings"
 )
 
@@ -24,7 +25,7 @@ func GetGroup() ([]toolkit.M, error) {
 	return arrm, nil
 
 }
-func FindGroup(payload toolkit.M) (toolkit.M, error) {
+func EditGroup(payload toolkit.M) (toolkit.M, error) {
 	tGroup := new(acl.Group)
 	result := toolkit.M{}
 
@@ -40,14 +41,17 @@ func FindGroup(payload toolkit.M) (toolkit.M, error) {
 func SearchGroup(payload toolkit.M) (toolkit.M, error) {
 	var filter *dbox.Filter
 
-	if strings.Contains(toolkit.TypeName(payload["search"]), "float") {
-		payload["search"] = toolkit.ToInt(payload["search"], toolkit.RoundingAuto)
-	}
-
 	tGroup := new(acl.Group)
 	if search := toolkit.ToString(payload["search"]); search != "" {
+		var bfind bool
+		if strings.Contains(toolkit.TypeName(payload["search"]), "bool") {
+			bfind, _ = strconv.ParseBool(search)
+		}
 		filter = new(dbox.Filter)
-		filter = dbox.Or(dbox.Contains("_id", search), dbox.Contains("title", search), dbox.Contains("owner", search))
+		filter = dbox.Or(dbox.Contains("_id", search),
+			dbox.Contains("title", search),
+			dbox.Contains("owner", search),
+			dbox.Eq("enable", bfind))
 
 	}
 	take := toolkit.ToInt(payload["take"], toolkit.RoundingAuto)
@@ -74,7 +78,7 @@ func SearchGroup(payload toolkit.M) (toolkit.M, error) {
 func GetAccessGroup(payload toolkit.M) ([]interface{}, error) {
 	tGroup := new(acl.Group)
 
-	if err := acl.FindByID(tGroup, payload.GetString("idGroup")); err != nil {
+	if err := acl.FindByID(tGroup, payload.GetString("_id")); err != nil {
 		return nil, err
 	}
 	var AccessGrants = []interface{}{}
@@ -89,45 +93,26 @@ func GetAccessGroup(payload toolkit.M) ([]interface{}, error) {
 }
 
 func DeleteGroup(payload toolkit.M) error {
-	tGroup := new(acl.Group)
+	idArray := payload.Get("_id").([]interface{})
 
-	if err := acl.FindByID(tGroup, payload["_id"].(string)); err != nil {
-		return err
+	for _, id := range idArray {
+		o := new(acl.Group)
+		o.ID = toolkit.ToString(id)
+		if err := acl.Delete(o); err != nil {
+			return err
+		}
 	}
-
-	if err := acl.Delete(tGroup); err != nil {
-		return err
-	}
-
 	return nil
 }
 
 func SaveGroup(payload toolkit.M) error {
 	g := payload["group"].(map[string]interface{})
-	config := payload["groupConfig"].(map[string]interface{})
-	memberConf, _ := toolkit.ToM(config)
-
-	if g["GroupType"].(string) == "1" {
-		memberConf.Set("filter", "("+g["Filter"].(string)+")").
-			Set("attributes", []string{g["LoginID"].(string), g["Fullname"].(string), g["Email"].(string)}).
-			Set("mapattributes", toolkit.M{}.Set("LoginID", g["LoginID"].(string)).
-			Set("FullName", g["Fullname"].(string)).
-			Set("Email", g["Email"].(string)))
-
-		if err := acl.AddUserLdapByGroup(g["_id"].(string), memberConf); err != nil {
-			return err
-		}
-		delete(config, "password")
-		delete(memberConf, "password")
-	}
 
 	initGroup := new(acl.Group)
 	initGroup.ID = g["_id"].(string)
 	initGroup.Title = g["Title"].(string)
 	initGroup.Owner = g["Owner"].(string)
 	initGroup.Enable = g["Enable"].(bool)
-	initGroup.GroupConf = config
-	initGroup.MemberConf = memberConf
 
 	if g["GroupType"].(string) == "1" {
 		initGroup.GroupType = acl.GroupTypeLdap
@@ -141,10 +126,7 @@ func SaveGroup(payload toolkit.M) error {
 
 	var grant map[string]interface{}
 	for _, p := range payload["grants"].([]interface{}) {
-		dat := []byte(p.(string))
-		if err := json.Unmarshal(dat, &grant); err != nil {
-			return err
-		}
+		grant = p.(map[string]interface{})
 		AccessID := grant["AccessID"].(string)
 		Accessvalue := grant["AccessValue"]
 		for _, v := range Accessvalue.([]interface{}) {

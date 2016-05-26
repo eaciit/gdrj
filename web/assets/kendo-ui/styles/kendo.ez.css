@@ -7449,6 +7449,7 @@ a.ez:hover {
 .panel-group.ez-collapse .panel .panel-heading {
   color: white;
   cursor: pointer;
+  background-color: #6194cf;
 }
 .panel-group.ez-collapse .panel .panel-heading .panel-title {
   font-size: 12px;
@@ -7463,9 +7464,6 @@ a.ez:hover {
 .panel-group.ez-collapse .panel .panel-heading .panel-title a:focus {
   text-decoration: none;
 }
-.panel-group.ez-collapse .panel .panel-heading:hover {
-  background-color: #6194cf;
-}
 .panel-group.ez-collapse .panel .panel-body {
   padding: 4px;
 }
@@ -7474,6 +7472,60 @@ a.ez:hover {
 }
 .panel-group.ez-collapse .panel .panel-body .form-group .input-group .k-widget {
   box-sizing: border-box;
+}
+.list-group.ez {
+  list-style: none;
+}
+.list-group.ez .list-group-item {
+  cursor: move;
+}
+.list-group.ez .list-group-item:hover .wrapper .text {
+  background-color: #6194cf;
+  color: white;
+}
+.list-group.ez .list-group-item .wrapper {
+  display: table;
+  width: 100%;
+  height: 30px;
+}
+.list-group.ez .list-group-item .wrapper .icon-drag {
+  display: table-cell;
+  width: 30px;
+  vertical-align: middle;
+  padding: 0px 10px;
+  color: white;
+  opacity: 0.8;
+}
+.list-group.ez .list-group-item .wrapper .text {
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 10px;
+}
+.list-group.ez .sortable-placeholder {
+  height: 30px;
+  background-color: rgba(51, 122, 183, 0.18);
+  border-left: 1px dotted #ffffff;
+  border-right: 1px dotted #ffffff;
+  content: ' ';
+  margin-bottom: -1px;
+  height: 32px;
+  border-type: dashed;
+}
+h3.ez-section {
+  margin-top: 0px !important;
+  border-bottom: 1px solid #3b79c2;
+  margin-bottom: 10px;
+}
+input[type="text"].ez {
+  border-color: #F0F3F4;
+}
+.table.ez tr th {
+  font-weight: normal;
+  padding: 2px;
+  font-size: 14px;
+}
+.table.ez tr td {
+  padding: 4px 2px;
 }
 .bg-base {
   background-color: #e7505a;
@@ -7485,7 +7537,7 @@ a.ez:hover {
   background-color: #74B841;
 }
 .bg-blue,
-.panel-group.ez-collapse .panel .panel-heading {
+.list-group.ez .list-group-item .wrapper .icon-drag {
   background-color: #3b79c2;
 }
 .bg-grey {
@@ -7504,7 +7556,8 @@ a.ez:hover {
   border-color: #74B841;
 }
 .border-blue,
-.panel-group.ez-collapse .panel {
+.panel-group.ez-collapse .panel,
+.list-group.ez .list-group-item {
   border-color: #3b79c2;
 }
 .border-grey {
@@ -7549,7 +7602,9 @@ a.ez:hover {
 .underline {
   text-decoration: underline;
 }
-.no-margin {
+.no-margin,
+.list-group.ez,
+.table.ez {
   margin: 0px;
 }
 .no-margin.hardcore {
@@ -7558,17 +7613,30 @@ a.ez:hover {
 .no-margin-left {
   margin-left: 0px;
 }
+.no-margin-left.hardcore {
+  margin-left: 0px !important;
+}
 .no-margin-top {
   margin-top: 0px;
 }
+.no-margin-top.hardcore {
+  margin-top: 0px !important;
+}
 .no-margin-right {
-  margin-left: 0px;
+  margin-right: 0px;
+}
+.no-margin-right.hardcore {
+  margin-right: 0px !important;
 }
 .no-margin-bottom {
   margin-bottom: 0px;
 }
+.no-margin-bottom.hardcore {
+  margin-bottom: 0px !important;
+}
 .no-padding,
-.panel-group.ez-collapse .panel .panel-heading {
+.panel-group.ez-collapse .panel .panel-heading,
+.list-group.ez .list-group-item {
   padding: 0px;
 }
 .no-padding.hardcore {
@@ -7577,22 +7645,41 @@ a.ez:hover {
 .no-padding-left {
   padding-left: 0px;
 }
+.no-padding-left.hardcore {
+  padding-left: 0px !important;
+}
 .no-padding-top {
   padding-top: 0px;
 }
+.no-padding-top.hardcore {
+  padding-top: 0px !important;
+}
 .no-padding-right {
-  padding-left: 0px;
+  padding-right: 0px;
+}
+.no-padding-right.hardcore {
+  padding-right: 0px !important;
 }
 .no-padding-bottom {
   padding-bottom: 0px;
 }
+.no-padding-bottom.hardcore {
+  padding-bottom: 0px !important;
+}
 .no-border,
-.panel-group.ez-collapse .panel .panel-body {
+.panel-group.ez-collapse .panel .panel-body,
+.table.ez tr th {
   border: none;
 }
 .no-border-radius,
-.panel-group.ez-collapse .panel {
+.panel-group.ez-collapse .panel,
+.list-group.ez .list-group-item,
+input[type="text"].ez {
   border-radius: 0px;
+}
+.no-shadow,
+input[type="text"].ez {
+  box-shadow: none;
 }
 .panel-heading {
   padding: 10px;

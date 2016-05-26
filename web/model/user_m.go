@@ -1,7 +1,6 @@
 package gocore
 
 import (
-	"encoding/json"
 	"github.com/eaciit/acl"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
@@ -12,16 +11,17 @@ import (
 func GetUser(payload toolkit.M) (toolkit.M, error) {
 	var filter *dbox.Filter
 
-	if strings.Contains(toolkit.TypeName(payload["find"]), "float") {
-		payload["find"] = toolkit.ToInt(payload["find"], toolkit.RoundingAuto)
-	}
-
 	tUser := new(acl.User)
-	if find := toolkit.ToString(payload["find"]); find != "" {
+	if find := toolkit.ToString(payload["search"]); find != "" {
+		var bfind bool
+		if strings.Contains(toolkit.TypeName(payload["search"]), "bool") {
+			bfind, _ = strconv.ParseBool(find)
+		}
 		filter = new(dbox.Filter)
 		filter = dbox.Or(dbox.Contains("id", find),
 			dbox.Contains("fullname", find),
-			dbox.Contains("email", find))
+			dbox.Contains("email", find),
+			dbox.Eq("enable", bfind))
 	}
 	take := toolkit.ToInt(payload["take"], toolkit.RoundingAuto)
 	skip := toolkit.ToInt(payload["skip"], toolkit.RoundingAuto)
@@ -48,7 +48,7 @@ func GetUser(payload toolkit.M) (toolkit.M, error) {
 
 	return data, nil
 }
-func FindUser(payload toolkit.M) (toolkit.M, error) {
+func EditUser(payload toolkit.M) (toolkit.M, error) {
 	tUser := new(acl.User)
 	result := toolkit.M{}
 
@@ -60,45 +60,23 @@ func FindUser(payload toolkit.M) (toolkit.M, error) {
 	return result, nil
 }
 
-func SearchUser(payload toolkit.M) ([]toolkit.M, error) {
-	find := payload.GetString("search")
-	bfind, err := strconv.ParseBool(find)
-	if err != nil {
-		return nil, err
-	}
-	tUser := new(acl.User)
-	arrm := make([]toolkit.M, 0, 0)
-	filter := dbox.Or(dbox.Contains("_id", find), dbox.Contains("id", find), dbox.Contains("loginid", find),
-		dbox.Contains("fullname", find), dbox.Contains("email", find), dbox.Eq("enable", bfind))
-
-	c, e := acl.Find(tUser, filter, toolkit.M{}.Set("take", 0))
-	if e != nil {
-		return nil, e
-	}
-	if e := c.Fetch(&arrm, 0, false); e != nil {
-		return nil, e
-	}
-
-	return arrm, nil
-}
-
 func DeleteUser(payload toolkit.M) error {
-	tUser := new(acl.User)
+	idArray := payload.Get("_id").([]interface{})
 
-	if err := acl.FindByID(tUser, payload.GetString("_id")); err != nil {
-		return err
+	for _, id := range idArray {
+		o := new(acl.User)
+		o.ID = toolkit.ToString(id)
+		if err := acl.Delete(o); err != nil {
+			return err
+		}
 	}
-
-	if err := acl.Delete(tUser); err != nil {
-		return err
-	}
-
 	return nil
 }
+
 func GetAccessUser(payload toolkit.M) ([]interface{}, error) {
 	tUser := new(acl.User)
 
-	if err := acl.FindByID(tUser, payload["id"].(string)); err != nil {
+	if err := acl.FindByID(tUser, payload["_id"].(string)); err != nil {
 		return nil, err
 	}
 	var AccessGrants = []interface{}{}
@@ -112,13 +90,10 @@ func GetAccessUser(payload toolkit.M) ([]interface{}, error) {
 }
 func SaveUser(payload toolkit.M) error {
 	user := payload["user"].(map[string]interface{})
-	config := payload["userConfig"].(map[string]interface{})
-
-	delete(config, "Username")
-	delete(config, "Password")
-
 	groups := user["Groups"]
+
 	var group []string
+	toolkit.Println("group", groups)
 	for _, v := range groups.([]interface{}) {
 		group = append(group, v.(string))
 	}
@@ -135,7 +110,6 @@ func SaveUser(payload toolkit.M) error {
 	initUser.Password = user["Password"].(string)
 	initUser.Enable = user["Enable"].(bool)
 	initUser.Groups = group
-	initUser.LoginConf = config
 
 	if user["LoginType"].(string) == "1" {
 		initUser.LoginType = acl.LogTypeLdap
@@ -154,10 +128,7 @@ func SaveUser(payload toolkit.M) error {
 
 	var grant map[string]interface{}
 	for _, p := range payload["grants"].([]interface{}) {
-		dat := []byte(p.(string))
-		if err := json.Unmarshal(dat, &grant); err != nil {
-			return err
-		}
+		grant = p.(map[string]interface{})
 		AccessID := grant["AccessID"].(string)
 		Accessvalue := grant["AccessValue"]
 		for _, v := range Accessvalue.([]interface{}) {
@@ -191,7 +162,7 @@ func SaveUser(payload toolkit.M) error {
 func ChangePass(payload toolkit.M) error {
 	user := payload["user"].(map[string]interface{})
 
-	if err := acl.ChangePassword(user["_id"].(string), payload["pass"].(string)); err != nil {
+	if err := acl.ChangePassword(user["_id"].(string), payload["newpass"].(string)); err != nil {
 		return err
 	}
 	return nil

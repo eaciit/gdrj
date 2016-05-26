@@ -4,19 +4,14 @@ import (
 	"github.com/eaciit/acl"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
-	"strings"
 	"time"
 )
 
 func GetSession(payload toolkit.M) (toolkit.M, error) {
 	var filter *dbox.Filter
 
-	if strings.Contains(toolkit.TypeName(payload["find"]), "float") {
-		payload["find"] = toolkit.ToInt(payload["find"], toolkit.RoundingAuto)
-	}
-
 	tSession := new(acl.Session)
-	if find := toolkit.ToString(payload["find"]); find != "" {
+	if find := toolkit.ToString(payload["search"]); find != "" {
 		filter = new(dbox.Filter)
 		filter = dbox.Contains("loginid", find)
 	}

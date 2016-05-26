@@ -8,7 +8,6 @@ import (
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	"path/filepath"
-	// "strings"
 	"time"
 )
 
@@ -67,4 +66,22 @@ func (d *UploadDataController) GetUploadedFiles(r *knot.WebContext) interface{} 
 		return helper.CreateResult(false, nil, err.Error())
 	}
 	return helper.CreateResult(true, data, "")
+}
+
+func (d *UploadDataController) ProcessData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := toolkit.M{}
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	locFile := filepath.Join(GDRJ_DATA_PATH, "file", toolkit.ToString(payload["filename"]))
+	uploadData := new(gdrj.UploadData)
+	err := uploadData.ProcessData(locFile)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, nil, "")
 }

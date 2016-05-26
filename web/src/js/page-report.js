@@ -1,13 +1,13 @@
 let currentReportMenu = vm.menu().find((d) => d.title === 'Report')
 	.submenu.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
 
-vm.pageTitle('Report')
+vm.currentMenu('Report')
+vm.currentTitle(currentReportMenu.title)
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
 	{ title: 'Report', href: '#' },
 	{ title: currentReportMenu.title, href: currentReportMenu.href }
 ])
-vm.pageTitle(currentReportMenu.title)
 
 viewModel.report = new Object()
 let rpt = viewModel.report

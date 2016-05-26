@@ -40,6 +40,7 @@ func main() {
 	server.Register(controller.CreateDataBrowserController(server), "")
 	server.Register(controller.CreateUploadDataController(server), "")
 	server.Register(controller.CreateReportController(server), "")
+	server.Register(controller.CreateAllocationFlowController(server), "")
 	server.Register(controller.CreateAdminisrationController(server), "")
 	server.Register(controller.CreateSessionController(server), "")
 	server.Register(controller.CreateUserController(server), "")
@@ -57,7 +58,7 @@ func main() {
 	})
 
 	if err := setAclDatabase(); err != nil {
-		toolkit.Printf("Error set database to efs: %s \n", err.Error())
+		toolkit.Printf("Error set acl database : %s \n", err.Error())
 	}
 
 	server.Listen()
