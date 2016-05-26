@@ -49,7 +49,11 @@ ss.generateGrid = function () {
                 }
             },
             schema: {
-                data: "data.Datas",
+                data: function data(res) {
+                    ss.selectedTableID("show");
+                    app.loader(false);
+                    return res.data.Datas;
+                },
                 total: "data.total"
             },
 
