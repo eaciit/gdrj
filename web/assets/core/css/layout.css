@@ -212,3 +212,6 @@ html, body {
 .fh {
   margin: auto;
   padding: 15%; }
+
+.tab-content > div {
+  padding-top: 10px; }

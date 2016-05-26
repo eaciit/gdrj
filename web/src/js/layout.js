@@ -16,7 +16,7 @@ vm.menu = ko.observableArray([
 		{ title: 'Allocation Flow', icon: 'arrows', href: '/web/allocationflow', submenu: [] },
 		{ title: 'Access', icon: 'unlock-alt', href: '/web/access', submenu: [] },
 		{ title: 'Group', icon: 'users', href: '/web/group', submenu: [] },
-		{ title: 'User', icon: 'user', href: '#', submenu: [] },
+		{ title: 'User', icon: 'user', href: '/web/user', submenu: [] },
 		{ title: 'Session', icon: 'clock-o', href: '/web/session', submenu: [] }
 	] }
 ])

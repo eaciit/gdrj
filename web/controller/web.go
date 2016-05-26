@@ -122,3 +122,12 @@ func (w *WebController) Session(r *knot.WebContext) interface{} {
 
 	return true
 }
+
+func (w *WebController) User(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-user.html")
+
+	return true
+}
