@@ -9,6 +9,7 @@ import (
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	"github.com/eaciit/toolkit"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -18,6 +19,8 @@ var (
 	endperiode   time.Time = time.Now()
 	arroutletid  []string
 	arrskuid     []string
+
+	//Add log variable
 
 	arsalesmonthly []*gdrj.SalesMonthly
 	mutex          = &sync.Mutex{}
@@ -39,10 +42,11 @@ func setinitialconnection() {
 }
 
 func setinitialvariable() {
-	fstartperiode := flag.String("startperiode", "", "config file")
-	fendperiode := flag.String("endperiode", "", "snapshot filepath")
-	foutletid := flag.String("outletid", "", "_id of the config (if array)")
-	fskuid := flag.String("skuid", "", "process id number for identify snapshot active")
+	fstartperiode := flag.String("startperiode", "", "start periode for selection data in format yyyy/mm/dd or dd/mm/yyyy. separated dot(.), dash(-) are permited")
+	fendperiode := flag.String("endperiode", "", "end periode for selection data in format yyyy/mm/dd or dd/mm/yyyy. separated dot(.), dash(-) are permited")
+	foutletid := flag.String("outletid", "", "outletid for filtering data in json string from array string")
+	fskuid := flag.String("skuid", "", "skuid for filtering data in json string from array string")
+	flogname := flag.String("log", "", "filename for save log")
 
 	flag.Parse()
 
@@ -72,20 +76,19 @@ func setinitialvariable() {
 		arrskuid = append(arrskuid, rstr...)
 	}
 
+	//set log
+
 }
 
-func getfilter(cat string, to time.Time) (dboxf *dbox.Filter) {
+func getfilter(cat string, from, to time.Time) (dboxf *dbox.Filter) {
 	ardboxf := make([]*dbox.Filter, 0, 0)
 	switch cat {
 	case "monthly":
-		ardboxf = append(ardboxf, dbox.Eq("month", to.Month()))
-		ardboxf = append(ardboxf, dbox.Eq("year", to.Year()))
-	case "daily":
-		ardboxf = append(ardboxf, dbox.Gte("date", to.AddDate(0, -1, 0)))
-		ardboxf = append(ardboxf, dbox.Lte("date", to))
+		ardboxf = append(ardboxf, dbox.Eq("month", from.Month()))
+		ardboxf = append(ardboxf, dbox.Eq("year", from.Year()))
 	default:
-		ardboxf = append(ardboxf, dbox.Gte("date", to.AddDate(0, -1, 0)))
-		ardboxf = append(ardboxf, dbox.Lte("date", to))
+		ardboxf = append(ardboxf, dbox.Gte("date", from))
+		ardboxf = append(ardboxf, dbox.Lt("date", to))
 	}
 
 	iarrskuid := []interface{}{}
@@ -125,9 +128,9 @@ func clearsalesmonthlydata(outtm chan time.Time) {
 
 		tperiode = startperiode.AddDate(0, i, 0)
 		if tperiode.Before(endperiode) {
-			dboxf = getfilter("monthly", tperiode)
+			dboxf = getfilter("monthly", tperiode, nil)
 		} else {
-			dboxf = getfilter("monthly", endperiode)
+			dboxf = getfilter("monthly", endperiode, nil)
 		}
 		i += 1
 
@@ -137,6 +140,7 @@ func clearsalesmonthlydata(outtm chan time.Time) {
 				wg.Done()
 				return
 			}
+			defer csm.Close()
 
 			arsalesmonthly := make([]*gdrj.SalesMonthly, 0, 0)
 			err = csm.Fetch(&arsalesmonthly, 0, false)
@@ -182,6 +186,67 @@ func processsalesmonthlydata(outtms <-chan time.Time) {
 			eouttm = endperiode.AddDate(0, 0, 1)
 		}
 
+		dboxf := getfilter("daily", souttm, eouttm)
+
+		wg.Add(1)
+		go func(gdboxf *dbox.Filter) {
+			csm, err := gdrj.Find(new(gdrj.Sales), gdboxf, toolkit.M{}.Set("order", []string{"skuid", "outletid"}))
+			if err != nil {
+				wg.Done()
+				return
+			}
+			defer csm.Close()
+
+			arsales := make([]*gdrj.Sales, 0, 0)
+			err = csm.Fetch(&arsales, 0, false)
+			if err != nil {
+				wg.Done()
+				return
+			}
+
+			tsalesmonthly := new(gdrj.SalesMonthly)
+			for _, sales := range arsales {
+
+				if tsalesmonthly.SKUID != sales.SKUID || tsalesmonthly.OutletID != sales.OutletID {
+					err = gdrj.Save(tsalesmonthly)
+					if err != nil {
+						wg.Done()
+						return
+					}
+
+					tsalesmonthly = new(gdrj.SalesMonthly)
+					tdboxf := dbox.And(dbox.Eq("skuid", sales.SKUID), dbox.Eq("outletid", sales.OutletID), dbox.Eq("year", sales.Date.Year()), dbox.Eq("month", sales.Date.Month()))
+					xcsm, err := gdrj.Find(tsalesmonthly, tdboxf, nil)
+					if err != nil {
+						wg.Done()
+						return
+					}
+
+					err = xcsm.Fetch(&tsalesmonthly, 1, false)
+					if err != nil && !strings.Contains(strings.ToLower(err.Error()), "not found") {
+						wg.Done()
+						return
+					}
+				}
+
+				tsalesmonthly.Year = sales.Year
+				tsalesmonthly.Month = sales.Month
+				tsalesmonthly.OutletID = sales.OutletID
+				tsalesmonthly.SKUID = sales.SKUID
+
+			}
+
+			if tsalesmonthly.SKUID != "" {
+				err = gdrj.Save(tsalesmonthly)
+			}
+
+			if err != nil {
+				wg.Done()
+				return
+			}
+
+			wg.Done()
+		}(dboxf)
 		toolkit.Println("PROCESS : ", souttm, " to ", eouttm)
 	}
 

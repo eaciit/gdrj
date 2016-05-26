@@ -1,11 +1,7 @@
 package gdrj
 
 import (
-<<<<<<< HEAD
-	//"github.com/eaciit/toolkit"
-=======
 	// "github.com/eaciit/toolkit"
->>>>>>> c58687dbd216236ed1143541cfe35844cd62ec71
 	"github.com/eaciit/orm/v1"
 	//"github.com/eaciit/dbox"
 	"time"
