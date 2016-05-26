@@ -1,6 +1,7 @@
 'use strict';
 
-vm.pageTitle("Session");
+vm.currentMenu('Administration');
+vm.currentTitle("Session");
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Administration', href: '#' }, { title: 'Session', href: '/session' }]);
 
 viewModel.Session = new Object();
@@ -48,7 +49,11 @@ ss.generateGrid = function () {
                 }
             },
             schema: {
-                data: "data.Datas",
+                data: function data(res) {
+                    ss.selectedTableID("show");
+                    app.loader(false);
+                    return res.data.Datas;
+                },
                 total: "data.total"
             },
 

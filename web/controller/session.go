@@ -21,7 +21,7 @@ func (a *SessionController) GetSession(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	payload := toolkit.M{}
-	if err := r.GetPayload(&payload); err != nil {
+	if err := r.GetForms(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 

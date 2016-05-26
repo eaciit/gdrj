@@ -1,4 +1,5 @@
-vm.pageTitle("Session")
+vm.currentMenu('Administration')
+vm.currentTitle("Session")
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
 	{ title: 'Administration', href: '#' },
@@ -57,7 +58,11 @@ ss.generateGrid = () => {
                 }
             },
             schema: {
-                data: "data.Datas",
+                data: function(res){
+                    ss.selectedTableID("show");
+                    app.loader(false);
+                    return res.data.Datas;
+                },
                 total: "data.total"
             },
 
