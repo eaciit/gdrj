@@ -30,7 +30,9 @@ ud.gridUploadedFiles = {
 	},
 	columns: [{ title: '&nbsp;', width: 40, attributes: { class: 'align-center' }, template: function template(d) {
 			return '<input type="checkbox" />';
-		} }, { title: 'File Name', field: 'Filename', attributes: { class: 'bold' } }, { title: 'Model', field: 'DocName' }, { title: 'Description', field: 'Note' }, { title: 'Date', template: function template(d) {
+		} }, { title: 'File Name', field: 'Filename', attributes: { class: 'bold' } }, { title: 'Model', field: 'DocName', template: function template(d) {
+			return '<span class="tag bg-green">' + d.DocName + '</span>';
+		} }, { title: 'Description', field: 'Note' }, { title: 'Date', template: function template(d) {
 			return moment(d.date).format('DD-MM-YYYY HH:mm:ss');
 		}
 	}, { title: 'Action', width: 50, template: function template(d) {

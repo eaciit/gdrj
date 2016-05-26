@@ -40,6 +40,7 @@ func main() {
 	server.Register(controller.CreateDataBrowserController(server), "")
 	server.Register(controller.CreateUploadDataController(server), "")
 	server.Register(controller.CreateReportController(server), "")
+	server.Register(controller.CreateAllocationFlowController(server), "")
 	server.Register(controller.CreateAdminisrationController(server), "")
 	server.Register(controller.CreateSessionController(server), "")
 	server.Register(controller.CreateUserController(server), "")

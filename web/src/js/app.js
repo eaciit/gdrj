@@ -110,6 +110,9 @@ app.resetValidation = (selectorID) => {
         
     }
 }
+app.resetForm = ($o) => {
+    $o.trigger('reset')
+}
 app.prepareTooltipster = ($o) => {
     let $tooltipster = ($o == undefined) ? $('.tooltipster') : $o
 
@@ -139,4 +142,16 @@ app.gridBoundTooltipster = (selector) => {
 app.capitalize = (s) => (s.length == 0 ? '' : (s[0].toUpperCase() + s.slice(1)))
 app.repeatAlphabetically = (prefix) => {
     return 'abcdefghijklmnopqrstuvwxyz'.split('').map((d) => `${prefix} ${d.toUpperCase()}`)
+}
+app.arrRemoveByIndex = (arr, index) => {
+    arr.splice(index, 1)
+}
+app.arrRemoveByItem = (arr, item) => {
+    let index = arr.indexOf(item)
+    if (index > -1) {
+        app.arrRemoveByIndex(arr, index)
+    }
+}
+app.clone = (o) => {
+    return $.extend(true, { }, o)
 }
