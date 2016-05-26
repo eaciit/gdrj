@@ -30,11 +30,31 @@ rpt.masterData.Group1 = ko.observableArray([]);
 rpt.masterData.Group2 = ko.observableArray([]);
 rpt.masterData.HCostCenterGroup = ko.observableArray([]);
 rpt.masterData.GLCode = ko.observableArray([]);
+rpt.commonBranch = ko.observableArray([]), rpt.value = {};
+rpt.value.Branch = ko.observableArray([]);
+rpt.value.Brand = ko.observableArray([]);
+rpt.value.Region = ko.observableArray([]);
+rpt.value.Channel = ko.observableArray([]);
+rpt.value.From = ko.observableArray([]);
+rpt.value.Area = ko.observableArray([]);
+rpt.value.Zone = ko.observableArray([]);
+rpt.value.Accounts = ko.observableArray([]);
+rpt.value.Outlet = ko.observableArray([]);
+rpt.value.Group = ko.observableArray([]);
+rpt.value.SKU = ko.observableArray([]);
+rpt.value.Entity = ko.observableArray([]);
+rpt.value.Type = ko.observableArray([]);
+rpt.value.HQ = ko.observableArray([]);
+rpt.value.Group1 = ko.observableArray([]);
+rpt.value.Group2 = ko.observableArray([]);
+rpt.value.HCostCenterGroup = ko.observableArray([]);
+rpt.value.GLCode = ko.observableArray([]);
 
 rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', title: 'Branch' }, { _id: 'Brand', title: 'Brand' }, { _id: 'Region', title: 'Region' }, { _id: 'Channel', title: 'Channel' }, { _id: 'From', title: 'From' }] }, { _id: 'geo', group: 'Geographical', sub: [{ _id: 'Region', title: 'Region' }, { _id: 'Area', title: 'Area' }, { _id: 'Zone', title: 'Zone' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'Channel', title: 'Channel' }, { _id: 'Accounts', title: 'Accounts' }, { _id: 'Outlet', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'Group', title: 'Group' }, { _id: 'Brand', title: 'Brand' }, { _id: 'SKU', title: 'SKU' }] }, { _id: 'profit_center', group: 'Profit Center', sub: [{ _id: 'Entity', title: 'Entity' }, { _id: 'Type', title: 'Type' }, { _id: 'Branch', title: 'Branch' }, { _id: 'HQ', title: 'HQ' }] }, { _id: 'cost_center', group: 'Cost Center', sub: [{ _id: 'Group1', title: 'Group 1' }, { _id: 'Group2', title: 'Group 2' }, { _id: 'HCostCenterGroup', title: 'Function' }] }, { _id: 'ledger', group: 'Ledger', sub: [{ _id: 'GLCode', title: 'GL Code' }] }];
 
 rpt.filterMultiSelect = function (d) {
 	var config = {
+		value: rpt.value[d._id],
 		data: rpt.masterData[d._id],
 		placeholder: 'Choose items ...'
 	};
@@ -46,6 +66,7 @@ rpt.filterMultiSelect = function (d) {
 					return { _id: d._id, Name: d._id + ' - ' + d.Name };
 				});
 			}, rpt),
+
 			dataValueField: '_id',
 			dataTextField: 'Name'
 		});
