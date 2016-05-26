@@ -25,8 +25,14 @@ rpt.masterData.Outlet = ko.observableArray([])
 rpt.masterData.Group = ko.observableArray([])
 rpt.masterData.SKU = ko.observableArray([])
 rpt.masterData.Entity = ko.observableArray([])
-rpt.masterData.Type = ko.observableArray([])
-rpt.masterData.HQ = ko.observableArray([])
+rpt.masterData.Type = ko.observableArray([
+	{ value: 'Mfg', text: 'Mfg' },
+	{ value: 'Branch', text: 'Branch' }
+])
+rpt.masterData.HQ = ko.observableArray([
+	{ value: true, text: 'True' },
+	{ value: false, text: 'False' }
+])
 rpt.masterData.Group1 = ko.observableArray([])
 rpt.masterData.Group2 = ko.observableArray([])
 rpt.masterData.HCostCenterGroup = ko.observableArray([])
@@ -38,7 +44,7 @@ rpt.filter = [
 		{ _id: 'Brand', title: 'Brand' },
 		{ _id: 'Region', title: 'Region' },
 		{ _id: 'Channel', title: 'Channel' },
-		{ _id: 'From', title: 'From' },
+		{ _id: 'From', },
 	] },
 	{ _id: 'geo', group: 'Geographical', sub: [
 		{ _id: 'Region', title: 'Region' },
@@ -74,6 +80,7 @@ rpt.filter = [
 rpt.filterMultiSelect = (d) => {
 	let config = {
 		data: rpt.masterData[d._id],
+		filter: 'contains',
 		placeholder: 'Choose items ...'
 	}
 
@@ -91,6 +98,11 @@ rpt.filterMultiSelect = (d) => {
 		app.ajaxPost(`/report/getdata${d._id.toLowerCase()}`, {}, (res) => {
 			rpt.masterData[d._id](res)
 		})
+	} else if (['HQ', 'Type'].indexOf(d._id) > -1) {
+		config = $.extend(true, config, {
+			dataValueField: 'value',
+			dataTextField: 'text'
+		})
 	} else if (['SKU', 'Outlet'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
 			autoBind: false,
@@ -107,7 +119,7 @@ rpt.filterMultiSelect = (d) => {
 		})
 	}
 
-	console.log(d, config)
+	// console.log('filter', d, config)
 
 	return config
 }
