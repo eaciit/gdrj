@@ -54,7 +54,6 @@ vm.prepareToggleFilter = () => {
 	let btnToggleFilter = $('.btn-toggle-filter')
 	let panelFilterContainer = $('.panel-filter').parent()
 
-
 	$('<i class="fa fa-angle-double-left tooltipster align-center color-orange" title="Toggle filter pane visibility"></i>').appendTo(btnToggleFilter)
 	app.prepareTooltipster($(btnToggleFilter).find('.fa'))
 

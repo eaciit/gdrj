@@ -1,4 +1,5 @@
 @import 'colors'
+@import 'compass/css3'
 
 html, body
 	height: 100%
@@ -280,3 +281,67 @@ html, body
 .fh
 	margin: auto
 	padding: 15%
+
+.report-module-pivot
+	> div.col-md-3
+		padding-left: 0px
+
+	> div.col-md-9
+		.wrapper-inner
+			// border-color: $color-base-green
+
+	.pivot-wrapper
+		padding-right: 0px
+
+		.wrapper-inner
+			border: 1px solid $color-base-grey
+			padding: 0px
+
+			&.highlight
+				box-sizing: border-box
+				border-color: $color-base-green
+				border-width: 3px
+				opacity: 0.6
+
+			h3
+				font-size: 14px
+				background-color: transparent
+				color: #58666E
+				padding: 10px 0px 2px
+				margin: 0px 10px
+
+			p
+				margin: 0px
+				padding: 10px 10px 0px
+				background-color: transparent
+
+			.list-group
+				padding: 10px
+
+				.list-group-item
+					overflow: hidden
+					position: relative
+
+					&:hover
+						.wrapper
+							.text
+								background-color: transparent
+								color: inherit
+
+							.icon
+								opacity: 1
+
+					.wrapper
+						cursor: auto
+
+						.icon
+							cursor: pointer
+
+							&:after
+								content: " "
+								background-color: #3B79C2
+								position: absolute
+								right: -3px
+								top: 0
+								bottom: 0
+								width: 4px
