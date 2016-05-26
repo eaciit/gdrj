@@ -1,14 +1,12 @@
 'use strict';
 
 var currentReportMenu = vm.menu().find(function (d) {
-	return d.title === 'Report';
-}).submenu.find(function (d) {
 	return d.href == '/' + document.URL.split('/').slice(3).join('/');
 });
 
-vm.currentMenu('Report');
+vm.currentMenu(currentReportMenu.title);
 vm.currentTitle(currentReportMenu.title);
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Report', href: '#' }, { title: currentReportMenu.title, href: currentReportMenu.href }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: currentReportMenu.title, href: currentReportMenu.href }]);
 
 viewModel.report = new Object();
 var rpt = viewModel.report;
