@@ -7523,7 +7523,7 @@ a.ez:hover {
   width: 100%;
   height: 30px;
 }
-.list-group.ez .list-group-item .wrapper .icon-drag {
+.list-group.ez .list-group-item .wrapper .icon {
   display: table-cell;
   width: 30px;
   vertical-align: middle;
@@ -7572,7 +7572,7 @@ input[type="text"].ez {
   background-color: #74B841;
 }
 .bg-blue,
-.list-group.ez .list-group-item .wrapper .icon-drag {
+.list-group.ez .list-group-item .wrapper .icon {
   background-color: #3b79c2;
 }
 .bg-grey {

@@ -5,22 +5,33 @@
 				<button class="btn-toggle-filter no-padding"></button>
 				Pivot
 			</h3>
+			<div class="panel-nav-button">
+				<div class="form-group relative align-right no-margin no-padding hardcore">
+					<button class="btn btn-sm btn-warning" data-bind="click: () => { pvt.mode('') }, visible: pvt.mode() == 'render'">
+						<i class="fa fa-arrow-left"></i> Back to Editor
+					</button>
+					<button class="btn btn-sm btn-primary" data-bind="click: rpt.refreshData, visible: pvt.mode() == ''">
+						<i class="fa fa-refresh"></i> Reload Report
+					</button>
+				</div>
+			</div>
 		</div>
-		<div class="panel-body">
+		<div class="panel-body" data-bind="visible: pvt.mode() == ''">
+			<p>Build pivot grid to compare data on selected dimension and data points.</p>
+
 			<div class="report-module report-module-pivot">
 
 				<div class="col-md-3 pivot-wrapper">
 <div class="wrapper-inner">
 	<h3 class="no-margin">Available fields</h3>
-	<p>List of available fields.</p>
 	<div class="wrapper" style="min-height: 300px;">
-		<ul class="list-group ez module applied-module" data-bind="foreach: af.dataAppliedModules" style="min-height: 300px;">
-			<li class="list-group-item">
+		<ul class="list-group ez pivot-section pivot-section-fields" data-bind="foreach: pvt.fields" style="min-height: 300px;">
+			<li class="list-group-item tooltipster-late" data-bind="attr: { title: rpt.titleFor($data) }">
 				<div class="wrapper">
-					<span class="icon-drag">
-						<i class="fa fa-arrows"></i>
+					<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data._id }"></span>
+					<span class="icon tooltipster" title="Click to add" onclick="pvt.showFieldControl(this)">
+						<i class="fa fa-share-square"></i>
 					</span>
-					<span class="text" data-bind="text: Name"></span>
 				</div>
 			</li>
 		</ul>
@@ -31,35 +42,35 @@
 				<div class="col-md-9">
 					<div class="row">
 						<div class="col-md-4 pivot-wrapper">
-<div class="wrapper-inner">
+<div class="wrapper-inner" data-module="column">
 	<h3 class="no-margin">Columns</h3>
-	<p>List of modules to execute.</p>
 	<div class="wrapper" style="min-height: 300px;">
-		<ul class="list-group ez module applied-module" data-bind="foreach: af.dataAppliedModules" style="min-height: 300px;">
-			<li class="list-group-item">
+		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.columns" style="min-height: 300px;">
+			<li class="list-group-item tooltipster-late" data-bind="attr: { title: rpt.titleFor($data) }">
 				<div class="wrapper">
-					<span class="icon-drag">
-						<i class="fa fa-arrows"></i>
+					<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data._id }"></span>
+					<span class="icon">
+						<i class="fa fa-share-square"></i>
 					</span>
-					<span class="text" data-bind="text: Name"></span>
 				</div>
+			</li>
+		</ul>
 			</li>
 		</ul>
 	</div>
 </div>
 						</div>
 						<div class="col-md-4 pivot-wrapper">
-<div class="wrapper-inner">
+<div class="wrapper-inner" data-module="row">
 	<h3 class="no-margin">Rows</h3>
-	<p>List of modules to execute.</p>
 	<div class="wrapper" style="min-height: 300px;">
-		<ul class="list-group ez module applied-module" data-bind="foreach: af.dataAppliedModules" style="min-height: 300px;">
-			<li class="list-group-item">
+		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.rows" style="min-height: 300px;">
+			<li class="list-group-item tooltipster-late" data-bind="attr: { title: rpt.titleFor($data) }">
 				<div class="wrapper">
-					<span class="icon-drag">
-						<i class="fa fa-arrows"></i>
+					<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data._id }"></span>
+					<span class="icon">
+						<i class="fa fa-share-square"></i>
 					</span>
-					<span class="text" data-bind="text: Name"></span>
 				</div>
 			</li>
 		</ul>
@@ -67,17 +78,16 @@
 </div>
 						</div>
 						<div class="col-md-4 pivot-wrapper">
-<div class="wrapper-inner">
+<div class="wrapper-inner" data-module="value">
 	<h3 class="no-margin">Data</h3>
-	<p>List of modules to execute.</p>
 	<div class="wrapper" style="min-height: 300px;">
-		<ul class="list-group ez module applied-module" data-bind="foreach: af.dataAppliedModules" style="min-height: 300px;">
-			<li class="list-group-item">
+		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.values" style="min-height: 300px;">
+			<li class="list-group-item tooltipster-late" data-bind="attr: { title: rpt.titleFor($data) }">
 				<div class="wrapper">
-					<span class="icon-drag">
-						<i class="fa fa-arrows"></i>
+					<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data._id }"></span>
+					<span class="icon">
+						<i class="fa fa-share-square"></i>
 					</span>
-					<span class="text" data-bind="text: Name"></span>
 				</div>
 			</li>
 		</ul>
@@ -88,55 +98,18 @@
 				</div>
 
 				<div class="clearfix"></div>
-				<!-- 
-				<ul class="list-group ez module available-module" data-bind="foreach: af.dataModules" style="min-height: 300px;">
-					<li class="list-group-item" draggable="true">
-						<div class="wrapper">
-							<span class="icon-drag">
-								<i class="fa fa-arrows"></i>
-							</span>
-							<span class="text" data-bind="text: Name">Module Lorem</span>
-						</div>
-					</li>
-				
-					<li class="list-group-item" draggable="true">
-						<div class="wrapper">
-							<span class="icon-drag">
-								<i class="fa fa-arrows"></i>
-							</span>
-							<span class="text" data-bind="text: Name">Module Ipsum</span>
-						</div>
-					</li>
-				
-					<li class="list-group-item" draggable="true">
-						<div class="wrapper">
-							<span class="icon-drag">
-								<i class="fa fa-arrows"></i>
-							</span>
-							<span class="text" data-bind="text: Name">Module Dolor</span>
-						</div>
-					</li>
-				
-					<li class="list-group-item" draggable="true">
-						<div class="wrapper">
-							<span class="icon-drag">
-								<i class="fa fa-arrows"></i>
-							</span>
-							<span class="text" data-bind="text: Name">Module Sit</span>
-						</div>
-					</li>
-				
-					<li class="list-group-item" draggable="true">
-						<div class="wrapper">
-							<span class="icon-drag">
-								<i class="fa fa-arrows"></i>
-							</span>
-							<span class="text" data-bind="text: Name">Module Amet</span>
-						</div>
-					</li>
-				</ul> -->
-
 			</div>
 		</div>
+
+
+
+
+		<div class="panel-body" data-bind="visible: pvt.mode() == 'render'">
+			<p>Generated pivot grid.</p>
+
+			<div class="pivot"></div>
+		</div>
+	</div>
+
 	</div>
 </div>

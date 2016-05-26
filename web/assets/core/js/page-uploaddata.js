@@ -30,12 +30,14 @@ ud.gridUploadedFiles = {
 	},
 	columns: [{ title: '&nbsp;', width: 40, attributes: { class: 'align-center' }, template: function template(d) {
 			return '<input type="checkbox" />';
-		} }, { title: 'File Name', field: 'Filename', attributes: { class: 'bold' } }, { title: 'Model', field: 'DocName', template: function template(d) {
-			return '<span class="tag bg-green">' + d.DocName + '</span>';
-		} }, { title: 'Description', field: 'Note' }, { title: 'Date', template: function template(d) {
+		} }, { title: 'File Name', field: 'Filename', attributes: { class: 'bold' }, template: function template(d) {
+			return '\n\t\t\t\t<div class=\'tooltipster\' title=\'File: ' + d.Filename + '<br />Description: ' + d.Desc + '\'>\n\t\t\t\t\t' + d.Filename + '\n\t\t\t\t</div>\n\t\t\t';
+		} }, { headerTemplate: '<center>Model</center>', field: 'DocName', width: 90, template: function template(d) {
+			return '<center>\n\t\t\t\t<span class="tag bg-green">' + d.DocName + '</span>\n\t\t\t</center>';
+		} }, { headerTemplate: '<center>Date</center>', width: 120, template: function template(d) {
 			return moment(d.date).format('DD-MM-YYYY HH:mm:ss');
 		}
-	}, { title: 'Action', width: 50, template: function template(d) {
+	}, { headerTemplate: '<center>Action</center>', width: 100, template: function template(d) {
 			switch (d.Status) {
 				case 'ready':
 					return '\n\t\t\t\t\t<button class="btn btn-xs btn-warning tooltipster" title="Ready" onclick="ud.processData(`' + d.Filename + '`,this)">\n\t\t\t\t\t\t<i class="fa fa-play"></i> Run process\n\t\t\t\t\t</button>\n\t\t\t\t';
@@ -53,7 +55,8 @@ ud.gridUploadedFiles = {
 		} }],
 	filterable: false,
 	sortable: false,
-	resizable: false
+	resizable: false,
+	dataBound: app.gridBoundTooltipster('.grid-uploadData')
 };
 
 ud.getMasterDataBrowser = function () {

@@ -280,6 +280,12 @@ html, body {
   border: 1px solid #F0F3F4;
   padding: 0px;
 }
+.report-module-pivot .pivot-wrapper .wrapper-inner.highlight {
+  box-sizing: border-box;
+  border-color: #74B841;
+  border-width: 3px;
+  opacity: 0.6;
+}
 .report-module-pivot .pivot-wrapper .wrapper-inner h3 {
   font-size: 14px;
   background-color: transparent;
@@ -294,4 +300,30 @@ html, body {
 }
 .report-module-pivot .pivot-wrapper .wrapper-inner .list-group {
   padding: 10px;
+}
+.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item {
+  overflow: hidden;
+  position: relative;
+}
+.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item:hover .wrapper .text {
+  background-color: transparent;
+  color: inherit;
+}
+.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item:hover .wrapper .icon {
+  opacity: 1;
+}
+.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper {
+  cursor: auto;
+}
+.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .icon {
+  cursor: pointer;
+}
+.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .icon:after {
+  content: " ";
+  background-color: #3B79C2;
+  position: absolute;
+  right: -3px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
 }

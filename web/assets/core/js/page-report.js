@@ -35,7 +35,15 @@ rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', titl
 
 rpt.filterMultiSelect = function (d) {
 	var config = {
-		data: rpt.masterData[d._id],
+		data: ko.computed(function () {
+			return rpt.masterData[d._id]().map(function (f) {
+				if (!f.hasOwnProperty('Name')) {
+					return f;
+				}
+
+				return { _id: f._id, Name: app.capitalize(f.Name) };
+			});
+		}, rpt.masterData[d._id]),
 		filter: 'contains',
 		placeholder: 'Choose items ...'
 	};
@@ -44,9 +52,9 @@ rpt.filterMultiSelect = function (d) {
 		config = $.extend(true, config, {
 			data: ko.computed(function () {
 				return rpt.masterData[d._id]().map(function (d) {
-					return { _id: d._id, Name: d._id + ' - ' + d.Name };
+					return { _id: d._id, Name: d._id + ' - ' + app.capitalize(d.Name) };
 				});
-			}, rpt),
+			}, rpt.masterData[d._id]),
 			dataValueField: '_id',
 			dataTextField: 'Name'
 		});
@@ -75,23 +83,23 @@ rpt.filterMultiSelect = function (d) {
 		});
 	}
 
-	// console.log('filter', d, config)
+	console.log('filter', d, config);
 
 	return config;
 };
-
-rpt.refreshData = function () {
-	// $('.grid').append($('<p />').text('Still under development.'))
-	return;
-	$('.grid').kendoGrid({
-		columns: [{ title: "ID" }],
-		dataSource: {
-			data: []
-		}
+rpt.titleFor = function (data) {
+	return 'asdfasdfasdfa';
+};
+rpt.prepareDrag = function () {
+	$('.pivot-section').sortable({
+		connectWith: '.pivot-section'
 	});
+};
+rpt.refreshData = function () {
+	pvt.refreshData();
 };
 
 $(function () {
-	rpt.refreshData();
+	rpt.prepareDrag();
 	pvt.init();
 });

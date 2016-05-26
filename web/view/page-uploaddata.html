@@ -1,7 +1,7 @@
 <script src="/res/core/js/page-uploaddata.js"></script>
 
 <div data-bind="with: ud">
-	<div class="col-md-4 ez">
+	<div class="col-md-4 col-sm-4 ez panel-filter">
 		<div class="panel ez no-padding hardcore">
 			<div class="panel-heading">
 				<h3 class="no-margin">Form</h3>
@@ -45,15 +45,18 @@
 		</div>
 	</div>
 
-	<div class="col-md-8">
+	<div class="col-md-8 col-sm-8 ez panel-content">
 		<div class="panel ez no-padding hardcore">
 			<div class="panel-heading">
-				<h3 class="no-margin">List of Uploaded Files</h3>
+				<h3 class="no-margin">
+					<button class="btn-toggle-filter no-padding"></button>
+					List of Uploaded Files
+				</h3>
 			</div>
 			<div class="panel-body">
 				<div class="wrapper">
 					<div  data-bind="visible: ud.dataUploadedFiles().length > 0">
-						<div class="grid grid-uploadData" data-bind="kendoGrid: gridUploadedFiles,dataBound: app.gridBoundTooltipster('.grid-uploadData')"></div>
+						<div class="grid grid-uploadData" data-bind="kendoGrid: gridUploadedFiles"></div>
 					</div>
 					<div class="no-grid" data-bind="visible: ud.dataUploadedFiles().length == 0">No data uploaded yet.</div>
 				</div>

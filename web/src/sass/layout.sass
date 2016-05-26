@@ -297,6 +297,12 @@ html, body
 			border: 1px solid $color-base-grey
 			padding: 0px
 
+			&.highlight
+				box-sizing: border-box
+				border-color: $color-base-green
+				border-width: 3px
+				opacity: 0.6
+
 			h3
 				font-size: 14px
 				background-color: transparent
@@ -311,3 +317,31 @@ html, body
 
 			.list-group
 				padding: 10px
+
+				.list-group-item
+					overflow: hidden
+					position: relative
+
+					&:hover
+						.wrapper
+							.text
+								background-color: transparent
+								color: inherit
+
+							.icon
+								opacity: 1
+
+					.wrapper
+						cursor: auto
+
+						.icon
+							cursor: pointer
+
+							&:after
+								content: " "
+								background-color: #3B79C2
+								position: absolute
+								right: -3px
+								top: 0
+								bottom: 0
+								width: 4px
