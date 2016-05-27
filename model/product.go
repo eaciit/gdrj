@@ -29,6 +29,21 @@ func ProductGetBySKUID(id string) *Product {
 	return p
 }
 
+func ProductGetAll() ([]*Product, error) {
+	cursor, err := DB().Find(new(Product), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*Product{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (p *Product) Save() error {
 	e := Save(p)
 	if e != nil {

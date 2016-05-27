@@ -31,6 +31,21 @@ func LedgerAccountGetByID(id string) *LedgerAccount {
 	return t
 }
 
+func LedgerAccountGetAll() ([]*LedgerAccount, error) {
+	cursor, err := DB().Find(new(LedgerAccount), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*LedgerAccount{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func FindLedgerAccountLikeId(id string, take, skip int) (arla []*LedgerAccount) {
 	conf := toolkit.M{}.Set("skip", skip)
 	if take > 0 {
