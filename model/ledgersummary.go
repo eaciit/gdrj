@@ -64,12 +64,13 @@ func SummarizeLedgerSum(
 		if len(dps) < 2 {
 			return nil, errors.New("SummarizeLedgerSum: Parameters should follow this pattern aggrOp:fieldName:[alias - optional]")
 		}
+        
 		fieldid := dps[1]
         alias := fieldid
 		op := ""
-		if !strings.HasPrefix(dps[0], "$") {
+	    if !strings.HasPrefix(dps[0], "$") {
 			dps[0] = "$" + strings.ToLower(dps[0])
-		} 
+		}
         
         if toolkit.HasMember([]string{dbox.AggrSum, dbox.AggrAvr, dbox.AggrMax,
 			dbox.AggrMin, dbox.AggrMean, dbox.AggrMed}, dps[0]) {
@@ -86,7 +87,11 @@ func SummarizeLedgerSum(
             alias = alias[1:]
         }
 		
-        q = q.Aggr(op, fieldid, alias)
+        if fnumber,enumber:=toolkit.IsStringNumber(fieldid,".");enumber==nil{
+            q = q.Aggr(op, fnumber, alias)
+        } else {
+            q = q.Aggr(op, fieldid, alias)
+        }
 	}
     if len(columns) > 0 {
 		q = q.Group(columns...)

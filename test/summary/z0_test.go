@@ -46,11 +46,14 @@ func Ctx() *orm.DataContext{
 
 func Test(t *testing.T) {
     ctx := Ctx()
+    
+    ctx.Connection.NewQuery().From(new(gdrj.LedgerSummary).TableName()).Delete().Exec(nil)
+    
     for i:=1;i<=1000;i++{
         s := new(gdrj.LedgerSummary)
         s.CompanyCode="C01"
         s.Date = &gdrj.Date{Year:2015,Month:4,}
-        s.LedgerAccount = toolkit.Sprintf("%d",i)
+        s.LedgerAccount = toolkit.Sprintf("%d",toolkit.RandInt(200000)+700000)
         if len(s.LedgerAccount)<10{
             s.LedgerAccount=strings.Repeat("0",10-len(s.LedgerAccount)) + s.LedgerAccount
         }
@@ -66,7 +69,7 @@ func Test(t *testing.T) {
 func TestSummarize(t *testing.T) {
     ms, e := gdrj.SummarizeLedgerSum(nil,
         []string{"companycode"},
-        []string{"sum:$value1"},
+        []string{"sum:$value1:Total","sum:1:RecordCount"},
         nil)
    if e!=nil {
        t.Fatalf("Error: %s", e.Error())
