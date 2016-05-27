@@ -72,7 +72,7 @@ pvt.changeAggregate = function (which) {
 	return function () {
 		pvt.values([]); // hack, temprary reset the values
 
-		var val = values.find(function (e) {
+		var val = pvt.values.find(function (e) {
 			return e._id == which;
 		});
 		if (app.isUndefined(val)) {
