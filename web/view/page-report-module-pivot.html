@@ -41,11 +41,12 @@
 
 				<div class="col-md-9">
 					<div class="row">
-						<div class="col-md-4 pivot-wrapper">
+						<div class="col-md-4 no-padding hardcore">
+							<div class="col-md-12 pivot-wrapper pivot-wrapper-column">
 <div class="wrapper-inner" data-module="column">
 	<h3 class="no-margin">Columns</h3>
-	<div class="wrapper" style="min-height: 300px;">
-		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.columns" style="min-height: 300px;">
+	<div class="wrapper" style="min-height: 192px;">
+		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.columns" style="min-height: 192px;">
 			<li class="list-group-item">
 				<div class="wrapper">
 					<span class="text" data-bind="text: $data._id, attr: { 'data-id': $data._id }"></span>
@@ -58,16 +59,14 @@
 				</div>
 			</li>
 		</ul>
-			</li>
-		</ul>
 	</div>
 </div>
-						</div>
-						<div class="col-md-4 pivot-wrapper">
+							</div>
+							<div class="col-md-12 pivot-wrapper">
 <div class="wrapper-inner" data-module="row">
 	<h3 class="no-margin">Rows</h3>
-	<div class="wrapper" style="min-height: 300px;">
-		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.rows" style="min-height: 300px;">
+	<div class="wrapper" style="min-height: 192px;">
+		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.rows" style="min-height: 192px;">
 			<li class="list-group-item">
 				<div class="wrapper">
 					<span class="text" data-bind="text: $data._id, attr: { 'data-id': $data._id }"></span>
@@ -82,6 +81,7 @@
 		</ul>
 	</div>
 </div>
+							</div>
 						</div>
 						<div class="col-md-4 pivot-wrapper">
 <div class="wrapper-inner" data-module="value">

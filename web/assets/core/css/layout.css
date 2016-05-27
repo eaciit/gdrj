@@ -280,6 +280,9 @@ html, body {
 .report-module-pivot .pivot-wrapper {
   padding-right: 0px;
 }
+.report-module-pivot .pivot-wrapper.pivot-wrapper-column {
+  margin-bottom: 10px;
+}
 .report-module-pivot .pivot-wrapper .wrapper-inner {
   border: 1px solid #F0F3F4;
   padding: 0px;

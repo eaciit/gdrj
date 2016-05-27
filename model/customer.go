@@ -47,6 +47,21 @@ func CustomerGetByID(id string) *Customer {
 	return c
 }
 
+func CustomerGetAll() ([]*Customer, error) {
+	cursor, err := DB().Find(new(Customer), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*Customer{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func GetFilteredCustomer(cgroup, keyaccount, cchannel string, take, skip int) (arla []*LedgerAccount) {
 	conf := toolkit.M{}.Set("skip", skip)
 	if take > 0 {

@@ -26,6 +26,20 @@ func HBrandCategoryGetByID(id string) *HBrandCategory {
 	DB().GetById(b, id)
 	return b
 }
+func HBrandCategoryGetAll() ([]*HBrandCategory, error) {
+	cursor, err := DB().Find(new(HBrandCategory), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*HBrandCategory{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
 
 func (h *HBrandCategory) Save() error {
 	err := Save(h)
