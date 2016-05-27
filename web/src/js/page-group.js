@@ -22,14 +22,8 @@ gr.templateGroup = {
     Email: "",
 }
 gr.templateGrants = {
-    AccessCreate: false,
-    AccessRead: false,
-    AccessUpdate: false,
-    AccessDelete: false,
-    AccessSpecial1: false,
-    AccessSpecial2: false,
-    AccessSpecial3: false,
-    AccessSpecial4: false
+    AccessID: "",
+    AccessValue: []
 }
 gr.templateFilter = {
     search: "",
@@ -55,8 +49,7 @@ gr.TableColumns = ko.observableArray([
 		headerTemplate: "<center>Action</center>", width: 100,
 		template: function(d){
 			return [
-    			"<button class='btn btn-sm btn-warning'><span class='fa fa-calculator' onclick='ec.editData(\""+d._id+"\")'></span></button>",
-    			// "<div onclick='ed.showFormulaEditor("+d.Index+", "+d+")'>"+d.FormulaText.join('')+"</div>",
+    			"<button class='btn btn-sm btn-warning' onclick='gr.editData(\""+d._id+"\")'><span class='fa fa-pencil' ></span></button>",
     		].join(" ");
 		}
 	}
@@ -115,9 +108,11 @@ gr.editData = (id) => {
         if (!app.isFine(res)) {
             return
         }
-        
-        $('#modalUpdate').modal('show')
+        for (var i in res.data.Grants){
+            res.data.Grants[i].AccessValue = []
+        }
         ko.mapping.fromJS(res.data, gr.config)
+        gr.displayAccess(res.data._id)
     }, (err) => {
         app.showError(err.responseText)
     }, {
@@ -125,19 +120,66 @@ gr.editData = (id) => {
     })
 }
 
+gr.displayAccess = (e) => {
+    app.ajaxPost("/group/getaccessgroup", {
+        _id: e
+    }, function(res) {
+        if (!app.isFine(res)) {
+            return;
+        }
+        if (res.data == null) {
+            res.data = "";
+        }
+        for (var i = 0; i < res.data.length; i++) {
+            gr.config.Grants()[i].AccessID(res.data[i].AccessID)
+            if (res.data[i].AccessValue.indexOf(1) != -1)
+                gr.config.Grants()[i].AccessValue.push("AccessCreate")
+            if (res.data[i].AccessValue.indexOf(2) != -1)
+                gr.config.Grants()[i].AccessValue.push("AccessRead")
+            if (res.data[i].AccessValue.indexOf(4) != -1)
+                gr.config.Grants()[i].AccessValue.push("AccessUpdate")
+            if (res.data[i].AccessValue.indexOf(8) != -1)
+                gr.config.Grants()[i].AccessValue.push("AccessDelete")
+            if (res.data[i].AccessValue.indexOf(16) != -1)
+                gr.config.Grants()[i].AccessValue.push("AccessSpecial1")
+            if (res.data[i].AccessValue.indexOf(32) != -1)
+                gr.config.Grants()[i].AccessValue.push("AccessSpecial2")
+            if (res.data[i].AccessValue.indexOf(64) != -1)
+                gr.config.Grants()[i].AccessValue.push("AccessSpecial3")
+            if (res.data[i].AccessValue.indexOf(128) != -1)
+                gr.config.Grants()[i].AccessValue.push("AccessSpecial4")
+        }
+        $('#modalUpdate').modal('show')
+    });
+};
+
+gr.getAccess = () => {
+
+}
+
 gr.saveChanges = () => {
 	if (!app.isFormValid(".form-group")) {
 		return
 	}
     let parm = ko.mapping.toJS(gr.config)
-    parm.GroupType = parseInt(parm.GroupType)
-	app.ajaxPost('/group/savegroup', parm, (res) => {
+    // parm.GroupType = parseInt(parm.GroupType)
+    let postparm = {
+        grants: parm.Grants,
+        group: {
+            _id: parm._id,
+            Title: parm.Title,
+            Owner: parm.Owner,
+            Enable: parm.Enable,
+            GroupType: parm.GroupType
+        },
+    }
+	app.ajaxPost('/group/savegroup', postparm, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}
 
 		$('#modalUpdate').modal('hide')
-		gr.refreshDataBrowser()
+		gr.refreshData()
 	}, (err) => {
 		app.showError(err.responseText)
 	}, {
@@ -147,6 +189,7 @@ gr.saveChanges = () => {
 
 gr.refreshData = () => {
 	$('.grid-group').data('kendoGrid').dataSource.read()
+    ko.mapping.fromJS(gr.templateGroup, gr.config)
 }
 
 gr.deletegroup = () => {
@@ -174,7 +217,7 @@ gr.deletegroup = () => {
                     if (!app.isFine(res)) {
                         return;
                     }
-                    gr.refreshDataBrowser()
+                    gr.refreshData()
                     swal({ title: "Data group(s) successfully deleted", type: "success" })
                 })
             }, 1000)
@@ -188,7 +231,7 @@ gr.generateGrid = () => {
         dataSource: {
             transport: {
                 read: {
-                    url: "/group/getaccessgroup",
+                    url: "/group/search",
                     dataType: "json",
                     data: ko.mapping.toJS(gr.filter),
                     type: "POST",
@@ -226,6 +269,8 @@ gr.generateGrid = () => {
 }
 
 $(() => {
+    $("#modalUpdate").insertAfter("body")
     gr.generateGrid()
-	$("#modalUpdate").insertAfter("body")
+    adm.getAccess()
+    // adm.getGrant()
 })

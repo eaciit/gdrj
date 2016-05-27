@@ -1,4 +1,4 @@
-vm.currentTitle('login');
+vm.pageTitle('login');
 
 viewModel.login = new Object()
 let lg = viewModel.login
@@ -32,9 +32,7 @@ lg.dataMenu =ko.observableArray([])
 lg.ErrorMessage = ko.observable('')
 lg.getConfirReset = ko.mapping.fromJS(lg.templateUrlParam)
 
-lg.getLogin = (e) => {
-	event.preventDefault()
-
+lg.getLogin = () => {
 	if (!app.isFormValid("#login-form")) {
 		return;
 	}

@@ -270,6 +270,10 @@ html, body {
   padding: 15%;
 }
 
+.tab-content > div {
+  padding-top: 10px;
+}
+
 .report-module-pivot > div.col-md-3 {
   padding-left: 0px;
 }
@@ -314,6 +318,19 @@ html, body {
 }
 .report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper {
   cursor: auto;
+}
+.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .expandable {
+  position: relative;
+}
+.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .expandable input[type="checkbox"] {
+  margin-top: 9px;
+  margin-right: 3px;
+}
+.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .aggregate {
+  height: 30px;
+}
+.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .aggregate input[type="checkbox"] {
+  margin-top: 9px;
 }
 .report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .icon {
   cursor: pointer;

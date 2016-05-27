@@ -83,6 +83,9 @@ app.isNot = (observable, comparator) => {
 
     return a !== b
 }
+app.isUndefined = (o) => {
+    return (typeof o === 'undefined')
+}
 app.showError = (message) => sweetAlert('Oops...', message, 'error')
 app.isFine = (res) => {
     if (!res.success) {
@@ -137,7 +140,6 @@ app.prepareTooltipster = ($o, argConfig) => {
             config = $.extend(true, config, argConfig)
         }
 
-    console.log("=====", e, config)
         $(e).tooltipster(config)
     })
 }
