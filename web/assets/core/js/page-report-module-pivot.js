@@ -3,33 +3,50 @@
 viewModel.pivot = new Object();
 var pvt = viewModel.pivot;
 
-pvt.fields = ko.observableArray([{ _id: 'ProductID', Name: 'Product ID' }, { _id: 'ProductName', Name: 'Product Name' }, { _id: 'SupplierID', Name: 'Supplier ID' }, { _id: 'CategoryID', Name: 'Category ID' }, { _id: 'QuantityPerUnit', Name: 'Quantity Per Unit' }, { _id: 'UnitPrice', Name: 'Unit Price' }, { _id: 'UnitsInStock', Name: 'Units In Stock' }, { _id: 'UnitsOnOrder', Name: 'Units On Order' }, { _id: 'ReorderLevel', Name: 'Reorder Level' }, { _id: 'Discontinued', Name: 'Discontinued' }, { _id: 'Category.CategoryID', Name: 'Category ID' }, { _id: 'Category.CategoryName', Name: 'Category Name' }, { _id: 'Category.Description', Name: 'Category Description' }]);
+pvt.templateDataPoint = {
+	_id: '',
+	aggr: 'sum'
+};
+pvt.optionDimensions = ko.observableArray([{ _id: 'ID', Name: 'ID' }, { _id: 'PC', Name: 'Profit Center' }, { _id: 'CC', Name: 'Cost Center' }, { _id: 'CompanyCode', Name: 'Company Code' }, { _id: 'LedgerAccount', Name: 'Ledger Account' }, { _id: 'Customer', Name: 'Customer' }, { _id: 'Product', Name: 'Product' }, { _id: 'Date', Name: 'Date' }]);
+pvt.optionDataPoints = ko.observableArray([{ _id: 'Value1', Name: 'Value 1' }, { _id: 'Value2', Name: 'Value 2' }, { _id: 'Value3', Name: 'Value 3' }]);
+pvt.optionAggregates = ko.observableArray([{ _id: 'avg', Name: 'Avg' }, { _id: 'count', Name: 'Count' }, { _id: 'sum', Name: 'Sum' }, { _id: 'max', Name: 'Max' }, { _id: 'min', Name: 'Min' }]);
 pvt.mode = ko.observable('');
-pvt.columns = ko.observableArray([ko.mapping.fromJS({ _id: 'CategoryName', expand: false }), ko.mapping.fromJS({ _id: 'ProductName', expand: false })]);
-pvt.rows = ko.observableArray([ko.mapping.fromJS({ _id: 'Discontinued', expand: false })]);
-pvt.values = ko.observableArray([{ _id: 'sum' }]);
-pvt.optionValues = ko.observableArray([{ _id: 'avg', Name: 'Avg' }, { _id: 'count', Name: 'Count' }, { _id: 'sum', Name: 'Sum' }, { _id: 'max', Name: 'Max' }, { _id: 'min', Name: 'Min' }]);
+pvt.columns = ko.observableArray([app.koMap({ _id: pvt.optionDimensions()[0]._id, expand: false }), app.koMap({ _id: pvt.optionDimensions()[1]._id, expand: false })]);
+pvt.rows = ko.observableArray([app.koMap({ _id: pvt.optionDimensions()[3]._id, expand: false })]);
+pvt.dataPoints = ko.observableArray([app.koMap({ _id: pvt.optionDataPoints()[0]._id, aggr: pvt.optionAggregates()[2]._id }), app.koMap({ _id: pvt.optionDataPoints()[0]._id, aggr: pvt.optionAggregates()[0]._id })]);
 pvt.data = ko.observableArray(tempData);
-pvt.currentTarget = null;
+pvt.currentTargetDimension = null;
+pvt.columnRowID = null;
+pvt.columnRowWhich = '';
 
 pvt.prepareTooltipster = function () {
-	$('.tooltipster-late').each(function (i, e) {
-		$(e).tooltipster({
-			contentAsHTML: true,
-			interactive: true,
-			theme: 'tooltipster-whi',
-			animation: 'grow',
-			delay: 0,
-			offsetY: -5,
-			touchDevices: false,
-			trigger: 'click',
-			position: 'top',
-			content: $('\n\t\t\t\t<h3 class="no-margin no-padding">Add to</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' data-target-module=\'column\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.addAs(this, "column")\'>\n\t\t\t\t\t\tColumn\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' data-target-module=\'row\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.addAs(this, "row")\'>\n\t\t\t\t\t\tRow\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t')
-		});
+	var config = {
+		contentAsHTML: true,
+		interactive: true,
+		theme: 'tooltipster-whi',
+		animation: 'grow',
+		delay: 0,
+		offsetY: -5,
+		touchDevices: false,
+		trigger: 'click',
+		position: 'top'
+	};
+
+	$('.tooltipster-dimension').each(function (i, e) {
+		$(e).tooltipster($.extend(true, config, {
+			content: $('\n\t\t\t\t<h3 class="no-margin no-padding">Add to</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' data-target-module=\'column\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.addAs(this, "column")\'>\n\t\t\t\t\t\t<i class=\'fa fa-columns\'></i> Column\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' data-target-module=\'row\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.addAs(this, "row")\'>\n\t\t\t\t\t\t<i class=\'fa fa-reorder\'></i> Row\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t')
+		}));
+	});
+
+	$('.tooltipster-column-row').each(function (i, e) {
+		var title = $(e).closest('.pivot-section').parent().prev().text();
+		$(e).tooltipster($.extend(true, config, {
+			content: $('\n\t\t\t\t<h3 class="no-margin no-padding">' + title + ' setting</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.configure(this, "column")\'>\n\t\t\t\t\t\t<i class=\'fa fa-gear\'></i> Configure\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.removeFrom()\'>\n\t\t\t\t\t\t<i class=\'fa fa-trash\'></i> Remove\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t')
+		}));
 	});
 };
 pvt.showFieldControl = function (o) {
-	pvt.currentTarget = $(o).prev();
+	pvt.currentTargetDimension = $(o).prev();
 };
 pvt.hoverInModule = function (o) {
 	var target = $(o).attr('data-target-module');
@@ -39,9 +56,13 @@ pvt.hoverOutModule = function (o) {
 	var target = $(o).attr('data-target-module');
 	$('[data-module="' + target + '"]').removeClass('highlight');
 };
+pvt.configure = function (o, what) {};
+pvt.addDataPoint = function () {
+	pvt.dataPoints.push(app.clone(pvt.templateDataPoint));
+};
 pvt.addAs = function (o, what) {
 	var holder = pvt[what + 's'];
-	var id = $(pvt.currentTarget).attr('data-id');
+	var id = $(pvt.currentTargetDimension).attr('data-id');
 
 	var isAddedOnColumn = typeof pvt.columns().find(function (d) {
 		return d._id === id;
@@ -49,57 +70,28 @@ pvt.addAs = function (o, what) {
 	var isAddedOnRow = typeof pvt.rows().find(function (d) {
 		return d._id === id;
 	}) !== 'undefined';
-	var isAddedOnValue = typeof pvt.values().find(function (d) {
-		return d._id === id;
-	}) !== 'undefined';
 
-	if (!(isAddedOnColumn || isAddedOnRow || isAddedOnValue)) {
-		var row = pvt.fields().find(function (d) {
+	if (!(isAddedOnColumn || isAddedOnRow)) {
+		var row = pvt.optionDimensions().find(function (d) {
 			return d._id === id;
 		});
 		holder.push(ko.mapping.fromJS($.extend(true, row, { expand: false })));
 	}
 };
-pvt.isAggregate = function (which) {
-	return ko.computed(function () {
-		var val = pvt.values().find(function (e) {
-			return e._id == which;
-		});
-		return !app.isUndefined(val);
-	}, pvt);
-};
-pvt.changeAggregate = function (which) {
-	return function () {
-		pvt.values([]); // hack, temprary reset the values
-
-		var val = pvt.values.find(function (e) {
-			return e._id == which;
-		});
-		if (app.isUndefined(val)) {
-			var item = pvt.optionValues().find(function (d) {
-				return d._id == which;
-			});
-			pvt.values.push(item);
-		} else {
-			app.arrRemoveByItem(pvt.values, val);
-		}
-
-		return true;
-	};
-};
-pvt.removeFrom = function (id, which) {
-	var holder = ko.mapping.toJS(pvt[which + 's']);
-	var row = holder.find(function (d) {
-		return d._id == id;
+pvt.removeFrom = function () {
+	var holder = pvt[pvt.columnRowWhich + 's'];
+	var row = holder().find(function (d) {
+		return ko.mapping.toJS(d)._id == pvt.columnRowID;
 	});
 	app.arrRemoveByItem(holder, row);
-	ko.mapping.fromJS(holder, pvt[which + 's']);
 };
-pvt.removeFromColumn = function (o) {
-	pvt.removeFrom($(o).attr('data-id'), 'column');
+pvt.showColumnSetting = function (o) {
+	pvt.columnRowID = $(o).attr('data-id');
+	pvt.columnRowWhich = 'column';
 };
-pvt.removeFromRow = function (o) {
-	pvt.removeFrom($(o).attr('data-id'), 'row');
+pvt.showRowSetting = function (o) {
+	pvt.columnRowID = $(o).attr('data-id');
+	pvt.columnRowWhich = 'row';
 };
 pvt.refreshData = function () {
 	pvt.mode('render');
@@ -110,11 +102,10 @@ pvt.refreshData = function () {
 	var rows = ko.mapping.toJS(pvt.rows()).map(function (d) {
 		return $.extend(true, { name: d._id, expand: false }, d);
 	});
-	var measures = pvt.values().map(function (d) {
+	var measures = app.distinct(ko.mapping.toJS(pvt.dataPoints).map(function (d) {
 		return d._id;
-	});
+	}));
 	var data = pvt.data();
-
 	console.log(columns, rows, measures);
 
 	$('.pivot').replaceWith('<div class="pivot"></div>');
