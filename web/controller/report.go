@@ -58,3 +58,14 @@ func (m *ReportController) GetDataEntity(r *knot.WebContext) interface{} {
 
 	return res
 }
+
+func (m *ReportController) GetDataRegion(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.HGeographiGetAll()
+	if err != nil {
+		return []*gdrj.HGeographi{}
+	}
+
+	return res
+}

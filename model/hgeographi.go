@@ -34,6 +34,21 @@ func HGeographiGetByID(id string) *HGeographi {
 	return b
 }
 
+func HGeographiGetAll() ([]*HGeographi, error) {
+	cursor, err := DB().Find(new(HGeographi), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*HGeographi{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (h *HGeographi) Save() error {
 	err := Save(h)
 	if err != nil {

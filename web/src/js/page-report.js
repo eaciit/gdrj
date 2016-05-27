@@ -91,7 +91,7 @@ rpt.filterMultiSelect = (d) => {
 		placeholder: 'Choose items ...'
 	}
 
-	if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity'].indexOf(d._id) > -1) {
+	if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'HGeographi'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
 			data: ko.computed(() => {
 				return rpt.masterData[d._id]().map((d) => {
@@ -126,7 +126,7 @@ rpt.filterMultiSelect = (d) => {
 		})
 	}
 
-	console.log('filter', d, config)
+	// console.log('filter', d, config)
 
 	return config
 }

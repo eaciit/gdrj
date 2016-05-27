@@ -46,11 +46,14 @@
 	<h3 class="no-margin">Columns</h3>
 	<div class="wrapper" style="min-height: 300px;">
 		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.columns" style="min-height: 300px;">
-			<li class="list-group-item tooltipster-late" data-bind="attr: { title: rpt.titleFor($data) }">
+			<li class="list-group-item">
 				<div class="wrapper">
-					<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data._id }"></span>
-					<span class="icon">
-						<i class="fa fa-share-square"></i>
+					<span class="text" data-bind="text: $data._id, attr: { 'data-id': $data._id }"></span>
+					<span class="expandable tooltipster" title="expand?">
+						<input type="checkbox" data-bind="checked: $data.expand">
+					</span>
+					<span class="icon tooltipster" title="Remove from column" data-bind="attr: { 'onclick': 'pvt.removeFromColumn(this)', 'data-id': $data._id }">
+						<i class="fa fa-remove"></i>
 					</span>
 				</div>
 			</li>
@@ -65,11 +68,14 @@
 	<h3 class="no-margin">Rows</h3>
 	<div class="wrapper" style="min-height: 300px;">
 		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.rows" style="min-height: 300px;">
-			<li class="list-group-item tooltipster-late" data-bind="attr: { title: rpt.titleFor($data) }">
+			<li class="list-group-item">
 				<div class="wrapper">
-					<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data._id }"></span>
-					<span class="icon">
-						<i class="fa fa-share-square"></i>
+					<span class="text" data-bind="text: $data._id, attr: { 'data-id': $data._id }"></span>
+					<span class="expandable tooltipster" title="expand?">
+						<input type="checkbox" data-bind="checked: $data.expand">
+					</span>
+					<span class="icon tooltipster" title="Remove from row" data-bind="attr: { 'onclick': 'pvt.removeFromRow(this)', 'data-id': $data._id }">
+						<i class="fa fa-remove"></i>
 					</span>
 				</div>
 			</li>
@@ -79,14 +85,14 @@
 						</div>
 						<div class="col-md-4 pivot-wrapper">
 <div class="wrapper-inner" data-module="value">
-	<h3 class="no-margin">Data</h3>
+	<h3 class="no-margin">Aggregates</h3>
 	<div class="wrapper" style="min-height: 300px;">
-		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.values" style="min-height: 300px;">
-			<li class="list-group-item tooltipster-late" data-bind="attr: { title: rpt.titleFor($data) }">
+		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.optionValues" style="min-height: 300px;">
+			<li class="list-group-item" >
 				<div class="wrapper">
 					<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data._id }"></span>
-					<span class="icon">
-						<i class="fa fa-share-square"></i>
+					<span class="icon aggregate pull-right" data-bind="attr: { 'data-id': $data._id }">
+						<input type="checkbox" data-bind="checked: pvt.isAggregate($data._id), click: pvt.changeAggregate($data._id)">
 					</span>
 				</div>
 			</li>
