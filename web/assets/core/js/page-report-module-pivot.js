@@ -3,14 +3,17 @@
 viewModel.pivot = new Object();
 var pvt = viewModel.pivot;
 
-pvt.optionDimensions = ko.observableArray([{ _id: 'ProductID', Name: 'Product ID' }, { _id: 'ProductName', Name: 'Product Name' }, { _id: 'SupplierID', Name: 'Supplier ID' }, { _id: 'CategoryID', Name: 'Category ID' }, { _id: 'Category.CategoryID', Name: 'Category ID' }, { _id: 'Category.CategoryName', Name: 'Category Name' }, { _id: 'Category.Description', Name: 'Category Description' }]);
-pvt.optionDataPoints = ko.observableArray([{ _id: 'QuantityPerUnit', Name: 'Quantity Per Unit' }, { _id: 'ReorderLevel', Name: 'Reorder Level' }, { _id: 'Discontinued', Name: 'Discontinued' }, { _id: 'UnitPrice', Name: 'Unit Price' }, { _id: 'UnitsInStock', Name: 'Units In Stock' }, { _id: 'UnitsOnOrder', Name: 'Units On Order' }]);
+pvt.templateDataPoint = {
+	_id: '',
+	aggr: 'sum'
+};
+pvt.optionDimensions = ko.observableArray([{ _id: 'ID', Name: 'ID' }, { _id: 'PC', Name: 'Profit Center' }, { _id: 'CC', Name: 'Cost Center' }, { _id: 'CompanyCode', Name: 'Company Code' }, { _id: 'LedgerAccount', Name: 'Ledger Account' }, { _id: 'Customer', Name: 'Customer' }, { _id: 'Product', Name: 'Product' }, { _id: 'Date', Name: 'Date' }]);
+pvt.optionDataPoints = ko.observableArray([{ _id: 'Value1', Name: 'Value 1' }, { _id: 'Value2', Name: 'Value 2' }, { _id: 'Value3', Name: 'Value 3' }]);
 pvt.optionAggregates = ko.observableArray([{ _id: 'avg', Name: 'Avg' }, { _id: 'count', Name: 'Count' }, { _id: 'sum', Name: 'Sum' }, { _id: 'max', Name: 'Max' }, { _id: 'min', Name: 'Min' }]);
 pvt.mode = ko.observable('');
-pvt.columns = ko.observableArray([ko.mapping.fromJS({ _id: 'CategoryName', expand: false }), ko.mapping.fromJS({ _id: 'ProductName', expand: false })]);
-pvt.rows = ko.observableArray([ko.mapping.fromJS({ _id: 'Discontinued', expand: false })]);
-pvt.templateDataPoint = { _id: '', aggr: 'sum' };
-pvt.dataPoints = ko.observableArray([ko.mapping.fromJS({ _id: 'QuantityPerUnit', aggr: 'sum' }), ko.mapping.fromJS({ _id: 'QuantityPerUnit', aggr: 'sum' })]);
+pvt.columns = ko.observableArray([app.koMap({ _id: pvt.optionDimensions()[0]._id, expand: false }), app.koMap({ _id: pvt.optionDimensions()[1]._id, expand: false })]);
+pvt.rows = ko.observableArray([app.koMap({ _id: pvt.optionDimensions()[3]._id, expand: false })]);
+pvt.dataPoints = ko.observableArray([app.koMap({ _id: pvt.optionDataPoints()[0]._id, aggr: pvt.optionAggregates()[2]._id }), app.koMap({ _id: pvt.optionDataPoints()[0]._id, aggr: pvt.optionAggregates()[0]._id })]);
 pvt.data = ko.observableArray(tempData);
 pvt.currentTargetDimension = null;
 pvt.columnRowID = null;

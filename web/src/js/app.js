@@ -167,3 +167,8 @@ app.clone = (o) => {
 app.distinct = (arr) => {
     return arr.filter((v, i, self) => self.indexOf(v) === i)
 }
+
+app.koMap = ko.mapping.fromJS
+app.koUnmap = ko.mapping.toJS
+app.observ = ko.observable
+app.observArr = ko.observArr
