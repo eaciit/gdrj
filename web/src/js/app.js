@@ -164,3 +164,6 @@ app.arrRemoveByItem = (arr, item) => {
 app.clone = (o) => {
     return $.extend(true, { }, o)
 }
+app.distinct = (arr) => {
+    return arr.filter((v, i, self) => self.indexOf(v) === i)
+}

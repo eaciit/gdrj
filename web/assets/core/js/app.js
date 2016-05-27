@@ -178,3 +178,8 @@ app.arrRemoveByItem = function (arr, item) {
 app.clone = function (o) {
     return $.extend(true, {}, o);
 };
+app.distinct = function (arr) {
+    return arr.filter(function (v, i, self) {
+        return self.indexOf(v) === i;
+    });
+};

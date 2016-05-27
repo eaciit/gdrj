@@ -274,11 +274,23 @@ html, body {
   padding-top: 10px;
 }
 
-.report-module-pivot > div.col-md-3 {
+.report-module-pivot > div {
   padding-left: 0px;
-}
-.report-module-pivot .pivot-wrapper {
   padding-right: 0px;
+}
+.report-module-pivot .pivot-section.pivot-section-data-point .input-group {
+  height: 32px;
+  margin-bottom: 2px;
+  border: 1px solid #3b79c2;
+}
+.report-module-pivot .pivot-section.pivot-section-data-point .input-group .input-group-addon {
+  background-color: #6194cf;
+  border-color: #6194cf;
+  color: white;
+}
+.report-module-pivot .pivot-section.pivot-section-data-point .input-group .k-dropdown-wrap.k-state-hover {
+  background-color: #F0F3F4;
+  border-color: #F0F3F4;
 }
 .report-module-pivot .pivot-wrapper.pivot-wrapper-column {
   margin-bottom: 10px;
@@ -300,6 +312,13 @@ html, body {
   padding: 10px 0px 2px;
   margin: 0px 10px;
 }
+.report-module-pivot .pivot-wrapper .wrapper-inner h3 .add-data-point {
+  border: none;
+  background-color: transparent;
+  padding: 0px 4px;
+  margin-right: -4px;
+  color: #E67E22;
+}
 .report-module-pivot .pivot-wrapper .wrapper-inner p {
   margin: 0px;
   padding: 10px 10px 0px;
@@ -311,6 +330,7 @@ html, body {
 .report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item {
   overflow: hidden;
   position: relative;
+  margin-bottom: 2px;
 }
 .report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item:hover .wrapper .text {
   background-color: transparent;
