@@ -97,7 +97,7 @@ pvt.changeAggregate = (which) => {
 	return () => {
 		pvt.values([]) // hack, temprary reset the values
 
-		let val = values.find((e) => e._id == which)
+		let val = pvt.values.find((e) => e._id == which)
 		if (app.isUndefined(val)) {
 			let item = pvt.optionValues().find((d) => d._id == which)
 			pvt.values.push(item)
