@@ -124,3 +124,11 @@ func (m *ReportController) GetDataLedgerAccount(r *knot.WebContext) interface{} 
 
 	return res
 }
+
+func (m *ReportController) GetDataPivot(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data := gdrj.LedgerSummaryGenerateDummyData()
+
+	return data
+}
