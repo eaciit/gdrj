@@ -1,7 +1,7 @@
 'use strict';
 
 vm.currentMenu('Administration');
-vm.currentTitle("Group");
+vm.currentTitle("User");
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Administration', href: '#' }, { title: 'User', href: '/user' }]);
 
 viewModel.User = new Object();

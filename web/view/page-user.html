@@ -52,7 +52,7 @@
 				{{template "_loader.html"}}
 				<div data-bind="visible: !app.loader()">
 					<p data-bind="visible: us.selectedTableID() != ''">
-						Data on table <span class="tag bg-orange">group</span>.
+						Data on table <span class="tag bg-orange">user</span>.
 					</p>
 					<div class="grid-user"></div>
 					<div class="no-grid" data-bind="visible: app.is(us.selectedTableID, '')">No data to be shown.</div>
@@ -68,7 +68,7 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title" id="myModalLabel">
-        			<span data-bind="text: us.isNew() ? 'Create new' : 'Edit'"></span> data <span>group</span>
+        			<span data-bind="text: us.isNew() ? 'Create new' : 'Edit'"></span> data <span>user</span>
         		</h4>
             </div>
             <div class="modal-body" data-bind="with: us.config">
