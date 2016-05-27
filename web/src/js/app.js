@@ -83,6 +83,9 @@ app.isNot = (observable, comparator) => {
 
     return a !== b
 }
+app.isUndefined = (o) => {
+    return (typeof o === 'undefined')
+}
 app.showError = (message) => sweetAlert('Oops...', message, 'error')
 app.isFine = (res) => {
     if (!res.success) {
@@ -113,8 +116,8 @@ app.resetValidation = (selectorID) => {
 app.resetForm = ($o) => {
     $o.trigger('reset')
 }
-app.prepareTooltipster = ($o) => {
-    let $tooltipster = ($o == undefined) ? $('.tooltipster') : $o
+app.prepareTooltipster = ($o, argConfig) => {
+    let $tooltipster = (typeof $o === 'undefined') ? $('.tooltipster') : $o
 
     $tooltipster.each((i, e) => {
         let position = 'top'
@@ -123,15 +126,21 @@ app.prepareTooltipster = ($o) => {
             position = $(e).attr('class').split(' ').find((d) => d.search('tooltipster-') > -1).replace(/tooltipster\-/g, '')
         }
 
-        $(e).tooltipster({
+        let config = {
             theme: 'tooltipster-val',
             animation: 'grow',
             delay: 0,
             offsetY: -5,
             touchDevices: false,
             trigger: 'hover',
-            position: position
-        })
+            position: position,
+            content: $('<div />').html($(e).attr('title'))
+        }
+        if (typeof argConfig !== 'undefined') {
+            config = $.extend(true, config, argConfig)
+        }
+
+        $(e).tooltipster(config)
     })
 }
 app.gridBoundTooltipster = (selector) => {

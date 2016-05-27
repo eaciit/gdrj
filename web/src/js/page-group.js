@@ -1,4 +1,5 @@
-vm.pageTitle("Group")
+vm.currentMenu('Administration')
+vm.currentTitle("Group")
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
 	{ title: 'Administration', href: '#' },
@@ -54,7 +55,7 @@ gr.TableColumns = ko.observableArray([
 		headerTemplate: "<center>Action</center>", width: 100,
 		template: function(d){
 			return [
-    			"<button class='btn btn-sm btn-warning'><span class='fa fa-calculator' onclick='ec.editData("+JSON.stringify(d)+")'></span></button>",
+    			"<button class='btn btn-sm btn-warning'><span class='fa fa-calculator' onclick='ec.editData(\""+d._id+"\")'></span></button>",
     			// "<div onclick='ed.showFormulaEditor("+d.Index+", "+d+")'>"+d.FormulaText.join('')+"</div>",
     		].join(" ");
 		}
@@ -108,10 +109,20 @@ gr.removeGrant = (data) => {
     gr.config.Grants.remove(data)
 }
 
-gr.editData = (data) => {
+gr.editData = (id) => {
 	gr.isNew(false)
-	$('#modalUpdate').modal('show')
-	ko.mapping.fromJS(data, gr.config)
+    app.ajaxPost('/group/editgroup', {_id: id}, (res) => {
+        if (!app.isFine(res)) {
+            return
+        }
+        
+        $('#modalUpdate').modal('show')
+        ko.mapping.fromJS(res.data, gr.config)
+    }, (err) => {
+        app.showError(err.responseText)
+    }, {
+        timeout: 5000
+    })
 }
 
 gr.saveChanges = () => {
@@ -187,7 +198,11 @@ gr.generateGrid = () => {
                 }
             },
             schema: {
-                data: "data.Datas",
+                data: function(res){
+                    gr.selectedTableID("show");
+                    app.loader(false);
+                    return res.data.Datas;
+                },
                 total: "data.total"
             },
 

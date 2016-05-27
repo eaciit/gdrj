@@ -31,18 +31,70 @@
 	<div class="panel">
 		<div class="panel-heading" role="tab" data-bind="attr: { 'id': 'h-' + $index() }">
 			<h4 class="panel-title">
-				<a class="collapsed tooltipster" role="button" data-toggle="collapse" title="Toggle filter common" data-bind="attr: { 'href': '#c-' + $index() }, text: $data.group">Common</a>
-	  		</h4>
+				<a class="tooltipster" role="button" data-toggle="collapse" title="Toggle filter common" data-bind="attr: { 'href': '#c-' + $index() }, css: { 'collapsed': ($index() > 0) }">
+					<span class="pull-left" data-bind="text: $data.group"></span>
+					<span class="pull-right">
+						<i class="fa fa-angle-left"></i>
+						<i class="fa fa-angle-down"></i>
+					</span>
+					<span class="clearfix"></span>
+				</a>
+			</h4>
 		</div>
 		<div class="panel-collapse collapse" role="tabpanel" data-bind="attr: { 'id': 'c-' + $index() }, css: { 'in': ($index() == 0) }">
 			<div class="panel-body" data-bind="foreach: $data.sub">
 				<div class="form-group">
-					<div class="input-group input-group-sm ez width-full">
-						<span class="input-group-addon width-100 align-right" data-bind="text: $data.title">Branch</span>
-						<div class="width-full">
-							<select data-bind="kendoMultiSelect: rpt.filterMultiSelect($data)" style="width: 100%"></select>
+					<!-- ko if: app.is($data._id, 'From') -->
+						<div class="col-md-6 no-padding hardcore">
+							<div class="input-group input-group-sm ez width-full">
+								<span class="input-group-addon width-80 align-right">From</span>
+								<div class="width-full">
+									<input type="text" style="width: 100px;" data-bind="kendoDatePicker: { format: 'dd-MM-yyyy', value: '' }" />
+								</div>
+								<div class="clearfix"></div>
+							</div>
 						</div>
-					</div>
+						<div class="col-md-6 no-padding hardcore">
+							<div class="input-group input-group-sm ez width-full">
+								<span class="input-group-addon width-80 align-right">To</span>
+								<div class="width-full">
+									<input type="text" style="width: 100px;" data-bind="kendoDatePicker: { format: 'dd-MM-yyyy', value: '' }" />
+								</div>
+								<div class="clearfix"></div>
+							</div>
+						</div>
+						<div class="clearfix"></div>
+					<!-- /ko -->
+					<!-- ko if: app.is($data._id, 'Type') -->
+						<div class="col-md-6 no-padding hardcore">
+							<div class="input-group input-group-sm ez width-full">
+								<span class="input-group-addon width-80 align-right">Type</span>
+								<div style="width: 98%">
+									<select data-bind="kendoMultiSelect: rpt.filterMultiSelect($data)" style="width: 100%"></select>
+								</div>
+								<div class="clearfix"></div>
+							</div>
+						</div>
+						<div class="col-md-6 no-padding hardcore">
+							<div class="input-group input-group-sm ez width-full">
+								<span class="input-group-addon width-80 align-right">HQ</span>
+								<div class="width-full">
+									<input class="form-control" type="checkbox" >
+									<!-- <select data-bind="kendoMultiSelect: rpt.filterMultiSelect($parent.sub.find((d) => d._id === 'HQ'))" style="width: 100%"></select> -->
+								</div>
+								<div class="clearfix"></div>
+							</div>
+						</div>
+						<div class="clearfix"></div>
+					<!-- /ko -->
+					<!-- ko if: (app.isNot($data._id, 'From') && app.isNot($data._id, 'Type') && app.isNot($data._id, 'HQ')) -->
+						<div class="input-group input-group-sm ez width-full">
+							<span class="input-group-addon width-80 align-right" data-bind="text: $data.title">Branch</span>
+							<div class="width-full">
+								<select data-bind="kendoMultiSelect: rpt.filterMultiSelect($data)" style="width: 100%"></select>
+							</div>
+						</div>
+					<!-- /ko -->
 				</div>
 			</div>
 		</div>

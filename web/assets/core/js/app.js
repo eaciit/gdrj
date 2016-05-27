@@ -91,6 +91,9 @@ app.isNot = function (observable, comparator) {
 
     return a !== b;
 };
+app.isUndefined = function (o) {
+    return typeof o === 'undefined';
+};
 app.showError = function (message) {
     return sweetAlert('Oops...', message, 'error');
 };
@@ -121,8 +124,8 @@ app.resetValidation = function (selectorID) {
 app.resetForm = function ($o) {
     $o.trigger('reset');
 };
-app.prepareTooltipster = function ($o) {
-    var $tooltipster = $o == undefined ? $('.tooltipster') : $o;
+app.prepareTooltipster = function ($o, argConfig) {
+    var $tooltipster = typeof $o === 'undefined' ? $('.tooltipster') : $o;
 
     $tooltipster.each(function (i, e) {
         var position = 'top';
@@ -133,15 +136,21 @@ app.prepareTooltipster = function ($o) {
             }).replace(/tooltipster\-/g, '');
         }
 
-        $(e).tooltipster({
+        var config = {
             theme: 'tooltipster-val',
             animation: 'grow',
             delay: 0,
             offsetY: -5,
             touchDevices: false,
             trigger: 'hover',
-            position: position
-        });
+            position: position,
+            content: $('<div />').html($(e).attr('title'))
+        };
+        if (typeof argConfig !== 'undefined') {
+            config = $.extend(true, config, argConfig);
+        }
+
+        $(e).tooltipster(config);
     });
 };
 app.gridBoundTooltipster = function (selector) {

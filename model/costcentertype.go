@@ -12,7 +12,7 @@ import (
 
 type CostCenterType struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	ID            string `json:"_id" bson:"_id"` //BrandID
+	ID            string `json:"_id" bson:"_id"` //CCTypeID
 	Name          string
 }
 
@@ -21,7 +21,7 @@ func (c *CostCenterType) RecordID() interface{} {
 }
 
 func (c *CostCenterType) TableName() string {
-	return "brand"
+	return "costcentertype"
 }
 
 func CostCenterTypeGetByID(id string) *CostCenterType {

@@ -16,6 +16,8 @@ type CostCenter struct {
 	CostGroup03   string
 	BranchID      string
 	BranchType    BranchTypeEnum
+	CCTypeID      string
+	HCCGroupID    string
 }
 
 func (c *CostCenter) RecordID() interface{} {
