@@ -46,6 +46,21 @@ func CustomerGetByID(id string) *Customer {
 	return c
 }
 
+func CustomerGetAll() ([]*Customer, error) {
+	cursor, err := DB().Find(new(Customer), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*Customer{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (c *Customer) Save() error {
 	e := Save(c)
 	if e != nil {
