@@ -1,4 +1,4 @@
-<script src="/res/core/js/page-group.js"></script>
+<script src="/res/core/js/page-user.js"></script>
 <script src="/res/core/js/page-administration.js"></script>
 
 <div>
@@ -8,7 +8,7 @@
 				<h3 class="no-margin">Filter</h3>
 				<div class="panel-nav-button">
 					<div class="form-group relative align-right no-margin no-padding hardcore">
-						<button class="btn btn-sm btn-primary" data-bind="click: gr.refreshData">
+						<button class="btn btn-sm btn-primary" data-bind="click: us.refreshData">
 							<i class="fa fa-refresh"></i> Reload Data
 						</button>
 					</div>
@@ -20,7 +20,7 @@
 					<div class="form-group form-group-table-name">
 						<div class="input-group input-group-sm ez width-full">
 							<span class="input-group-addon width-100 align-right">Search</span>
-							<input type="text" class="form-control" required data-required-msg="cannot be empty" placeholder="Type value here ..." data-bind="value: gr.filter.search" />
+							<input type="text" class="form-control" required data-required-msg="cannot be empty" placeholder="Type value here ..." data-bind="value: us.filter.search" />
 						</div>
 					</div>
 				</div>
@@ -37,13 +37,13 @@
 					<button class="btn-toggle-filter no-padding">
 						<i class="fa fa-angle-double-left tooltipster color-grey" title="Toggle filter pane visibility"></i>
 					</button>
-					Data Group
+					Data User
 				</h3>
 				<div class="panel-nav-button">
-					<button class="btn btn-primary btn-sm" data-bind="click: gr.newData">
+					<button class="btn btn-primary btn-sm" data-bind="click: us.newData">
 						<i class="fa fa-plus"></i> New Data
 					</button>
-					<button class="btn btn-danger btn-sm" data-bind="click: gr.deletegroup">
+					<button class="btn btn-danger btn-sm" data-bind="click: us.deleteuser">
 						<i class="fa fa-trash"></i> Delete
 					</button>
 				</div>
@@ -51,11 +51,11 @@
 			<div class="panel-body">
 				{{template "_loader.html"}}
 				<div data-bind="visible: !app.loader()">
-					<p data-bind="visible: gr.selectedTableID() != ''">
-						Data on table <span class="tag bg-orange">group</span>.
+					<p data-bind="visible: us.selectedTableID() != ''">
+						Data on table <span class="tag bg-orange">user</span>.
 					</p>
-					<div class="grid-group"></div>
-					<div class="no-grid" data-bind="visible: app.is(gr.selectedTableID, '')">No data to be shown.</div>
+					<div class="grid-user"></div>
+					<div class="no-grid" data-bind="visible: app.is(us.selectedTableID, '')">No data to be shown.</div>
 				</div>
 			</div>
 		</div>
@@ -68,41 +68,41 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title" id="myModalLabel">
-        			<span data-bind="text: gr.isNew() ? 'Create new' : 'Edit'"></span> data <span>group</span>
+        			<span data-bind="text: us.isNew() ? 'Create new' : 'Edit'"></span> data <span>user</span>
         		</h4>
             </div>
-            <div class="modal-body" data-bind="with: gr.config">
-                <form class="wrapper form-group" novalidate>
+            <div class="modal-body" data-bind="with: us.config">
+                <form class="wrapper form-user" novalidate>
                 	<div class="col-md-12">
                 		<ul class="nav nav-tabs" role="tablist">
-							<li role="presentation" class="active"><a href="#tabgroup" aria-controls="home" role="tab" data-toggle="tab">Groups</a></li>
+							<li role="presentation" class="active"><a href="#tabuser" aria-controls="home" role="tab" data-toggle="tab">User</a></li>
+							<li role="presentation"><a href="#tabgroup" aria-controls="access" role="tab" data-toggle="tab">Group</a></li>
 							<li role="presentation"><a href="#tabaccess" aria-controls="access" role="tab" data-toggle="tab">Access</a></li>
 						</ul>
 						<div class="tab-content">
-							<div role="tabpanel" class="tab-pane active" id="tabgroup">
+							<div role="tabpanel" class="tab-pane active" id="tabuser">
 								<div class="form-group">
 									<div class="input-group input-group-sm ez width-full">
-										<span class="input-group-addon align-right width-100">Add Type</span>
-										<input type="radio" name="grouptype" value="1" data-bind="checked: GroupType" /> ldap
-										<input type="radio" name="grouptype" value="0" data-bind="checked: GroupType" /> basic
-									</div>
-								</div>
-			                	<div class="form-group">
-									<div class="input-group input-group-sm ez width-full">
-										<span class="input-group-addon align-right width-100">ID</span>
-										<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: _id" placeholder="Type value here ..." />
-									</div>
-								</div>
-								<div class="form-group">
-									<div class="input-group input-group-sm ez width-full">
-										<span class="input-group-addon align-right width-100">Title</span>
-										<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: Title" placeholder="Type value here ..." />
+										<span class="input-group-addon align-right width-100">Login Type</span>
+										<select class="form-control input-sm" id="LoginType" name="LoginType" data-bind="value: LoginType">
+											<option value="0"></option>
+											<option value="1">Ldap</option>
+											<option value="2">Google</option>
+											<option value="3">Facebook</option>
+										</select>
+                                		<span class="k-invalid-msg" data-for="LoginType"></span>
 									</div>
 								</div>
 								<div class="form-group">
 									<div class="input-group input-group-sm ez width-full">
-										<span class="input-group-addon align-right width-100">Owner</span>
-										<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: Owner" placeholder="Type value here ..." />
+										<span class="input-group-addon align-right width-100">Login ID</span>
+										<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: LoginID" placeholder="Type value here ..." />
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="input-group input-group-sm ez width-full">
+										<span class="input-group-addon align-right width-100">Full Name</span>
+										<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: FullName" placeholder="Type value here ..." />
 									</div>
 								</div>
 								<div class="form-group">
@@ -111,12 +111,33 @@
 										<input type="checkbox" data-bind="checked: Enable" />
 									</div>
 								</div>
+								<div class="form-group">
+									<div class="input-group input-group-sm ez width-full">
+										<span class="input-group-addon align-right width-100">Email</span>
+										<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: Email" placeholder="Type value here ..." />
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="input-group input-group-sm ez width-full">
+										<span class="input-group-addon align-right width-100">Password</span>
+										<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: Password" placeholder="Type value here ..." />
+									</div>
+								</div>
+							</div>
+							<div role="tabpanel" class="tab-pane" id="tabgroup">
+								<div class="col-md-6">
+	                                <div id="listgroup" class="grid listgroup" data-bind="kendoGrid: { dataSource: { pageSize: 15 },   data: us.listGroupsData, selectable: 'multiple, row', change: us.selectlistGridGroups, columns: us.listGroupsColumns, filterfable: true,     sortable: true, pageable: true}">
+	                                </div>
+								</div>
+								<div class="col-md-6">
+									<div class="grid selectedgroup" data-bind="kendoGrid: { dataSource: { pageSize: 15 }, data: us.selectedGroupsData, selectable: 'multiple, row', change: us.removeselectGridGroups, columns: us.selectedGroupsColumns, filterfable: false, pageable: true}"></div>
+								</div>
 							</div>
 							<div role="tabpanel" class="tab-pane" id="tabaccess">
 								<div class="form-group">
 									<div class="input-group input-group-sm ez width-full">
 										<span class="input-group-addon align-right width-100">Add Privilage</span>
-										<button class="btn btn-success btn-sm" data-bind="click: gr.addGrant">
+										<button class="btn btn-success btn-sm" data-bind="click: us.addGrant">
                                             <span class="glyphicon glyphicon-plus"></span> Add
                                         </button>
 									</div>
@@ -125,6 +146,7 @@
 									<table class="table" id="datasource-settings">
                                         <thead>
                                             <tr>
+                                                <th width="200px;">Grant</th>
                                                 <th width="200px;">Access</th>
                                                 <th>Create</th>
                                                 <th>Read</th>
@@ -136,10 +158,11 @@
                                                 <th>Special Access 4</th>
                                             </tr>
                                         </thead>
-                                        <tbody align="center" data-bind="foreach: gr.config.Grants">
+                                        <tbody align="center" data-bind="foreach: us.config.Grants">
                                             <tr>
+                                            	<td data-bind="text: Grant">
+                                            	</td>
                                                 <td>
-                                                    <!-- <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value: AccessID ,options: adm.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select> -->
                                                     <select class="form-control input-sm" data-bind=" value: AccessID ,options: adm.Access()"></select>
                                                 </td>
                                                 <td>
@@ -167,7 +190,7 @@
                                                     <input type='checkbox' value="AccessSpecial4" data-bind=" checked: AccessValue" />
                                                 </td>
                                                 <td>
-                                                    <button type="button" class="btn btn-sm btn-danger" data-bind="click: gr.removeGrant">
+                                                    <button type="button" class="btn btn-sm btn-danger" data-bind="visible: Grant() == '', click: us.removeGrant">
                                                             <span class="glyphicon glyphicon-remove"></span>
                                                     </button>
                                                 </td>
@@ -185,7 +208,7 @@
                 <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
 		        	Cancel
 		        </button>
-                <button class="btn btn-sm btn-primary" data-bind="click: gr.saveChanges">
+                <button class="btn btn-sm btn-primary" data-bind="click: us.saveChanges">
 					<i class="fa fa-save"></i> Save
 				</button>
             </div>
