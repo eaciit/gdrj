@@ -28,7 +28,7 @@
 							<ul class="list-group ez pivot-section pivot-section-fields" data-bind="foreach: pvt.optionDimensions" style="min-height: 524px;">
 								<li class="list-group-item tooltipster-dimension" data-bind="attr: { title: rpt.titleFor($data) }">
 									<div class="wrapper">
-										<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data._id }"></span>
+										<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data.field }"></span>
 										<span class="icon tooltipster" title="Click to add" onclick="pvt.showFieldControl(this)">
 											<i class="fa fa-share-square"></i>
 										</span>
@@ -47,8 +47,8 @@
 								<ul class="list-group ez pivot-section" data-bind="foreach: pvt.columns" style="min-height: 242px;">
 									<li class="list-group-item">
 										<div class="wrapper">
-											<span class="text" data-bind="text: $data._id, attr: { 'data-id': $data._id }"></span>
-											<span class="icon tooltipster-column-row" data-bind="attr: { 'onclick': 'pvt.showColumnSetting(this)', 'data-id': $data._id }">
+											<span class="text" data-bind="text: $data.label, attr: { 'data-id': $data.field }"></span>
+											<span class="icon tooltipster-column-row" data-bind="attr: { 'onclick': 'pvt.showColumnSetting(this)', 'data-id': $data.field }">
 												<i class="fa fa-gear"></i>
 											</span>
 										</div>
@@ -64,8 +64,8 @@
 								<ul class="list-group ez pivot-section" data-bind="foreach: pvt.rows" style="min-height: 242px;">
 									<li class="list-group-item">
 										<div class="wrapper">
-											<span class="text" data-bind="text: $data._id, attr: { 'data-id': $data._id }"></span>
-											<span class="icon tooltipster-column-row" data-bind="attr: { 'onclick': 'pvt.showRowSetting(this)', 'data-id': $data._id }">
+											<span class="text" data-bind="text: $data.label, attr: { 'data-id': $data.field }"></span>
+											<span class="icon tooltipster-column-row" data-bind="attr: { 'onclick': 'pvt.showRowSetting(this)', 'data-id': $data.field }">
 												<i class="fa fa-gear"></i>
 											</span>
 										</div>
@@ -94,11 +94,11 @@
 								<div class="input-group input-group-sm ez width-full">
 									<span class="input-group-addon">Data Point</span>
 									<div class="width-full">
-										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: pvt.optionDataPoints, value: $data._id, optionLabel: 'Pick ...', dataValueField: '_id', dataTextField: 'Name' }"></select>
+										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: pvt.optionDataPoints, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'Name' }"></select>
 									</div>
 									<span class="input-group-addon">Aggr</span>
 									<div class="width-full">
-										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: pvt.optionAggregates, value: $data.aggr, optionLabel: 'Pick ...', dataValueField: '_id', dataTextField: 'Name' }"></select>
+										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: pvt.optionAggregates, value: $data.aggr, optionLabel: 'Pick ...', dataValueField: 'aggr', dataTextField: 'Name' }"></select>
 									</div>
 								</div>
 							</div>

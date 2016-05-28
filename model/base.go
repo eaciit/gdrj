@@ -15,7 +15,7 @@ var _db *orm.DataContext
 var _conn dbox.IConnection
 var _dbErr error
 
-type GDRJModel struct{
+type GDRJModel struct {
 	orm.ModelBase
 	LastUpdate time.Time
 }
@@ -92,4 +92,12 @@ func Find(o orm.IModel, filter *dbox.Filter, config toolkit.M) (dbox.ICursor, er
 		return nil, errors.New("Find: " + e.Error())
 	}
 	return c, nil
+}
+
+type Date struct {
+	ID      string
+	Date    time.Time
+	Month   time.Month
+	Quarter int
+	Year    int
 }

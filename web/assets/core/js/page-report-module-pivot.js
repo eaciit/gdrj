@@ -3,17 +3,55 @@
 viewModel.pivot = new Object();
 var pvt = viewModel.pivot;
 
+pvt.pivotModel = [{ field: 'ID', type: 'string', label: 'ID', as: 'dimension' }, { field: 'PC._id', type: 'string', label: 'Profit Center - ID', as: 'dimension' }, { field: 'PC.EntityID', type: 'string', label: 'Profit Center - Entity ID' }, { field: 'PC.Name', type: 'string', label: 'Profit Center - Name' }, { field: 'PC.BrandID', type: 'string', label: 'Profit Center - Brand ID' }, { field: 'PC.BrandCategoryID', type: 'string', label: 'Profit Center - Brand Category ID' }, { field: 'PC.BranchID', type: 'string', label: 'Profit Center - Branch ID' }, { field: 'PC.BranchType', type: 'int', label: 'Profit Center - Branch Type' }, { field: 'CC._id', type: 'string', label: 'Cost Center - ID', as: 'dimension' }, { field: 'CC.EntityID', type: 'string', label: 'Cost Center - Entity ID' }, { field: 'CC.Name', type: 'string', label: 'Cost Center - Name' }, { field: 'CC.CostGroup01', type: 'string', label: 'Cost Center - Cost Group 01' }, { field: 'CC.CostGroup02', type: 'string', label: 'Cost Center - Cost Group 02' }, { field: 'CC.CostGroup03', type: 'string', label: 'Cost Center - Cost Group 03' }, { field: 'CC.BranchID', type: 'string', label: 'Cost Center - Branch ID' }, { field: 'CC.BranchType', type: 'string', label: 'Cost Center - Branch Type' }, { field: 'CC.CCTypeID', type: 'string', label: 'Cost Center - Type' }, { field: 'CC.HCCGroupID', type: 'string', label: 'Cost Center - HCC Group ID' }, { field: 'CompanyCode', type: 'string', label: 'Company Code', as: 'dimension' }, { field: 'LedgerAccount', type: 'string', label: 'Ledger Account', as: 'dimension' }, { field: 'Customer._id', type: 'string', label: 'Customer - ID', as: 'dimension' }, { field: 'Customer.CustomerID', type: 'string', label: 'Customer - Customer ID' }, { field: 'Customer.Plant', type: 'string', label: 'Customer - Plant' }, { field: 'Customer.Name', type: 'string', label: 'Customer - Name' }, { field: 'Customer.KeyAccount', type: 'string', label: 'Customer - Key Account' }, { field: 'Customer.Channel', type: 'string', label: 'Customer - Channel' }, { field: 'Customer.Group', type: 'string', label: 'Customer - Group' }, { field: 'Customer.National', type: 'string', label: 'Customer - National' }, { field: 'Customer.Zone', type: 'string', label: 'Customer - Zone' }, { field: 'Customer.Region', type: 'string', label: 'Customer - Region' }, { field: 'Customer.Area', type: 'string', label: 'Customer - Area' }, { field: 'Product._id', type: 'string', label: 'Product - ID', as: 'dimension' }, { field: 'Product.Name', type: 'string', label: 'Product - Name' }, { field: 'Product.Config', type: 'string', label: 'Product - Config' }, { field: 'Product.Brand', type: 'string', label: 'Product - Brand' }, { field: 'Product.LongName', type: 'string', label: 'Product - Long Name' }, { field: 'Data.ID', type: 'string', label: 'Data - ID', as: 'dimension' }, { field: 'Data.Month', type: 'string', label: 'Data - Month' }, { field: 'Data.Quarter', type: 'int', label: 'Data - Quarter' }, { field: 'Data.Year', type: 'int', label: 'Data - Year' }, { field: 'Value1', type: 'string', label: 'Value 1', as: 'data point' }, { field: 'Value2', type: 'string', label: 'Value 2', as: 'data point' }, { field: 'Value3', type: 'string', label: 'Value 3', as: 'data point' }];
+
 pvt.templateDataPoint = {
 	_id: '',
 	aggr: 'sum'
 };
-pvt.optionDimensions = ko.observableArray([{ _id: 'ID', Name: 'ID' }, { _id: 'PC', Name: 'Profit Center' }, { _id: 'CC', Name: 'Cost Center' }, { _id: 'CompanyCode', Name: 'Company Code' }, { _id: 'LedgerAccount', Name: 'Ledger Account' }, { _id: 'Customer', Name: 'Customer' }, { _id: 'Product', Name: 'Product' }, { _id: 'Date', Name: 'Date' }]);
-pvt.optionDataPoints = ko.observableArray([{ _id: 'Value1', Name: 'Value 1' }, { _id: 'Value2', Name: 'Value 2' }, { _id: 'Value3', Name: 'Value 3' }]);
-pvt.optionAggregates = ko.observableArray([{ _id: 'avg', Name: 'Avg' }, { _id: 'count', Name: 'Count' }, { _id: 'sum', Name: 'Sum' }, { _id: 'max', Name: 'Max' }, { _id: 'min', Name: 'Min' }]);
+pvt.optionDimensions = ko.computed(function () {
+	return pvt.pivotModel.filter(function (d) {
+		return d.as === 'dimension';
+	}).map(function (d) {
+		return { field: d.field, Name: d.label };
+	});
+});
+pvt.optionDataPoints = ko.computed(function () {
+	return pvt.pivotModel.filter(function (d) {
+		return d.as === 'data point';
+	}).map(function (d) {
+		return { field: d.field, Name: d.label };
+	});
+});
+pvt.optionAggregates = ko.observableArray([{ aggr: 'average', Name: 'Avg' }, { aggr: 'count', Name: 'Count' }, { aggr: 'sum', Name: 'Sum' }, { aggr: 'max', Name: 'Max' }, { aggr: 'min', Name: 'Min' }]);
 pvt.mode = ko.observable('');
-pvt.columns = ko.observableArray([app.koMap({ _id: pvt.optionDimensions()[0]._id, expand: false }), app.koMap({ _id: pvt.optionDimensions()[1]._id, expand: false })]);
-pvt.rows = ko.observableArray([app.koMap({ _id: pvt.optionDimensions()[3]._id, expand: false })]);
-pvt.dataPoints = ko.observableArray([app.koMap({ _id: pvt.optionDataPoints()[0]._id, aggr: pvt.optionAggregates()[2]._id }), app.koMap({ _id: pvt.optionDataPoints()[0]._id, aggr: pvt.optionAggregates()[0]._id })]);
+pvt.columns = ko.observableArray([app.koMap({
+	field: pvt.optionDimensions()[1].field,
+	label: pvt.optionDimensions()[1].Name,
+	expand: false
+}), app.koMap({
+	field: pvt.optionDimensions()[2].field,
+	label: pvt.optionDimensions()[2].Name,
+	expand: false
+})]);
+pvt.rows = ko.observableArray([app.koMap({
+	field: pvt.optionDimensions()[3].field,
+	label: pvt.optionDimensions()[3].Name,
+	expand: false
+})]);
+pvt.dataPoints = ko.observableArray([app.koMap({
+	field: pvt.optionDataPoints()[0].field,
+	label: pvt.optionDataPoints()[0].Name,
+	expand: false,
+	aggr: pvt.optionAggregates()[2].aggr
+})]);
+
+// app.koMap({
+// 	field: pvt.optionDataPoints()[0].field,
+// 	label: pvt.optionDataPoints()[0].Name,
+// 	expand: false,
+// 	aggr: pvt.optionAggregates()[2].aggr
+// }),
 pvt.data = ko.observableArray(tempData);
 pvt.currentTargetDimension = null;
 pvt.columnRowID = null;
@@ -56,6 +94,13 @@ pvt.hoverOutModule = function (o) {
 	var target = $(o).attr('data-target-module');
 	$('[data-module="' + target + '"]').removeClass('highlight');
 };
+pvt.getData = function (callback) {
+	app.ajaxPost("/report/getdatapivot", {}, function (res) {
+		if (!app.isUndefined(callback)) {
+			callback(res);
+		}
+	});
+};
 pvt.configure = function (o, what) {};
 pvt.addDataPoint = function () {
 	pvt.dataPoints.push(app.clone(pvt.templateDataPoint));
@@ -96,51 +141,73 @@ pvt.showRowSetting = function (o) {
 pvt.refreshData = function () {
 	pvt.mode('render');
 
-	var columns = ko.mapping.toJS(pvt.columns()).map(function (d) {
-		return $.extend(true, { name: d._id, expand: false }, d);
-	});
-	var rows = ko.mapping.toJS(pvt.rows()).map(function (d) {
-		return $.extend(true, { name: d._id, expand: false }, d);
-	});
-	var measures = app.distinct(ko.mapping.toJS(pvt.dataPoints).map(function (d) {
-		return d._id;
-	}));
-	var data = pvt.data();
-	console.log(columns, rows, measures);
+	var key = function key(field) {
+		return field.replace(/\./g, '_');
+	};
 
-	$('.pivot').replaceWith('<div class="pivot"></div>');
-	$('.pivot').kendoPivotGrid({
-		filterable: true,
-		// columnWidth: 120,
-		// height: 570,
-		dataSource: {
-			data: data,
-			schema: {
-				model: {
-					fields: {
-						ProductName: { type: "string" },
-						UnitPrice: { type: "number" },
-						UnitsInStock: { type: "number" },
-						Discontinued: { type: "boolean" },
-						CategoryName: { field: "Category.CategoryName" }
+	pvt.getData(function (data) {
+		var modelFields = {};
+		pvt.pivotModel.filter(function (d) {
+			ko.mapping.toJS(pvt.columns).find(function (e) {
+				return e.field == d.field;
+			});
+		}).forEach(function (d) {
+			modelFields[key(d.field)] = { field: d.field, type: d.type };
+		});
+
+		var cubeDimensions = {};
+		ko.mapping.toJS(pvt.columns).forEach(function (d) {
+			cubeDimensions[key(d.field)] = { caption: d.label };
+		});
+
+		var cubeMeasures = {};
+		ko.mapping.toJS(pvt.optionDataPoints).forEach(function (d) {
+			pvt.optionAggregates().map(function (e) {
+				cubeMeasures[key(d.field) + '_' + e.aggr] = {
+					field: key(d.field),
+					format: '{0:n2}',
+					aggregate: e.aggr
+				};
+			});
+		});
+
+		var columns = ko.mapping.toJS(pvt.columns()).map(function (d) {
+			return { name: key(d.field), expand: false };
+		});
+		var rows = ko.mapping.toJS(pvt.rows()).map(function (d) {
+			return { name: key(d.field), expand: false };
+		});
+		var measures = ko.mapping.toJS(pvt.dataPoints).map(function (d) {
+			return key(d.field) + '_' + d.aggr;
+		});
+
+		var config = {
+			filterable: true,
+			dataSource: {
+				data: data,
+				schema: {
+					model: { fields: modelFields },
+					cube: {
+						dimensions: cubeDimensions,
+						measures: cubeMeasures
 					}
 				},
-				cube: {
-					dimensions: {
-						ProductName: { caption: "All Products" },
-						CategoryName: { caption: "All Categories" },
-						Discontinued: { caption: "Discontinued" }
-					},
-					measures: {
-						"Sum": { field: "UnitPrice", format: "{0:c}", aggregate: "sum" },
-						"Average": { field: "UnitPrice", format: "{0:c}", aggregate: "average" }
-					}
-				}
-			},
-			columns: columns,
-			rows: rows,
-			measures: measures
-		}
+				columns: columns,
+				rows: rows,
+				measures: measures
+			}
+		};
+
+		console.log('modelFields', modelFields);
+		console.log('cubeDimensions', cubeDimensions);
+		console.log('cubeMeasures', cubeMeasures);
+		console.log('columns', columns);
+		console.log('rows', rows);
+		console.log('measures', measures);
+		console.log('config', config);
+
+		$('.pivot').replaceWith('<div class="pivot"></div>');
+		$('.pivot').kendoPivotGrid(config);
 	});
 };
 
