@@ -29,11 +29,3 @@ func (t *LedgerTrx) RecordID() interface{} {
 func (t *LedgerTrx) TableName() string {
 	return "LedgerTrx"
 }
-
-type Date struct {
-	ID      string
-	Date    time.Time
-	Month   time.Month
-	Quarter int
-	Year    int
-}

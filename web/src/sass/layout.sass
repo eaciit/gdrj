@@ -286,15 +286,32 @@ html, body
 	padding-top: 10px
 
 .report-module-pivot
-	> div.col-md-3
+	> div
 		padding-left: 0px
+		padding-right: 0px
 
 	> div.col-md-9
 		.wrapper-inner
 			// border-color: $color-base-green
 
+	.pivot-section.pivot-section-data-point
+		.input-group
+			height: 32px
+			margin-bottom: 2px
+			border: 1px solid $color-base-blue
+
+			.input-group-addon
+				background-color: lighten($color-base-blue, 10%)
+				border-color: lighten($color-base-blue, 10%)
+				color: white
+
+			.k-dropdown-wrap.k-state-hover
+				background-color: #F0F3F4
+				border-color: #F0F3F4
+
 	.pivot-wrapper
-		padding-right: 0px
+		&.pivot-wrapper-column
+			margin-bottom: 10px
 
 		.wrapper-inner
 			border: 1px solid $color-base-grey
@@ -313,6 +330,13 @@ html, body
 				padding: 10px 0px 2px
 				margin: 0px 10px
 
+				.add-data-point
+					border: none
+					background-color: transparent
+					padding: 0px 4px
+					margin-right: -4px
+					color: $color-base-orange
+
 			p
 				margin: 0px
 				padding: 10px 10px 0px
@@ -324,6 +348,8 @@ html, body
 				.list-group-item
 					overflow: hidden
 					position: relative
+					margin-bottom: 2px
+					// border-color: $color-base-grey
 
 					&:hover
 						.wrapper

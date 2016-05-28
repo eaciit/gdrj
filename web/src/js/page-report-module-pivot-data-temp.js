@@ -1,6 +1,20 @@
+
+// ID                  // string
+// PC                  // ProfitCenter
+// CC                  // CostCenter
+// CompanyCode                     // string
+// LedgerAccount                   // string
+// Customer                    // Customer
+// Product                     // Product
+// Date                    // Date
+// Value1                  // asdfsadf
+// Value2                  // sdfasdfasdf
+// Value3                  // float64
+
+
 let tempData = [{
-    ProductID : 1,
-    ProductName : "Chai",
+    ID : 1,
+    PC : "Chai",
     SupplierID : 1,
     CategoryID : 1,
     QuantityPerUnit : "10 boxes x 20 bags",
@@ -15,8 +29,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 2,
-    ProductName : "Chang",
+    ID : 2,
+    PC : "Chang",
     SupplierID : 1,
     CategoryID : 1,
     QuantityPerUnit : "24 - 12 oz bottles",
@@ -31,8 +45,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 3,
-    ProductName : "Aniseed Syrup",
+    ID : 3,
+    PC : "Aniseed Syrup",
     SupplierID : 1,
     CategoryID : 2,
     QuantityPerUnit : "12 - 550 ml bottles",
@@ -47,8 +61,8 @@ let tempData = [{
         Description : "Sweet and savory sauces, relishes, spreads, and seasonings"
     }
 }, {
-    ProductID : 4,
-    ProductName : "Chef Anton's Cajun Seasoning",
+    ID : 4,
+    PC : "Chef Anton's Cajun Seasoning",
     SupplierID : 2,
     CategoryID : 2,
     QuantityPerUnit : "48 - 6 oz jars",
@@ -63,8 +77,8 @@ let tempData = [{
         Description : "Sweet and savory sauces, relishes, spreads, and seasonings"
     }
 }, {
-    ProductID : 5,
-    ProductName : "Chef Anton's Gumbo Mix",
+    ID : 5,
+    PC : "Chef Anton's Gumbo Mix",
     SupplierID : 2,
     CategoryID : 2,
     QuantityPerUnit : "36 boxes",
@@ -79,8 +93,8 @@ let tempData = [{
         Description : "Sweet and savory sauces, relishes, spreads, and seasonings"
     }
 }, {
-    ProductID : 6,
-    ProductName : "Grandma's Boysenberry Spread",
+    ID : 6,
+    PC : "Grandma's Boysenberry Spread",
     SupplierID : 3,
     CategoryID : 2,
     QuantityPerUnit : "12 - 8 oz jars",
@@ -95,8 +109,8 @@ let tempData = [{
         Description : "Sweet and savory sauces, relishes, spreads, and seasonings"
     }
 }, {
-    ProductID : 7,
-    ProductName : "Uncle Bob's Organic Dried Pears",
+    ID : 7,
+    PC : "Uncle Bob's Organic Dried Pears",
     SupplierID : 3,
     CategoryID : 7,
     QuantityPerUnit : "12 - 1 lb pkgs.",
@@ -111,8 +125,8 @@ let tempData = [{
         Description : "Dried fruit and bean curd"
     }
 }, {
-    ProductID : 8,
-    ProductName : "Northwoods Cranberry Sauce",
+    ID : 8,
+    PC : "Northwoods Cranberry Sauce",
     SupplierID : 3,
     CategoryID : 2,
     QuantityPerUnit : "12 - 12 oz jars",
@@ -127,8 +141,8 @@ let tempData = [{
         Description : "Sweet and savory sauces, relishes, spreads, and seasonings"
     }
 }, {
-    ProductID : 9,
-    ProductName : "Mishi Kobe Niku",
+    ID : 9,
+    PC : "Mishi Kobe Niku",
     SupplierID : 4,
     CategoryID : 6,
     QuantityPerUnit : "18 - 500 g pkgs.",
@@ -143,8 +157,8 @@ let tempData = [{
         Description : "Prepared meats"
     }
 }, {
-    ProductID : 10,
-    ProductName : "Ikura",
+    ID : 10,
+    PC : "Ikura",
     SupplierID : 4,
     CategoryID : 8,
     QuantityPerUnit : "12 - 200 ml jars",
@@ -159,8 +173,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 11,
-    ProductName : "Queso Cabrales",
+    ID : 11,
+    PC : "Queso Cabrales",
     SupplierID : 5,
     CategoryID : 4,
     QuantityPerUnit : "1 kg pkg.",
@@ -175,8 +189,8 @@ let tempData = [{
         Description : "Cheeses"
     }
 }, {
-    ProductID : 12,
-    ProductName : "Queso Manchego La Pastora",
+    ID : 12,
+    PC : "Queso Manchego La Pastora",
     SupplierID : 5,
     CategoryID : 4,
     QuantityPerUnit : "10 - 500 g pkgs.",
@@ -191,8 +205,8 @@ let tempData = [{
         Description : "Cheeses"
     }
 }, {
-    ProductID : 13,
-    ProductName : "Konbu",
+    ID : 13,
+    PC : "Konbu",
     SupplierID : 6,
     CategoryID : 8,
     QuantityPerUnit : "2 kg box",
@@ -207,8 +221,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 14,
-    ProductName : "Tofu",
+    ID : 14,
+    PC : "Tofu",
     SupplierID : 6,
     CategoryID : 7,
     QuantityPerUnit : "40 - 100 g pkgs.",
@@ -223,8 +237,8 @@ let tempData = [{
         Description : "Dried fruit and bean curd"
     }
 }, {
-    ProductID : 15,
-    ProductName : "Genen Shouyu",
+    ID : 15,
+    PC : "Genen Shouyu",
     SupplierID : 6,
     CategoryID : 2,
     QuantityPerUnit : "24 - 250 ml bottles",
@@ -239,8 +253,8 @@ let tempData = [{
         Description : "Sweet and savory sauces, relishes, spreads, and seasonings"
     }
 }, {
-    ProductID : 16,
-    ProductName : "Pavlova",
+    ID : 16,
+    PC : "Pavlova",
     SupplierID : 7,
     CategoryID : 3,
     QuantityPerUnit : "32 - 500 g boxes",
@@ -255,8 +269,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 17,
-    ProductName : "Alice Mutton",
+    ID : 17,
+    PC : "Alice Mutton",
     SupplierID : 7,
     CategoryID : 6,
     QuantityPerUnit : "20 - 1 kg tins",
@@ -271,8 +285,8 @@ let tempData = [{
         Description : "Prepared meats"
     }
 }, {
-    ProductID : 18,
-    ProductName : "Carnarvon Tigers",
+    ID : 18,
+    PC : "Carnarvon Tigers",
     SupplierID : 7,
     CategoryID : 8,
     QuantityPerUnit : "16 kg pkg.",
@@ -287,8 +301,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 19,
-    ProductName : "Teatime Chocolate Biscuits",
+    ID : 19,
+    PC : "Teatime Chocolate Biscuits",
     SupplierID : 8,
     CategoryID : 3,
     QuantityPerUnit : "10 boxes x 12 pieces",
@@ -303,8 +317,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 20,
-    ProductName : "Sir Rodney's Marmalade",
+    ID : 20,
+    PC : "Sir Rodney's Marmalade",
     SupplierID : 8,
     CategoryID : 3,
     QuantityPerUnit : "30 gift boxes",
@@ -319,8 +333,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 21,
-    ProductName : "Sir Rodney's Scones",
+    ID : 21,
+    PC : "Sir Rodney's Scones",
     SupplierID : 8,
     CategoryID : 3,
     QuantityPerUnit : "24 pkgs. x 4 pieces",
@@ -335,8 +349,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 22,
-    ProductName : "Gustaf's Knäckebröd",
+    ID : 22,
+    PC : "Gustaf's Knäckebröd",
     SupplierID : 9,
     CategoryID : 5,
     QuantityPerUnit : "24 - 500 g pkgs.",
@@ -351,8 +365,8 @@ let tempData = [{
         Description : "Breads, crackers, pasta, and cereal"
     }
 }, {
-    ProductID : 23,
-    ProductName : "Tunnbröd",
+    ID : 23,
+    PC : "Tunnbröd",
     SupplierID : 9,
     CategoryID : 5,
     QuantityPerUnit : "12 - 250 g pkgs.",
@@ -367,8 +381,8 @@ let tempData = [{
         Description : "Breads, crackers, pasta, and cereal"
     }
 }, {
-    ProductID : 24,
-    ProductName : "Guaraná Fantástica",
+    ID : 24,
+    PC : "Guaraná Fantástica",
     SupplierID : 10,
     CategoryID : 1,
     QuantityPerUnit : "12 - 355 ml cans",
@@ -383,8 +397,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 25,
-    ProductName : "NuNuCa Nuß-Nougat-Creme",
+    ID : 25,
+    PC : "NuNuCa Nuß-Nougat-Creme",
     SupplierID : 11,
     CategoryID : 3,
     QuantityPerUnit : "20 - 450 g glasses",
@@ -399,8 +413,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 26,
-    ProductName : "Gumbär Gummibärchen",
+    ID : 26,
+    PC : "Gumbär Gummibärchen",
     SupplierID : 11,
     CategoryID : 3,
     QuantityPerUnit : "100 - 250 g bags",
@@ -415,8 +429,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 27,
-    ProductName : "Schoggi Schokolade",
+    ID : 27,
+    PC : "Schoggi Schokolade",
     SupplierID : 11,
     CategoryID : 3,
     QuantityPerUnit : "100 - 100 g pieces",
@@ -431,8 +445,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 28,
-    ProductName : "Rössle Sauerkraut",
+    ID : 28,
+    PC : "Rössle Sauerkraut",
     SupplierID : 12,
     CategoryID : 7,
     QuantityPerUnit : "25 - 825 g cans",
@@ -447,8 +461,8 @@ let tempData = [{
         Description : "Dried fruit and bean curd"
     }
 }, {
-    ProductID : 29,
-    ProductName : "Thüringer Rostbratwurst",
+    ID : 29,
+    PC : "Thüringer Rostbratwurst",
     SupplierID : 12,
     CategoryID : 6,
     QuantityPerUnit : "50 bags x 30 sausgs.",
@@ -463,8 +477,8 @@ let tempData = [{
         Description : "Prepared meats"
     }
 }, {
-    ProductID : 30,
-    ProductName : "Nord-Ost Matjeshering",
+    ID : 30,
+    PC : "Nord-Ost Matjeshering",
     SupplierID : 13,
     CategoryID : 8,
     QuantityPerUnit : "10 - 200 g glasses",
@@ -479,8 +493,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 31,
-    ProductName : "Gorgonzola Telino",
+    ID : 31,
+    PC : "Gorgonzola Telino",
     SupplierID : 14,
     CategoryID : 4,
     QuantityPerUnit : "12 - 100 g pkgs",
@@ -495,8 +509,8 @@ let tempData = [{
         Description : "Cheeses"
     }
 }, {
-    ProductID : 32,
-    ProductName : "Mascarpone Fabioli",
+    ID : 32,
+    PC : "Mascarpone Fabioli",
     SupplierID : 14,
     CategoryID : 4,
     QuantityPerUnit : "24 - 200 g pkgs.",
@@ -511,8 +525,8 @@ let tempData = [{
         Description : "Cheeses"
     }
 }, {
-    ProductID : 33,
-    ProductName : "Geitost",
+    ID : 33,
+    PC : "Geitost",
     SupplierID : 15,
     CategoryID : 4,
     QuantityPerUnit : "500 g",
@@ -527,8 +541,8 @@ let tempData = [{
         Description : "Cheeses"
     }
 }, {
-    ProductID : 34,
-    ProductName : "Sasquatch Ale",
+    ID : 34,
+    PC : "Sasquatch Ale",
     SupplierID : 16,
     CategoryID : 1,
     QuantityPerUnit : "24 - 12 oz bottles",
@@ -543,8 +557,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 35,
-    ProductName : "Steeleye Stout",
+    ID : 35,
+    PC : "Steeleye Stout",
     SupplierID : 16,
     CategoryID : 1,
     QuantityPerUnit : "24 - 12 oz bottles",
@@ -559,8 +573,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 36,
-    ProductName : "Inlagd Sill",
+    ID : 36,
+    PC : "Inlagd Sill",
     SupplierID : 17,
     CategoryID : 8,
     QuantityPerUnit : "24 - 250 g  jars",
@@ -575,8 +589,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 37,
-    ProductName : "Gravad lax",
+    ID : 37,
+    PC : "Gravad lax",
     SupplierID : 17,
     CategoryID : 8,
     QuantityPerUnit : "12 - 500 g pkgs.",
@@ -591,8 +605,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 38,
-    ProductName : "Côte de Blaye",
+    ID : 38,
+    PC : "Côte de Blaye",
     SupplierID : 18,
     CategoryID : 1,
     QuantityPerUnit : "12 - 75 cl bottles",
@@ -607,8 +621,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 39,
-    ProductName : "Chartreuse verte",
+    ID : 39,
+    PC : "Chartreuse verte",
     SupplierID : 18,
     CategoryID : 1,
     QuantityPerUnit : "750 cc per bottle",
@@ -623,8 +637,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 40,
-    ProductName : "Boston Crab Meat",
+    ID : 40,
+    PC : "Boston Crab Meat",
     SupplierID : 19,
     CategoryID : 8,
     QuantityPerUnit : "24 - 4 oz tins",
@@ -639,8 +653,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 41,
-    ProductName : "Jack's New England Clam Chowder",
+    ID : 41,
+    PC : "Jack's New England Clam Chowder",
     SupplierID : 19,
     CategoryID : 8,
     QuantityPerUnit : "12 - 12 oz cans",
@@ -655,8 +669,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 42,
-    ProductName : "Singaporean Hokkien Fried Mee",
+    ID : 42,
+    PC : "Singaporean Hokkien Fried Mee",
     SupplierID : 20,
     CategoryID : 5,
     QuantityPerUnit : "32 - 1 kg pkgs.",
@@ -671,8 +685,8 @@ let tempData = [{
         Description : "Breads, crackers, pasta, and cereal"
     }
 }, {
-    ProductID : 43,
-    ProductName : "Ipoh Coffee",
+    ID : 43,
+    PC : "Ipoh Coffee",
     SupplierID : 20,
     CategoryID : 1,
     QuantityPerUnit : "16 - 500 g tins",
@@ -687,8 +701,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 44,
-    ProductName : "Gula Malacca",
+    ID : 44,
+    PC : "Gula Malacca",
     SupplierID : 20,
     CategoryID : 2,
     QuantityPerUnit : "20 - 2 kg bags",
@@ -703,8 +717,8 @@ let tempData = [{
         Description : "Sweet and savory sauces, relishes, spreads, and seasonings"
     }
 }, {
-    ProductID : 45,
-    ProductName : "Rogede sild",
+    ID : 45,
+    PC : "Rogede sild",
     SupplierID : 21,
     CategoryID : 8,
     QuantityPerUnit : "1k pkg.",
@@ -719,8 +733,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 46,
-    ProductName : "Spegesild",
+    ID : 46,
+    PC : "Spegesild",
     SupplierID : 21,
     CategoryID : 8,
     QuantityPerUnit : "4 - 450 g glasses",
@@ -735,8 +749,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 47,
-    ProductName : "Zaanse koeken",
+    ID : 47,
+    PC : "Zaanse koeken",
     SupplierID : 22,
     CategoryID : 3,
     QuantityPerUnit : "10 - 4 oz boxes",
@@ -751,8 +765,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 48,
-    ProductName : "Chocolade",
+    ID : 48,
+    PC : "Chocolade",
     SupplierID : 22,
     CategoryID : 3,
     QuantityPerUnit : "10 pkgs.",
@@ -767,8 +781,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 49,
-    ProductName : "Maxilaku",
+    ID : 49,
+    PC : "Maxilaku",
     SupplierID : 23,
     CategoryID : 3,
     QuantityPerUnit : "24 - 50 g pkgs.",
@@ -783,8 +797,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 50,
-    ProductName : "Valkoinen suklaa",
+    ID : 50,
+    PC : "Valkoinen suklaa",
     SupplierID : 23,
     CategoryID : 3,
     QuantityPerUnit : "12 - 100 g bars",
@@ -799,8 +813,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 51,
-    ProductName : "Manjimup Dried Apples",
+    ID : 51,
+    PC : "Manjimup Dried Apples",
     SupplierID : 24,
     CategoryID : 7,
     QuantityPerUnit : "50 - 300 g pkgs.",
@@ -815,8 +829,8 @@ let tempData = [{
         Description : "Dried fruit and bean curd"
     }
 }, {
-    ProductID : 52,
-    ProductName : "Filo Mix",
+    ID : 52,
+    PC : "Filo Mix",
     SupplierID : 24,
     CategoryID : 5,
     QuantityPerUnit : "16 - 2 kg boxes",
@@ -831,8 +845,8 @@ let tempData = [{
         Description : "Breads, crackers, pasta, and cereal"
     }
 }, {
-    ProductID : 53,
-    ProductName : "Perth Pasties",
+    ID : 53,
+    PC : "Perth Pasties",
     SupplierID : 24,
     CategoryID : 6,
     QuantityPerUnit : "48 pieces",
@@ -847,8 +861,8 @@ let tempData = [{
         Description : "Prepared meats"
     }
 }, {
-    ProductID : 54,
-    ProductName : "Tourtière",
+    ID : 54,
+    PC : "Tourtière",
     SupplierID : 25,
     CategoryID : 6,
     QuantityPerUnit : "16 pies",
@@ -863,8 +877,8 @@ let tempData = [{
         Description : "Prepared meats"
     }
 }, {
-    ProductID : 55,
-    ProductName : "Pâté chinois",
+    ID : 55,
+    PC : "Pâté chinois",
     SupplierID : 25,
     CategoryID : 6,
     QuantityPerUnit : "24 boxes x 2 pies",
@@ -879,8 +893,8 @@ let tempData = [{
         Description : "Prepared meats"
     }
 }, {
-    ProductID : 56,
-    ProductName : "Gnocchi di nonna Alice",
+    ID : 56,
+    PC : "Gnocchi di nonna Alice",
     SupplierID : 26,
     CategoryID : 5,
     QuantityPerUnit : "24 - 250 g pkgs.",
@@ -895,8 +909,8 @@ let tempData = [{
         Description : "Breads, crackers, pasta, and cereal"
     }
 }, {
-    ProductID : 57,
-    ProductName : "Ravioli Angelo",
+    ID : 57,
+    PC : "Ravioli Angelo",
     SupplierID : 26,
     CategoryID : 5,
     QuantityPerUnit : "24 - 250 g pkgs.",
@@ -911,8 +925,8 @@ let tempData = [{
         Description : "Breads, crackers, pasta, and cereal"
     }
 }, {
-    ProductID : 58,
-    ProductName : "Escargots de Bourgogne",
+    ID : 58,
+    PC : "Escargots de Bourgogne",
     SupplierID : 27,
     CategoryID : 8,
     QuantityPerUnit : "24 pieces",
@@ -927,8 +941,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 59,
-    ProductName : "Raclette Courdavault",
+    ID : 59,
+    PC : "Raclette Courdavault",
     SupplierID : 28,
     CategoryID : 4,
     QuantityPerUnit : "5 kg pkg.",
@@ -943,8 +957,8 @@ let tempData = [{
         Description : "Cheeses"
     }
 }, {
-    ProductID : 60,
-    ProductName : "Camembert Pierrot",
+    ID : 60,
+    PC : "Camembert Pierrot",
     SupplierID : 28,
     CategoryID : 4,
     QuantityPerUnit : "15 - 300 g rounds",
@@ -959,8 +973,8 @@ let tempData = [{
         Description : "Cheeses"
     }
 }, {
-    ProductID : 61,
-    ProductName : "Sirop d'érable",
+    ID : 61,
+    PC : "Sirop d'érable",
     SupplierID : 29,
     CategoryID : 2,
     QuantityPerUnit : "24 - 500 ml bottles",
@@ -975,8 +989,8 @@ let tempData = [{
         Description : "Sweet and savory sauces, relishes, spreads, and seasonings"
     }
 }, {
-    ProductID : 62,
-    ProductName : "Tarte au sucre",
+    ID : 62,
+    PC : "Tarte au sucre",
     SupplierID : 29,
     CategoryID : 3,
     QuantityPerUnit : "48 pies",
@@ -991,8 +1005,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 63,
-    ProductName : "Vegie-spread",
+    ID : 63,
+    PC : "Vegie-spread",
     SupplierID : 7,
     CategoryID : 2,
     QuantityPerUnit : "15 - 625 g jars",
@@ -1007,8 +1021,8 @@ let tempData = [{
         Description : "Sweet and savory sauces, relishes, spreads, and seasonings"
     }
 }, {
-    ProductID : 64,
-    ProductName : "Wimmers gute Semmelknödel",
+    ID : 64,
+    PC : "Wimmers gute Semmelknödel",
     SupplierID : 12,
     CategoryID : 5,
     QuantityPerUnit : "20 bags x 4 pieces",
@@ -1023,8 +1037,8 @@ let tempData = [{
         Description : "Breads, crackers, pasta, and cereal"
     }
 }, {
-    ProductID : 65,
-    ProductName : "Louisiana Fiery Hot Pepper Sauce",
+    ID : 65,
+    PC : "Louisiana Fiery Hot Pepper Sauce",
     SupplierID : 2,
     CategoryID : 2,
     QuantityPerUnit : "32 - 8 oz bottles",
@@ -1039,8 +1053,8 @@ let tempData = [{
         Description : "Sweet and savory sauces, relishes, spreads, and seasonings"
     }
 }, {
-    ProductID : 66,
-    ProductName : "Louisiana Hot Spiced Okra",
+    ID : 66,
+    PC : "Louisiana Hot Spiced Okra",
     SupplierID : 2,
     CategoryID : 2,
     QuantityPerUnit : "24 - 8 oz jars",
@@ -1055,8 +1069,8 @@ let tempData = [{
         Description : "Sweet and savory sauces, relishes, spreads, and seasonings"
     }
 }, {
-    ProductID : 67,
-    ProductName : "Laughing Lumberjack Lager",
+    ID : 67,
+    PC : "Laughing Lumberjack Lager",
     SupplierID : 16,
     CategoryID : 1,
     QuantityPerUnit : "24 - 12 oz bottles",
@@ -1071,8 +1085,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 68,
-    ProductName : "Scottish Longbreads",
+    ID : 68,
+    PC : "Scottish Longbreads",
     SupplierID : 8,
     CategoryID : 3,
     QuantityPerUnit : "10 boxes x 8 pieces",
@@ -1087,8 +1101,8 @@ let tempData = [{
         Description : "Desserts, candies, and sweet breads"
     }
 }, {
-    ProductID : 69,
-    ProductName : "Gudbrandsdalsost",
+    ID : 69,
+    PC : "Gudbrandsdalsost",
     SupplierID : 15,
     CategoryID : 4,
     QuantityPerUnit : "10 kg pkg.",
@@ -1103,8 +1117,8 @@ let tempData = [{
         Description : "Cheeses"
     }
 }, {
-    ProductID : 70,
-    ProductName : "Outback Lager",
+    ID : 70,
+    PC : "Outback Lager",
     SupplierID : 7,
     CategoryID : 1,
     QuantityPerUnit : "24 - 355 ml bottles",
@@ -1119,8 +1133,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 71,
-    ProductName : "Flotemysost",
+    ID : 71,
+    PC : "Flotemysost",
     SupplierID : 15,
     CategoryID : 4,
     QuantityPerUnit : "10 - 500 g pkgs.",
@@ -1135,8 +1149,8 @@ let tempData = [{
         Description : "Cheeses"
     }
 }, {
-    ProductID : 72,
-    ProductName : "Mozzarella di Giovanni",
+    ID : 72,
+    PC : "Mozzarella di Giovanni",
     SupplierID : 14,
     CategoryID : 4,
     QuantityPerUnit : "24 - 200 g pkgs.",
@@ -1151,8 +1165,8 @@ let tempData = [{
         Description : "Cheeses"
     }
 }, {
-    ProductID : 73,
-    ProductName : "Röd Kaviar",
+    ID : 73,
+    PC : "Röd Kaviar",
     SupplierID : 17,
     CategoryID : 8,
     QuantityPerUnit : "24 - 150 g jars",
@@ -1167,8 +1181,8 @@ let tempData = [{
         Description : "Seaweed and fish"
     }
 }, {
-    ProductID : 74,
-    ProductName : "Longlife Tofu",
+    ID : 74,
+    PC : "Longlife Tofu",
     SupplierID : 4,
     CategoryID : 7,
     QuantityPerUnit : "5 kg pkg.",
@@ -1183,8 +1197,8 @@ let tempData = [{
         Description : "Dried fruit and bean curd"
     }
 }, {
-    ProductID : 75,
-    ProductName : "Rhönbräu Klosterbier",
+    ID : 75,
+    PC : "Rhönbräu Klosterbier",
     SupplierID : 12,
     CategoryID : 1,
     QuantityPerUnit : "24 - 0.5 l bottles",
@@ -1199,8 +1213,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 76,
-    ProductName : "Lakkalikööri",
+    ID : 76,
+    PC : "Lakkalikööri",
     SupplierID : 23,
     CategoryID : 1,
     QuantityPerUnit : "500 ml",
@@ -1215,8 +1229,8 @@ let tempData = [{
         Description : "Soft drinks, coffees, teas, beers, and ales"
     }
 }, {
-    ProductID : 77,
-    ProductName : "Original Frankfurter grüne Soße",
+    ID : 77,
+    PC : "Original Frankfurter grüne Soße",
     SupplierID : 12,
     CategoryID : 2,
     QuantityPerUnit : "12 boxes",

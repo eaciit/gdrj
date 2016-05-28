@@ -43,15 +43,5 @@ gulp.task('compass:watch', ['compass'], () => {
 	gulp.watch(sourcePathSASS, ['compass'])
 })
 
-// gulp.task('compass', function() {
-//   gulp.src('./src/*.scss')
-//     .pipe(compass({
-//       project: path.join(__dirname, 'assets'),
-//       css: 'css',
-//       sass: 'sass'
-//     }))
-//     .pipe(gulp.dest('app/assets/temp'));
-// });
-
 let tasks = ['clean', 'babel:watch', 'compass:watch']
 gulp.task('default', tasks, noop)

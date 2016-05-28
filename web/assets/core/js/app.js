@@ -178,3 +178,26 @@ app.arrRemoveByItem = function (arr, item) {
 app.clone = function (o) {
     return $.extend(true, {}, o);
 };
+app.distinct = function (arr) {
+    return arr.filter(function (v, i, self) {
+        return self.indexOf(v) === i;
+    });
+};
+app.forEach = function (d, callback) {
+    if (d instanceof Array) {
+        d.forEach(callback);
+    }
+
+    if (d instanceof Object) {
+        for (var key in d) {
+            if (d.hasOwnProperty(key)) {
+                callback(key, d[key]);
+            }
+        }
+    }
+};
+
+app.koMap = ko.mapping.fromJS;
+app.koUnmap = ko.mapping.toJS;
+app.observ = ko.observable;
+app.observArr = ko.observArr;

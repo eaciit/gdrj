@@ -59,7 +59,18 @@ func (m *ReportController) GetDataEntity(r *knot.WebContext) interface{} {
 	return res
 }
 
-func (m *ReportController) GetDataRegion(r *knot.WebContext) interface{} {
+func (m *ReportController) GetDataChannel(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.ChannelGetAll()
+	if err != nil {
+		return []*gdrj.Channel{}
+	}
+
+	return res
+}
+
+func (m *ReportController) GetDataHGeographi(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	res, err := gdrj.HGeographiGetAll()
@@ -68,4 +79,56 @@ func (m *ReportController) GetDataRegion(r *knot.WebContext) interface{} {
 	}
 
 	return res
+}
+
+func (m *ReportController) GetDataCustomer(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.CustomerGetAll()
+	if err != nil {
+		return []*gdrj.Customer{}
+	}
+
+	return res
+}
+
+func (m *ReportController) GetDataHBrandCategory(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.HBrandCategoryGetAll()
+	if err != nil {
+		return []*gdrj.HBrandCategory{}
+	}
+
+	return res
+}
+
+func (m *ReportController) GetDataProduct(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.ProductGetAll()
+	if err != nil {
+		return []*gdrj.Product{}
+	}
+
+	return res
+}
+
+func (m *ReportController) GetDataLedgerAccount(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.LedgerAccountGetAll()
+	if err != nil {
+		return []*gdrj.LedgerAccount{}
+	}
+
+	return res
+}
+
+func (m *ReportController) GetDataPivot(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data := gdrj.LedgerSummaryGenerateDummyData()
+
+	return data
 }
