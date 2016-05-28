@@ -216,6 +216,7 @@ us.checkDeleteData = function (elem, e) {
 us.newData = function () {
     us.isNew(true);
     $('#modalUpdate').modal('show');
+    us.tempCheckIdDelete([]);
     ko.mapping.fromJS(us.templateUser, us.config);
 };
 
