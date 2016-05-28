@@ -1,9 +1,13 @@
 package controller
 
 import (
+	"eaciit/gdrj/model"
 	"eaciit/gdrj/web/helper"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 type AllocationFlowController struct {
@@ -19,15 +23,25 @@ func CreateAllocationFlowController(s *knot.Server) *AllocationFlowController {
 func (d *AllocationFlowController) GetModules(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	result := []toolkit.M{
+	/*result := []toolkit.M{
 		{"_id": "n001", "Name": "Module Lorem"},
 		{"_id": "n002", "Name": "Module Ipsum"},
 		{"_id": "n003", "Name": "Module Dolor"},
 		{"_id": "n004", "Name": "Module Sit"},
 		{"_id": "n005", "Name": "Module Amet"},
+	}*/
+
+	payload := map[string]interface{}{}
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	search := payload["search"].(string)
+	data, err := new(gdrj.Module).Get(search)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	return helper.CreateResult(true, result, "")
+	return helper.CreateResult(true, data, "")
 }
 
 func (d *AllocationFlowController) GetAppliedModules(r *knot.WebContext) interface{} {
@@ -42,4 +56,82 @@ func (d *AllocationFlowController) GetAppliedModules(r *knot.WebContext) interfa
 	}
 
 	return helper.CreateResult(true, result, "")
+}
+
+func (d *AllocationFlowController) SaveModules(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	var compressedSource = filepath.Join(AppBasePath, "modules")
+	err, fileName := helper.UploadHandler(r, "userfile", compressedSource)
+	if r.Request.FormValue("mode") != "editor" { /*edit gak selalu harus upload file baru*/
+		if err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	modules := new(gdrj.Module)
+	modules.ID = r.Request.FormValue("_id")
+	modules.Name = r.Request.FormValue("name")
+	modules.Description = r.Request.FormValue("desc")
+	modules.BuildPath = r.Request.FormValue("buildpath")
+	modules.IsCompiled, err = strconv.ParseBool(r.Request.FormValue("iscompiled"))
+	params := r.Request.FormValue("param")
+	modules.AddParam = strings.Split(params, ",")
+
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	if fileName != "" {
+		if err = modules.ExtractFile(compressedSource, fileName); err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	if !modules.IsCompiled {
+		if err := modules.BuildFile(modules.Name, AppBasePath); err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}
+	}
+
+	if err := gdrj.Save(modules); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, modules, "")
+}
+
+func (d *AllocationFlowController) EditModules(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	data := new(gdrj.Module)
+	if err := r.GetPayload(&data); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+	if err := gdrj.Get(data, data.ID); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, data, "")
+}
+
+func (d *AllocationFlowController) RemoveModules(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := map[string]interface{}{}
+	if err := r.GetPayload(&payload); !helper.HandleError(err) {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	idArray := payload["_id"].([]interface{})
+
+	for _, id := range idArray {
+		o := new(gdrj.Module)
+		o.ID = id.(string)
+		/*if err := o.Delete(compressedSource); err != nil {
+			return helper.CreateResult(false, nil, err.Error())
+		}*/
+	}
+
+	return helper.CreateResult(true, nil, "")
 }

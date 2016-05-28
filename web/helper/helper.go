@@ -85,3 +85,21 @@ func UploadFileHandler(r *knot.WebContext, tempfile, dstpath, filename string) (
 
 	return nil, handler.Filename, newFileName, strings.Split(ext, ".")[1]
 }
+
+func UploadHandler(r *knot.WebContext, filename, dstpath string) (error, string) {
+	file, handler, err := r.Request.FormFile(filename)
+	if err != nil {
+		return err, ""
+	}
+	defer file.Close()
+
+	dstSource := dstpath + toolkit.PathSeparator + handler.Filename
+	f, err := os.OpenFile(dstSource, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return err, ""
+	}
+	defer f.Close()
+	io.Copy(f, file)
+
+	return nil, handler.Filename
+}

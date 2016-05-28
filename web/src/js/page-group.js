@@ -189,6 +189,7 @@ gr.saveChanges = () => {
 
 gr.refreshData = () => {
 	$('.grid-group').data('kendoGrid').dataSource.read()
+    gr.tempCheckIdDelete([])
     ko.mapping.fromJS(gr.templateGroup, gr.config)
 }
 

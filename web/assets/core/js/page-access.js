@@ -138,6 +138,8 @@ ac.saveChanges = function () {
 
 ac.refreshDataBrowser = function () {
     $('.grid-access').data('kendoGrid').dataSource.read();
+    ac.tempCheckIdDelete([]);
+    ko.mapping.fromJS(ac.templateAccess, ac.config);
 };
 
 ac.deleteaccess = function () {

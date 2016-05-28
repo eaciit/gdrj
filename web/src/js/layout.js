@@ -18,7 +18,8 @@ vm.menu = ko.observableArray([
 		{ title: 'Group', icon: 'users', href: '/web/group', submenu: [] },
 		{ title: 'User', icon: 'user', href: '/web/user', submenu: [] },
 		{ title: 'Session', icon: 'clock-o', href: '/web/session', submenu: [] }
-	] }
+	] },
+	{ title: 'Organizational', icon: 'arrows', href: '/web/organization', submenu: [] }
 ])
 vm.breadcrumb = ko.observableArray([
 	{ title: 'Godrej', href: '#' },
