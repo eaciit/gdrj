@@ -34,7 +34,7 @@ func (s *LedgerSummary) PrepareID() interface{}{
 }
 
 func (s *LedgerSummary) TableName() string {
-	return "LedgerSummary"
+	return "ledgersummaries"
 }
 
 func LedgerSummaryGenerateDummyData() []*LedgerSummary {

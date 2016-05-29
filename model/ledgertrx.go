@@ -26,5 +26,5 @@ func (t *LedgerTrx) RecordID() interface{} {
 }
 
 func (t *LedgerTrx) TableName() string {
-	return "LedgerTrx"
+	return "ledgertrans"
 }
