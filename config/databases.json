@@ -16,7 +16,7 @@
     "data": {
         "db": "ecgodrej",
         "driver": "mongo",
-        "host": "localhost:27123",
+        "host": "cloud.eaciit.com:27017",
         "pass": "",
         "user": "",
         "setting": {

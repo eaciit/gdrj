@@ -7,13 +7,14 @@ import (
 )
 
 type ProfitCenter struct {
-	orm.ModelBase `json:"-" bson:"-"`
-	ID            string `json:"_id" bson:"_id"` //PCID
-	EntityID      string
-	Name          string
-	Brand         string
-	BranchID      string
-	BranchType    BranchTypeEnum
+	orm.ModelBase   `json:"-" bson:"-"`
+	ID              string `json:"_id" bson:"_id"` //PCID
+	EntityID        string
+	Name            string
+	BrandID         string
+	BrandCategoryID string
+	BranchID        string
+	BranchType      BranchTypeEnum
 }
 
 func (p *ProfitCenter) RecordID() interface{} {

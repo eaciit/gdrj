@@ -1,7 +1,5 @@
 "use strict";
 
-vm.currentTitle('login');
-
 viewModel.login = new Object();
 var lg = viewModel.login;
 
@@ -34,7 +32,7 @@ lg.dataMenu = ko.observableArray([]);
 lg.ErrorMessage = ko.observable('');
 lg.getConfirReset = ko.mapping.fromJS(lg.templateUrlParam);
 
-lg.getLogin = function (e) {
+lg.getLogin = function () {
 	event.preventDefault();
 
 	if (!app.isFormValid("#login-form")) {

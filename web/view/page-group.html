@@ -1,4 +1,5 @@
 <script src="/res/core/js/page-group.js"></script>
+<script src="/res/core/js/page-administration.js"></script>
 
 <div>
 	<div class="col-md-4 col-sm-4 ez panel-filter">
@@ -62,7 +63,7 @@
 </div>
 
 <div class="modal fade" id="modalUpdate" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog" role="document" style="width: 700px;">
+    <div class="modal-dialog" role="document" style="width: 800px;">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -73,35 +74,107 @@
             <div class="modal-body" data-bind="with: gr.config">
                 <form class="wrapper form-group" novalidate>
                 	<div class="col-md-12">
-						<div class="form-group">
-							<div class="input-group input-group-sm ez width-full">
-								<span class="input-group-addon align-right width-100">Add Type</span>
-								<input type="radio" name="grouptype" value="1" data-bind="checked: GroupType" /> ldap
-								<input type="radio" name="grouptype" value="0" data-bind="checked: GroupType" /> basic
+                		<ul class="nav nav-tabs" role="tablist">
+							<li role="presentation" class="active"><a href="#tabgroup" aria-controls="home" role="tab" data-toggle="tab">Groups</a></li>
+							<li role="presentation"><a href="#tabaccess" aria-controls="access" role="tab" data-toggle="tab">Access</a></li>
+						</ul>
+						<div class="tab-content">
+							<div role="tabpanel" class="tab-pane active" id="tabgroup">
+								<div class="form-group">
+									<div class="input-group input-group-sm ez width-full">
+										<span class="input-group-addon align-right width-100">Add Type</span>
+										<input type="radio" name="grouptype" value="1" data-bind="checked: GroupType" /> ldap
+										<input type="radio" name="grouptype" value="0" data-bind="checked: GroupType" /> basic
+									</div>
+								</div>
+			                	<div class="form-group">
+									<div class="input-group input-group-sm ez width-full">
+										<span class="input-group-addon align-right width-100">ID</span>
+										<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: _id" placeholder="Type value here ..." />
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="input-group input-group-sm ez width-full">
+										<span class="input-group-addon align-right width-100">Title</span>
+										<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: Title" placeholder="Type value here ..." />
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="input-group input-group-sm ez width-full">
+										<span class="input-group-addon align-right width-100">Owner</span>
+										<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: Owner" placeholder="Type value here ..." />
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="input-group input-group-sm ez width-full">
+										<span class="input-group-addon align-right width-100">Enable</span>
+										<input type="checkbox" data-bind="checked: Enable" />
+									</div>
+								</div>
 							</div>
-						</div>
-	                	<div class="form-group">
-							<div class="input-group input-group-sm ez width-full">
-								<span class="input-group-addon align-right width-100">ID</span>
-								<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: _id" placeholder="Type value here ..." />
-							</div>
-						</div>
-						<div class="form-group">
-							<div class="input-group input-group-sm ez width-full">
-								<span class="input-group-addon align-right width-100">Title</span>
-								<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: Title" placeholder="Type value here ..." />
-							</div>
-						</div>
-						<div class="form-group">
-							<div class="input-group input-group-sm ez width-full">
-								<span class="input-group-addon align-right width-100">Owner</span>
-								<input type="text" class="form-control" required data-required-msg="cannot be empty" data-bind="value: Owner" placeholder="Type value here ..." />
-							</div>
-						</div>
-						<div class="form-group">
-							<div class="input-group input-group-sm ez width-full">
-								<span class="input-group-addon align-right width-100">Enable</span>
-								<input type="checkbox" data-bind="checked: Enable" />
+							<div role="tabpanel" class="tab-pane" id="tabaccess">
+								<div class="form-group">
+									<div class="input-group input-group-sm ez width-full">
+										<span class="input-group-addon align-right width-100">Add Privilage</span>
+										<button class="btn btn-success btn-sm" data-bind="click: gr.addGrant">
+                                            <span class="glyphicon glyphicon-plus"></span> Add
+                                        </button>
+									</div>
+								</div>
+								<div class="col-md-12">
+									<table class="table" id="datasource-settings">
+                                        <thead>
+                                            <tr>
+                                                <th width="200px;">Access</th>
+                                                <th>Create</th>
+                                                <th>Read</th>
+                                                <th>Update</th>
+                                                <th>Delete</th>
+                                                <th>Special Access 1</th>
+                                                <th>Special Access 2</th>
+                                                <th>Special Access 3</th>
+                                                <th>Special Access 4</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody align="center" data-bind="foreach: gr.config.Grants">
+                                            <tr>
+                                                <td>
+                                                    <!-- <select class="form-control input-sm" data-bind="visible: (app.mode() == 'editor'),value: AccessID ,options: adm.Access,selectedOptions : usr.config.Grants()[$index()].AccessID "></select> -->
+                                                    <select class="form-control input-sm" data-bind=" value: AccessID ,options: adm.Access()"></select>
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' value="AccessCreate" data-bind=" checked: AccessValue" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' value="AccessRead" data-bind=" checked: AccessValue" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' value="AccessUpdate" data-bind=" checked: AccessValue" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' value="AccessDelete" data-bind=" checked: AccessValue" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' value="AccessSpecial1" data-bind=" checked: AccessValue" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' value="AccessSpecial2" data-bind=" checked: AccessValue" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' value="AccessSpecial3" data-bind=" checked: AccessValue" />
+                                                </td>
+                                                <td>
+                                                    <input type='checkbox' value="AccessSpecial4" data-bind=" checked: AccessValue" />
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-danger" data-bind="click: gr.removeGrant">
+                                                            <span class="glyphicon glyphicon-remove"></span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+								</div>
 							</div>
 						</div>
 					</div>

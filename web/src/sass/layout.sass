@@ -1,4 +1,5 @@
 @import 'colors'
+@import 'compass/css3'
 
 html, body
 	height: 100%
@@ -280,3 +281,109 @@ html, body
 .fh
 	margin: auto
 	padding: 15%
+
+.tab-content>div
+	padding-top: 10px
+
+.report-module-pivot
+	> div
+		padding-left: 0px
+		padding-right: 0px
+
+	> div.col-md-9
+		.wrapper-inner
+			// border-color: $color-base-green
+
+	.pivot-section.pivot-section-data-point
+		.input-group
+			height: 32px
+			margin-bottom: 2px
+			border: 1px solid $color-base-blue
+
+			.input-group-addon
+				background-color: lighten($color-base-blue, 10%)
+				border-color: lighten($color-base-blue, 10%)
+				color: white
+
+			.k-dropdown-wrap.k-state-hover
+				background-color: #F0F3F4
+				border-color: #F0F3F4
+
+	.pivot-wrapper
+		&.pivot-wrapper-column
+			margin-bottom: 10px
+
+		.wrapper-inner
+			border: 1px solid $color-base-grey
+			padding: 0px
+
+			&.highlight
+				box-sizing: border-box
+				border-color: $color-base-green
+				border-width: 3px
+				opacity: 0.6
+
+			h3
+				font-size: 14px
+				background-color: transparent
+				color: #58666E
+				padding: 10px 0px 2px
+				margin: 0px 10px
+
+				.add-data-point
+					border: none
+					background-color: transparent
+					padding: 0px 4px
+					margin-right: -4px
+					color: $color-base-orange
+
+			p
+				margin: 0px
+				padding: 10px 10px 0px
+				background-color: transparent
+
+			.list-group
+				padding: 10px
+
+				.list-group-item
+					overflow: hidden
+					position: relative
+					margin-bottom: 2px
+					// border-color: $color-base-grey
+
+					&:hover
+						.wrapper
+							.text
+								background-color: transparent
+								color: inherit
+
+							.icon
+								opacity: 1
+
+					.wrapper
+						cursor: auto
+
+						.expandable
+							position: relative
+
+							input[type="checkbox"]
+								margin-top: 9px
+								margin-right: 3px
+
+						.aggregate
+							height: 30px
+
+							input[type="checkbox"]
+								margin-top: 9px
+
+						.icon
+							cursor: pointer
+
+							&:after
+								content: " "
+								background-color: #3B79C2
+								position: absolute
+								right: -3px
+								top: 0
+								bottom: 0
+								width: 4px

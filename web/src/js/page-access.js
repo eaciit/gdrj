@@ -143,6 +143,8 @@ ac.saveChanges = () => {
 
 ac.refreshDataBrowser = () => {
 	$('.grid-access').data('kendoGrid').dataSource.read()
+    ac.tempCheckIdDelete([])
+    ko.mapping.fromJS(ac.templateAccess, ac.config)
 }
 
 ac.deleteaccess = () => {

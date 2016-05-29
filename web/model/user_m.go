@@ -93,7 +93,6 @@ func SaveUser(payload toolkit.M) error {
 	groups := user["Groups"]
 
 	var group []string
-	toolkit.Println("group", groups)
 	for _, v := range groups.([]interface{}) {
 		group = append(group, v.(string))
 	}

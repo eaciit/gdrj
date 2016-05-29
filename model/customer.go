@@ -2,6 +2,7 @@ package gdrj
 
 import (
 	"errors"
+	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 )
@@ -24,7 +25,7 @@ type Customer struct {
 	Plant         string
 	Name          string
 	KeyAccount    string
-	Channel       ChannelTypeEnum
+	Channel       string
 	Group         string
 	National      string
 	Zone          string
@@ -44,6 +45,38 @@ func CustomerGetByID(id string) *Customer {
 	c := new(Customer)
 	DB().GetById(c, id)
 	return c
+}
+
+func CustomerGetAll() ([]*Customer, error) {
+	cursor, err := DB().Find(new(Customer), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*Customer{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func GetFilteredCustomer(cgroup, keyaccount, cchannel string, take, skip int) (arla []*LedgerAccount) {
+	conf := toolkit.M{}.Set("skip", skip)
+	if take > 0 {
+		conf.Set("take", take)
+	}
+
+	arla = make([]*LedgerAccount, 0, 0)
+	dboxf := dbox.And(dbox.Contains("group", cgroup), dbox.Contains("keyaccount", keyaccount), dbox.Contains("channel", cchannel))
+	c, e := Find(new(LedgerAccount), dboxf, conf)
+	if e != nil {
+		return
+	}
+
+	_ = c.Fetch(&arla, 0, false)
+	return
 }
 
 func (c *Customer) Save() error {

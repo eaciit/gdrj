@@ -34,15 +34,22 @@ ud.gridUploadedFiles = {
 		{ title: '&nbsp;', width: 40, attributes: { class: 'align-center' }, template: (d) => {
 			return '<input type="checkbox" />'
 		} },
-		{ title: 'File Name', field: 'Filename', attributes: { class: 'bold' } },
-		{ title: 'Model', field: 'DocName', template: (d) => {
-			return `<span class="tag bg-green">${d.DocName}</span>`
+		{ title: 'File Name', field: 'Filename', attributes: { class: 'bold' }, template: (d) => {
+			return `
+				<div class='tooltipster' title='File: ${d.Filename}<br />Description: ${d.Desc}'>
+					${d.Filename}
+				</div>
+			`
 		} },
-		{ title: 'Description', field: 'Note' },
-		{ title: 'Date', template: (d) =>
+		{ headerTemplate: '<center>Model</center>', field: 'DocName', width: 90, template: (d) => {
+			return `<center>
+				<span class="tag bg-green">${d.DocName}</span>
+			</center>`
+		} },
+		{ headerTemplate: '<center>Date</center>', width: 120, template: (d) =>
 			moment(d.date).format('DD-MM-YYYY HH:mm:ss')
 		},
-		{ title: 'Action', width: 50, template: (d) => {
+		{ headerTemplate: '<center>Action</center>', width: 100, template: (d) => {
 			switch (d.Status) {
 				case 'ready': return `
 					<button class="btn btn-xs btn-warning tooltipster" title="Ready" onclick="ud.processData(\`${d.Filename}\`,this)">
@@ -64,7 +71,8 @@ ud.gridUploadedFiles = {
 	],
 	filterable: false,
 	sortable: false,
-	resizable: false
+	resizable: false,
+	dataBound: app.gridBoundTooltipster('.grid-uploadData')
 }
 
 ud.getMasterDataBrowser = () => {

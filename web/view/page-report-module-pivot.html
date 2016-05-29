@@ -1,0 +1,124 @@
+<div class="col-md-8 col-sm-8 ez panel-content">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin">
+				<button class="btn-toggle-filter no-padding"></button>
+				Pivot
+			</h3>
+			<div class="panel-nav-button">
+				<div class="form-group relative align-right no-margin no-padding hardcore">
+					<button class="btn btn-sm btn-warning" data-bind="click: () => { pvt.mode('') }, visible: pvt.mode() == 'render'">
+						<i class="fa fa-arrow-left"></i> Back to Editor
+					</button>
+					<button class="btn btn-sm btn-primary" data-bind="click: rpt.refreshData, visible: pvt.mode() == ''">
+						<i class="fa fa-refresh"></i> Reload Report
+					</button>
+				</div>
+			</div>
+		</div>
+		<div class="panel-body" data-bind="visible: pvt.mode() == ''">
+			<p>Build pivot grid to compare value of data point based on selected dimensions (rows and columns).</p>
+
+			<div class="report-module report-module-pivot">
+
+				<div class="col-md-3 pivot-wrapper">
+					<div class="wrapper-inner">
+						<h3 class="no-margin">Dimensions</h3>
+						<div class="wrapper" style="min-height: 524px;">
+							<ul class="list-group ez pivot-section pivot-section-fields" data-bind="foreach: pvt.optionDimensions" style="min-height: 524px;">
+								<li class="list-group-item tooltipster-dimension" data-bind="attr: { title: rpt.titleFor($data) }">
+									<div class="wrapper">
+										<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data.field }"></span>
+										<span class="icon tooltipster" title="Click to add" onclick="pvt.showFieldControl(this)">
+											<i class="fa fa-share-square"></i>
+										</span>
+									</div>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-4">
+					<div class="col-md-12 pivot-wrapper pivot-wrapper-column">
+						<div class="wrapper-inner" data-module="column">
+							<h3 class="no-margin">Columns</h3>
+							<div class="wrapper" style="min-height: 242px;">
+								<ul class="list-group ez pivot-section" data-bind="foreach: pvt.columns" style="min-height: 242px;">
+									<li class="list-group-item">
+										<div class="wrapper">
+											<span class="text" data-bind="text: $data.label, attr: { 'data-id': $data.field }"></span>
+											<span class="icon tooltipster-column-row" data-bind="attr: { 'onclick': 'pvt.showColumnSetting(this)', 'data-id': $data.field }">
+												<i class="fa fa-gear"></i>
+											</span>
+										</div>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 pivot-wrapper">
+						<div class="wrapper-inner" data-module="row">
+							<h3 class="no-margin">Rows</h3>
+							<div class="wrapper" style="min-height: 242px;">
+								<ul class="list-group ez pivot-section" data-bind="foreach: pvt.rows" style="min-height: 242px;">
+									<li class="list-group-item">
+										<div class="wrapper">
+											<span class="text" data-bind="text: $data.label, attr: { 'data-id': $data.field }"></span>
+											<span class="icon tooltipster-column-row" data-bind="attr: { 'onclick': 'pvt.showRowSetting(this)', 'data-id': $data.field }">
+												<i class="fa fa-gear"></i>
+											</span>
+										</div>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+				<div class="col-md-5 pivot-wrapper">
+					<div class="wrapper-inner" data-module="value">
+						<h3 class="no-margin">
+							<div class="pull-left">Data Points</div>
+							<div class="pull-right">
+								<button class="add-data-point tooltipster" title="Click to add more data point" data-bind="click: pvt.addDataPoint">
+									<span class="fa fa-plus"></span>
+								</button>
+							</div>
+							<div class="clearfix"></div>
+						</h3>
+						<div class="wrapper" style="min-height: 524px;">
+							<div class="list-group ez pivot-section pivot-section-data-point" data-bind="foreach: pvt.dataPoints" style="min-height: 524px;">
+
+								<div class="input-group input-group-sm ez width-full">
+									<span class="input-group-addon">Data Point</span>
+									<div class="width-full">
+										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: pvt.optionDataPoints, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'Name' }"></select>
+									</div>
+									<span class="input-group-addon">Aggr</span>
+									<div class="width-full">
+										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: pvt.optionAggregates, value: $data.aggr, optionLabel: 'Pick ...', dataValueField: 'aggr', dataTextField: 'Name' }"></select>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+		</div>
+
+
+
+
+		<div class="panel-body" data-bind="visible: pvt.mode() == 'render'">
+			<p>Generated pivot grid.</p>
+
+			<div class="pivot"></div>
+		</div>
+	</div>
+
+	</div>
+</div>
