@@ -11,7 +11,7 @@ ol.accessToken = 'pk.eyJ1Ijoibm92YWxhZ3VuZyIsImEiOiJjaW90aXJhd2EwMGMydWxtNWRjamx
 ol.mapURL = 'https://api.mapbox.com/styles/v1/novalagung/ciotivzfv001vcpnnyuwa3dr6/tiles/{z}/{x}/{y}?access_token=' + ol.accessToken;
 ol.mapConfig = {};
 ol.indonesiaLatLng = [-1.8504955, 117.4004627];
-ol.mapData = [{ id: 'Outlet Bandung', city: 'Bandung', latlng: [-6.915102, 107.609158] }, { id: 'Outlet Surabaya', city: 'Surabaya', latlng: [-7.2754438, 112.6416437] }];
+ol.mapData = app.randomGeoLocations();
 
 ol.initMap = function () {
 	ol.map = L.map('outlet-location').setView(ol.indonesiaLatLng, 5);
@@ -19,7 +19,7 @@ ol.initMap = function () {
 
 	ol.mapData.forEach(function (d) {
 		d.marker = L.marker(d.latlng).addTo(ol.map);
-		d.marker.bindPopup(['<b>' + d.id + '</b>', d.city, d.latlng].join('<br />'));
+		d.marker.bindPopup(['<b>' + d.name + '</b>', d.latlng].join('<br />'));
 	});
 };
 

@@ -115,7 +115,7 @@ pvt.dataPoints = ko.observableArray([
 	// 	aggr: pvt.optionAggregates()[2].aggr
 	// }),
 ])
-pvt.data = ko.observableArray(tempData)
+pvt.data = ko.observableArray([/*tempData*/])
 pvt.currentTargetDimension = null
 pvt.columnRowID = null
 pvt.columnRowWhich = ''
@@ -219,64 +219,42 @@ pvt.showRowSetting = (o) => {
 pvt.refreshData = () => {
 	pvt.mode('render')
 
-	let key = (field) => field.replace(/\./g, '_')
+	let dimensions = ko.mapping.toJS(pvt.columns).map((d) => { return { type: 'column', field: d.field } })
+		     .concat(ko.mapping.toJS(pvt.rows)   .map((d) => { return { type: 'row'   , field: d.field } }))
 
-	pvt.getData((data) => {
-		let modelFields = {}
-		pvt.pivotModel.filter((d) => {
-			ko.mapping.toJS(pvt.columns).find((e) => e.field == d.field)
-		}).forEach((d) => {
-			modelFields[key(d.field)] = { field: d.field, type: d.type }
-		})
+	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
+		.map((d) => { return { op: d.aggr, field: d.field, alias: d.label } })
 
-		let cubeDimensions = { }
-		ko.mapping.toJS(pvt.columns).forEach((d) => {
-			cubeDimensions[key(d.field)] = { caption: d.label }
-		})
+	let param = { dimensions: dimensions, datapoints: dataPoints }
+	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
+		if (!app.isFine(res)) {
+			return
+		}
 
-		let cubeMeasures = { }
-		ko.mapping.toJS(pvt.optionDataPoints).forEach((d) => {
-			pvt.optionAggregates().map((e) => {
-				cubeMeasures[`${key(d.field)}_${e.aggr}`] = {
-					field: key(d.field),
-					format: '{0:n2}',
-					aggregate: e.aggr
-				}
-			})
-		})
-
-		let columns = ko.mapping.toJS(pvt.columns()).map((d) => {
-			return { name: key(d.field), expand: false }
-		})
-	    let rows = ko.mapping.toJS(pvt.rows()).map((d) => {
-			return { name: key(d.field), expand: false }
-		})
-	    let measures = ko.mapping.toJS(pvt.dataPoints).map((d) => `${key(d.field)}_${d.aggr}`)
+		if (res.data.length == 0) {
+			return
+		}
 
 	    let config = {
 	        filterable: true,
 	        dataSource: {
-	            data: data,
-	            schema: {
-	                model: { fields: modelFields },
-	                cube: {
-	                    dimensions: cubeDimensions,
-	                    measures: cubeMeasures,
-	                }
-	            },
-	            columns: columns,
-	            rows: rows,
-	            measures: measures
-	        }
+				data: res.data.data,
+				schema: {
+					model: {
+						fields: res.data.metadata.SchemaModelFields
+					},
+					cube: {
+						dimensions: res.data.metadata.SchemaCubeDimension,
+						measures: res.data.metadata.SchemaCubeMeasures
+					}
+				},
+				columns: res.data.metadata.Columns,
+				rows: res.data.metadata.Rows,
+				measures: res.data.metadata.Measures
+			}
 	    }
 
-		console.log('modelFields', modelFields)
-		console.log('cubeDimensions', cubeDimensions)
-		console.log('cubeMeasures', cubeMeasures)
-		console.log('columns', columns)
-		console.log('rows', rows)
-		console.log('measures', measures)
-		console.log('config', config)
+		console.log("=====", JSON.stringify(config))
 
 		$('.pivot').replaceWith('<div class="pivot"></div>')
 		$('.pivot').kendoPivotGrid(config)

@@ -1,10 +1,22 @@
 'use strict';
 
+// let menuLink = vm.menu()
+// 	.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
+
+// vm.currentMenu(menuLink.title)
+// vm.currentTitle(menuLink.title)
+// vm.breadcrumb([
+// 	{ title: 'Godrej', href: '#' },
+// 	{ title: menuLink.title, href: menuLink.href }
+// ])
+
 var menuLink = vm.menu().find(function (d) {
+	return d.title == "Report";
+}).submenu.find(function (d) {
 	return d.href == '/' + document.URL.split('/').slice(3).join('/');
 });
 
-vm.currentMenu(menuLink.title);
+vm.currentMenu('Report');
 vm.currentTitle(menuLink.title);
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: menuLink.title, href: menuLink.href }]);
 
@@ -55,6 +67,9 @@ rpt.filterMultiSelect = function (d) {
 					read: {
 						url: '/report/getdata' + d._id.toLowerCase()
 					}
+				},
+				schema: {
+					data: 'data'
 				}
 			},
 			minLength: 3,
@@ -72,7 +87,11 @@ rpt.filterMultiSelect = function (d) {
 		});
 
 		app.ajaxPost('/report/getdata' + d._id.toLowerCase(), {}, function (res) {
-			rpt.masterData[d._id](res);
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			rpt.masterData[d._id](res.data);
 		});
 	} else if (['Region', 'Area', 'Zone'].indexOf(d._id) > -1) {
 		var keys = { Area: 'ID', Region: 'Region', Zone: 'Zone' };
@@ -87,7 +106,11 @@ rpt.filterMultiSelect = function (d) {
 		});
 
 		app.ajaxPost('/report/getdatahgeographi', {}, function (res) {
-			rpt.masterData[d._id](res);
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			rpt.masterData[d._id](res.data);
 		});
 	} else if (['LedgerAccount'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
@@ -101,7 +124,11 @@ rpt.filterMultiSelect = function (d) {
 		});
 
 		app.ajaxPost('/report/getdata' + d._id.toLowerCase(), {}, function (res) {
-			rpt.masterData[d._id](res);
+			if (!app.isFine(res)) {
+				return;
+			}
+
+			rpt.masterData[d._id](res.data);
 		});
 	}
 

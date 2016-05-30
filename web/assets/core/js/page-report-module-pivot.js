@@ -54,7 +54,7 @@ pvt.dataPoints = ko.observableArray([app.koMap({
 // 	expand: false,
 // 	aggr: pvt.optionAggregates()[2].aggr
 // }),
-pvt.data = ko.observableArray(tempData);
+pvt.data = ko.observableArray([/*tempData*/]);
 pvt.currentTargetDimension = null;
 pvt.columnRowID = null;
 pvt.columnRowWhich = '';
@@ -144,70 +144,46 @@ pvt.showRowSetting = function (o) {
 pvt.refreshData = function () {
 	pvt.mode('render');
 
-	var key = function key(field) {
-		return field.replace(/\./g, '_');
-	};
+	var dimensions = ko.mapping.toJS(pvt.columns).map(function (d) {
+		return { type: 'column', field: d.field };
+	}).concat(ko.mapping.toJS(pvt.rows).map(function (d) {
+		return { type: 'row', field: d.field };
+	}));
 
-	pvt.getData(function (data) {
-		var modelFields = {};
-		pvt.pivotModel.filter(function (d) {
-			ko.mapping.toJS(pvt.columns).find(function (e) {
-				return e.field == d.field;
-			});
-		}).forEach(function (d) {
-			modelFields[key(d.field)] = { field: d.field, type: d.type };
-		});
+	var dataPoints = ko.mapping.toJS(pvt.dataPoints).map(function (d) {
+		return { op: d.aggr, field: d.field, alias: d.label };
+	});
 
-		var cubeDimensions = {};
-		ko.mapping.toJS(pvt.columns).forEach(function (d) {
-			cubeDimensions[key(d.field)] = { caption: d.label };
-		});
+	var param = { dimensions: dimensions, datapoints: dataPoints };
+	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
 
-		var cubeMeasures = {};
-		ko.mapping.toJS(pvt.optionDataPoints).forEach(function (d) {
-			pvt.optionAggregates().map(function (e) {
-				cubeMeasures[key(d.field) + '_' + e.aggr] = {
-					field: key(d.field),
-					format: '{0:n2}',
-					aggregate: e.aggr
-				};
-			});
-		});
-
-		var columns = ko.mapping.toJS(pvt.columns()).map(function (d) {
-			return { name: key(d.field), expand: false };
-		});
-		var rows = ko.mapping.toJS(pvt.rows()).map(function (d) {
-			return { name: key(d.field), expand: false };
-		});
-		var measures = ko.mapping.toJS(pvt.dataPoints).map(function (d) {
-			return key(d.field) + '_' + d.aggr;
-		});
+		if (res.data.length == 0) {
+			return;
+		}
 
 		var config = {
 			filterable: true,
 			dataSource: {
-				data: data,
+				data: res.data.data,
 				schema: {
-					model: { fields: modelFields },
+					model: {
+						fields: res.data.metadata.SchemaModelFields
+					},
 					cube: {
-						dimensions: cubeDimensions,
-						measures: cubeMeasures
+						dimensions: res.data.metadata.SchemaCubeDimension,
+						measures: res.data.metadata.SchemaCubeMeasures
 					}
 				},
-				columns: columns,
-				rows: rows,
-				measures: measures
+				columns: res.data.metadata.Columns,
+				rows: res.data.metadata.Rows,
+				measures: res.data.metadata.Measures
 			}
 		};
 
-		console.log('modelFields', modelFields);
-		console.log('cubeDimensions', cubeDimensions);
-		console.log('cubeMeasures', cubeMeasures);
-		console.log('columns', columns);
-		console.log('rows', rows);
-		console.log('measures', measures);
-		console.log('config', config);
+		console.log("=====", JSON.stringify(config));
 
 		$('.pivot').replaceWith('<div class="pivot"></div>');
 		$('.pivot').kendoPivotGrid(config);
