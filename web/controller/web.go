@@ -26,7 +26,6 @@ func (w *WebController) Index(r *knot.WebContext) interface{} {
 
 func (w *WebController) Login(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
-	// r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
 	r.Config.ViewName = View("page-login.html")
 
@@ -137,6 +136,15 @@ func (w *WebController) Organization(r *knot.WebContext) interface{} {
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
 	r.Config.ViewName = View("page-organization.html")
+
+	return true
+}
+
+func (w *WebController) OutletLocation(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-outlet-location.html")
 
 	return true
 }
