@@ -12,14 +12,14 @@ vm.menu = ko.observableArray([
 		{ title: 'Data Browser', icon: 'list', href: '/web/databrowser', submenu: [] },
 		{ title: 'Upload Data', icon: 'upload', href: '/web/uploaddata', submenu: [] }
 	] },
+	{ title: 'Organization', icon: 'sitemap', href: '/web/organization', submenu: [] },
 	{ title: 'Administration', icon: 'gear', href: '#', submenu: [
 		{ title: 'Allocation Flow', icon: 'arrows', href: '/web/allocationflow', submenu: [] },
 		{ title: 'Access', icon: 'unlock-alt', href: '/web/access', submenu: [] },
 		{ title: 'Group', icon: 'users', href: '/web/group', submenu: [] },
 		{ title: 'User', icon: 'user', href: '/web/user', submenu: [] },
 		{ title: 'Session', icon: 'clock-o', href: '/web/session', submenu: [] }
-	] },
-	{ title: 'Organizational', icon: 'arrows', href: '/web/organization', submenu: [] }
+	] }
 ])
 vm.breadcrumb = ko.observableArray([
 	{ title: 'Godrej', href: '#' },

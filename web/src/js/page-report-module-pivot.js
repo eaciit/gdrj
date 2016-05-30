@@ -55,8 +55,10 @@ pvt.pivotModel = [
 ]
 
 pvt.templateDataPoint = {
-	_id: '',
-	aggr: 'sum'
+	aggr: 'sum',
+	expand: false,
+	field: '',
+	label: ''
 }
 pvt.optionDimensions = ko.computed(() => {
 	return pvt.pivotModel
@@ -186,7 +188,8 @@ pvt.configure = (o, what) => {
 
 }
 pvt.addDataPoint = () => {
-	pvt.dataPoints.push(app.clone(pvt.templateDataPoint))
+	let row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint))
+	pvt.dataPoints.push(row)
 }
 pvt.addAs = (o, what) => {
 	let holder = pvt[`${what}s`]
