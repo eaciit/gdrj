@@ -185,3 +185,59 @@ app.koMap = ko.mapping.fromJS
 app.koUnmap = ko.mapping.toJS
 app.observ = ko.observable
 app.observArr = ko.observArr
+
+app.randomString = (length = 5) => Math.random().toString(36).substring(2, length)
+
+app.latLngIndonesia = { lat: -1.8504955, lng: 117.4004627 }
+app.randomGeoLocations = (center = app.latLngIndonesia, radius = 1000000, count = 100) => {
+    let generateRandomPoint = (center, radius) => {
+        var x0 = center.lng
+        var y0 = center.lat
+
+        // Convert Radius from meters to degrees.
+        var rd = radius / 111300
+
+        var u = Math.random()
+        var v = Math.random()
+
+        var w = rd * Math.sqrt(u)
+        var t = 2 * Math.PI * v
+        var x = w * Math.cos(t)
+        var y = w * Math.sin(t)
+
+        var xp = x / Math.cos(y0)
+
+        return {
+            name: app.randomString(10),
+            latlng : [y + y0, xp + x0]
+        }
+    }
+
+    var points = []
+    for (var i = 0; i < count; i++) {
+        points.push(generateRandomPoint(center, radius))
+    }
+
+    return points
+}
+
+app.split = (arr, separator = '', length = 0) => {
+    if (length == 0) {
+        return arr.split(separator)
+    }
+
+    let res = []
+    let resJoin = []
+
+    arr.split(separator).forEach((d, i) => {
+        if (i < length) {
+            res.push(d)
+            return
+        }
+
+        resJoin.push(d)
+    })
+
+    res = res.concat(resJoin.join(separator))
+    return res
+}

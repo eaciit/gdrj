@@ -10,8 +10,11 @@
 					<button class="btn btn-sm btn-warning" data-bind="click: () => { pvt.mode('') }, visible: pvt.mode() == 'render'">
 						<i class="fa fa-arrow-left"></i> Back to Editor
 					</button>
+					<button class="btn btn-sm btn-primary" data-bind="click: rpt.refreshData, visible: pvt.mode() == 'render'">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
 					<button class="btn btn-sm btn-primary" data-bind="click: rpt.refreshData, visible: pvt.mode() == ''">
-						<i class="fa fa-refresh"></i> Reload Report
+						<i class="fa fa-eye"></i> View Pivot
 					</button>
 				</div>
 			</div>
