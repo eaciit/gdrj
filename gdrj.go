@@ -45,6 +45,7 @@ func main() {
 	server.Register(controller.CreateSessionController(server), "")
 	server.Register(controller.CreateUserController(server), "")
 	server.Register(controller.CreateGroupController(server), "")
+	server.Register(controller.CreateOrganizationController(server), "")
 
 	server.Route("/", func(r *knot.WebContext) interface{} {
 		sessionid := r.Session("sessionid", "")
