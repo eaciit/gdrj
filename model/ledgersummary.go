@@ -88,9 +88,7 @@ func SummaryGenerateDummyData() []*LedgerSummary {
 		pr := new(Product)
 		pr.ID = toolkit.RandomString(5)
 		pr.Name = toolkit.RandomString(5)
-		//pr.Config = toolkit.RandomString(5)
 		pr.Brand = toolkit.RandomString(5)
-		//pr.LongName = toolkit.RandomString(5)
 		prs = append(prs, pr)
 
 		da := new(Date)
