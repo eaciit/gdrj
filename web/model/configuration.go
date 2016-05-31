@@ -1,6 +1,7 @@
 package gocore
 
 import (
+	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 )
@@ -20,6 +21,16 @@ type Ports struct {
 	orm.ModelBase
 	ID   string `json:"_id",bson:"_id"`
 	Port int    `json:"port",bson:"port"`
+}
+
+type Organization struct {
+	orm.ModelBase `json:"-" bson:"-"`
+	ID            string         `json:"_id" bson:"_id"`
+	FullName      string         `json:"FullName" bson:"FullName"`
+	Position      string         `json:"Position" bson:"Position"`
+	Image         string         `json:"Image" bson:"Image"`
+	Color         string         `json:"Color" bson:"Color"`
+	Items         []Organization `json:"Items" bson:"Items"`
 }
 
 type Configuration struct {
@@ -82,6 +93,34 @@ func (a *Databases) TableName() string {
 
 func (a *Databases) RecordID() interface{} {
 	return a.ID
+}
+
+func (o *Organization) TableName() string {
+	return "organizations"
+}
+
+func (o *Organization) RecordID() interface{} {
+	return o.ID
+}
+
+func GetOrganizationByID(id string) ([]Organization, error) {
+	result := make([]Organization, 0)
+
+	dboxf := dbox.And(dbox.Contains("_id", id))
+	cursor, err := Find(new(Organization), dboxf)
+	if err != nil {
+		return nil, err
+	}
+
+	err = cursor.Fetch(&result, 0, false)
+	if cursor != nil {
+		cursor.Close()
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func GetDB(key string) interface{} {
