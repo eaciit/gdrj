@@ -162,9 +162,9 @@ pvt.showAndRefreshPivot = function () {
 };
 pvt.refreshData = function () {
 	var dimensions = ko.mapping.toJS(pvt.columns).map(function (d) {
-		return { type: 'column', field: d.field };
+		return { type: 'column', field: d.field, alias: d.label };
 	}).concat(ko.mapping.toJS(pvt.rows).map(function (d) {
-		return { type: 'row', field: d.field };
+		return { type: 'row', field: d.field, alias: d.label };
 	}));
 
 	var dataPoints = ko.mapping.toJS(pvt.dataPoints).filter(function (d) {
