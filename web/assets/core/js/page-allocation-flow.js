@@ -82,7 +82,7 @@ af.doUpload = function () {
 	}
 
 	var param = af.getFormPayload();
-	app.ajaxPost('/allocationflow/savemodules', param, function (res) {
+	app.ajaxPost('/allocationflow/uploadnewmodule', param, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
