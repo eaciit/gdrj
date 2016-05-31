@@ -232,8 +232,8 @@ pvt.showAndRefreshPivot = () => {
 	pvt.refreshData()
 }
 pvt.refreshData = () => {
-	let dimensions = ko.mapping.toJS(pvt.columns).map((d) => { return { type: 'column', field: d.field } })
-		     .concat(ko.mapping.toJS(pvt.rows)   .map((d) => { return { type: 'row'   , field: d.field } }))
+	let dimensions = ko.mapping.toJS(pvt.columns).map((d) => { return { type: 'column', field: d.field, alias: d.label } })
+		     .concat(ko.mapping.toJS(pvt.rows)   .map((d) => { return { type: 'row'   , field: d.field, alias: d.label } }))
 
 	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
 		.filter((d) => d.field != '' && d.aggr != '')
