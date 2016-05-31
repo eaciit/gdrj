@@ -28,7 +28,7 @@ pvt.optionDataPoints = ko.computed(function () {
 pvt.optionAggregates = ko.observableArray([{ aggr: 'avg', Name: 'Avg' },
 // { aggr: 'count', Name: 'Count' },
 { aggr: 'sum', Name: 'Sum' }, { aggr: 'max', Name: 'Max' }, { aggr: 'min', Name: 'Min' }]);
-pvt.mode = ko.observable('');
+pvt.mode = ko.observable('render');
 pvt.columns = ko.observableArray([app.koMap({
 	field: pvt.optionDimensions()[1].field,
 	label: pvt.optionDimensions()[1].Name,
@@ -58,8 +58,6 @@ pvt.dataPoints = ko.observableArray([app.koMap({
 // }),
 pvt.data = ko.observableArray([/*tempData*/]);
 pvt.currentTargetDimension = null;
-pvt.columnRowID = null;
-pvt.columnRowWhich = '';
 
 pvt.prepareTooltipster = function () {
 	var config = {
@@ -105,7 +103,6 @@ pvt.getData = function (callback) {
 		}
 	});
 };
-pvt.configure = function (o, what) {};
 pvt.addDataPoint = function () {
 	var row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint));
 	pvt.dataPoints.push(row);
@@ -114,34 +111,43 @@ pvt.addAs = function (o, what) {
 	var holder = pvt[what + 's'];
 	var id = $(pvt.currentTargetDimension).attr('data-id');
 
-	var isAddedOnColumn = typeof pvt.columns().find(function (d) {
-		return d._id === id;
+	var isAddedOnColumn = typeof ko.mapping.toJS(pvt.columns()).find(function (d) {
+		return d.field === id;
 	}) !== 'undefined';
-	var isAddedOnRow = typeof pvt.rows().find(function (d) {
-		return d._id === id;
+	var isAddedOnRow = typeof ko.mapping.toJS(pvt.rows()).find(function (d) {
+		return d.field === id;
 	}) !== 'undefined';
 
 	if (!(isAddedOnColumn || isAddedOnRow)) {
 		var row = pvt.optionDimensions().find(function (d) {
-			return d._id === id;
+			return d.field === id;
 		});
-		holder.push(ko.mapping.fromJS($.extend(true, row, { expand: false })));
+		holder.push(ko.mapping.fromJS({ field: row.field, label: row.Name, expand: false }));
 	}
 };
-pvt.removeFrom = function () {
-	var holder = pvt[pvt.columnRowWhich + 's'];
-	var row = holder().find(function (d) {
-		return ko.mapping.toJS(d)._id == pvt.columnRowID;
+pvt.removeFrom = function (o, which) {
+	swal({
+		title: "Are you sure?",
+		text: 'Item will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: true
+	}, function () {
+		var holder = pvt[which];
+
+		if (which == 'dataPoints') {
+			var index = $(o).attr('data-index');
+			app.arrRemoveByIndex(holder, index);
+		}
+
+		var id = $(o).attr('data-id');
+		var row = holder().find(function (d) {
+			return ko.mapping.toJS(d).field == id;
+		});
+		app.arrRemoveByItem(holder, row);
 	});
-	app.arrRemoveByItem(holder, row);
-};
-pvt.showColumnSetting = function (o) {
-	pvt.columnRowID = $(o).attr('data-id');
-	pvt.columnRowWhich = 'column';
-};
-pvt.showRowSetting = function (o) {
-	pvt.columnRowID = $(o).attr('data-id');
-	pvt.columnRowWhich = 'row';
 };
 pvt.refreshData = function () {
 	pvt.mode('render');
@@ -152,8 +158,14 @@ pvt.refreshData = function () {
 		return { type: 'row', field: d.field };
 	}));
 
-	var dataPoints = ko.mapping.toJS(pvt.dataPoints).map(function (d) {
-		return { op: d.aggr, field: d.field, alias: d.label };
+	var dataPoints = ko.mapping.toJS(pvt.dataPoints).filter(function (d) {
+		return d.field != '' && d.aggr != '';
+	}).map(function (d) {
+		var row = ko.mapping.toJS(pvt.pivotModel).find(function (e) {
+			return e.field == d.field;
+		});
+		var label = row == undefined ? d.field : row.label;
+		return { op: d.aggr, field: d.field, alias: label };
 	});
 
 	var param = { dimensions: dimensions, datapoints: dataPoints };
@@ -185,7 +197,7 @@ pvt.refreshData = function () {
 			}
 		};
 
-		console.log("=====", JSON.stringify(config));
+		console.log("=====", config);
 
 		$('.pivot').replaceWith('<div class="pivot"></div>');
 		$('.pivot').kendoPivotGrid(config);
@@ -194,4 +206,5 @@ pvt.refreshData = function () {
 
 pvt.init = function () {
 	pvt.prepareTooltipster();
+	pvt.refreshData();
 };

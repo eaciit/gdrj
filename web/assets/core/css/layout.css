@@ -288,6 +288,9 @@ html, body {
   border-color: #6194cf;
   color: white;
 }
+.report-module-pivot .pivot-section.pivot-section-data-point .input-group .input-group-addon.clickable {
+  cursor: pointer;
+}
 .report-module-pivot .pivot-section.pivot-section-data-point .input-group .k-dropdown-wrap.k-state-hover {
   background-color: #F0F3F4;
   border-color: #F0F3F4;
@@ -336,7 +339,7 @@ html, body {
   background-color: transparent;
   color: inherit;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item:hover .wrapper .icon {
+.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item:hover .wrapper .icon:not(.no-hover) {
   opacity: 1;
 }
 .report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper {

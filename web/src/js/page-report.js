@@ -28,7 +28,8 @@ rpt.filter = [
 		{ _id: 'Brand', title: 'Brand' },
 		{ _id: 'Region', title: 'Region' },
 		{ _id: 'Channel', title: 'Channel' },
-		{ _id: 'From', },
+		{ _id: 'From' },
+		{ _id: 'To' },
 	] },
 	{ _id: 'geo', group: 'Geographical', sub: [
 		{ _id: 'Region', title: 'Region' },
@@ -117,7 +118,7 @@ rpt.filterMultiSelect = (d) => {
 			minLength: 3,
 			placeholder: 'Type min 3 chars, then choose items ...'
 		})
-	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'Customer', 'HBrandCategory', 'Product'].indexOf(d._id) > -1) {
+	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'Customer', 'HBrandCategory', 'Product', 'Type'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
 			data: ko.computed(() => {
 				return rpt.masterData[d._id]().map((d) => {

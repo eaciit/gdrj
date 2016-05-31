@@ -8,13 +8,13 @@
 			<div class="panel-nav-button">
 				<div class="form-group relative align-right no-margin no-padding hardcore">
 					<button class="btn btn-sm btn-warning" data-bind="click: () => { pvt.mode('') }, visible: pvt.mode() == 'render'">
-						<i class="fa fa-arrow-left"></i> Back to Editor
+						<i class="fa fa-gear"></i> Show Configuration
 					</button>
 					<button class="btn btn-sm btn-primary" data-bind="click: rpt.refreshData, visible: pvt.mode() == 'render'">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-primary" data-bind="click: rpt.refreshData, visible: pvt.mode() == ''">
-						<i class="fa fa-eye"></i> View Pivot
+						<i class="fa fa-eye"></i> Show Pivot
 					</button>
 				</div>
 			</div>
@@ -42,7 +42,7 @@
 					</div>
 				</div>
 
-				<div class="col-md-4">
+				<div class="col-md-3">
 					<div class="col-md-12 pivot-wrapper pivot-wrapper-column">
 						<div class="wrapper-inner" data-module="column">
 							<h3 class="no-margin">Columns</h3>
@@ -51,8 +51,8 @@
 									<li class="list-group-item">
 										<div class="wrapper">
 											<span class="text" data-bind="text: $data.label, attr: { 'data-id': $data.field }"></span>
-											<span class="icon tooltipster-column-row" data-bind="attr: { 'onclick': 'pvt.showColumnSetting(this)', 'data-id': $data.field }">
-												<i class="fa fa-gear"></i>
+											<span class="icon tooltipster" title="Click to remove" data-bind="attr: { 'data-id': $data.field }" onclick="pvt.removeFrom(this, 'columns')">
+												<i class="fa fa fa-columns"></i>
 											</span>
 										</div>
 									</li>
@@ -68,8 +68,8 @@
 									<li class="list-group-item">
 										<div class="wrapper">
 											<span class="text" data-bind="text: $data.label, attr: { 'data-id': $data.field }"></span>
-											<span class="icon tooltipster-column-row" data-bind="attr: { 'onclick': 'pvt.showRowSetting(this)', 'data-id': $data.field }">
-												<i class="fa fa-gear"></i>
+											<span class="icon tooltipster" title="Click to remove" data-bind="attr: { 'data-id': $data.field }" onclick="pvt.removeFrom(this, 'rows')">
+												<i class="fa fa-reorder"></i>
 											</span>
 										</div>
 									</li>
@@ -80,7 +80,7 @@
 				</div>
 
 
-				<div class="col-md-5 pivot-wrapper">
+				<div class="col-md-6 pivot-wrapper">
 					<div class="wrapper-inner" data-module="value">
 						<h3 class="no-margin">
 							<div class="pull-left">Data Points</div>
@@ -93,16 +93,18 @@
 						</h3>
 						<div class="wrapper" style="min-height: 524px;">
 							<div class="list-group ez pivot-section pivot-section-data-point" data-bind="foreach: pvt.dataPoints" style="min-height: 524px;">
-
 								<div class="input-group input-group-sm ez width-full">
 									<span class="input-group-addon">Data Point</span>
-									<div class="width-full">
+									<div>
 										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: pvt.optionDataPoints, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'Name' }"></select>
 									</div>
 									<span class="input-group-addon">Aggr</span>
-									<div class="width-full">
+									<div>
 										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: pvt.optionAggregates, value: $data.aggr, optionLabel: 'Pick ...', dataValueField: 'aggr', dataTextField: 'Name' }"></select>
 									</div>
+									<span class="input-group-addon tooltipster clickable" title="Click to remove" data-bind="attr: { 'data-index': $index() }" onclick="pvt.removeFrom(this, 'dataPoints')">
+										<i class="fa fa fa-bullseye"></i>
+									</span>
 								</div>
 							</div>
 						</div>
