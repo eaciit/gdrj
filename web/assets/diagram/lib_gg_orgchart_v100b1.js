@@ -982,9 +982,15 @@ var oc_zdp_width,
         if (node === null)
             return;
 
+        // biru title = "#3A87AD", tulisan: "#1A678D", box = "#D9EDF7", hover: #E9FDF7, border = #BCE8F1
+        // merah title = "#AD3A3A", tulisan: "#8D1A1A", box = "#F7D9D9", hover: #FDE9E9, border = #F1BCD0
+        // ijo title = "#3AAD3E", tulisan: "#1A8D1E", box = "#D9F7DB", hover: #EFFDE9, border = #C7F1BC
+        // abu2 title = "#A0A7A4", tulisan: "#8A8C8E", box = "#C5C5C5", hover: #FBFBFB, border = #E6E6E6
+
         // draw children
         //
         if (typeof node.children != "undefined") {
+            
             for (var i = 0; i < node.children.length; i++) {
                 oc_draw_obj(options,
                             node.children[i],
@@ -994,6 +1000,54 @@ var oc_zdp_width,
                             node.deltacorner[1] + yoffset
                            );
             }
+        }
+
+        if (node.children !== undefined){
+            if (node.children.length == 1){
+                options.box_color = "#F7D9D9";
+                options.box_color_hover = "#FDE9E9";
+                options.box_border_color = "#F1BCD0";
+                options.subtitle_color = "#8D1A1A";
+                options.title_color = "#AD3A3A";
+            } else if (node.children.length == 2) {
+                options.box_color = "#D9EDF7";
+                options.box_color_hover = "#E9FDF7";
+                options.box_border_color = "#BCE8F1";
+                options.subtitle_color = "#1A678D";
+                options.title_color = "#3A87AD";
+            } else if (node.children.length == 3){
+                options.box_color = "#D9F7DB";
+                options.box_color_hover = "#EFFDE9";
+                options.box_border_color = "#C7F1BC";
+                options.subtitle_color = "#1A8D1E";
+                options.title_color = "#3AAD3E";
+            } else if (node.children.length > 3) {
+                options.box_color = "#D9F7F4";
+                options.box_color_hover = "#E9FDF9";
+                options.box_border_color = "#BCF1EC";
+                options.title_color = "#1A8D82";
+                options.subtitle_color = "#3AAD9D";
+            } else {
+                options.box_color = "#F1F1F1";
+                options.box_color_hover = "#FBFBFB";
+                options.box_border_color = "#E6E6E6";
+                options.title_color = "#A0A7A4";
+                options.subtitle_color = "#8A8C8E";
+            }
+        } else {
+            options.box_color = "#F1F1F1";
+            options.box_color_hover = "#FBFBFB";
+            options.box_border_color = "#E6E6E6";
+            options.title_color = "#A0A7A4";
+            options.subtitle_color = "#8A8C8E";
+        }
+
+        if (typeof node.is_root != "undefined") {
+            options.box_color = "#F7EED9";
+            options.box_color_hover = "#FDF7E9";
+            options.box_border_color = "#F1DEBC";
+            options.title_color = "#AD7A3A";
+            options.subtitle_color = "#8D5A1A";
         }
 
         // debug
@@ -1068,7 +1122,7 @@ var oc_zdp_width,
         }
 
         // now draw the box
-        //
+        // iki kudu di custom
         var box;
         if (typeof node.visible == "undefined" || node.visible === true) {
             box = options.oc_paper.rect(nX0, nY0, nX1 - nX0, nY1 - nY0, options.box_border_radius);
