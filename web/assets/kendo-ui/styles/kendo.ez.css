@@ -7755,6 +7755,9 @@ input[type="text"].ez {
 .relative {
   position: relative;
 }
+.transition-width {
+  transition: width ease-in-out 400ms;
+}
 /* Button Concept by Chris Deacy http://codepen.io/chrisdothtml/pen/xbmddV */
 .btn.ez {
   border-radius: 0px;

@@ -36,6 +36,28 @@ vm.adjustLayout = function () {
 	var height = window.innerHeight - $('.app-top').height();
 	$('.app-container').css('min-height', height);
 };
+vm.showFilterCallback = app.noop;
+vm.showFilter = function () {
+	var btnToggleFilter = $('.btn-toggle-filter');
+	var panelFilterContainer = $('.panel-filter').parent();
+
+	panelFilterContainer.removeClass('minimized');
+	btnToggleFilter.find('.fa').removeClass('color-blue').addClass('color-orange').removeClass('fa-angle-double-right').addClass('fa-angle-double-left');
+
+	$('.panel-filter').show(300);
+	$('.panel-content').animate({ 'width': 'auto' }, 300, vm.showFilterCallback);
+};
+vm.hideFilterCallback = app.noop;
+vm.hideFilter = function () {
+	var btnToggleFilter = $('.btn-toggle-filter');
+	var panelFilterContainer = $('.panel-filter').parent();
+
+	panelFilterContainer.addClass('minimized');
+	btnToggleFilter.find('.fa').removeClass('color-orange').addClass('color-blue').removeClass('fa-angle-double-left').addClass('fa-angle-double-right');
+
+	$('.panel-filter').hide(300);
+	$('.panel-content').animate({ 'width': '100%' }, 300, vm.hideFilterCallback);
+};
 vm.prepareToggleFilter = function () {
 	var btnToggleFilter = $('.btn-toggle-filter');
 	var panelFilterContainer = $('.panel-filter').parent();
@@ -45,17 +67,9 @@ vm.prepareToggleFilter = function () {
 
 	btnToggleFilter.on('click', function () {
 		if (panelFilterContainer.hasClass('minimized')) {
-			panelFilterContainer.removeClass('minimized');
-			btnToggleFilter.find('.fa').removeClass('color-blue').addClass('color-orange').removeClass('fa-angle-double-right').addClass('fa-angle-double-left');
-
-			$('.panel-filter').show(300);
-			$('.panel-content').animate({ 'width': 'auto' }, 300);
+			vm.showFilter();
 		} else {
-			panelFilterContainer.addClass('minimized');
-			btnToggleFilter.find('.fa').removeClass('color-orange').addClass('color-blue').removeClass('fa-angle-double-left').addClass('fa-angle-double-right');
-
-			$('.panel-filter').hide(300);
-			$('.panel-content').animate({ 'width': '100%' }, 300);
+			vm.hideFilter();
 		}
 	});
 };
