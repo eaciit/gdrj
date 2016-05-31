@@ -18,6 +18,7 @@ or.optionsdiagram = {
 }
 or.newDiagram = (idyo, id, container, src, options) => {
     let result
+
     result = ggOrgChart.render({
         data_id           : idyo,
         container         : id,
@@ -25,6 +26,11 @@ or.newDiagram = (idyo, id, container, src, options) => {
         use_zoom_print    : true,
         container_supra   : container,
         initial_zoom      : 0.75,
+        box_color: "#C5C5C5",
+        box_color_hover: "#FBFBFB",
+        box_border_color: "#E6E6E6",
+        title_color: "#A0A7A4",
+        subtitle_color: "#8A8C8E",
         // pdf_canvas        : 'oc_print_canvas_4',
         // pdf_canvas_width  : 800,
         // pdf_canvas_height : 480,
