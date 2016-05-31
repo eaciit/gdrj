@@ -25,7 +25,9 @@ pvt.optionDataPoints = ko.computed(function () {
 		return { field: d.field, Name: d.label };
 	});
 });
-pvt.optionAggregates = ko.observableArray([{ aggr: 'average', Name: 'Avg' }, { aggr: 'count', Name: 'Count' }, { aggr: 'sum', Name: 'Sum' }, { aggr: 'max', Name: 'Max' }, { aggr: 'min', Name: 'Min' }]);
+pvt.optionAggregates = ko.observableArray([{ aggr: 'avg', Name: 'Avg' },
+// { aggr: 'count', Name: 'Count' },
+{ aggr: 'sum', Name: 'Sum' }, { aggr: 'max', Name: 'Max' }, { aggr: 'min', Name: 'Min' }]);
 pvt.mode = ko.observable('');
 pvt.columns = ko.observableArray([app.koMap({
 	field: pvt.optionDimensions()[1].field,

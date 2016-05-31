@@ -351,8 +351,13 @@ func (p *PivotParam) GetPivotConfig(data []toolkit.M) toolkit.M {
 
 			for _, c := range p.DataPoints {
 				if strings.ToLower(strings.Replace(c.Alias, " ", "_", -1)) == strings.ToLower(key) {
+					op := c.OP
+					if op == "avg" {
+						op = "average"
+					}
+
 					res.SchemaModelFields.Set(key, toolkit.M{"type": "number"})
-					res.SchemaCubeMeasures.Set(key, toolkit.M{"field": key, "aggregate": c.OP})
+					res.SchemaCubeMeasures.Set(key, toolkit.M{"field": key, "aggregate": op})
 					res.Measures = append(res.Measures, key)
 				}
 			}

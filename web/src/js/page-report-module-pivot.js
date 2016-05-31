@@ -75,8 +75,8 @@ pvt.optionDataPoints = ko.computed(() => {
 		})
 })
 pvt.optionAggregates = ko.observableArray([
-	{ aggr: 'average', Name: 'Avg' },
-	{ aggr: 'count', Name: 'Count' },
+	{ aggr: 'avg', Name: 'Avg' },
+	// { aggr: 'count', Name: 'Count' },
 	{ aggr: 'sum', Name: 'Sum' },
 	{ aggr: 'max', Name: 'Max' },
 	{ aggr: 'min', Name: 'Min' }
