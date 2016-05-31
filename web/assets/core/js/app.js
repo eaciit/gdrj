@@ -178,3 +178,92 @@ app.arrRemoveByItem = function (arr, item) {
 app.clone = function (o) {
     return $.extend(true, {}, o);
 };
+app.distinct = function (arr) {
+    return arr.filter(function (v, i, self) {
+        return self.indexOf(v) === i;
+    });
+};
+app.forEach = function (d, callback) {
+    if (d instanceof Array) {
+        d.forEach(callback);
+    }
+
+    if (d instanceof Object) {
+        for (var key in d) {
+            if (d.hasOwnProperty(key)) {
+                callback(key, d[key]);
+            }
+        }
+    }
+};
+
+app.koMap = ko.mapping.fromJS;
+app.koUnmap = ko.mapping.toJS;
+app.observ = ko.observable;
+app.observArr = ko.observArr;
+
+app.randomString = function () {
+    var length = arguments.length <= 0 || arguments[0] === undefined ? 5 : arguments[0];
+    return Math.random().toString(36).substring(2, length);
+};
+
+app.latLngIndonesia = { lat: -1.8504955, lng: 117.4004627 };
+app.randomGeoLocations = function () {
+    var center = arguments.length <= 0 || arguments[0] === undefined ? app.latLngIndonesia : arguments[0];
+    var radius = arguments.length <= 1 || arguments[1] === undefined ? 1000000 : arguments[1];
+    var count = arguments.length <= 2 || arguments[2] === undefined ? 100 : arguments[2];
+
+    var generateRandomPoint = function generateRandomPoint(center, radius) {
+        var x0 = center.lng;
+        var y0 = center.lat;
+
+        // Convert Radius from meters to degrees.
+        var rd = radius / 111300;
+
+        var u = Math.random();
+        var v = Math.random();
+
+        var w = rd * Math.sqrt(u);
+        var t = 2 * Math.PI * v;
+        var x = w * Math.cos(t);
+        var y = w * Math.sin(t);
+
+        var xp = x / Math.cos(y0);
+
+        return {
+            name: app.randomString(10),
+            latlng: [y + y0, xp + x0]
+        };
+    };
+
+    var points = [];
+    for (var i = 0; i < count; i++) {
+        points.push(generateRandomPoint(center, radius));
+    }
+
+    return points;
+};
+
+app.split = function (arr) {
+    var separator = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+    var length = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+
+    if (length == 0) {
+        return arr.split(separator);
+    }
+
+    var res = [];
+    var resJoin = [];
+
+    arr.split(separator).forEach(function (d, i) {
+        if (i < length) {
+            res.push(d);
+            return;
+        }
+
+        resJoin.push(d);
+    });
+
+    res = res.concat(resJoin.join(separator));
+    return res;
+};

@@ -26,6 +26,21 @@ func ChannelGetByID(id string) *Channel {
 	return b
 }
 
+func ChannelGetAll() ([]*Channel, error) {
+	cursor, err := DB().Find(new(Channel), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*Channel{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (c *Channel) Save() error {
 	err := Save(c)
 	if err != nil {

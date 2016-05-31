@@ -10,95 +10,101 @@
 					<button class="btn btn-sm btn-warning" data-bind="click: () => { pvt.mode('') }, visible: pvt.mode() == 'render'">
 						<i class="fa fa-arrow-left"></i> Back to Editor
 					</button>
+					<button class="btn btn-sm btn-primary" data-bind="click: rpt.refreshData, visible: pvt.mode() == 'render'">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
 					<button class="btn btn-sm btn-primary" data-bind="click: rpt.refreshData, visible: pvt.mode() == ''">
-						<i class="fa fa-refresh"></i> Reload Report
+						<i class="fa fa-eye"></i> View Pivot
 					</button>
 				</div>
 			</div>
 		</div>
 		<div class="panel-body" data-bind="visible: pvt.mode() == ''">
-			<p>Build pivot grid to compare data on selected dimension and data points.</p>
+			<p>Build pivot grid to compare value of data point based on selected dimensions (rows and columns).</p>
 
 			<div class="report-module report-module-pivot">
 
 				<div class="col-md-3 pivot-wrapper">
-<div class="wrapper-inner">
-	<h3 class="no-margin">Available fields</h3>
-	<div class="wrapper" style="min-height: 300px;">
-		<ul class="list-group ez pivot-section pivot-section-fields" data-bind="foreach: pvt.fields" style="min-height: 300px;">
-			<li class="list-group-item tooltipster-late" data-bind="attr: { title: rpt.titleFor($data) }">
-				<div class="wrapper">
-					<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data._id }"></span>
-					<span class="icon tooltipster" title="Click to add" onclick="pvt.showFieldControl(this)">
-						<i class="fa fa-share-square"></i>
-					</span>
-				</div>
-			</li>
-		</ul>
-	</div>
-</div>
+					<div class="wrapper-inner">
+						<h3 class="no-margin">Dimensions</h3>
+						<div class="wrapper" style="min-height: 524px;">
+							<ul class="list-group ez pivot-section pivot-section-fields" data-bind="foreach: pvt.optionDimensions" style="min-height: 524px;">
+								<li class="list-group-item tooltipster-dimension" data-bind="attr: { title: rpt.titleFor($data) }">
+									<div class="wrapper">
+										<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data.field }"></span>
+										<span class="icon tooltipster" title="Click to add" onclick="pvt.showFieldControl(this)">
+											<i class="fa fa-share-square"></i>
+										</span>
+									</div>
+								</li>
+							</ul>
+						</div>
+					</div>
 				</div>
 
-				<div class="col-md-9">
-					<div class="row">
-						<div class="col-md-4 pivot-wrapper">
-<div class="wrapper-inner" data-module="column">
-	<h3 class="no-margin">Columns</h3>
-	<div class="wrapper" style="min-height: 300px;">
-		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.columns" style="min-height: 300px;">
-			<li class="list-group-item">
-				<div class="wrapper">
-					<span class="text" data-bind="text: $data._id, attr: { 'data-id': $data._id }"></span>
-					<span class="expandable tooltipster" title="expand?">
-						<input type="checkbox" data-bind="checked: $data.expand">
-					</span>
-					<span class="icon tooltipster" title="Remove from column" data-bind="attr: { 'onclick': 'pvt.removeFromColumn(this)', 'data-id': $data._id }">
-						<i class="fa fa-remove"></i>
-					</span>
-				</div>
-			</li>
-		</ul>
-			</li>
-		</ul>
-	</div>
-</div>
+				<div class="col-md-4">
+					<div class="col-md-12 pivot-wrapper pivot-wrapper-column">
+						<div class="wrapper-inner" data-module="column">
+							<h3 class="no-margin">Columns</h3>
+							<div class="wrapper" style="min-height: 242px;">
+								<ul class="list-group ez pivot-section" data-bind="foreach: pvt.columns" style="min-height: 242px;">
+									<li class="list-group-item">
+										<div class="wrapper">
+											<span class="text" data-bind="text: $data.label, attr: { 'data-id': $data.field }"></span>
+											<span class="icon tooltipster-column-row" data-bind="attr: { 'onclick': 'pvt.showColumnSetting(this)', 'data-id': $data.field }">
+												<i class="fa fa-gear"></i>
+											</span>
+										</div>
+									</li>
+								</ul>
+							</div>
 						</div>
-						<div class="col-md-4 pivot-wrapper">
-<div class="wrapper-inner" data-module="row">
-	<h3 class="no-margin">Rows</h3>
-	<div class="wrapper" style="min-height: 300px;">
-		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.rows" style="min-height: 300px;">
-			<li class="list-group-item">
-				<div class="wrapper">
-					<span class="text" data-bind="text: $data._id, attr: { 'data-id': $data._id }"></span>
-					<span class="expandable tooltipster" title="expand?">
-						<input type="checkbox" data-bind="checked: $data.expand">
-					</span>
-					<span class="icon tooltipster" title="Remove from row" data-bind="attr: { 'onclick': 'pvt.removeFromRow(this)', 'data-id': $data._id }">
-						<i class="fa fa-remove"></i>
-					</span>
-				</div>
-			</li>
-		</ul>
-	</div>
-</div>
+					</div>
+					<div class="col-md-12 pivot-wrapper">
+						<div class="wrapper-inner" data-module="row">
+							<h3 class="no-margin">Rows</h3>
+							<div class="wrapper" style="min-height: 242px;">
+								<ul class="list-group ez pivot-section" data-bind="foreach: pvt.rows" style="min-height: 242px;">
+									<li class="list-group-item">
+										<div class="wrapper">
+											<span class="text" data-bind="text: $data.label, attr: { 'data-id': $data.field }"></span>
+											<span class="icon tooltipster-column-row" data-bind="attr: { 'onclick': 'pvt.showRowSetting(this)', 'data-id': $data.field }">
+												<i class="fa fa-gear"></i>
+											</span>
+										</div>
+									</li>
+								</ul>
+							</div>
 						</div>
-						<div class="col-md-4 pivot-wrapper">
-<div class="wrapper-inner" data-module="value">
-	<h3 class="no-margin">Aggregates</h3>
-	<div class="wrapper" style="min-height: 300px;">
-		<ul class="list-group ez pivot-section" data-bind="foreach: pvt.optionValues" style="min-height: 300px;">
-			<li class="list-group-item" >
-				<div class="wrapper">
-					<span class="text" data-bind="text: $data.Name, attr: { 'data-id': $data._id }"></span>
-					<span class="icon aggregate pull-right" data-bind="attr: { 'data-id': $data._id }">
-						<input type="checkbox" data-bind="checked: pvt.isAggregate($data._id), click: pvt.changeAggregate($data._id)">
-					</span>
+					</div>
 				</div>
-			</li>
-		</ul>
-	</div>
-</div>
+
+
+				<div class="col-md-5 pivot-wrapper">
+					<div class="wrapper-inner" data-module="value">
+						<h3 class="no-margin">
+							<div class="pull-left">Data Points</div>
+							<div class="pull-right">
+								<button class="add-data-point tooltipster" title="Click to add more data point" data-bind="click: pvt.addDataPoint">
+									<span class="fa fa-plus"></span>
+								</button>
+							</div>
+							<div class="clearfix"></div>
+						</h3>
+						<div class="wrapper" style="min-height: 524px;">
+							<div class="list-group ez pivot-section pivot-section-data-point" data-bind="foreach: pvt.dataPoints" style="min-height: 524px;">
+
+								<div class="input-group input-group-sm ez width-full">
+									<span class="input-group-addon">Data Point</span>
+									<div class="width-full">
+										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: pvt.optionDataPoints, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'Name' }"></select>
+									</div>
+									<span class="input-group-addon">Aggr</span>
+									<div class="width-full">
+										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: pvt.optionAggregates, value: $data.aggr, optionLabel: 'Pick ...', dataValueField: 'aggr', dataTextField: 'Name' }"></select>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>

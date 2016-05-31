@@ -3,7 +3,6 @@ package gdrj
 import (
 	// "github.com/eaciit/toolkit"
 	"github.com/eaciit/orm/v1"
-	//"github.com/eaciit/dbox"
 	"time"
 )
 
@@ -27,13 +26,5 @@ func (t *LedgerTrx) RecordID() interface{} {
 }
 
 func (t *LedgerTrx) TableName() string {
-	return "LedgerTrx"
-}
-
-type Date struct {
-	ID      string
-	Date    time.Time
-	Month   time.Month
-	Quarter int
-	Year    int
+	return "ledgertrans"
 }
