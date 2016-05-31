@@ -6,8 +6,10 @@ import (
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	"path/filepath"
+	"os"
+	"io/ioutil"
 	//"strconv"
-	//"strings"
+	"strings"
 )
 
 type AllocationFlowController struct {
@@ -23,30 +25,63 @@ func CreateAllocationFlowController(s *knot.Server) *AllocationFlowController {
 func (d *AllocationFlowController) GetModules(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	payload := toolkit.M{}
+	
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-	search := payload.GetString("search")
-	data, err := new(gdrj.Module).Get(search)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
+	
+	/*
+	fp, efp := os.Getwd()
+	if efp!=nil {
+		return helper.CreateResult(false,nil,efp.Error())	
 	}
-
-	return helper.CreateResult(true, data, "")
+	fp = filepath.Join(fp,"modules")
+	folders, _ := ioutil.ReadDir(fp)
+	data := []toolkit.M{}
+	for _, folder := range folders{
+			name := folder.Name()
+			f := toolkit.M{}.Set("Name", name).Set("_id", name)
+			if folder.IsDir() && !strings.HasPrefix(folder.Name(),"."){
+				data = append(data, f)
+			}
+	}
+	*/
+	
+	return helper.CreateResult(true, nil, "")
 }
 
 func (d *AllocationFlowController) GetAppliedModules(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-
-	result := []toolkit.M{
-		{"_id": "n001", "Name": "Module Lorem"},
-		{"_id": "n002", "Name": "Module Ipsum"},
-		{"_id": "n003", "Name": "Module Dolor"},
-		{"_id": "n004", "Name": "Module Sit"},
-		{"_id": "n005", "Name": "Module Amet"},
+	payload := toolkit.M{}
+	
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	return helper.CreateResult(true, result, "")
+	
+	fp, efp := os.Getwd()
+	if efp!=nil {
+		return helper.CreateResult(false,nil,efp.Error())	
+	}
+	fp = filepath.Join(fp,"modules")
+	folders, _ := ioutil.ReadDir(fp)
+	data := []toolkit.M{}
+	for _, folder := range folders{
+			name := folder.Name()
+			if folder.IsDir() && !strings.HasPrefix(folder.Name(),"."){
+				files, _ := ioutil.ReadDir(filepath.Join(fp, name))
+				f := toolkit.M{}.Set("Name", name).Set("_id", name).Set("Applied",true)
+				for _, binFile := range files{
+					binFileName := binFile.Name()
+					if strings.HasSuffix(binFileName, ".bin"){
+						f.Set("Executable", binFileName)
+						break
+					}
+				}
+				data = append(data, f)
+			}
+	}
+	
+	return helper.CreateResult(true, data, "")
 }
 
 func (d *AllocationFlowController) SaveModules(r *knot.WebContext) interface{} {
