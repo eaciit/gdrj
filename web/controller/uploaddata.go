@@ -77,7 +77,6 @@ func (d *UploadDataController) ProcessData(r *knot.WebContext) interface{} {
 	}
 	uploadData := gdrj.UploadDataGetByID(payload.GetString("_id"))
 	locFile := filepath.Join(GDRJ_DATA_PATH, "file", uploadData.PhysicalName)
-	toolkit.Println(locFile)
 
 	if err := uploadData.ProcessData(locFile); err != nil {
 		return helper.CreateResult(false, nil, err.Error())

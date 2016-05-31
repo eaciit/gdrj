@@ -29,7 +29,6 @@ type UploadData struct {
 	FieldId       string
 	DocName       string
 	Date          time.Time
-	Account       []string
 	Datacount     float64
 	Process       float64 // 0
 	Status        string  // ready, done, failed, onprocess, rollback

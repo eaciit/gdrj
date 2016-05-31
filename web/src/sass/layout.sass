@@ -305,6 +305,9 @@ html, body
 				border-color: lighten($color-base-blue, 10%)
 				color: white
 
+				&.clickable
+					cursor: pointer
+
 			.k-dropdown-wrap.k-state-hover
 				background-color: #F0F3F4
 				border-color: #F0F3F4
@@ -357,7 +360,7 @@ html, body
 								background-color: transparent
 								color: inherit
 
-							.icon
+							.icon:not(.no-hover)
 								opacity: 1
 
 					.wrapper
@@ -388,5 +391,6 @@ html, body
 								bottom: 0
 								width: 4px
 
-#outlet-location
-	height: 500px
+#outlet-location, #pivot-wrapper
+	min-height: 400px
+
