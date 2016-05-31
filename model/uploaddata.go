@@ -119,7 +119,7 @@ func (u *UploadData) ProcessData(loc string) (err error) {
 			} else {
 				ci++
 				omod := GetModelData(u.DocName)
-				toolkit.Println(toolkit.TypeName(omod))
+				// toolkit.Println(toolkit.TypeName(omod))
 
 				var id interface{}
 				if u.FieldId == "" {
@@ -228,6 +228,9 @@ func GetModelData(docname string) orm.IModel {
 
 func Mapstructtype(m toolkit.M, omod orm.IModel) {
 	tv := reflect.ValueOf(omod)
+	if tv.Kind() != reflect.Struct {
+		tv = tv.Elem()
+	}
 
 	for i := 0; i < tv.NumField(); i++ {
 		ttype := tv.Field(i).Kind()
