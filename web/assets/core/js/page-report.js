@@ -149,6 +149,23 @@ rpt.refreshData = function () {
 };
 
 $(function () {
+	vm.showFilterCallback = function () {
+		$('.panel-content-pivot').removeClass('col-md-8');
+		$('.panel-content-pivot').addClass('col-md-6');
+
+		$('.panel-content-map').removeClass('col-md-4');
+		$('.panel-content-map').addClass('col-md-6');
+
+		pvt.showAndRefreshPivot();
+	};
+	vm.hideFilterCallback = function () {
+		$('.panel-content-pivot').removeClass('col-md-6');
+		$('.panel-content-pivot').addClass('col-md-8');
+
+		$('.panel-content-map').removeClass('col-md-6');
+		$('.panel-content-map').addClass('col-md-4');
+	};
+
 	rpt.prepareDrag();
 	pvt.init();
 });

@@ -284,6 +284,10 @@ func (p *PivotParam) MapSummarizedLedger(data []toolkit.M) []toolkit.M {
 							}
 						}
 
+						if key2 == "_id" {
+							keyv = toolkit.TrimByString(keyv, "_")
+						}
+
 						metadata[fmt.Sprintf("%s.%s", key, key2)] = keyv
 					}
 				} else {
@@ -337,7 +341,10 @@ func (p *PivotParam) GetPivotConfig(data []toolkit.M) toolkit.M {
 	if len(data) > 0 {
 		for key := range data[0] {
 			for _, c := range p.Dimensions {
-				if strings.ToLower(strings.Replace(c.Field, ".", "", -1)) == strings.ToLower(key) {
+				a := strings.ToLower(strings.Replace(c.Field, ".", "", -1)) == strings.ToLower(key)
+				b := strings.ToLower(toolkit.TrimByString(c.Field, "_")) == strings.ToLower(key)
+
+				if a || b {
 					if c.Type == "column" {
 						res.Columns = append(res.Columns, toolkit.M{"name": key, "expand": false})
 					} else {

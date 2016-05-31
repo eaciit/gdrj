@@ -2,7 +2,7 @@ viewModel.pivot = new Object()
 let pvt = viewModel.pivot
 
 pvt.pivotModel = [
-    { field: 'ID', type: 'string', label: 'ID', as: 'dimension' },
+    { field: '_id', type: 'string', label: 'ID', as: 'dimension' },
 
     { field: 'PC._id', type: 'string', label: 'Profit Center - ID', as: 'dimension' },
     { field: 'PC.EntityID', type: 'string', label: 'Profit Center - Entity ID' },
@@ -164,6 +164,11 @@ pvt.prepareTooltipster = () => {
 		}))
 	})
 }
+pvt.showConfig = () => {
+	vm.hideFilter()
+	pvt.mode('')
+	pvt.refreshData()
+}
 pvt.showFieldControl = (o) => {
 	pvt.currentTargetDimension = $(o).prev()
 }
@@ -185,6 +190,7 @@ pvt.getData = (callback) => {
 pvt.addDataPoint = () => {
 	let row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint))
 	pvt.dataPoints.push(row)
+	app.prepareTooltipster($(".pivot-section-data-point .input-group:last .tooltipster"))
 }
 pvt.addAs = (o, what) => {
 	let holder = pvt[`${what}s`]
@@ -220,9 +226,12 @@ pvt.removeFrom = (o, which) => {
 		app.arrRemoveByItem(holder, row)
 	})
 }
-pvt.refreshData = () => {
+pvt.showAndRefreshPivot = () => {
+	// vm.showFilter()
 	pvt.mode('render')
-
+	pvt.refreshData()
+}
+pvt.refreshData = () => {
 	let dimensions = ko.mapping.toJS(pvt.columns).map((d) => { return { type: 'column', field: d.field } })
 		     .concat(ko.mapping.toJS(pvt.rows)   .map((d) => { return { type: 'row'   , field: d.field } }))
 
@@ -245,7 +254,8 @@ pvt.refreshData = () => {
 		}
 
 	    let config = {
-	        filterable: true,
+	        filterable: false,
+	        reorderable: false,
 	        dataSource: {
 				data: res.data.data,
 				schema: {

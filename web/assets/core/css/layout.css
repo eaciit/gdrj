@@ -371,6 +371,6 @@ html, body {
   width: 4px;
 }
 
-#outlet-location {
-  height: 500px;
+#outlet-location, #pivot-wrapper {
+  min-height: 400px;
 }

@@ -3,7 +3,7 @@
 viewModel.pivot = new Object();
 var pvt = viewModel.pivot;
 
-pvt.pivotModel = [{ field: 'ID', type: 'string', label: 'ID', as: 'dimension' }, { field: 'PC._id', type: 'string', label: 'Profit Center - ID', as: 'dimension' }, { field: 'PC.EntityID', type: 'string', label: 'Profit Center - Entity ID' }, { field: 'PC.Name', type: 'string', label: 'Profit Center - Name' }, { field: 'PC.BrandID', type: 'string', label: 'Profit Center - Brand ID' }, { field: 'PC.BrandCategoryID', type: 'string', label: 'Profit Center - Brand Category ID' }, { field: 'PC.BranchID', type: 'string', label: 'Profit Center - Branch ID' }, { field: 'PC.BranchType', type: 'int', label: 'Profit Center - Branch Type' }, { field: 'CC._id', type: 'string', label: 'Cost Center - ID', as: 'dimension' }, { field: 'CC.EntityID', type: 'string', label: 'Cost Center - Entity ID' }, { field: 'CC.Name', type: 'string', label: 'Cost Center - Name' }, { field: 'CC.CostGroup01', type: 'string', label: 'Cost Center - Cost Group 01' }, { field: 'CC.CostGroup02', type: 'string', label: 'Cost Center - Cost Group 02' }, { field: 'CC.CostGroup03', type: 'string', label: 'Cost Center - Cost Group 03' }, { field: 'CC.BranchID', type: 'string', label: 'Cost Center - Branch ID' }, { field: 'CC.BranchType', type: 'string', label: 'Cost Center - Branch Type' }, { field: 'CC.CCTypeID', type: 'string', label: 'Cost Center - Type' }, { field: 'CC.HCCGroupID', type: 'string', label: 'Cost Center - HCC Group ID' }, { field: 'CompanyCode', type: 'string', label: 'Company Code', as: 'dimension' }, { field: 'LedgerAccount', type: 'string', label: 'Ledger Account', as: 'dimension' }, { field: 'Customer._id', type: 'string', label: 'Customer - ID', as: 'dimension' }, { field: 'Customer.CustomerID', type: 'string', label: 'Customer - Customer ID' }, { field: 'Customer.Plant', type: 'string', label: 'Customer - Plant' }, { field: 'Customer.Name', type: 'string', label: 'Customer - Name' }, { field: 'Customer.KeyAccount', type: 'string', label: 'Customer - Key Account' }, { field: 'Customer.Channel', type: 'string', label: 'Customer - Channel' }, { field: 'Customer.Group', type: 'string', label: 'Customer - Group' }, { field: 'Customer.National', type: 'string', label: 'Customer - National' }, { field: 'Customer.Zone', type: 'string', label: 'Customer - Zone' }, { field: 'Customer.Region', type: 'string', label: 'Customer - Region' }, { field: 'Customer.Area', type: 'string', label: 'Customer - Area' }, { field: 'Product._id', type: 'string', label: 'Product - ID', as: 'dimension' }, { field: 'Product.Name', type: 'string', label: 'Product - Name' }, { field: 'Product.Config', type: 'string', label: 'Product - Config' }, { field: 'Product.Brand', type: 'string', label: 'Product - Brand' }, { field: 'Product.LongName', type: 'string', label: 'Product - Long Name' }, { field: 'Data.ID', type: 'string', label: 'Data - ID', as: 'dimension' }, { field: 'Data.Month', type: 'string', label: 'Data - Month' }, { field: 'Data.Quarter', type: 'int', label: 'Data - Quarter' }, { field: 'Data.Year', type: 'int', label: 'Data - Year' }, { field: 'Value1', type: 'string', label: 'Value 1', as: 'data point' }, { field: 'Value2', type: 'string', label: 'Value 2', as: 'data point' }, { field: 'Value3', type: 'string', label: 'Value 3', as: 'data point' }];
+pvt.pivotModel = [{ field: '_id', type: 'string', label: 'ID', as: 'dimension' }, { field: 'PC._id', type: 'string', label: 'Profit Center - ID', as: 'dimension' }, { field: 'PC.EntityID', type: 'string', label: 'Profit Center - Entity ID' }, { field: 'PC.Name', type: 'string', label: 'Profit Center - Name' }, { field: 'PC.BrandID', type: 'string', label: 'Profit Center - Brand ID' }, { field: 'PC.BrandCategoryID', type: 'string', label: 'Profit Center - Brand Category ID' }, { field: 'PC.BranchID', type: 'string', label: 'Profit Center - Branch ID' }, { field: 'PC.BranchType', type: 'int', label: 'Profit Center - Branch Type' }, { field: 'CC._id', type: 'string', label: 'Cost Center - ID', as: 'dimension' }, { field: 'CC.EntityID', type: 'string', label: 'Cost Center - Entity ID' }, { field: 'CC.Name', type: 'string', label: 'Cost Center - Name' }, { field: 'CC.CostGroup01', type: 'string', label: 'Cost Center - Cost Group 01' }, { field: 'CC.CostGroup02', type: 'string', label: 'Cost Center - Cost Group 02' }, { field: 'CC.CostGroup03', type: 'string', label: 'Cost Center - Cost Group 03' }, { field: 'CC.BranchID', type: 'string', label: 'Cost Center - Branch ID' }, { field: 'CC.BranchType', type: 'string', label: 'Cost Center - Branch Type' }, { field: 'CC.CCTypeID', type: 'string', label: 'Cost Center - Type' }, { field: 'CC.HCCGroupID', type: 'string', label: 'Cost Center - HCC Group ID' }, { field: 'CompanyCode', type: 'string', label: 'Company Code', as: 'dimension' }, { field: 'LedgerAccount', type: 'string', label: 'Ledger Account', as: 'dimension' }, { field: 'Customer._id', type: 'string', label: 'Customer - ID', as: 'dimension' }, { field: 'Customer.CustomerID', type: 'string', label: 'Customer - Customer ID' }, { field: 'Customer.Plant', type: 'string', label: 'Customer - Plant' }, { field: 'Customer.Name', type: 'string', label: 'Customer - Name' }, { field: 'Customer.KeyAccount', type: 'string', label: 'Customer - Key Account' }, { field: 'Customer.Channel', type: 'string', label: 'Customer - Channel' }, { field: 'Customer.Group', type: 'string', label: 'Customer - Group' }, { field: 'Customer.National', type: 'string', label: 'Customer - National' }, { field: 'Customer.Zone', type: 'string', label: 'Customer - Zone' }, { field: 'Customer.Region', type: 'string', label: 'Customer - Region' }, { field: 'Customer.Area', type: 'string', label: 'Customer - Area' }, { field: 'Product._id', type: 'string', label: 'Product - ID', as: 'dimension' }, { field: 'Product.Name', type: 'string', label: 'Product - Name' }, { field: 'Product.Config', type: 'string', label: 'Product - Config' }, { field: 'Product.Brand', type: 'string', label: 'Product - Brand' }, { field: 'Product.LongName', type: 'string', label: 'Product - Long Name' }, { field: 'Data.ID', type: 'string', label: 'Data - ID', as: 'dimension' }, { field: 'Data.Month', type: 'string', label: 'Data - Month' }, { field: 'Data.Quarter', type: 'int', label: 'Data - Quarter' }, { field: 'Data.Year', type: 'int', label: 'Data - Year' }, { field: 'Value1', type: 'string', label: 'Value 1', as: 'data point' }, { field: 'Value2', type: 'string', label: 'Value 2', as: 'data point' }, { field: 'Value3', type: 'string', label: 'Value 3', as: 'data point' }];
 
 pvt.templateDataPoint = {
 	aggr: 'sum',
@@ -85,6 +85,11 @@ pvt.prepareTooltipster = function () {
 		}));
 	});
 };
+pvt.showConfig = function () {
+	vm.hideFilter();
+	pvt.mode('');
+	pvt.refreshData();
+};
 pvt.showFieldControl = function (o) {
 	pvt.currentTargetDimension = $(o).prev();
 };
@@ -106,6 +111,7 @@ pvt.getData = function (callback) {
 pvt.addDataPoint = function () {
 	var row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint));
 	pvt.dataPoints.push(row);
+	app.prepareTooltipster($(".pivot-section-data-point .input-group:last .tooltipster"));
 };
 pvt.addAs = function (o, what) {
 	var holder = pvt[what + 's'];
@@ -149,9 +155,12 @@ pvt.removeFrom = function (o, which) {
 		app.arrRemoveByItem(holder, row);
 	});
 };
-pvt.refreshData = function () {
+pvt.showAndRefreshPivot = function () {
+	// vm.showFilter()
 	pvt.mode('render');
-
+	pvt.refreshData();
+};
+pvt.refreshData = function () {
 	var dimensions = ko.mapping.toJS(pvt.columns).map(function (d) {
 		return { type: 'column', field: d.field };
 	}).concat(ko.mapping.toJS(pvt.rows).map(function (d) {
@@ -179,7 +188,8 @@ pvt.refreshData = function () {
 		}
 
 		var config = {
-			filterable: true,
+			filterable: false,
+			reorderable: false,
 			dataSource: {
 				data: res.data.data,
 				schema: {
