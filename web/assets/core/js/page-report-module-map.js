@@ -18,7 +18,12 @@ ol.initMap = function () {
 	L.tileLayer(ol.mapURL, ol.mapConfig).addTo(ol.map);
 
 	ol.mapData.forEach(function (d) {
-		d.marker = L.marker(d.latlng).addTo(ol.map);
+		d.marker = L.marker(d.latlng, {
+			icon: new L.DivIcon({
+				className: 'my-div-icon',
+				html: '<div class="leaflet-div-icon"><span>100</span></div>'
+			})
+		}).addTo(ol.map);
 		d.marker.bindPopup(['<b>' + d.name + '</b>', d.latlng].join('<br />'));
 	});
 };

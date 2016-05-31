@@ -474,6 +474,15 @@
 /* div icon */
 
 .leaflet-div-icon {
-	background: #fff;
-	border: 1px solid #666;
+	border-radius: 50%;
+	background: #2E8ECE ;
+	width: 60px;
+	height: 60px;
+	text-align: center;
+	padding-top: 15px;
+	border: 6px solid #fff;
 	}
+.leaflet-div-icon span{	
+	font-weight: bold;
+	color: #fff;
+}
