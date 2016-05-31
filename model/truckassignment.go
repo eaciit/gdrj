@@ -23,7 +23,7 @@ func (t *TruckAssignment) RecordID() interface{} {
 }
 
 func (t *TruckAssignment) TableName() string {
-	return "truck"
+	return "truckassignment"
 }
 
 func TruckAssignmentGetByID(id string) *TruckAssignment {

@@ -11,8 +11,8 @@ type LedgerTrx struct {
 	ID            string `json:"_id" bson:"_id"`
 	Year          int
 	Month         time.Month
-	Qtr           int
-	Data          time.Time
+	Qty           int
+	Date          time.Time
 	PeriodID      string
 	CompanyCode   string
 	PCID          string
