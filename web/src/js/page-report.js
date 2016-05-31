@@ -1,7 +1,18 @@
+// let menuLink = vm.menu()
+// 	.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
+
+// vm.currentMenu(menuLink.title)
+// vm.currentTitle(menuLink.title)
+// vm.breadcrumb([
+// 	{ title: 'Godrej', href: '#' },
+// 	{ title: menuLink.title, href: menuLink.href }
+// ])
+
 let menuLink = vm.menu()
+    .find((d) => d.title == "Report").submenu
 	.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
 
-vm.currentMenu(menuLink.title)
+vm.currentMenu('Report')
 vm.currentTitle(menuLink.title)
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
@@ -98,7 +109,10 @@ rpt.filterMultiSelect = (d) => {
                     read: {
                         url: `/report/getdata${d._id.toLowerCase()}`,
                     }
-                }
+                },
+                schema: {
+					data: 'data'
+				}
 			},
 			minLength: 3,
 			placeholder: 'Type min 3 chars, then choose items ...'
@@ -115,7 +129,11 @@ rpt.filterMultiSelect = (d) => {
 		})
 		
 		app.ajaxPost(`/report/getdata${d._id.toLowerCase()}`, {}, (res) => {
-			rpt.masterData[d._id](res)
+			if (!app.isFine(res)) {
+				return
+			}
+
+			rpt.masterData[d._id](res.data)
 		})
 	} else if (['Region', 'Area', 'Zone'].indexOf(d._id) > -1) {
 		let keys = { Area: 'ID', Region: 'Region', Zone: 'Zone' }
@@ -130,7 +148,11 @@ rpt.filterMultiSelect = (d) => {
 		})
 		
 		app.ajaxPost(`/report/getdatahgeographi`, {}, (res) => {
-			rpt.masterData[d._id](res)
+			if (!app.isFine(res)) {
+				return
+			}
+
+			rpt.masterData[d._id](res.data)
 		})
 	} else if (['LedgerAccount'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
@@ -144,7 +166,11 @@ rpt.filterMultiSelect = (d) => {
 		})
 		
 		app.ajaxPost(`/report/getdata${d._id.toLowerCase()}`, {}, (res) => {
-			rpt.masterData[d._id](res)
+			if (!app.isFine(res)) {
+				return
+			}
+
+			rpt.masterData[d._id](res.data)
 		})
 	}
 
