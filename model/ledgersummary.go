@@ -3,24 +3,26 @@ package gdrj
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	"strings"
-	"time"
 )
 
 type LedgerSummary struct {
-	orm.ModelBase          `bson:"-" json:"-"`
-	ID                     string `bson:"_id"`
-	PC                     *ProfitCenter
-	CC                     *CostCenter
-	CompanyCode            string
-	LedgerAccount          string
-	Customer               *Customer
-	Product                *Product
-	Date                   *Date
-	Value1, Value2, Value3 float64
+	orm.ModelBase                          `bson:"-" json:"-"`
+	ID                                     string `bson:"_id"`
+	PC                                     *ProfitCenter
+	CC                                     *CostCenter
+	CompanyCode                            string
+	LedgerAccount                          string
+	Customer                               *Customer
+	Product                                *Product
+	Date                                   *Date
+	PLGroup1, PLGroup2, PLGroup3, PLGroup4 string
+	Value1, Value2, Value3                 float64
 }
 
 func (s *LedgerSummary) RecordID() interface{} {
@@ -282,6 +284,10 @@ func (p *PivotParam) MapSummarizedLedger(data []toolkit.M) []toolkit.M {
 							}
 						}
 
+						if key2 == "_id" {
+							keyv = toolkit.TrimByString(keyv, "_")
+						}
+
 						metadata[fmt.Sprintf("%s.%s", key, key2)] = keyv
 					}
 				} else {
@@ -335,7 +341,10 @@ func (p *PivotParam) GetPivotConfig(data []toolkit.M) toolkit.M {
 	if len(data) > 0 {
 		for key := range data[0] {
 			for _, c := range p.Dimensions {
-				if strings.ToLower(strings.Replace(c.Field, ".", "", -1)) == strings.ToLower(key) {
+				a := strings.ToLower(strings.Replace(c.Field, ".", "", -1)) == strings.ToLower(key)
+				b := strings.ToLower(toolkit.TrimByString(c.Field, "_")) == strings.ToLower(key)
+
+				if a || b {
 					if c.Type == "column" {
 						res.Columns = append(res.Columns, toolkit.M{"name": key, "expand": false})
 					} else {

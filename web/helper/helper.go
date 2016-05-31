@@ -99,7 +99,10 @@ func UploadHandler(r *knot.WebContext, filename, dstpath string) (error, string)
 		return err, ""
 	}
 	defer f.Close()
-	io.Copy(f, file)
-
+	_, err = io.Copy(f, file)
+	if err!=nil {	
+		return err, ""
+	}
+	fmt.Println("Write file: " + dstSource)
 	return nil, handler.Filename
 }

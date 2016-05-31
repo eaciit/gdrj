@@ -19,6 +19,7 @@ type Branch struct {
 	ID        string `json:"_id" bson:"_id"` //BranchID
 	Name      string
 	Location  string
+	Other     string
 }
 
 func (b *Branch) RecordID() interface{} {
