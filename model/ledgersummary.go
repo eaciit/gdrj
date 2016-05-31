@@ -3,24 +3,26 @@ package gdrj
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	"strings"
-	"time"
 )
 
 type LedgerSummary struct {
-	orm.ModelBase          `bson:"-" json:"-"`
-	ID                     string `bson:"_id"`
-	PC                     *ProfitCenter
-	CC                     *CostCenter
-	CompanyCode            string
-	LedgerAccount          string
-	Customer               *Customer
-	Product                *Product
-	Date                   *Date
-	Value1, Value2, Value3 float64
+	orm.ModelBase                          `bson:"-" json:"-"`
+	ID                                     string `bson:"_id"`
+	PC                                     *ProfitCenter
+	CC                                     *CostCenter
+	CompanyCode                            string
+	LedgerAccount                          string
+	Customer                               *Customer
+	Product                                *Product
+	Date                                   *Date
+	PLGroup1, PLGroup2, PLGroup3, PLGroup4 string
+	Value1, Value2, Value3                 float64
 }
 
 func (s *LedgerSummary) RecordID() interface{} {
@@ -86,9 +88,7 @@ func SummaryGenerateDummyData() []*LedgerSummary {
 		pr := new(Product)
 		pr.ID = toolkit.RandomString(5)
 		pr.Name = toolkit.RandomString(5)
-		pr.Config = toolkit.RandomString(5)
 		pr.Brand = toolkit.RandomString(5)
-		pr.LongName = toolkit.RandomString(5)
 		prs = append(prs, pr)
 
 		da := new(Date)
