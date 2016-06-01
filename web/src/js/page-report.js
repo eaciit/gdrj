@@ -120,8 +120,7 @@ rpt.filter.forEach((d) => {
 				}
 
 				// change value event goes here
-
-				console.log("=====", e._id, value)
+				app.log(e._id, value)
 			}, 100)
 		}
 	})
@@ -204,6 +203,10 @@ rpt.filterMultiSelect = (d) => {
 			}
 
 			rpt.masterData[d._id](res.data)
+
+			if (d._id == 'Branch') {
+				ol.initMap()
+			}
 		})
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -239,8 +242,6 @@ rpt.filterMultiSelect = (d) => {
 		})
 	}
 
-	// console.log('filter', d, config)
-
 	return config
 }
 rpt.titleFor = (data) => {
@@ -256,23 +257,6 @@ rpt.refreshData = () => {
 }
 
 $(() => {
-	vm.showFilterCallback = () => {
-		$('.panel-content-pivot').removeClass('col-md-8')
-		$('.panel-content-pivot').addClass('col-md-6')
-
-		$('.panel-content-map').removeClass('col-md-4')
-		$('.panel-content-map').addClass('col-md-6')
-
-		pvt.showAndRefreshPivot()
-	}
-	vm.hideFilterCallback = () => {
-		$('.panel-content-pivot').removeClass('col-md-6')
-		$('.panel-content-pivot').addClass('col-md-8')
-
-		$('.panel-content-map').removeClass('col-md-6')
-		$('.panel-content-map').addClass('col-md-4')
-	}
-
 	rpt.prepareDrag()
 	pvt.init()
 })

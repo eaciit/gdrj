@@ -273,7 +273,7 @@ pvt.refreshData = () => {
 			}
 	    }
 
-		console.log("=====", config)
+		app.log(config)
 
 		$('.pivot').replaceWith('<div class="pivot"></div>')
 		$('.pivot').kendoPivotGrid(config)

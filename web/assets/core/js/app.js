@@ -5,8 +5,16 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 viewModel.app = new Object();
 var app = viewModel.app;
 
+app.dev = true;
 app.loader = ko.observable(false);
 app.noop = function () {};
+app.log = function () {
+    if (!app.dev) {
+        return;
+    }
+
+    console.log.apply(console, [].slice.call(arguments));
+};
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
     var callbackScheduler = function callbackScheduler(callback) {
@@ -258,7 +266,6 @@ app.randomGeoLocations = function () {
     for (var i = 0; i < count; i++) {
         points.push(generateRandomPoint(center, radius));
     }
-
     return points;
 };
 
