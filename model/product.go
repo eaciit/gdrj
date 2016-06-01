@@ -12,6 +12,8 @@ type Product struct {
 	Name            string
 	ProdCategory    string
 	Brand           string
+	BrandCategoryID string
+	PCID            string
 	ProdSubCategory string
 	ProdSubBrand    string
 	ProdVariant     string
