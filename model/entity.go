@@ -37,6 +37,7 @@ func EntityGetAll() ([]*Entity, error) {
 	if err != nil {
 		return nil, err
 	}
+	cursor.Close()
 
 	return result, nil
 }

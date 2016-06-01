@@ -43,6 +43,7 @@ func ProductGetAll() ([]*Product, error) {
 	if err != nil {
 		return nil, err
 	}
+	cursor.Close()
 
 	return result, nil
 }

@@ -88,7 +88,16 @@ func (m *ReportController) GetDataHGeographi(r *knot.WebContext) interface{} {
 func (m *ReportController) GetDataCustomer(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	res, err := gdrj.CustomerGetAll()
+	param := struct {
+		Keyword string `json:"keyword"`
+		Limit   int    `json:"limit"`
+	}{}
+
+	if err := r.GetForms(&param); err != nil {
+		return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
+	}
+
+	res, err := gdrj.CustomerGetContains(param.Keyword, param.Limit)
 	if err != nil {
 		return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
 	}
