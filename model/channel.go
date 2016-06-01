@@ -9,7 +9,7 @@ import (
 type Channel struct {
 	orm.ModelBase `json:"-" bson:"-"`
 	ID            string `json:"_id" bson:"_id"` //BrandID
-	Channel       string
+	Name          string
 }
 
 func (c *Channel) RecordID() interface{} {
@@ -37,6 +37,7 @@ func ChannelGetAll() ([]*Channel, error) {
 	if err != nil {
 		return nil, err
 	}
+	cursor.Close()
 
 	return result, nil
 }

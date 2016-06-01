@@ -148,7 +148,23 @@ app.gridBoundTooltipster = (selector) => {
         app.prepareTooltipster($(selector).find(".tooltipster"))
     }
 }
-app.capitalize = (s) => (s.length == 0 ? '' : (s[0].toUpperCase() + s.slice(1)))
+app.redefine = (o, d) => (typeof o === 'undefined') ? d : o
+app.capitalize = (s, isHardcore = false) => {
+    s = app.redefine(s, '')
+
+    if (isHardcore) {
+        s = s.toLowerCase()
+    }
+
+    if (s.length == 0) {
+        return ''
+    }
+
+    let res = s.split(' ')
+        .map((d) => (d.length > 0) ? (d[0].toUpperCase() + d.slice(1)) : 0)
+        .join(' ')
+    return res
+}
 app.repeatAlphabetically = (prefix) => {
     return 'abcdefghijklmnopqrstuvwxyz'.split('').map((d) => `${prefix} ${d.toUpperCase()}`)
 }

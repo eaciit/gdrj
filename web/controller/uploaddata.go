@@ -35,6 +35,7 @@ func (d *UploadDataController) UploadFile(r *knot.WebContext) interface{} {
 	uploadData.PhysicalName = newName
 	uploadData.Desc = r.Request.FormValue("desc")
 	uploadData.DataType = ext
+	uploadData.FieldId = r.Request.FormValue("fieldid")
 	uploadData.DocName = r.Request.FormValue("model")
 	uploadData.Date = time.Now().UTC()
 	uploadData.Datacount = 0 /*task to do*/

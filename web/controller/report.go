@@ -88,9 +88,29 @@ func (m *ReportController) GetDataHGeographi(r *knot.WebContext) interface{} {
 func (m *ReportController) GetDataCustomer(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	res, err := gdrj.CustomerGetAll()
+	param := struct {
+		Keyword string `json:"keyword"`
+		Limit   int    `json:"limit"`
+	}{}
+
+	if err := r.GetForms(&param); err != nil {
+		return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
+	}
+
+	res, err := gdrj.CustomerGetContains(param.Keyword, param.Limit)
 	if err != nil {
 		return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
+func (m *ReportController) GetDataCustomerGroup(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.CustomerGroupGetAll()
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.CustomerGroup{}, err.Error())
 	}
 
 	return helper.CreateResult(true, res, "")
@@ -124,6 +144,17 @@ func (m *ReportController) GetDataLedgerAccount(r *knot.WebContext) interface{} 
 	res, err := gdrj.LedgerAccountGetAll()
 	if err != nil {
 		return helper.CreateResult(false, []*gdrj.LedgerAccount{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
+func (m *ReportController) GetDataKeyAccount(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.KeyAccountGetAll()
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.KeyAccount{}, err.Error())
 	}
 
 	return helper.CreateResult(true, res, "")
