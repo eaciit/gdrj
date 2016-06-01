@@ -1046,11 +1046,17 @@ var oc_zdp_width,
         }
 
         if (typeof node.is_root != "undefined") {
-            options.box_color = "#F7EED9";
-            options.box_color_hover = "#FDF7E9";
-            options.box_border_color = "#F1DEBC";
-            options.title_color = "#AD7A3A";
-            options.subtitle_color = "#8D5A1A";
+            options.box_color = "#F1F1F1";
+            options.box_color_hover = "#FBFBFB";
+            options.box_border_color = "#E6E6E6";
+            options.title_color = "#A0A7A4";
+            options.subtitle_color = "#8A8C8E";
+            
+            // options.box_color = "#F7EED9";
+            // options.box_color_hover = "#FDF7E9";
+            // options.box_border_color = "#F1DEBC";
+            // options.title_color = "#AD7A3A";
+            // options.subtitle_color = "#8D5A1A";
         }
 
         // debug
