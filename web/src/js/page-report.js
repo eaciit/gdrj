@@ -24,41 +24,41 @@ let rpt = viewModel.report
 
 rpt.filter = [
 	{ _id: 'common', group: 'Base Filter', sub: [
-		{ _id: 'Branch', title: 'Branch' },
-		{ _id: 'Brand', title: 'Brand' },
-		{ _id: 'Region', title: 'Region' },
-		{ _id: 'Channel', title: 'Channel' },
-		{ _id: 'From' },
-		{ _id: 'To' },
+		{ _id: 'Branch', from: 'Branch', title: 'Branch' },
+		{ _id: 'Brand', from: 'Brand', title: 'Brand' },
+		{ _id: 'RegionC', from: 'Region', title: 'Region' },
+		{ _id: 'Channel', from: 'Channel', title: 'Channel' },
+		{ _id: 'From', from: 'From' },
+		{ _id: 'To', from: 'To' },
 	] },
 	{ _id: 'geo', group: 'Geographical', sub: [
-		{ _id: 'Zone', title: 'Zone' },
-		{ _id: 'Region', title: 'Region' },
-		{ _id: 'Area', title: 'Area' }
+		{ _id: 'Zone', from: 'Zone', title: 'Zone' },
+		{ _id: 'Region', from: 'Region', title: 'Region' },
+		{ _id: 'Area', from: 'Area', title: 'Area' }
 	] },
 	{ _id: 'customer', group: 'Customer', sub: [
-		{ _id: 'Channel', title: 'Channel' },
-		{ _id: 'KeyAccount', title: 'Accounts' },
-		{ _id: 'Customer', title: 'Outlet' }
+		{ _id: 'ChannelC', from: 'Channel', title: 'Channel' },
+		{ _id: 'KeyAccount', from: 'KeyAccount', title: 'Accounts' },
+		{ _id: 'Customer', from: 'Customer', title: 'Outlet' }
 	] },
 	{ _id: 'product', group: 'Product', sub: [
-		{ _id: 'HBrandCategory', title: 'Group' },
-		{ _id: 'Brand', title: 'Brand' },
-		{ _id: 'Product', title: 'SKU' }
+		{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' },
+		{ _id: 'BrandP', from: 'Brand', title: 'Brand' },
+		{ _id: 'Product', from: 'Product', title: 'SKU' }
 	] },
 	{ _id: 'profit_center', group: 'Profit Center', sub: [
-		{ _id: 'Entity', title: 'Entity' },
-		{ _id: 'Type', title: 'Type' },
-		{ _id: 'Branch', title: 'Branch' },
-		{ _id: 'HQ', title: 'HQ' }
+		{ _id: 'Entity', from: 'Entity', title: 'Entity' },
+		{ _id: 'Type', from: 'Type', title: 'Type' },
+		{ _id: 'BranchPC', from: 'Branch', title: 'Branch' },
+		{ _id: 'HQ', from: 'HQ', title: 'HQ' }
 	] },
 	{ _id: 'cost_center', group: 'Cost Center', sub: [
-		{ _id: 'Group1', title: 'Group 1' },
-		{ _id: 'Group2', title: 'Group 2' },
-		{ _id: 'HCostCenterGroup', title: 'Function' }
+		{ _id: 'Group1', from: 'Group1', title: 'Group 1' },
+		{ _id: 'Group2', from: 'Group2', title: 'Group 2' },
+		{ _id: 'HCostCenterGroup', from: 'HCostCenterGroup', title: 'Function' }
 	] },
 	{ _id: 'ledger', group: 'Ledger', sub: [
-		{ _id: 'LedgerAccount', title: 'GL Code' }
+		{ _id: 'LedgerAccount', from: 'LedgerAccount', title: 'GL Code' }
 	] },
 ]
 
@@ -99,15 +99,15 @@ rpt.filter.forEach((d) => {
 						.filter((f) => (vZone.length == 0) ? true : (vZone.indexOf(f.Zone) > -1))
 						.toArray()
 
-					rpt.groupGeoBy(raw, 'Region')
-					rpt.groupGeoBy(raw, 'Area')
+					rpt.masterData.Region(rpt.groupGeoBy(raw, 'Region'))
+					rpt.masterData.Area(rpt.groupGeoBy(raw, 'Area'))
 				} else if (e._id == 'Region') {
 					let raw = Lazy(rpt.masterData.geographi())
 						.filter((f) => (vZone.length == 0) ? true : (vZone.indexOf(f.Zone) > -1))
 						.filter((f) => (vRegion.length == 0) ? true : (vRegion.indexOf(f.Region) > -1))
 						.toArray()
 
-					rpt.groupGeoBy(raw, 'Area')
+					rpt.masterData.Area(rpt.groupGeoBy(raw, 'Area'))
 					rpt.enableHolder['Zone'](vRegion.length == 0)
 				} else if (e._id == 'Area') {
 					let raw = Lazy(rpt.masterData.geographi())
@@ -134,9 +134,7 @@ rpt.groupGeoBy = (raw, category) => {
 		.map((k, v) => { return { _id: v, Name: app.capitalize(v, true) } })
 		.toArray()
 
-	console.log("=data", data)
-
-	rpt.masterData[category](data)
+	return data
 }
 
 rpt.filterMultiSelect = (d) => {
@@ -147,13 +145,13 @@ rpt.filterMultiSelect = (d) => {
 		value: rpt.valueMasterData[d._id]
 	}
 
-	if (['HQ', 'Type'].indexOf(d._id) > -1) {
+	if (['HQ', 'Type'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: 'value',
 			dataTextField: 'text'
 		})
-	} else if (['Customer'].indexOf(d._id) > -1) {
+	} else if (['Customer'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			autoBind: false,
 			minLength: 1,
@@ -166,7 +164,7 @@ rpt.filterMultiSelect = (d) => {
 				serverFiltering: true,
                 transport: {
                     read: {
-                        url: `/report/getdata${d._id.toLowerCase()}`,
+                        url: `/report/getdata${d.from.toLowerCase()}`,
                     },
                     parameterMap: function(data, type) {
                     	let keyword = data.filter.filters[0].value
@@ -178,7 +176,7 @@ rpt.filterMultiSelect = (d) => {
 				}
 			}
 		})
-	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'LedgerAccount'].indexOf(d._id) > -1) {
+	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'LedgerAccount'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -193,14 +191,21 @@ rpt.filterMultiSelect = (d) => {
 			}
 		})
 
-		app.ajaxPost(`/report/getdata${d._id.toLowerCase()}`, {}, (res) => {
+		if (d.from == 'Product') {
+			config = $.extend(true, config, {
+				minLength: 1,
+				placeholder: 'Type min 1 chars'
+			})
+		}
+
+		app.ajaxPost(`/report/getdata${d.from.toLowerCase()}`, {}, (res) => {
 			if (!res.success) {
 				return
 			}
 
 			rpt.masterData[d._id](res.data)
 		})
-	} else if (['Region', 'Area', 'Zone'].indexOf(d._id) > -1) {
+	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -208,7 +213,7 @@ rpt.filterMultiSelect = (d) => {
 			enabled: rpt.enableHolder[d._id],
 		})
 
-		if (d._id == 'Region') {
+		if (d.from == 'Region') {
 			app.ajaxPost(`/report/getdatahgeographi`, {}, (res) => {
 				if (!res.success) {
 					return
@@ -217,8 +222,11 @@ rpt.filterMultiSelect = (d) => {
 				rpt.masterData.geographi(res.data);
 
 				['Region', 'Area', 'Zone'].forEach((e) => {
-					rpt.groupGeoBy(rpt.masterData.geographi(), e)
+					let res = rpt.groupGeoBy(rpt.masterData.geographi(), e)
+					rpt.masterData[e](res)
 				})
+
+				rpt.masterData.RegionC(rpt.masterData.Region())
 			})
 		}
 	} else {
