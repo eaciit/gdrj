@@ -11,7 +11,8 @@ type SalesDetail struct {
 	orm.ModelBase    `json:"-" bson:"-"`
 	ID               string `json:"_id" bson:"_id"`
 	Date             time.Time
-	OutletID         string
+	BranchID         string
+	SalesHeaderID    string
 	SKUID_SAPBI      string
 	SKUID_VDIST      string
 	SalesQty         int

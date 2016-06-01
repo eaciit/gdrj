@@ -13,10 +13,12 @@ type InventoryLevel struct {
 	Year          int
 	Month         time.Month
 	BranchID      string
-	SKUID         string
+	SKUID_VDIST   string
+	SKUID_SAPBI   string
+	ProductName   string
 	QtyOpen       int
-	QtyReceive    int
-	QtySold       int
+	QtyReceived   int
+	QtySales      int
 	QtyOther      int
 	QtyBalance    int
 }

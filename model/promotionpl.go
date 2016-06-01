@@ -8,16 +8,17 @@ import (
 )
 
 type PromotionPL struct {
-	orm.ModelBase `json:"-" bson:"-"`
-	ID            string `json:"_id" bson:"_id"`
-	Year          int
-	Month         time.Month
-	OutletID      string
-	SKUID         string
-	PCID          string
-	CCID          string
-	PLItemID      string
-	Amount        float64
+	orm.ModelBase    `json:"-" bson:"-"`
+	ID               string `json:"_id" bson:"_id"`
+	Year             int
+	Month            time.Month
+	ClaimRefNo       string
+	SKUID_VDIST      string
+	SKUID_SAP        string
+	ExpenseProposal  string
+	DiscountProposal string
+	OutletNo         string
+	OutletName       string
 }
 
 func (p *PromotionPL) RecordID() interface{} {
