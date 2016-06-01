@@ -24,7 +24,12 @@ ol.initMap = function () {
 	// })
 	ol.mapData = app.GetLocation(rpt.masterData.Branch());
 	ol.mapData.forEach(function (d) {
-		d['marker'] = L.marker(d.latlng).addTo(ol.map);
+		// d['marker'] = L.marker(d.latlng).addTo(ol.map)
+		d['marker'] = L.marker(d.latlng, { icon: new L.DivIcon({
+				className: 'my-div-icon',
+				html: '<div class="leaflet-div-icon2"><span>100</span></div>'
+			})
+		}).addTo(ol.map);
 		// d['marker'] = L.circleMarker(d.latlng, { color: "#f00", fillOpacity: 0.5, radius: 10, stroke: true } ).addTo(ol.map);
 		d.marker.bindPopup(['<b>' + d.name + '</b>', d.latlng].join('<br />'));
 	});
