@@ -106,19 +106,19 @@ func (u *UploadData) ProcessData(loc string) (err error) {
 
 		isEOF := false
 		for !isEOF {
-			m, e := f.ReadM()
-			if e == io.EOF {
+			m, err := f.ReadM()
+			if err == io.EOF {
 				isEOF = true
-			} else if e != nil {
+			} else if err != nil {
 				u.Process = float64(ci)
 				u.Status = "failed"
-				u.Note = toolkit.Sprintf("[process-upload-%d] Found : %v", ci, e.Error())
+				u.Note = toolkit.Sprintf("[process-upload-%d] Found : %v", ci, err.Error())
 				u.Save()
 				return
 			} else {
 				ci++
 				omod := GetModelData(u.DocName)
-				// toolkit.Println(toolkit.TypeName(omod))
+				// toolkit.Printf("orm model%+v\n", omod)
 
 				var id interface{}
 				if u.FieldId == "" {
@@ -132,20 +132,20 @@ func (u *UploadData) ProcessData(loc string) (err error) {
 				Mapautotype(m)
 				Mapstructtype(m, omod)
 
-				e = toolkit.Serde(m, omod, "json")
-				if e != nil {
+				err = toolkit.Serde(m, omod, "json")
+				if err != nil {
 					u.Status = "failed"
 					u.Process = float64(ci)
-					u.Note = toolkit.Sprintf("[process-upload-%d] Found : %v", ci, e.Error())
+					u.Note = toolkit.Sprintf("[process-upload-%d] Found : %v", ci, err.Error())
 					u.Save()
 					return
 				}
 
-				e = Save(omod)
-				if e != nil {
+				err = Save(omod)
+				if err != nil {
 					u.Status = "failed"
 					u.Process = float64(ci)
-					u.Note = toolkit.Sprintf("[process-upload-%d] Found : %v", ci, e.Error())
+					u.Note = toolkit.Sprintf("[process-upload-%d] Found : %v", ci, err.Error())
 					u.Save()
 					return
 				}
@@ -178,17 +178,56 @@ func GetModelData(docname string) orm.IModel {
 	case "branch":
 		oim := new(Branch)
 		return oim
+	case "brand":
+		oim := new(Brand)
+		return oim
 	case "costcenter":
 		oim := new(CostCenter)
+		return oim
+	case "costcentertype":
+		oim := new(CostCenterType)
 		return oim
 	case "customer":
 		oim := new(Customer)
 		return oim
+	case "customergroup":
+		oim := new(CustomerGroup)
+		return oim
 	case "directsalespl":
 		oim := new(DirectSalesPL)
 		return oim
+	case "entity":
+		oim := new(Entity)
+		return oim
+	case "hbrandcategory":
+		oim := new(HBrandCategory)
+		return oim
+	case "hcostcentergroup":
+		oim := new(HCostCenterGroup)
+		return oim
+	case "headcount":
+		oim := new(HeadCount)
+		return oim
+	case "hgeographi":
+		oim := new(HGeographi)
+		return oim
+	case "indirectsalespl":
+		oim := new(IndirectSalesPL)
+		return oim
 	case "inventorylevel":
 		oim := new(InventoryLevel)
+		return oim
+	case "keyaccount":
+		oim := new(KeyAccount)
+		return oim
+	case "ledgeraccount":
+		oim := new(LedgerAccount)
+		return oim
+	case "ledgersummaries":
+		oim := new(LedgerSummary)
+		return oim
+	case "ledgertrans":
+		oim := new(LedgerTrx)
 		return oim
 	case "plstructure":
 		oim := new(PLStructure)
@@ -204,6 +243,15 @@ func GetModelData(docname string) orm.IModel {
 		return oim
 	case "sales":
 		oim := new(Sales)
+		return oim
+	case "rawsalesdetail":
+		oim := new(SalesDetail)
+		return oim
+	case "rawsalesheader":
+		oim := new(SalesHeader)
+		return oim
+	case "salesmonthly":
+		oim := new(SalesMonthly)
 		return oim
 	case "salesresource":
 		oim := new(SalesResource)
@@ -226,28 +274,29 @@ func GetModelData(docname string) orm.IModel {
 }
 
 func Mapstructtype(m toolkit.M, omod orm.IModel) {
-	tv := reflect.ValueOf(omod)
+	tv := reflect.TypeOf(omod).Elem()
 	if tv.Kind() != reflect.Struct {
 		tv = tv.Elem()
 	}
 
 	for i := 0; i < tv.NumField(); i++ {
-		ttype := tv.Field(i).Kind()
+		ttype := tv.Field(i).Type.String()
 		str := ""
 
-		if m.Has(tv.Field(i).Type().Name()) {
-			str = tv.Field(i).Type().Name()
-		} else if m.Has(strings.ToLower(tv.Field(i).Type().Name())) {
-			str = strings.ToLower(tv.Field(i).Type().Name())
+		if m.Has(tv.Field(i).Name) {
+			str = tv.Field(i).Name
+		} else if m.Has(strings.ToLower(tv.Field(i).Name)) {
+			str = strings.ToLower(tv.Field(i).Name)
 		}
+		// toolkit.Println(tv.Field(i).Name, ":", str, ":", ttype)
 
 		if str != "" {
-			switch ttype {
-			case reflect.Int:
+			switch {
+			case strings.Contains(ttype, "int"):
 				m.Set(str, toolkit.ToInt(m[str], toolkit.RoundingAuto))
-			case reflect.String:
+			case strings.Contains(ttype, "string"):
 				m.Set(str, toolkit.ToString(m[str]))
-			case reflect.Float64:
+			case strings.Contains(ttype, "float"):
 				tstr := toolkit.ToString(m[str])
 				decimalPoint := len(tstr) - (strings.Index(tstr, ".") + 1)
 				m.Set(str, toolkit.ToFloat64(tstr, decimalPoint, toolkit.RoundingAuto))

@@ -22,7 +22,7 @@ type Customer struct {
 	orm.ModelBase `json:"-" bson:"-"`
 	ID            string `json:"_id" bson:"_id"` //OutletID
 	CustomerID    string
-	Plant         string
+	BranchID      string
 	Name          string
 	KeyAccount    string
 	Channel       string

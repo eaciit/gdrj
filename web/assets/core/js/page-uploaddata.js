@@ -8,6 +8,7 @@ viewModel.uploadData = new Object();
 var ud = viewModel.uploadData;
 
 ud.inputDescription = ko.observable('');
+ud.inputFieldID = ko.observable('');
 ud.inputModel = ko.observable('');
 
 ud.dataUploadedFiles = ko.observableArray([]);
@@ -95,6 +96,7 @@ ud.doUpload = function () {
 	var payload = new FormData();
 	payload.append('model', ud.inputModel());
 	payload.append('desc', ud.inputDescription());
+	payload.append('fieldid', ud.inputFieldID());
 	payload.append('userfile', $('[name=file]')[0].files[0]);
 
 	app.ajaxPost('/uploaddata/uploadfile', payload, function (res) {
