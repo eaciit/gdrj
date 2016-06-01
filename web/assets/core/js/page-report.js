@@ -64,8 +64,8 @@ rpt.filterMultiSelect = function (d) {
 					data: 'data'
 				}
 			},
-			minLength: 3,
-			placeholder: 'Type min 3 chars, then choose items ...'
+			minLength: 1,
+			placeholder: 'Type min 1 chars, then choose items ...'
 		});
 	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'LedgerAccount'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
