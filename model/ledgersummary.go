@@ -74,7 +74,7 @@ func SummaryGenerateDummyData() []*LedgerSummary {
 		cu := new(Customer)
 		cu.ID = toolkit.RandomString(5)
 		cu.CustomerID = toolkit.RandomString(5)
-		cu.Plant = toolkit.RandomString(5)
+		cu.BranchID = toolkit.RandomString(5)
 		cu.Name = toolkit.RandomString(5)
 		cu.KeyAccount = toolkit.RandomString(5)
 		cu.Channel = toolkit.RandomString(5)
