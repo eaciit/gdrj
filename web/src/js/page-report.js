@@ -140,7 +140,10 @@ rpt.filterMultiSelect = (d) => {
 					return { _id: e._id, Name: name, Location: e.Location } 
 			})
 			rpt.masterData[d._id](data)
-			ol.mapData = app.GetLocation(rpt.masterData.Branch())
+			if (d._id == 'Branch'){
+				console.log("asd")
+				ol.initMap()
+			}
 		})
 	} else if (['Region', 'Area', 'Zone'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
