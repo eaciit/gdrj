@@ -235,6 +235,7 @@ type PivotParam struct {
 type PivotParamDimensions struct {
 	Field string `json:"field"`
 	Type  string `json:"type"`
+	Alias string `json:"alias"`
 }
 
 type PivotParamDataPoint struct {
@@ -351,8 +352,9 @@ func (p *PivotParam) GetPivotConfig(data []toolkit.M) toolkit.M {
 						res.Rows = append(res.Rows, toolkit.M{"name": key, "expand": false})
 					}
 
+					caption := fmt.Sprintf("All %s", c.Alias)
 					res.SchemaModelFields.Set(key, toolkit.M{"type": "string"})
-					res.SchemaCubeDimension.Set(key, toolkit.M{"caption": key})
+					res.SchemaCubeDimension.Set(key, toolkit.M{"caption": caption})
 				}
 			}
 

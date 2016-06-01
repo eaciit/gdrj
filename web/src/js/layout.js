@@ -15,7 +15,6 @@ vm.menu = ko.observableArray([
 		{ title: 'Upload Data', icon: 'upload', href: '/web/uploaddata', submenu: [] }
 	] },
 	{ title: 'Organization', icon: 'sitemap', href: '/web/organization', submenu: [] },
-	{ title: 'Outlet Location', icon: 'map', href: '/web/outletlocation', submenu: [] },
 	{ title: 'Administration', icon: 'gear', href: '#', submenu: [
 		{ title: 'Allocation Flow', icon: 'arrows', href: '/web/allocationflow', submenu: [] },
 		{ title: 'Access', icon: 'unlock-alt', href: '/web/access', submenu: [] },
