@@ -93,7 +93,7 @@ rpt.filterMultiSelect = (d) => {
 			dataValueField: 'value',
 			dataTextField: 'text'
 		})
-	} else if (['SKU', 'Outlet'].indexOf(d._id) > -1) {
+	} else if (['SKU', 'Outlet', 'Customer'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
 			autoBind: false,
 			dataSource: {
@@ -110,7 +110,7 @@ rpt.filterMultiSelect = (d) => {
 			minLength: 3,
 			placeholder: 'Type min 3 chars, then choose items ...'
 		})
-	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'Customer', 'HBrandCategory', 'Product', 'Type', 'KeyAccount'].indexOf(d._id) > -1) {
+	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'LedgerAccount'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -118,13 +118,14 @@ rpt.filterMultiSelect = (d) => {
 		})
 
 		app.ajaxPost(`/report/getdata${d._id.toLowerCase()}`, {}, (res) => {
-			// if (!app.isFine(res)) {
 			if (!res.success) {
 				return
 			}
 
+			let key = 'Name'
+			if (d._id == 'KeyAccount') key = 'Title'
 			let data = res.data.map((e) => {
-				return { _id: e._id, Name: `${e._id} - ${app.capitalize(e.Name, true)}` }
+				return { _id: e._id, Name: `${e._id} - ${app.capitalize(e[key], true)}` }
 			})
 			rpt.masterData[d._id](data)
 		})
@@ -136,7 +137,6 @@ rpt.filterMultiSelect = (d) => {
 		})
 
 		app.ajaxPost(`/report/getdatahgeographi`, {}, (res) => {
-			// if (!app.isFine(res)) {
 			if (!res.success) {
 				return
 			}
@@ -147,24 +147,6 @@ rpt.filterMultiSelect = (d) => {
 				.groupBy((d) => d[groupKey])
 				.map((k, v) => { return { _id: v, Name: app.capitalize(v, true) } })
 				.toArray()
-			rpt.masterData[d._id](data)
-		})
-	} else if (['LedgerAccount'].indexOf(d._id) > -1) {
-		config = $.extend(true, config, {
-			data: rpt.masterData[d._id],
-			dataValueField: '_id',
-			dataTextField: 'Name'
-		})
-		
-		app.ajaxPost(`/report/getdata${d._id.toLowerCase()}`, {}, (res) => {
-			// if (!app.isFine(res)) {
-			if (!res.success) {
-				return
-			}
-
-			let data = res.data.map((d) => {
-				return { _id: d._id, Name: `${d._id} - ${app.capitalize(d.Title, true)}` }
-			})
 			rpt.masterData[d._id](data)
 		})
 	} else {
