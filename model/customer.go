@@ -63,12 +63,12 @@ func CustomerGetAll() ([]*Customer, error) {
 	return result, nil
 }
 
-func CustomerGetContains(keyword string, limit int) ([]*Customer, error) {
-	filter := []*dbox.Filter{dbox.And(dbox.Contains("_id", keyword), dbox.Contains("name", keyword))}
+func CustomerGetContains(keyword string) ([]*Customer, error) {
+	filter := []*dbox.Filter{dbox.Or(dbox.Contains("_id", keyword), dbox.Contains("name", keyword))}
 	param := toolkit.M{}.Set("where", filter)
 
-	if limit > 0 {
-		param = param.Set("limit", limit)
+	if len(keyword) < 6 {
+		param = param.Set("limit", 100)
 	}
 
 	cursor, err := DB().Find(new(Customer), param)

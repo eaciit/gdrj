@@ -96,6 +96,11 @@ rpt.filterMultiSelect = (d) => {
 	} else if (['Customer'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
 			autoBind: false,
+			minLength: 1,
+			placeholder: 'Type min 1 chars',
+			dataValueField: '_id',
+			dataTextField: 'Name',
+			template: (d) => `${d._id} - ${d.Name}`,
 			dataSource: {
 				serverFiltering: true,
                 transport: {
@@ -104,23 +109,26 @@ rpt.filterMultiSelect = (d) => {
                     },
                     parameterMap: function(data, type) {
                     	let keyword = data.filter.filters[0].value
-						return { keyword: keyword, limit: 100 }
+						return { keyword: keyword }
 					}
                 },
                 schema: {
 					data: 'data'
 				}
-			},
-			minLength: 1,
-			placeholder: 'Type min 3 chars',
-			dataValueField: '_id',
-			dataTextField: 'Name'
+			}
 		})
 	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'LedgerAccount'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
-			dataTextField: 'Name'
+			dataTextField: 'Name',
+			template: (d) => {
+				if (d._id == 'KeyAccount') {
+					return app.capitalize(d.KeyAccount, true)
+				}
+
+				return `${d._id} - ${app.capitalize(d.Name, true)}`
+			}
 		})
 
 		app.ajaxPost(`/report/getdata${d._id.toLowerCase()}`, {}, (res) => {
@@ -128,16 +136,7 @@ rpt.filterMultiSelect = (d) => {
 				return
 			}
 
-			let key = 'Name'
-			let data = res.data.map((e) => {
-				let name = `${e._id} - ${app.capitalize(e[key], true)}`
-				if (d._id == 'KeyAccount') {
-					name = app.capitalize(e[key], true)
-				}
-
-				return { _id: e._id, Name: name }
-			})
-			rpt.masterData[d._id](data)
+			rpt.masterData[d._id](res.data)
 		})
 	} else if (['Region', 'Area', 'Zone'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {

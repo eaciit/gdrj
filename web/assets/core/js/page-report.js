@@ -53,6 +53,13 @@ rpt.filterMultiSelect = function (d) {
 	} else if (['Customer'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
 			autoBind: false,
+			minLength: 1,
+			placeholder: 'Type min 1 chars',
+			dataValueField: '_id',
+			dataTextField: 'Name',
+			template: function template(d) {
+				return d._id + ' - ' + d.Name;
+			},
 			dataSource: {
 				serverFiltering: true,
 				transport: {
@@ -61,23 +68,26 @@ rpt.filterMultiSelect = function (d) {
 					},
 					parameterMap: function parameterMap(data, type) {
 						var keyword = data.filter.filters[0].value;
-						return { keyword: keyword, limit: 100 };
+						return { keyword: keyword };
 					}
 				},
 				schema: {
 					data: 'data'
 				}
-			},
-			minLength: 1,
-			placeholder: 'Type min 3 chars',
-			dataValueField: '_id',
-			dataTextField: 'Name'
+			}
 		});
 	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'LedgerAccount'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
-			dataTextField: 'Name'
+			dataTextField: 'Name',
+			template: function template(d) {
+				if (d._id == 'KeyAccount') {
+					return app.capitalize(d.KeyAccount, true);
+				}
+
+				return d._id + ' - ' + app.capitalize(d.Name, true);
+			}
 		});
 
 		app.ajaxPost('/report/getdata' + d._id.toLowerCase(), {}, function (res) {
@@ -85,16 +95,7 @@ rpt.filterMultiSelect = function (d) {
 				return;
 			}
 
-			var key = 'Name';
-			var data = res.data.map(function (e) {
-				var name = e._id + ' - ' + app.capitalize(e[key], true);
-				if (d._id == 'KeyAccount') {
-					name = app.capitalize(e[key], true);
-				}
-
-				return { _id: e._id, Name: name };
-			});
-			rpt.masterData[d._id](data);
+			rpt.masterData[d._id](res.data);
 		});
 	} else if (['Region', 'Area', 'Zone'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
