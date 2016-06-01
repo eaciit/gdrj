@@ -32,9 +32,9 @@ rpt.filter = [
 		{ _id: 'To' },
 	] },
 	{ _id: 'geo', group: 'Geographical', sub: [
+		{ _id: 'Zone', title: 'Zone' },
 		{ _id: 'Region', title: 'Region' },
-		{ _id: 'Area', title: 'Area' },
-		{ _id: 'Zone', title: 'Zone' }
+		{ _id: 'Area', title: 'Area' }
 	] },
 	{ _id: 'customer', group: 'Customer', sub: [
 		{ _id: 'Channel', title: 'Channel' },
@@ -42,8 +42,8 @@ rpt.filter = [
 		{ _id: 'Customer', title: 'Outlet' }
 	] },
 	{ _id: 'product', group: 'Product', sub: [
-		{ _id: 'Group', title: 'Group' },
-		{ _id: 'HBrandCategory', title: 'Brand' },
+		{ _id: 'HBrandCategory', title: 'Group' },
+		{ _id: 'Brand', title: 'Brand' },
 		{ _id: 'Product', title: 'SKU' }
 	] },
 	{ _id: 'profit_center', group: 'Profit Center', sub: [
@@ -62,7 +62,12 @@ rpt.filter = [
 	] },
 ]
 
-rpt.masterData = {}
+rpt.valueMasterData = {}
+rpt.masterData = {
+	geographi: ko.observableArray([])
+}
+rpt.enableHolder = {}
+rpt.eventChange = {}
 rpt.masterData.Type = ko.observableArray([
 	{ value: 'Mfg', text: 'Mfg' },
 	{ value: 'Branch', text: 'Branch' }
@@ -77,14 +82,69 @@ rpt.filter.forEach((d) => {
 			return
 		}
 
+		rpt.valueMasterData[e._id] = ko.observableArray([])
 		rpt.masterData[e._id] = ko.observableArray([])
+		rpt.enableHolder[e._id] = ko.observable(true)
+		rpt.eventChange[e._id] = function () {
+			let self = this
+			let value = self.value()
+
+			setTimeout(() => {
+				let vZone = rpt.valueMasterData['Zone']()
+				let vRegion = rpt.valueMasterData['Region']()
+				let vArea = rpt.valueMasterData['Area']()
+
+				if (e._id == 'Zone') {
+					let raw = Lazy(rpt.masterData.geographi())
+						.filter((f) => (vZone.length == 0) ? true : (vZone.indexOf(f.Zone) > -1))
+						.toArray()
+
+					rpt.groupGeoBy(raw, 'Region')
+					rpt.groupGeoBy(raw, 'Area')
+				} else if (e._id == 'Region') {
+					let raw = Lazy(rpt.masterData.geographi())
+						.filter((f) => (vZone.length == 0) ? true : (vZone.indexOf(f.Zone) > -1))
+						.filter((f) => (vRegion.length == 0) ? true : (vRegion.indexOf(f.Region) > -1))
+						.toArray()
+
+					rpt.groupGeoBy(raw, 'Area')
+					rpt.enableHolder['Zone'](vRegion.length == 0)
+				} else if (e._id == 'Area') {
+					let raw = Lazy(rpt.masterData.geographi())
+						.filter((f) => (vZone.length == 0) ? true : (vZone.indexOf(f.Zone) > -1))
+						.filter((f) => (vRegion.length == 0) ? true : (vRegion.indexOf(f.Region) > -1))
+						.toArray()
+
+					rpt.enableHolder['Region'](vArea.length == 0)
+					rpt.enableHolder['Zone'](vRegion.length == 0)
+				}
+
+				// change value event goes here
+
+				console.log("=====", e._id, value)
+			}, 100)
+		}
 	})
 })
+
+rpt.groupGeoBy = (raw, category) => {
+	let groupKey = (category == 'Area') ? '_id' : category
+	let data = Lazy(raw)
+		.groupBy((f) => f[groupKey])
+		.map((k, v) => { return { _id: v, Name: app.capitalize(v, true) } })
+		.toArray()
+
+	console.log("=data", data)
+
+	rpt.masterData[category](data)
+}
 
 rpt.filterMultiSelect = (d) => {
 	let config = {
 		filter: 'contains',
-		placeholder: 'Choose items ...'
+		placeholder: 'Choose items ...',
+		change: rpt.eventChange[d._id],
+		value: rpt.valueMasterData[d._id]
 	}
 
 	if (['HQ', 'Type'].indexOf(d._id) > -1) {
@@ -101,6 +161,7 @@ rpt.filterMultiSelect = (d) => {
 			dataValueField: '_id',
 			dataTextField: 'Name',
 			template: (d) => `${d._id} - ${d.Name}`,
+			enabled: rpt.enableHolder[d._id],
 			dataSource: {
 				serverFiltering: true,
                 transport: {
@@ -122,6 +183,7 @@ rpt.filterMultiSelect = (d) => {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
 			dataTextField: 'Name',
+			enabled: rpt.enableHolder[d._id],
 			template: (d) => {
 				if (d._id == 'KeyAccount') {
 					return app.capitalize(d.KeyAccount, true)
@@ -142,22 +204,23 @@ rpt.filterMultiSelect = (d) => {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
-			dataTextField: 'Name'
+			dataTextField: 'Name',
+			enabled: rpt.enableHolder[d._id],
 		})
 
-		app.ajaxPost(`/report/getdatahgeographi`, {}, (res) => {
-			if (!res.success) {
-				return
-			}
+		if (d._id == 'Region') {
+			app.ajaxPost(`/report/getdatahgeographi`, {}, (res) => {
+				if (!res.success) {
+					return
+				}
 
-			let keys = { Area: 'ID', Region: 'Region', Zone: 'Zone' }
-			let groupKey = (d._id == 'Area') ? '_id' : d._id
-			let data = Lazy(res.data)
-				.groupBy((d) => d[groupKey])
-				.map((k, v) => { return { _id: v, Name: app.capitalize(v, true) } })
-				.toArray()
-			rpt.masterData[d._id](data)
-		})
+				rpt.masterData.geographi(res.data);
+
+				['Region', 'Area', 'Zone'].forEach((e) => {
+					rpt.groupGeoBy(rpt.masterData.geographi(), e)
+				})
+			})
+		}
 	} else {
 		config.data = rpt.masterData[d._id]().map((f) => {
 			if (!f.hasOwnProperty('Name')) {

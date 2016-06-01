@@ -15,6 +15,7 @@ import (
 type HGeographi struct {
 	orm.ModelBase `json:"-" bson:"-"`
 	ID            string `json:"_id" bson:"_id"` //Area
+	Location      string
 	Region        string
 	Zone          string
 	National      string
