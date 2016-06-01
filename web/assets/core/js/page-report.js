@@ -216,9 +216,27 @@ rpt.prepareDrag = function () {
 };
 rpt.refreshData = function () {
 	pvt.refreshData();
+	ol.mark();
 };
 
 $(function () {
+	// vm.showFilterCallback = () => {
+	// 	$('.panel-content-pivot').removeClass('col-md-12')
+	// 	$('.panel-content-pivot').addClass('col-md-6')
+
+	// 	$('.panel-content-map').removeClass('col-md-12')
+	// 	$('.panel-content-map').addClass('col-md-6')
+
+	// 	pvt.showAndRefreshPivot()
+	// }
+	// vm.hideFilterCallback = () => {
+	// 	$('.panel-content-pivot').removeClass('col-md-6')
+	// 	$('.panel-content-pivot').addClass('col-md-12')
+
+	// 	$('.panel-content-map').removeClass('col-md-6')
+	// 	$('.panel-content-map').addClass('col-md-12')
+	// }
+
 	rpt.prepareDrag();
 	pvt.init();
 });
