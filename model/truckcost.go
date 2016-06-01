@@ -4,17 +4,18 @@ import (
 	"errors"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	// "time"
+	"time"
 )
 
 type TruckCost struct {
 	orm.ModelBase `json:"-" bson:"-"`
 	ID            string `json:"_id" bson:"_id"`
-	Date          string
+	Date          time.Time
 	TruckID       string
 	BranchID      string
 	Mileage       int
 	Gasoline      float64
+	Volume        int
 	Parking       float64
 	Driver        float64
 	Maintenance   float64

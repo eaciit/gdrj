@@ -19,18 +19,20 @@ const (
 )
 
 type Customer struct {
-	orm.ModelBase `json:"-" bson:"-"`
-	ID            string `json:"_id" bson:"_id"` //OutletID
-	CustomerID    string
-	BranchID      string
-	Name          string
-	KeyAccount    string
-	Channel       string
-	Group         string
-	National      string
-	Zone          string
-	Region        string
-	Area          string
+	orm.ModelBase     `json:"-" bson:"-"`
+	ID                string `json:"_id" bson:"_id"` //OutletID
+	BranchID          string
+	BranchName        string
+	Name              string
+	KeyAccount        string
+	ChannelID         string
+	ChannelName       string
+	CustomerGroup     string
+	CustomerGroupName string
+	National          string
+	Zone              string
+	Region            string
+	Area              string
 }
 
 func (c *Customer) RecordID() interface{} {
