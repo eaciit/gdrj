@@ -50,7 +50,7 @@ rpt.filterMultiSelect = function (d) {
 			dataValueField: 'value',
 			dataTextField: 'text'
 		});
-	} else if (['SKU', 'Outlet', 'Customer'].indexOf(d._id) > -1) {
+	} else if (['Customer'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
 			autoBind: false,
 			dataSource: {
@@ -58,6 +58,10 @@ rpt.filterMultiSelect = function (d) {
 				transport: {
 					read: {
 						url: '/report/getdata' + d._id.toLowerCase()
+					},
+					parameterMap: function parameterMap(data, type) {
+						var keyword = data.filter.filters[0].value;
+						return { keyword: keyword, limit: 100 };
 					}
 				},
 				schema: {
@@ -65,7 +69,9 @@ rpt.filterMultiSelect = function (d) {
 				}
 			},
 			minLength: 1,
-			placeholder: 'Type min 1 chars, then choose items ...'
+			placeholder: 'Type min 3 chars',
+			dataValueField: '_id',
+			dataTextField: 'Name'
 		});
 	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'LedgerAccount'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
@@ -80,9 +86,13 @@ rpt.filterMultiSelect = function (d) {
 			}
 
 			var key = 'Name';
-			if (d._id == 'KeyAccount') key = 'Title';
 			var data = res.data.map(function (e) {
-				return { _id: e._id, Name: e._id + ' - ' + app.capitalize(e[key], true) };
+				var name = e._id + ' - ' + app.capitalize(e[key], true);
+				if (d._id == 'KeyAccount') {
+					name = app.capitalize(e[key], true);
+				}
+
+				return { _id: e._id, Name: name };
 			});
 			rpt.masterData[d._id](data);
 		});
