@@ -22,7 +22,6 @@ ol.initMap = function () {
 	// 	d.marker = L.marker(d.latlng).addTo(ol.map)
 	// 	d.marker.bindPopup([`<b>${d.name}</b>`, d.latlng].join('<br />'))
 	// })
-	ol.mapData = app.GetLocation(rpt.masterData.Branch());
 	ol.mapData.forEach(function (d) {
 		// d['marker'] = L.marker(d.latlng).addTo(ol.map)
 		d['marker'] = L.marker(d.latlng, { icon: new L.DivIcon({

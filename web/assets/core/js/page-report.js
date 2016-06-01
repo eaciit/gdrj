@@ -94,6 +94,7 @@ rpt.filterMultiSelect = function (d) {
 				if (e['Location'] == undefined) return { _id: e._id, Name: name };else return { _id: e._id, Name: name, Location: e.Location };
 			});
 			rpt.masterData[d._id](data);
+			ol.mapData = app.GetLocation(rpt.masterData.Branch());
 		});
 	} else if (['Region', 'Area', 'Zone'].indexOf(d._id) > -1) {
 		config = $.extend(true, config, {
