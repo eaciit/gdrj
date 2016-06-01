@@ -233,7 +233,21 @@ app.randomGeoLocations = (center = app.latLngIndonesia, radius = 1000000, count 
     for (var i = 0; i < count; i++) {
         points.push(generateRandomPoint(center, radius))
     }
+    return points
+}
 
+app.GetLocation = (datamap) => {
+    let arrLoc = [], points = []
+    for (var i = 0; i < datamap.length; i++) {
+        if (datamap[i].Location != ''){
+            arrLoc = datamap[i].Location.split(",")
+            arrLoc = [parseFloat(arrLoc[0]),parseFloat(arrLoc[1])]
+            points.push({
+                name: datamap[i].Name,
+                latlng : arrLoc,
+            })
+        }
+    }
     return points
 }
 

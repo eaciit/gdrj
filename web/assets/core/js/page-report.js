@@ -82,7 +82,7 @@ rpt.filterMultiSelect = function (d) {
 			var key = 'Name';
 			if (d._id == 'KeyAccount') key = 'Title';
 			var data = res.data.map(function (e) {
-				return { _id: e._id, Name: e._id + ' - ' + app.capitalize(e[key], true) };
+				if (e['Location'] == undefined) return { _id: e._id, Name: e._id + ' - ' + app.capitalize(e[key], true) };else return { _id: e._id, Name: e._id + ' - ' + app.capitalize(e[key], true), Location: e.Location };
 			});
 			rpt.masterData[d._id](data);
 		});

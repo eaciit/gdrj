@@ -125,7 +125,10 @@ rpt.filterMultiSelect = (d) => {
 			let key = 'Name'
 			if (d._id == 'KeyAccount') key = 'Title'
 			let data = res.data.map((e) => {
-				return { _id: e._id, Name: `${e._id} - ${app.capitalize(e[key], true)}` }
+				if (e['Location'] == undefined)
+					return { _id: e._id, Name: `${e._id} - ${app.capitalize(e[key], true)}` }
+				else
+					return { _id: e._id, Name: `${e._id} - ${app.capitalize(e[key], true)}`, Location: e.Location }
 			})
 			rpt.masterData[d._id](data)
 		})
