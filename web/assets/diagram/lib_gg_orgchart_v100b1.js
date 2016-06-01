@@ -506,8 +506,8 @@ var oc_zdp_width,
         if (options.box_fix_height) {
             options.oc_max_text_height = options.box_fix_height - 2 * options.inner_padding;
         } else {
-            if (dimensions_title[1] + dimensions_subtitle[1] > options.oc_max_text_height)
-                options.oc_max_text_height = dimensions_title[1] + dimensions_subtitle[1];
+            if (dimensions_title[1] + dimensions_subtitle[1] + 5 > options.oc_max_text_height)
+                options.oc_max_text_height = dimensions_title[1] + dimensions_subtitle[1] + 5;
         }
 
         // traverse children
@@ -1125,7 +1125,6 @@ var oc_zdp_width,
         }
 
         // now draw the box
-        // iki kudu di custom
         var box;
         if (typeof node.visible == "undefined" || node.visible === true) {
             box = options.oc_paper.rect(nX0, nY0, nX1 - nX0, nY1 - nY0, options.box_border_radius);
@@ -1215,6 +1214,9 @@ var oc_zdp_width,
                     if ((options.use_images && typeof node.image != "undefined") &&
                         (typeof node.image_position != "undefined" && node.image_position == "above")) {   // text below image
                         subtitle_ypos += options.images_size[1] + options.inner_padding;
+                    }
+                    if (node.children !== undefined){
+                        node.subtitle = node.subtitle + "\n" + "1/"+node.children.length;
                     }
                     var subtitle = options.oc_paper.text(xc, subtitle_ypos, node.subtitle);
                     subtitle.attr('font-family', options.text_font);
