@@ -96,6 +96,17 @@ func (m *ReportController) GetDataCustomer(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, res, "")
 }
 
+func (m *ReportController) GetDataCustomerGroup(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.CustomerGroupGetAll()
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.CustomerGroup{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
 func (m *ReportController) GetDataHBrandCategory(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -124,6 +135,17 @@ func (m *ReportController) GetDataLedgerAccount(r *knot.WebContext) interface{} 
 	res, err := gdrj.LedgerAccountGetAll()
 	if err != nil {
 		return helper.CreateResult(false, []*gdrj.LedgerAccount{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
+func (m *ReportController) GetDataKeyAccount(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.KeyAccountGetAll()
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.KeyAccount{}, err.Error())
 	}
 
 	return helper.CreateResult(true, res, "")

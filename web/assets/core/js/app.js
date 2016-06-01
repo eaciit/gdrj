@@ -158,8 +158,26 @@ app.gridBoundTooltipster = function (selector) {
         app.prepareTooltipster($(selector).find(".tooltipster"));
     };
 };
+app.redefine = function (o, d) {
+    return typeof o === 'undefined' ? d : o;
+};
 app.capitalize = function (s) {
-    return s.length == 0 ? '' : s[0].toUpperCase() + s.slice(1);
+    var isHardcore = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+    s = app.redefine(s, '');
+
+    if (isHardcore) {
+        s = s.toLowerCase();
+    }
+
+    if (s.length == 0) {
+        return '';
+    }
+
+    var res = s.split(' ').map(function (d) {
+        return d.length > 0 ? d[0].toUpperCase() + d.slice(1) : 0;
+    }).join(' ');
+    return res;
 };
 app.repeatAlphabetically = function (prefix) {
     return 'abcdefghijklmnopqrstuvwxyz'.split('').map(function (d) {

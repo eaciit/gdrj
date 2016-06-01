@@ -150,30 +150,30 @@ var oc_zdp_width,
     //
     var defaultOptions = {
         container: 'oc_container',            // name of the DIV where the chart will be drawn
-        vline: 10,                            // size of the smallest vertical line of connectors
-        hline: 10,                            // size of the smallest horizontal line of connectors
+        vline: 20,                            // size of the smallest vertical line of connectors
+        hline: 15,                            // size of the smallest horizontal line of connectors
         xoffset: 0,                           // inital x-offset of diagram (can be negative)
         yoffset: 0,                           // inital y-offset of diagram (can be negative)
-        inner_padding: 10,                    // space from text to box border
+        inner_padding: 15,                    // space from text to box border
         box_color:        '#D9EDF7',          // fill color of boxes
         box_color_hover:  '#E9FDF7',          // fill color of boxes when mouse is over them
         box_border_color: '#BCE8F1',          // stroke color of boxes
-        box_border_radius: 8,                 // border radius of boxes in pixels
-        box_border_width: 2,                  // border with of boxes in pixels
-        box_fix_width: null,                  // set fix width for boxes in pixels
+        box_border_radius: 2,                 // border radius of boxes in pixels
+        box_border_width: 1,                  // border with of boxes in pixels
+        box_fix_width: 150,                  // set fix width for boxes in pixels
         box_fix_height: null,                 // set fix height for boxes in pixels
         box_root_node_width: null,            // override fix width and max text width
         box_root_node_height: null,           // override fix height and size defined by text length
         box_html_template: null,              // id of element with template; Depends on jsrender and jQuery libraries!
-        line_color:     '#3A87AD',            // color of connectors
+        line_color:     '#A4ADB1',            // color of connectors
         title_color:    '#3A87AD',            // color of titles
         subtitle_color: '#1A678D',            // color of subtitles
-        title_font_size: 12,                  // size of font used for displaying titles inside boxes
+        title_font_size: 15,                  // size of font used for displaying titles inside boxes
         subtitle_font_size: 10,               // size of font used for displaying subtitles inside boxes
         title_char_size: [7, 12.5],           // size (x, y) of a char of the font used for displaying titles
         subtitle_char_size: [5, 10],          // size (x, y) of a char of the font used for displaying subtitles
         max_text_width: 0,                    // max width (in chars) of each line of text ('0' for no limit)
-        text_font: 'Lucida Console, Courier', // font family to use (should be monospaced)
+        text_font: '"Source Sans Pro", "Open Sans", "Helvetica Neue", Helvetica, Arial', // font family to use (should be monospaced)
         use_images: false,                    // use images within boxes?
         images_base_url: './images/',         // base url of the images to be embeeded in boxes, with a trailing slash
         images_size: [160, 160],              // size (x, y) of the images to be embeeded inside boxes
@@ -418,6 +418,9 @@ var oc_zdp_width,
         if (line_str !== '')
             lines.push(line_str);
         var result = lines.join('\n');
+
+
+
         return result;
     }
 
@@ -982,9 +985,15 @@ var oc_zdp_width,
         if (node === null)
             return;
 
+        // biru title = "#3A87AD", tulisan: "#1A678D", box = "#D9EDF7", hover: #E9FDF7, border = #BCE8F1
+        // merah title = "#AD3A3A", tulisan: "#8D1A1A", box = "#F7D9D9", hover: #FDE9E9, border = #F1BCD0
+        // ijo title = "#3AAD3E", tulisan: "#1A8D1E", box = "#D9F7DB", hover: #EFFDE9, border = #C7F1BC
+        // abu2 title = "#A0A7A4", tulisan: "#8A8C8E", box = "#C5C5C5", hover: #FBFBFB, border = #E6E6E6
+
         // draw children
         //
         if (typeof node.children != "undefined") {
+            
             for (var i = 0; i < node.children.length; i++) {
                 oc_draw_obj(options,
                             node.children[i],
@@ -994,6 +1003,60 @@ var oc_zdp_width,
                             node.deltacorner[1] + yoffset
                            );
             }
+        }
+
+        if (node.children !== undefined){
+            if (node.children.length == 1){
+                options.box_color = "#F7D9D9";
+                options.box_color_hover = "#FDE9E9";
+                options.box_border_color = "#F1BCD0";
+                options.subtitle_color = "#8D1A1A";
+                options.title_color = "#AD3A3A";
+            } else if (node.children.length == 2) {
+                options.box_color = "#D9EDF7";
+                options.box_color_hover = "#E9FDF7";
+                options.box_border_color = "#BCE8F1";
+                options.subtitle_color = "#1A678D";
+                options.title_color = "#3A87AD";
+            } else if (node.children.length == 3){
+                options.box_color = "#D9F7DB";
+                options.box_color_hover = "#EFFDE9";
+                options.box_border_color = "#C7F1BC";
+                options.subtitle_color = "#1A8D1E";
+                options.title_color = "#3AAD3E";
+            } else if (node.children.length > 3) {
+                options.box_color = "#D9F7F4";
+                options.box_color_hover = "#E9FDF9";
+                options.box_border_color = "#BCF1EC";
+                options.title_color = "#1A8D82";
+                options.subtitle_color = "#3AAD9D";
+            } else {
+                options.box_color = "#F1F1F1";
+                options.box_color_hover = "#FBFBFB";
+                options.box_border_color = "#E6E6E6";
+                options.title_color = "#A0A7A4";
+                options.subtitle_color = "#8A8C8E";
+            }
+        } else {
+            options.box_color = "#F1F1F1";
+            options.box_color_hover = "#FBFBFB";
+            options.box_border_color = "#E6E6E6";
+            options.title_color = "#A0A7A4";
+            options.subtitle_color = "#8A8C8E";
+        }
+
+        if (typeof node.is_root != "undefined") {
+            options.box_color = "#F1F1F1";
+            options.box_color_hover = "#FBFBFB";
+            options.box_border_color = "#E6E6E6";
+            options.title_color = "#A0A7A4";
+            options.subtitle_color = "#8A8C8E";
+            
+            // options.box_color = "#F7EED9";
+            // options.box_color_hover = "#FDF7E9";
+            // options.box_border_color = "#F1DEBC";
+            // options.title_color = "#AD7A3A";
+            // options.subtitle_color = "#8D5A1A";
         }
 
         // debug
@@ -1068,7 +1131,7 @@ var oc_zdp_width,
         }
 
         // now draw the box
-        //
+        // iki kudu di custom
         var box;
         if (typeof node.visible == "undefined" || node.visible === true) {
             box = options.oc_paper.rect(nX0, nY0, nX1 - nX0, nY1 - nY0, options.box_border_radius);
