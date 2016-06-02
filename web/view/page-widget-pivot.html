@@ -1,3 +1,8 @@
+<link href="/res/leaflet/leaflet.css" rel="stylesheet">
+<script src="/res/leaflet/leaflet.js"></script>
+
+<script src="/res/core/js/page-widget-pivot.js"></script>
+
 <div class="panel ez no-padding hardcore">
 	<div class="panel-heading">
 		<h3 class="no-margin">
@@ -6,16 +11,17 @@
 		</h3>
 		<div class="panel-nav-button">
 			<div class="form-group relative align-right no-margin no-padding hardcore">
-				<button class="btn btn-sm btn-primary" data-bind="click: pvt.showConfig, visible: pvt.mode() == 'render'">
+				<button class="btn btn-sm btn-primary" data-bind="click: pvt.showConfig, visible: rpt.mode() == 'render'">
 					<i class="fa fa-gear"></i> Show Configuration
 				</button>
-				<button class="btn btn-sm btn-primary" data-bind="click: pvt.showAndRefreshPivot, visible: pvt.mode() == ''">
+				<button class="btn btn-sm btn-primary" data-bind="click: pvt.showAndRefreshPivot, visible: rpt.mode() == ''">
 					<i class="fa fa-eye"></i> Show Pivot
 				</button>
+				<button class="btn btn-sm btn-info" data-bind="click: vm.expandToggleContent"><i class="fa fa-expand"></i></button>
 			</div>
 		</div>
 	</div>
-	<div class="panel-body" data-bind="visible: pvt.mode() == ''">
+	<div class="panel-body" data-bind="visible: rpt.mode() == ''">
 		<p>Build pivot grid to compare value of data point based on selected dimensions (rows and columns).</p>
 
 		<div class="report-module report-module-pivot">
@@ -111,7 +117,7 @@
 		</div>
 	</div>
 
-	<div class="panel-body" data-bind="visible: pvt.mode() == 'render'">
+	<div class="panel-body" data-bind="visible: rpt.mode() == 'render'">
 		<p>Generated pivot grid.</p>
 
 		<div id="pivot-wrapper">

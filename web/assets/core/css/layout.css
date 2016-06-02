@@ -415,7 +415,7 @@ html, body {
   position: fixed;
   right: 26px;
   z-index: 1;
-  top: 114px;
+  bottom: 27px;
   background-color: #FDFDFD;
   padding: 10px;
   border: 1px solid #F0F3F4;

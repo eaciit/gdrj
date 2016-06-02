@@ -9,6 +9,7 @@ vm.menu = ko.observableArray([
 		{ title: 'General Trade', icon: 'list', href: '/web/reportgeneraltrade', submenu: [] },
 		{ title: 'Market Efficiency', icon: 'shopping-basket', href: '/web/reportmarketefficiency', submenu: [] },
 		{ title: 'SG & A', icon: 'list', href: '/web/reportsgna', submenu: [] },
+		{ title: 'Chart Comparison', icon: 'bar-chart-o', href: '/web/reportchartcomparison', submenu: [] }
 	] },
 	{ title: 'Data Manager', icon: 'database', href: '#', submenu: [
 		{ title: 'Data Browser', icon: 'list', href: '/web/databrowser', submenu: [] },

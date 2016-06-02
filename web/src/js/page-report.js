@@ -12,6 +12,10 @@ let menuLink = vm.menu()
     .find((d) => d.title == "Report").submenu
 	.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
 
+if (app.isUndefined(menuLink)) {
+	menuLink = '{"title":"","href":"#"}'.toObject()
+}
+
 vm.currentMenu('Report')
 vm.currentTitle(menuLink.title)
 vm.breadcrumb([
@@ -62,6 +66,7 @@ rpt.filter = [
 	] },
 ]
 
+rpt.mode = ko.observable('render')
 rpt.valueMasterData = {}
 rpt.masterData = {
 	geographi: ko.observableArray([])
@@ -203,10 +208,6 @@ rpt.filterMultiSelect = (d) => {
 			}
 
 			rpt.masterData[d._id](res.data)
-
-			if (d._id == 'Branch') {
-				ol.initMap()
-			}
 		})
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -252,29 +253,34 @@ rpt.prepareDrag = () => {
 	    connectWith: '.pivot-section'
 	})
 }
-rpt.refreshData = () => {
-	pvt.refreshData()
-	ol.mark()
-}
+rpt.init = () => app.noop
+rpt.refresh = () => app.noop
 
 $(() => {
-	// vm.showFilterCallback = () => {
-	// 	$('.panel-content-pivot').removeClass('col-md-12')
-	// 	$('.panel-content-pivot').addClass('col-md-6')
+	let $contentPivot = $('.panel-content-pivot')
+	let $contentMap = $('.panel-content-map')
+	let $btnInfo = $('.btn-info')
 
-	// 	$('.panel-content-map').removeClass('col-md-12')
-	// 	$('.panel-content-map').addClass('col-md-6')
+	vm.expandToggleContent = (a, b) => {
+		$contentPivot.toggleClass('col-md-12 col-md-6')
+		$contentMap.toggleClass('col-md-12 col-md-6')
+		$btnInfo.find('.fa').toggleClass('fa-compress')
 
-	// 	pvt.showAndRefreshPivot()
-	// }
-	// vm.hideFilterCallback = () => {
-	// 	$('.panel-content-pivot').removeClass('col-md-6')
-	// 	$('.panel-content-pivot').addClass('col-md-12')
+		ol.map._onResize()
 
-	// 	$('.panel-content-map').removeClass('col-md-6')
-	// 	$('.panel-content-map').addClass('col-md-12')
-	// }
+		if ($contentPivot.hasClass('col-md-12')) {
+			$contentPivot.removeClass('no-padding-left').addClass('no-padding')
+			$contentMap.removeClass('no-padding-right').addClass('no-padding')
+
+			$contentMap.insertBefore($contentPivot)
+		} else {
+			$contentPivot.removeClass('no-padding').addClass('no-padding-left')
+			$contentMap.removeClass('no-padding').addClass('no-padding-right')
+
+			$contentPivot.insertBefore($contentMap)
+		}
+	}
 
 	rpt.prepareDrag()
-	pvt.init()
+	rpt.init()
 })

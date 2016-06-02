@@ -1,12 +1,3 @@
-<link href="/res/leaflet/leaflet.css" rel="stylesheet">
-<script src="/res/leaflet/leaflet.js"></script>
-
-<!-- <link rel="stylesheet" href="/res/leaflet/MarkerCluster.css" />
-<link rel="stylesheet" href="/res/leaflet/MarkerCluster.Default.css" />
-<script src="/res/leaflet/leaflet.markercluster-src.js"></script> -->
-
-<script src="/res/core/js/page-report-module-pivot.js"></script>
-<script src="/res/core/js/page-report-module-map.js"></script>
 <script src="/res/core/js/page-report.js"></script>
 
 <div>
@@ -16,8 +7,8 @@
 				<h3 class="no-margin">Filter</h3>
 				<div class="panel-nav-button">
 					<div class="form-group relative align-right no-margin no-padding hardcore">
-						<button class="btn btn-sm btn-primary" data-bind="click: rpt.refreshData, visible: pvt.mode() == 'render'">
-							<i class="fa fa-refresh"></i> Refresh Report
+						<button class="btn btn-sm btn-primary" data-bind="click: rpt.refresh, visible: rpt.mode() == 'render'">
+							<i class="fa fa-refresh"></i> Refresh
 						</button>
 					</div>
 				</div>
@@ -43,16 +34,9 @@
 		{{template "page-report-market-efficiency.html"}}
 	{{else if eq .subreport "page-report-sgna.html"}}
 		{{template "page-report-sgna.html"}}
+	{{else if eq .subreport "page-report-chart-comparison.html"}}
+		{{template "page-report-chart-comparison.html"}}
 	{{end}}
-	
-	<div class="col-md-9 col-sm-9 ez panel-content">
-		<div class="col-md-6 col-sm-6 no-padding-left hardcore panel-content-pivot transition-width">
-			{{template "page-report-module-pivot.html"}}
-		</div>
-		<div class="col-md-6 col-sm-6 no-padding-right hardcore panel-content-map transition-width">
-			{{template "page-report-module-map.html"}}
-		</div>
-	</div>
 	
 	<div class="clearfix"></div>
 </div>

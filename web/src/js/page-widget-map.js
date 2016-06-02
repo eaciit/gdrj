@@ -36,10 +36,22 @@ ol.changeVal = (which) => (() => {
 	return true
 })
 
-ol.initMap = function () {
+ol.initMap = () => {
 	ol.map = L.map('outlet-location').setView(ol.indonesiaLatLng, 6)
 	L.tileLayer(ol.mapURL, ol.mapConfig).addTo(ol.map)
 	ol.mark()
+}
+
+ol.init = function () {
+	let detector = null
+	detector = setInterval(() => {
+		if (rpt.masterData.Branch().length == 0) {
+			return
+		}
+
+		clearInterval(detector)
+		ol.initMap()
+	}, 100)
 }
 
 ol.mark = () => {

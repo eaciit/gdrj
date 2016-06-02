@@ -242,7 +242,7 @@ var methodsDataBrowser = {
 			}
 		}
 		column = {
-			headerTemplate: "<center>Action</center>", width: 100, attributes: { style: "text-align: center; cursor: pointer;"}, 
+			headerTemplate: "<a class='k-link align-center' href='#'>Action</a>", width: 80, attributes: { style: "text-align: center; cursor: pointer;"}, 
 			headerAttributes: { style: "font-weight: bold;"},
 			template: function (d) {
 	    		return [
@@ -285,7 +285,15 @@ var methodsDataBrowser = {
 					}))
 				}
 
-				colums.filter((d) => d.field != '_id').forEach((d) => {
+				let lastColumn = colums.find((d) => app.isUndefined(d.field))
+				if (app.isDefined(lastColumn)) {
+					columnsLocked.push($.extend(true, lastColumn, {
+						locked: true,
+						width: 60
+					}))
+				}
+
+				colums.filter((d) => d.field != '_id' && app.isDefined(d.field)).forEach((d) => {
 					columnsLocked.push($.extend(true, d, {
 						width: 150
 					}))

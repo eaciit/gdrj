@@ -11,6 +11,13 @@ app.log = function () {
 
     console.log.apply(console, [].slice.call(arguments))
 }
+app.error = function () {
+    if (!app.dev) {
+        return
+    }
+
+    console.error.apply(console, [].slice.call(arguments))
+}
 app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
     let startReq = moment()
     let callbackScheduler = (callback) => {
@@ -79,6 +86,7 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
 app.seriesColorsGodrej = ['#e7505a', '#66b23c', '#3b79c2']
 app.randomRange = (min, max) => (Math.floor(Math.random() * (max - min + 1)) + min)
 app.capitalize = (d) => `${d[0].toUpperCase()}${d.slice(1)}`
+app.typeIs = (target, comparator) => (typeof target === comparator)
 app.is = (observable, comparator) => {
     let a = (typeof observable === 'function') ? observable() : observable
     let b = (typeof comparator === 'function') ? comparator() : comparator
@@ -265,3 +273,32 @@ app.split = (arr, separator = '', length = 0) => {
     res = res.concat(resJoin.join(separator))
     return res
 }
+
+app.extend = (which, klass) => {
+    app.forEach(klass, (key, val) => {
+        if (app.typeIs(val, 'function')) {
+            let body = { value: val }
+
+            if (app.typeIs(which, 'string')) {
+                Object.defineProperty(window[which].prototype, key, body)
+            } else {
+                Object.defineProperty(target.prototype, key, body)
+            }
+        }
+    })
+}
+
+viewModel.StringExt = new Object()
+let s = viewModel.StringExt
+
+s.toObject = function () {
+    let source = String(this)
+    try {
+        return JSON.parse(source)
+    } catch (err) {
+        console.error(err)
+        return {}
+    }
+}
+
+app.extend('String', s)
