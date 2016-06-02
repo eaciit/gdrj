@@ -9,7 +9,7 @@ import (
 
 type PLStructure struct {
 	orm.ModelBase `json:"-" bson:"-"`
-	PLItemID      string `json:"_id" bson:"_id"`
+	ID            string `json:"_id" bson:"_id"` //PLItemID
 	PLGroup       string
 	PLSubGroup    string
 	Name          string
@@ -17,7 +17,7 @@ type PLStructure struct {
 }
 
 func (p *PLStructure) RecordID() interface{} {
-	return p.PLItemID
+	return p.ID
 }
 
 func (p *PLStructure) TableName() string {
