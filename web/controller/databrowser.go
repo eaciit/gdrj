@@ -30,10 +30,10 @@ func (d *DataBrowserController) GetDataBrowserMetaData(r *knot.WebContext) inter
 
 	param := toolkit.M{
 		"page":      1,
-		"pageSize":  10,
-		"skip":      0,
-		"tablename": payload.GetString("tablename"),
 		"take":      1,
+		"skip":      0,
+		"pageSize":  10,
+		"tablename": payload.GetString("tablename"),
 	}
 
 	_, _, dataDS, err := gocore.ConnectToDatabase(param)
