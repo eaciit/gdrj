@@ -91,6 +91,7 @@ app.isNot = (observable, comparator) => {
 
     return a !== b
 }
+app.isDefined = (o) => !app.isUndefined(o)
 app.isUndefined = (o) => {
     return (typeof o === 'undefined')
 }
