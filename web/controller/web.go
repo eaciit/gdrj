@@ -148,3 +148,12 @@ func (w *WebController) OutletLocation(r *knot.WebContext) interface{} {
 
 	return true
 }
+
+func (w *WebController) ChartComparison(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-report-chart-comparison.html")
+
+	return true
+}
