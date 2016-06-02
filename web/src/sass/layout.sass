@@ -416,6 +416,20 @@ html, body
 	color: #fff
 
 #organization 
+	$section-height: 350px
+
+	.wrapper-diagram
+		overflow: auto
+		height: $section-height
+
+		.or_container
+			position: relative
+			width: 100%
+			height: ($section-height - 30)
+			
+			.or_content
+				margin-left: 8px
+
 	.legend
 		position: fixed
 		right: 26px

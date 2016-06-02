@@ -19,6 +19,31 @@ func CreateDataBrowserController(s *knot.Server) *DataBrowserController {
 	return controller
 }
 
+func (d *DataBrowserController) GetDataBrowserMetaData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := toolkit.M{}
+	err := r.GetPayload(&payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	param := toolkit.M{
+		"page":      1,
+		"pageSize":  10,
+		"skip":      0,
+		"tablename": payload.GetString("tablename"),
+		"take":      1,
+	}
+
+	_, _, dataDS, err := gocore.ConnectToDatabase(param)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return helper.CreateResult(true, dataDS, "")
+}
+
 func (d *DataBrowserController) GetDataBrowser(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -31,6 +56,9 @@ func (d *DataBrowserController) GetDataBrowser(r *knot.WebContext) interface{} {
 	}
 
 	count, data, dataDS, err := gocore.ConnectToDatabase(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
 
 	result.Set("DataCount", count)
 	result.Set("DataValue", data)
