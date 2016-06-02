@@ -384,6 +384,33 @@ html, body {
   width: 100%;
 }
 
+.leaflet-div-icon2 {
+  background: #2E8ECE;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  text-align: center;
+  padding-top: 15px;
+  border: 6px solid #fff;
+}
+
+.leaflet-div-icon2 span {
+  font-weight: bold;
+  color: #fff;
+}
+
+#organization .wrapper-diagram {
+  overflow: auto;
+  height: 350px;
+}
+#organization .wrapper-diagram .or_container {
+  position: relative;
+  width: 100%;
+  height: 320px;
+}
+#organization .wrapper-diagram .or_container .or_content {
+  margin-left: 8px;
+}
 #organization .legend {
   position: fixed;
   right: 26px;

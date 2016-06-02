@@ -32,7 +32,7 @@ db.getMasterDataBrowser = () => {
 	})
 }
 db.createDataBrowser = (dataItem) => {
-	app.ajaxPost("/databrowser/getdatabrowser", { tablename: dataItem }, (res) => {
+	app.ajaxPost("/databrowser/getdatabrowsermetadata", { tablename: dataItem }, (res) => {
 		if (!app.isFine(res)) {
 			return
 		}
@@ -54,13 +54,12 @@ db.createDataBrowser = (dataItem) => {
 				serverPaging: true,
 				pageSize: 10,
 				serverSorting: true,
-				callOK: (res) => {
-					// console.log(res)
-				}
+				callOK: (res) => app.noop
             },
-			metadata: res.data.dataresult.MetaData,
+			metadata: res.data.MetaData,
 		})
-		let metadata = res.data.dataresult.MetaData
+		
+		let metadata = res.data.MetaData
 		db.metaData([])
 		for (var i in metadata){
 			if (metadata[i].DataType != 'string' && metadata[i].DataType != 'bool' && metadata[i].DataType != 'date')
@@ -69,7 +68,7 @@ db.createDataBrowser = (dataItem) => {
 				metadata[i]['value'] = ''
 			db.metaData.push(ko.mapping.fromJS(metadata[i]))
 		}
-		db.tableName(res.data.dataresult.TableNames)
+		db.tableName(res.data.TableNames)
 
 		// hack the position
 		db.cleanLeftFilter()

@@ -5,8 +5,16 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 viewModel.app = new Object();
 var app = viewModel.app;
 
+app.dev = true;
 app.loader = ko.observable(false);
 app.noop = function () {};
+app.log = function () {
+    if (!app.dev) {
+        return;
+    }
+
+    console.log.apply(console, [].slice.call(arguments));
+};
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
     var callbackScheduler = function callbackScheduler(callback) {
@@ -90,6 +98,9 @@ app.isNot = function (observable, comparator) {
     var b = typeof comparator === 'function' ? comparator() : comparator;
 
     return a !== b;
+};
+app.isDefined = function (o) {
+    return !app.isUndefined(o);
 };
 app.isUndefined = function (o) {
     return typeof o === 'undefined';
@@ -258,7 +269,6 @@ app.randomGeoLocations = function () {
     for (var i = 0; i < count; i++) {
         points.push(generateRandomPoint(center, radius));
     }
-
     return points;
 };
 
