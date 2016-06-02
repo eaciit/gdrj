@@ -11,6 +11,7 @@ type SalesHeader struct {
 	orm.ModelBase       `json:"-" bson:"-"`
 	ID                  string `json:"_id" bson:"_id"`
 	Date                time.Time
+	BranchID            string
 	OutletID            string
 	SalesTaxAmount      float64
 	SalesDiscountAmount float64
