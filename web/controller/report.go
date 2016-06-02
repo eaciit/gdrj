@@ -90,14 +90,13 @@ func (m *ReportController) GetDataCustomer(r *knot.WebContext) interface{} {
 
 	param := struct {
 		Keyword string `json:"keyword"`
-		Limit   int    `json:"limit"`
 	}{}
 
 	if err := r.GetForms(&param); err != nil {
 		return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
 	}
 
-	res, err := gdrj.CustomerGetContains(param.Keyword, param.Limit)
+	res, err := gdrj.CustomerGetContains(param.Keyword)
 	if err != nil {
 		return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
 	}

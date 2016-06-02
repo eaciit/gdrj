@@ -384,6 +384,21 @@ html, body {
   width: 100%;
 }
 
+.leaflet-div-icon2 {
+  background: #2E8ECE;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  padding-top: 7px;
+  border: 6px solid #fff;
+  font-size: 10px;
+}
+
+.leaflet-div-icon2 span {
+  color: #fff;
+}
+
 #organization .legend {
   position: fixed;
   right: 26px;

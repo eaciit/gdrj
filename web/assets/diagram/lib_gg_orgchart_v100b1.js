@@ -1216,7 +1216,7 @@ var oc_zdp_width,
                         subtitle_ypos += options.images_size[1] + options.inner_padding;
                     }
                     if (node.children !== undefined){
-                        node.subtitle = node.subtitle + "\n" + "1/"+node.children.length;
+                        node.subtitle = node.subtitle + "\n" + "(1/"+node.children.length+")";
                     }
                     var subtitle = options.oc_paper.text(xc, subtitle_ypos, node.subtitle);
                     subtitle.attr('font-family', options.text_font);

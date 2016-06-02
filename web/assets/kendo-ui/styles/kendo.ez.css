@@ -7564,6 +7564,13 @@ h3.ez-section {
 input[type="text"].ez {
   border-color: #F0F3F4;
 }
+.radio.ez {
+  position: relative;
+  display: block;
+  margin: 0px;
+  padding: 5px 10px;
+  border: 1px solid #F0F3F4;
+}
 .table.ez tr th {
   font-weight: normal;
   padding: 2px;

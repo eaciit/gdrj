@@ -138,9 +138,9 @@ var methodsDataBrowser = {
 			return '';
 		}
 		else if (settingFilter.DataType.toLowerCase() == 'date'){
-			$divElementFilter = $('<input class="ecdatabrowser-filterfrom" idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter = $('<input class="ecdatabrowser-filterfrom" style="width: 100px;" idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
-			$divElementFilter = $('<span class="ecdatabrowser-spacerange"> - </span><input class="ecdatabrowser-filterto" idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
+			$divElementFilter = $('<span class="ecdatabrowser-spacerange"> - </span><input class="ecdatabrowser-filterto" style="width: 100px;" idfilter="filter-'+filterchoose+'-'+index+'" typedata="date" fielddata="'+ settingFilter.Field +'"/>');
 			$divElementFilter.appendTo(element);
 			id.find('input[idfilter=filter-'+filterchoose+'-'+index+']').kendoDatePicker({
 				format: settingFilter.Format,

@@ -1,8 +1,16 @@
 viewModel.app = new Object()
 let app = viewModel.app
 
+app.dev = true
 app.loader = ko.observable(false)
 app.noop = (() => {})
+app.log = function () {
+    if (!app.dev) {
+        return
+    }
+
+    console.log.apply(console, [].slice.call(arguments))
+}
 app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
     let startReq = moment()
     let callbackScheduler = (callback) => {
@@ -233,7 +241,6 @@ app.randomGeoLocations = (center = app.latLngIndonesia, radius = 1000000, count 
     for (var i = 0; i < count; i++) {
         points.push(generateRandomPoint(center, radius))
     }
-
     return points
 }
 
