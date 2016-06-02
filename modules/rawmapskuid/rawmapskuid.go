@@ -6,6 +6,7 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
 	"os"
+	"runtime"
 	"sync"
 )
 
@@ -25,6 +26,7 @@ func setinitialconnection() {
 }
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	var mwg sync.WaitGroup
 	setinitialconnection()
 	defer gdrj.CloseDb()
@@ -57,13 +59,13 @@ func main() {
 	i := 0
 	for !iseof {
 		arrsalesdetail := []*gdrj.SalesDetail{}
-		err = cr.Fetch(&arrsalesdetail, 1000, false)
+		err = cr.Fetch(&arrsalesdetail, 50000, false)
 
-		if len(arrsalesdetail) < 1000 {
+		if len(arrsalesdetail) < 50000 {
 			iseof = true
 		}
 		mwg.Add(1)
-		func(xsd []*gdrj.SalesDetail) {
+		go func(xsd []*gdrj.SalesDetail) {
 			defer mwg.Done()
 			for _, v := range xsd {
 				i++
