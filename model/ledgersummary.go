@@ -23,20 +23,55 @@ type LedgerSummary struct {
 	Date                                   *Date
 	PLGroup1, PLGroup2, PLGroup3, PLGroup4 string
 	Value1, Value2, Value3                 float64
+	//EasyForSelect
+	PCID, CCID, OutletID, SKUID, PLCode, PLOrder string
+	Month                                        time.Month
+	Year                                         int
 }
 
+// month,year
 func (s *LedgerSummary) RecordID() interface{} {
 	return s.ID
 	//return toolkit.Sprintf("%d_%d_%s_%s", s.Date.Year, s.Date.Month, s.CompanyCode, s.LedgerAccount)
 }
 
 func (s *LedgerSummary) PrepareID() interface{} {
-	s.ID = toolkit.Sprintf("%d_%d_%s_%s", s.Date.Year, s.Date.Month, s.CompanyCode, s.LedgerAccount)
+	s.ID = toolkit.Sprintf("%d_%d_%s_%s_%s_%s_%s_%s_%s", 
+		s.Date.Year, s.Date.Month, 
+		s.CompanyCode, s.LedgerAccount, 
+		s.PLCode, s.OutletID, s.SKUID, s.PCID, s.CCID)
 	return s
 }
 
 func (s *LedgerSummary) TableName() string {
 	return "ledgersummaries"
+}
+
+func (s *LedgerSummary) PreSave()error{
+	s.ID=s.PrepareID()
+	return nil
+}
+
+func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string, Year int, Month time.Month) (ls *LedgerSummary) {
+	ls = new(LedgerSummary)
+
+	filter := dbox.And(dbox.Eq("month", Month),
+		dbox.Eq("year", Year),
+		dbox.Eq("ledgeraccount", LedgerAccount),
+		dbox.Contains("pcid", PCID),
+		dbox.Contains("ccid", CCID),
+		dbox.Contains("outletid", OutletID),
+		dbox.Contains("skuid", SKUID))
+
+	cr, err := Find(ls, filter, nil)
+	if err != nil {
+		return
+	}
+
+	_ = cr.Fetch(&ls, 1, false)
+	cr.Close()
+
+	return
 }
 
 func SummaryGenerateDummyData() []*LedgerSummary {

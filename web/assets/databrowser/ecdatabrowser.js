@@ -274,6 +274,28 @@ var methodsDataBrowser = {
 				columns: colums
 			});
 		} else {
+			if (colums.length > 4) {
+				let columnsLocked = []
+
+				let firstColumn = colums.find((d) => d.field == '_id')
+				if (app.isDefined(firstColumn)) {
+					columnsLocked.push($.extend(true, firstColumn, {
+						locked: true,
+						width: 110
+					}))
+				}
+
+				colums.filter((d) => d.field != '_id').forEach((d) => {
+					columnsLocked.push($.extend(true, d, {
+						width: 150
+					}))
+				})
+
+				colums = columnsLocked
+			}
+
+				console.log(colums)
+
 			id.find('div[idfilter=gridFilterBrowser]').kendoGrid({
 				dataSource: {
 					transport: {
