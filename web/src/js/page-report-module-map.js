@@ -12,7 +12,7 @@ ol.showBy = ko.observable('Branch')
 ol.accessToken = 'pk.eyJ1Ijoibm92YWxhZ3VuZyIsImEiOiJjaW90aXJhd2EwMGMydWxtNWRjamx1bTRkIn0.n8q9HSAC6VscEvUuVZiCyg'
 ol.mapURL = `https://api.mapbox.com/styles/v1/novalagung/ciotivzfv001vcpnnyuwa3dr6/tiles/{z}/{x}/{y}?access_token=${ol.accessToken}`
 ol.mapConfig = {}
-ol.indonesiaLatLng = [-1.8504955, 117.4004627]
+ol.indonesiaLatLng = [-7.1022721, 110.6229416] // [-1.8504955, 117.4004627]
 ol.mapData = []
 
 ol.getLocation = (datamap) => {
@@ -31,7 +31,7 @@ ol.getLocation = (datamap) => {
 }
 
 ol.initMap = function () {
-	ol.map = L.map('outlet-location').setView(ol.indonesiaLatLng, 5)
+	ol.map = L.map('outlet-location').setView(ol.indonesiaLatLng, 6)
 	L.tileLayer(ol.mapURL, ol.mapConfig).addTo(ol.map)
 	ol.mark()
 }
