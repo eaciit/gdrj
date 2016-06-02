@@ -12,6 +12,10 @@ let menuLink = vm.menu()
     .find((d) => d.title == "Report").submenu
 	.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
 
+if (app.isUndefined(menuLink)) {
+	menuLink = '{"title":"","href":"#"}'.toObject()
+}
+
 vm.currentMenu('Report')
 vm.currentTitle(menuLink.title)
 vm.breadcrumb([
@@ -203,10 +207,6 @@ rpt.filterMultiSelect = (d) => {
 			}
 
 			rpt.masterData[d._id](res.data)
-
-			if (d._id == 'Branch') {
-				ol.initMap()
-			}
 		})
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -252,10 +252,8 @@ rpt.prepareDrag = () => {
 	    connectWith: '.pivot-section'
 	})
 }
-rpt.refreshData = () => {
-	pvt.refreshData()
-	ol.mark()
-}
+rpt.init = () => app.noop
+rpt.refresh = () => app.noop
 
 $(() => {
 	let $contentPivot = $('.panel-content-pivot')
@@ -283,5 +281,5 @@ $(() => {
 	}
 
 	rpt.prepareDrag()
-	pvt.init()
+	rpt.init()
 })

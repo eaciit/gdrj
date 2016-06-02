@@ -15,6 +15,13 @@ app.log = function () {
 
     console.log.apply(console, [].slice.call(arguments));
 };
+app.error = function () {
+    if (!app.dev) {
+        return;
+    }
+
+    console.error.apply(console, [].slice.call(arguments));
+};
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
     var callbackScheduler = function callbackScheduler(callback) {
@@ -86,6 +93,9 @@ app.randomRange = function (min, max) {
 };
 app.capitalize = function (d) {
     return '' + d[0].toUpperCase() + d.slice(1);
+};
+app.typeIs = function (target, comparator) {
+    return (typeof target === 'undefined' ? 'undefined' : _typeof(target)) === comparator;
 };
 app.is = function (observable, comparator) {
     var a = typeof observable === 'function' ? observable() : observable;
@@ -295,3 +305,32 @@ app.split = function (arr) {
     res = res.concat(resJoin.join(separator));
     return res;
 };
+
+app.extend = function (which, klass) {
+    app.forEach(klass, function (key, val) {
+        if (app.typeIs(val, 'function')) {
+            var body = { value: val };
+
+            if (app.typeIs(which, 'string')) {
+                Object.defineProperty(window[which].prototype, key, body);
+            } else {
+                Object.defineProperty(target.prototype, key, body);
+            }
+        }
+    });
+};
+
+viewModel.StringExt = new Object();
+var s = viewModel.StringExt;
+
+s.toObject = function () {
+    var source = String(this);
+    try {
+        return JSON.parse(source);
+    } catch (err) {
+        console.error(err);
+        return {};
+    }
+};
+
+app.extend('String', s);

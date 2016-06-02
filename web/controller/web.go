@@ -86,6 +86,15 @@ func (w *WebController) ReportSGNA(r *knot.WebContext) interface{} {
 	return toolkit.M{"subreport": "page-report-sgna.html"}
 }
 
+func (w *WebController) ReportChartComparison(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-report.html")
+
+	return toolkit.M{"subreport": "page-report-chart-comparison.html"}
+}
+
 func (w *WebController) AllocationFlow(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
@@ -136,24 +145,6 @@ func (w *WebController) Organization(r *knot.WebContext) interface{} {
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
 	r.Config.ViewName = View("page-organization.html")
-
-	return true
-}
-
-func (w *WebController) OutletLocation(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputTemplate
-	r.Config.LayoutTemplate = LayoutFile
-	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = View("page-outlet-location.html")
-
-	return true
-}
-
-func (w *WebController) ChartComparison(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputTemplate
-	r.Config.LayoutTemplate = LayoutFile
-	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = View("page-report-chart-comparison.html")
 
 	return true
 }

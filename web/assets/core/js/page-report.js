@@ -16,6 +16,10 @@ var menuLink = vm.menu().find(function (d) {
 	return d.href == '/' + document.URL.split('/').slice(3).join('/');
 });
 
+if (app.isUndefined(menuLink)) {
+	menuLink = '{"title":"","href":"#"}'.toObject();
+}
+
 vm.currentMenu('Report');
 vm.currentTitle(menuLink.title);
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: menuLink.title, href: menuLink.href }]);
@@ -165,10 +169,6 @@ rpt.filterMultiSelect = function (d) {
 			}
 
 			rpt.masterData[d._id](res.data);
-
-			if (d._id == 'Branch') {
-				ol.initMap();
-			}
 		});
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -214,9 +214,11 @@ rpt.prepareDrag = function () {
 		connectWith: '.pivot-section'
 	});
 };
-rpt.refreshData = function () {
-	pvt.refreshData();
-	ol.mark();
+rpt.init = function () {
+	return app.noop;
+};
+rpt.refresh = function () {
+	return app.noop;
 };
 
 $(function () {
@@ -245,5 +247,5 @@ $(function () {
 	};
 
 	rpt.prepareDrag();
-	pvt.init();
+	rpt.init();
 });
