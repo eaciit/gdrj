@@ -17,10 +17,10 @@
 				<span class="input-group-addon width-80 align-right">Show by</span>
 				<div class="radio ez">
 					<label class="checkbox-inline">
-						<input type="radio" name="map-show-by" value="Branch" data-bind="checked: ol.showBy, click: () => { ol.showBy('Branch'); return true }"> Branch
+						<input type="radio" name="map-show-by" value="Branch" data-bind="checked: ol.showBy, click: ol.changeVal('Branch')"> Branch
 					</label>
 					<label class="checkbox-inline">
-						<input type="radio" name="map-show-by" value="geographi" data-bind="checked: ol.showBy, click: () => { ol.showBy('geographi'); return true }"> City
+						<input type="radio" name="map-show-by" value="geographi" data-bind="checked: ol.showBy, click: ol.changeVal('geographi')"> City
 					</label>
 				</div>
 				<div class="clearfix"></div>

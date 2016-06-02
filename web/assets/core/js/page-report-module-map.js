@@ -30,6 +30,14 @@ ol.getLocation = function (datamap) {
 	return points;
 };
 
+ol.changeVal = function (which) {
+	return function () {
+		ol.showBy(which);
+		setTimeout(ol.mark, 300);
+		return true;
+	};
+};
+
 ol.initMap = function () {
 	ol.map = L.map('outlet-location').setView(ol.indonesiaLatLng, 6);
 	L.tileLayer(ol.mapURL, ol.mapConfig).addTo(ol.map);

@@ -30,6 +30,12 @@ ol.getLocation = (datamap) => {
     return points
 }
 
+ol.changeVal = (which) => (() => { 
+	ol.showBy(which)
+	setTimeout(ol.mark, 300)
+	return true
+})
+
 ol.initMap = function () {
 	ol.map = L.map('outlet-location').setView(ol.indonesiaLatLng, 6)
 	L.tileLayer(ol.mapURL, ol.mapConfig).addTo(ol.map)
