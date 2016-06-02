@@ -13,9 +13,10 @@ type TruckAssignment struct {
 	orm.ModelBase `json:"-" bson:"-"`
 	ID            string `json:"_id" bson:"_id"`
 	Date          time.Time
-	Driver        []string //name, not mandatory
+	DriverID      string //name, not mandatory
 	BranchID      string
 	OutletID      string
+	TruckID       string
 }
 
 func (t *TruckAssignment) RecordID() interface{} {
