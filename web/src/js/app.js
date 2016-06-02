@@ -1,8 +1,16 @@
 viewModel.app = new Object()
 let app = viewModel.app
 
+app.dev = true
 app.loader = ko.observable(false)
 app.noop = (() => {})
+app.log = function () {
+    if (!app.dev) {
+        return
+    }
+
+    console.log.apply(console, [].slice.call(arguments))
+}
 app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
     let startReq = moment()
     let callbackScheduler = (callback) => {
@@ -83,6 +91,7 @@ app.isNot = (observable, comparator) => {
 
     return a !== b
 }
+app.isDefined = (o) => !app.isUndefined(o)
 app.isUndefined = (o) => {
     return (typeof o === 'undefined')
 }
@@ -232,21 +241,6 @@ app.randomGeoLocations = (center = app.latLngIndonesia, radius = 1000000, count 
     var points = []
     for (var i = 0; i < count; i++) {
         points.push(generateRandomPoint(center, radius))
-    }
-    return points
-}
-
-app.GetLocation = (datamap) => {
-    let arrLoc = [], points = []
-    for (var i = 0; i < datamap.length; i++) {
-        if (datamap[i].Location != ''){
-            arrLoc = datamap[i].Location.split(",")
-            arrLoc = [parseFloat(arrLoc[0]),parseFloat(arrLoc[1])]
-            points.push({
-                name: datamap[i].Name,
-                latlng : arrLoc,
-            })
-        }
     }
     return points
 }

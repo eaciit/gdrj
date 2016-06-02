@@ -30,7 +30,7 @@ db.getMasterDataBrowser = function () {
 	});
 };
 db.createDataBrowser = function (dataItem) {
-	app.ajaxPost("/databrowser/getdatabrowser", { tablename: dataItem }, function (res) {
+	app.ajaxPost("/databrowser/getdatabrowsermetadata", { tablename: dataItem }, function (res) {
 		if (!app.isFine(res)) {
 			return;
 		}
@@ -53,18 +53,19 @@ db.createDataBrowser = function (dataItem) {
 				pageSize: 10,
 				serverSorting: true,
 				callOK: function callOK(res) {
-					// console.log(res)
+					return app.noop;
 				}
 			},
-			metadata: res.data.dataresult.MetaData
+			metadata: res.data.MetaData
 		});
-		var metadata = res.data.dataresult.MetaData;
+
+		var metadata = res.data.MetaData;
 		db.metaData([]);
 		for (var i in metadata) {
 			if (metadata[i].DataType != 'string' && metadata[i].DataType != 'bool' && metadata[i].DataType != 'date') metadata[i]['value'] = 0;else metadata[i]['value'] = '';
 			db.metaData.push(ko.mapping.fromJS(metadata[i]));
 		}
-		db.tableName(res.data.dataresult.TableNames);
+		db.tableName(res.data.TableNames);
 
 		// hack the position
 		db.cleanLeftFilter();
