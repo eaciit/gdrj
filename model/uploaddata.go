@@ -86,7 +86,7 @@ func (u *UploadData) ProcessData(loc string) (err error) {
 
 	//Pre check before run
 	mutex.Lock()
-	u.Status = "onprocess"
+	// u.Status = "onprocess"
 	_ = u.Save()
 	mutex.Unlock()
 
@@ -161,7 +161,7 @@ func (u *UploadData) ProcessData(loc string) (err error) {
 
 		mutex.Lock()
 		u.Process = u.Datacount
-		u.Status = "done"
+		// u.Status = "done"
 		_ = u.Save()
 
 		mutex.Unlock()
@@ -287,22 +287,29 @@ func Mapstructtype(m toolkit.M, omod orm.IModel) {
 			str = tv.Field(i).Name
 		} else if m.Has(strings.ToLower(tv.Field(i).Name)) {
 			str = strings.ToLower(tv.Field(i).Name)
+		} else if tv.Field(i).Name == "ID" && m.Has("_id") {
+			str = "_id"
 		}
 		// toolkit.Println(tv.Field(i).Name, ":", str, ":", ttype)
 
+		toolkit.Println("field : ", str, "type : ", ttype)
 		if str != "" {
 			switch {
 			case strings.Contains(ttype, "int"):
+				toolkit.Println("it's integer")
 				m.Set(str, toolkit.ToInt(m[str], toolkit.RoundingAuto))
 			case strings.Contains(ttype, "string"):
+				toolkit.Println("it's string")
 				m.Set(str, toolkit.ToString(m[str]))
 			case strings.Contains(ttype, "float"):
+				toolkit.Println("it's float")
 				tstr := toolkit.ToString(m[str])
 				decimalPoint := len(tstr) - (strings.Index(tstr, ".") + 1)
 				m.Set(str, toolkit.ToFloat64(tstr, decimalPoint, toolkit.RoundingAuto))
 			}
 		}
 	}
+	toolkit.Println("===========\n", m, "\n===========")
 
 	return
 }
