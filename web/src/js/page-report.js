@@ -274,6 +274,31 @@ $(() => {
 	// 	$('.panel-content-map').removeClass('col-md-6')
 	// 	$('.panel-content-map').addClass('col-md-12')
 	// }
+	vm.expandToggleContent = (a,b) => {
+		$('.panel-content-pivot').toggleClass('col-md-12 col-md-6', 500)
+		$('.panel-content-map').toggleClass('col-md-12 col-md-6', 500)
+		if ($('.panel-content-pivot').hasClass('col-md-12')) {
+			$('.panel-content-map').css({top: '513px'})
+			$('.panel-content-pivot').animate({top: '513px'}, 500, function(){
+				$('.panel-content-map').insertBefore($('.panel-content-pivot'))
+			})
+			$('.panel-content-map').animate({top: '0px'}, 1000, function(){
+				$('.panel-content-pivot').css({top: '0px'})
+			})
+		} else {
+			console.log($('.panel-content-pivot').width())
+			$('.panel-content-pivot').css({top: '513px'})
+			$('.panel-content-pivot').css({right: ($('.panel-content-pivot').width()/2) + 'px'})
+			$('.panel-content-map').animate({left: ($('.panel-content-map').width()/2) + 'px'}, 500, function(){
+				$('.panel-content-pivot').animate({top: '0px'}, 500, function(){
+					$('.panel-content-pivot').css({right: ''})
+					$('.panel-content-pivot').css({left: ''})
+					$('.panel-content-map').css({left: ''})
+					$('.panel-content-pivot').insertBefore($('.panel-content-map'))
+				})
+			})
+		}
+	}
 
 	rpt.prepareDrag()
 	pvt.init()
