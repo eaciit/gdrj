@@ -4,7 +4,7 @@ var vm = viewModel;
 
 vm.currentMenu = ko.observable('Dashboard');
 vm.currentTitle = ko.observable('Dashboard');
-vm.menu = ko.observableArray([{ title: 'Dashboard', icon: 'home', href: '#', submenu: [] }, { title: 'Report', icon: 'file-text-o', href: '#', submenu: [{ title: 'Distribution', icon: 'user', href: '/web/reportdistribution', submenu: [] }, { title: 'General Trade', icon: 'list', href: '/web/reportgeneraltrade', submenu: [] }, { title: 'Market Efficiency', icon: 'shopping-basket', href: '/web/reportmarketefficiency', submenu: [] }, { title: 'SG & A', icon: 'list', href: '/web/reportsgna', submenu: [] }] }, { title: 'Data Manager', icon: 'database', href: '#', submenu: [{ title: 'Data Browser', icon: 'list', href: '/web/databrowser', submenu: [] }, { title: 'Upload Data', icon: 'upload', href: '/web/uploaddata', submenu: [] }] }, { title: 'Organization', icon: 'sitemap', href: '/web/organization', submenu: [] }, { title: 'Outlet Location', icon: 'map', href: '/web/outletlocation', submenu: [] }, { title: 'Administration', icon: 'gear', href: '#', submenu: [{ title: 'Allocation Flow', icon: 'arrows', href: '/web/allocationflow', submenu: [] }, { title: 'Access', icon: 'unlock-alt', href: '/web/access', submenu: [] }, { title: 'Group', icon: 'users', href: '/web/group', submenu: [] }, { title: 'User', icon: 'user', href: '/web/user', submenu: [] }, { title: 'Session', icon: 'clock-o', href: '/web/session', submenu: [] }] }]);
+vm.menu = ko.observableArray([{ title: 'Dashboard', icon: 'home', href: '#', submenu: [] }, { title: 'Report', icon: 'file-text-o', href: '#', submenu: [{ title: 'Distribution', icon: 'user', href: '/web/reportdistribution', submenu: [] }, { title: 'General Trade', icon: 'list', href: '/web/reportgeneraltrade', submenu: [] }, { title: 'Market Efficiency', icon: 'shopping-basket', href: '/web/reportmarketefficiency', submenu: [] }, { title: 'SG & A', icon: 'list', href: '/web/reportsgna', submenu: [] }] }, { title: 'Data Manager', icon: 'database', href: '#', submenu: [{ title: 'Data Browser', icon: 'list', href: '/web/databrowser', submenu: [] }, { title: 'Upload Data', icon: 'upload', href: '/web/uploaddata', submenu: [] }] }, { title: 'Organization', icon: 'sitemap', href: '/web/organization', submenu: [] }, { title: 'Administration', icon: 'gear', href: '#', submenu: [{ title: 'Allocation Flow', icon: 'arrows', href: '/web/allocationflow', submenu: [] }, { title: 'Access', icon: 'unlock-alt', href: '/web/access', submenu: [] }, { title: 'Group', icon: 'users', href: '/web/group', submenu: [] }, { title: 'User', icon: 'user', href: '/web/user', submenu: [] }, { title: 'Session', icon: 'clock-o', href: '/web/session', submenu: [] }] }]);
 vm.breadcrumb = ko.observableArray([{ title: 'Godrej', href: '#' }, { title: 'Dashboard', href: '#' }]);
 
 vm.menuIcon = function (data) {
@@ -36,6 +36,28 @@ vm.adjustLayout = function () {
 	var height = window.innerHeight - $('.app-top').height();
 	$('.app-container').css('min-height', height);
 };
+vm.showFilterCallback = app.noop;
+vm.showFilter = function () {
+	var btnToggleFilter = $('.btn-toggle-filter');
+	var panelFilterContainer = $('.panel-filter').parent();
+
+	panelFilterContainer.removeClass('minimized');
+	btnToggleFilter.find('.fa').removeClass('color-blue').addClass('color-orange').removeClass('fa-angle-double-right').addClass('fa-angle-double-left');
+
+	$('.panel-filter').show(300);
+	$('.panel-content').animate({ 'width': 'auto' }, 300, vm.showFilterCallback);
+};
+vm.hideFilterCallback = app.noop;
+vm.hideFilter = function () {
+	var btnToggleFilter = $('.btn-toggle-filter');
+	var panelFilterContainer = $('.panel-filter').parent();
+
+	panelFilterContainer.addClass('minimized');
+	btnToggleFilter.find('.fa').removeClass('color-orange').addClass('color-blue').removeClass('fa-angle-double-left').addClass('fa-angle-double-right');
+
+	$('.panel-filter').hide(300);
+	$('.panel-content').animate({ 'width': '100%' }, 300, vm.hideFilterCallback);
+};
 vm.prepareToggleFilter = function () {
 	var btnToggleFilter = $('.btn-toggle-filter');
 	var panelFilterContainer = $('.panel-filter').parent();
@@ -45,17 +67,9 @@ vm.prepareToggleFilter = function () {
 
 	btnToggleFilter.on('click', function () {
 		if (panelFilterContainer.hasClass('minimized')) {
-			panelFilterContainer.removeClass('minimized');
-			btnToggleFilter.find('.fa').removeClass('color-blue').addClass('color-orange').removeClass('fa-angle-double-right').addClass('fa-angle-double-left');
-
-			$('.panel-filter').show(300);
-			$('.panel-content').animate({ 'width': 'auto' }, 300);
+			vm.showFilter();
 		} else {
-			panelFilterContainer.addClass('minimized');
-			btnToggleFilter.find('.fa').removeClass('color-orange').addClass('color-blue').removeClass('fa-angle-double-left').addClass('fa-angle-double-right');
-
-			$('.panel-filter').hide(300);
-			$('.panel-content').animate({ 'width': '100%' }, 300);
+			vm.hideFilter();
 		}
 	});
 };

@@ -26,6 +26,21 @@ func CustomerGroupGetByID(id string) *CustomerGroup {
 	return b
 }
 
+func CustomerGroupGetAll() ([]*CustomerGroup, error) {
+	cursor, err := DB().Find(new(CustomerGroup), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*CustomerGroup{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+	cursor.Close()
+
+	return result, nil
+}
 func (c *CustomerGroup) Save() error {
 	err := Save(c)
 	if err != nil {

@@ -2,7 +2,7 @@ viewModel.pivot = new Object()
 let pvt = viewModel.pivot
 
 pvt.pivotModel = [
-    { field: 'ID', type: 'string', label: 'ID', as: 'dimension' },
+    { field: '_id', type: 'string', label: 'ID', as: 'dimension' },
 
     { field: 'PC._id', type: 'string', label: 'Profit Center - ID', as: 'dimension' },
     { field: 'PC.EntityID', type: 'string', label: 'Profit Center - Entity ID' },
@@ -81,7 +81,7 @@ pvt.optionAggregates = ko.observableArray([
 	{ aggr: 'max', Name: 'Max' },
 	{ aggr: 'min', Name: 'Min' }
 ])
-pvt.mode = ko.observable('')
+pvt.mode = ko.observable('render')
 pvt.columns = ko.observableArray([
 	app.koMap({
 		field: pvt.optionDimensions()[1].field,
@@ -117,8 +117,6 @@ pvt.dataPoints = ko.observableArray([
 ])
 pvt.data = ko.observableArray([/*tempData*/])
 pvt.currentTargetDimension = null
-pvt.columnRowID = null
-pvt.columnRowWhich = ''
 
 pvt.prepareTooltipster = () => {
 	let config = {
@@ -166,6 +164,11 @@ pvt.prepareTooltipster = () => {
 		}))
 	})
 }
+pvt.showConfig = () => {
+	vm.hideFilter()
+	pvt.mode('')
+	pvt.refreshData()
+}
 pvt.showFieldControl = (o) => {
 	pvt.currentTargetDimension = $(o).prev()
 }
@@ -184,46 +187,61 @@ pvt.getData = (callback) => {
 		}
 	})
 }
-pvt.configure = (o, what) => {
-
-}
 pvt.addDataPoint = () => {
 	let row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint))
 	pvt.dataPoints.push(row)
+	app.prepareTooltipster($(".pivot-section-data-point .input-group:last .tooltipster"))
 }
 pvt.addAs = (o, what) => {
 	let holder = pvt[`${what}s`]
 	let id = $(pvt.currentTargetDimension).attr('data-id')
 
-	let isAddedOnColumn = (typeof pvt.columns().find((d) => d._id === id) !== 'undefined')
-	let isAddedOnRow    = (typeof pvt.rows   ().find((d) => d._id === id) !== 'undefined')
+	let isAddedOnColumn = (typeof ko.mapping.toJS(pvt.columns()).find((d) => d.field === id) !== 'undefined')
+	let isAddedOnRow    = (typeof ko.mapping.toJS(pvt.rows   ()).find((d) => d.field === id) !== 'undefined')
 
 	if (!(isAddedOnColumn || isAddedOnRow)) {
-		let row = pvt.optionDimensions().find((d) => d._id === id)
-		holder.push(ko.mapping.fromJS($.extend(true, row, { expand: false })))
+		let row = pvt.optionDimensions().find((d) => d.field === id)
+		holder.push(ko.mapping.fromJS({ field: row.field, label: row.Name, expand: false }))
 	}
 }
-pvt.removeFrom = () => {
-	let holder = pvt[`${pvt.columnRowWhich}s`]
-	let row = holder().find((d) => ko.mapping.toJS(d)._id == pvt.columnRowID)
-	app.arrRemoveByItem(holder, row)
+pvt.removeFrom = (o, which) => {
+	swal({
+		title: "Are you sure?",
+		text: 'Item will be deleted',
+		type: "warning",
+		showCancelButton: true,
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "Delete",
+		closeOnConfirm: true
+	}, () => {
+		let holder = pvt[which]
+
+		if (which == 'dataPoints') {
+			let index = $(o).attr('data-index')
+			app.arrRemoveByIndex(holder, index)
+		}
+
+		let id = $(o).attr('data-id')
+		let row = holder().find((d) => ko.mapping.toJS(d).field == id)
+		app.arrRemoveByItem(holder, row)
+	})
 }
-pvt.showColumnSetting = (o) => {
-	pvt.columnRowID = $(o).attr('data-id')
-	pvt.columnRowWhich = 'column'
-}
-pvt.showRowSetting = (o) => {
-	pvt.columnRowID = $(o).attr('data-id')
-	pvt.columnRowWhich = 'row'
+pvt.showAndRefreshPivot = () => {
+	// vm.showFilter()
+	pvt.mode('render')
+	pvt.refreshData()
 }
 pvt.refreshData = () => {
-	pvt.mode('render')
-
-	let dimensions = ko.mapping.toJS(pvt.columns).map((d) => { return { type: 'column', field: d.field } })
-		     .concat(ko.mapping.toJS(pvt.rows)   .map((d) => { return { type: 'row'   , field: d.field } }))
+	let dimensions = ko.mapping.toJS(pvt.columns).map((d) => { return { type: 'column', field: d.field, alias: d.label } })
+		     .concat(ko.mapping.toJS(pvt.rows)   .map((d) => { return { type: 'row'   , field: d.field, alias: d.label } }))
 
 	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
-		.map((d) => { return { op: d.aggr, field: d.field, alias: d.label } })
+		.filter((d) => d.field != '' && d.aggr != '')
+		.map((d) => { 
+			let row = ko.mapping.toJS(pvt.pivotModel).find((e) => e.field == d.field)
+			let label = (row == undefined) ? d.field : row.label
+			return { op: d.aggr, field: d.field, alias: label }
+		})
 
 	let param = { dimensions: dimensions, datapoints: dataPoints }
 	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
@@ -236,7 +254,8 @@ pvt.refreshData = () => {
 		}
 
 	    let config = {
-	        filterable: true,
+	        filterable: false,
+	        reorderable: false,
 	        dataSource: {
 				data: res.data.data,
 				schema: {
@@ -254,7 +273,7 @@ pvt.refreshData = () => {
 			}
 	    }
 
-		console.log("=====", JSON.stringify(config))
+		app.log(config)
 
 		$('.pivot').replaceWith('<div class="pivot"></div>')
 		$('.pivot').kendoPivotGrid(config)
@@ -263,5 +282,6 @@ pvt.refreshData = () => {
 
 pvt.init = () => {
 	pvt.prepareTooltipster()
+	pvt.refreshData()
 }
 

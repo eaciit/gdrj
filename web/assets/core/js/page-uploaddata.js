@@ -40,7 +40,7 @@ ud.gridUploadedFiles = {
 	}, { headerTemplate: '<center>Action</center>', width: 100, template: function template(d) {
 			switch (d.Status) {
 				case 'ready':
-					return '\n\t\t\t\t\t<button class="btn btn-xs btn-warning tooltipster" title="Ready" onclick="ud.processData(`' + d.Filename + '`,this)">\n\t\t\t\t\t\t<i class="fa fa-play"></i> Run process\n\t\t\t\t\t</button>\n\t\t\t\t';
+					return '\n\t\t\t\t\t<button class="btn btn-xs btn-warning tooltipster" title="Ready" onclick="ud.processData(`' + d._id + '`,this)">\n\t\t\t\t\t\t<i class="fa fa-play"></i> Run process\n\t\t\t\t\t</button>\n\t\t\t\t';
 				case 'rollback':
 					return '\n\t\t\t\t\t<button class="btn btn-xs btn-warning tooltipster" title="Ready"">\n\t\t\t\t\t\t<i class="fa fa-refresh"></i> Rollback\n\t\t\t\t\t</button>\n\t\t\t\t';
 				case 'done':
@@ -57,6 +57,20 @@ ud.gridUploadedFiles = {
 	sortable: false,
 	resizable: false,
 	dataBound: app.gridBoundTooltipster('.grid-uploadData')
+};
+
+ud.processData = function (data) {
+	app.ajaxPost('/uploaddata/processdata', {_id: data}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ud.getUploadedFiles();
+	}, function (err) {
+		app.showError(err.responseText);
+	}, {
+		timeout: 5000
+	});
 };
 
 ud.getMasterDataBrowser = function () {

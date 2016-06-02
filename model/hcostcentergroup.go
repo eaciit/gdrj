@@ -38,6 +38,7 @@ func HCostCenterGroupGetAll() ([]*HCostCenterGroup, error) {
 	if err != nil {
 		return nil, err
 	}
+	cursor.Close()
 
 	return result, nil
 }

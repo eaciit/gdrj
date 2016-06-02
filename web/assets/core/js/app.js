@@ -5,8 +5,16 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 viewModel.app = new Object();
 var app = viewModel.app;
 
+app.dev = true;
 app.loader = ko.observable(false);
 app.noop = function () {};
+app.log = function () {
+    if (!app.dev) {
+        return;
+    }
+
+    console.log.apply(console, [].slice.call(arguments));
+};
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
     var callbackScheduler = function callbackScheduler(callback) {
@@ -158,8 +166,26 @@ app.gridBoundTooltipster = function (selector) {
         app.prepareTooltipster($(selector).find(".tooltipster"));
     };
 };
+app.redefine = function (o, d) {
+    return typeof o === 'undefined' ? d : o;
+};
 app.capitalize = function (s) {
-    return s.length == 0 ? '' : s[0].toUpperCase() + s.slice(1);
+    var isHardcore = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+    s = app.redefine(s, '');
+
+    if (isHardcore) {
+        s = s.toLowerCase();
+    }
+
+    if (s.length == 0) {
+        return '';
+    }
+
+    var res = s.split(' ').map(function (d) {
+        return d.length > 0 ? d[0].toUpperCase() + d.slice(1) : 0;
+    }).join(' ');
+    return res;
 };
 app.repeatAlphabetically = function (prefix) {
     return 'abcdefghijklmnopqrstuvwxyz'.split('').map(function (d) {
@@ -240,7 +266,6 @@ app.randomGeoLocations = function () {
     for (var i = 0; i < count; i++) {
         points.push(generateRandomPoint(center, radius));
     }
-
     return points;
 };
 

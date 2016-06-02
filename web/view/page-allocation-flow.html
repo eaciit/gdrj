@@ -1,7 +1,7 @@
 <script src="/res/core/js/page-allocation-flow.js"></script>
 
 <div>
-	<div class="col-md-4 col-sm-4 ez panel-filter">
+	<div class="col-md-4 col-sm-4 ez panel-filter" data-bind="visible:false">
 		<div class="panel ez no-padding hardcore">
 			<div class="panel-heading">
 				<h3 class="no-margin">Available Modules</h3>
@@ -58,6 +58,9 @@
 									<i class="fa fa-arrows"></i>
 								</span>
 								<span class="text" data-bind="text: Name"></span>
+								<span class="text" style="width:30px">
+									<input type="checkbox" data-bind="checked:Applied" />
+								</span>
 							</div>
 						</li>
 					</ul>

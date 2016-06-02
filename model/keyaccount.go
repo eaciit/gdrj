@@ -26,6 +26,22 @@ func KeyAccountGetByID(id string) *KeyAccount {
 	return b
 }
 
+func KeyAccountGetAll() ([]*KeyAccount, error) {
+	cursor, err := DB().Find(new(KeyAccount), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*KeyAccount{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+	cursor.Close()
+
+	return result, nil
+}
+
 func (k *KeyAccount) Save() error {
 	err := Save(k)
 	if err != nil {

@@ -305,6 +305,9 @@ html, body
 				border-color: lighten($color-base-blue, 10%)
 				color: white
 
+				&.clickable
+					cursor: pointer
+
 			.k-dropdown-wrap.k-state-hover
 				background-color: #F0F3F4
 				border-color: #F0F3F4
@@ -357,7 +360,7 @@ html, body
 								background-color: transparent
 								color: inherit
 
-							.icon
+							.icon:not(.no-hover)
 								opacity: 1
 
 					.wrapper
@@ -388,5 +391,56 @@ html, body
 								bottom: 0
 								width: 4px
 
-#outlet-location
-	height: 500px
+#outlet-location, #pivot-wrapper
+	min-height: 400px
+
+#pivot-wrapper
+	overflow: auto
+	overflow-x: scroll
+
+	.pivot-wrapper-inner
+		min-width: 600px
+		width: 100%
+
+.leaflet-div-icon2
+	background: #2E8ECE	 
+	border-radius: 50%
+	width: 60px
+	height: 60px
+	text-align: center
+	padding-top: 15px
+	border: 6px solid #fff
+
+.leaflet-div-icon2 span	
+	font-weight: bold
+	color: #fff
+
+#organization 
+	.legend
+		position: fixed
+		right: 26px
+		z-index: 1
+		top: 114px
+		background-color: #FDFDFD
+		padding: 10px
+		border: 1px solid $color-base-grey
+		width: 200px
+		box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02)
+
+		h3
+			font-size: 19px
+			margin-bottom: 7px
+
+		.row-legend
+			padding-top: 2px
+			position: relative
+
+			.pull-right
+				position: relative
+
+				div
+					width: 110px
+					height: 2px
+					margin-top: 8px
+					border: 1px solid 1px solid rgba(164, 173, 177, 0.19)
+					box-sizing: content-box

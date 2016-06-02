@@ -42,6 +42,7 @@ func LedgerAccountGetAll() ([]*LedgerAccount, error) {
 	if err != nil {
 		return nil, err
 	}
+	cursor.Close()
 
 	return result, nil
 }
@@ -57,6 +58,7 @@ func FindLedgerAccountLikeId(id string, take, skip int) (arla []*LedgerAccount) 
 	if e != nil {
 		return
 	}
+	c.Close()
 
 	_ = c.Fetch(&arla, 0, false)
 	return

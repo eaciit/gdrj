@@ -1,15 +1,17 @@
 package gdrj
 
 import (
-	"github.com/eaciit/dbox"
-	"github.com/eaciit/orm/v1"
-	"github.com/eaciit/toolkit"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/eaciit/dbox"
+	"github.com/eaciit/orm/v1"
+	"github.com/eaciit/toolkit"
 )
 
 // ==================================== Module
@@ -23,6 +25,7 @@ type Module struct {
 	IsCompiled    bool //if false do extract and build
 	LastCompile   time.Time
 	ExecFile      string
+	Applied       bool
 	AddParam      []string //except base param, startperiode,endperiode,outletid,skuid
 	IsActive      bool
 }
@@ -83,11 +86,13 @@ func (m *Module) BuildFile(filename string, basepath string) error {
 				path += "\\" + val
 			}
 		}
+
 		fullPath = filepath.Join(basepath, "modules", path)
 		err := exec.Command("cmd", "/c", "cd", fullPath).Run()
 		if err != nil {
 			return err
 		}
+
 		err = exec.Command("cmd", "/c", "go build", "-o", filepath.Join(fullPath, m.Name+".exe")).Run()
 		if err != nil {
 			return err
@@ -95,17 +100,25 @@ func (m *Module) BuildFile(filename string, basepath string) error {
 
 		m.ExecFile = m.Name + ".exe"
 	} else {
-		fullPath = filepath.Join(basepath, "modules", m.BuildPath)
-		err := exec.Command("cd", fullPath).Run()
+		fullPath = filepath.Join(basepath, "modules", m.Name, m.BuildPath)
+		/*
+			err := exec.Command("cd", fullPath).Run()
+			if err != nil {
+				return errors.New(
+					toolkit.Sprintf("cd %s: ", fullPath) + err.Error())
+			}
+		*/
+		var err error
+		binFileName := filepath.Join(fullPath, m.Name+".bin")
+		command := toolkit.Sprintf("\"cd %s && go build -o %s\"",
+			fullPath, binFileName)
+		_, err = toolkit.RunCommand("bash", "-c", command)
 		if err != nil {
-			return err
-		}
-		err = exec.Command("go build", "-o", filepath.Join(fullPath, m.Name+".sh")).Run()
-		if err != nil {
-			return err
+			return errors.New(toolkit.Sprintf("bash -c %s",
+				command) + err.Error())
 		}
 
-		m.ExecFile = m.Name + ".sh"
+		m.ExecFile = m.Name + ".bin"
 	}
 
 	m.CompileFile(fullPath)

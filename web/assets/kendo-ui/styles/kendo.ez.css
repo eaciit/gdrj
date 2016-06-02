@@ -7404,6 +7404,16 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
 .k-nav-current.k-state-hover .k-link {
   color: #58666e;
 }
+.k-pivot tr:hover .k-alt {
+  background-color: transparent;
+}
+.k-pivot .k-pivot-rowheaders .k-grid tr:hover {
+  color: #58666e;
+}
+.k-pivot .k-grid-header th.k-header,
+.k-filter-row th {
+  border-color: white;
+}
 [style="font:12px Arial,Helvetica,sans-serif;"] {
   font: 12px 'Source Sans Pro', 'Lato', 'Open Sans', 'Helvetica Neue', Arial, sans-serif !important;
   opacity: 0.8;
@@ -7553,6 +7563,13 @@ h3.ez-section {
 }
 input[type="text"].ez {
   border-color: #F0F3F4;
+}
+.radio.ez {
+  position: relative;
+  display: block;
+  margin: 0px;
+  padding: 5px 10px;
+  border: 1px solid #F0F3F4;
 }
 .table.ez tr th {
   font-weight: normal;
@@ -7754,6 +7771,9 @@ input[type="text"].ez {
 }
 .relative {
   position: relative;
+}
+.transition-width {
+  transition: width ease-in-out 400ms;
 }
 /* Button Concept by Chris Deacy http://codepen.io/chrisdothtml/pen/xbmddV */
 .btn.ez {

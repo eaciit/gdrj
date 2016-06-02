@@ -7,12 +7,17 @@ import (
 )
 
 type Product struct {
-	orm.ModelBase `json:"-" bson:"-"`
-	ID            string `bson:"_id" json:"_id"` //SKUID
-	Name          string
-	Config        string
-	Brand         string
-	LongName      string
+	orm.ModelBase   `json:"-" bson:"-"`
+	ID              string `bson:"_id" json:"_id"` //SKUID
+	Name            string
+	ProdCategory    string
+	Brand           string
+	BrandCategoryID string
+	PCID            string
+	ProdSubCategory string
+	ProdSubBrand    string
+	ProdVariant     string
+	ProdDesignType  string
 }
 
 func (p *Product) RecordID() interface{} {
@@ -40,6 +45,7 @@ func ProductGetAll() ([]*Product, error) {
 	if err != nil {
 		return nil, err
 	}
+	cursor.Close()
 
 	return result, nil
 }

@@ -19,18 +19,20 @@ const (
 )
 
 type Customer struct {
-	orm.ModelBase `json:"-" bson:"-"`
-	ID            string `json:"_id" bson:"_id"` //OutletID
-	CustomerID    string
-	Plant         string
-	Name          string
-	KeyAccount    string
-	Channel       string
-	Group         string
-	National      string
-	Zone          string
-	Region        string
-	Area          string
+	orm.ModelBase     `json:"-" bson:"-"`
+	ID                string `json:"_id" bson:"_id"` //OutletID
+	BranchID          string
+	BranchName        string
+	Name              string
+	KeyAccount        string
+	ChannelID         string
+	ChannelName       string
+	CustomerGroup     string
+	CustomerGroupName string
+	National          string
+	Zone              string
+	Region            string
+	Area              string
 }
 
 func (c *Customer) RecordID() interface{} {
@@ -58,6 +60,30 @@ func CustomerGetAll() ([]*Customer, error) {
 	if err != nil {
 		return nil, err
 	}
+	cursor.Close()
+
+	return result, nil
+}
+
+func CustomerGetContains(keyword string) ([]*Customer, error) {
+	filter := []*dbox.Filter{dbox.Or(dbox.Contains("_id", keyword), dbox.Contains("name", keyword))}
+	param := toolkit.M{}.Set("where", filter)
+
+	if len(keyword) < 6 {
+		param = param.Set("limit", 100)
+	}
+
+	cursor, err := DB().Find(new(Customer), param)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*Customer{}
+	err = cursor.Fetch(&result, 100, false)
+	if err != nil {
+		return nil, err
+	}
+	cursor.Close()
 
 	return result, nil
 }

@@ -35,6 +35,7 @@ func (d *UploadDataController) UploadFile(r *knot.WebContext) interface{} {
 	uploadData.PhysicalName = newName
 	uploadData.Desc = r.Request.FormValue("desc")
 	uploadData.DataType = ext
+	uploadData.FieldId = r.Request.FormValue("fieldid")
 	uploadData.DocName = r.Request.FormValue("model")
 	uploadData.Date = time.Now().UTC()
 	uploadData.Datacount = 0 /*task to do*/
@@ -75,11 +76,10 @@ func (d *UploadDataController) ProcessData(r *knot.WebContext) interface{} {
 	if err := r.GetPayload(&payload); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
+	uploadData := gdrj.UploadDataGetByID(payload.GetString("_id"))
+	locFile := filepath.Join(GDRJ_DATA_PATH, "file", uploadData.PhysicalName)
 
-	locFile := filepath.Join(GDRJ_DATA_PATH, "file", toolkit.ToString(payload["filename"]))
-	uploadData := new(gdrj.UploadData)
-	err := uploadData.ProcessData(locFile)
-	if err != nil {
+	if err := uploadData.ProcessData(locFile); err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 

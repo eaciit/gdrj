@@ -1,8 +1,16 @@
 viewModel.app = new Object()
 let app = viewModel.app
 
+app.dev = true
 app.loader = ko.observable(false)
 app.noop = (() => {})
+app.log = function () {
+    if (!app.dev) {
+        return
+    }
+
+    console.log.apply(console, [].slice.call(arguments))
+}
 app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
     let startReq = moment()
     let callbackScheduler = (callback) => {
@@ -148,7 +156,23 @@ app.gridBoundTooltipster = (selector) => {
         app.prepareTooltipster($(selector).find(".tooltipster"))
     }
 }
-app.capitalize = (s) => (s.length == 0 ? '' : (s[0].toUpperCase() + s.slice(1)))
+app.redefine = (o, d) => (typeof o === 'undefined') ? d : o
+app.capitalize = (s, isHardcore = false) => {
+    s = app.redefine(s, '')
+
+    if (isHardcore) {
+        s = s.toLowerCase()
+    }
+
+    if (s.length == 0) {
+        return ''
+    }
+
+    let res = s.split(' ')
+        .map((d) => (d.length > 0) ? (d[0].toUpperCase() + d.slice(1)) : 0)
+        .join(' ')
+    return res
+}
 app.repeatAlphabetically = (prefix) => {
     return 'abcdefghijklmnopqrstuvwxyz'.split('').map((d) => `${prefix} ${d.toUpperCase()}`)
 }
@@ -217,7 +241,6 @@ app.randomGeoLocations = (center = app.latLngIndonesia, radius = 1000000, count 
     for (var i = 0; i < count; i++) {
         points.push(generateRandomPoint(center, radius))
     }
-
     return points
 }
 

@@ -1,4 +1,72 @@
-<div>
+<script type="text/javascript" src="/res/diagram/jspdf-ggorgchart.js" ></script>
+<script type="text/javascript" src="/res/diagram/rgbcolor.js"></script> 
+<script type="text/javascript" src="/res/diagram/StackBlur.js"></script>
+<script type="text/javascript" src="/res/diagram/canvg.js"></script> 
+<script type="text/javascript" src="/res/diagram/raphael-ggorgchart.js"></script>  
+<script type="text/javascript" src="/res/diagram/lib_gg_orgchart_v100b1.js"></script>
+<script type="text/javascript" src="/res/diagram/drag-on.js"></script>
+<script type="text/javascript" src="/res/diagram/jsrender.js"></script>
+<script src="/res/core/js/page-organization.js"></script>
+<style type="text/css">
+	.or_container {
+            position : relative;
+            width    : 100%;
+            height   : 300px;
+            overflow : auto;
+    }
+    .or_content {
+        margin-left : 8px;
+    }
+</style>
+<div id="organization">
+	<div class="legend">
+		<h3 class="ez no-margin">Legend</h3>
+
+
+		<div class="row-legend">
+			<div class="pull-left">Top</div>
+			<div class="pull-right">
+				<div style="background-color: #AD7A3A;"></div>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+		<div class="row-legend">
+			<div class="pull-left">1/1</div>
+			<div class="pull-right">
+				<div style="background-color: #AD3A3A;"></div>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+		<div class="row-legend">
+			<div class="pull-left">1/2</div>
+			<div class="pull-right">
+				<div style="background-color: #3A87AD;"></div>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+		<div class="row-legend">
+			<div class="pull-left">1/3</div>
+			<div class="pull-right">
+				<div style="background-color: #3AAD3E;"></div>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+		<div class="row-legend">
+			<div class="pull-left">1/4</div>
+			<div class="pull-right">
+				<div style="background-color: #3AAD9D;"></div>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+		<div class="row-legend">
+			<div class="pull-left">Other</div>
+			<div class="pull-right">
+				<div style="background-color: #8A8C8E;"></div>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+	</div>
+
 	<div class="col-md-12 col-sm-12 ez panel-filter">
 		<div class="panel ez no-padding hardcore">
 			<div class="panel-heading">
@@ -9,8 +77,20 @@
 			<div class="panel-body">
 				<div class="row">
 					<div class="col-md-12">
-						<div style="overflow:auto; width: 1000px; height: 300px;">
-							<div id="diagram"></div>
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomIn(or.optionsdiagram.options1)}">
+							<i class="fa fa-search-plus"></i> Zoom In
+						</button>
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomOut(or.optionsdiagram.options1)}">
+							<i class="fa fa-search-minus"></i> Zoom Out
+						</button>
+					</div>
+					<div class="col-md-12">
+						<div style="overflow:auto; height: 300px;">
+							<div class="or_container" id="or_container_1">
+					            <div class="or_content" class="dragon">
+					                <div id="diagram1"></div>
+					            </div>
+					        </div>
 						</div>
 					</div>
 				</div>
@@ -28,8 +108,22 @@
 			</div>
 			<div class="panel-body">
 				<div class="row">
-					<div class="col-md-12" style="overflow:auto;height: 500px;">
-						<div id="diagramfinance"></div>
+					<div class="col-md-12">
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomIn(or.optionsdiagram.options2)}">
+							<i class="fa fa-search-plus"></i> Zoom In
+						</button>
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomOut(or.optionsdiagram.options2)}">
+							<i class="fa fa-search-minus"></i> Zoom Out
+						</button>
+					</div>
+					<div class="col-md-12">
+						<div style="overflow:auto; height: 300px;">
+							<div class="or_container" id="or_container_2">
+					            <div class="or_content" class="dragon">
+					                <div id="diagram2"></div>
+					            </div>
+					        </div>
+						</div>
 					</div>
 				</div>
 				<div class="clearfix"></div>
@@ -46,8 +140,22 @@
 			</div>
 			<div class="panel-body">
 				<div class="row">
-					<div class="col-md-12" style="overflow:auto;height: 500px;">
-						<div id="diagrampso"></div>
+					<div class="col-md-12">
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomIn(or.optionsdiagram.options3)}">
+							<i class="fa fa-search-plus"></i> Zoom In
+						</button>
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomOut(or.optionsdiagram.options3)}">
+							<i class="fa fa-search-minus"></i> Zoom Out
+						</button>
+					</div>
+					<div class="col-md-12">
+						<div style="overflow:auto; height: 300px;">
+							<div class="or_container" id="or_container_3">
+					            <div class="or_content" class="dragon">
+					                <div id="diagram3"></div>
+					            </div>
+					        </div>
+						</div>
 					</div>
 				</div>
 				<div class="clearfix"></div>
@@ -64,8 +172,22 @@
 			</div>
 			<div class="panel-body">
 				<div class="row">
-					<div class="col-md-12" style="overflow:auto;height: 500px;">
-						<div id="diagramlbo"></div>
+					<div class="col-md-12">
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomIn(or.optionsdiagram.options4)}">
+							<i class="fa fa-search-plus"></i> Zoom In
+						</button>
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomOut(or.optionsdiagram.options4)}">
+							<i class="fa fa-search-minus"></i> Zoom Out
+						</button>
+					</div>
+					<div class="col-md-12">
+						<div style="overflow:auto; height: 300px;">
+							<div class="or_container" id="or_container_4">
+					            <div class="or_content" class="dragon">
+					                <div id="diagram4"></div>
+					            </div>
+					        </div>
+						</div>
 					</div>
 				</div>
 				<div class="clearfix"></div>
@@ -82,8 +204,22 @@
 			</div>
 			<div class="panel-body">
 				<div class="row">
-					<div class="col-md-12" style="overflow:auto;height: 500px;">
-						<div id="diagramsales"></div>
+					<div class="col-md-12">
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomIn(or.optionsdiagram.options5)}">
+							<i class="fa fa-search-plus"></i> Zoom In
+						</button>
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomOut(or.optionsdiagram.options5)}">
+							<i class="fa fa-search-minus"></i> Zoom Out
+						</button>
+					</div>
+					<div class="col-md-12">
+						<div style="overflow:auto; height: 300px;">
+							<div class="or_container" id="or_container_5">
+					            <div class="or_content" class="dragon">
+					                <div id="diagram5"></div>
+					            </div>
+					        </div>
+						</div>
 					</div>
 				</div>
 				<div class="clearfix"></div>
@@ -100,8 +236,22 @@
 			</div>
 			<div class="panel-body">
 				<div class="row">
-					<div class="col-md-12" style="overflow:auto;height: 500px;">
-						<div id="diagramsales2"></div>
+					<div class="col-md-12">
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomIn(or.optionsdiagram.options6)}">
+							<i class="fa fa-search-plus"></i> Zoom In
+						</button>
+						<button class="btn btn-primary btn-sm" data-bind="click: function(){or.zoomOut(or.optionsdiagram.options6)}">
+							<i class="fa fa-search-minus"></i> Zoom Out
+						</button>
+					</div>
+					<div class="col-md-12">
+						<div style="overflow:auto; height: 300px;">
+							<div class="or_container" id="or_container_6">
+					            <div class="or_content" class="dragon">
+					                <div id="diagram6"></div>
+					            </div>
+					        </div>
+						</div>
 					</div>
 				</div>
 				<div class="clearfix"></div>
@@ -112,4 +262,3 @@
 </div>
 
 <div class="clearfix"></div>
-<script src="/res/core/js/page-organization.js"></script>
