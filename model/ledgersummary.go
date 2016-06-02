@@ -36,12 +36,20 @@ func (s *LedgerSummary) RecordID() interface{} {
 }
 
 func (s *LedgerSummary) PrepareID() interface{} {
-	s.ID = toolkit.Sprintf("%d_%d_%s_%s", s.Date.Year, s.Date.Month, s.CompanyCode, s.LedgerAccount)
+	s.ID = toolkit.Sprintf("%d_%d_%s_%s_%s_%s_%s_%s_%s", 
+		s.Date.Year, s.Date.Month, 
+		s.CompanyCode, s.LedgerAccount, 
+		s.PLCode, s.OutletID, s.SKUID, s.PCID, s.CCID)
 	return s
 }
 
 func (s *LedgerSummary) TableName() string {
 	return "ledgersummaries"
+}
+
+func (s *LedgerSummary) PreSave()error{
+	s.ID=s.PrepareID()
+	return nil
 }
 
 func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string, Year int, Month time.Month) (ls *LedgerSummary) {
