@@ -81,7 +81,6 @@ pvt.optionAggregates = ko.observableArray([
 	{ aggr: 'max', Name: 'Max' },
 	{ aggr: 'min', Name: 'Min' }
 ])
-pvt.mode = ko.observable('render')
 pvt.columns = ko.observableArray([
 	app.koMap({
 		field: pvt.optionDimensions()[1].field,
@@ -166,7 +165,7 @@ pvt.prepareTooltipster = () => {
 }
 pvt.showConfig = () => {
 	vm.hideFilter()
-	pvt.mode('')
+	rpt.mode('')
 	pvt.refreshData()
 }
 pvt.showFieldControl = (o) => {
@@ -228,7 +227,7 @@ pvt.removeFrom = (o, which) => {
 }
 pvt.showAndRefreshPivot = () => {
 	// vm.showFilter()
-	pvt.mode('render')
+	rpt.mode('render')
 	pvt.refreshData()
 }
 pvt.refreshData = () => {

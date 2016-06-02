@@ -28,7 +28,6 @@ pvt.optionDataPoints = ko.computed(function () {
 pvt.optionAggregates = ko.observableArray([{ aggr: 'avg', Name: 'Avg' },
 // { aggr: 'count', Name: 'Count' },
 { aggr: 'sum', Name: 'Sum' }, { aggr: 'max', Name: 'Max' }, { aggr: 'min', Name: 'Min' }]);
-pvt.mode = ko.observable('render');
 pvt.columns = ko.observableArray([app.koMap({
 	field: pvt.optionDimensions()[1].field,
 	label: pvt.optionDimensions()[1].Name,
@@ -87,7 +86,7 @@ pvt.prepareTooltipster = function () {
 };
 pvt.showConfig = function () {
 	vm.hideFilter();
-	pvt.mode('');
+	rpt.mode('');
 	pvt.refreshData();
 };
 pvt.showFieldControl = function (o) {
@@ -157,7 +156,7 @@ pvt.removeFrom = function (o, which) {
 };
 pvt.showAndRefreshPivot = function () {
 	// vm.showFilter()
-	pvt.mode('render');
+	rpt.mode('render');
 	pvt.refreshData();
 };
 pvt.refreshData = function () {

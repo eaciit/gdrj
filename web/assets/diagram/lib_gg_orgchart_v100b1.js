@@ -507,7 +507,10 @@ var oc_zdp_width,
             options.oc_max_text_height = options.box_fix_height - 2 * options.inner_padding;
         } else {
             if (dimensions_title[1] + dimensions_subtitle[1] + 5 > options.oc_max_text_height)
-                options.oc_max_text_height = dimensions_title[1] + dimensions_subtitle[1] + 5;
+                options.oc_max_text_height = dimensions_title[1] + dimensions_subtitle[1] + 10;
+
+            // if (node.subtitle_lines > 1)
+            //     options.oc_max_text_height = options.oc_max_text_height + 8;
         }
 
         // traverse children

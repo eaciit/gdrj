@@ -28,8 +28,9 @@ func includeFiles() []string {
 	filepath.Walk(filepath.Join(basePath, ViewPath), func(path string, info os.FileInfo, err error) error {
 		ok1 := strings.HasPrefix(info.Name(), "_")
 		ok2 := strings.HasPrefix(info.Name(), "page-report-")
+		ok3 := strings.Contains(info.Name(), "page-widget-")
 
-		if ok1 || ok2 {
+		if ok1 || ok2 || ok3 {
 			viewFile := filepath.Join(ViewPath, info.Name())
 			files = append(files, viewFile)
 		}
