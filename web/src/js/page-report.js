@@ -66,6 +66,7 @@ rpt.filter = [
 	] },
 ]
 
+rpt.mode = ko.observable('render')
 rpt.valueMasterData = {}
 rpt.masterData = {
 	geographi: ko.observableArray([])
