@@ -52,7 +52,7 @@ ud.gridUploadedFiles = {
 		{ headerTemplate: '<center>Action</center>', width: 100, template: (d) => {
 			switch (d.Status) {
 				case 'ready': return `
-					<button class="btn btn-xs btn-warning tooltipster" title="Ready" onclick="ud.processData(\`${d.Filename}\`,this)">
+					<button class="btn btn-xs btn-warning tooltipster" title="Ready" onclick="ud.processData(\`${d._id}\`,this)">
 						<i class="fa fa-play"></i> Run process
 					</button>
 				`
@@ -74,6 +74,19 @@ ud.gridUploadedFiles = {
 	resizable: false,
 	dataBound: app.gridBoundTooltipster('.grid-uploadData')
 }
+ud.processData = function (data) {
+	app.ajaxPost('/uploaddata/processdata', { _id: data }, (res) => {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		ud.getUploadedFiles()
+	}, function (err) {
+		app.showError(err.responseText)
+	}, {
+		timeout: 5000
+	})
+};
 
 ud.getMasterDataBrowser = () => {
 	ud.masterDataBrowser([])
