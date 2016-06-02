@@ -2,6 +2,7 @@ package gdrj
 
 import (
 	"errors"
+	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
 )
 
@@ -23,6 +24,22 @@ func MappingInventoryGetByID(id string) *MappingInventory {
 	mp := new(MappingInventory)
 	DB().GetById(mp, id)
 	return mp
+}
+
+func MappingInventoryGetByIDVdist(id string) (mi *MappingInventory) {
+	mi = new(MappingInventory)
+
+	filter := dbox.Eq("skuid_vdist", id)
+
+	cr, err := Find(mi, filter, nil)
+	if err != nil {
+		return
+	}
+
+	_ = cr.Fetch(&mi, 1, false)
+	cr.Close()
+
+	return
 }
 
 func MappingInventoryGetAll() ([]*MappingInventory, error) {

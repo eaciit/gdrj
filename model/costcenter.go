@@ -28,7 +28,7 @@ func (c *CostCenter) TableName() string {
 	return "costcenter"
 }
 
-func ProductGetByID(id string) *CostCenter {
+func CostCenterGetByID(id string) *CostCenter {
 	c := new(CostCenter)
 	DB().GetById(c, id)
 	return c
