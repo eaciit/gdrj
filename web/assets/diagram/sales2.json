@@ -70,18 +70,18 @@
             "Image": "",
             "Color": "#FF4545",
             "children": [{
-                "title": "HR DIST",
+                "title": "Widiana",
                 "subtitle": "HR DIST",
                 "Image": "",
                 "Color": "#FF4545"
             }, {
-                "title": "GA DIST",
-                "subtitle": "Jhony Hermawan",
+                "title": "Jhony Hermawan",
+                "subtitle": "GA DIST",
                 "Image": "",
                 "Color": "#FF4545"
             }, {
-                "title": "GROUP GA",
-                "subtitle": "Reda Harman",
+                "title": "Reda Harman",
+                "subtitle": "GROUP GA",
                 "Image": "",
                 "Color": "#FF4545"
             }]
