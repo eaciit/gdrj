@@ -53,6 +53,8 @@ func main() {
 	defer cr.Close()
 	iseof := false
 
+	c := cr.Count()
+	i := 0
 	for !iseof {
 		arrsalesdetail := []*gdrj.SalesDetail{}
 		err = cr.Fetch(&arrsalesdetail, 1000, false)
@@ -61,14 +63,16 @@ func main() {
 			iseof = true
 		}
 		mwg.Add(1)
-		go func(xsd []*gdrj.SalesDetail) {
+		func(xsd []*gdrj.SalesDetail) {
+			defer mwg.Done()
 			for _, v := range xsd {
+				i++
+				toolkit.Printfn("%d of %d == %v : SAP : %v", i, c, v.ID, v.SKUID_SAPBI)
 				tv := toolkit.ToString(tkmmap.Get(v.SKUID_VDIST, ""))
-				toolkit.Printf(".")
+				toolkit.Printfn(tv)
 				v.SKUID_SAPBI = tv
 				_ = gdrj.Save(v)
 			}
-			mwg.Done()
 		}(arrsalesdetail)
 
 	}
