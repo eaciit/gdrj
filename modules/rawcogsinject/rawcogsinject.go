@@ -86,7 +86,7 @@ func main() {
 			ls.Value1 = v.COGS_Amount
 
 			tLedgerAccount := gdrj.LedgerMasterGetByID("75000055")
-
+			ls.LedgerAccount = "75000055"
 			ls.PLCode = tLedgerAccount.PLCode
 			ls.PLOrder = tLedgerAccount.OrderIndex
 
