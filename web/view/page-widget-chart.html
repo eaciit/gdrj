@@ -9,6 +9,9 @@
 	<div class="panel-body">
 		<p>Show godrej outlets location of Indonesia.</p>
 
-		<div id="chart" style="height: 300px;"></div>
+		{{template "_loader.html"}}
+		<div data-bind="visible: !app.loader()">
+			<div id="chart" style="height: 300px;"></div>
+		</div>
 	</div>
 </div>

@@ -120,7 +120,9 @@
 	<div class="panel-body" data-bind="visible: rpt.mode() == 'render'">
 		<p>Generated pivot grid.</p>
 
-		<div id="pivot-wrapper">
+		{{template "_loader.html"}}
+		
+		<div id="pivot-wrapper" data-bind="visible: !app.loader()">
 			<div class="pivot-wrapper-inner">
 				<div class="pivot"></div>
 			</div>
