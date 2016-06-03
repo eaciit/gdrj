@@ -60,6 +60,11 @@ pvt.templateDataPoint = {
 	field: '',
 	label: ''
 }
+pvt.templateRowColumn = {
+	field: '',
+	label: '',
+	expand: false
+}
 pvt.optionDimensions = ko.computed(() => {
 	return pvt.pivotModel
 		.filter((d) => d.as === 'dimension')
@@ -185,6 +190,16 @@ pvt.getData = (callback) => {
 			callback(res)
 		}
 	})
+}
+pvt.addColumn = () => {
+	let row = ko.mapping.fromJS(app.clone(pvt.templateRowColumn))
+	pvt.columns.push(row)
+	app.prepareTooltipster($(".pivot-section-columns .input-group:last .tooltipster"))
+}
+pvt.addRow = () => {
+	let row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint))
+	pvt.rows.push(row)
+	app.prepareTooltipster($(".pivot-section-row .input-group:last .tooltipster"))
 }
 pvt.addDataPoint = () => {
 	let row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint))

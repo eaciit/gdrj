@@ -11,6 +11,11 @@ pvt.templateDataPoint = {
 	field: '',
 	label: ''
 };
+pvt.templateRowColumn = {
+	field: '',
+	label: '',
+	expand: false
+};
 pvt.optionDimensions = ko.computed(function () {
 	return pvt.pivotModel.filter(function (d) {
 		return d.as === 'dimension';
@@ -106,6 +111,16 @@ pvt.getData = function (callback) {
 			callback(res);
 		}
 	});
+};
+pvt.addColumn = function () {
+	var row = ko.mapping.fromJS(app.clone(pvt.templateRowColumn));
+	pvt.columns.push(row);
+	app.prepareTooltipster($(".pivot-section-columns .input-group:last .tooltipster"));
+};
+pvt.addRow = function () {
+	var row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint));
+	pvt.rows.push(row);
+	app.prepareTooltipster($(".pivot-section-row .input-group:last .tooltipster"));
 };
 pvt.addDataPoint = function () {
 	var row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint));

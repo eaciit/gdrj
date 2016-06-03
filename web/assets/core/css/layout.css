@@ -278,20 +278,20 @@ html, body {
   padding-left: 0px;
   padding-right: 0px;
 }
-.report-module-pivot .pivot-section.pivot-section-data-point .input-group {
+.report-module-pivot .pivot-section .input-group {
   height: 32px;
   margin-bottom: 2px;
   border: 1px solid #3b79c2;
 }
-.report-module-pivot .pivot-section.pivot-section-data-point .input-group .input-group-addon {
+.report-module-pivot .pivot-section .input-group .input-group-addon {
   background-color: #6194cf;
   border-color: #6194cf;
   color: white;
 }
-.report-module-pivot .pivot-section.pivot-section-data-point .input-group .input-group-addon.clickable {
+.report-module-pivot .pivot-section .input-group .input-group-addon.clickable {
   cursor: pointer;
 }
-.report-module-pivot .pivot-section.pivot-section-data-point .input-group .k-dropdown-wrap.k-state-hover {
+.report-module-pivot .pivot-section .input-group .k-dropdown-wrap.k-state-hover {
   background-color: #F0F3F4;
   border-color: #F0F3F4;
 }
