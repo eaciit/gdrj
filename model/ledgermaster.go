@@ -10,6 +10,8 @@ type LedgerMaster struct {
 	orm.ModelBase `json:"-" bson:"-"`
 	ID            string `json:"_id" bson:"_id"` //LedgerMaster
 	Title         string
+	PLCode        string
+	OrderIndex    string
 	H1            string
 	H2            string
 	H3            string
