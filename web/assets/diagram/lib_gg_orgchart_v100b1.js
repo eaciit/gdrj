@@ -168,10 +168,10 @@ var oc_zdp_width,
         line_color:     '#53999E',            // color of connectors
         title_color:    '#FFFFFF',            // color of titles
         subtitle_color: '#FFFFFF',            // color of subtitles
-        title_font_size: 17,                  // size of font used for displaying titles inside boxes
-        subtitle_font_size: 10,               // size of font used for displaying subtitles inside boxes
+        title_font_size: 18,                  // size of font used for displaying titles inside boxes
+        subtitle_font_size: 12,               // size of font used for displaying subtitles inside boxes
         title_char_size: [7, 12.5],           // size (x, y) of a char of the font used for displaying titles
-        subtitle_char_size: [5, 9],          // size (x, y) of a char of the font used for displaying subtitles
+        subtitle_char_size: [10, 15],          // size (x, y) of a char of the font used for displaying subtitles
         max_text_width: 0,                    // max width (in chars) of each line of text ('0' for no limit)
         text_font: '"Source Sans Pro", "Open Sans", "Helvetica Neue", Helvetica, Arial', // font family to use (should be monospaced)
         use_images: false,                    // use images within boxes?
@@ -1018,7 +1018,7 @@ var oc_zdp_width,
                 options.subtitle_color = "#FFFFFF";
                 options.title_color = "#FFFFFF";
             } else if (node.children.length == 3){
-                options.box_color = "#48944A";
+                options.box_color = "#00A65A";
                 options.box_color_hover = "#4caa4e";
                 options.box_border_color = "#C7F1BC";
                 options.subtitle_color = "#FFFFFF";
@@ -1030,16 +1030,16 @@ var oc_zdp_width,
                 options.title_color = "#FFFFFF";
                 options.subtitle_color = "#FFFFFF";
             } else {
-                options.box_color = "#00C0EF";
-                options.box_color_hover = "#14d1fc";
-                options.box_border_color = "#04bee8";
-                options.title_color = "#A0A7A4";
-                options.subtitle_color = "#8A8C8E";
+                 options.box_color = "#6F808A";
+                options.box_color_hover = "#76858e";
+                options.box_border_color = "#6f7c84";
+                options.title_color = "#FCFCFC";
+                options.subtitle_color = "#FCFCFC";
             }
         } else {
-            options.box_color = "#A0CFDF";
-            options.box_color_hover = "#a7d6e5";
-            options.box_border_color = "#E6E6E6";
+            options.box_color = "#6F808A";
+            options.box_color_hover = "#76858e";
+            options.box_border_color = "#6f7c84";
             options.title_color = "#FCFCFC";
             options.subtitle_color = "#FCFCFC";
         }
@@ -1221,6 +1221,7 @@ var oc_zdp_width,
                     subtitle.attr('font-family', options.text_font);
                     subtitle.attr('font-size', options.subtitle_font_size);
                     subtitle.attr('fill', options.subtitle_color);
+                    subtitle.attr('letter-spacing','0.6px')
                 }
             }
         }
@@ -1343,7 +1344,7 @@ var oc_zdp_width,
         } else {
             var regexp = RegExp('<defs[^><]*>|<.defs[^><]*>','g');
             content = content.replace(regexp,
-                '<rect width="'+options.oc_zdp_width_internal+'" height="'+options.oc_zdp_height_internal+'" style="fill:rgb(255,255,255);"/>'
+                '<rect width="'+options.oc_zdp_width_internal+'" height="'+options.oc_zdp_height_internal+'" style="fill:rgb(255,255,255); "/>'
             ); 
         }
         canvg(options.pdf_canvas, content, { ignoreMouse: true, ignoreAnimation: true } );
