@@ -30,13 +30,13 @@ cc.render = function () {
 	var $container = $('.chart-container');
 	$container.empty();
 
-	cc.selectedIdeas().forEach(function (d) {
+	cc.selectedIdeas().forEach(function (d, i) {
 		var o = $("<div class=\"col-md-12 col-sm-12 no-padding hardcore\">\n\t\t\t<div class=\"chart chart-" + d._id + "\" style=\"height: 300px;\"></div>\n\t\t</div>");
 		$container.append(o);
 
-		var series = [{ field: 'actual' }, { field: 'plan' }];
+		var series = [{ field: 'actual', color: app.seriesColorsGodrej[0] }, { field: 'plan', color: app.seriesColorsGodrej[1] }];
 		var data = cc.dataTemp;
-		crt.createChart(".chart-" + d._id, d.name, series, data, 'activity');
+		crt.createChart(".chart-" + d._id, d.name, [series[i]], data, 'activity');
 	});
 };
 
