@@ -10,6 +10,7 @@ import (
 type Sales struct {
 	orm.ModelBase       `json:"-" bson:"-"`
 	ID                  string `json:"_id" bson:"_id"`
+	INVID               string
 	Date                time.Time
 	OutletID            string
 	SKUID               string
