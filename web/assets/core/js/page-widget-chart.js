@@ -55,3 +55,5 @@ crt.createChart = function (o, title) {
 	var sel = app.typeIs(o, 'string') ? $(o) : o;
 	sel.kendoChart(config);
 };
+
+crt.render = function (data) {};

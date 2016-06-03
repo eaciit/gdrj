@@ -251,9 +251,6 @@ rpt.getIdeas = () => {
 		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.name))
 	})
 }
-rpt.showAnalysis = (which) => {
-
-}
 
 $(() => {
 	let $contentPivot = $('.panel-content-pivot')

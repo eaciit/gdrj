@@ -43,3 +43,7 @@ crt.createChart = (o, title, series= [], data= [], categoryAxis= 'category', cha
 	let sel = (app.typeIs(o, 'string') ? $(o) : o)
 	sel.kendoChart(config)
 }
+
+crt.render = (data) => {
+
+}

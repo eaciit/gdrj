@@ -217,7 +217,6 @@ rpt.getIdeas = function () {
 		}));
 	});
 };
-rpt.showAnalysis = function (which) {};
 
 $(function () {
 	var $contentPivot = $('.panel-content-pivot');

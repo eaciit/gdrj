@@ -273,9 +273,11 @@ pvt.removeFrom = (o, which) => {
 		app.arrRemoveByItem(holder, row)
 	})
 }
-pvt.refreshData = () => {
-	let dimensions = ko.mapping.toJS(pvt.dimensions).map((d) => { return { type: 'column', field: d.field, alias: d.name } })
-		     .concat(ko.mapping.toJS(pvt.rows)   .map((d) => { return { type: 'row'   , field: d.field, alias: d.name } }))
+pvt.getPivotConfig = () => {
+	let dimensions = ko.mapping.toJS(pvt.dimensions)
+		.map((d) => { return { type: 'column', field: d.field, alias: d.name } })
+		.concat(ko.mapping.toJS(pvt.rows)
+		.map((d) => { return { type: 'row' , field: d.field, alias: d.name } }))
 
 	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
 		.filter((d) => d.field != '' && d.aggr != '')
@@ -286,36 +288,34 @@ pvt.refreshData = () => {
 		})
 
 	let param = { dimensions: dimensions, datapoints: dataPoints }
-	app.ajaxPost("/report/summarycalculatedatapivotdummy", param, (res) => {
-		if (res.Data.length == 0) {
-			return
-		}
+	return param
+}
 
-	    let config = {
-	        filterable: false,
-	        reorderable: false,
-	        dataSource: {
-				data: res.Data.Data,
-				schema: {
-					model: {
-						fields: res.Data.MetaData.SchemaModelFields
-					},
-					cube: {
-						dimensions: res.Data.MetaData.SchemaCubeDimensions,
-						measures: res.Data.MetaData.SchemaCubeMeasures
-					}
+pvt.render = (data) => {
+	let config = {
+	    filterable: false,
+	    reorderable: false,
+	    dataSource: {
+			data: data.Data,
+			schema: {
+				model: {
+					fields: data.MetaData.SchemaModelFields
 				},
-				columns: res.Data.MetaData.Columns,
-				rows: res.Data.MetaData.Rows,
-				measures: res.Data.MetaData.Measures
-			}
-	    }
+				cube: {
+					dimensions: data.MetaData.SchemaCubeDimensions,
+					measures: data.MetaData.SchemaCubeMeasures
+				}
+			},
+			columns: data.MetaData.Columns,
+			rows: data.MetaData.Rows,
+			measures: data.MetaData.Measures
+		}
+	}
 
-		app.log(config)
+	app.log(config)
 
-		$('.pivot').replaceWith('<div class="pivot"></div>')
-		$('.pivot').kendoPivotGrid(config)
-	})
+	$('.pivot').replaceWith('<div class="pivot"></div>')
+	$('.pivot').kendoPivotGrid(config)
 }
 
 pvt.init = () => {

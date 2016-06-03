@@ -5,16 +5,19 @@ vm.breadcrumb(vm.breadcrumb().concat([
 
 vm.reportAnalysis = {}
 let ra = vm.reportAnalysis
-ra.init = () => {
-	// pvt.dimensions(pvt.optionDimensions().filter(
-		// (d) => app.redefine(d.tag, '').indexOf(o.Name) > -1))
+
+rpt.refresh = () => {
+	let param = pvt.getPivotConfig()
+	app.ajaxPost("/report/summarycalculatedatapivotdummy", param, (res) => {
+		if (res.Data.length == 0) {
+			return
+		}
+
+		pvt.render(res.Data)
+		crt.render(res.Data)
+	})
 }
 
 rpt.init = () => {
-	ra.init()
-	pvt.init()
-}
-
-rpt.refresh = () => {
-	pvt.refreshData()
+	rpt.refresh()
 }

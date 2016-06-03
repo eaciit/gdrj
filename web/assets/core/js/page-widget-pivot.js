@@ -165,7 +165,7 @@ pvt.removeFrom = function (o, which) {
 		app.arrRemoveByItem(holder, row);
 	});
 };
-pvt.refreshData = function () {
+pvt.getPivotConfig = function () {
 	var dimensions = ko.mapping.toJS(pvt.dimensions).map(function (d) {
 		return { type: 'column', field: d.field, alias: d.name };
 	}).concat(ko.mapping.toJS(pvt.rows).map(function (d) {
@@ -183,36 +183,34 @@ pvt.refreshData = function () {
 	});
 
 	var param = { dimensions: dimensions, datapoints: dataPoints };
-	app.ajaxPost("/report/summarycalculatedatapivotdummy", param, function (res) {
-		if (res.Data.length == 0) {
-			return;
-		}
+	return param;
+};
 
-		var config = {
-			filterable: false,
-			reorderable: false,
-			dataSource: {
-				data: res.Data.Data,
-				schema: {
-					model: {
-						fields: res.Data.MetaData.SchemaModelFields
-					},
-					cube: {
-						dimensions: res.Data.MetaData.SchemaCubeDimensions,
-						measures: res.Data.MetaData.SchemaCubeMeasures
-					}
+pvt.render = function (data) {
+	var config = {
+		filterable: false,
+		reorderable: false,
+		dataSource: {
+			data: data.Data,
+			schema: {
+				model: {
+					fields: data.MetaData.SchemaModelFields
 				},
-				columns: res.Data.MetaData.Columns,
-				rows: res.Data.MetaData.Rows,
-				measures: res.Data.MetaData.Measures
-			}
-		};
+				cube: {
+					dimensions: data.MetaData.SchemaCubeDimensions,
+					measures: data.MetaData.SchemaCubeMeasures
+				}
+			},
+			columns: data.MetaData.Columns,
+			rows: data.MetaData.Rows,
+			measures: data.MetaData.Measures
+		}
+	};
 
-		app.log(config);
+	app.log(config);
 
-		$('.pivot').replaceWith('<div class="pivot"></div>');
-		$('.pivot').kendoPivotGrid(config);
-	});
+	$('.pivot').replaceWith('<div class="pivot"></div>');
+	$('.pivot').kendoPivotGrid(config);
 };
 
 pvt.init = function () {
