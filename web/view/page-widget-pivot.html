@@ -26,7 +26,7 @@
 
 		<div class="report-module report-module-pivot">
 			<div class="col-md-4">
-				<div class="col-md-12 pivot-wrapper pivot-wrapper-column">
+				<div class="col-md-12 pivot-wrapper pivot-wrapper-column" data-bind="css: { 'read-only': !pvt.enableDimensions() }">
 					<div class="wrapper-inner" data-module="column">
 						<h3 class="no-margin">
 							<div class="pull-left">
@@ -54,7 +54,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-md-12 pivot-wrapper">
+				<div class="col-md-12 pivot-wrapper pivot-wrapper-row" data-bind="css: { 'read-only': !pvt.enableRows() }">
 					<div class="wrapper-inner" data-module="row">
 						<h3 class="no-margin">
 							<div class="pull-left">
@@ -85,7 +85,7 @@
 			</div>
 
 
-			<div class="col-md-8 pivot-wrapper">
+			<div class="col-md-8 pivot-wrapper" data-bind="css: { 'read-only': !pvt.enableDataPoints() }">
 				<div class="wrapper-inner" data-module="value">
 					<h3 class="no-margin">
 						<div class="pull-left">

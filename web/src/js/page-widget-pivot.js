@@ -2,9 +2,9 @@ viewModel.pivot = new Object()
 let pvt = viewModel.pivot
 
 pvt.pivotModel = [
-    { field: '_id', type: 'string', name: 'ID', as: 'dimension' },
+    { field: '_id', type: 'string', name: 'ID' },
 
-    { field: 'PC._id', type: 'string', name: 'Profit Center - ID', as: 'dimension' },
+    { field: 'PC._id', type: 'string', name: 'Profit Center - ID' },
     { field: 'PC.EntityID', type: 'string', name: 'Profit Center - Entity ID' },
     { field: 'PC.Name', type: 'string', name: 'Profit Center - Name' },
     { field: 'PC.BrandID', type: 'string', name: 'Profit Center - Brand ID' },
@@ -12,7 +12,7 @@ pvt.pivotModel = [
     { field: 'PC.BranchID', type: 'string', name: 'Profit Center - Branch ID' },
     { field: 'PC.BranchType', type: 'int', name: 'Profit Center - Branch Type' },
 
-    { field: 'CC._id', type: 'string', name: 'Cost Center - ID', as: 'dimension' },
+    { field: 'CC._id', type: 'string', name: 'Cost Center - ID' },
     { field: 'CC.EntityID', type: 'string', name: 'Cost Center - Entity ID' },
     { field: 'CC.Name', type: 'string', name: 'Cost Center - Name' },
     { field: 'CC.CostGroup01', type: 'string', name: 'Cost Center - Cost Group 01' },
@@ -23,37 +23,60 @@ pvt.pivotModel = [
     { field: 'CC.CCTypeID', type: 'string', name: 'Cost Center - Type' },
     { field: 'CC.HCCGroupID', type: 'string', name: 'Cost Center - HCC Group ID' },
 
-    { field: 'CompanyCode', type: 'string', name: 'Company Code', as: 'dimension' },
-    { field: 'LedgerAccount', type: 'string', name: 'Ledger Account', as: 'dimension' },
+    { field: 'CompanyCode', type: 'string', name: 'Company Code' },
+    { field: 'LedgerAccount', type: 'string', name: 'Ledger Account' },
 
-    { field: 'Customer._id', type: 'string', name: 'Customer - ID', as: 'dimension' },
-    { field: 'Customer.CustomerID', type: 'string', name: 'Customer - Customer ID' },
-    { field: 'Customer.Plant', type: 'string', name: 'Customer - Plant' },
+    { field: 'Customer._id', type: 'string', name: 'Customer - ID' },
+    { field: 'Customer.BranchID', type: 'string', name: 'Customer - Branch ID' },
+    { field: 'Customer.BranchName', type: 'string', name: 'Customer - branch Name' },
     { field: 'Customer.Name', type: 'string', name: 'Customer - Name' },
     { field: 'Customer.KeyAccount', type: 'string', name: 'Customer - Key Account' },
-    { field: 'Customer.Channel', type: 'string', name: 'Customer - Channel' },
-    { field: 'Customer.Group', type: 'string', name: 'Customer - Group' },
+    { field: 'Customer.ChannelID', type: 'string', name: 'Customer - Channel ID' },
+    { field: 'Customer.ChannelName', type: 'string', name: 'Customer - Channel Name' },
+    { field: 'Customer.CustomerGroup', type: 'string', name: 'Customer - Customer Group' },
+    { field: 'Customer.CustomerGroupName', type: 'string', name: 'Customer - Customer Group Name' },
     { field: 'Customer.National', type: 'string', name: 'Customer - National' },
     { field: 'Customer.Zone', type: 'string', name: 'Customer - Zone' },
     { field: 'Customer.Region', type: 'string', name: 'Customer - Region' },
     { field: 'Customer.Area', type: 'string', name: 'Customer - Area' },
 
-    { field: 'Product._id', type: 'string', name: 'Product - ID', as: 'dimension' },
+    { field: 'Product._id', type: 'string', name: 'Product - ID' },
     { field: 'Product.Name', type: 'string', name: 'Product - Name' },
-    { field: 'Product.Config', type: 'string', name: 'Product - Config' },
+    { field: 'Product.ProdCategory', type: 'string', name: 'Product - Category' },
     { field: 'Product.Brand', type: 'string', name: 'Product - Brand' },
-    { field: 'Product.LongName', type: 'string', name: 'Product - Long Name' },
+    { field: 'Product.BrandCategoryID', type: 'string', name: 'Product - Brand Category ID' },
+    { field: 'Product.PCID', type: 'string', name: 'Product - PCID' },
+    { field: 'Product.ProdSubCategory', type: 'string', name: 'Product - Sub Category' },
+    { field: 'Product.ProdSubBrand', type: 'string', name: 'Product - Sub Brand' },
+    { field: 'Product.ProdVariant', type: 'string', name: 'Product - Variant' },
+    { field: 'Product.ProdDesignType', type: 'string', name: 'Product - Design Type' },
 
-    { field: 'Data.ID', type: 'string', name: 'Data - ID', as: 'dimension' },
-    { field: 'Data.Month', type: 'string', name: 'Data - Month' },
-    { field: 'Data.Quarter', type: 'int', name: 'Data - Quarter' },
-    { field: 'Data.Year', type: 'int', name: 'Data - Year' },
+    { field: 'Date.ID', type: 'string', name: 'Date - ID' },
+    { field: 'Date.Date', type: 'string', name: 'Date - Date' },
+    { field: 'Date.Month', type: 'string', name: 'Date - Month' },
+    { field: 'Date.Quarter', type: 'int', name: 'Date - Quarter' },
+    { field: 'Date.YearTxt', type: 'string', name: 'Date - YearTxt' },
+    { field: 'Date.QuarterTxt', type: 'string', name: 'Date - QuarterTxt' },
+    { field: 'Date.Year', type: 'int', name: 'Date - Year' },
 
-    { field: 'Value1', type: 'string', name: 'Value 1', as: 'data point' },
-    { field: 'Value2', type: 'string', name: 'Value 2', as: 'data point' },
-    { field: 'Value3', type: 'string', name: 'Value 3', as: 'data point' }
+    { field: 'PLGroup1', type: 'string', name: 'PL Group 1' },
+    { field: 'PLGroup2', type: 'string', name: 'PL Group 2' },
+    { field: 'PLGroup3', type: 'string', name: 'PL Group 3' },
+    { field: 'PLGroup4', type: 'string', name: 'PL Group 4' },
+    { field: 'Value1', type: 'double', name: 'Value 1', as: 'dataPoints' },
+    { field: 'Value2', type: 'double', name: 'Value 2', as: 'dataPoints' },
+    { field: 'Value3', type: 'double', name: 'Value 3', as: 'dataPoints' },
+    { field: 'PCID', type: 'string', name: 'Profit Center ID' },
+    { field: 'CCID', type: 'string', name: 'Cost Center ID' },
+    { field: 'SKUID', type: 'string', name: 'SKU ID' },
+    { field: 'PLCode', type: 'string', name: 'PL Code' },
+    { field: 'Month', type: 'string', name: 'Month' },
+    { field: 'Year', type: 'string', name: 'Year' },
 ]
 
+pvt.enableDimensions = ko.observable(true)
+pvt.enableRows = ko.observable(true)
+pvt.enableDataPoints = ko.observable(true)
 pvt.templateDataPoint = {
 	aggr: 'sum',
 	expand: false,
@@ -66,20 +89,20 @@ pvt.templateRowColumn = {
 	expand: false
 }
 pvt.optionDimensions = ko.observableArray([
-	{ field: 'Branch/RD', name: 'Branch/RD' },
-	{ field: 'Channel', name: 'Channel' },
-	{ field: 'Geography', name: 'Geography' },
-	{ field: 'Product', name: 'Product' },
-	{ field: 'Time', name: 'Time' },
-	{ field: 'Cost Type', name: 'Cost Type' },
-	{ field: 'Function', name: 'Function' }
+	{ field: 'PC.BranchID', name: 'Branch/RD' },
+	{ field: 'Customer.ChannelID', name: 'Channel' },
+	{ field: 'Customer.Area', name: 'Geography' },
+	{ field: 'Product._id', name: 'Product' },
+	{ field: 'Date.Date', name: 'Time' },
+	{ field: '', name: 'Cost Type' }, // <<<<< ====================== need to be filled
+	{ field: 'CC.HCCGroupID', name: 'Function' },
 ])
 pvt.optionRows = ko.observableArray([
-	{ field: 'Outlet', name: 'Outlet' },
-	{ field: 'SKU', name: 'SKU' },
-	{ field: 'PC', name: 'PC' },
-	{ field: 'CC', name: 'CC' },
-	{ field: 'G/L', name: 'G/L' }
+	{ field: 'Customer._id', name: 'Outlet' },
+	{ field: 'Product._id', name: 'SKU' },
+	{ field: 'PC._id', name: 'PC' },
+	{ field: 'CC._id', name: 'CC' },
+	{ field: 'LedgerAccount', name: 'G/L' }
 ])
 pvt.optionDataPoints = ko.observableArray([
     { field: 'Value1', name: 'Value 1' },
@@ -87,9 +110,9 @@ pvt.optionDataPoints = ko.observableArray([
     { field: 'Value3', name: 'Value 3' }
 ])
 pvt.optionAggregates = ko.observableArray([
+	{ aggr: 'sum', name: 'Sum' },
 	{ aggr: 'avg', name: 'Avg' },
 	// { aggr: 'count', name: 'Count' },
-	{ aggr: 'sum', name: 'Sum' },
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
@@ -117,7 +140,7 @@ pvt.dataPoints = ko.observableArray([
 		field: pvt.optionDataPoints()[0].field,
 		name: pvt.optionDataPoints()[0].name,
 		expand: false,
-		aggr: pvt.optionAggregates()[2].aggr
+		aggr: pvt.optionAggregates()[0].aggr
 	}),
 	// app.koMap({
 	// 	field: pvt.optionDataPoints()[0].field,

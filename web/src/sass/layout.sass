@@ -316,6 +316,18 @@ html, body
 		&.pivot-wrapper-column
 			margin-bottom: 10px
 
+		&.read-only
+			.wrapper-inner
+				pointer-events: none
+				opacity: 0.8
+				background-color: #fbfbfb
+
+				.wrapper
+					opacity: 0.6
+
+				.add-data-point
+					display: none
+
 		.wrapper-inner
 			border: 1px solid $color-base-grey
 			padding: 0px
