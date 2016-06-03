@@ -15,6 +15,7 @@ import (
 )
 
 var (
+	starttime              = time.Now()
 	startperiode time.Time = time.Date(2014, 4, 1, 0, 0, 0, 0, time.UTC)
 	endperiode   time.Time = startperiode.AddDate(1, 0, -1)
 	// endperiode   time.Time = startperiode.AddDate(1, 0, -1)
@@ -308,18 +309,19 @@ func main() {
 		go func(tash []*gdrj.SalesHeader) {
 			for _, v := range tash {
 				icount += 1
-				toolkit.Printfn("%d of %d data header processing", countsales, icount)
+				toolkit.Printfn("%d of %d data header processing in %.2f Minutes", icount, countsales, time.Since(starttime).Minutes())
+
 				vcustomer := gdrj.CustomerGetByID(toolkit.Sprintf("%v%v", v.BranchID, v.OutletID))
 
 				dbfdetail := dbox.Eq("salesheaderid", v.ID)
-				cr, err := gdrj.Find(new(gdrj.SalesDetail), dbfdetail, nil)
+				gcr, err := gdrj.Find(new(gdrj.SalesDetail), dbfdetail, nil)
 				if err != nil {
 					toolkit.Println("Error Found : ", err.Error())
 					os.Exit(1)
 				}
 
 				arrsalesdetail := []*gdrj.SalesDetail{}
-				err = cr.Fetch(&arrsalesdetail, 0, false)
+				err = gcr.Fetch(&arrsalesdetail, 0, false)
 				if err != nil {
 					toolkit.Println("Error Found : ", err.Error())
 					os.Exit(1)
@@ -347,7 +349,6 @@ func main() {
 					xvls.Value1 += xv.SalesGrossAmount
 
 					if xvls.ID == "" {
-						xvls.ID = toolkit.RandomString(32)
 						xvls.PC = xvprofitcenter
 						xvls.CompanyCode = "ID11"
 						xvls.Customer = vcustomer
@@ -378,7 +379,6 @@ func main() {
 					}
 
 					if xvledgersummarydisc.ID == "" {
-						xvledgersummarydisc.ID = toolkit.RandomString(32)
 						xvledgersummarydisc.PC = xvprofitcenter
 						xvledgersummarydisc.CompanyCode = "ID11"
 						xvledgersummarydisc.Customer = vcustomer
@@ -403,7 +403,7 @@ func main() {
 					mutex.Unlock()
 				}
 
-				cr.Close()
+				gcr.Close()
 			}
 			mwg.Done()
 		}(arrsalesheader)
