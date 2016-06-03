@@ -1,26 +1,11 @@
 // let menuLink = vm.menu()
 // 	.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
 
-// vm.currentMenu(menuLink.title)
-// vm.currentTitle(menuLink.title)
-// vm.breadcrumb([
-// 	{ title: 'Godrej', href: '#' },
-// 	{ title: menuLink.title, href: menuLink.href }
-// ])
-
-let menuLink = vm.menu()
-    .find((d) => d.title == "Report").submenu
-	.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
-
-if (app.isUndefined(menuLink)) {
-	menuLink = '{"title":"","href":"#"}'.toObject()
-}
-
 vm.currentMenu('Report')
-vm.currentTitle(menuLink.title)
+vm.currentTitle('Report')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: menuLink.title, href: menuLink.href }
+	{ title: 'Report', href: '/web/report/all' }
 ])
 
 viewModel.report = new Object()
@@ -256,6 +241,20 @@ rpt.prepareDrag = () => {
 rpt.init = () => app.noop
 rpt.refresh = () => app.noop
 
+rpt.analysisIdeas = ko.observableArray([])
+rpt.getIdeas = () => {
+	app.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.name))
+	})
+}
+rpt.showAnalysis = (which) => {
+
+}
+
 $(() => {
 	let $contentPivot = $('.panel-content-pivot')
 	let $contentMap = $('.panel-content-map')
@@ -281,6 +280,7 @@ $(() => {
 		}
 	}
 
+	rpt.getIdeas()
 	rpt.prepareDrag()
 	rpt.init()
 })

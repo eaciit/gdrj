@@ -1,10 +1,3 @@
-vm.currentMenu('Chart Comparison')
-vm.currentTitle('Chart Comparison')
-vm.breadcrumb([
-	{ title: 'Godrej', href: '#' },
-	{ title: 'Chart Comparison', href: '/chartcomparison' }
-])
-
 viewModel.chart = new Object()
 var crt = viewModel.chart
 

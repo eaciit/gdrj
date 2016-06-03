@@ -1,3 +1,10 @@
+vm.currentMenu('Chart Comparison')
+vm.currentTitle('Chart Comparison')
+vm.breadcrumb([
+	{ title: 'Godrej', href: '#' },
+	{ title: 'Chart Comparison', href: '/chartcomparison' }
+])
+
 viewModel.chartComparison = new Object()
 let cc = viewModel.chartComparison
 
@@ -7,7 +14,7 @@ cc.dataTemp = [
 	{ "activity": "abandonment", "actual": 90, "plan": 85 }
 ]
 cc.data = {}
-cc.ideas = ko.observableArray([])
+cc.analysisIdeas = ko.observableArray([])
 cc.getIdeas = () => {
 	app.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
 		if (!app.isFine(res)) {
@@ -22,8 +29,8 @@ cc.getIdeas = () => {
 			}
 		}) 
 
-		cc.ideas(res.data)
-		cc.selectedIdeas(cc.ideas().slice(0, 2))
+		cc.analysisIdeas(res.data)
+		cc.selectedIdeas(cc.analysisIdeas().slice(0, 2))
 		cc.render()
 	})
 }

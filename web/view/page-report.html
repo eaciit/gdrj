@@ -26,17 +26,42 @@
 		</div>
 	</div>
 
-	{{if eq .subreport "page-report-distribution.html"}}
-		{{template "page-report-distribution.html"}}
-	{{else if eq .subreport "page-report-general-trade.html"}}
-		{{template "page-report-general-trade.html"}}
-	{{else if eq .subreport "page-report-market-efficiency.html"}}
-		{{template "page-report-market-efficiency.html"}}
-	{{else if eq .subreport "page-report-sgna.html"}}
-		{{template "page-report-sgna.html"}}
-	{{else if eq .subreport "page-report-chart-comparison.html"}}
-		{{template "page-report-chart-comparison.html"}}
-	{{end}}
+{{if eq .subreport "all"}}
+	<div class="col-md-9 col-sm-9 ez panel-content">
+		<div class="panel ez no-padding hardcore">
+			<div class="panel-heading">
+				<h3 class="no-margin">
+					<button class="btn-toggle-filter no-padding"></button>
+					All Analysis Ideas
+				</h3>
+			</div>
+			<div class="panel-body">
+				<p>Click which analysis you want to view.</p>
+
+				<div data-bind="foreach: rpt.analysisIdeas()" class="list-analysis">
+					<div class="col-md-3">
+						<div class="wrapper">
+							<a href="#" data-bind="attr: { 'href': '/web/report/' + $data._id }, text: $data.name"></a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{{else}}
+	<script>let o = { ID: "{{.row.ID}}", Name: "{{.row.Name}}" }</script>
+	<script src="/res/core/js/page-report-analysis.js"></script>
+
+	<div class="col-md-9 col-sm-9 ez panel-content">
+		<div class="col-md-6 col-sm-6 no-padding-left hardcore panel-content-pivot">
+			{{template "page-widget-pivot.html"}}
+		</div>
+		<div class="col-md-6 col-sm-6 no-padding-right hardcore panel-content-map">
+			{{template "page-widget-chart.html"}}
+		</div>
+	</div>
+{{end}}
+
 	
 	<div class="clearfix"></div>
 </div>

@@ -3,26 +3,9 @@
 // let menuLink = vm.menu()
 // 	.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
 
-// vm.currentMenu(menuLink.title)
-// vm.currentTitle(menuLink.title)
-// vm.breadcrumb([
-// 	{ title: 'Godrej', href: '#' },
-// 	{ title: menuLink.title, href: menuLink.href }
-// ])
-
-var menuLink = vm.menu().find(function (d) {
-	return d.title == "Report";
-}).submenu.find(function (d) {
-	return d.href == '/' + document.URL.split('/').slice(3).join('/');
-});
-
-if (app.isUndefined(menuLink)) {
-	menuLink = '{"title":"","href":"#"}'.toObject();
-}
-
 vm.currentMenu('Report');
-vm.currentTitle(menuLink.title);
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: menuLink.title, href: menuLink.href }]);
+vm.currentTitle('Report');
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Report', href: '/web/report/all' }]);
 
 viewModel.report = new Object();
 var rpt = viewModel.report;
@@ -222,6 +205,20 @@ rpt.refresh = function () {
 	return app.noop;
 };
 
+rpt.analysisIdeas = ko.observableArray([]);
+rpt.getIdeas = function () {
+	app.ajaxPost('/report/getdataanalysisidea', {}, function (res) {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		rpt.analysisIdeas(_.sortBy(res.data, function (d) {
+			return d.name;
+		}));
+	});
+};
+rpt.showAnalysis = function (which) {};
+
 $(function () {
 	var $contentPivot = $('.panel-content-pivot');
 	var $contentMap = $('.panel-content-map');
@@ -247,6 +244,7 @@ $(function () {
 		}
 	};
 
+	rpt.getIdeas();
 	rpt.prepareDrag();
 	rpt.init();
 });

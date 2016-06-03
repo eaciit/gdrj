@@ -18,6 +18,15 @@ func (a *AnalysisIdea) RecordID() interface{} {
 	return a.ID
 }
 
+func AnalysisIdeaGetByID(id string) *AnalysisIdea {
+	o := new(AnalysisIdea)
+	if err := Get(o, id); err != nil {
+		return nil
+	}
+
+	return o
+}
+
 func AnalysisIdeaGetAll() ([]*AnalysisIdea, error) {
 	cursor, err := Find(new(AnalysisIdea), nil)
 	if err != nil {

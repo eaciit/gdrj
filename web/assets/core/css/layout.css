@@ -440,3 +440,19 @@ html, body {
   border: 1px solid 1px solid rgba(164, 173, 177, 0.19);
   box-sizing: content-box;
 }
+
+.list-analysis {
+  margin-bottom: 10px;
+}
+.list-analysis .col-md-3 {
+  padding: 0px;
+}
+.list-analysis .col-md-3 .wrapper a {
+  padding: 4px 8px;
+  display: block;
+}
+.list-analysis .col-md-3 .wrapper a:hover, .list-analysis .col-md-3 .wrapper a:active, .list-analysis .col-md-3 .wrapper a:focus {
+  background-color: #3b79c2;
+  color: white;
+  text-decoration: none;
+}
