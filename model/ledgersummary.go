@@ -116,7 +116,7 @@ func SummaryGenerateDummyData() []*LedgerSummary {
 		cu.National = toolkit.RandomString(5)
 		cu.Zone = toolkit.RandomString(5)
 		cu.Region = toolkit.RandomString(5)
-		cu.Area = toolkit.RandomString(5)
+		cu.AreaName = toolkit.RandomString(5)
 		cus = append(cus, cu)
 
 		pr := new(Product)
