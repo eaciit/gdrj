@@ -79,14 +79,12 @@ pvt.enableRows = ko.observable(true)
 pvt.enableDataPoints = ko.observable(true)
 pvt.templateDataPoint = {
 	aggr: 'sum',
-	expand: false,
 	field: '',
 	name: ''
 }
 pvt.templateRowColumn = {
 	field: '',
-	name: '',
-	expand: false
+	name: ''
 }
 pvt.optionDimensions = ko.observableArray([
 	{ field: 'PC.BranchID', name: 'Branch/RD' },
@@ -120,32 +118,28 @@ pvt.dimensions = ko.observableArray([
 	app.koMap({
 		field: pvt.optionDimensions()[1].field,
 		name: pvt.optionDimensions()[1].name,
-		expand: false
 	}),
 	app.koMap({
 		field: pvt.optionDimensions()[2].field,
 		name: pvt.optionDimensions()[2].name,
-		expand: false
 	}),
 ])
 pvt.rows = ko.observableArray([
 	app.koMap({
 		field: pvt.optionRows()[3].field,
 		name: pvt.optionRows()[3].name,
-		expand: false
 	}),
 ])
 pvt.dataPoints = ko.observableArray([
 	app.koMap({
 		field: pvt.optionDataPoints()[0].field,
 		name: pvt.optionDataPoints()[0].name,
-		expand: false,
 		aggr: pvt.optionAggregates()[0].aggr
 	}),
 	// app.koMap({
 	// 	field: pvt.optionDataPoints()[0].field,
 	// 	name: pvt.optionDataPoints()[0].name,
-	// 	expand: false,
+	//,
 	// 	aggr: pvt.optionAggregates()[2].aggr
 	// }),
 ])
@@ -248,7 +242,7 @@ pvt.addAs = (o, what) => {
 
 	if (!(isAddedOnColumn || isAddedOnRow)) {
 		let row = pvt.optionDimensions().find((d) => d.field === id)
-		holder.push(ko.mapping.fromJS({ field: row.field, name: row.name, expand: false }))
+		holder.push(ko.mapping.fromJS({ field: row.field, name: row.name }))
 	}
 }
 pvt.removeFrom = (o, which) => {
@@ -275,16 +269,16 @@ pvt.removeFrom = (o, which) => {
 }
 pvt.getPivotConfig = () => {
 	let dimensions = ko.mapping.toJS(pvt.dimensions)
-		.map((d) => { return { type: 'column', field: d.field, alias: d.name } })
+		.map((d) => { return { type: 'column', field: d.field, name: d.name } })
 		.concat(ko.mapping.toJS(pvt.rows)
-		.map((d) => { return { type: 'row' , field: d.field, alias: d.name } }))
+		.map((d) => { return { type: 'row' , field: d.field, name: d.name } }))
 
 	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
 		.filter((d) => d.field != '' && d.aggr != '')
 		.map((d) => { 
 			let row = ko.mapping.toJS(pvt.pivotModel).find((e) => e.field == d.field)
 			let name = (row == undefined) ? d.field : row.name
-			return { op: d.aggr, field: d.field, alias: name }
+			return { op: d.aggr, field: d.field, name: name }
 		})
 
 	let param = { dimensions: dimensions, datapoints: dataPoints }

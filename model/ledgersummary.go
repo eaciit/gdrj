@@ -269,13 +269,13 @@ type PivotParam struct {
 type PivotParamDimensions struct {
 	Field string `json:"field"`
 	Type  string `json:"type"`
-	Alias string `json:"alias"`
+	Name  string `json:"name"`
 }
 
 type PivotParamDataPoint struct {
 	OP    string `json:"op"`
 	Field string `json:"field"`
-	Alias string `json:"alias"`
+	Name  string `json:"name"`
 }
 
 func (p *PivotParam) ParseDimensions() (res []string) {
@@ -288,7 +288,7 @@ func (p *PivotParam) ParseDimensions() (res []string) {
 
 func (p *PivotParam) ParseDataPoints() (res []string) {
 	for _, each := range p.DataPoints {
-		parts := []string{each.OP, each.Field, each.Alias}
+		parts := []string{each.OP, each.Field, each.Name}
 
 		if !strings.HasPrefix(parts[1], "$") {
 			parts[1] = fmt.Sprintf("$%s", parts[1])
@@ -328,8 +328,8 @@ func (p *PivotParam) MapSummarizedLedger(data []toolkit.M) []toolkit.M {
 				} else {
 					keyv := key
 					for _, each := range p.DataPoints {
-						if strings.ToLower(each.Alias) == strings.ToLower(key) {
-							keyv = strings.Replace(each.Alias, " ", "_", -1)
+						if strings.ToLower(each.Name) == strings.ToLower(key) {
+							keyv = strings.Replace(each.Name, " ", "_", -1)
 						}
 					}
 					metadata[key] = keyv
@@ -386,14 +386,14 @@ func (p *PivotParam) GetPivotConfig(data []toolkit.M) toolkit.M {
 						res.Rows = append(res.Rows, toolkit.M{"name": key, "expand": false})
 					}
 
-					caption := fmt.Sprintf("All %s", c.Alias)
+					caption := fmt.Sprintf("All %s", c.Name)
 					res.SchemaModelFields.Set(key, toolkit.M{"type": "string"})
 					res.SchemaCubeDimension.Set(key, toolkit.M{"caption": caption})
 				}
 			}
 
 			for _, c := range p.DataPoints {
-				if strings.ToLower(strings.Replace(c.Alias, " ", "_", -1)) == strings.ToLower(key) {
+				if strings.ToLower(strings.Replace(c.Name, " ", "_", -1)) == strings.ToLower(key) {
 					op := c.OP
 					if op == "avg" {
 						op = "average"

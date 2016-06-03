@@ -9,7 +9,11 @@ crt.config.wetengLuwe = (title, data, series, categoryAxisField) => {
 		seriesDefaults: {
 			type: 'column',
 			overlay: { gradient: 'none' },
-			border: { width: 0 }
+			border: { width: 0 },
+			labels: {
+				visible: true,
+				position: 'outsideEnd'
+			},
 		},
 		series: series,
 		seriesColors: app.seriesColorsGodrej,
@@ -32,7 +36,7 @@ crt.config.wetengLuwe = (title, data, series, categoryAxisField) => {
 	}
 }
 
-crt.createChart = (o, title, series= [], data= [], categoryAxis= 'category', chartType= 'columns', which= 'wetengLuwe') => {
+crt.render = (title, series= [], data= [], categoryAxis= 'category', chartType= 'columns', which= 'wetengLuwe') => {
 	series.forEach((d) => {
 		if (app.isUndefined(d.name)) {
 			d.name = d.field
@@ -40,10 +44,6 @@ crt.createChart = (o, title, series= [], data= [], categoryAxis= 'category', cha
 	})
 
 	let config = crt.config[which](title, data, series, categoryAxis)
-	let sel = (app.typeIs(o, 'string') ? $(o) : o)
-	sel.kendoChart(config)
-}
-
-crt.render = (data) => {
-
+	app.log('chart', app.clone(config))
+	$('#chart').kendoChart(config)
 }

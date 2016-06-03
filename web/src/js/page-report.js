@@ -256,7 +256,6 @@ rpt.expandToggleContent = () => {
 	}
 
 	btnExpand.find('.fa').toggleClass('fa-compress')
-	ol.map._onResize()
 }
 
 rpt.init = () => app.noop

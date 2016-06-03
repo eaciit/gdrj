@@ -10,14 +10,12 @@ pvt.enableRows = ko.observable(true);
 pvt.enableDataPoints = ko.observable(true);
 pvt.templateDataPoint = {
 	aggr: 'sum',
-	expand: false,
 	field: '',
 	name: ''
 };
 pvt.templateRowColumn = {
 	field: '',
-	name: '',
-	expand: false
+	name: ''
 };
 pvt.optionDimensions = ko.observableArray([{ field: 'PC.BranchID', name: 'Branch/RD' }, { field: 'Customer.ChannelID', name: 'Channel' }, { field: 'Customer.Area', name: 'Geography' }, { field: 'Product._id', name: 'Product' }, { field: 'Date.Date', name: 'Time' }, { field: '', name: 'Cost Type' }, // <<<<< ====================== need to be filled
 { field: 'CC.HCCGroupID', name: 'Function' }]);
@@ -28,29 +26,25 @@ pvt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr:
 { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
 pvt.dimensions = ko.observableArray([app.koMap({
 	field: pvt.optionDimensions()[1].field,
-	name: pvt.optionDimensions()[1].name,
-	expand: false
+	name: pvt.optionDimensions()[1].name
 }), app.koMap({
 	field: pvt.optionDimensions()[2].field,
-	name: pvt.optionDimensions()[2].name,
-	expand: false
+	name: pvt.optionDimensions()[2].name
 })]);
 pvt.rows = ko.observableArray([app.koMap({
 	field: pvt.optionRows()[3].field,
-	name: pvt.optionRows()[3].name,
-	expand: false
+	name: pvt.optionRows()[3].name
 })]);
 pvt.dataPoints = ko.observableArray([app.koMap({
 	field: pvt.optionDataPoints()[0].field,
 	name: pvt.optionDataPoints()[0].name,
-	expand: false,
 	aggr: pvt.optionAggregates()[0].aggr
 })]);
 
 // app.koMap({
 // 	field: pvt.optionDataPoints()[0].field,
 // 	name: pvt.optionDataPoints()[0].name,
-// 	expand: false,
+//,
 // 	aggr: pvt.optionAggregates()[2].aggr
 // }),
 pvt.data = ko.observableArray([/*tempData*/]);
@@ -138,7 +132,7 @@ pvt.addAs = function (o, what) {
 		var row = pvt.optionDimensions().find(function (d) {
 			return d.field === id;
 		});
-		holder.push(ko.mapping.fromJS({ field: row.field, name: row.name, expand: false }));
+		holder.push(ko.mapping.fromJS({ field: row.field, name: row.name }));
 	}
 };
 pvt.removeFrom = function (o, which) {
@@ -167,9 +161,9 @@ pvt.removeFrom = function (o, which) {
 };
 pvt.getPivotConfig = function () {
 	var dimensions = ko.mapping.toJS(pvt.dimensions).map(function (d) {
-		return { type: 'column', field: d.field, alias: d.name };
+		return { type: 'column', field: d.field, name: d.name };
 	}).concat(ko.mapping.toJS(pvt.rows).map(function (d) {
-		return { type: 'row', field: d.field, alias: d.name };
+		return { type: 'row', field: d.field, name: d.name };
 	}));
 
 	var dataPoints = ko.mapping.toJS(pvt.dataPoints).filter(function (d) {
@@ -179,7 +173,7 @@ pvt.getPivotConfig = function () {
 			return e.field == d.field;
 		});
 		var name = row == undefined ? d.field : row.name;
-		return { op: d.aggr, field: d.field, alias: name };
+		return { op: d.aggr, field: d.field, name: name };
 	});
 
 	var param = { dimensions: dimensions, datapoints: dataPoints };

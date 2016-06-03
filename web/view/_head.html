@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="{{.BaseUrl}}/res/pace/pace.css" />
 <script src="{{.BaseUrl}}/res/pace/pace.min.js"></script>
 <script>
+	paceOptions = { ajax: false, document: false, eventLag: false }
 	Pace.on('done', function () {
 		$('.is-loading').removeClass('is-loading');
 	});

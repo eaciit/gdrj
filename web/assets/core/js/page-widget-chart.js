@@ -11,7 +11,11 @@ crt.config.wetengLuwe = function (title, data, series, categoryAxisField) {
 		seriesDefaults: {
 			type: 'column',
 			overlay: { gradient: 'none' },
-			border: { width: 0 }
+			border: { width: 0 },
+			labels: {
+				visible: true,
+				position: 'outsideEnd'
+			}
 		},
 		series: series,
 		seriesColors: app.seriesColorsGodrej,
@@ -38,12 +42,12 @@ crt.config.wetengLuwe = function (title, data, series, categoryAxisField) {
 	};
 };
 
-crt.createChart = function (o, title) {
-	var series = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
-	var data = arguments.length <= 3 || arguments[3] === undefined ? [] : arguments[3];
-	var categoryAxis = arguments.length <= 4 || arguments[4] === undefined ? 'category' : arguments[4];
-	var chartType = arguments.length <= 5 || arguments[5] === undefined ? 'columns' : arguments[5];
-	var which = arguments.length <= 6 || arguments[6] === undefined ? 'wetengLuwe' : arguments[6];
+crt.render = function (title) {
+	var series = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+	var data = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+	var categoryAxis = arguments.length <= 3 || arguments[3] === undefined ? 'category' : arguments[3];
+	var chartType = arguments.length <= 4 || arguments[4] === undefined ? 'columns' : arguments[4];
+	var which = arguments.length <= 5 || arguments[5] === undefined ? 'wetengLuwe' : arguments[5];
 
 	series.forEach(function (d) {
 		if (app.isUndefined(d.name)) {
@@ -52,8 +56,6 @@ crt.createChart = function (o, title) {
 	});
 
 	var config = crt.config[which](title, data, series, categoryAxis);
-	var sel = app.typeIs(o, 'string') ? $(o) : o;
-	sel.kendoChart(config);
+	app.log('chart', app.clone(config));
+	$('#chart').kendoChart(config);
 };
-
-crt.render = function (data) {};
