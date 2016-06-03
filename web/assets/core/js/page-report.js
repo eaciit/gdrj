@@ -16,6 +16,10 @@ var menuLink = vm.menu().find(function (d) {
 	return d.href == '/' + document.URL.split('/').slice(3).join('/');
 });
 
+if (app.isUndefined(menuLink)) {
+	menuLink = '{"title":"","href":"#"}'.toObject();
+}
+
 vm.currentMenu('Report');
 vm.currentTitle(menuLink.title);
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: menuLink.title, href: menuLink.href }]);
@@ -25,6 +29,7 @@ var rpt = viewModel.report;
 
 rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', from: 'Branch', title: 'Branch' }, { _id: 'Brand', from: 'Brand', title: 'Brand' }, { _id: 'RegionC', from: 'Region', title: 'Region' }, { _id: 'Channel', from: 'Channel', title: 'Channel' }, { _id: 'From', from: 'From' }, { _id: 'To', from: 'To' }] }, { _id: 'geo', group: 'Geographical', sub: [{ _id: 'Zone', from: 'Zone', title: 'Zone' }, { _id: 'Region', from: 'Region', title: 'Region' }, { _id: 'Area', from: 'Area', title: 'Area' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'ChannelC', from: 'Channel', title: 'Channel' }, { _id: 'KeyAccount', from: 'KeyAccount', title: 'Accounts' }, { _id: 'Customer', from: 'Customer', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' }, { _id: 'BrandP', from: 'Brand', title: 'Brand' }, { _id: 'Product', from: 'Product', title: 'SKU' }] }, { _id: 'profit_center', group: 'Profit Center', sub: [{ _id: 'Entity', from: 'Entity', title: 'Entity' }, { _id: 'Type', from: 'Type', title: 'Type' }, { _id: 'BranchPC', from: 'Branch', title: 'Branch' }, { _id: 'HQ', from: 'HQ', title: 'HQ' }] }, { _id: 'cost_center', group: 'Cost Center', sub: [{ _id: 'Group1', from: 'Group1', title: 'Group 1' }, { _id: 'Group2', from: 'Group2', title: 'Group 2' }, { _id: 'HCostCenterGroup', from: 'HCostCenterGroup', title: 'Function' }] }, { _id: 'ledger', group: 'Ledger', sub: [{ _id: 'LedgerAccount', from: 'LedgerAccount', title: 'GL Code' }] }];
 
+rpt.mode = ko.observable('render');
 rpt.valueMasterData = {};
 rpt.masterData = {
 	geographi: ko.observableArray([])
@@ -165,10 +170,6 @@ rpt.filterMultiSelect = function (d) {
 			}
 
 			rpt.masterData[d._id](res.data);
-
-			if (d._id == 'Branch') {
-				ol.initMap();
-			}
 		});
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -214,29 +215,38 @@ rpt.prepareDrag = function () {
 		connectWith: '.pivot-section'
 	});
 };
-rpt.refreshData = function () {
-	pvt.refreshData();
-	ol.mark();
+rpt.init = function () {
+	return app.noop;
+};
+rpt.refresh = function () {
+	return app.noop;
 };
 
 $(function () {
-	// vm.showFilterCallback = () => {
-	// 	$('.panel-content-pivot').removeClass('col-md-12')
-	// 	$('.panel-content-pivot').addClass('col-md-6')
+	var $contentPivot = $('.panel-content-pivot');
+	var $contentMap = $('.panel-content-map');
+	var $btnInfo = $('.btn-info');
 
-	// 	$('.panel-content-map').removeClass('col-md-12')
-	// 	$('.panel-content-map').addClass('col-md-6')
+	vm.expandToggleContent = function (a, b) {
+		$contentPivot.toggleClass('col-md-12 col-md-6');
+		$contentMap.toggleClass('col-md-12 col-md-6');
+		$btnInfo.find('.fa').toggleClass('fa-compress');
 
-	// 	pvt.showAndRefreshPivot()
-	// }
-	// vm.hideFilterCallback = () => {
-	// 	$('.panel-content-pivot').removeClass('col-md-6')
-	// 	$('.panel-content-pivot').addClass('col-md-12')
+		ol.map._onResize();
 
-	// 	$('.panel-content-map').removeClass('col-md-6')
-	// 	$('.panel-content-map').addClass('col-md-12')
-	// }
+		if ($contentPivot.hasClass('col-md-12')) {
+			$contentPivot.removeClass('no-padding-left').addClass('no-padding');
+			$contentMap.removeClass('no-padding-right').addClass('no-padding');
+
+			$contentMap.insertBefore($contentPivot);
+		} else {
+			$contentPivot.removeClass('no-padding').addClass('no-padding-left');
+			$contentMap.removeClass('no-padding').addClass('no-padding-right');
+
+			$contentPivot.insertBefore($contentMap);
+		}
+	};
 
 	rpt.prepareDrag();
-	pvt.init();
+	rpt.init();
 });

@@ -3,7 +3,7 @@ package controller
 import (
 	"eaciit/gdrj/model"
 	"eaciit/gdrj/web/helper"
-	// "fmt"
+	"eaciit/gdrj/web/model"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
@@ -154,6 +154,17 @@ func (m *ReportController) GetDataKeyAccount(r *knot.WebContext) interface{} {
 	res, err := gdrj.KeyAccountGetAll()
 	if err != nil {
 		return helper.CreateResult(false, []*gdrj.KeyAccount{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
+func (m *ReportController) GetDataAnalysisIdea(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gocore.AnalysisIdeaGetAll()
+	if err != nil {
+		return helper.CreateResult(false, []*gocore.AnalysisIdea{}, err.Error())
 	}
 
 	return helper.CreateResult(true, res, "")

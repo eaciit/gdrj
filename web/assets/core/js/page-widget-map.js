@@ -44,6 +44,18 @@ ol.initMap = function () {
 	ol.mark();
 };
 
+ol.init = function () {
+	var detector = null;
+	detector = setInterval(function () {
+		if (rpt.masterData.Branch().length == 0) {
+			return;
+		}
+
+		clearInterval(detector);
+		ol.initMap();
+	}, 100);
+};
+
 ol.mark = function () {
 	ol.mapData.forEach(function (d) {
 		if (typeof d.marker !== 'undefined') {
