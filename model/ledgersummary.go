@@ -48,7 +48,7 @@ func (s *LedgerSummary) TableName() string {
 }
 
 func (s *LedgerSummary) PreSave()error{
-	s.ID=s.PrepareID()
+	s.ID=s.PrepareID().(string)
 	return nil
 }
 
