@@ -32,6 +32,9 @@
 						<button class="btn btn-sm btn-primary" data-bind="click: rpt.refresh">
 							<i class="fa fa-refresh"></i> Refresh
 						</button>
+						<button class="btn btn-sm btn-info btn-expand" data-bind="click: rpt.expandToggleContent">
+							<i class="fa fa-expand"></i>
+						</button>
 					</div>
 				</div>
 			</div>
@@ -52,10 +55,10 @@
 	<script src="/res/core/js/page-report-analysis.js"></script>
 
 	<div class="col-md-9 col-sm-9 ez panel-content">
-		<div class="col-md-6 col-sm-6 no-padding-left hardcore panel-content-pivot">
+		<div class="col-md-6 col-sm-6 no-padding-left hardcore panel-content-expandable panel-content-left">
 			{{template "page-widget-pivot.html"}}
 		</div>
-		<div class="col-md-6 col-sm-6 no-padding-right hardcore panel-content-map">
+		<div class="col-md-6 col-sm-6 no-padding-right hardcore panel-content-expandable panel-content-right">
 			{{template "page-widget-chart.html"}}
 		</div>
 	</div>

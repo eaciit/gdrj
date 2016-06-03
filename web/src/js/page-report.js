@@ -238,6 +238,27 @@ rpt.prepareDrag = () => {
 	    connectWith: '.pivot-section'
 	})
 }
+
+rpt.expandToggleContent = () => {
+	let btnExpand = $('.btn-expand')
+	let panel = $('.panel-content-expandable')
+	let panelLeft = $('.panel-content-left')
+	let panelRight = $('.panel-content-right')
+
+	if (panel.hasClass('col-md-12')) {
+		panel.removeClass('col-md-12 no-padding').addClass('col-md-6')
+		panelLeft.addClass('no-padding-left')
+		panelRight.addClass('no-padding-right')
+	} else {
+		panel.removeClass('col-md-6').addClass('col-md-12 no-padding')
+		panelLeft.removeClass('no-padding-left')
+		panelRight.removeClass('no-padding-right')
+	}
+
+	btnExpand.find('.fa').toggleClass('fa-compress')
+	ol.map._onResize()
+}
+
 rpt.init = () => app.noop
 rpt.refresh = () => app.noop
 
@@ -256,26 +277,6 @@ $(() => {
 	let $contentPivot = $('.panel-content-pivot')
 	let $contentMap = $('.panel-content-map')
 	let $btnInfo = $('.btn-info')
-
-	vm.expandToggleContent = (a, b) => {
-		$contentPivot.toggleClass('col-md-12 col-md-6')
-		$contentMap.toggleClass('col-md-12 col-md-6')
-		$btnInfo.find('.fa').toggleClass('fa-compress')
-
-		ol.map._onResize()
-
-		if ($contentPivot.hasClass('col-md-12')) {
-			$contentPivot.removeClass('no-padding-left').addClass('no-padding')
-			$contentMap.removeClass('no-padding-right').addClass('no-padding')
-
-			$contentMap.insertBefore($contentPivot)
-		} else {
-			$contentPivot.removeClass('no-padding').addClass('no-padding-left')
-			$contentMap.removeClass('no-padding').addClass('no-padding-right')
-
-			$contentPivot.insertBefore($contentMap)
-		}
-	}
 
 	rpt.getIdeas()
 	rpt.prepareDrag()
