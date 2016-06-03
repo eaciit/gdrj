@@ -84,15 +84,16 @@ func setinitialvariable() {
 
 }
 
+func clearpastdata() {
+	//next
+	return
+}
+
 func getheaderfilter() (dboxf *dbox.Filter) {
 	ardboxf := make([]*dbox.Filter, 0, 0)
-	// switch cat {
-	// case "monthly":
-	// 	ardboxf = append(ardboxf, dbox.Eq("month", from.Month()))
-	// 	ardboxf = append(ardboxf, dbox.Eq("year", from.Year()))
-	// default:
+
 	ardboxf = append(ardboxf, dbox.Gte("date", startperiode))
-	ardboxf = append(ardboxf, dbox.Lt("date", endperiode))
+	ardboxf = append(ardboxf, dbox.Lte("date", endperiode))
 	// }
 
 	// iarrskuid := []interface{}{}
@@ -270,6 +271,7 @@ func main() {
 
 	setinitialconnection()
 	setinitialvariable()
+	clearpastdata()
 
 	defer gdrj.CloseDb()
 	toolkit.Println("START DATE : [", startperiode, "] END DATE : [", endperiode, "]")
