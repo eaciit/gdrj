@@ -32,15 +32,18 @@ cc.render = () => {
 	let $container = $('.chart-container')
 	$container.empty()
 
-	cc.selectedIdeas().forEach((d) => {
+	cc.selectedIdeas().forEach((d, i) => {
 		let o = $(`<div class="col-md-12 col-sm-12 no-padding hardcore">
 			<div class="chart chart-${d._id}" style="height: 300px;"></div>
 		</div>`)
 		$container.append(o)
 
-		let series = [{ field: 'actual' }, { field: 'plan' }]
+		let series = [
+			{ field: 'actual', color: app.seriesColorsGodrej[0] },
+			{ field: 'plan', color: app.seriesColorsGodrej[1] }
+		]
 		let data = cc.dataTemp
-		crt.createChart(`.chart-${d._id}`, d.name, series, data, 'activity')
+		crt.createChart(`.chart-${d._id}`, d.name, [series[i]], data, 'activity')
 	})
 }
 
