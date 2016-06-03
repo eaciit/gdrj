@@ -8,8 +8,8 @@ import (
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	"time"
 	"math"
+	"time"
 )
 
 var _db *orm.DataContext
@@ -96,31 +96,31 @@ func Find(o orm.IModel, filter *dbox.Filter, config toolkit.M) (dbox.ICursor, er
 }
 
 type Date struct {
-	ID      string
-	Date    time.Time
-	Month   time.Month
-	Quarter int
-	YearTxt string
+	ID         string
+	Date       time.Time
+	Month      time.Month
+	Quarter    int
+	YearTxt    string
 	QuarterTxt string
-	Year    int
+	Year       int
 }
 
-func NewDate(yr,mth,dt int)*Date{
+func NewDate(yr, mth, dt int) *Date {
 	d := new(Date)
-	d.Date = time.Date(yr,mth,dt,0,0,0,0,time.UTC)
-	d.ID = toolkit.Date2String(d.Date,"YYYYMMDD")
-	d.Month=d.Month
-	d.Year=d.Year
-	d.Quarter=int(math.Ceil(float64(d.Month)/3.0)-1.0)
-	if d.Quarter==0{
-		d.Quarter=4
+	d.Date = time.Date(yr, time.Month(mth), dt, 0, 0, 0, 0, time.UTC)
+	d.ID = toolkit.Date2String(d.Date, "YYYYMMDD")
+	d.Month = d.Month
+	d.Year = d.Year
+	d.Quarter = int(math.Ceil(float64(d.Month)/3.0) - 1.0)
+	if d.Quarter == 0 {
+		d.Quarter = 4
 	}
-	if d.Quarter<4{
-		d.QuarterTxt=toolkit.Sprintf("%d-%d Q%d",
-			d.Year,d.Year+1,d.Quarter)
+	if d.Quarter < 4 {
+		d.QuarterTxt = toolkit.Sprintf("%d-%d Q%d",
+			d.Year, d.Year+1, d.Quarter)
 	} else {
-		d.QuarterTxt=toolkit.Sprintf("%d-%d Q%d",
-			d.Year-1,d.Year,d.Quarter)
+		d.QuarterTxt = toolkit.Sprintf("%d-%d Q%d",
+			d.Year-1, d.Year, d.Quarter)
 	}
 	return d
 }
