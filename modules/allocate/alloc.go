@@ -27,6 +27,8 @@ func (a *Allocation) getCursor(conn dbox.IConnection, filter *dbox.Filter)(dbox.
         From(ls0.TableName()).
         Where(filter)
     
+    q = q.Group("plcode")
+    q = q.Group("ledgeraccount")
     if a.HasOutlet{
         q = q.Group("outletid")
     }
@@ -57,7 +59,6 @@ func (a *Allocation) Allocate(conn dbox.IConnection, filter *dbox.Filter, outTo 
     }
     defer c.Close()
     
-    loop := true
     for{
         m := new(toolkit.M)
         ls := new(gdrj.LedgerSummary)
@@ -81,11 +82,56 @@ func (a *Allocation) Allocate(conn dbox.IConnection, filter *dbox.Filter, outTo 
         if a.HasCC{
             f1sales = append(f1sales,dbox.Eq("ccid",m.GetString("_id.ccid")))
         }
-        f1sales = append(f1sales, dbox.Eq("",""))
+        f1sales = append(f1sales, dbox.Eq("plcode","PL8A"))
         fsales := dbox.And(f1sales...)
         
         //--- get sales for respective selections
+        e = func(){
+            var asales Allocation
+            asales = *a
+            asales.HasCC=false
+            asales.HasPC=false
+            asales.HasOutlet=true
+            asales.HasSKU=true
+            csales, ecsales := asales.getCursor(conn, fsales)
+            if ecsales!=nil {
+                return errors.New("Allocate: GetSales: " + e.Error())
+            }
+            defer csales.Close()
+            
+            loopSales:=true
+            for;loopSales;{
+                msales:=toolkit.M{}
+                esales:=csales.Fetch(&msales,1,false)    
+                if esales!=nil{
+                    return errors.New("Allocate: FetchSales: " + e.Error())
+                }
+                
+                newLs := new(gdrj.LedgerSummary)
+                newLs.CompanyCode = m.GetString("_id.companycode")
+                newLs.LedgerAccount = m.GetString("_id.ledgeraccount")
+                newLs.PLCode = m.GetString("_id.plcode")
+                newLs.PLOrder = m.GetString("_id.plorder")
+                newLs.Date = gdrj.NewDate(
+                    m.GetInt("_id.date.year"),
+                    m.GetInt("_id.date.month"),
+                    1)
+                newLs.pcid = 
+            }
+        }()
+        if e!=nil {
+            return e
+        }
     }
     
     return nil
+}
+
+func Allocate(ls *gdrj.LedgerSummary, allocate *Allocation)error{
+    filters := []*dbox.Filter{}
+    filters = append(filters, dbox.Eq("companycode",ls.CompanyCode))
+    filters = append(filters, dbox.Eq("date.year",ls.Date.Year))
+    filters = append(filters, dbox.Eq("date.month",ls.Date.Month))
+    filters = append(filters, dbox.Eq("ledgeraccount",ls.LedgerAccount))
+    filters = append(filters, dbox.Eq("plcode",ls.PLCode))  
 }
