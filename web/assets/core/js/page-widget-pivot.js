@@ -83,9 +83,12 @@ pvt.prepareTooltipster = function () {
 	});
 };
 pvt.showConfig = function () {
-	vm.hideFilter();
+	// vm.hideFilter()
 	rpt.mode('');
-	pvt.refreshData();
+};
+pvt.showAndRefreshPivot = function () {
+	// vm.showFilter()
+	rpt.mode('render');
 };
 pvt.showFieldControl = function (o) {
 	pvt.currentTargetDimension = $(o).prev();
@@ -161,11 +164,6 @@ pvt.removeFrom = function (o, which) {
 		});
 		app.arrRemoveByItem(holder, row);
 	});
-};
-pvt.showAndRefreshPivot = function () {
-	// vm.showFilter()
-	rpt.mode('render');
-	pvt.refreshData();
 };
 pvt.refreshData = function () {
 	var dimensions = ko.mapping.toJS(pvt.dimensions).map(function (d) {

@@ -199,9 +199,12 @@ pvt.prepareTooltipster = () => {
 	})
 }
 pvt.showConfig = () => {
-	vm.hideFilter()
+	// vm.hideFilter()
 	rpt.mode('')
-	pvt.refreshData()
+}
+pvt.showAndRefreshPivot = () => {
+	// vm.showFilter()
+	rpt.mode('render')
 }
 pvt.showFieldControl = (o) => {
 	pvt.currentTargetDimension = $(o).prev()
@@ -269,11 +272,6 @@ pvt.removeFrom = (o, which) => {
 		let row = holder().find((d) => ko.mapping.toJS(d).field == id)
 		app.arrRemoveByItem(holder, row)
 	})
-}
-pvt.showAndRefreshPivot = () => {
-	// vm.showFilter()
-	rpt.mode('render')
-	pvt.refreshData()
 }
 pvt.refreshData = () => {
 	let dimensions = ko.mapping.toJS(pvt.dimensions).map((d) => { return { type: 'column', field: d.field, alias: d.name } })
