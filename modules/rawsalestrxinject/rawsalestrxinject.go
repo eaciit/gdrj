@@ -16,7 +16,7 @@ import (
 
 var (
 	startperiode time.Time = time.Date(2014, 4, 1, 0, 0, 0, 0, time.UTC)
-	endperiode   time.Time = startperiode.AddDate(0, 1, -1)
+	endperiode   time.Time = startperiode.AddDate(1, 0, -1)
 	// endperiode   time.Time = startperiode.AddDate(1, 0, -1)
 	arroutletid []string
 	arrskuid    []string
@@ -26,6 +26,8 @@ var (
 
 	arsalesmonthly []*gdrj.SalesMonthly
 	mutex          = &sync.Mutex{}
+
+	countsales, icount int
 )
 
 func setinitialconnection() {
@@ -279,6 +281,10 @@ func main() {
 		toolkit.Println("Error Found : ", err.Error())
 		os.Exit(1)
 	}
+
+	countsales = cr.Count()
+	icount = 0
+
 	defer cr.Close()
 	for !iseof && cr.Count() > 0 {
 		arrsalesheader := []*gdrj.SalesHeader{}
@@ -299,7 +305,8 @@ func main() {
 		mwg.Add(1)
 		go func(tash []*gdrj.SalesHeader) {
 			for _, v := range tash {
-
+				icount += 1
+				toolkit.Printfn("%d of %d data header processing", countsales, icount)
 				vcustomer := gdrj.CustomerGetByID(toolkit.Sprintf("%v%v", v.BranchID, v.OutletID))
 
 				dbfdetail := dbox.Eq("salesheaderid", v.ID)
@@ -327,9 +334,13 @@ func main() {
 					if xv.SalesGrossAmount < 0 {
 						xvls = gdrj.GetLedgerSummaryByDetail("70000302", xvprofitcenter.ID, "", vcustomer.ID, xvproduct.ID, v.Date.Year(), v.Date.Month())
 						xvls.LedgerAccount = "70000302"
+						xvls.PLCode = "PL01"
+						xvls.PLOrder = "PL0001"
 					} else {
 						xvls = gdrj.GetLedgerSummaryByDetail("70000000", xvprofitcenter.ID, "", vcustomer.ID, xvproduct.ID, v.Date.Year(), v.Date.Month())
 						xvls.LedgerAccount = "70000000"
+						xvls.PLCode = "PL04"
+						xvls.PLOrder = "PL0004"
 					}
 					xvls.Value1 += xv.SalesGrossAmount
 
@@ -357,25 +368,27 @@ func main() {
 
 					xvledgersummarydisc := gdrj.GetLedgerSummaryByDetail("75053730", xvprofitcenter.ID, "", vcustomer.ID, xvproduct.ID, v.Date.Year(), v.Date.Month())
 					xvledgersummarydisc.LedgerAccount = "75053730"
+					xvledgersummarydisc.PLCode = "PL07"
+					xvledgersummarydisc.PLOrder = "PL0007"
 					xvledgersummarydisc.Value1 += allocdiscount
 					if xv.SalesGrossAmount > xv.SalesNetAmount {
 						xvledgersummarydisc.Value1 += (xv.SalesGrossAmount - xv.SalesNetAmount)
 					}
 
 					if xvledgersummarydisc.ID == "" {
-						xvls.ID = toolkit.RandomString(32)
-						xvls.PC = xvprofitcenter
-						xvls.CompanyCode = "ID11"
-						xvls.Customer = vcustomer
-						xvls.Product = xvproduct
-						xvls.Date = &gdrj.Date{
+						xvledgersummarydisc.ID = toolkit.RandomString(32)
+						xvledgersummarydisc.PC = xvprofitcenter
+						xvledgersummarydisc.CompanyCode = "ID11"
+						xvledgersummarydisc.Customer = vcustomer
+						xvledgersummarydisc.Product = xvproduct
+						xvledgersummarydisc.Date = &gdrj.Date{
 							Month: v.Date.Month(),
 							Year:  v.Date.Year()}
-						xvls.PCID = xvprofitcenter.ID
-						xvls.OutletID = vcustomer.ID
-						xvls.SKUID = xvproduct.ID
-						xvls.Month = v.Date.Month()
-						xvls.Year = v.Date.Year()
+						xvledgersummarydisc.PCID = xvprofitcenter.ID
+						xvledgersummarydisc.OutletID = vcustomer.ID
+						xvledgersummarydisc.SKUID = xvproduct.ID
+						xvledgersummarydisc.Month = v.Date.Month()
+						xvledgersummarydisc.Year = v.Date.Year()
 					}
 
 					if allocdiscount > 0 || (xv.SalesGrossAmount-xv.SalesNetAmount) > 0 {
