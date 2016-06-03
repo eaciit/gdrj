@@ -256,6 +256,16 @@ rpt.expandToggleContent = () => {
 	}
 
 	btnExpand.find('.fa').toggleClass('fa-compress')
+
+	let pivot = $('.k-pivot').data('kendoPivotGrid')
+	if (app.isDefined(pivot)) {
+		$('.k-pivot').data('kendoPivotGrid').refresh()
+	}
+
+	let chart = $('.k-chart').data('kendoChart')
+	if (app.isDefined(chart)) {
+		$('.k-chart').data('kendoChart').refresh()
+	}
 }
 
 rpt.init = () => app.noop

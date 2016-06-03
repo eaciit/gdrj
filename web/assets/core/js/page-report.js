@@ -216,6 +216,16 @@ rpt.expandToggleContent = function () {
 	}
 
 	btnExpand.find('.fa').toggleClass('fa-compress');
+
+	var pivot = $('.k-pivot').data('kendoPivotGrid');
+	if (app.isDefined(pivot)) {
+		$('.k-pivot').data('kendoPivotGrid').refresh();
+	}
+
+	var chart = $('.k-chart').data('kendoChart');
+	if (app.isDefined(chart)) {
+		$('.k-chart').data('kendoChart').refresh();
+	}
 };
 
 rpt.init = function () {
