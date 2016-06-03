@@ -28,15 +28,16 @@ func setinitialconnection() {
 }
 
 var (
-	arrstring = []string{"SAP_SGAPL"}
-	arrcount  = []int{0}
+	// arrstring = []string{"SAP_SGAPL", "SAP_APINTRA", "SAP_MEGASARI", "SAP_SUSEMI", "SAP_DISC-RDJKT", "SAP_FREIGHT", "SAP_SALESRD"}
+	arrstring = []string{"SAP_APINTRA", "SAP_MEGASARI", "SAP_SUSEMI", "SAP_DISC-RDJKT", "SAP_FREIGHT", "SAP_SALESRD"}
+	arrcount  = []int{0, 0, 0, 0, 0, 0, 0, 0}
 )
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	var mwg sync.WaitGroup
 	setinitialconnection()
-	defer gdrj.CloseDb()
+	// defer gdrj.CloseDb()
 	// tkmmap := toolkit.M{}
 
 	toolkit.Println("START...")
@@ -51,7 +52,7 @@ func main() {
 
 		arrcount[i] = crx.Count()
 		mwg.Add(1)
-		go func(xi int, xcrx dbox.ICursor) {
+		func(xi int, xcrx dbox.ICursor) {
 			defer mwg.Done()
 			ci := 0
 			iseof := false

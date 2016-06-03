@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	countsales, icount int = 0, 0
+	countsales, icount, vskip int = 0, 0, 0
 )
 
 func setinitialconnection() {
@@ -44,29 +44,38 @@ func main() {
 	}
 
 	countsales = crx.Count()
-	icount = 0
+	crx.Close()
 
+	icount = 0
 	iseof := false
-	for !iseof {
-		arrsh := []*gdrj.SalesHeader{}
-		err = crx.Fetch(&arrsh, 10000, false)
+	for !iseof && countsales > 0 {
+		acrx, err := gdrj.Find(new(gdrj.SalesHeader), nil, toolkit.M{}.Set("take", 1000).Set("skip", vskip))
 		if err != nil {
 			toolkit.Println("Error Found : ", err.Error())
 			os.Exit(1)
 		}
+		vskip += 100000
 
-		if len(arrsh) < 10000 {
+		arrsh := []*gdrj.SalesHeader{}
+		err = acrx.Fetch(&arrsh, 0, false)
+		if err != nil {
+			toolkit.Println("Error Found : ", err.Error())
+			os.Exit(1)
+		}
+		acrx.Close()
+
+		if len(arrsh) < 1000 {
 			iseof = false
 		}
 
 		mwg.Add(1)
-		go func(garrsh []*gdrj.SalesHeader) {
+		func(garrsh []*gdrj.SalesHeader) {
 			defer mwg.Done()
 
-			for _, gv := range garrsh {
+			for ix, gv := range garrsh {
 				icount += 1
 
-				toolkit.Printfn("%d of %d data header processing", icount, countsales)
+				toolkit.Printfn("%d of %d data header processing. %d of %d", icount, countsales, ix, len(garrsh))
 
 				dbfdetail := dbox.Eq("salesheaderid", gv.ID)
 				gcr, err := gdrj.Find(new(gdrj.SalesDetail), dbfdetail, nil)
@@ -111,8 +120,6 @@ func main() {
 			}
 		}(arrsh)
 	}
-
-	crx.Close()
 
 	mwg.Wait()
 	toolkit.Println("END...")
