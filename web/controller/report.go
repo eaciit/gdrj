@@ -203,3 +203,137 @@ func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interfa
 
 	return helper.CreateResult(true, res, "")
 }
+
+func (m *ReportController) SummaryCalculateDataPivotDummy(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res := new(toolkit.Result)
+
+	// ============= PAYLOAD
+
+	payload := new(gdrj.PivotParam)
+	rawPayload := `{
+		"dimensions": [
+			{ "type": "column", "field": "Category", "alias": "Data Category" },
+			{ "type": "column", "field": "Date", "alias": "Data Date" },
+			{ "type": "row", "field": "Location", "alias": "Data Location" }
+		],
+		"datapoints": [
+			{ "op": "sum", "field": "Value", "alias": "Value" }
+		]
+	}`
+	if err := toolkit.Unjson([]byte(rawPayload), payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	// ============= DATA
+
+	data := []struct {
+		ID       string `json:"_id"`
+		Location string
+		Category string
+		Date     string
+		Value    float64
+	}{}
+	rawData := `[
+		{ "_id": "A0001", "Location": "Jakarta", "Category": "Gross Sales", "Date": "2016-06-02", "Value": 100 },
+		{ "_id": "A0002", "Location": "Malang", "Category": "Gross Sales", "Date": "2016-06-03", "Value": 90 },
+		{ "_id": "A0003", "Location": "Yogyakarta", "Category": "Gross Sales", "Date": "2016-06-04", "Value": 80 },
+		{ "_id": "A0004", "Location": "Jakarta", "Category": "Discount", "Date": "2016-06-02", "Value": 95 },
+		{ "_id": "A0005", "Location": "Malang", "Category": "Discount", "Date": "2016-06-03", "Value": 105 },
+		{ "_id": "A0006", "Location": "Yogyakarta", "Category": "Discount", "Date": "2016-06-04", "Value": 85 },
+		{ "_id": "A0007", "Location": "Jakarta", "Category": "Net Sales", "Date": "2016-06-02", "Value": 80 },
+		{ "_id": "A0008", "Location": "Malang", "Category": "Net Sales", "Date": "2016-06-03", "Value": 90 },
+		{ "_id": "A0009", "Location": "Yogyakarta", "Category": "Net Sales", "Date": "2016-06-04", "Value": 100 }
+	]`
+	if err := toolkit.Unjson([]byte(rawData), &data); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	// ============= META DATA
+
+	metaData := struct {
+		SchemaModelFields    toolkit.M
+		SchemaCubeDimensions toolkit.M
+		SchemaCubeMeasures   toolkit.M
+		Columns              []toolkit.M
+		Rows                 []toolkit.M
+		Measures             []string
+	}{
+		toolkit.M{},
+		toolkit.M{},
+		toolkit.M{},
+		[]toolkit.M{},
+		[]toolkit.M{},
+		[]string{},
+	}
+
+	rawSchemaModelFields := `{
+		"_id": { "type": "string" },
+		"Location": { "type": "Location" },
+		"Category": { "type": "Category" },
+		"Date": { "type": "Date" },
+		"Value": { "type": "Value" }
+	}`
+	if err := toolkit.Unjson([]byte(rawSchemaModelFields), &(metaData.SchemaModelFields)); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	rawSchemaCubeDimensions := `{
+		"Location": { "caption": "Location" },
+		"Category": { "caption": "Category" },
+		"Date": { "caption": "Date" }
+	}`
+	if err := toolkit.Unjson([]byte(rawSchemaCubeDimensions), &(metaData.SchemaCubeDimensions)); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	rawSchemaCubeMeasures := `{
+		"Sum_Value": { "field": "Value", "aggregate": "sum" }
+	}`
+	if err := toolkit.Unjson([]byte(rawSchemaCubeMeasures), &(metaData.SchemaCubeMeasures)); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	rawColumns := `[
+		{ "name": "Category", "expand": true },
+		{ "name": "Date", "expand": true }
+	]`
+	if err := toolkit.Unjson([]byte(rawColumns), &(metaData.Columns)); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	rawRows := `[
+		{ "name": "Location", "expand": true }
+	]`
+	if err := toolkit.Unjson([]byte(rawRows), &(metaData.Rows)); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	rawMeasures := `["Sum_Value"]`
+	if err := toolkit.Unjson([]byte(rawMeasures), &(metaData.Measures)); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	// ============= OUTPUT
+
+	output := struct {
+		Data     interface{}
+		MetaData interface{}
+	}{
+		data,
+		metaData,
+	}
+
+	res.SetData(output)
+
+	return res
+}

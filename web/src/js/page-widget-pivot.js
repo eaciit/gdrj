@@ -286,12 +286,8 @@ pvt.refreshData = () => {
 		})
 
 	let param = { dimensions: dimensions, datapoints: dataPoints }
-	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
-		if (!app.isFine(res)) {
-			return
-		}
-
-		if (res.data.length == 0) {
+	app.ajaxPost("/report/summarycalculatedatapivotdummy", param, (res) => {
+		if (res.Data.length == 0) {
 			return
 		}
 
@@ -299,19 +295,19 @@ pvt.refreshData = () => {
 	        filterable: false,
 	        reorderable: false,
 	        dataSource: {
-				data: res.data.data,
+				data: res.Data.Data,
 				schema: {
 					model: {
-						fields: res.data.metadata.SchemaModelFields
+						fields: res.Data.MetaData.SchemaModelFields
 					},
 					cube: {
-						dimensions: res.data.metadata.SchemaCubeDimension,
-						measures: res.data.metadata.SchemaCubeMeasures
+						dimensions: res.Data.MetaData.SchemaCubeDimensions,
+						measures: res.Data.MetaData.SchemaCubeMeasures
 					}
 				},
-				columns: res.data.metadata.Columns,
-				rows: res.data.metadata.Rows,
-				measures: res.data.metadata.Measures
+				columns: res.Data.MetaData.Columns,
+				rows: res.Data.MetaData.Rows,
+				measures: res.Data.MetaData.Measures
 			}
 	    }
 
