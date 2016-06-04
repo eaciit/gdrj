@@ -80,7 +80,9 @@ crt.data = ko.observableArray([]);
 crt.series = ko.observableArray([]);
 
 crt.render = function () {
-	var series = crt.series().map(function (d) {
+	var series = ko.mapping.toJS(crt.series).filter(function (d) {
+		return d.field != '';
+	}).map(function (d) {
 		if (app.isUndefined(d.name)) {
 			d.name = d.field;
 		}
@@ -99,8 +101,8 @@ crt.getParam = function () {
 	var row = ra.optionDimensions().find(function (d) {
 		return d.field == crt.categoryAxisField();
 	});
-	var dataPoints = ko.mapping.toJS(pvt.dataPoints).filter(function (d) {
-		return d.field != '' && d.aggr != '';
+	var dataPoints = ko.mapping.toJS(crt.series).filter(function (d) {
+		return d.field != '';
 	}).map(function (d) {
 		return {
 			field: d.field,
@@ -115,8 +117,8 @@ crt.getParam = function () {
 	};
 };
 crt.refresh = function () {
-	// pvt.data(DATATEMP_PIVOT)
-	crt.series([{ field: 'value1', name: 'Gross Sales' }, { field: 'value2', name: 'Discount' }, { field: 'value3', name: 'Net Sales' }]);
+	// crt.data(DATATEMP_PIVOT)
+	crt.series([app.koMap({ field: 'value1', name: 'Gross Sales' }), app.koMap({ field: 'value2', name: 'Discount' }), app.koMap({ field: 'value3', name: 'Net Sales' })]);
 	app.ajaxPost("/report/summarycalculatedatapivot", crt.getParam(), function (res) {
 		crt.data(res.Data);
 		crt.render();

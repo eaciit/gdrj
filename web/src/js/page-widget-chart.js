@@ -79,13 +79,15 @@ crt.data = ko.observableArray([])
 crt.series = ko.observableArray([])
 
 crt.render = () => {
-	let series = crt.series().map((d) => {
-		if (app.isUndefined(d.name)) {
-			d.name = d.field
-		}
+	let series = ko.mapping.toJS(crt.series)
+		.filter((d) => (d.field != ''))
+		.map((d) => {
+			if (app.isUndefined(d.name)) {
+				d.name = d.field
+			}
 
-		return d
-	})
+			return d
+		})
 
 	let config = crt.configure(series)
 	app.log('chart', app.clone(config))
@@ -109,8 +111,8 @@ let DATATEMP_TABLE = [
 
 crt.getParam = () => {
 	let row = ra.optionDimensions().find((d) => (d.field == crt.categoryAxisField()))
-	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
-		.filter((d) => (d.field != '') && (d.aggr != ''))
+	let dataPoints = ko.mapping.toJS(crt.series)
+		.filter((d) => (d.field != ''))
 		.map((d) => { return { 
 			field: d.field, 
 			name: d.name, 
@@ -123,11 +125,11 @@ crt.getParam = () => {
 	}
 }
 crt.refresh = () => {
-	// pvt.data(DATATEMP_PIVOT)
+	// crt.data(DATATEMP_PIVOT)
 	crt.series([
-		{ field: 'value1', name: 'Gross Sales' },
-		{ field: 'value2', name: 'Discount' },
-		{ field: 'value3', name: 'Net Sales' }
+		app.koMap({ field: 'value1', name: 'Gross Sales' }),
+		app.koMap({ field: 'value2', name: 'Discount' }),
+		app.koMap({ field: 'value3', name: 'Net Sales' })
 	])
 	app.ajaxPost("/report/summarycalculatedatapivot", crt.getParam(), (res) => {
 		crt.data(res.Data)
