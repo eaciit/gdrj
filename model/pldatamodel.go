@@ -53,9 +53,9 @@ func BuildPLDataModel(conn dbox.IConnection, plcode string, filter *dbox.Filter,
 	return nil
 }
 
-/*
 func doBuild(msource toolkit.M, filter *dbox.Filter, ag *AllocationGroup){
     //--- get the sales and grouped by required group
+    /*
     filterSales := dbox.And(dbox.Eq("plcode","PL008A"), filter)
     qsales := conn.NewQuery().From(ls.TableName()).Where(filterSales)
     groupbys := []string{}
@@ -84,5 +84,5 @@ func doBuild(msource toolkit.M, filter *dbox.Filter, ag *AllocationGroup){
             break
         }
     }
+    */
 }
-*/

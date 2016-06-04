@@ -3,10 +3,11 @@ package main
 import (
 	"eaciit/gdrj/model"
 	"eaciit/gdrj/modules"
-	"github.com/eaciit/dbox"
-	"github.com/eaciit/toolkit"
 	"os"
 	"runtime"
+
+	"github.com/eaciit/dbox"
+	"github.com/eaciit/toolkit"
 	// "strings"
 	"sync"
 	"time"
@@ -42,84 +43,84 @@ func main() {
 
 	toolkit.Println("START...")
 
-	for i, src := range arrstring {
-		dbf := dbox.Contains("src", src)
-		crx, err := gdrj.Find(new(gdrj.RawDataPL), dbf, nil)
-		if err != nil {
-			toolkit.Println("Error Found : ", err.Error())
-			os.Exit(1)
-		}
+	//for i, src := range arrstring {
+	//dbf := dbox.Contains("src", src)
+	crx, err := gdrj.Find(new(gdrj.RawDataPL), nil, nil)
+	if err != nil {
+		toolkit.Println("Error Found : ", err.Error())
+		os.Exit(1)
+	}
 
-		arrcount[i] = crx.Count()
-		mwg.Add(1)
-		func(xi int, xcrx dbox.ICursor) {
-			defer mwg.Done()
-			ci := 0
-			iseof := false
-			for !iseof {
-				arrpl := []*gdrj.RawDataPL{}
-				_ = xcrx.Fetch(&arrpl, 1000, false)
+	i := 0
+	arrcount[i] = crx.Count()
+	mwg.Add(1)
+	func(xi int, xcrx dbox.ICursor) {
+		defer mwg.Done()
+		ci := 0
+		iseof := false
+		for !iseof {
+			arrpl := []*gdrj.RawDataPL{}
+			_ = xcrx.Fetch(&arrpl, 1000, false)
 
-				if len(arrpl) < 1000 {
-					iseof = true
-				}
-
-				for _, v := range arrpl {
-					tdate := time.Date(v.Year, time.Month(v.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
-
-					ls := new(gdrj.LedgerSummary)
-					ls.CompanyCode = v.EntityID
-					ls.LedgerAccount = v.Account
-
-					ls.Year = tdate.Year()
-					ls.Month = tdate.Month()
-					ls.Date = &gdrj.Date{
-						Month: tdate.Month(),
-						Year:  tdate.Year()}
-
-					ls.PCID = v.PCID
-					if v.PCID != "" {
-						ls.PC = gdrj.ProfitCenterGetByID(v.PCID)
-					}
-
-					ls.CCID = v.CCID
-					if v.CCID != "" {
-						ls.CC = gdrj.CostCenterGetByID(v.CCID)
-					}
-
-					ls.OutletID = v.OutletID
-					if v.OutletID != "" {
-						ls.Customer = gdrj.CustomerGetByID(v.OutletID)
-					}
-
-					ls.SKUID = v.SKUID
-					if v.SKUID != "" {
-						ls.Product = gdrj.ProductGetBySKUID(v.SKUID)
-					}
-
-					ls.Value1 = v.AmountinIDR
-					ls.Value2 = v.AmountinUSD
-
-					tLedgerAccount := gdrj.LedgerMasterGetByID(ls.LedgerAccount)
-
-					ls.PLCode = tLedgerAccount.PLCode
-					ls.PLOrder = tLedgerAccount.OrderIndex
-
-					err = gdrj.Save(ls)
-					if err != nil {
-						toolkit.Println("Error Found : ", err.Error())
-						os.Exit(1)
-					}
-
-					ci++
-				}
-
-				toolkit.Printfn("[%v] %d of %d Processed", arrstring[xi], ci, arrcount[xi])
+			if len(arrpl) < 1000 {
+				iseof = true
 			}
 
-		}(i, crx)
+			for _, v := range arrpl {
+				tdate := time.Date(v.Year, time.Month(v.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 
-	}
+				ls := new(gdrj.LedgerSummary)
+				ls.CompanyCode = v.EntityID
+				ls.LedgerAccount = v.Account
+
+				ls.Year = tdate.Year()
+				ls.Month = tdate.Month()
+				ls.Date = &gdrj.Date{
+					Month: tdate.Month(),
+					Year:  tdate.Year()}
+
+				ls.PCID = v.PCID
+				if v.PCID != "" {
+					ls.PC = gdrj.ProfitCenterGetByID(v.PCID)
+				}
+
+				ls.CCID = v.CCID
+				if v.CCID != "" {
+					ls.CC = gdrj.CostCenterGetByID(v.CCID)
+				}
+
+				ls.OutletID = v.OutletID
+				if v.OutletID != "" {
+					ls.Customer = gdrj.CustomerGetByID(v.OutletID)
+				}
+
+				ls.SKUID = v.SKUID
+				if v.SKUID != "" {
+					ls.Product = gdrj.ProductGetBySKUID(v.SKUID)
+				}
+
+				ls.Value1 = v.AmountinIDR
+				ls.Value2 = v.AmountinUSD
+
+				tLedgerAccount := gdrj.LedgerMasterGetByID(ls.LedgerAccount)
+
+				ls.PLCode = tLedgerAccount.PLCode
+				ls.PLOrder = tLedgerAccount.OrderIndex
+
+				ls.ID = ls.PrepareID().(string)
+				err = gdrj.Save(ls)
+				if err != nil {
+					toolkit.Println("Error Found : ", err.Error())
+					os.Exit(1)
+				}
+
+				ci++
+			}
+
+			toolkit.Printfn("%d of %d Processed", ci, arrcount[xi])
+		}
+
+	}(i, crx)
 
 	mwg.Wait()
 	toolkit.Println("END...")
