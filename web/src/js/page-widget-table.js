@@ -35,6 +35,7 @@ tbl.computeDimensionDataPoint = (which, field) => {
 	})
 }
 tbl.refresh = () => {
+	// pvt.data(DATATEMP_TABLE)
 	app.ajaxPost("/report/summarycalculatedatapivot", tbl.getParam(), (res) => {
 		tbl.data(res.Data)
 		tbl.render()
@@ -48,10 +49,16 @@ tbl.render = () => {
 
 	if ((tbl.dimensions().length + tbl.dataPoints().length) > 6) {
 		table.css('min-width', '600px')
+		table.parent().css('overflow-x', 'scroll')
+	} else {
+		table.css('min-width', 'inherit')
+		table.parent().css('overflow-x', 'inherit')
 	}
 
 	let dimensions = app.koUnmap(tbl.dimensions)
+		.filter((d) => (d.field != ''))
 	let dataPoints = app.koUnmap(tbl.dataPoints)
+		.filter((d) => (d.field != '') && (d.aggr != ''))
 
 	// HEADER
 
@@ -114,7 +121,9 @@ tbl.render = () => {
 
 tbl.getParam = () => {
 	let dimensions = ko.mapping.toJS(tbl.dimensions)
+		.filter((d) => (d.field != ''))
 	let dataPoints = ko.mapping.toJS(tbl.dataPoints)
+		.filter((d) => (d.field != '') && (d.field != ''))
 		.map((d) => { return { field: d.field, name: d.name, aggr: 'sum' } })
 
 	return {

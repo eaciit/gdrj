@@ -45,6 +45,7 @@ tbl.computeDimensionDataPoint = function (which, field) {
 	});
 };
 tbl.refresh = function () {
+	// pvt.data(DATATEMP_TABLE)
 	app.ajaxPost("/report/summarycalculatedatapivot", tbl.getParam(), function (res) {
 		tbl.data(res.Data);
 		tbl.render();
@@ -58,10 +59,18 @@ tbl.render = function () {
 
 	if (tbl.dimensions().length + tbl.dataPoints().length > 6) {
 		table.css('min-width', '600px');
+		table.parent().css('overflow-x', 'scroll');
+	} else {
+		table.css('min-width', 'inherit');
+		table.parent().css('overflow-x', 'inherit');
 	}
 
-	var dimensions = app.koUnmap(tbl.dimensions);
-	var dataPoints = app.koUnmap(tbl.dataPoints);
+	var dimensions = app.koUnmap(tbl.dimensions).filter(function (d) {
+		return d.field != '';
+	});
+	var dataPoints = app.koUnmap(tbl.dataPoints).filter(function (d) {
+		return d.field != '' && d.aggr != '';
+	});
 
 	// HEADER
 
@@ -123,8 +132,12 @@ tbl.render = function () {
 };
 
 tbl.getParam = function () {
-	var dimensions = ko.mapping.toJS(tbl.dimensions);
-	var dataPoints = ko.mapping.toJS(tbl.dataPoints).map(function (d) {
+	var dimensions = ko.mapping.toJS(tbl.dimensions).filter(function (d) {
+		return d.field != '';
+	});
+	var dataPoints = ko.mapping.toJS(tbl.dataPoints).filter(function (d) {
+		return d.field != '' && d.field != '';
+	}).map(function (d) {
 		return { field: d.field, name: d.name, aggr: 'sum' };
 	});
 

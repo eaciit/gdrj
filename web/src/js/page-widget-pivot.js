@@ -6,7 +6,7 @@ pvt.templateDataPoint = {
 	field: '',
 	name: ''
 }
-pvt.templateRowColumn = {
+pvt.templateDimension = {
 	field: '',
 	name: ''
 }
@@ -29,85 +29,13 @@ pvt.setMode = (what) => () => {
 		pvt.refresh()
 	}
 }
-pvt.prepareTooltipster = () => {
-	let config = {
-		contentAsHTML: true,
-		interactive: true,
-		theme: 'tooltipster-whi',
-		animation: 'grow',
-		delay: 0,
-		offsetY: -5,
-		touchDevices: false,
-		trigger: 'click',
-		position: 'top'
-	}
-	
-	$('.tooltipster-dimension').each((i, e) => {
-		$(e).tooltipster($.extend(true, config, {
-			content: $(`
-				<h3 class="no-margin no-padding">Add to</h3>
-				<div>
-					<button class='btn btn-sm btn-success' data-target-module='column' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.addAs(this, "column")'>
-						<i class='fa fa-columns'></i> Column
-					</button>
-					<button class='btn btn-sm btn-success' data-target-module='row' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.addAs(this, "row")'>
-						<i class='fa fa-reorder'></i> Row
-					</button>
-				</div>
-			`)
-		}))
-	})
-	
-	$('.tooltipster-column-row').each((i, e) => {
-		let title = $(e).closest('.pivot-section').parent().prev().text()
-		$(e).tooltipster($.extend(true, config, {
-			content: $(`
-				<h3 class="no-margin no-padding">${title} setting</h3>
-				<div>
-					<button class='btn btn-sm btn-success' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.configure(this, "column")'>
-						<i class='fa fa-gear'></i> Configure
-					</button>
-					<button class='btn btn-sm btn-success' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.removeFrom()'>
-						<i class='fa fa-trash'></i> Remove
-					</button>
-				</div>
-			`)
-		}))
-	})
-}
-pvt.showConfig = () => {
-	// vm.hideFilter()
-	rpt.mode('')
-}
-pvt.showAndRefreshPivot = () => {
-	// vm.showFilter()
-	rpt.mode('render')
-}
-pvt.showFieldControl = (o) => {
-	pvt.currentTargetDimension = $(o).prev()
-}
-pvt.hoverInModule = (o) => {
-	let target = $(o).attr('data-target-module')
-	$(`[data-module="${target}"]`).addClass('highlight')
-}
-pvt.hoverOutModule = (o) => {
-	let target = $(o).attr('data-target-module')
-	$(`[data-module="${target}"]`).removeClass('highlight')
-}
-pvt.getData = (callback) => {
-	app.ajaxPost("/report/getdatapivot", {}, (res) => {
-		if (!app.isUndefined(callback)) {
-			callback(res)
-		}
-	})
-}
 pvt.addColumn = () => {
-	let row = ko.mapping.fromJS(app.clone(pvt.templateRowColumn))
-	pvt.dimensions.push(row)
+	let row = ko.mapping.fromJS(app.clone(pvt.templateDimension))
+	pvt.columns.push(row)
 	app.prepareTooltipster($(".pivot-section-columns .input-group:last .tooltipster"))
 }
 pvt.addRow = () => {
-	let row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint))
+	let row = ko.mapping.fromJS(app.clone(pvt.templateDimension))
 	pvt.rows.push(row)
 	app.prepareTooltipster($(".pivot-section-row .input-group:last .tooltipster"))
 }
@@ -115,18 +43,6 @@ pvt.addDataPoint = () => {
 	let row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint))
 	pvt.dataPoints.push(row)
 	app.prepareTooltipster($(".pivot-section-data-point .input-group:last .tooltipster"))
-}
-pvt.addAs = (o, what) => {
-	let holder = pvt[`${what}s`]
-	let id = $(pvt.currentTargetDimension).attr('data-id')
-
-	let isAddedOnColumn = (typeof ko.mapping.toJS(pvt.dimensions()).find((d) => d.field === id) !== 'undefined')
-	let isAddedOnRow    = (typeof ko.mapping.toJS(pvt.rows   ()).find((d) => d.field === id) !== 'undefined')
-
-	if (!(isAddedOnColumn || isAddedOnRow)) {
-		let row = pvt.optionDimensions().find((d) => d.field === id)
-		holder.push(ko.mapping.fromJS({ field: row.field, name: row.name }))
-	}
 }
 pvt.removeFrom = (o, which) => {
 	swal({
@@ -150,29 +66,29 @@ pvt.removeFrom = (o, which) => {
 		app.arrRemoveByItem(holder, row)
 	})
 }
-pvt.getPivotConfig = () => {
-	let dimensions = ko.mapping.toJS(pvt.dimensions)
-		.map((d) => { return { type: 'column', field: d.field, name: d.name } })
-		.concat(ko.mapping.toJS(pvt.rows)
-		.map((d) => { return { type: 'row' , field: d.field, name: d.name } }))
-
+pvt.getParam = () => {
+	let dimensions = ko.mapping.toJS(pvt.rows().concat(pvt.columns()))
+		.filter((d) => (d.field != ''))
 	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
-		.filter((d) => d.field != '' && d.aggr != '')
-		.map((d) => { 
-			let row = ko.mapping.toJS(pvt.pivotModel).find((e) => e.field == d.field)
-			let name = (row == undefined) ? d.field : row.name
-			return { op: d.aggr, field: d.field, name: name }
-		})
+		.filter((d) => (d.field != '') && (d.aggr != ''))
+		.map((d) => { return { 
+			field: d.field, 
+			name: d.name, 
+			aggr: 'sum'
+		} })
 
-	let param = { dimensions: dimensions, datapoints: dataPoints }
-	return param
+	return {
+		dimensions: dimensions,
+		dataPoints: dataPoints
+	}
 }
-
 pvt.refresh = () => {
-	pvt.data(DATATEMP_PIVOT)
-	pvt.render()
+	// pvt.data(DATATEMP_PIVOT)
+	app.ajaxPost("/report/summarycalculatedatapivot", pvt.getParam(), (res) => {
+		pvt.data(res.Data)
+		pvt.render()
+	})
 }
-
 pvt.render = () => {
 	let data = []
 	let schemaModelFields = {}
@@ -199,30 +115,37 @@ pvt.render = () => {
 	})
 
 	let constructSchema = (from, to) => {
-		app.koUnmap(from()).forEach((d) => {
-			let option = app.koUnmap(ra.optionDimensions).find((e) => e.field == d.field)
-			let key = option.name.replace(/ /g, '_').replace(/\//g, '_')
-			let field = d.field.replace(/\./g, '_')
+		app.koUnmap(from())
+			.filter((d) => (d.field != ''))
+			.forEach((d) => {
+				let option = app.koUnmap(ra.optionDimensions).find((e) => e.field == d.field)
+				let key = option.name.replace(/ /g, '_').replace(/\//g, '_')
+				let field = d.field.replace(/\./g, '_')
 
-			schemaModelFields[key] = { type: 'string', field: field }
-			schemaCubeDimensions[key] = { caption: option.name }
+				schemaModelFields[key] = { type: 'string', field: field }
+				schemaCubeDimensions[key] = { caption: option.name }
 
-			to.push({ name: key, expand: true })
-		})
+				to.push({ name: key, expand: true })
+			})
 	}
 
 	constructSchema(pvt.rows, rows)
 	constructSchema(pvt.columns, columns)
 	
-	app.koUnmap(pvt.dataPoints).forEach((d) => {
-		let key = d.name.replace(/ /g, '_').replace(/\//g, '_')
-		// let field = d.field.replace(/\./g, '_')
-		// schemaModelFields[key] = { type: 'number', field: field }
+	app.koUnmap(pvt.dataPoints)
+		.filter((d) => (d.field != '') && (d.aggr != ''))
+		.forEach((d) => {
+			let key = d.name.replace(/ /g, '_').replace(/\//g, '_')
+			// let field = d.field.replace(/\./g, '_')
+			// schemaModelFields[key] = { type: 'number', field: field }
 
-		let prop = { field: d.field, aggregate: d.aggr }
-		schemaCubeMeasures[key] = prop
-		measures.push(key)
-	})
+			let prop = { field: d.field, aggregate: d.aggr, format: '{0:c}' }
+			if (prop.aggregate == 'avg') {
+				prop.aggregate = 'average'
+			}
+			schemaCubeMeasures[key] = prop
+			measures.push(key)
+		})
 
 	let config = {
 	    filterable: false,

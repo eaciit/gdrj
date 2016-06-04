@@ -8,7 +8,7 @@ pvt.templateDataPoint = {
 	field: '',
 	name: ''
 };
-pvt.templateRowColumn = {
+pvt.templateDimension = {
 	field: '',
 	name: ''
 };
@@ -33,65 +33,13 @@ pvt.setMode = function (what) {
 		}
 	};
 };
-pvt.prepareTooltipster = function () {
-	var config = {
-		contentAsHTML: true,
-		interactive: true,
-		theme: 'tooltipster-whi',
-		animation: 'grow',
-		delay: 0,
-		offsetY: -5,
-		touchDevices: false,
-		trigger: 'click',
-		position: 'top'
-	};
-
-	$('.tooltipster-dimension').each(function (i, e) {
-		$(e).tooltipster($.extend(true, config, {
-			content: $('\n\t\t\t\t<h3 class="no-margin no-padding">Add to</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' data-target-module=\'column\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.addAs(this, "column")\'>\n\t\t\t\t\t\t<i class=\'fa fa-columns\'></i> Column\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' data-target-module=\'row\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.addAs(this, "row")\'>\n\t\t\t\t\t\t<i class=\'fa fa-reorder\'></i> Row\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t')
-		}));
-	});
-
-	$('.tooltipster-column-row').each(function (i, e) {
-		var title = $(e).closest('.pivot-section').parent().prev().text();
-		$(e).tooltipster($.extend(true, config, {
-			content: $('\n\t\t\t\t<h3 class="no-margin no-padding">' + title + ' setting</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.configure(this, "column")\'>\n\t\t\t\t\t\t<i class=\'fa fa-gear\'></i> Configure\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.removeFrom()\'>\n\t\t\t\t\t\t<i class=\'fa fa-trash\'></i> Remove\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t')
-		}));
-	});
-};
-pvt.showConfig = function () {
-	// vm.hideFilter()
-	rpt.mode('');
-};
-pvt.showAndRefreshPivot = function () {
-	// vm.showFilter()
-	rpt.mode('render');
-};
-pvt.showFieldControl = function (o) {
-	pvt.currentTargetDimension = $(o).prev();
-};
-pvt.hoverInModule = function (o) {
-	var target = $(o).attr('data-target-module');
-	$('[data-module="' + target + '"]').addClass('highlight');
-};
-pvt.hoverOutModule = function (o) {
-	var target = $(o).attr('data-target-module');
-	$('[data-module="' + target + '"]').removeClass('highlight');
-};
-pvt.getData = function (callback) {
-	app.ajaxPost("/report/getdatapivot", {}, function (res) {
-		if (!app.isUndefined(callback)) {
-			callback(res);
-		}
-	});
-};
 pvt.addColumn = function () {
-	var row = ko.mapping.fromJS(app.clone(pvt.templateRowColumn));
-	pvt.dimensions.push(row);
+	var row = ko.mapping.fromJS(app.clone(pvt.templateDimension));
+	pvt.columns.push(row);
 	app.prepareTooltipster($(".pivot-section-columns .input-group:last .tooltipster"));
 };
 pvt.addRow = function () {
-	var row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint));
+	var row = ko.mapping.fromJS(app.clone(pvt.templateDimension));
 	pvt.rows.push(row);
 	app.prepareTooltipster($(".pivot-section-row .input-group:last .tooltipster"));
 };
@@ -99,24 +47,6 @@ pvt.addDataPoint = function () {
 	var row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint));
 	pvt.dataPoints.push(row);
 	app.prepareTooltipster($(".pivot-section-data-point .input-group:last .tooltipster"));
-};
-pvt.addAs = function (o, what) {
-	var holder = pvt[what + 's'];
-	var id = $(pvt.currentTargetDimension).attr('data-id');
-
-	var isAddedOnColumn = typeof ko.mapping.toJS(pvt.dimensions()).find(function (d) {
-		return d.field === id;
-	}) !== 'undefined';
-	var isAddedOnRow = typeof ko.mapping.toJS(pvt.rows()).find(function (d) {
-		return d.field === id;
-	}) !== 'undefined';
-
-	if (!(isAddedOnColumn || isAddedOnRow)) {
-		var row = pvt.optionDimensions().find(function (d) {
-			return d.field === id;
-		});
-		holder.push(ko.mapping.fromJS({ field: row.field, name: row.name }));
-	}
 };
 pvt.removeFrom = function (o, which) {
 	swal({
@@ -142,32 +72,32 @@ pvt.removeFrom = function (o, which) {
 		app.arrRemoveByItem(holder, row);
 	});
 };
-pvt.getPivotConfig = function () {
-	var dimensions = ko.mapping.toJS(pvt.dimensions).map(function (d) {
-		return { type: 'column', field: d.field, name: d.name };
-	}).concat(ko.mapping.toJS(pvt.rows).map(function (d) {
-		return { type: 'row', field: d.field, name: d.name };
-	}));
-
+pvt.getParam = function () {
+	var dimensions = ko.mapping.toJS(pvt.rows().concat(pvt.columns())).filter(function (d) {
+		return d.field != '';
+	});
 	var dataPoints = ko.mapping.toJS(pvt.dataPoints).filter(function (d) {
 		return d.field != '' && d.aggr != '';
 	}).map(function (d) {
-		var row = ko.mapping.toJS(pvt.pivotModel).find(function (e) {
-			return e.field == d.field;
-		});
-		var name = row == undefined ? d.field : row.name;
-		return { op: d.aggr, field: d.field, name: name };
+		return {
+			field: d.field,
+			name: d.name,
+			aggr: 'sum'
+		};
 	});
 
-	var param = { dimensions: dimensions, datapoints: dataPoints };
-	return param;
+	return {
+		dimensions: dimensions,
+		dataPoints: dataPoints
+	};
 };
-
 pvt.refresh = function () {
-	pvt.data(DATATEMP_PIVOT);
-	pvt.render();
+	// pvt.data(DATATEMP_PIVOT)
+	app.ajaxPost("/report/summarycalculatedatapivot", pvt.getParam(), function (res) {
+		pvt.data(res.Data);
+		pvt.render();
+	});
 };
-
 pvt.render = function () {
 	var data = [];
 	var schemaModelFields = {};
@@ -194,7 +124,9 @@ pvt.render = function () {
 	});
 
 	var constructSchema = function constructSchema(from, to) {
-		app.koUnmap(from()).forEach(function (d) {
+		app.koUnmap(from()).filter(function (d) {
+			return d.field != '';
+		}).forEach(function (d) {
 			var option = app.koUnmap(ra.optionDimensions).find(function (e) {
 				return e.field == d.field;
 			});
@@ -211,12 +143,17 @@ pvt.render = function () {
 	constructSchema(pvt.rows, rows);
 	constructSchema(pvt.columns, columns);
 
-	app.koUnmap(pvt.dataPoints).forEach(function (d) {
+	app.koUnmap(pvt.dataPoints).filter(function (d) {
+		return d.field != '' && d.aggr != '';
+	}).forEach(function (d) {
 		var key = d.name.replace(/ /g, '_').replace(/\//g, '_');
 		// let field = d.field.replace(/\./g, '_')
 		// schemaModelFields[key] = { type: 'number', field: field }
 
-		var prop = { field: d.field, aggregate: d.aggr };
+		var prop = { field: d.field, aggregate: d.aggr, format: '{0:c}' };
+		if (prop.aggregate == 'avg') {
+			prop.aggregate = 'average';
+		}
 		schemaCubeMeasures[key] = prop;
 		measures.push(key);
 	});
