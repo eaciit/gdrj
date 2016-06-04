@@ -285,7 +285,7 @@ html, body
 .tab-content>div
 	padding-top: 10px
 
-.report-module-pivot
+.report-module-rsec
 	> div
 		padding-left: 0px
 		padding-right: 0px
@@ -294,11 +294,15 @@ html, body
 		.wrapper-inner
 			// border-color: $color-base-green
 
-	.pivot-section.pivot-section-data-point
+	.rsec-section
 		.input-group
 			height: 32px
 			margin-bottom: 2px
 			border: 1px solid $color-base-blue
+
+			.text
+				display: block
+				padding: 6px 6px 7px
 
 			.input-group-addon
 				background-color: lighten($color-base-blue, 10%)
@@ -312,9 +316,27 @@ html, body
 				background-color: #F0F3F4
 				border-color: #F0F3F4
 
-	.pivot-wrapper
-		&.pivot-wrapper-column
+	.rsec-wrapper
+		&.rsec-wrapper-column
 			margin-bottom: 10px
+
+		&.read-only
+			.wrapper-inner
+				pointer-events: none
+				opacity: 0.8
+				background-color: #fbfbfb
+
+				.wrapper
+					opacity: 0.6
+
+				.add-data-point
+					display: none
+
+		&.left
+			padding-right: 5px
+
+		&.right
+			padding-left: 5px
 
 		.wrapper-inner
 			border: 1px solid $color-base-grey
@@ -391,6 +413,27 @@ html, body
 								bottom: 0
 								width: 4px
 
+.tabular-view
+	tr:not(.total)
+		&.total
+			td
+				font-weight: bold
+
+		&:hover
+			background-color: $color-base-green
+
+			td
+				color: white
+
+		th
+			padding: 4px 0px
+				
+		td
+			&[rowspan]
+				vertical-align: middle
+
+			&.dimension
+
 #outlet-location, #pivot-wrapper
 	min-height: 400px
 
@@ -458,3 +501,19 @@ html, body
 					margin-top: 8px
 					border: 1px solid 1px solid rgba(164, 173, 177, 0.19)
 					box-sizing: content-box
+
+.list-analysis
+	margin-bottom: 10px
+	
+	.col-md-3
+		padding: 0px
+
+		.wrapper
+			a
+				padding: 4px 8px
+				display: block
+
+				&:hover, &:active, &:focus
+					background-color: $color-base-blue
+					color: white
+					text-decoration: none

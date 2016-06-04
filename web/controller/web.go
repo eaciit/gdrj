@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"eaciit/gdrj/web/model"
+	"fmt"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -147,4 +149,21 @@ func (w *WebController) Organization(r *knot.WebContext) interface{} {
 	r.Config.ViewName = View("page-organization.html")
 
 	return true
+}
+
+func (w *WebController) PageReport(r *knot.WebContext, args []string) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-report.html")
+
+	if len(args) == 0 {
+		return toolkit.M{"subreport": false}
+	}
+
+	row := gocore.AnalysisIdeaGetByID(args[0])
+	fmt.Printf("-----> /report/%s\n", args[0])
+	fmt.Printf("-----> %#v\n", row)
+
+	return toolkit.M{"subreport": args[0], "row": row}
 }

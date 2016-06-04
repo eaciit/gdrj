@@ -287,6 +287,7 @@ app.extend = (which, klass) => {
         }
     })
 }
+app.newEl = (s) => $(`<${s} />`)
 
 viewModel.StringExt = new Object()
 let s = viewModel.StringExt

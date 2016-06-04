@@ -8,7 +8,9 @@ import (
 	"github.com/eaciit/toolkit"
 	"net/http"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"strings"
 )
 
 var (
@@ -32,10 +34,12 @@ func main() {
 		}
 	}
 
+	webController := controller.CreateWebController(server)
+
 	server.Address = toolkit.Sprintf("localhost:%v", toolkit.ToString(port.Port))
 	server.RouteStatic("res", filepath.Join(controller.AppBasePath, "web", "assets"))
 	server.RouteStatic("image", filepath.Join(controller.AppBasePath, "web", "assets", "img"))
-	server.Register(controller.CreateWebController(server), "")
+	server.Register(webController, "")
 	server.Register(controller.CreateLoginController(server), "")
 	server.Register(controller.CreateDataBrowserController(server), "")
 	server.Register(controller.CreateUploadDataController(server), "")
@@ -48,6 +52,14 @@ func main() {
 	server.Register(controller.CreateOrganizationController(server), "")
 
 	server.Route("/", func(r *knot.WebContext) interface{} {
+		regex := regexp.MustCompile("/web/report/[a-zA-Z0-9_]+(/.*)?$")
+		rURL := r.Request.URL.String()
+
+		if regex.MatchString(rURL) {
+			args := strings.Split(strings.Replace(rURL, "/web/report/", "", -1), "/")
+			return webController.PageReport(r, args)
+		}
+
 		sessionid := r.Session("sessionid", "")
 		if sessionid == "" {
 			http.Redirect(r.Writer, r.Request, "/web/login", 301)

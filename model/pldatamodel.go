@@ -53,36 +53,36 @@ func BuildPLDataModel(conn dbox.IConnection, plcode string, filter *dbox.Filter,
 	return nil
 }
 
-func doBuild(msource toolkit.M, filter *dbox.Filter, ag *AllocationGroup){
-    //--- get the sales and grouped by required group
-    /*
-    filterSales := dbox.And(dbox.Eq("plcode","PL008A"), filter)
-    qsales := conn.NewQuery().From(ls.TableName()).Where(filterSales)
-    groupbys := []string{}
-    if ag.ByOutlet {
-        groupbys = append(groupbys,"outletid")
-    }
-    if ag.BySKU {
-        groupbys = append(groupbys,"skuid")
-    }
-    if len(groupbys)>0{
-        qsales = qsales.Group()
-    }
-    qsales = qsales.Group(dbox.AggrSum,"value1")
-    csales, esales := qsales.Cursor(nil)
-    if esales!=nil {
-        return errors.New("BuildPLDataModel: " + esales.Error())
-    }
-    defer csales.Close()
+func doBuild(msource toolkit.M, filter *dbox.Filter, ag *AllocationGroup) {
+	//--- get the sales and grouped by required group
+	/*
+	   filterSales := dbox.And(dbox.Eq("plcode","PL008A"), filter)
+	   qsales := conn.NewQuery().From(ls.TableName()).Where(filterSales)
+	   groupbys := []string{}
+	   if ag.ByOutlet {
+	       groupbys = append(groupbys,"outletid")
+	   }
+	   if ag.BySKU {
+	       groupbys = append(groupbys,"skuid")
+	   }
+	   if len(groupbys)>0{
+	       qsales = qsales.Group()
+	   }
+	   qsales = qsales.Group(dbox.AggrSum,"value1")
+	   csales, esales := qsales.Cursor(nil)
+	   if esales!=nil {
+	       return errors.New("BuildPLDataModel: " + esales.Error())
+	   }
+	   defer csales.Close()
 
-    isneof := true
-    for isneof{
-        m := toolkit.M{}
-        efetch := csales.Fetch(&m, 1, false)
-        if !m.Has("_id") {
-            isneof=true
-            break
-        }
-    }
-    */
+	   isneof := true
+	   for isneof{
+	       m := toolkit.M{}
+	       efetch := csales.Fetch(&m, 1, false)
+	       if !m.Has("_id") {
+	           isneof=true
+	           break
+	       }
+	   }
+	*/
 }

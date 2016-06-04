@@ -319,6 +319,9 @@ app.extend = function (which, klass) {
         }
     });
 };
+app.newEl = function (s) {
+    return $('<' + s + ' />');
+};
 
 viewModel.StringExt = new Object();
 var s = viewModel.StringExt;
