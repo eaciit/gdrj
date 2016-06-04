@@ -50,12 +50,11 @@ func prepMaster(){
     var e error
     i :=0
     toolkit.Printfn("Data count: %d", cpc.Count())
-    for ;e==nil;e=cpc.Fetch(pc,1,false){
-        if e==nil{
-            i++
-            toolkit.Println(i, "PC: ", pc.ID, toolkit.JsonString(pc))
-            pcs.Set(pc.ID,pc)
-        }
+    for e=cpc.Fetch(pc,1,false);e==nil;{
+        i++
+        toolkit.Println(i, "PC: ", pc.ID, toolkit.JsonString(pc))
+        pcs.Set(pc.ID,pc)
+        e=cpc.Fetch(pc,1,false)
     }
 }
 
