@@ -9,7 +9,7 @@ tbl.dataPoints = ko.observableArray([])
 tbl.enableDimensions = ko.observable(true)
 tbl.enableDataPoints = ko.observable(true)
 
-tbl.setMode = (what) => {
+tbl.setMode = (what) => () => {
 	tbl.mode(what)
 
 	if (what == 'render') {
@@ -35,14 +35,20 @@ tbl.computeDimensionDataPoint = (which, field) => {
 	})
 }
 tbl.refresh = () => {
-	tbl.data(DATATEMP_TABLE)
-	tbl.render()
+	app.ajaxPost("/report/summarycalculatedatapivot", tbl.getParam(), (res) => {
+		tbl.data(res.Data)
+		tbl.render()
+	})
 }
 tbl.render = () => {
 	let tableWrapper = $('.table').empty()
 	let table = app.newEl('table').addClass('table ez').appendTo(tableWrapper)
 	let thead = app.newEl('thead').appendTo(table)
 	let tbody = app.newEl('tbody').appendTo(table)
+
+	if ((tbl.dimensions().length + tbl.dataPoints().length) > 6) {
+		table.css('min-width', '600px')
+	}
 
 	let dimensions = app.koUnmap(tbl.dimensions)
 	let dataPoints = app.koUnmap(tbl.dataPoints)
@@ -104,6 +110,17 @@ tbl.render = () => {
 	dataPoints.forEach((e, i) => {
 		let td = app.newEl('td').appendTo(rowLast).html(kendo.toString(sum[i], "n2"))
 	})
+}
+
+tbl.getParam = () => {
+	let dimensions = ko.mapping.toJS(tbl.dimensions)
+	let dataPoints = ko.mapping.toJS(tbl.dataPoints)
+		.map((d) => { return { field: d.field, name: d.name, aggr: 'sum' } })
+
+	return {
+		dimensions: dimensions,
+		dataPoints: dataPoints
+	}
 }
 
 let DATATEMP_TABLE = [

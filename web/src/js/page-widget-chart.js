@@ -16,7 +16,7 @@ let DATATEMP_PIVOT = [
 viewModel.chart = new Object()
 var crt = viewModel.chart
 
-crt.setMode = (what) => {
+crt.setMode = (what) => () => {
 	crt.mode(what)
 
 	if (what == 'render') {

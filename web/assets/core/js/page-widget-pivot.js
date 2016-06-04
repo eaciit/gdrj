@@ -25,13 +25,14 @@ pvt.mode = ko.observable('render');
 pvt.currentTargetDimension = null;
 
 pvt.setMode = function (what) {
-	pvt.mode(what);
+	return function () {
+		pvt.mode(what);
 
-	if (what == 'render') {
-		pvt.refresh();
-	}
+		if (what == 'render') {
+			pvt.refresh();
+		}
+	};
 };
-
 pvt.prepareTooltipster = function () {
 	var config = {
 		contentAsHTML: true,

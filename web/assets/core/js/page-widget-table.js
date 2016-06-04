@@ -12,11 +12,13 @@ tbl.enableDimensions = ko.observable(true);
 tbl.enableDataPoints = ko.observable(true);
 
 tbl.setMode = function (what) {
-	tbl.mode(what);
+	return function () {
+		tbl.mode(what);
 
-	if (what == 'render') {
-		tbl.refresh();
-	}
+		if (what == 'render') {
+			tbl.refresh();
+		}
+	};
 };
 tbl.mode = ko.observable('render');
 tbl.computeDimensionDataPoint = function (which, field) {
@@ -43,14 +45,20 @@ tbl.computeDimensionDataPoint = function (which, field) {
 	});
 };
 tbl.refresh = function () {
-	tbl.data(DATATEMP_TABLE);
-	tbl.render();
+	app.ajaxPost("/report/summarycalculatedatapivot", tbl.getParam(), function (res) {
+		tbl.data(res.Data);
+		tbl.render();
+	});
 };
 tbl.render = function () {
 	var tableWrapper = $('.table').empty();
 	var table = app.newEl('table').addClass('table ez').appendTo(tableWrapper);
 	var thead = app.newEl('thead').appendTo(table);
 	var tbody = app.newEl('tbody').appendTo(table);
+
+	if (tbl.dimensions().length + tbl.dataPoints().length > 6) {
+		table.css('min-width', '600px');
+	}
 
 	var dimensions = app.koUnmap(tbl.dimensions);
 	var dataPoints = app.koUnmap(tbl.dataPoints);
@@ -112,6 +120,18 @@ tbl.render = function () {
 	dataPoints.forEach(function (e, i) {
 		var td = app.newEl('td').appendTo(rowLast).html(kendo.toString(sum[i], "n2"));
 	});
+};
+
+tbl.getParam = function () {
+	var dimensions = ko.mapping.toJS(tbl.dimensions);
+	var dataPoints = ko.mapping.toJS(tbl.dataPoints).map(function (d) {
+		return { field: d.field, name: d.name, aggr: 'sum' };
+	});
+
+	return {
+		dimensions: dimensions,
+		dataPoints: dataPoints
+	};
 };
 
 var DATATEMP_TABLE = [{ "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }];

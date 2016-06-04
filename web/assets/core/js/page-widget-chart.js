@@ -6,11 +6,13 @@ viewModel.chart = new Object();
 var crt = viewModel.chart;
 
 crt.setMode = function (what) {
-	crt.mode(what);
+	return function () {
+		crt.mode(what);
 
-	if (what == 'render') {
-		crt.refresh();
-	}
+		if (what == 'render') {
+			crt.refresh();
+		}
+	};
 };
 crt.mode = ko.observable('render');
 crt.configure = function (series) {

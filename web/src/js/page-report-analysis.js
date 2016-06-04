@@ -86,7 +86,7 @@ ra.optionDimensions = ko.observableArray([
 	{ field: 'customer.area', name: 'Geography' },
 	{ field: 'product.name', name: 'Product' },
 	{ field: 'date.date', name: 'Time' },
-	{ field: '', name: 'Cost Type' }, // <<<<< ====================== need to be filled
+	{ field: 'cc.cctypeid', name: 'Cost Type' }, // <<<<< ====================== need to be filled
 	{ field: 'cc.hccgroupid', name: 'Function' },
 ])
 ra.optionDataPoints = ko.observableArray([
@@ -100,43 +100,3 @@ ra.optionAggregates = ko.observableArray([
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
-
-rpt.refresh = () => {
-	// let param = pvt.getPivotConfig()
-	// app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
-	// 	if (res.Data.length == 0) {
-	// 		return
-	// 	}
-
-	// 	pvt.render(res.Data)
-	// })
-
-	// app.ajaxPost("/report/summarycalculatedatachart", param, (res) => {
-	// 	if (res.Data.Data.length == 0) {
-	// 		return
-	// 	}
-
-	// 	// crt.render('', res.Data.MetaData.Series, res.Data.Data, res.Data.MetaData.CategoryAxis)
-	// })
-}
-
-// rpt.init = () => {
-// 	pvt.dimensions([
-// 		app.koMap({ field: 'CC.BranchID', name: 'Branch' }),
-// 		app.koMap({ field: 'Product.Brand', name: 'Brand' })
-// 	])
-
-// 	pvt.dataPoints([
-// 		app.koMap({ aggr: 'sum', field: 'Value1', name: 'Gross Sales' }),
-// 		app.koMap({ aggr: 'sum', field: 'Value2', name: 'Discount' }),
-// 		app.koMap({ aggr: 'sum', field: 'Value3', name: 'Net Sales' })
-// 	])
-
-// 	switch (o.ID) {
-// 		case 'freight_cost_by_sales': {
-// 			pvt.enableDimensions(false)
-// 		break }
-// 	}
-
-// 	rpt.refresh()
-// }
