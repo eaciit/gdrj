@@ -20,17 +20,17 @@
 			<div class="pull-right margin-bottom-20">
 				<div class="form-inline">
 					<div class="input-group input-group-sm ez">
-						<span class="input-group-addon width-100 align-right">Activity Ideas</span>
+						<span class="input-group-addon width-100 align-right">Breakdown</span>
 						<div class="width-full">
-							<select style="width: 150px;" data-bind="kendoMultiSelect: { data: cc.ideas, value: cc.selectedIdeas, dataValueField: '_id', dataTextField: 'name', placeholder: 'Choose ideas' }"></select>
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: [], optionLabel: 'Select one' }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
 
 					<div class="input-group input-group-sm ez">
-						<span class="input-group-addon width-100 align-right">Breakdown</span>
+						<span class="input-group-addon width-100 align-right">Activity Ideas</span>
 						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: [], optionLabel: 'Select one' }"></select>
+							<select style="width: 400px;" data-bind="kendoMultiSelect: { data: cc.analysisIdeas, value: cc.selectedIdeas, dataValueField: '_id', dataTextField: 'name', placeholder: 'Choose ideas' }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>

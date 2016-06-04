@@ -3,7 +3,7 @@
     "data": {
         "db": "ecgodrej",
         "driver": "mongo",
-        "host": "go.eaciit.com:27123",
+        "host": "localhost:27017",
         "pass": "",
         "user": "",
         "setting": {
@@ -16,7 +16,7 @@
     "data": {
         "db": "ecgodrej",
         "driver": "mongo",
-        "host": "go.eaciit.com:27123",
+        "host": "localhost:27017",
         "pass": "",
         "user": "",
         "setting": {
