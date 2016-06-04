@@ -274,111 +274,115 @@ html, body {
   padding-top: 10px;
 }
 
-.report-module-pivot > div {
+.report-module-rsec > div {
   padding-left: 0px;
   padding-right: 0px;
 }
-.report-module-pivot .pivot-section .input-group {
+.report-module-rsec .rsec-section .input-group {
   height: 32px;
   margin-bottom: 2px;
   border: 1px solid #3b79c2;
 }
-.report-module-pivot .pivot-section .input-group .input-group-addon {
+.report-module-rsec .rsec-section .input-group .text {
+  display: block;
+  padding: 6px 6px 7px;
+}
+.report-module-rsec .rsec-section .input-group .input-group-addon {
   background-color: #6194cf;
   border-color: #6194cf;
   color: white;
 }
-.report-module-pivot .pivot-section .input-group .input-group-addon.clickable {
+.report-module-rsec .rsec-section .input-group .input-group-addon.clickable {
   cursor: pointer;
 }
-.report-module-pivot .pivot-section .input-group .k-dropdown-wrap.k-state-hover {
+.report-module-rsec .rsec-section .input-group .k-dropdown-wrap.k-state-hover {
   background-color: #F0F3F4;
   border-color: #F0F3F4;
 }
-.report-module-pivot .pivot-wrapper.pivot-wrapper-column {
+.report-module-rsec .rsec-wrapper.rsec-wrapper-column {
   margin-bottom: 10px;
 }
-.report-module-pivot .pivot-wrapper.read-only .wrapper-inner {
+.report-module-rsec .rsec-wrapper.read-only .wrapper-inner {
   pointer-events: none;
   opacity: 0.8;
   background-color: #fbfbfb;
 }
-.report-module-pivot .pivot-wrapper.read-only .wrapper-inner .wrapper {
+.report-module-rsec .rsec-wrapper.read-only .wrapper-inner .wrapper {
   opacity: 0.6;
 }
-.report-module-pivot .pivot-wrapper.read-only .wrapper-inner .add-data-point {
+.report-module-rsec .rsec-wrapper.read-only .wrapper-inner .add-data-point {
   display: none;
 }
-.report-module-pivot .pivot-wrapper.left {
+.report-module-rsec .rsec-wrapper.left {
   padding-right: 5px;
 }
-.report-module-pivot .pivot-wrapper.right {
+.report-module-rsec .rsec-wrapper.right {
   padding-left: 5px;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner {
+.report-module-rsec .rsec-wrapper .wrapper-inner {
   border: 1px solid #F0F3F4;
   padding: 0px;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner.highlight {
+.report-module-rsec .rsec-wrapper .wrapper-inner.highlight {
   box-sizing: border-box;
   border-color: #74B841;
   border-width: 3px;
   opacity: 0.6;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner h3 {
+.report-module-rsec .rsec-wrapper .wrapper-inner h3 {
   font-size: 14px;
   background-color: transparent;
   color: #58666E;
   padding: 10px 0px 2px;
   margin: 0px 10px;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner h3 .add-data-point {
+.report-module-rsec .rsec-wrapper .wrapper-inner h3 .add-data-point {
   border: none;
   background-color: transparent;
   padding: 0px 4px;
   margin-right: -4px;
   color: #E67E22;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner p {
+.report-module-rsec .rsec-wrapper .wrapper-inner p {
   margin: 0px;
   padding: 10px 10px 0px;
   background-color: transparent;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group {
+.report-module-rsec .rsec-wrapper .wrapper-inner .list-group {
   padding: 10px;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item {
+.report-module-rsec .rsec-wrapper .wrapper-inner .list-group .list-group-item {
   overflow: hidden;
   position: relative;
   margin-bottom: 2px;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item:hover .wrapper .text {
+.report-module-rsec .rsec-wrapper .wrapper-inner .list-group .list-group-item:hover .wrapper .text {
   background-color: transparent;
   color: inherit;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item:hover .wrapper .icon:not(.no-hover) {
+.report-module-rsec .rsec-wrapper .wrapper-inner .list-group .list-group-item:hover .wrapper .icon:not(.no-hover) {
   opacity: 1;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper {
+.report-module-rsec .rsec-wrapper .wrapper-inner .list-group .list-group-item .wrapper {
   cursor: auto;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .expandable {
+.report-module-rsec .rsec-wrapper .wrapper-inner .list-group .list-group-item .wrapper .expandable {
   position: relative;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .expandable input[type="checkbox"] {
+.report-module-rsec .rsec-wrapper .wrapper-inner .list-group .list-group-item .wrapper .expandable input[type="checkbox"] {
   margin-top: 9px;
   margin-right: 3px;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .aggregate {
+.report-module-rsec .rsec-wrapper .wrapper-inner .list-group .list-group-item .wrapper .aggregate {
   height: 30px;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .aggregate input[type="checkbox"] {
+.report-module-rsec .rsec-wrapper .wrapper-inner .list-group .list-group-item .wrapper .aggregate input[type="checkbox"] {
   margin-top: 9px;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .icon {
+.report-module-rsec .rsec-wrapper .wrapper-inner .list-group .list-group-item .wrapper .icon {
   cursor: pointer;
 }
-.report-module-pivot .pivot-wrapper .wrapper-inner .list-group .list-group-item .wrapper .icon:after {
+.report-module-rsec .rsec-wrapper .wrapper-inner .list-group .list-group-item .wrapper .icon:after {
   content: " ";
   background-color: #3B79C2;
   position: absolute;
@@ -387,11 +391,15 @@ html, body {
   bottom: 0;
   width: 4px;
 }
-.report-module-pivot .pivot-wrapper .pivot-wrapper-inner .table.pivot.ez tr td[rowspan] {
-  vertical-align: middle;
-}
-.report-module-pivot .pivot-wrapper .pivot-wrapper-inner .table.pivot.ez tr td.dimension {
+
+.tabular-view tr.total td {
   font-weight: bold;
+}
+.tabular-view tr th {
+  padding: 4px 0px;
+}
+.tabular-view tr td[rowspan] {
+  vertical-align: middle;
 }
 
 #outlet-location, #pivot-wrapper {

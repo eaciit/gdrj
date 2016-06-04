@@ -16,6 +16,7 @@ type LedgerSummary struct {
 	ID                                     string `bson:"_id"`
 	PC                                     *ProfitCenter
 	CC                                     *CostCenter
+	PLModel                                *PLModel
 	CompanyCode                            string
 	LedgerAccount                          string
 	Customer                               *Customer
@@ -71,88 +72,6 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 	cr.Close()
 
 	return
-}
-
-func SummaryGenerateDummyData() []*LedgerSummary {
-	res := []*LedgerSummary{}
-	pcs := []*ProfitCenter{}
-	ccs := []*CostCenter{}
-	cus := []*Customer{}
-	prs := []*Product{}
-	das := []*Date{}
-
-	for i := 0; i < 5; i++ {
-		pc := new(ProfitCenter)
-		pc.ID = fmt.Sprintf("PC00%d", i)
-		pc.EntityID = toolkit.RandomString(5)
-		pc.Name = toolkit.RandomString(10)
-		pc.BrandID = toolkit.RandomString(5)
-		pc.BrandCategoryID = toolkit.RandomString(5)
-		pc.BranchID = toolkit.RandomString(5)
-		pc.BranchType = BranchTypeEnum(toolkit.RandInt(100))
-		pcs = append(pcs, pc)
-
-		cc := new(CostCenter)
-		cc.ID = fmt.Sprintf("CC00%d", i)
-		cc.EntityID = toolkit.RandomString(5)
-		cc.Name = toolkit.RandomString(10)
-		cc.CostGroup01 = toolkit.RandomString(5)
-		cc.CostGroup02 = toolkit.RandomString(5)
-		cc.CostGroup03 = toolkit.RandomString(5)
-		cc.BranchID = toolkit.RandomString(5)
-		cc.BranchType = BranchTypeEnum(toolkit.RandInt(100))
-		cc.CCTypeID = toolkit.RandomString(5)
-		cc.HCCGroupID = toolkit.RandomString(5)
-		ccs = append(ccs, cc)
-
-		cu := new(Customer)
-		cu.ID = toolkit.RandomString(5)
-		cu.BranchName = toolkit.RandomString(5)
-		cu.BranchID = toolkit.RandomString(5)
-		cu.Name = toolkit.RandomString(5)
-		cu.KeyAccount = toolkit.RandomString(5)
-		cu.ChannelName = toolkit.RandomString(5)
-		cu.CustomerGroupName = toolkit.RandomString(5)
-		cu.National = toolkit.RandomString(5)
-		cu.Zone = toolkit.RandomString(5)
-		cu.Region = toolkit.RandomString(5)
-		cu.Area = toolkit.RandomString(5)
-		cus = append(cus, cu)
-
-		pr := new(Product)
-		pr.ID = toolkit.RandomString(5)
-		pr.Name = toolkit.RandomString(5)
-		pr.Brand = toolkit.RandomString(5)
-		prs = append(prs, pr)
-
-		da := new(Date)
-		da.ID = toolkit.RandomString(5)
-		da.Date = time.Now()
-		da.Month = time.Month(5)
-		da.Quarter = toolkit.RandInt(100)
-		da.Year = toolkit.RandInt(100)
-		das = append(das, da)
-	}
-
-	for i := 0; i < 100; i++ {
-		o := new(LedgerSummary)
-		o.ID = fmt.Sprintf("LS00%d", i)
-		o.PC = pcs[i%len(pcs)]
-		o.CC = ccs[i%len(ccs)]
-		o.CompanyCode = toolkit.RandomString(3)
-		o.LedgerAccount = toolkit.RandomString(3)
-		o.Customer = cus[i%len(cus)]
-		o.Product = prs[i%len(prs)]
-		o.Date = das[i%len(das)]
-		o.Value1 = toolkit.RandFloat(3000, 2)
-		o.Value2 = toolkit.RandFloat(3000, 2)
-		o.Value3 = toolkit.RandFloat(3000, 2)
-		o.Save()
-
-		res = append(res, o)
-	}
-
-	return res
 }
 
 /*

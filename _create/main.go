@@ -17,7 +17,8 @@ var max = 10000
 var pldatamodel = new(gdrj.PLDataModel).TableName()
 
 func main() {
-	doInsert(2016)
+	// doInsert(2015)
+	// doInsert(2016)
 }
 
 func doInsert(year int) {
@@ -35,6 +36,7 @@ func doInsert(year int) {
 	dataPNL := GetPNL(fmt.Sprintf("alloc%d", year))
 	dataCustomer := GetCustomer()
 	dataBrand := GetBrand()
+	dataPLModel := GetPLModel()
 
 	for _, eachPNL := range dataPNL {
 		totalPercentage := 0.0
@@ -65,7 +67,7 @@ func doInsert(year int) {
 			date.Year = year
 
 			ls := new(gdrj.LedgerSummary)
-			ls.ID = fmt.Sprintf("%v_%v_%v_%v_%v_%v_%v", year, month, date.Date.Day(), customer.ID, eachPNL.PLCODE, brand.ID, toolkit.RandInt(100000))
+			ls.ID = fmt.Sprintf("%v_%v_%v_%v_%v_%v_%v_%v_%v", year, month, date.Date.Day(), customer.ID, eachPNL.PLCODE, brand.ID, toolkit.RandInt(100000), toolkit.RandInt(100000), toolkit.RandInt(100000))
 			ls.Year = year
 			ls.Month = month
 			ls.Date = date
@@ -107,6 +109,35 @@ func GetCustomer() []gdrj.Customer {
 	}
 
 	data := []gdrj.Customer{}
+
+	err = csr.Fetch(&data, 0, false)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	csr.Close()
+
+	return data
+}
+
+func GetPLModel() []gdrj.PLModel {
+	conn, err := dbox.NewConnection("mongo", &ci)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	defer conn.Close()
+
+	err = conn.Connect()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	csr, err := conn.NewQuery().Select().From("plmodel").Cursor(nil)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	data := []gdrj.PLModel{}
 
 	err = csr.Fetch(&data, 0, false)
 	if err != nil {

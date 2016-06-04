@@ -171,14 +171,6 @@ func (m *ReportController) GetDataAnalysisIdea(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, res, "")
 }
 
-func (m *ReportController) SummaryGenerateDummyData(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	data := gdrj.SummaryGenerateDummyData()
-
-	return data
-}
-
 func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
