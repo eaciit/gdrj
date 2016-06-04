@@ -105,6 +105,7 @@ func main() {
 					ls.PLCode = tLedgerAccount.PLCode
 					ls.PLOrder = tLedgerAccount.OrderIndex
 
+					ls.ID = ls.PrepareID().(string)
 					err = gdrj.Save(ls)
 					if err != nil {
 						toolkit.Println("Error Found : ", err.Error())
