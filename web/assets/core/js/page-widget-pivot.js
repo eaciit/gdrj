@@ -19,7 +19,7 @@ pvt.templateRowColumn = {
 	field: '',
 	name: ''
 };
-pvt.optionDimensions = ko.observableArray([{ field: 'Customer.BranchName', name: 'Branch/RD' }, { field: 'Customer.ChannelName', name: 'Channel' }, { field: 'Customer.Area', name: 'Geography' }, { field: 'Product.Brand', name: 'Brand' }, { field: 'Date.Date', name: 'Time' }, { field: '', name: 'Cost Type' }, // <<<<< ====================== need to be filled
+pvt.optionDimensions = ko.observableArray([{ field: "CC.BranchID", name: 'Branch/RD' }, { field: 'Customer.ChannelName', name: 'Channel' }, { field: 'Customer.Area', name: 'Geography' }, { field: 'Product.Brand', name: 'Brand' }, { field: 'Date.Date', name: 'Time' }, { field: '', name: 'Cost Type' }, // <<<<< ====================== need to be filled
 { field: 'CC.HCCGroupID', name: 'Function' }]);
 pvt.optionRows = ko.observableArray([{ field: 'Customer._id', name: 'Outlet' }, { field: 'Product._id', name: 'SKU' }, { field: 'PC._id', name: 'PC' }, { field: 'CC._id', name: 'CC' }, { field: 'LedgerAccount', name: 'G/L' }]);
 pvt.optionDataPoints = ko.observableArray([{ field: 'Value1', name: 'Value 1' }, { field: 'Value2', name: 'Value 2' }, { field: 'Value3', name: 'Value 3' }]);
@@ -197,6 +197,9 @@ pvt.render = function (data) {
 
 	var manyDimensions = dimensions.length;
 	var tds = [];
+	var sum = dataPoints.map(function (d) {
+		return 0;
+	});
 
 	pvt.data().forEach(function (d, i) {
 		var tr = app.newEl('tr').appendTo(tbody);
@@ -204,27 +207,36 @@ pvt.render = function (data) {
 
 		dimensions.forEach(function (e, j) {
 			var value = d._id[e.field.toLowerCase()];
-			var td = app.newEl('td').addClass('dimension').appendTo(tr).html(value);
+			var td = app.newEl('td').addClass('dimension').appendTo(tr).html(kendo.toString(value, "n2"));
 			tds.push(td);
 			tds[i][j] = td;
 		});
 
-		dataPoints.forEach(function (e) {
+		dataPoints.forEach(function (e, i) {
 			var value = d[e.field.toLowerCase()];
-			var td = app.newEl('td').appendTo(tr).html(value);
+			var td = app.newEl('td').appendTo(tr).html(kendo.toString(value, "n2"));
+
+			sum[i] += value;
 		});
 
-		dimensions.forEach(function (d, j) {
-			var rowspan = dimensions.length - j;
+		// dimensions.forEach((d, j) => {
+		// 	let rowspan = dimensions.length - j
 
-			if (i % dimensions.length == 0) {
-				tds[i][j].attr('rowspan', rowspan);
-			} else {
-				if (rowspan > 1) {
-					$(tds[i][j]).remove();
-				}
-			}
-		});
+		// 	if (i % dimensions.length == 0) {
+		// 		tds[i][j].attr('rowspan', rowspan)
+		// 	} else {
+		// 		if (rowspan > 1) {
+		// 			// $(tds[i][j]).remove()
+		// 		}
+		// 	}
+		// })
+	});
+
+	var rowLast = app.newEl('tr').appendTo(tbody);
+	var tdSpace = app.newEl('td').html('&nbsp;').attr('colspan', dataPoints.length - 2).appendTo(rowLast);
+
+	dataPoints.forEach(function (e, i) {
+		var td = app.newEl('td').appendTo(rowLast).html(kendo.toString(sum[i], "n2"));
 	});
 };
 

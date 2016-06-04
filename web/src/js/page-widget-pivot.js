@@ -96,7 +96,7 @@ pvt.templateRowColumn = {
 	name: ''
 }
 pvt.optionDimensions = ko.observableArray([
-	{ field: 'Customer.BranchName', name: 'Branch/RD' },
+	{ field: "CC.BranchID", name: 'Branch/RD' },
 	{ field: 'Customer.ChannelName', name: 'Channel' },
 	{ field: 'Customer.Area', name: 'Geography' },
 	{ field: 'Product.Brand', name: 'Brand' },
@@ -302,6 +302,7 @@ pvt.render = (data) => {
 
 	let manyDimensions = dimensions.length
 	let tds = []
+	let sum = dataPoints.map((d) => 0)
 
 	pvt.data().forEach((d, i) => {
 		let tr = app.newEl('tr').appendTo(tbody)
@@ -309,27 +310,36 @@ pvt.render = (data) => {
 
 		dimensions.forEach((e, j) => {
 			let value = d._id[e.field.toLowerCase()]
-			let td = app.newEl('td').addClass('dimension').appendTo(tr).html(value)
+			let td = app.newEl('td').addClass('dimension').appendTo(tr).html(kendo.toString(value, "n2"))
 			tds.push(td)
 			tds[i][j] = td
 		})
 
-		dataPoints.forEach((e) => {
+		dataPoints.forEach((e, i) => {
 			let value = d[e.field.toLowerCase()]
-			let td = app.newEl('td').appendTo(tr).html(value)
+			let td = app.newEl('td').appendTo(tr).html(kendo.toString(value, "n2"))
+
+			sum[i] += value
 		})
 
-		dimensions.forEach((d, j) => {
-			let rowspan = dimensions.length - j
+		// dimensions.forEach((d, j) => {
+		// 	let rowspan = dimensions.length - j
 
-			if (i % dimensions.length == 0) {
-				tds[i][j].attr('rowspan', rowspan)
-			} else {
-				if (rowspan > 1) {
-					$(tds[i][j]).remove()
-				} 
-			}
-		})
+		// 	if (i % dimensions.length == 0) {
+		// 		tds[i][j].attr('rowspan', rowspan)
+		// 	} else {
+		// 		if (rowspan > 1) {
+		// 			// $(tds[i][j]).remove()
+		// 		} 
+		// 	}
+		// })
+	})
+
+	let rowLast = app.newEl('tr').appendTo(tbody)
+	let tdSpace = app.newEl('td').html('&nbsp;').attr('colspan', dataPoints.length - 2).appendTo(rowLast)
+
+	dataPoints.forEach((e, i) => {
+		let td = app.newEl('td').appendTo(rowLast).html(kendo.toString(sum[i], "n2"))
 	})
 }
 
