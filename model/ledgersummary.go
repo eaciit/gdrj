@@ -16,7 +16,6 @@ type LedgerSummary struct {
 	ID                                     string `bson:"_id"`
 	PC                                     *ProfitCenter
 	CC                                     *CostCenter
-	PLModel                                *PLModel
 	CompanyCode                            string
 	LedgerAccount                          string
 	Customer                               *Customer
@@ -72,6 +71,88 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 	cr.Close()
 
 	return
+}
+
+func SummaryGenerateDummyData() []*LedgerSummary {
+	res := []*LedgerSummary{}
+	pcs := []*ProfitCenter{}
+	ccs := []*CostCenter{}
+	cus := []*Customer{}
+	prs := []*Product{}
+	das := []*Date{}
+
+	for i := 0; i < 5; i++ {
+		pc := new(ProfitCenter)
+		pc.ID = fmt.Sprintf("PC00%d", i)
+		pc.EntityID = toolkit.RandomString(5)
+		pc.Name = toolkit.RandomString(10)
+		pc.BrandID = toolkit.RandomString(5)
+		pc.BrandCategoryID = toolkit.RandomString(5)
+		pc.BranchID = toolkit.RandomString(5)
+		pc.BranchType = BranchTypeEnum(toolkit.RandInt(100))
+		pcs = append(pcs, pc)
+
+		cc := new(CostCenter)
+		cc.ID = fmt.Sprintf("CC00%d", i)
+		cc.EntityID = toolkit.RandomString(5)
+		cc.Name = toolkit.RandomString(10)
+		cc.CostGroup01 = toolkit.RandomString(5)
+		cc.CostGroup02 = toolkit.RandomString(5)
+		cc.CostGroup03 = toolkit.RandomString(5)
+		cc.BranchID = toolkit.RandomString(5)
+		cc.BranchType = BranchTypeEnum(toolkit.RandInt(100))
+		cc.CCTypeID = toolkit.RandomString(5)
+		cc.HCCGroupID = toolkit.RandomString(5)
+		ccs = append(ccs, cc)
+
+		cu := new(Customer)
+		cu.ID = toolkit.RandomString(5)
+		cu.BranchName = toolkit.RandomString(5)
+		cu.BranchID = toolkit.RandomString(5)
+		cu.Name = toolkit.RandomString(5)
+		cu.KeyAccount = toolkit.RandomString(5)
+		cu.ChannelName = toolkit.RandomString(5)
+		cu.CustomerGroupName = toolkit.RandomString(5)
+		cu.National = toolkit.RandomString(5)
+		cu.Zone = toolkit.RandomString(5)
+		cu.Region = toolkit.RandomString(5)
+		cu.AreaName = toolkit.RandomString(5)
+		cus = append(cus, cu)
+
+		pr := new(Product)
+		pr.ID = toolkit.RandomString(5)
+		pr.Name = toolkit.RandomString(5)
+		pr.Brand = toolkit.RandomString(5)
+		prs = append(prs, pr)
+
+		da := new(Date)
+		da.ID = toolkit.RandomString(5)
+		da.Date = time.Now()
+		da.Month = time.Month(5)
+		da.Quarter = toolkit.RandInt(100)
+		da.Year = toolkit.RandInt(100)
+		das = append(das, da)
+	}
+
+	for i := 0; i < 100; i++ {
+		o := new(LedgerSummary)
+		o.ID = fmt.Sprintf("LS00%d", i)
+		o.PC = pcs[i%len(pcs)]
+		o.CC = ccs[i%len(ccs)]
+		o.CompanyCode = toolkit.RandomString(3)
+		o.LedgerAccount = toolkit.RandomString(3)
+		o.Customer = cus[i%len(cus)]
+		o.Product = prs[i%len(prs)]
+		o.Date = das[i%len(das)]
+		o.Value1 = toolkit.RandFloat(3000, 2)
+		o.Value2 = toolkit.RandFloat(3000, 2)
+		o.Value3 = toolkit.RandFloat(3000, 2)
+		o.Save()
+
+		res = append(res, o)
+	}
+
+	return res
 }
 
 /*
@@ -152,12 +233,12 @@ func SummarizeLedgerSum(
 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
 	}
 
-	// if c.Count() > 0 {
-	// 	e = c.Fetch(&ms, 0, false)
-	// 	if e != nil {
-	// 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
-	// 	}
-	// }
+	if c.Count() > 0 {
+		e = c.Fetch(&ms, 0, false)
+		if e != nil {
+			return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
+		}
+	}
 
 	if fnTransform != nil {
 		for idx, m := range ms {
@@ -187,11 +268,14 @@ type PivotParam struct {
 
 type PivotParamDimensions struct {
 	Field string `json:"field"`
+	Type  string `json:"type"`
+	Alias string `json:"alias"`
 }
 
 type PivotParamDataPoint struct {
-	Aggr  string `json:"aggr"`
+	OP    string `json:"op"`
 	Field string `json:"field"`
+	Alias string `json:"alias"`
 }
 
 func (p *PivotParam) ParseDimensions() (res []string) {
@@ -204,7 +288,7 @@ func (p *PivotParam) ParseDimensions() (res []string) {
 
 func (p *PivotParam) ParseDataPoints() (res []string) {
 	for _, each := range p.DataPoints {
-		parts := []string{each.Aggr, each.Field, each.Field}
+		parts := []string{each.OP, each.Field, each.Alias}
 
 		if !strings.HasPrefix(parts[1], "$") {
 			parts[1] = fmt.Sprintf("$%s", parts[1])
@@ -213,4 +297,120 @@ func (p *PivotParam) ParseDataPoints() (res []string) {
 		res = append(res, strings.Join(parts, ":"))
 	}
 	return
+}
+
+func (p *PivotParam) MapSummarizedLedger(data []toolkit.M) []toolkit.M {
+	res := []toolkit.M{}
+	metadata := map[string]string{}
+
+	for i, each := range data {
+		row := toolkit.M{}
+
+		if i == 0 {
+			// cache the metadata, only on first loop
+			for key, val := range each {
+				if key == "_id" {
+					for key2 := range val.(toolkit.M) {
+						keyv := key2
+
+						for _, dimension := range p.Dimensions {
+							if strings.ToLower(dimension.Field) == strings.ToLower(keyv) {
+								keyv = strings.Replace(strings.Replace(dimension.Field, ".", "", -1), "_id", "_ID", -1)
+							}
+						}
+
+						if key2 == "_id" {
+							keyv = toolkit.TrimByString(keyv, "_")
+						}
+
+						metadata[fmt.Sprintf("%s.%s", key, key2)] = keyv
+					}
+				} else {
+					keyv := key
+					for _, each := range p.DataPoints {
+						if strings.ToLower(each.Alias) == strings.ToLower(key) {
+							keyv = strings.Replace(each.Alias, " ", "_", -1)
+						}
+					}
+					metadata[key] = keyv
+				}
+			}
+		}
+
+		// flatten the data
+		for key, val := range each {
+			if key == "_id" {
+				for key2, val2 := range val.(toolkit.M) {
+					keyv := metadata[fmt.Sprintf("%s.%s", key, key2)]
+					row.Set(keyv, val2)
+				}
+			} else {
+				keyv := metadata[key]
+				row.Set(keyv, val)
+			}
+		}
+
+		res = append(res, row)
+	}
+
+	return res
+}
+
+func (p *PivotParam) GetPivotConfig(data []toolkit.M) toolkit.M {
+	res := struct {
+		SchemaModelFields   toolkit.M
+		SchemaCubeDimension toolkit.M
+		SchemaCubeMeasures  toolkit.M
+		Columns             []toolkit.M
+		Rows                []toolkit.M
+		Measures            []string
+	}{
+		toolkit.M{},
+		toolkit.M{},
+		toolkit.M{},
+		[]toolkit.M{},
+		[]toolkit.M{},
+		[]string{},
+	}
+
+	if len(data) > 0 {
+		for key := range data[0] {
+			for _, c := range p.Dimensions {
+				a := strings.ToLower(strings.Replace(c.Field, ".", "", -1)) == strings.ToLower(key)
+				b := strings.ToLower(toolkit.TrimByString(c.Field, "_")) == strings.ToLower(key)
+
+				if a || b {
+					if c.Type == "column" {
+						res.Columns = append(res.Columns, toolkit.M{"name": key, "expand": false})
+					} else {
+						res.Rows = append(res.Rows, toolkit.M{"name": key, "expand": false})
+					}
+
+					caption := fmt.Sprintf("All %s", c.Alias)
+					res.SchemaModelFields.Set(key, toolkit.M{"type": "string"})
+					res.SchemaCubeDimension.Set(key, toolkit.M{"caption": caption})
+				}
+			}
+
+			for _, c := range p.DataPoints {
+				if strings.ToLower(strings.Replace(c.Alias, " ", "_", -1)) == strings.ToLower(key) {
+					op := c.OP
+					if op == "avg" {
+						op = "average"
+					}
+
+					res.SchemaModelFields.Set(key, toolkit.M{"type": "number"})
+					res.SchemaCubeMeasures.Set(key, toolkit.M{"field": key, "aggregate": op})
+					res.Measures = append(res.Measures, key)
+				}
+			}
+		}
+	}
+
+	resM, err := toolkit.ToM(res)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return resM
 }
