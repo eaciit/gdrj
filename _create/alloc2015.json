@@ -1,0 +1,120 @@
+ID            string `json:"_id" bson:"_id"` //_id
+	OrderIndex    string
+	PLHeader1     string
+	PLHeader2     string
+	PLHeader3     string
+	Amount        float64
+
+{ "_id": "PL1", "plheader1": "Net Sales", "plheader2": "Gross Sales", "plheader3": "Sales Local" },
+{ "_id": "PL2", "plheader1": "Net Sales", "plheader2": "Gross Sales", "plheader3": "Sales Local RD" },
+{ "_id": "PL3", "plheader1": "Net Sales", "plheader2": "Gross Sales", "plheader3": "Sales Return " },
+{ "_id": "PL4", "plheader1": "Net Sales", "plheader2": "Gross Sales", "plheader3": "Sales Return RD" },
+{ "_id": "PL5", "plheader1": "Net Sales", "plheader2": "Gross Sales", "plheader3": "Trademark License" },
+{ "_id": "PL6", "plheader1": "Net Sales", "plheader2": "Gross Sales", "plheader3": "Sales Export" },
+{ "_id": "PL7", "plheader1": "Net Sales", "plheader2": "Sales Discount", "plheader3": "Sales Discount" },
+{ "_id": "PL8", "plheader1": "Net Sales", "plheader2": "Sales Discount", "plheader3": "Sales Discount RD" },
+{ "_id": "PL8A", "plheader1": "Net Sales", "plheader2": "Net Sales", "plheader3": "Net Sales" },
+{ "_id": "PL9", "plheader1": "Direct Expense", "plheader2": "Raw Material / Packaging Material", "plheader3": "Material - Local" },
+{ "_id": "PL10", "plheader1": "Direct Expense", "plheader2": "Raw Material / Packaging Material", "plheader3": "Material - Import" },
+{ "_id": "PL11", "plheader1": "Direct Expense", "plheader2": "Raw Material / Packaging Material", "plheader3": "Material - Promo" },
+{ "_id": "PL12", "plheader1": "Direct Expense", "plheader2": "Raw Material / Packaging Material", "plheader3": "Material - FG" },
+{ "_id": "PL13", "plheader1": "Direct Expense", "plheader2": "Raw Material / Packaging Material", "plheader3": "Material - Other" },
+{ "_id": "PL14", "plheader1": "Direct Expense", "plheader2": "Direct Labor", "plheader3": "Direct Labor" },
+{ "_id": "PL14A", "plheader1": "Direct Expense", "plheader2": "Direct Expense", "plheader3": "Direct Expense" },
+{ "_id": "PL15", "plheader1": "Indirect Expense", "plheader2": "Personnel Expenses", "plheader3": "Personnel Expenses" },
+{ "_id": "PL16", "plheader1": "Indirect Expense", "plheader2": "Services", "plheader3": "Services" },
+{ "_id": "PL17", "plheader1": "Indirect Expense", "plheader2": "Rent", "plheader3": "Rent" },
+{ "_id": "PL18", "plheader1": "Indirect Expense", "plheader2": "Transportation", "plheader3": "Transportation" },
+{ "_id": "PL19", "plheader1": "Indirect Expense", "plheader2": "Repair & Maintenance", "plheader3": "Repair & Maintenance" },
+{ "_id": "PL20", "plheader1": "Indirect Expense", "plheader2": "Others", "plheader3": "Others" },
+{ "_id": "PL21", "plheader1": "Indirect Expense", "plheader2": "Depr & Amort. Exp", "plheader3": "Depr & Amort. Exp" },
+{ "_id": "PL74", "plheader1": "Indirect Expense", "plheader2": "Energy Cost Factory", "plheader3": "Energy Cost Factory" },
+{ "_id": "PL74A", "plheader1": "Indirect Expense", "plheader2": "Indirect Expense", "plheader3": "Indirect Expense" },
+{ "_id": "PL74B", "plheader1": "Cost of Goods Sold	Cost of Goods Sold	Cost of Goods Sold
+{ "_id": "PL74C", "plheader1": "Gross Margin	Gross Margin	Gross Margin
+{ "_id": "PL23", "plheader1": "Freight Expense	Freight Expense	Freight Expense
+{ "_id": "PL24", "plheader1": "Royalties & Trademark Exp	Indovest Trademark	Indovest Trademark
+{ "_id": "PL25", "plheader1": "Royalties & Trademark Exp	Godrej Trademark	Godrej Trademark
+{ "_id": "PL26", "plheader1": "Royalties & Trademark Exp	Godrej Techsupport	Godrej Techsupport
+{ "_id": "PL26A", "plheader1": "Royalties & Trademark Exp	Royalties & Trademark Exp	Royalties & Trademark Exp
+{ "_id": "PL28", "plheader1": "Advt & Promo Expenses	Advertising Expenses	Advertising Expenses
+{ "_id": "PL29", "plheader1": "Advt & Promo Expenses	Promotions Expenses	Bonus
+{ "_id": "PL30", "plheader1": "Advt & Promo Expenses	Promotions Expenses	Gondola / Mailer / Motoris
+{ "_id": "PL31", "plheader1": "Advt & Promo Expenses	Promotions Expenses	Other
+{ "_id": "PL32", "plheader1": "Advt & Promo Expenses	SPG Exp / Export Cost	SPG Exp / Export Cost
+{ "_id": "PL32A", "plheader1": "Advt & Promo Expenses	Advt & Promo Expenses	Advt & Promo Expenses
+{ "_id": "PL32B", "plheader1": "Selling Expenses	Selling Expenses	Selling Expenses
+{ "_id": "PL33", "plheader1": "G&A Expenses	Personnel  Exp - Office	Personnel  Exp - Office
+{ "_id": "PL34", "plheader1": "G&A Expenses	General Exp - Office	General Exp - Office
+{ "_id": "PL35", "plheader1": "G&A Expenses	Depr & A Exp - Office	Depr & A Exp - Office
+{ "_id": "PL94", "plheader1": "G&A Expenses	Foreign Exch. Loss/(Gain)	Foreign Exch. Loss/(Gain)
+{ "_id": "PL94A", "plheader1": "G&A Expenses	G&A Expenses	G&A Expenses
+{ "_id": "PL94B", "plheader1": "Operating Expense	Operating Expense	Operating Expense
+{ "_id": "PL94C", "plheader1": "Operating Income	Operating Income	Operating Income
+{ "_id": "PL36", "plheader1": "Non Operating (Income) / Exp	Foreign Exch. Loss/(Gain)	Foreign Exch. Loss/(Gain)
+{ "_id": "PL37", "plheader1": "Non Operating (Income) / Exp	Interest Expense	Interest Expense
+{ "_id": "PL38", "plheader1": "Non Operating (Income) / Exp	Interest Income	Interest Income
+{ "_id": "PL39", "plheader1": "Non Operating (Income) / Exp	Other Expense ( Income)	Other Expense ( Income)
+{ "_id": "PL39A", "plheader1": "Non Operating (Income) / Exp	Non Operating (Income) / Exp	Non Operating (Income) / Exp
+{ "_id": "PL39B", "plheader1": "Earning Before Tax	Earning Before Tax	Earning Before Tax
+{ "_id": "PL40", "plheader1": "Tax Expense	Current Income Tax	Current Income Tax
+{ "_id": "PL41", "plheader1": "Tax Expense	Deferred Tax	Deferred Tax
+{ "_id": "PL41A", "plheader1": "Tax Expense	Tax Expense	Tax Expense
+{ "_id": "PL41B", "plheader1": "% PBT	% PBT	% PBT
+{ "_id": "PL41C", "plheader1": "Earning After Tax	Earning After Tax	Earning After Tax
+{ "_id": "PL42", "plheader1": "Total Depreciation Exp	Depreciation - Direct	Depreciation - Direct
+{ "_id": "PL43", "plheader1": "Total Depreciation Exp	Depreciation - Indirect	Depreciation - Indirect
+{ "_id": "PL44", "plheader1": "Total Depreciation Exp	Damaged Goods	Damaged Goods
+{ "_id": "PL44A", "plheader1": "Total Depreciation Exp	Total Depreciation Exp	Total Depreciation Exp
+{ "_id": "PL44B", "plheader1": "EBIT	EBIT	EBIT
+{ "_id": "PL44C", "plheader1": "EBITDA	EBITDA	EBITDA
+{ "_id": "PL44D", "plheader1": "EBITDA & Royalties	EBITDA & Royalties	EBITDA & Royalties
+
+[
+	{ "_id": "PL001", "Value": 2636910.75389200 },
+	{ "_id": "PL002", "Value": -132368.487195 },
+	{ "_id": "PL003", "Value": 2504542.266697 },
+	{ "_id": "PL004", "Value": 1369802.880622 },
+	{ "_id": "PL005", "Value": 75207.737135 },
+	{ "_id": "PL006", "Value": 385.975561 },
+	{ "_id": "PL007", "Value": 1445010.617757 },
+	{ "_id": "PL008", "Value": 28125.842133 },
+	{ "_id": "PL009", "Value": 45788.191085 },
+	{ "_id": "PL010", "Value": 15066.668191 },
+	{ "_id": "PL011", "Value": 88980.701409 },
+	{ "_id": "PL012", "Value": 1533991.319166 },
+	{ "_id": "PL013", "Value": 970550.947531 },
+	{ "_id": "PL014", "Value": 105131.742179 },
+	{ "_id": "PL015", "Value": 52628.450103 },
+	{ "_id": "PL016", "Value": 26314.22505 },
+	{ "_id": "PL017", "Value": 184074.417332 },
+	{ "_id": "PL018", "Value": 114055.471513 },
+	{ "_id": "PL019", "Value": 195893.954065 },
+	{ "_id": "PL020", "Value": 41534.222521 },
+	{ "_id": "PL021", "Value": 351483.648099 },
+	{ "_id": "PL022", "Value": 535944.040992 },
+	{ "_id": "PL023", "Value": 83887.424167 },
+	{ "_id": "PL024", "Value": 43596.914443 },
+	{ "_id": "PL025", "Value": 6851.774925 },
+	{ "_id": "PL026", "Value": 134336.113535 },
+	{ "_id": "PL027", "Value": 670280.154527 },
+	{ "_id": "PL028", "Value": 300270.793004 },
+	{ "_id": "PL029", "Value": 10257.475625 },
+	{ "_id": "PL030", "Value": 6462.864544 },
+	{ "_id": "PL031", "Value": -7664.330607 },
+	{ "_id": "PL032", "Value": -39918.732029 },
+	{ "_id": "PL033", "Value": -30862.722467 },
+	{ "_id": "PL034", "Value": 331133.515471 },
+	{ "_id": "PL035", "Value": 94408.56275 },
+	{ "_id": "PL036", "Value": -16368.139314 },
+	{ "_id": "PL037", "Value": 78040.423436 },
+	{ "_id": "PL038", "Value": 23.56766071383510 },
+	{ "_id": "PL039", "Value": 253093.092035 },
+	{ "_id": "PL040", "Value": 15066.668191 },
+	{ "_id": "PL041", "Value": 6851.774925 },
+	{ "_id": "PL042", "Value": 9794.932721 },
+	{ "_id": "PL043", "Value": 21918.443116 },
+	{ "_id": "PL044", "Value": 300270.793004 },
+	{ "_id": "PL045", "Value": 331984.168841 },
+	{ "_id": "PL046", "Value": 505525.381635 }
+]

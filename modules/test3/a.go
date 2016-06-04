@@ -104,83 +104,34 @@ func main() {
 
 	//for i, src := range arrstring {
 	//dbf := dbox.Contains("src", src)
-	crx, err := gdrj.Find(new(gdrj.RawDataPL), nil, nil)
+	crx, err := gdrj.Find(new(gdrj.SalesDetail), nil, nil)
 	if err != nil {
 		toolkit.Println("Error Found : ", err.Error())
 		os.Exit(1)
 	}
-
-    arrcount := []int{0}
-	i := 0
-	arrcount[i] = crx.Count()
-	func(xi int, xcrx dbox.ICursor) {
-		ci := 0
-		iseof := false
-		for !iseof {
-			arrpl := []*gdrj.RawDataPL{}
-			_ = xcrx.Fetch(&arrpl, 1000, false)
-
-			if len(arrpl) < 1000 {
-				iseof = true
-			}
-
-			for _, v := range arrpl {
-				tdate := time.Date(v.Year, time.Month(v.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
-
-				ls := new(gdrj.LedgerSummary)
-				ls.CompanyCode = v.EntityID
-				ls.LedgerAccount = v.Account
-
-				ls.Year = tdate.Year()
-				ls.Month = tdate.Month()
-				ls.Date = &gdrj.Date{
-					Month: tdate.Month(),
-					Year:  tdate.Year()}
-
-				ls.PCID = v.PCID
-				if v.PCID != "" && pcs.Has(v.PCID) {
-					ls.PC = pcs.Get(v.PCID).(*gdrj.ProfitCenter)
-				}
-
-				ls.CCID = v.CCID
-				if v.CCID != "" && ccs.Has(v.CCID) {
-					ls.CC = ccs.Get(v.CCID).(*gdrj.CostCenter)
-				}
-
-				ls.OutletID = v.OutletID
-				if v.OutletID != "" && custs.Has(v.OutletID) {
-					ls.Customer = custs.Get(v.OutletID).(*gdrj.Customer)
-                    //ls.Customer = gdrj.CustomerGetByID(v.OutletID)
-				}
-
-				ls.SKUID = v.SKUID
-				if v.SKUID != "" && prods.Has(v.SKUID) {
-                    ls.Product = prods.Get(v.SKUID).(*gdrj.Product)
-				}
-
-				ls.Value1 = v.AmountinIDR
-				ls.Value2 = v.AmountinUSD
-
-                tLedgerAccount := new(gdrj.LedgerMaster)
-                if ledgers.Has(ls.LedgerAccount){
-				    tLedgerAccount = ledgers.Get(ls.LedgerAccount).(*gdrj.LedgerMaster)
-                }
-				ls.PLCode = tLedgerAccount.PLCode
-				ls.PLOrder = tLedgerAccount.OrderIndex
-
-				ls.ID = ls.PrepareID().(string)
-				err = gdrj.Save(ls)
-				if err != nil {
-					toolkit.Println("Error Found : ", err.Error())
-					os.Exit(1)
-				}
-
-				ci++
-			}
-
-			toolkit.Printfn("%d of %d Processed", ci, arrcount[xi])
-		}
-
-	}(i, crx)
+    defer crx.Close()
+    
+    count := crx.Count()
+    var e error
+    //sd := new(gdrj.SalesDetail)
+    i:=0
+    
+    t0 := time.Now()
+    isneof:=true
+    for isneof{
+        var sds []gdrj.SalesDetail
+        e=crx.Fetch(&sds,1000,false);
+        if e!=nil{
+            isneof=false
+            break
+        }
+        if len(sds)<1000{
+            isneof=false
+        }
+        for _, _ = range sds{
+            i++
+        }
+        toolkit.Printfn("Processing %d of %d in %s", i, count, time.Since(t0).String())
+    }
 	toolkit.Println("END...")
 }
