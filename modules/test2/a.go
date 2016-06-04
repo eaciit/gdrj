@@ -76,6 +76,9 @@ func prepMaster(){
         prods.Set(ledger.ID,prod)
         e=cledger.Fetch(ledger,1,false)
     }
+    
+    toolkit.Printfn("Populate data:\n" +
+        toolkit.JsonString(prods))
 }
 
 func main() {
