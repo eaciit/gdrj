@@ -46,13 +46,8 @@ func (s *LedgerSummary) TableName() string {
 	return "ledgersummaries"
 }
 
-<<<<<<< HEAD
-func (s *LedgerSummary) PreSave()error{
-	s.ID=s.PrepareID().(string)
-=======
 func (s *LedgerSummary) PreSave() error {
-	// s.ID = s.PrepareID()
->>>>>>> eb78e47e6bdcdf39c6b5960b11595dd2b98a5afe
+	s.ID = s.PrepareID().(string)
 	return nil
 }
 
