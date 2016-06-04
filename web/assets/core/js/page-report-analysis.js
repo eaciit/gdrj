@@ -26,9 +26,9 @@ rpt.refresh = function () {
 };
 
 rpt.init = function () {
-	pvt.dimensions([app.koMap({ "field": "Category", "name": "Data Category" }), app.koMap({ "field": "Date", "name": "Data Date" })]);
-	pvt.rows([app.koMap({ "field": "Location", "name": "Data Location" })]);
-	pvt.dataPoints([app.koMap({ "aggr": "sum", "field": "Value", "name": "Value" })]);
+	pvt.dimensions([app.koMap({ field: 'Customer.BranchName', name: 'Branch' }), app.koMap({ field: 'Product.Brand', name: 'Brand' })]);
+
+	pvt.dataPoints([app.koMap({ field: 'Value1', name: 'Gross Sales' }), app.koMap({ field: 'Value2', name: 'Discount' }), app.koMap({ field: 'Value3', name: 'Net Sales' })]);
 
 	switch (o.ID) {
 		case 'freight_cost_by_sales':

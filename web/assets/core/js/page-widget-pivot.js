@@ -1,4 +1,6 @@
-'use strict';
+"use strict";
+
+var DATATEMP = [{ "_id": { "Customer.BranchName": "Jakarta", "Product.Brand": "Mitu" }, "Value1": 1000, "Value2": 800, "Value3": 200 }, { "_id": { "Customer.BranchName": "Jakarta", "Product.Brand": "Hit" }, "Value1": 1100, "Value2": 900, "Value3": 150 }, { "_id": { "Customer.BranchName": "Malang", "Product.Brand": "Mitu" }, "Value1": 900, "Value2": 600, "Value3": 300 }, { "_id": { "Customer.BranchName": "Malang", "Product.Brand": "Hit" }, "Value1": 700, "Value2": 700, "Value3": 100 }, { "_id": { "Customer.BranchName": "Yogyakarta", "Product.Brand": "Mitu" }, "Value1": 1000, "Value2": 800, "Value3": 200 }, { "_id": { "Customer.BranchName": "Yogyakarta", "Product.Brand": "Hit" }, "Value1": 1100, "Value2": 900, "Value3": 150 }];
 
 viewModel.pivot = new Object();
 var pvt = viewModel.pivot;
@@ -17,7 +19,7 @@ pvt.templateRowColumn = {
 	field: '',
 	name: ''
 };
-pvt.optionDimensions = ko.observableArray([{ field: 'PC.BranchID', name: 'Branch/RD' }, { field: 'Customer.ChannelID', name: 'Channel' }, { field: 'Customer.Area', name: 'Geography' }, { field: 'Product._id', name: 'Product' }, { field: 'Date.Date', name: 'Time' }, { field: '', name: 'Cost Type' }, // <<<<< ====================== need to be filled
+pvt.optionDimensions = ko.observableArray([{ field: 'Customer.BranchName', name: 'Branch/RD' }, { field: 'Customer.ChannelName', name: 'Channel' }, { field: 'Customer.Area', name: 'Geography' }, { field: 'Product.Brand', name: 'Brand' }, { field: 'Date.Date', name: 'Time' }, { field: '', name: 'Cost Type' }, // <<<<< ====================== need to be filled
 { field: 'CC.HCCGroupID', name: 'Function' }]);
 pvt.optionRows = ko.observableArray([{ field: 'Customer._id', name: 'Outlet' }, { field: 'Product._id', name: 'SKU' }, { field: 'PC._id', name: 'PC' }, { field: 'CC._id', name: 'CC' }, { field: 'LedgerAccount', name: 'G/L' }]);
 pvt.optionDataPoints = ko.observableArray([{ field: 'Value1', name: 'Value 1' }, { field: 'Value2', name: 'Value 2' }, { field: 'Value3', name: 'Value 3' }]);
@@ -47,7 +49,7 @@ pvt.dataPoints = ko.observableArray([app.koMap({
 //,
 // 	aggr: pvt.optionAggregates()[2].aggr
 // }),
-pvt.data = ko.observableArray([/*tempData*/]);
+pvt.data = ko.observableArray(DATATEMP);
 pvt.currentTargetDimension = null;
 
 pvt.prepareTooltipster = function () {
@@ -65,14 +67,14 @@ pvt.prepareTooltipster = function () {
 
 	$('.tooltipster-dimension').each(function (i, e) {
 		$(e).tooltipster($.extend(true, config, {
-			content: $('\n\t\t\t\t<h3 class="no-margin no-padding">Add to</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' data-target-module=\'column\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.addAs(this, "column")\'>\n\t\t\t\t\t\t<i class=\'fa fa-columns\'></i> Column\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' data-target-module=\'row\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.addAs(this, "row")\'>\n\t\t\t\t\t\t<i class=\'fa fa-reorder\'></i> Row\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t')
+			content: $("\n\t\t\t\t<h3 class=\"no-margin no-padding\">Add to</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class='btn btn-sm btn-success' data-target-module='column' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.addAs(this, \"column\")'>\n\t\t\t\t\t\t<i class='fa fa-columns'></i> Column\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class='btn btn-sm btn-success' data-target-module='row' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.addAs(this, \"row\")'>\n\t\t\t\t\t\t<i class='fa fa-reorder'></i> Row\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t")
 		}));
 	});
 
 	$('.tooltipster-column-row').each(function (i, e) {
 		var title = $(e).closest('.pivot-section').parent().prev().text();
 		$(e).tooltipster($.extend(true, config, {
-			content: $('\n\t\t\t\t<h3 class="no-margin no-padding">' + title + ' setting</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.configure(this, "column")\'>\n\t\t\t\t\t\t<i class=\'fa fa-gear\'></i> Configure\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.removeFrom()\'>\n\t\t\t\t\t\t<i class=\'fa fa-trash\'></i> Remove\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t')
+			content: $("\n\t\t\t\t<h3 class=\"no-margin no-padding\">" + title + " setting</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class='btn btn-sm btn-success' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.configure(this, \"column\")'>\n\t\t\t\t\t\t<i class='fa fa-gear'></i> Configure\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class='btn btn-sm btn-success' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.removeFrom()'>\n\t\t\t\t\t\t<i class='fa fa-trash'></i> Remove\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t")
 		}));
 	});
 };
@@ -89,11 +91,11 @@ pvt.showFieldControl = function (o) {
 };
 pvt.hoverInModule = function (o) {
 	var target = $(o).attr('data-target-module');
-	$('[data-module="' + target + '"]').addClass('highlight');
+	$("[data-module=\"" + target + "\"]").addClass('highlight');
 };
 pvt.hoverOutModule = function (o) {
 	var target = $(o).attr('data-target-module');
-	$('[data-module="' + target + '"]').removeClass('highlight');
+	$("[data-module=\"" + target + "\"]").removeClass('highlight');
 };
 pvt.getData = function (callback) {
 	app.ajaxPost("/report/getdatapivot", {}, function (res) {
@@ -118,7 +120,7 @@ pvt.addDataPoint = function () {
 	app.prepareTooltipster($(".pivot-section-data-point .input-group:last .tooltipster"));
 };
 pvt.addAs = function (o, what) {
-	var holder = pvt[what + 's'];
+	var holder = pvt[what + "s"];
 	var id = $(pvt.currentTargetDimension).attr('data-id');
 
 	var isAddedOnColumn = typeof ko.mapping.toJS(pvt.dimensions()).find(function (d) {
@@ -179,32 +181,77 @@ pvt.getPivotConfig = function () {
 	var param = { dimensions: dimensions, datapoints: dataPoints };
 	return param;
 };
-
+pvt.computeDimensionDataPoint = function (which, field) {
+	return ko.pureComputed({
+		read: function read() {
+			return pvt[which]().filter(function (d) {
+				return d.field() == field;
+			}).length > 0;
+		},
+		write: function write(value) {
+			// var lastSpacePos = value.lastIndexOf(" ");
+			// if (lastSpacePos > 0) { // Ignore values with no space character
+			//     this.firstName(value.substring(0, lastSpacePos)); // Update "firstName"
+			//     this.lastName(value.substring(lastSpacePos + 1)); // Update "lastName"
+			// }
+		},
+		owner: undefined
+	});
+};
 pvt.render = function (data) {
-	var config = {
-		filterable: false,
-		reorderable: false,
-		dataSource: {
-			data: data.Data,
-			schema: {
-				model: {
-					fields: data.MetaData.SchemaModelFields
-				},
-				cube: {
-					dimensions: data.MetaData.SchemaCubeDimensions,
-					measures: data.MetaData.SchemaCubeMeasures
+	var pivot = $('.pivot').empty();
+	var table = app.newEl('table').addClass('table pivot ez').appendTo(pivot);
+	var thead = app.newEl('thead').appendTo(table);
+	var tbody = app.newEl('tbody').appendTo(table);
+
+	var dimensions = app.koUnmap(pvt.dimensions);
+	var dataPoints = app.koUnmap(pvt.dataPoints);
+
+	// HEADER
+
+	var tr = app.newEl('tr').appendTo(thead);
+
+	dimensions.forEach(function (d) {
+		var th = app.newEl('th').html(d.name).appendTo(thead);
+	});
+
+	dataPoints.forEach(function (d) {
+		var th = app.newEl('th').html(d.name).appendTo(thead);
+	});
+
+	// DATA
+
+	var manyDimensions = dimensions.length;
+	var tds = [];
+
+	pvt.data().forEach(function (d, i) {
+		var tr = app.newEl('tr').appendTo(tbody);
+		tds[i] = [];
+
+		dimensions.forEach(function (e, j) {
+			var value = d._id[e.field];
+			var td = app.newEl('td').addClass('dimension').appendTo(tr).html(value);
+			tds.push(td);
+			tds[i][j] = td;
+		});
+
+		dataPoints.forEach(function (e) {
+			var value = d[e.field];
+			var td = app.newEl('td').appendTo(tr).html(value);
+		});
+
+		dimensions.forEach(function (d, j) {
+			var rowspan = dimensions.length - j;
+
+			if (i % dimensions.length == 0) {
+				tds[i][j].attr('rowspan', rowspan);
+			} else {
+				if (rowspan > 1) {
+					$(tds[i][j]).remove();
 				}
-			},
-			columns: data.MetaData.Columns,
-			rows: data.MetaData.Rows,
-			measures: data.MetaData.Measures
-		}
-	};
-
-	app.log(config);
-
-	$('.pivot').replaceWith('<div class="pivot"></div>');
-	$('.pivot').kendoPivotGrid(config);
+			}
+		});
+	});
 };
 
 pvt.init = function () {

@@ -1,3 +1,12 @@
+let DATATEMP = [
+	{"_id": {"Customer.BranchName": "Jakarta", "Product.Brand": "Mitu"}, "Value1": 1000, "Value2": 800, "Value3": 200 },
+	{"_id": {"Customer.BranchName": "Jakarta", "Product.Brand": "Hit"}, "Value1": 1100, "Value2": 900, "Value3": 150 },
+	{"_id": {"Customer.BranchName": "Malang", "Product.Brand": "Mitu"}, "Value1": 900, "Value2": 600, "Value3": 300 },
+	{"_id": {"Customer.BranchName": "Malang", "Product.Brand": "Hit"}, "Value1": 700, "Value2": 700, "Value3": 100 },
+	{"_id": {"Customer.BranchName": "Yogyakarta", "Product.Brand": "Mitu"}, "Value1": 1000, "Value2": 800, "Value3": 200 },
+	{"_id": {"Customer.BranchName": "Yogyakarta", "Product.Brand": "Hit"}, "Value1": 1100, "Value2": 900, "Value3": 150 }
+]
+
 viewModel.pivot = new Object()
 let pvt = viewModel.pivot
 
@@ -87,10 +96,10 @@ pvt.templateRowColumn = {
 	name: ''
 }
 pvt.optionDimensions = ko.observableArray([
-	{ field: 'PC.BranchID', name: 'Branch/RD' },
-	{ field: 'Customer.ChannelID', name: 'Channel' },
+	{ field: 'Customer.BranchName', name: 'Branch/RD' },
+	{ field: 'Customer.ChannelName', name: 'Channel' },
 	{ field: 'Customer.Area', name: 'Geography' },
-	{ field: 'Product._id', name: 'Product' },
+	{ field: 'Product.Brand', name: 'Brand' },
 	{ field: 'Date.Date', name: 'Time' },
 	{ field: '', name: 'Cost Type' }, // <<<<< ====================== need to be filled
 	{ field: 'CC.HCCGroupID', name: 'Function' },
@@ -143,7 +152,7 @@ pvt.dataPoints = ko.observableArray([
 	// 	aggr: pvt.optionAggregates()[2].aggr
 	// }),
 ])
-pvt.data = ko.observableArray([/*tempData*/])
+pvt.data = ko.observableArray(DATATEMP)
 pvt.currentTargetDimension = null
 
 pvt.prepareTooltipster = () => {
@@ -284,32 +293,75 @@ pvt.getPivotConfig = () => {
 	let param = { dimensions: dimensions, datapoints: dataPoints }
 	return param
 }
-
+pvt.computeDimensionDataPoint = (which, field) => {
+	return ko.pureComputed({
+		read: () => {
+	        return pvt[which]().filter((d) => d.field() == field).length > 0
+	    },
+	    write: (value) => {
+	        // var lastSpacePos = value.lastIndexOf(" ");
+	        // if (lastSpacePos > 0) { // Ignore values with no space character
+	        //     this.firstName(value.substring(0, lastSpacePos)); // Update "firstName"
+	        //     this.lastName(value.substring(lastSpacePos + 1)); // Update "lastName"
+	        // }
+	    },
+	    owner: this
+	})
+}
 pvt.render = (data) => {
-	let config = {
-	    filterable: false,
-	    reorderable: false,
-	    dataSource: {
-			data: data.Data,
-			schema: {
-				model: {
-					fields: data.MetaData.SchemaModelFields
-				},
-				cube: {
-					dimensions: data.MetaData.SchemaCubeDimensions,
-					measures: data.MetaData.SchemaCubeMeasures
-				}
-			},
-			columns: data.MetaData.Columns,
-			rows: data.MetaData.Rows,
-			measures: data.MetaData.Measures
-		}
-	}
+	let pivot = $('.pivot').empty()
+	let table = app.newEl('table').addClass('table pivot ez').appendTo(pivot)
+	let thead = app.newEl('thead').appendTo(table)
+	let tbody = app.newEl('tbody').appendTo(table)
 
-	app.log(config)
+	let dimensions = app.koUnmap(pvt.dimensions)
+	let dataPoints = app.koUnmap(pvt.dataPoints)
 
-	$('.pivot').replaceWith('<div class="pivot"></div>')
-	$('.pivot').kendoPivotGrid(config)
+	// HEADER
+
+	let tr = app.newEl('tr').appendTo(thead)
+
+	dimensions.forEach((d) => {
+		let th = app.newEl('th').html(d.name).appendTo(thead)
+	})
+
+	dataPoints.forEach((d) => {
+		let th = app.newEl('th').html(d.name).appendTo(thead)
+	})
+
+	// DATA
+
+	let manyDimensions = dimensions.length
+	let tds = []
+
+	pvt.data().forEach((d, i) => {
+		let tr = app.newEl('tr').appendTo(tbody)
+		tds[i] = []
+
+		dimensions.forEach((e, j) => {
+			let value = d._id[e.field]
+			let td = app.newEl('td').addClass('dimension').appendTo(tr).html(value)
+			tds.push(td)
+			tds[i][j] = td
+		})
+
+		dataPoints.forEach((e) => {
+			let value = d[e.field]
+			let td = app.newEl('td').appendTo(tr).html(value)
+		})
+
+		dimensions.forEach((d, j) => {
+			let rowspan = dimensions.length - j
+
+			if (i % dimensions.length == 0) {
+				tds[i][j].attr('rowspan', rowspan)
+			} else {
+				if (rowspan > 1) {
+					$(tds[i][j]).remove()
+				} 
+			}
+		})
+	})
 }
 
 pvt.init = () => {

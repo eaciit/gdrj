@@ -233,12 +233,13 @@ func SummarizeLedgerSum(
 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
 	}
 
-	if c.Count() > 0 {
-		e = c.Fetch(&ms, 0, false)
-		if e != nil {
-			return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
-		}
-	}
+
+	// if c.Count() > 0 {
+	// 	e = c.Fetch(&ms, 0, false)
+	// 	if e != nil {
+	// 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
+	// 	}
+	// }
 
 	if fnTransform != nil {
 		for idx, m := range ms {

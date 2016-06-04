@@ -27,14 +27,14 @@ rpt.refresh = () => {
 
 rpt.init = () => {
 	pvt.dimensions([
-		app.koMap({ "field": "Category", "name": "Data Category" }),
-		app.koMap({ "field": "Date", "name": "Data Date" })
+		app.koMap({ field: 'Customer.BranchName', name: 'Branch' }),
+		app.koMap({ field: 'Product.Brand', name: 'Brand' })
 	])
-	pvt.rows([
-		app.koMap({ "field": "Location", "name": "Data Location" })
-	])
+
 	pvt.dataPoints([
-		app.koMap({ "aggr": "sum", "field": "Value", "name": "Value" })
+		app.koMap({ field: 'Value1', name: 'Gross Sales' }),
+		app.koMap({ field: 'Value2', name: 'Discount' }),
+		app.koMap({ field: 'Value3', name: 'Net Sales' })
 	])
 
 	switch (o.ID) {

@@ -328,6 +328,12 @@ html, body
 				.add-data-point
 					display: none
 
+		&.left
+			padding-right: 5px
+
+		&.right
+			padding-left: 5px
+
 		.wrapper-inner
 			border: 1px solid $color-base-grey
 			padding: 0px
@@ -402,6 +408,17 @@ html, body
 								top: 0
 								bottom: 0
 								width: 4px
+
+		.pivot-wrapper-inner
+			.table.pivot.ez
+				tr
+					td
+						&[rowspan]
+							vertical-align: middle
+
+						&.dimension
+							font-weight: bold
+
 
 #outlet-location, #pivot-wrapper
 	min-height: 400px
