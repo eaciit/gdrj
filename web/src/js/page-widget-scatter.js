@@ -95,7 +95,8 @@ sct.getParam = () => {
 
 	return {
 		dimensions: dimensions,
-		dataPoints: dataPoints
+		dataPoints: dataPoints,
+		plcode: o.PLCode
 	}
 }
 

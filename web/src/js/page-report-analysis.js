@@ -90,9 +90,9 @@ ra.optionDimensions = ko.observableArray([
 	{ field: 'cc.hccgroupid', name: 'Function' },
 ])
 ra.optionDataPoints = ko.observableArray([
-    { field: 'value1', name: 'Value 1' },
-    { field: 'value2', name: 'Value 2' },
-    { field: 'value3', name: 'Value 3' }
+    { field: 'value1', name: o['value1'] },
+    { field: 'value2', name: o['value2'] },
+    { field: 'value3', name: o['value3'] }
 ])
 ra.optionAggregates = ko.observableArray([
 	{ aggr: 'sum', name: 'Sum' },
@@ -122,3 +122,5 @@ rpt.refresh = () => {
         crt.refresh()
     }
 }
+
+console.log(o)

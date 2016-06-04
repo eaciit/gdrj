@@ -20,14 +20,17 @@ tbl.mode = ko.observable('render')
 tbl.computeDimensionDataPoint = (which, field) => {
 	return ko.pureComputed({
 		read: () => {
+			console.log(which, field, tbl[which]())
 	        return tbl[which]().filter((d) => d.field() == field).length > 0
 	    },
 	    write: (value) => {
+			console.log(which, tbl, field, tbl[which])
 	    	let row = tbl[which]().find((d) => d.field() == field)
 	    	if (app.isDefined(row)) {
 	    		tbl[which].remove(row)
 	    	} else {
-	    		row = app.koMap(app.koUnmap(ra.optionDimensions).find((d) => d.field == field))
+	    		let option = (which == 'dataPoint') ? 'optionDataPoints' : 'optionDimensions'
+	    		row = app.koMap(app.koUnmap(ra[option]).find((d) => d.field == field))
 	    		tbl[which].push(row)
 	    	}
 	    },
@@ -128,7 +131,8 @@ tbl.getParam = () => {
 
 	return {
 		dimensions: dimensions,
-		dataPoints: dataPoints
+		dataPoints: dataPoints,
+		plcode: o.PLCode
 	}
 }
 
@@ -154,9 +158,9 @@ $(() => {
 		app.koMap({ field: 'customer.channelname', name: 'Product' })
 	])
 	tbl.dataPoints([
-		app.koMap({ field: 'value1', name: 'Gross Sales' }),
-		app.koMap({ field: 'value2', name: 'Discount' }),
-		app.koMap({ field: 'value3', name: 'Net Sales' })
+		app.koMap({ field: 'value1', name: o[`value1`] }),
+		app.koMap({ field: 'value2', name: o[`value2`] }),
+		app.koMap({ field: 'value3', name: o[`value3`] })
 	])
 	tbl.refresh()
 })

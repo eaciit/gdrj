@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"eaciit/gdrj/model"
 	"eaciit/gdrj/web/model"
 	"fmt"
 	"github.com/eaciit/knot/knot.v1"
@@ -165,5 +166,16 @@ func (w *WebController) PageReport(r *knot.WebContext, args []string) interface{
 	fmt.Printf("-----> /report/%s\n", args[0])
 	fmt.Printf("-----> %#v\n", row)
 
-	return toolkit.M{"subreport": args[0], "row": row}
+	plmodel := new(gdrj.PLModel)
+
+	switch row.ID {
+	case "cost_by_sales":
+		plmodel = gdrj.PLModelGetByID("PL7")
+	}
+
+	return toolkit.M{
+		"subreport": args[0],
+		"row":       row,
+		"plmodel":   *plmodel,
+	}
 }

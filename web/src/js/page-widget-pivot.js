@@ -79,7 +79,8 @@ pvt.getParam = () => {
 
 	return {
 		dimensions: dimensions,
-		dataPoints: dataPoints
+		dataPoints: dataPoints,
+		plcode: o.PLCode
 	}
 }
 pvt.refresh = () => {
@@ -197,9 +198,9 @@ $(() => {
 		app.koMap({ field: 'customer.branchname', name: 'Branch/RD' })
 	])
 	pvt.dataPoints([
-		app.koMap({ aggr: 'sum', field: 'value1', name: 'Gross Sales' }),
-		app.koMap({ aggr: 'sum', field: 'value2', name: 'Discount' }),
-		app.koMap({ aggr: 'sum', field: 'value3', name: 'Net Sales' })
+		app.koMap({ aggr: 'sum', field: 'value1', name: o[`value1`] }),
+		app.koMap({ aggr: 'sum', field: 'value2', name: o[`value2`] }),
+		app.koMap({ aggr: 'sum', field: 'value3', name: o[`value3`] })
 	])
 
 	pvt.refresh()

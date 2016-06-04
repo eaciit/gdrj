@@ -183,6 +183,7 @@ func (s *LedgerSummary) Save() error {
 type PivotParam struct {
 	Dimensions []*PivotParamDimensions `json:"dimensions"`
 	DataPoints []*PivotParamDataPoint  `json:"datapoints"`
+	PLCode     string                  `json:"plcode"`
 }
 
 type PivotParamDimensions struct {
@@ -213,4 +214,11 @@ func (p *PivotParam) ParseDataPoints() (res []string) {
 		res = append(res, strings.Join(parts, ":"))
 	}
 	return
+}
+
+func (p *PivotParam) ParseFilter() *dbox.Filter {
+	filters := []*dbox.Filter{}
+	filters = append(filters, dbox.Eq("plcode", p.PLCode))
+	fmt.Println("plcode", p.PLCode)
+	return dbox.And(filters...)
 }

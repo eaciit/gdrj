@@ -55,7 +55,16 @@
 		</div>
 	</div>
 
-	<script>let o = { ID: "{{.row.ID}}", Name: "{{.row.Name}}" }</script>
+	<script>
+	let o = {
+		ID: "{{.row.ID}}",
+		Name: "{{.row.Name}}",
+		PLCode: "{{.plmodel.ID}}",
+		value1: "{{.plmodel.PLHeader1}}",
+		value2: "{{.plmodel.PLHeader2}}",
+		value3: "{{.plmodel.PLHeader3}}"
+	}
+	</script>
 	<script src="/res/core/js/page-report-analysis.js"></script>
 
 	<div class="col-md-9 col-sm-9 ez panel-content">

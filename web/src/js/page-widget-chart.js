@@ -121,15 +121,16 @@ crt.getParam = () => {
 
 	return {
 		dimensions: [row],
-		dataPoints: dataPoints
+		dataPoints: dataPoints,
+		plcode: o.PLCode
 	}
 }
 crt.refresh = () => {
 	// crt.data(DATATEMP_PIVOT)
 	crt.series([
-		app.koMap({ field: 'value1', name: 'Gross Sales' }),
-		app.koMap({ field: 'value2', name: 'Discount' }),
-		app.koMap({ field: 'value3', name: 'Net Sales' })
+		app.koMap({ field: 'value1', name: o[`value1`] }),
+		app.koMap({ field: 'value2', name: o[`value2`] }),
+		app.koMap({ field: 'value3', name: o[`value3`] })
 	])
 	app.ajaxPost("/report/summarycalculatedatapivot", crt.getParam(), (res) => {
 		crt.data(res.Data)

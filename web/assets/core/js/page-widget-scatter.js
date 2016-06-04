@@ -87,7 +87,8 @@ sct.getParam = function () {
 
 	return {
 		dimensions: dimensions,
-		dataPoints: dataPoints
+		dataPoints: dataPoints,
+		plcode: o.PLCode
 	};
 };
 

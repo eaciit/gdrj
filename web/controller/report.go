@@ -181,7 +181,7 @@ func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interfa
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	var filter *dbox.Filter = nil
+	var filter *dbox.Filter = payload.ParseFilter()
 	var columns []string = payload.ParseDimensions()
 	var datapoints []string = payload.ParseDataPoints()
 	var fnTransform (func(m *toolkit.M) error) = nil
@@ -424,79 +424,6 @@ func (m *ReportController) SummaryCalculateDataPivotDummy(r *knot.WebContext) in
 	}
 
 	// ============= OUTPUT
-
-	output := struct {
-		Data     interface{}
-		MetaData interface{}
-	}{
-		data,
-		metaData,
-	}
-
-	res.SetData(output)
-
-	return res
-}
-
-func (m *ReportController) SummaryCalculateDataChartDummy(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	res := new(toolkit.Result)
-
-	// ============= PAYLOAD
-
-	payload := new(gdrj.PivotParam)
-	rawPayload := `{
-		"dimensions": [
-			{ "type": "column", "field": "Category", "name": "Data Category" },
-			{ "type": "column", "field": "Date", "name": "Data Date" },
-			{ "type": "row", "field": "Location", "name": "Data Location" }
-		],
-		"datapoints": [
-			{ "op": "sum", "field": "Value", "name": "Value" }
-		]
-	}`
-	if err := toolkit.Unjson([]byte(rawPayload), payload); err != nil {
-		res.SetError(err)
-		return res
-	}
-
-	// ============= DATA
-
-	data := []struct {
-		ID       string `json:"_id"`
-		Location string
-		Actual   float64
-		Plan     float64
-	}{}
-	rawData := `[
-		{ "_id": "A0001", "Location": "Jakarta", "Actual": 200, "Plan": 400 },
-		{ "_id": "A0001", "Location": "Malang", "Actual": 220, "Plan": 390 },
-		{ "_id": "A0001", "Location": "Yogyakarta", "Actual": 210, "Plan": 380 }
-	]`
-	if err := toolkit.Unjson([]byte(rawData), &data); err != nil {
-		res.SetError(err)
-		return res
-	}
-
-	// ============= META DATA
-
-	metaData := struct {
-		CategoryAxis string
-		Series       []toolkit.M
-	}{
-		"Location",
-		[]toolkit.M{},
-	}
-
-	rawSeries := `[
-		{ "field": "Actual" },
-		{ "field": "Plan" }
-	]`
-	if err := toolkit.Unjson([]byte(rawSeries), &(metaData.Series)); err != nil {
-		res.SetError(err)
-		return res
-	}
 
 	output := struct {
 		Data     interface{}

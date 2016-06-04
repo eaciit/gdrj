@@ -24,18 +24,21 @@ tbl.mode = ko.observable('render');
 tbl.computeDimensionDataPoint = function (which, field) {
 	return ko.pureComputed({
 		read: function read() {
+			console.log(which, field, tbl[which]());
 			return tbl[which]().filter(function (d) {
 				return d.field() == field;
 			}).length > 0;
 		},
 		write: function write(value) {
+			console.log(which, tbl, field, tbl[which]);
 			var row = tbl[which]().find(function (d) {
 				return d.field() == field;
 			});
 			if (app.isDefined(row)) {
 				tbl[which].remove(row);
 			} else {
-				row = app.koMap(app.koUnmap(ra.optionDimensions).find(function (d) {
+				var option = which == 'dataPoint' ? 'optionDataPoints' : 'optionDimensions';
+				row = app.koMap(app.koUnmap(ra[option]).find(function (d) {
 					return d.field == field;
 				}));
 				tbl[which].push(row);
@@ -143,7 +146,8 @@ tbl.getParam = function () {
 
 	return {
 		dimensions: dimensions,
-		dataPoints: dataPoints
+		dataPoints: dataPoints,
+		plcode: o.PLCode
 	};
 };
 
@@ -151,6 +155,6 @@ var DATATEMP_TABLE = [{ "_id": { "customer.branchname": "Jakarta", "product.name
 
 $(function () {
 	tbl.dimensions([app.koMap({ field: 'customer.branchname', name: 'Branch/RD' }), app.koMap({ field: 'product.name', name: 'Product' }), app.koMap({ field: 'customer.channelname', name: 'Product' })]);
-	tbl.dataPoints([app.koMap({ field: 'value1', name: 'Gross Sales' }), app.koMap({ field: 'value2', name: 'Discount' }), app.koMap({ field: 'value3', name: 'Net Sales' })]);
+	tbl.dataPoints([app.koMap({ field: 'value1', name: o['value1'] }), app.koMap({ field: 'value2', name: o['value2'] }), app.koMap({ field: 'value3', name: o['value3'] })]);
 	tbl.refresh();
 });
