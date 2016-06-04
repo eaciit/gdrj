@@ -18,7 +18,7 @@
 	</div>
 	<div class="panel-body" data-bind="visible: tbl.mode() == ''">
 		<div class="report-module report-module-rsec">
-			<div class="col-md-6 rsec-wrapper rsec-wrapper-column left" data-bind="css: { 'read-only': !ra.enableDimensions() }">
+			<div class="col-md-6 rsec-wrapper rsec-wrapper-column left" data-bind="css: { 'read-only': !tbl.enableDimensions() }">
 				<div class="wrapper-inner" data-module="column">
 					<h3 class="no-margin">
 						<i class="fa fa-reorder"></i>
@@ -40,7 +40,7 @@
 				</div>
 			</div>
 
-			<div class="col-md-6 rsec-wrapper rsec-wrapper-column right" data-bind="css: { 'read-only': !ra.enableDataPoints() }">
+			<div class="col-md-6 rsec-wrapper rsec-wrapper-column right" data-bind="css: { 'read-only': !tbl.enableDataPoints() }">
 				<div class="wrapper-inner" data-module="column">
 					<h3 class="no-margin">
 						<i class="fa fa-columns"></i>

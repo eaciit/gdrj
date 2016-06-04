@@ -13,8 +13,6 @@ ra.optionDimensions = ko.observableArray([{ field: "customer.branchname", name: 
 { field: 'cc.hccgroupid', name: 'Function' }]);
 ra.optionDataPoints = ko.observableArray([{ field: 'value1', name: 'Value 1' }, { field: 'value2', name: 'Value 2' }, { field: 'value3', name: 'Value 3' }]);
 ra.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
-ra.enableDimensions = ko.observable(true);
-ra.enableDataPoints = ko.observable(true);
 
 rpt.refresh = function () {}
 // let param = pvt.getPivotConfig()

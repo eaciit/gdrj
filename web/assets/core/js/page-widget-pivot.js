@@ -1,11 +1,10 @@
 "use strict";
 
-var DATATEMP_PIVOT = [{ "_id": { "Customer.BranchName": "Jakarta", "Product.Brand": "Mitu" }, "Value1": 1000, "Value2": 800, "Value3": 200 }, { "_id": { "Customer.BranchName": "Jakarta", "Product.Brand": "Hit" }, "Value1": 1100, "Value2": 900, "Value3": 150 }, { "_id": { "Customer.BranchName": "Malang", "Product.Brand": "Mitu" }, "Value1": 900, "Value2": 600, "Value3": 300 }, { "_id": { "Customer.BranchName": "Malang", "Product.Brand": "Hit" }, "Value1": 700, "Value2": 700, "Value3": 100 }, { "_id": { "Customer.BranchName": "Yogyakarta", "Product.Brand": "Mitu" }, "Value1": 1000, "Value2": 800, "Value3": 200 }, { "_id": { "Customer.BranchName": "Yogyakarta", "Product.Brand": "Hit" }, "Value1": 1100, "Value2": 900, "Value3": 150 }];
+var DATATEMP_PIVOT = [{ "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }];
 
 viewModel.pivot = new Object();
 var pvt = viewModel.pivot;
 
-pvt.mode = ko.observable('render');
 pvt.templateDataPoint = {
 	aggr: 'sum',
 	field: '',
@@ -15,10 +14,16 @@ pvt.templateRowColumn = {
 	field: '',
 	name: ''
 };
-pvt.data = ko.observableArray(DATATEMP_PIVOT);
-pvt.columns = ko.observableArray([]);
-pvt.rows = ko.observableArray([]);
-pvt.dataPoints = ko.observableArray([]);
+
+pvt.data = ko.observableArray([]);
+pvt.columns = ko.observableArray([app.koMap({ field: 'customer.channelname', name: 'Product' }), app.koMap({ field: 'product.name', name: 'Product' })]);
+pvt.rows = ko.observableArray([app.koMap({ field: 'customer.branchname', name: 'Branch/RD' })]);
+pvt.dataPoints = ko.observableArray([app.koMap({ aggr: 'sum', field: 'value1', name: 'Gross Sales' }), app.koMap({ aggr: 'sum', field: 'value2', name: 'Discount' }), app.koMap({ aggr: 'sum', field: 'value3', name: 'Net Sales' })]);
+
+pvt.enableColumns = ko.observable(true);
+pvt.enableRows = ko.observable(true);
+pvt.enableDataPoints = ko.observable(true);
+pvt.mode = ko.observable('render');
 pvt.currentTargetDimension = null;
 
 pvt.prepareTooltipster = function () {
@@ -132,104 +137,110 @@ pvt.removeFrom = function (o, which) {
 };
 pvt.getPivotConfig = function () {
 	var dimensions = ko.mapping.toJS(pvt.dimensions).map(function (d) {
-		return { field: d.field };
-	});
+		return { type: 'column', field: d.field, name: d.name };
+	}).concat(ko.mapping.toJS(pvt.rows).map(function (d) {
+		return { type: 'row', field: d.field, name: d.name };
+	}));
 
-	var dataPoints = ko.mapping.toJS(pvt.dataPoints).map(function (d) {
-		return { aggr: d.aggr, field: d.field };
+	var dataPoints = ko.mapping.toJS(pvt.dataPoints).filter(function (d) {
+		return d.field != '' && d.aggr != '';
+	}).map(function (d) {
+		var row = ko.mapping.toJS(pvt.pivotModel).find(function (e) {
+			return e.field == d.field;
+		});
+		var name = row == undefined ? d.field : row.name;
+		return { op: d.aggr, field: d.field, name: name };
 	});
 
 	var param = { dimensions: dimensions, datapoints: dataPoints };
 	return param;
 };
-pvt.computeDimensionDataPoint = function (which, field) {
-	return ko.pureComputed({
-		read: function read() {
-			return pvt[which]().filter(function (d) {
-				return d.field() == field;
-			}).length > 0;
-		},
-		write: function write(value) {
-			// var lastSpacePos = value.lastIndexOf(" ");
-			// if (lastSpacePos > 0) { // Ignore values with no space character
-			//     this.firstName(value.substring(0, lastSpacePos)); // Update "firstName"
-			//     this.lastName(value.substring(lastSpacePos + 1)); // Update "lastName"
-			// }
-		},
-		owner: undefined
-	});
+
+pvt.refresh = function () {
+	pvt.data(DATATEMP_PIVOT);
+	pvt.render();
 };
-pvt.render = function (data) {
-	pvt.data(data);
 
-	var pivot = $('.pivot').empty();
-	var table = app.newEl('table').addClass('table pivot ez').appendTo(pivot);
-	var thead = app.newEl('thead').appendTo(table);
-	var tbody = app.newEl('tbody').appendTo(table);
+pvt.render = function () {
+	var data = [];
+	var schemaModelFields = {};
+	var schemaCubeDimensions = {};
+	var schemaCubeMeasures = {};
+	var columns = [];
+	var rows = [];
+	var measures = [];
 
-	var dimensions = app.koUnmap(pvt.dimensions);
-	var dataPoints = app.koUnmap(pvt.dataPoints);
+	data = pvt.data().map(function (d) {
+		var res = {};
 
-	// HEADER
-
-	var tr = app.newEl('tr').appendTo(thead);
-
-	dimensions.forEach(function (d) {
-		var th = app.newEl('th').html(d.name).appendTo(thead);
-	});
-
-	dataPoints.forEach(function (d) {
-		var th = app.newEl('th').html(d.name).appendTo(thead);
-	});
-
-	// DATA
-
-	var manyDimensions = dimensions.length;
-	var tds = [];
-	var sum = dataPoints.map(function (d) {
-		return 0;
-	});
-
-	pvt.data().forEach(function (d, i) {
-		var tr = app.newEl('tr').appendTo(tbody);
-		tds[i] = [];
-
-		dimensions.forEach(function (e, j) {
-			var value = d._id[e.field.toLowerCase()];
-			var td = app.newEl('td').addClass('dimension').appendTo(tr).html(kendo.toString(value, "n2"));
-			tds.push(td);
-			tds[i][j] = td;
+		app.forEach(d, function (k, v) {
+			if (k == '_id') {
+				app.forEach(v, function (l, m) {
+					res[l.replace(/\./g, '_')] = m;
+				});
+			} else {
+				res[k.replace(/\./g, '_')] = v;
+			}
 		});
 
-		dataPoints.forEach(function (e, i) {
-			var value = d[e.field.toLowerCase()];
-			var td = app.newEl('td').appendTo(tr).html(kendo.toString(value, "n2"));
+		return res;
+	});
 
-			sum[i] += value;
+	var constructSchema = function constructSchema(from, to) {
+		app.koUnmap(from()).forEach(function (d) {
+			var option = app.koUnmap(ra.optionDimensions).find(function (e) {
+				return e.field == d.field;
+			});
+			var key = option.name.replace(/ /g, '_').replace(/\//g, '_');
+			var field = d.field.replace(/\./g, '_');
+
+			schemaModelFields[key] = { type: 'string', field: field };
+			schemaCubeDimensions[key] = { caption: option.name };
+
+			to.push({ name: key, expand: true });
 		});
+	};
 
-		// dimensions.forEach((d, j) => {
-		// 	let rowspan = dimensions.length - j
+	constructSchema(pvt.rows, rows);
+	constructSchema(pvt.columns, columns);
 
-		// 	if (i % dimensions.length == 0) {
-		// 		tds[i][j].attr('rowspan', rowspan)
-		// 	} else {
-		// 		if (rowspan > 1) {
-		// 			// $(tds[i][j]).remove()
-		// 		}
-		// 	}
-		// })
+	app.koUnmap(pvt.dataPoints).forEach(function (d) {
+		var key = d.field.replace(/ /g, '_').replace(/\//g, '_');
+		var field = d.field.replace(/\./g, '_');
+		schemaModelFields[key] = { type: 'number', field: field };
+
+		var keym = d.aggr + "_" + field;
+		var prop = { field: field, aggregate: d.aggr };
+		schemaCubeMeasures[keym] = prop;
+		measures.push(keym);
 	});
 
-	var rowLast = app.newEl('tr').appendTo(tbody);
-	var tdSpace = app.newEl('td').html('&nbsp;').attr('colspan', dataPoints.length - 2).appendTo(rowLast);
+	var config = {
+		filterable: false,
+		reorderable: false,
+		dataSource: {
+			data: data,
+			schema: {
+				model: {
+					fields: schemaModelFields
+				},
+				cube: {
+					dimensions: schemaCubeDimensions,
+					measures: schemaCubeMeasures
+				}
+			},
+			columns: columns,
+			rows: rows,
+			measures: measures
+		}
+	};
 
-	dataPoints.forEach(function (e, i) {
-		var td = app.newEl('td').appendTo(rowLast).html(kendo.toString(sum[i], "n2"));
-	});
+	app.log(app.clone(config));
+
+	$('.pivot').replaceWith('<div class="pivot"></div>');
+	$('.pivot').kendoPivotGrid(config);
 };
 
-pvt.init = function () {
-	pvt.prepareTooltipster();
-	pvt.refreshData();
-};
+$(function () {
+	pvt.refresh();
+});

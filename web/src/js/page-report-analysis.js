@@ -100,8 +100,6 @@ ra.optionAggregates = ko.observableArray([
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
-ra.enableDimensions = ko.observable(true)
-ra.enableDataPoints = ko.observable(true)
 
 rpt.refresh = () => {
 	// let param = pvt.getPivotConfig()

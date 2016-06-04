@@ -1,16 +1,21 @@
 let DATATEMP_PIVOT = [
-	{"_id": {"Customer.BranchName": "Jakarta", "Product.Brand": "Mitu"}, "Value1": 1000, "Value2": 800, "Value3": 200 },
-	{"_id": {"Customer.BranchName": "Jakarta", "Product.Brand": "Hit"}, "Value1": 1100, "Value2": 900, "Value3": 150 },
-	{"_id": {"Customer.BranchName": "Malang", "Product.Brand": "Mitu"}, "Value1": 900, "Value2": 600, "Value3": 300 },
-	{"_id": {"Customer.BranchName": "Malang", "Product.Brand": "Hit"}, "Value1": 700, "Value2": 700, "Value3": 100 },
-	{"_id": {"Customer.BranchName": "Yogyakarta", "Product.Brand": "Mitu"}, "Value1": 1000, "Value2": 800, "Value3": 200 },
-	{"_id": {"Customer.BranchName": "Yogyakarta", "Product.Brand": "Hit"}, "Value1": 1100, "Value2": 900, "Value3": 150 }
+	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
+	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
+	{"_id": {"customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
+	{"_id": {"customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 },
+	{"_id": {"customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 900, "value2": 600, "value3": 300 },
+	{"_id": {"customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 900, "value2": 600, "value3": 300 },
+	{"_id": {"customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 700, "value2": 700, "value3": 100 },
+	{"_id": {"customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 700, "value2": 700, "value3": 100 },
+	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
+	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
+	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
+	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 }
 ]
 
 viewModel.pivot = new Object()
 let pvt = viewModel.pivot
 
-pvt.mode = ko.observable('render')
 pvt.templateDataPoint = {
 	aggr: 'sum',
 	field: '',
@@ -20,10 +25,25 @@ pvt.templateRowColumn = {
 	field: '',
 	name: ''
 }
-pvt.data = ko.observableArray(DATATEMP_PIVOT)
-pvt.columns = ko.observableArray([])
-pvt.rows = ko.observableArray([])
-pvt.dataPoints = ko.observableArray([])
+
+pvt.data = ko.observableArray([])
+pvt.columns = ko.observableArray([
+	app.koMap({ field: 'customer.channelname', name: 'Product' }),
+	app.koMap({ field: 'product.name', name: 'Product' })
+])
+pvt.rows = ko.observableArray([
+	app.koMap({ field: 'customer.branchname', name: 'Branch/RD' })
+])
+pvt.dataPoints = ko.observableArray([
+	app.koMap({ aggr: 'sum', field: 'value1', name: 'Gross Sales' }),
+	app.koMap({ aggr: 'sum', field: 'value2', name: 'Discount' }),
+	app.koMap({ aggr: 'sum', field: 'value3', name: 'Net Sales' })
+])
+
+pvt.enableColumns = ko.observable(true)
+pvt.enableRows = ko.observable(true)
+pvt.enableDataPoints = ko.observable(true)
+pvt.mode = ko.observable('render')
 pvt.currentTargetDimension = null
 
 pvt.prepareTooltipster = () => {
@@ -149,99 +169,105 @@ pvt.removeFrom = (o, which) => {
 }
 pvt.getPivotConfig = () => {
 	let dimensions = ko.mapping.toJS(pvt.dimensions)
-		.map((d) => { return { field: d.field } })
+		.map((d) => { return { type: 'column', field: d.field, name: d.name } })
+		.concat(ko.mapping.toJS(pvt.rows)
+		.map((d) => { return { type: 'row' , field: d.field, name: d.name } }))
 
 	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
-		.map((d) => { return { aggr: d.aggr, field: d.field } })
+		.filter((d) => d.field != '' && d.aggr != '')
+		.map((d) => { 
+			let row = ko.mapping.toJS(pvt.pivotModel).find((e) => e.field == d.field)
+			let name = (row == undefined) ? d.field : row.name
+			return { op: d.aggr, field: d.field, name: name }
+		})
 
 	let param = { dimensions: dimensions, datapoints: dataPoints }
 	return param
 }
-pvt.computeDimensionDataPoint = (which, field) => {
-	return ko.pureComputed({
-		read: () => {
-	        return pvt[which]().filter((d) => d.field() == field).length > 0
-	    },
-	    write: (value) => {
-	        // var lastSpacePos = value.lastIndexOf(" ");
-	        // if (lastSpacePos > 0) { // Ignore values with no space character
-	        //     this.firstName(value.substring(0, lastSpacePos)); // Update "firstName"
-	        //     this.lastName(value.substring(lastSpacePos + 1)); // Update "lastName"
-	        // }
-	    },
-	    owner: this
-	})
+
+pvt.refresh = () => {
+	pvt.data(DATATEMP_PIVOT)
+	pvt.render()
 }
-pvt.render = (data) => {
-	pvt.data(data)
 
-	let pivot = $('.pivot').empty()
-	let table = app.newEl('table').addClass('table pivot ez').appendTo(pivot)
-	let thead = app.newEl('thead').appendTo(table)
-	let tbody = app.newEl('tbody').appendTo(table)
+pvt.render = () => {
+	let data = []
+	let schemaModelFields = {}
+	let schemaCubeDimensions = {}
+	let schemaCubeMeasures = {}
+	let columns = []
+	let rows = []
+	let measures = []
 
-	let dimensions = app.koUnmap(pvt.dimensions)
-	let dataPoints = app.koUnmap(pvt.dataPoints)
+	data = pvt.data().map((d) => {
+		let res = {}
 
-	// HEADER
-
-	let tr = app.newEl('tr').appendTo(thead)
-
-	dimensions.forEach((d) => {
-		let th = app.newEl('th').html(d.name).appendTo(thead)
-	})
-
-	dataPoints.forEach((d) => {
-		let th = app.newEl('th').html(d.name).appendTo(thead)
-	})
-
-	// DATA
-
-	let manyDimensions = dimensions.length
-	let tds = []
-	let sum = dataPoints.map((d) => 0)
-
-	pvt.data().forEach((d, i) => {
-		let tr = app.newEl('tr').appendTo(tbody)
-		tds[i] = []
-
-		dimensions.forEach((e, j) => {
-			let value = d._id[e.field.toLowerCase()]
-			let td = app.newEl('td').addClass('dimension').appendTo(tr).html(kendo.toString(value, "n2"))
-			tds.push(td)
-			tds[i][j] = td
+		app.forEach(d, (k, v) => {
+			if (k == '_id') {
+				app.forEach(v, (l, m) => {
+					res[l.replace(/\./g, '_')] = m
+				})
+			} else {
+				res[k.replace(/\./g, '_')] = v
+			}
 		})
 
-		dataPoints.forEach((e, i) => {
-			let value = d[e.field.toLowerCase()]
-			let td = app.newEl('td').appendTo(tr).html(kendo.toString(value, "n2"))
+		return res
+	})
 
-			sum[i] += value
+	let constructSchema = (from, to) => {
+		app.koUnmap(from()).forEach((d) => {
+			let option = app.koUnmap(ra.optionDimensions).find((e) => e.field == d.field)
+			let key = option.name.replace(/ /g, '_').replace(/\//g, '_')
+			let field = d.field.replace(/\./g, '_')
+
+			schemaModelFields[key] = { type: 'string', field: field }
+			schemaCubeDimensions[key] = { caption: option.name }
+
+			to.push({ name: key, expand: true })
 		})
+	}
 
-		// dimensions.forEach((d, j) => {
-		// 	let rowspan = dimensions.length - j
+	constructSchema(pvt.rows, rows)
+	constructSchema(pvt.columns, columns)
+	
+	app.koUnmap(pvt.dataPoints).forEach((d) => {
+		let key = d.field.replace(/ /g, '_').replace(/\//g, '_')
+		let field = d.field.replace(/\./g, '_')
+		schemaModelFields[key] = { type: 'number', field: field }
 
-		// 	if (i % dimensions.length == 0) {
-		// 		tds[i][j].attr('rowspan', rowspan)
-		// 	} else {
-		// 		if (rowspan > 1) {
-		// 			// $(tds[i][j]).remove()
-		// 		} 
-		// 	}
-		// })
+		let keym = `${d.aggr}_${field}`
+		let prop = { field: field, aggregate: d.aggr }
+		schemaCubeMeasures[keym] = prop
+		measures.push(keym)
 	})
 
-	let rowLast = app.newEl('tr').appendTo(tbody)
-	let tdSpace = app.newEl('td').html('&nbsp;').attr('colspan', dataPoints.length - 2).appendTo(rowLast)
+	let config = {
+	    filterable: false,
+	    reorderable: false,
+	    dataSource: {
+			data: data,
+			schema: {
+				model: {
+					fields: schemaModelFields
+				},
+				cube: {
+					dimensions: schemaCubeDimensions,
+					measures: schemaCubeMeasures
+				}
+			},
+			columns: columns,
+			rows: rows,
+			measures: measures
+		}
+	}
 
-	dataPoints.forEach((e, i) => {
-		let td = app.newEl('td').appendTo(rowLast).html(kendo.toString(sum[i], "n2"))
-	})
+	app.log(app.clone(config))
+
+	$('.pivot').replaceWith('<div class="pivot"></div>')
+	$('.pivot').kendoPivotGrid(config)
 }
 
-pvt.init = () => {
-	pvt.prepareTooltipster()
-	pvt.refreshData()
-}
-
+$(() => {
+	pvt.refresh()
+})

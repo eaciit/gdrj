@@ -29,6 +29,8 @@ tbl.dataPoints = ko.observableArray([
 	app.koMap({ field: 'value2', name: 'Discount' }),
 	app.koMap({ field: 'value3', name: 'Net Sales' })
 ])
+tbl.enableDimensions = ko.observable(true)
+tbl.enableDataPoints = ko.observable(true)
 
 tbl.mode = ko.observable('render')
 tbl.computeDimensionDataPoint = (which, field) => {

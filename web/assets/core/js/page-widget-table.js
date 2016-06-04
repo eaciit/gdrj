@@ -10,6 +10,8 @@ tbl.currentTargetDimension = null;
 
 tbl.dimensions = ko.observableArray([app.koMap({ field: 'customer.branchname', name: 'Branch/RD' }), app.koMap({ field: 'product.name', name: 'Product' }), app.koMap({ field: 'customer.channelname', name: 'Product' })]);
 tbl.dataPoints = ko.observableArray([app.koMap({ field: 'value1', name: 'Gross Sales' }), app.koMap({ field: 'value2', name: 'Discount' }), app.koMap({ field: 'value3', name: 'Net Sales' })]);
+tbl.enableDimensions = ko.observable(true);
+tbl.enableDataPoints = ko.observable(true);
 
 tbl.mode = ko.observable('render');
 tbl.computeDimensionDataPoint = function (which, field) {
