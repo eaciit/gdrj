@@ -77,7 +77,7 @@ func prepMaster(){
     cledger:=getCursor(ledger)
     defer cledger.Close()
     for e=cledger.Fetch(ledger,1,false);e==nil;{
-        prods.Set(ledger.ID,prod)
+        ledgers.Set(ledger.ID,ledger)
         ledger=new(gdrj.LedgerMaster)
         e=cledger.Fetch(ledger,1,false)
     }
@@ -104,7 +104,7 @@ func main() {
 
 	//for i, src := range arrstring {
 	//dbf := dbox.Contains("src", src)
-	crx, err := gdrj.Find(new(gdrj.RawDataPL), nil, nil)
+	crx, err := gdrj.Find(new(gdrj.RawDataPL), nil, toolkit.M{})
 	if err != nil {
 		toolkit.Println("Error Found : ", err.Error())
 		os.Exit(1)
@@ -165,9 +165,14 @@ func main() {
                 if ledgers.Has(ls.LedgerAccount){
 				    tLedgerAccount = ledgers.Get(ls.LedgerAccount).(*gdrj.LedgerMaster)
                 }
+				toolkit.Println(tLedgerAccount)
 				ls.PLCode = tLedgerAccount.PLCode
 				ls.PLOrder = tLedgerAccount.OrderIndex
-
+				ls.PLGroup1 = tLedgerAccount.H1
+				ls.PLGroup2 = tLedgerAccount.H2
+				ls.PLGroup3 = tLedgerAccount.H3
+				
+				ls.Date = gdrj.NewDate(ls.Year, int(ls.Month), 1)
 				ls.ID = ls.PrepareID().(string)
 				err = gdrj.Save(ls)
 				if err != nil {

@@ -12,8 +12,11 @@ import (
 	// "strings"
 )
 
+var conn dbox.IConnection
+
 func setinitialconnection() {
-	conn, err := modules.GetDboxIConnection("db_godrej")
+	var err error
+    conn, err = modules.GetDboxIConnection("db_godrej")
 
 	if err != nil {
 		toolkit.Println("Initial connection found : ", err)
@@ -33,6 +36,7 @@ var (
     ledgers = toolkit.M{}
     prods = toolkit.M{}
     custs = toolkit.M{}
+    vdistskus = toolkit.M{}
 )
 
 func getCursor(obj orm.IModel)dbox.ICursor{
@@ -90,6 +94,14 @@ func prepMaster(){
         cust=new(gdrj.Customer)
         e=ccust.Fetch(cust,1,false)
     }
+    
+    sku:=new(gdrj.MappingInventory)
+    cskus:=getCursor(sku)
+    defer cskus.Close()
+    for e=cskus.Fetch(sku,1,false);e==nil;{
+        vdistskus.Set(sku.SKUID_VDIST,sku.ID)
+        e=cskus.Fetch(sku,1,false)
+    }
 }
 
 func main() {
@@ -104,7 +116,7 @@ func main() {
 
 	//for i, src := range arrstring {
 	//dbf := dbox.Contains("src", src)
-	crx, err := gdrj.Find(new(gdrj.SalesDetail), nil, nil)
+	crx, err := gdrj.Find(new(gdrj.SalesHeader), nil, nil)
 	if err != nil {
 		toolkit.Println("Error Found : ", err.Error())
 		os.Exit(1)
@@ -119,19 +131,76 @@ func main() {
     t0 := time.Now()
     isneof:=true
     for isneof{
-        var sds []gdrj.SalesDetail
-        e=crx.Fetch(&sds,1000,false);
+        var shs []gdrj.SalesHeader
+        e=crx.Fetch(&shs,1000,false);
         if e!=nil{
             isneof=false
             break
         }
-        if len(sds)<1000{
+        if len(shs)<1000{
             isneof=false
         }
-        for _, _ = range sds{
+        for _, sh := range shs{
             i++
+            processHeader(&sh)
         }
         toolkit.Printfn("Processing %d of %d in %s", i, count, time.Since(t0).String())
     }
 	toolkit.Println("END...")
+}
+
+func processHeader(sh *gdrj.SalesHeader){
+    var sds []gdrj.SalesDetail
+    var sdsi []toolkit.M
+    
+    filter := dbox.Eq("salesheaderid",sh.ID)
+    
+    func(){
+        crs, ecrs :=gdrj.Find(new(gdrj.SalesDetail), filter, nil)
+        if ecrs!=nil{
+            return
+        }
+        defer crs.Close()
+        crs.Fetch(&sds,0,false)
+    }()
+    
+    func(){
+        filter = dbox.Eq("SalesheaderID",sh.ID)
+        crs, ecrs :=conn.NewQuery().From("rawsalesdetail_import").Where(filter).Cursor(nil)
+        if ecrs!=nil{
+            return
+        }
+        defer crs.Close()
+        crs.Fetch(&sdsi,0,false)
+        
+        for _, si := range sdsi{
+            sd := gdrj.SalesDetail{}
+            skuid := si.GetString("SKUID_VDIST")
+            if !vdistskus.Has(skuid){
+                continue
+            }
+            sd.SKUID_SAPBI = vdistskus.GetString(skuid)
+            sd.BranchID = si.GetString("BranchID")
+            sd.SalesQty = si.GetInt("SalesQty")
+            sd.Price = si.GetFloat64("Price")
+            sd.SalesGrossAmount = si.GetFloat64("SalesGrossAmount")
+            sd.SalesNetAmount = si.GetFloat64("SalesNetAmount")
+            sds = append(sds,sd)
+        }
+    }()
+    
+    totalAmount := float64(0)
+    for _, sd := range sds{
+        totalAmount += sd.SalesNetAmount
+    }
+    
+    //-- alloc disc
+    for _, sd := range sds{
+        if sh.SalesDiscountAmount != 0 {
+            sd.AllocDiscAmount = sd.SalesNetAmount * sh.SalesDiscountAmount / totalAmount
+        }
+        if sh.SalesTaxAmount != 0 {
+            sd.AllocTaxAmount = sd.SalesNetAmount * sh.SalesTaxAmount / totalAmount
+        }
+    }   
 }
