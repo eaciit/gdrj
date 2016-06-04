@@ -165,7 +165,6 @@ func main() {
                 if ledgers.Has(ls.LedgerAccount){
 				    tLedgerAccount = ledgers.Get(ls.LedgerAccount).(*gdrj.LedgerMaster)
                 }
-				toolkit.Println(tLedgerAccount)
 				ls.PLCode = tLedgerAccount.PLCode
 				ls.PLOrder = tLedgerAccount.OrderIndex
 				ls.PLGroup1 = tLedgerAccount.H1
