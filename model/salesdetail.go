@@ -19,6 +19,8 @@ type SalesDetail struct {
 	Price            float64
 	SalesGrossAmount float64
 	SalesNetAmount   float64
+	AllocTaxAmount float64
+	AllocDiscAmount float64
 }
 
 func (sd *SalesDetail) RecordID() interface{} {

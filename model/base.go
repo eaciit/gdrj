@@ -109,8 +109,8 @@ func NewDate(yr, mth, dt int) *Date {
 	d := new(Date)
 	d.Date = time.Date(yr, time.Month(mth), dt, 0, 0, 0, 0, time.UTC)
 	d.ID = toolkit.Date2String(d.Date, "YYYYMMDD")
-	d.Month = d.Month
-	d.Year = d.Year
+	d.Month = d.Date.Month()
+	d.Year = d.Date.Year()
 	d.Quarter = int(math.Ceil(float64(d.Month)/3.0) - 1.0)
 	if d.Quarter == 0 {
 		d.Quarter = 4
