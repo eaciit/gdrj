@@ -7,11 +7,14 @@
 		</h3>
 		<div class="panel-nav-button">
 			<div class="form-group relative align-right no-margin no-padding hardcore">
-				<button class="btn btn-sm btn-primary" data-bind="click: () => { tbl.mode('') }, visible: (tbl.mode() == 'render')">
-					<i class="fa fa-gear"></i> Show Configuration
+				<button class="btn btn-sm btn-primary" data-bind="click: tbl.refresh, visible: (tbl.mode() == 'render')">
+					<i class="fa fa-refresh"></i>
 				</button>
-				<button class="btn btn-sm btn-primary" data-bind="click: () => { tbl.mode('render') }, visible: (tbl.mode() == '')">
-					<i class="fa fa-eye"></i> Show Table
+				<button class="btn btn-sm btn-primary" data-bind="click: tbl.setMode(''), visible: (tbl.mode() == 'render')">
+					<i class="fa fa-gear"></i>
+				</button>
+				<button class="btn btn-sm btn-warning" data-bind="click: tbl.setMode('render'), visible: (tbl.mode() == '')">
+					<i class="fa fa-arrow-left"></i>
 				</button>
 			</div>
 		</div>

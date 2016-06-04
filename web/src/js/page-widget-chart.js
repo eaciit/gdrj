@@ -16,6 +16,13 @@ let DATATEMP_PIVOT = [
 viewModel.chart = new Object()
 var crt = viewModel.chart
 
+crt.setMode = (what) => {
+	crt.mode(what)
+
+	if (what == 'render') {
+		crt.refresh()
+	}
+}
 crt.mode = ko.observable('render')
 crt.configure = (series) => {
 	let data = Lazy(DATATEMP_TABLE)
@@ -99,7 +106,6 @@ let DATATEMP_TABLE = [
 ]
 
 crt.refresh = () => {
-	crt.categoryAxisField('customer.branchname')
 	crt.data(DATATEMP_TABLE)
 	crt.series([
 		{ field: 'value1', name: 'Gross Sales' },
@@ -110,5 +116,6 @@ crt.refresh = () => {
 }
 
 $(() => {
+	crt.categoryAxisField('customer.branchname')
 	crt.refresh()
 })

@@ -9,6 +9,13 @@ tbl.dataPoints = ko.observableArray([])
 tbl.enableDimensions = ko.observable(true)
 tbl.enableDataPoints = ko.observable(true)
 
+tbl.setMode = (what) => {
+	tbl.mode(what)
+
+	if (what == 'render') {
+		tbl.refresh()
+	}
+}
 tbl.mode = ko.observable('render')
 tbl.computeDimensionDataPoint = (which, field) => {
 	return ko.pureComputed({
@@ -92,7 +99,7 @@ tbl.render = () => {
 	let rowLast = app.newEl('tr').appendTo(tbody).addClass('total')
 	let tdSpace = app.newEl('td').html('&nbsp;')
 		.addClass('Total')
-		.attr('colspan', dataPoints.length).appendTo(rowLast)
+		.attr('colspan', dimensions.length).appendTo(rowLast)
 
 	dataPoints.forEach((e, i) => {
 		let td = app.newEl('td').appendTo(rowLast).html(kendo.toString(sum[i], "n2"))

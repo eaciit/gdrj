@@ -5,6 +5,13 @@ var DATATEMP_PIVOT = [{ "_id": { "customer.branchname": "Jakarta", "product.name
 viewModel.chart = new Object();
 var crt = viewModel.chart;
 
+crt.setMode = function (what) {
+	crt.mode(what);
+
+	if (what == 'render') {
+		crt.refresh();
+	}
+};
 crt.mode = ko.observable('render');
 crt.configure = function (series) {
 	var data = Lazy(DATATEMP_TABLE).groupBy(function (d) {
@@ -85,12 +92,12 @@ crt.render = function () {
 var DATATEMP_TABLE = [{ "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }];
 
 crt.refresh = function () {
-	crt.categoryAxisField('customer.branchname');
 	crt.data(DATATEMP_TABLE);
 	crt.series([{ field: 'value1', name: 'Gross Sales' }, { field: 'value2', name: 'Discount' }, { field: 'value3', name: 'Net Sales' }]);
 	crt.render();
 };
 
 $(function () {
+	crt.categoryAxisField('customer.branchname');
 	crt.refresh();
 });

@@ -22,6 +22,14 @@ pvt.enableDataPoints = ko.observable(true)
 pvt.mode = ko.observable('render')
 pvt.currentTargetDimension = null
 
+pvt.setMode = (what) => {
+	pvt.mode(what)
+
+	if (what == 'render') {
+		pvt.refresh()
+	}
+}
+
 pvt.prepareTooltipster = () => {
 	let config = {
 		contentAsHTML: true,

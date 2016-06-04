@@ -24,6 +24,14 @@ pvt.enableDataPoints = ko.observable(true);
 pvt.mode = ko.observable('render');
 pvt.currentTargetDimension = null;
 
+pvt.setMode = function (what) {
+	pvt.mode(what);
+
+	if (what == 'render') {
+		pvt.refresh();
+	}
+};
+
 pvt.prepareTooltipster = function () {
 	var config = {
 		contentAsHTML: true,
