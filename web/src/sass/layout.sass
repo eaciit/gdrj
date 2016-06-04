@@ -414,10 +414,16 @@ html, body
 								width: 4px
 
 .tabular-view
-	tr
+	tr:not(.total)
 		&.total
 			td
 				font-weight: bold
+
+		&:hover
+			background-color: $color-base-green
+
+			td
+				color: white
 
 		th
 			padding: 4px 0px
