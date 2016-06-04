@@ -100,3 +100,13 @@ ra.optionAggregates = ko.observableArray([
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
+ra.setName = (data, options) => () => {
+    setTimeout(() => {
+        let row = options().find((d) => (d.field == data.field()))
+        if (app.isDefined(row)) {
+            data.name(row.name)
+        }
+
+        console.log(app.koUnmap(data), options())
+    }, 150)
+}

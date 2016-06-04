@@ -40,7 +40,7 @@
 							<div class="list-group ez rsec-section rsec-section-columns" data-bind="foreach: pvt.columns" style="min-height: 242px;">
 								<div class="input-group input-group-sm ez width-full">
 									<div>
-										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: ra.optionDimensions, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'name' }"></select>
+										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: ra.optionDimensions, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'name', change: ra.setName($data, ra.optionDimensions) }"></select>
 									</div>
 									<span class="input-group-addon tooltipster clickable" title="Click to remove" data-bind="attr: { 'data-id': $data.field }" onclick="pvt.removeFrom(this, 'columns')">
 										<i class="fa fa-close"></i>
@@ -68,7 +68,7 @@
 							<div class="list-group ez rsec-section rsec-section-rows" data-bind="foreach: pvt.rows" style="min-height: 242px;">
 								<div class="input-group input-group-sm ez width-full">
 									<div>
-										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: ra.optionDimensions, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'name' }"></select>
+										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: ra.optionDimensions, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'name', change: ra.setName($data, ra.optionDimensions) }"></select>
 									</div>
 									<span class="input-group-addon tooltipster clickable" title="Click to remove" data-bind="attr: { 'data-id': $data.field }" onclick="pvt.removeFrom(this, 'rows')">
 										<i class="fa fa-close"></i>
@@ -100,7 +100,7 @@
 							<div class="input-group input-group-sm ez width-full">
 								<span class="input-group-addon">Data Point</span>
 								<div>
-									<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: ra.optionDataPoints, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'name' }"></select>
+									<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: ra.optionDataPoints, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'name', change: ra.setName($data, ra.optionDataPoints) }"></select>
 								</div>
 								<span class="input-group-addon">Aggr</span>
 								<div>

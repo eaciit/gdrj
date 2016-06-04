@@ -13,3 +13,17 @@ ra.optionDimensions = ko.observableArray([{ field: "customer.branchname", name: 
 { field: 'cc.hccgroupid', name: 'Function' }]);
 ra.optionDataPoints = ko.observableArray([{ field: 'value1', name: 'Value 1' }, { field: 'value2', name: 'Value 2' }, { field: 'value3', name: 'Value 3' }]);
 ra.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
+ra.setName = function (data, options) {
+    return function () {
+        setTimeout(function () {
+            var row = options().find(function (d) {
+                return d.field == data.field();
+            });
+            if (app.isDefined(row)) {
+                data.name(row.name);
+            }
+
+            console.log(app.koUnmap(data), options());
+        }, 150);
+    };
+};
