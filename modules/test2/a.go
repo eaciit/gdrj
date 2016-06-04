@@ -28,7 +28,7 @@ func setinitialconnection() {
 }
 
 var (
-    pcs = toolkit.M{}
+    pcs, ccs, prods, ledgers = toolkit.M{}
 )
 
 func getCursor(obj orm.IModel)dbox.ICursor{
@@ -41,20 +41,37 @@ func getCursor(obj orm.IModel)dbox.ICursor{
 
 func prepMaster(){
     pc:=new(gdrj.ProfitCenter)
-    cpc := getCursor(pc)
-    if cpc==nil{
-        os.Exit(200)
-    }
-    defer cpc.Close()
+    cc:=new(gdrj.CostCenter)
+    prod:=new(gdrj.Product)
+    ledger:=new(gdrj.LedgerAccount)
     
+    cpc := getCursor(pc)
+    defer cpc.Close()
     var e error
-    i :=0
-    toolkit.Printfn("Data count: %d", cpc.Count())
     for e=cpc.Fetch(pc,1,false);e==nil;{
-        i++
-        toolkit.Println(i, "PC: ", pc.ID, toolkit.JsonString(pc))
         pcs.Set(pc.ID,pc)
         e=cpc.Fetch(pc,1,false)
+    }
+    
+    ccc:=getCursor(cc)
+    defer ccc.Close()
+    for e=ccc.Fetch(cc,1,false);e==nil{
+        ccs.Set(cc.ID,cc)
+        e=ccc.Fetch(cc,1,false)
+    }
+    
+    cprod:=getCursor(prod)
+    defer cprod.Close()
+    for e=cprod.Fetch(prod,1,false);e==nil{
+        prods.Set(prod.ID,prod)
+        e=cprod.Fetch(prod,1,false)
+    }
+    
+    clegder:=getCursor(ledger)
+    defer cledger.Close()
+    for e=cledger.Fetch(ledger,1,false);e==nil{
+        prods.Set(ledger.ID,prod)
+        e=cledger.Fetch(ledger,1,false)
     }
 }
 
