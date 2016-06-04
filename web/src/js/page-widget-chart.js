@@ -25,9 +25,10 @@ crt.setMode = (what) => () => {
 }
 crt.mode = ko.observable('render')
 crt.configure = (series) => {
-	let data = Lazy(DATATEMP_TABLE)
+	let data = Lazy(crt.data())
 		.groupBy((d) => d._id[crt.categoryAxisField()])
 		.map((k, v) => {
+			console.log(v, k)
 			let res = { category: v }
 			res.value1 = Lazy(k).sum((d) => d.value1)
 			res.value2 = Lazy(k).sum((d) => d.value2)
@@ -44,7 +45,8 @@ crt.configure = (series) => {
 			border: { width: 0 },
 			labels: {
 				visible: true,
-				position: 'outsideEnd'
+				position: 'outsideEnd',
+				format: '{0:n2}'
 			},
 		},
 		series: series,
@@ -73,7 +75,7 @@ crt.configure = (series) => {
 crt.categoryAxisField = ko.observable('category')
 crt.chartType = ko.observable('column')
 crt.title = ko.observable('')
-crt.data = ko.observable({ data: [] })
+crt.data = ko.observableArray([])
 crt.series = ko.observableArray([])
 
 crt.render = () => {
@@ -105,14 +107,35 @@ let DATATEMP_TABLE = [
 	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 }
 ]
 
+crt.getParam = () => {
+	let row = ra.optionDimensions().find((d) => (d.field == crt.categoryAxisField()))
+	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
+		.filter((d) => (d.field != '') && (d.aggr != ''))
+		.map((d) => { return { 
+			field: d.field, 
+			name: d.name, 
+			aggr: 'sum'
+		} })
+
+	return {
+		dimensions: [row],
+		dataPoints: dataPoints
+	}
+}
 crt.refresh = () => {
-	crt.data(DATATEMP_TABLE)
+	// pvt.data(DATATEMP_PIVOT)
 	crt.series([
 		{ field: 'value1', name: 'Gross Sales' },
 		{ field: 'value2', name: 'Discount' },
 		{ field: 'value3', name: 'Net Sales' }
 	])
-	crt.render()
+	app.ajaxPost("/report/summarycalculatedatapivot", crt.getParam(), (res) => {
+		crt.data(res.Data)
+		crt.render()
+	})
+}
+crt.refreshOnChange = () => {
+	setTimeout(crt.refresh, 100)
 }
 
 $(() => {

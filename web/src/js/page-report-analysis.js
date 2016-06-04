@@ -83,9 +83,9 @@ ra.data = ko.observableArray([])
 ra.optionDimensions = ko.observableArray([
 	{ field: "customer.branchname", name: 'Branch/RD' },
 	{ field: 'customer.channelname', name: 'Channel' },
-	{ field: 'customer.area', name: 'Geography' },
+	{ field: 'customer.region', name: 'Geography' },
 	{ field: 'product.name', name: 'Product' },
-	{ field: 'date.date', name: 'Time' },
+	{ field: 'date.year', name: 'Time' },
 	{ field: 'cc.cctypeid', name: 'Cost Type' }, // <<<<< ====================== need to be filled
 	{ field: 'cc.hccgroupid', name: 'Function' },
 ])
@@ -109,4 +109,16 @@ ra.setName = (data, options) => () => {
 
         console.log(app.koUnmap(data), options())
     }, 150)
+}
+
+rpt.refresh = () => {
+    if (app.isDefined(pvt)) {
+        pvt.refresh()
+    }
+    if (app.isDefined(rpt)) {
+        rpt.refresh()
+    }
+    if (app.isDefined(crt)) {
+        crt.refresh()
+    }
 }
