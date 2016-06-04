@@ -51,8 +51,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	//arrcount[i] = crx.Count()
 	i := 0
+	arrcount[i] = crx.Count()
 	mwg.Add(1)
 	func(xi int, xcrx dbox.ICursor) {
 		defer mwg.Done()
@@ -117,7 +117,7 @@ func main() {
 				ci++
 			}
 
-			toolkit.Printfn("[%v] %d of %d Processed", arrstring[xi], ci, arrcount[xi])
+			toolkit.Printfn("%d of %d Processed", ci, arrcount[xi])
 		}
 
 	}(i, crx)
