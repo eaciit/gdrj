@@ -28,7 +28,10 @@ func setinitialconnection() {
 }
 
 var (
-    pcs, ccs, prods, ledgers = toolkit.M{}
+    pcs = toolkit.M{}
+    ccs = toolkit.M{}
+    ledgers = toolkit.M{}
+    prods = toolkit.M{}
 )
 
 func getCursor(obj orm.IModel)dbox.ICursor{
@@ -55,21 +58,21 @@ func prepMaster(){
     
     ccc:=getCursor(cc)
     defer ccc.Close()
-    for e=ccc.Fetch(cc,1,false);e==nil{
+    for e=ccc.Fetch(cc,1,false);e==nil;{
         ccs.Set(cc.ID,cc)
         e=ccc.Fetch(cc,1,false)
     }
     
     cprod:=getCursor(prod)
     defer cprod.Close()
-    for e=cprod.Fetch(prod,1,false);e==nil{
+    for e=cprod.Fetch(prod,1,false);e==nil;{
         prods.Set(prod.ID,prod)
         e=cprod.Fetch(prod,1,false)
     }
     
-    clegder:=getCursor(ledger)
+    cledger:=getCursor(ledger)
     defer cledger.Close()
-    for e=cledger.Fetch(ledger,1,false);e==nil{
+    for e=cledger.Fetch(ledger,1,false);e==nil;{
         prods.Set(ledger.ID,prod)
         e=cledger.Fetch(ledger,1,false)
     }
