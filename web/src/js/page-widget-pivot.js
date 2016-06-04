@@ -123,35 +123,9 @@ pvt.optionAggregates = ko.observableArray([
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
-pvt.dimensions = ko.observableArray([
-	app.koMap({
-		field: pvt.optionDimensions()[1].field,
-		name: pvt.optionDimensions()[1].name,
-	}),
-	app.koMap({
-		field: pvt.optionDimensions()[2].field,
-		name: pvt.optionDimensions()[2].name,
-	}),
-])
-pvt.rows = ko.observableArray([
-	app.koMap({
-		field: pvt.optionRows()[3].field,
-		name: pvt.optionRows()[3].name,
-	}),
-])
-pvt.dataPoints = ko.observableArray([
-	app.koMap({
-		field: pvt.optionDataPoints()[0].field,
-		name: pvt.optionDataPoints()[0].name,
-		aggr: pvt.optionAggregates()[0].aggr
-	}),
-	// app.koMap({
-	// 	field: pvt.optionDataPoints()[0].field,
-	// 	name: pvt.optionDataPoints()[0].name,
-	//,
-	// 	aggr: pvt.optionAggregates()[2].aggr
-	// }),
-])
+pvt.dimensions = ko.observableArray([])
+pvt.rows = ko.observableArray([])
+pvt.dataPoints = ko.observableArray([])
 pvt.data = ko.observableArray(DATATEMP)
 pvt.currentTargetDimension = null
 
@@ -278,17 +252,10 @@ pvt.removeFrom = (o, which) => {
 }
 pvt.getPivotConfig = () => {
 	let dimensions = ko.mapping.toJS(pvt.dimensions)
-		.map((d) => { return { type: 'column', field: d.field, name: d.name } })
-		.concat(ko.mapping.toJS(pvt.rows)
-		.map((d) => { return { type: 'row' , field: d.field, name: d.name } }))
+		.map((d) => { return { field: d.field } })
 
 	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
-		.filter((d) => d.field != '' && d.aggr != '')
-		.map((d) => { 
-			let row = ko.mapping.toJS(pvt.pivotModel).find((e) => e.field == d.field)
-			let name = (row == undefined) ? d.field : row.name
-			return { op: d.aggr, field: d.field, name: name }
-		})
+		.map((d) => { return { aggr: d.aggr, field: d.field } })
 
 	let param = { dimensions: dimensions, datapoints: dataPoints }
 	return param
@@ -309,6 +276,8 @@ pvt.computeDimensionDataPoint = (which, field) => {
 	})
 }
 pvt.render = (data) => {
+	pvt.data(data)
+
 	let pivot = $('.pivot').empty()
 	let table = app.newEl('table').addClass('table pivot ez').appendTo(pivot)
 	let thead = app.newEl('thead').appendTo(table)
@@ -339,14 +308,14 @@ pvt.render = (data) => {
 		tds[i] = []
 
 		dimensions.forEach((e, j) => {
-			let value = d._id[e.field]
+			let value = d._id[e.field.toLowerCase()]
 			let td = app.newEl('td').addClass('dimension').appendTo(tr).html(value)
 			tds.push(td)
 			tds[i][j] = td
 		})
 
 		dataPoints.forEach((e) => {
-			let value = d[e.field]
+			let value = d[e.field.toLowerCase()]
 			let td = app.newEl('td').appendTo(tr).html(value)
 		})
 

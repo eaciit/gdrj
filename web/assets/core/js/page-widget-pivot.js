@@ -26,29 +26,9 @@ pvt.optionDataPoints = ko.observableArray([{ field: 'Value1', name: 'Value 1' },
 pvt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' },
 // { aggr: 'count', name: 'Count' },
 { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
-pvt.dimensions = ko.observableArray([app.koMap({
-	field: pvt.optionDimensions()[1].field,
-	name: pvt.optionDimensions()[1].name
-}), app.koMap({
-	field: pvt.optionDimensions()[2].field,
-	name: pvt.optionDimensions()[2].name
-})]);
-pvt.rows = ko.observableArray([app.koMap({
-	field: pvt.optionRows()[3].field,
-	name: pvt.optionRows()[3].name
-})]);
-pvt.dataPoints = ko.observableArray([app.koMap({
-	field: pvt.optionDataPoints()[0].field,
-	name: pvt.optionDataPoints()[0].name,
-	aggr: pvt.optionAggregates()[0].aggr
-})]);
-
-// app.koMap({
-// 	field: pvt.optionDataPoints()[0].field,
-// 	name: pvt.optionDataPoints()[0].name,
-//,
-// 	aggr: pvt.optionAggregates()[2].aggr
-// }),
+pvt.dimensions = ko.observableArray([]);
+pvt.rows = ko.observableArray([]);
+pvt.dataPoints = ko.observableArray([]);
 pvt.data = ko.observableArray(DATATEMP);
 pvt.currentTargetDimension = null;
 
@@ -163,19 +143,11 @@ pvt.removeFrom = function (o, which) {
 };
 pvt.getPivotConfig = function () {
 	var dimensions = ko.mapping.toJS(pvt.dimensions).map(function (d) {
-		return { type: 'column', field: d.field, name: d.name };
-	}).concat(ko.mapping.toJS(pvt.rows).map(function (d) {
-		return { type: 'row', field: d.field, name: d.name };
-	}));
+		return { field: d.field };
+	});
 
-	var dataPoints = ko.mapping.toJS(pvt.dataPoints).filter(function (d) {
-		return d.field != '' && d.aggr != '';
-	}).map(function (d) {
-		var row = ko.mapping.toJS(pvt.pivotModel).find(function (e) {
-			return e.field == d.field;
-		});
-		var name = row == undefined ? d.field : row.name;
-		return { op: d.aggr, field: d.field, name: name };
+	var dataPoints = ko.mapping.toJS(pvt.dataPoints).map(function (d) {
+		return { aggr: d.aggr, field: d.field };
 	});
 
 	var param = { dimensions: dimensions, datapoints: dataPoints };
@@ -199,6 +171,8 @@ pvt.computeDimensionDataPoint = function (which, field) {
 	});
 };
 pvt.render = function (data) {
+	pvt.data(data);
+
 	var pivot = $('.pivot').empty();
 	var table = app.newEl('table').addClass('table pivot ez').appendTo(pivot);
 	var thead = app.newEl('thead').appendTo(table);
@@ -229,14 +203,14 @@ pvt.render = function (data) {
 		tds[i] = [];
 
 		dimensions.forEach(function (e, j) {
-			var value = d._id[e.field];
+			var value = d._id[e.field.toLowerCase()];
 			var td = app.newEl('td').addClass('dimension').appendTo(tr).html(value);
 			tds.push(td);
 			tds[i][j] = td;
 		});
 
 		dataPoints.forEach(function (e) {
-			var value = d[e.field];
+			var value = d[e.field.toLowerCase()];
 			var td = app.newEl('td').appendTo(tr).html(value);
 		});
 

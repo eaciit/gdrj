@@ -201,11 +201,6 @@ func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interfa
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	// data = payload.MapSummarizedLedger(data)
-	// metadata := payload.GetPivotConfig(data)
-
-	// res := toolkit.M{"data": data, "metadata": metadata}
-
 	res := new(toolkit.Result)
 	res.SetData(data)
 

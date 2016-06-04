@@ -8,33 +8,33 @@ let ra = vm.reportAnalysis
 
 rpt.refresh = () => {
 	let param = pvt.getPivotConfig()
-	app.ajaxPost("/report/summarycalculatedatapivotdummy", param, (res) => {
-		if (res.Data.Data.length == 0) {
+	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
+		if (res.Data.length == 0) {
 			return
 		}
 
 		pvt.render(res.Data)
 	})
 
-	app.ajaxPost("/report/summarycalculatedatachartdummy", param, (res) => {
-		if (res.Data.Data.length == 0) {
-			return
-		}
+	// app.ajaxPost("/report/summarycalculatedatachart", param, (res) => {
+	// 	if (res.Data.Data.length == 0) {
+	// 		return
+	// 	}
 
-		crt.render('', res.Data.MetaData.Series, res.Data.Data, res.Data.MetaData.CategoryAxis)
-	})
+	// 	// crt.render('', res.Data.MetaData.Series, res.Data.Data, res.Data.MetaData.CategoryAxis)
+	// })
 }
 
 rpt.init = () => {
 	pvt.dimensions([
-		app.koMap({ field: 'Customer.BranchName', name: 'Branch' }),
+		app.koMap({ field: 'CC.BranchID', name: 'Branch' }),
 		app.koMap({ field: 'Product.Brand', name: 'Brand' })
 	])
 
 	pvt.dataPoints([
-		app.koMap({ field: 'Value1', name: 'Gross Sales' }),
-		app.koMap({ field: 'Value2', name: 'Discount' }),
-		app.koMap({ field: 'Value3', name: 'Net Sales' })
+		app.koMap({ aggr: 'sum', field: 'Value1', name: 'Gross Sales' }),
+		app.koMap({ aggr: 'sum', field: 'Value2', name: 'Discount' }),
+		app.koMap({ aggr: 'sum', field: 'Value3', name: 'Net Sales' })
 	])
 
 	switch (o.ID) {

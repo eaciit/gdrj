@@ -233,7 +233,6 @@ func SummarizeLedgerSum(
 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
 	}
 
-
 	// if c.Count() > 0 {
 	// 	e = c.Fetch(&ms, 0, false)
 	// 	if e != nil {
@@ -269,14 +268,11 @@ type PivotParam struct {
 
 type PivotParamDimensions struct {
 	Field string `json:"field"`
-	Type  string `json:"type"`
-	Name  string `json:"name"`
 }
 
 type PivotParamDataPoint struct {
-	OP    string `json:"op"`
+	Aggr  string `json:"aggr"`
 	Field string `json:"field"`
-	Name  string `json:"name"`
 }
 
 func (p *PivotParam) ParseDimensions() (res []string) {
@@ -289,7 +285,7 @@ func (p *PivotParam) ParseDimensions() (res []string) {
 
 func (p *PivotParam) ParseDataPoints() (res []string) {
 	for _, each := range p.DataPoints {
-		parts := []string{each.OP, each.Field, each.Name}
+		parts := []string{each.Aggr, each.Field, each.Field}
 
 		if !strings.HasPrefix(parts[1], "$") {
 			parts[1] = fmt.Sprintf("$%s", parts[1])
@@ -298,120 +294,4 @@ func (p *PivotParam) ParseDataPoints() (res []string) {
 		res = append(res, strings.Join(parts, ":"))
 	}
 	return
-}
-
-func (p *PivotParam) MapSummarizedLedger(data []toolkit.M) []toolkit.M {
-	res := []toolkit.M{}
-	metadata := map[string]string{}
-
-	for i, each := range data {
-		row := toolkit.M{}
-
-		if i == 0 {
-			// cache the metadata, only on first loop
-			for key, val := range each {
-				if key == "_id" {
-					for key2 := range val.(toolkit.M) {
-						keyv := key2
-
-						for _, dimension := range p.Dimensions {
-							if strings.ToLower(dimension.Field) == strings.ToLower(keyv) {
-								keyv = strings.Replace(strings.Replace(dimension.Field, ".", "", -1), "_id", "_ID", -1)
-							}
-						}
-
-						if key2 == "_id" {
-							keyv = toolkit.TrimByString(keyv, "_")
-						}
-
-						metadata[fmt.Sprintf("%s.%s", key, key2)] = keyv
-					}
-				} else {
-					keyv := key
-					for _, each := range p.DataPoints {
-						if strings.ToLower(each.Name) == strings.ToLower(key) {
-							keyv = strings.Replace(each.Name, " ", "_", -1)
-						}
-					}
-					metadata[key] = keyv
-				}
-			}
-		}
-
-		// flatten the data
-		for key, val := range each {
-			if key == "_id" {
-				for key2, val2 := range val.(toolkit.M) {
-					keyv := metadata[fmt.Sprintf("%s.%s", key, key2)]
-					row.Set(keyv, val2)
-				}
-			} else {
-				keyv := metadata[key]
-				row.Set(keyv, val)
-			}
-		}
-
-		res = append(res, row)
-	}
-
-	return res
-}
-
-func (p *PivotParam) GetPivotConfig(data []toolkit.M) toolkit.M {
-	res := struct {
-		SchemaModelFields   toolkit.M
-		SchemaCubeDimension toolkit.M
-		SchemaCubeMeasures  toolkit.M
-		Columns             []toolkit.M
-		Rows                []toolkit.M
-		Measures            []string
-	}{
-		toolkit.M{},
-		toolkit.M{},
-		toolkit.M{},
-		[]toolkit.M{},
-		[]toolkit.M{},
-		[]string{},
-	}
-
-	if len(data) > 0 {
-		for key := range data[0] {
-			for _, c := range p.Dimensions {
-				a := strings.ToLower(strings.Replace(c.Field, ".", "", -1)) == strings.ToLower(key)
-				b := strings.ToLower(toolkit.TrimByString(c.Field, "_")) == strings.ToLower(key)
-
-				if a || b {
-					if c.Type == "column" {
-						res.Columns = append(res.Columns, toolkit.M{"name": key, "expand": false})
-					} else {
-						res.Rows = append(res.Rows, toolkit.M{"name": key, "expand": false})
-					}
-
-					caption := fmt.Sprintf("All %s", c.Name)
-					res.SchemaModelFields.Set(key, toolkit.M{"type": "string"})
-					res.SchemaCubeDimension.Set(key, toolkit.M{"caption": caption})
-				}
-			}
-
-			for _, c := range p.DataPoints {
-				if strings.ToLower(strings.Replace(c.Name, " ", "_", -1)) == strings.ToLower(key) {
-					op := c.OP
-					if op == "avg" {
-						op = "average"
-					}
-
-					res.SchemaModelFields.Set(key, toolkit.M{"type": "number"})
-					res.SchemaCubeMeasures.Set(key, toolkit.M{"field": key, "aggregate": op})
-					res.Measures = append(res.Measures, key)
-				}
-			}
-		}
-	}
-
-	resM, err := toolkit.ToM(res)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	return resM
 }
