@@ -68,7 +68,7 @@ crt.configure = (series) => {
 		},
 		tooltip: {
 			visible: true,
-			template: (d) => `${app.capitalize(d.series.name)} on ${app.capitalize(d.dataItem[crt.categoryAxisField()])}: ${d.value}`
+			template: (d) => `${app.capitalize(d.series.name)} on ${app.capitalize(d.dataItem.category)}: ${kendo.toString(d.value, 'n2')}`
 		}
 	}
 }

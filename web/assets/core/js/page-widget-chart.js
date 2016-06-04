@@ -68,7 +68,7 @@ crt.configure = function (series) {
 		tooltip: {
 			visible: true,
 			template: function template(d) {
-				return app.capitalize(d.series.name) + " on " + app.capitalize(d.dataItem[crt.categoryAxisField()]) + ": " + d.value;
+				return app.capitalize(d.series.name) + " on " + app.capitalize(d.dataItem.category) + ": " + kendo.toString(d.value, 'n2');
 			}
 		}
 	};
