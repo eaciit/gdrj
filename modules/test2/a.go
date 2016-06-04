@@ -49,7 +49,7 @@ func prepMaster(){
     
     var e error
     for ;e==nil;e=cpc.Fetch(pc,1,false){
-        toolkit.Println("PC: ",pc)
+        toolkit.Println("PC: ", pc.ID, toolkit.JsonString(pc))
         pcs.Set(pc.ID,pc)
     }
 }
