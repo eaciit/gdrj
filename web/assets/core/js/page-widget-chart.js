@@ -1,15 +1,33 @@
-'use strict';
+"use strict";
+
+var DATATEMP_PIVOT = [{ "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }];
 
 viewModel.chart = new Object();
 var crt = viewModel.chart;
 
-crt.config = {};
-crt.config.wetengLuwe = function (title, data, series, categoryAxisField) {
+crt.mode = ko.observable('render');
+crt.configure = function (series) {
+	var data = Lazy(DATATEMP_TABLE).groupBy(function (d) {
+		return d._id[crt.categoryAxisField()];
+	}).map(function (k, v) {
+		var res = { category: v };
+		res.value1 = Lazy(k).sum(function (d) {
+			return d.value1;
+		});
+		res.value2 = Lazy(k).sum(function (d) {
+			return d.value2;
+		});
+		res.value3 = Lazy(k).sum(function (d) {
+			return d.value3;
+		});
+		return res;
+	}).toArray();
+
 	return {
-		title: title,
+		title: crt.title(),
 		dataSource: { data: data },
 		seriesDefaults: {
-			type: 'column',
+			type: crt.chartType(),
 			overlay: { gradient: 'none' },
 			border: { width: 0 },
 			labels: {
@@ -20,7 +38,7 @@ crt.config.wetengLuwe = function (title, data, series, categoryAxisField) {
 		series: series,
 		seriesColors: app.seriesColorsGodrej,
 		categoryAxis: {
-			field: categoryAxisField,
+			field: 'category',
 			majorGridLines: { color: '#fafafa' },
 			labels: {
 				font: 'Source Sans Pro 11',
@@ -29,33 +47,50 @@ crt.config.wetengLuwe = function (title, data, series, categoryAxisField) {
 				}
 			}
 		},
-		legend: { visible: false },
+		legend: {
+			visible: true,
+			position: 'bottom'
+		},
 		valueAxis: {
 			majorGridLines: { color: '#fafafa' }
 		},
 		tooltip: {
 			visible: true,
 			template: function template(d) {
-				return app.capitalize(d.series.name) + ' on ' + app.capitalize(d.dataItem[categoryAxisField]) + ': ' + d.value;
+				return app.capitalize(d.series.name) + " on " + app.capitalize(d.dataItem[crt.categoryAxisField()]) + ": " + d.value;
 			}
 		}
 	};
 };
+crt.categoryAxisField = ko.observable('category');
+crt.chartType = ko.observable('column');
+crt.title = ko.observable('');
+crt.data = ko.observable({ data: [] });
+crt.series = ko.observableArray([]);
 
-crt.render = function (title) {
-	var series = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-	var data = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
-	var categoryAxis = arguments.length <= 3 || arguments[3] === undefined ? 'category' : arguments[3];
-	var chartType = arguments.length <= 4 || arguments[4] === undefined ? 'columns' : arguments[4];
-	var which = arguments.length <= 5 || arguments[5] === undefined ? 'wetengLuwe' : arguments[5];
-
-	series.forEach(function (d) {
+crt.render = function () {
+	var series = crt.series().map(function (d) {
 		if (app.isUndefined(d.name)) {
 			d.name = d.field;
 		}
+
+		return d;
 	});
 
-	var config = crt.config[which](title, data, series, categoryAxis);
+	var config = crt.configure(series);
 	app.log('chart', app.clone(config));
 	$('#chart').kendoChart(config);
 };
+
+var DATATEMP_TABLE = [{ "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }];
+
+crt.refresh = function () {
+	crt.categoryAxisField('customer.branchname');
+	crt.data(DATATEMP_TABLE);
+	crt.series([{ field: 'value1', name: 'Gross Sales' }, { field: 'value2', name: 'Discount' }, { field: 'value3', name: 'Net Sales' }]);
+	crt.render();
+};
+
+$(function () {
+	crt.refresh();
+});

@@ -1,6 +1,4 @@
-"use strict";
-
-var DATATEMP_PIVOT = [{ "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }];
+'use strict';
 
 viewModel.pivot = new Object();
 var pvt = viewModel.pivot;
@@ -16,9 +14,9 @@ pvt.templateRowColumn = {
 };
 
 pvt.data = ko.observableArray([]);
-pvt.columns = ko.observableArray([app.koMap({ field: 'customer.channelname', name: 'Product' }), app.koMap({ field: 'product.name', name: 'Product' })]);
-pvt.rows = ko.observableArray([app.koMap({ field: 'customer.branchname', name: 'Branch/RD' })]);
-pvt.dataPoints = ko.observableArray([app.koMap({ aggr: 'sum', field: 'value1', name: 'Gross Sales' }), app.koMap({ aggr: 'sum', field: 'value2', name: 'Discount' }), app.koMap({ aggr: 'sum', field: 'value3', name: 'Net Sales' })]);
+pvt.columns = ko.observableArray([]);
+pvt.rows = ko.observableArray([]);
+pvt.dataPoints = ko.observableArray([]);
 
 pvt.enableColumns = ko.observable(true);
 pvt.enableRows = ko.observable(true);
@@ -41,14 +39,14 @@ pvt.prepareTooltipster = function () {
 
 	$('.tooltipster-dimension').each(function (i, e) {
 		$(e).tooltipster($.extend(true, config, {
-			content: $("\n\t\t\t\t<h3 class=\"no-margin no-padding\">Add to</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class='btn btn-sm btn-success' data-target-module='column' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.addAs(this, \"column\")'>\n\t\t\t\t\t\t<i class='fa fa-columns'></i> Column\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class='btn btn-sm btn-success' data-target-module='row' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.addAs(this, \"row\")'>\n\t\t\t\t\t\t<i class='fa fa-reorder'></i> Row\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t")
+			content: $('\n\t\t\t\t<h3 class="no-margin no-padding">Add to</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' data-target-module=\'column\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.addAs(this, "column")\'>\n\t\t\t\t\t\t<i class=\'fa fa-columns\'></i> Column\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' data-target-module=\'row\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.addAs(this, "row")\'>\n\t\t\t\t\t\t<i class=\'fa fa-reorder\'></i> Row\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t')
 		}));
 	});
 
 	$('.tooltipster-column-row').each(function (i, e) {
 		var title = $(e).closest('.pivot-section').parent().prev().text();
 		$(e).tooltipster($.extend(true, config, {
-			content: $("\n\t\t\t\t<h3 class=\"no-margin no-padding\">" + title + " setting</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class='btn btn-sm btn-success' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.configure(this, \"column\")'>\n\t\t\t\t\t\t<i class='fa fa-gear'></i> Configure\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class='btn btn-sm btn-success' onmouseenter='pvt.hoverInModule(this);' onmouseleave='pvt.hoverOutModule(this);' onclick='pvt.removeFrom()'>\n\t\t\t\t\t\t<i class='fa fa-trash'></i> Remove\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t")
+			content: $('\n\t\t\t\t<h3 class="no-margin no-padding">' + title + ' setting</h3>\n\t\t\t\t<div>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.configure(this, "column")\'>\n\t\t\t\t\t\t<i class=\'fa fa-gear\'></i> Configure\n\t\t\t\t\t</button>\n\t\t\t\t\t<button class=\'btn btn-sm btn-success\' onmouseenter=\'pvt.hoverInModule(this);\' onmouseleave=\'pvt.hoverOutModule(this);\' onclick=\'pvt.removeFrom()\'>\n\t\t\t\t\t\t<i class=\'fa fa-trash\'></i> Remove\n\t\t\t\t\t</button>\n\t\t\t\t</div>\n\t\t\t')
 		}));
 	});
 };
@@ -65,11 +63,11 @@ pvt.showFieldControl = function (o) {
 };
 pvt.hoverInModule = function (o) {
 	var target = $(o).attr('data-target-module');
-	$("[data-module=\"" + target + "\"]").addClass('highlight');
+	$('[data-module="' + target + '"]').addClass('highlight');
 };
 pvt.hoverOutModule = function (o) {
 	var target = $(o).attr('data-target-module');
-	$("[data-module=\"" + target + "\"]").removeClass('highlight');
+	$('[data-module="' + target + '"]').removeClass('highlight');
 };
 pvt.getData = function (callback) {
 	app.ajaxPost("/report/getdatapivot", {}, function (res) {
@@ -94,7 +92,7 @@ pvt.addDataPoint = function () {
 	app.prepareTooltipster($(".pivot-section-data-point .input-group:last .tooltipster"));
 };
 pvt.addAs = function (o, what) {
-	var holder = pvt[what + "s"];
+	var holder = pvt[what + 's'];
 	var id = $(pvt.currentTargetDimension).attr('data-id');
 
 	var isAddedOnColumn = typeof ko.mapping.toJS(pvt.dimensions()).find(function (d) {
@@ -205,14 +203,13 @@ pvt.render = function () {
 	constructSchema(pvt.columns, columns);
 
 	app.koUnmap(pvt.dataPoints).forEach(function (d) {
-		var key = d.field.replace(/ /g, '_').replace(/\//g, '_');
-		var field = d.field.replace(/\./g, '_');
-		schemaModelFields[key] = { type: 'number', field: field };
+		var key = d.name.replace(/ /g, '_').replace(/\//g, '_');
+		// let field = d.field.replace(/\./g, '_')
+		// schemaModelFields[key] = { type: 'number', field: field }
 
-		var keym = d.aggr + "_" + field;
-		var prop = { field: field, aggregate: d.aggr };
-		schemaCubeMeasures[keym] = prop;
-		measures.push(keym);
+		var prop = { field: d.field, aggregate: d.aggr };
+		schemaCubeMeasures[key] = prop;
+		measures.push(key);
 	});
 
 	var config = {
@@ -241,6 +238,12 @@ pvt.render = function () {
 	$('.pivot').kendoPivotGrid(config);
 };
 
+var DATATEMP_PIVOT = [{ "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }];
+
 $(function () {
+	pvt.columns([app.koMap({ field: 'customer.channelname', name: 'Product' }), app.koMap({ field: 'product.name', name: 'Product' })]);
+	pvt.rows([app.koMap({ field: 'customer.branchname', name: 'Branch/RD' })]);
+	pvt.dataPoints([app.koMap({ aggr: 'sum', field: 'value1', name: 'Gross Sales' }), app.koMap({ aggr: 'sum', field: 'value2', name: 'Discount' }), app.koMap({ aggr: 'sum', field: 'value3', name: 'Net Sales' })]);
+
 	pvt.refresh();
 });

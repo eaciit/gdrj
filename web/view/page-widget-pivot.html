@@ -16,7 +16,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="panel-body" data-bind="visible: rpt.mode() == ''">
+	<div class="panel-body" data-bind="visible: pvt.mode() == ''">
 		<div class="report-module report-module-rsec">
 			<div class="col-md-4">
 				<div class="col-md-12 rsec-wrapper rsec-wrapper-column" data-bind="css: { 'read-only': !pvt.enableColumns() }">
@@ -116,10 +116,11 @@
 		</div>
 	</div>
 
-	<div class="panel-body" data-bind="visible: rpt.mode() == 'render'">
-		{{template "_loader.html"}}
-
-		<div id="pivot-wrapper" data-bind="visible: !app.loader()">
+	<div class="panel-body" data-bind="visible: pvt.mode() == 'render'">
+		<!-- {{template "_loader.html"}} -->
+  		<!-- data-bind="visible: !app.loader()" -->
+		
+		<div id="pivot-wrapper">
 			<div class="pivot-wrapper-inner">
 				<div class="pivot"></div>
 			</div>

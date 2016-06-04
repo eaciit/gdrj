@@ -67,9 +67,10 @@
 	</div>
 
 	<div class="panel-body" data-bind="visible: tbl.mode() == 'render'">
-		{{template "_loader.html"}}
+		<!-- {{template "_loader.html"}} -->
+		<!-- data-bind="visible: !app.loader()" -->
 
-		<div data-bind="visible: !app.loader()">
+		<div>
 			<div class="tabular-view table"></div>
 		</div>
 	</div>

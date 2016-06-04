@@ -5,13 +5,21 @@
 		<h3 class="no-margin">
 			Chart
 		</h3>
+		<div class="panel-nav-button">
+			<div class="form-group relative align-right no-margin no-padding hardcore">
+				<button class="btn btn-sm btn-primary" data-bind="click: () => { crt.mode('') }, visible: (crt.mode() == 'render')">
+					<i class="fa fa-gear"></i> Show Configuration
+				</button>
+				<button class="btn btn-sm btn-primary" data-bind="click: () => { crt.mode('render') }, visible: (crt.mode() == '')">
+					<i class="fa fa-eye"></i> Show Chart
+				</button>
+			</div>
+		</div>
 	</div>
 	<div class="panel-body">
-		<p>Show godrej outlets location of Indonesia.</p>
-
-		{{template "_loader.html"}}
-		<div data-bind="visible: !app.loader()">
+		<!-- {{template "_loader.html"}} -->
+		<!-- <div data-bind="visible: !app.loader()"> -->
 			<div id="chart" style="height: 300px;"></div>
-		</div>
+		<!-- </div> -->
 	</div>
 </div>
