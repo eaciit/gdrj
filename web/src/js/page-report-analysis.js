@@ -121,6 +121,9 @@ rpt.refresh = () => {
     if (app.isDefined(crt)) {
         crt.refresh()
     }
+    if (app.isDefined(sct)) {
+        sct.refresh()
+    }
 }
 
 console.log(o)
