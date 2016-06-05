@@ -6,35 +6,26 @@
 			Chart
 		</h3>
 		<div class="panel-nav-button">
-			<div class="form-group relative align-right no-margin no-padding hardcore">
-				<button class="btn btn-sm btn-primary" data-bind="click: crt.refresh, visible: (crt.mode() == 'render')">
-					<i class="fa fa-refresh"></i>
-				</button>
-				<button class="btn btn-sm btn-warning" data-bind="click: crt.setMode('render'), visible: (crt.mode() == '')">
-					<i class="fa fa-arrow-left"></i>
-				</button>
-			</div>
-		</div>
-	</div>
-	<div class="panel-body" data-bind="visible: crt.mode() == 'render'">
-		<div class="pull-right">
 			<div class="form-inline">
-				<div class="input-group input-group-sm ez margin-bottom-10">
+				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 					<span class="input-group-addon width-100 align-right">Breakdown by</span>
 					<div class="width-full">
 						<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: ra.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: crt.categoryAxisField, optionLabel: 'Select one', change: crt.refreshOnChange }"></select>
 					</div>
 					<div class="clearfix"></div>
 				</div>
+				<button class="btn btn-sm btn-primary" data-bind="click: crt.refresh, visible: (crt.mode() == 'render')">
+					<i class="fa fa-refresh"></i>
+				</button>
 			</div>
 		</div>
-		<div class="clearfix"></div>
+	</div>
+	<div class="panel-body" data-bind="visible: crt.mode() == 'render'">
 		<!-- {{template "_loader.html"}} -->
 		<!-- <div data-bind="visible: !app.loader()"> -->
-		<div>
+		<div style="height: 320px;">
 			<div id="chart" style="height: 300px;"></div>
 		</div>
 		<!-- </div> -->
 	</div>
-	<div class="panel-body" data-bind="visible: crt.mode() == ''"></div>
 </div>

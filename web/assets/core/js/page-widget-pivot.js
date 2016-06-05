@@ -105,7 +105,7 @@ pvt.render = function () {
 	var measures = [];
 
 	var constructSchema = function constructSchema(from, to) {
-		app.koUnmap(from()).filter(function (d) {
+		app.koUnmap(pvt[from]()).filter(function (d) {
 			return d.field != '';
 		}).forEach(function (d) {
 			var option = app.koUnmap(ra.optionDimensions).find(function (e) {
@@ -114,25 +114,33 @@ pvt.render = function () {
 			var key = app.idAble(option.name);
 			var field = app.idAble(d.field);
 
-			schemaModelFields[key] = { type: 'string', field: field };
-			schemaCubeDimensions[key] = { caption: option.name };
+			schemaModelFields[field] = { type: 'string' };
+			schemaCubeDimensions[field] = { caption: key };
 
-			to.push({ name: key, expand: true });
+			var row = { name: field };
+			if (from == 'rows') {
+				row.expand = true;
+			}
+
+			to.push(row);
 		});
 	};
 
-	constructSchema(pvt.rows, rows);
-	constructSchema(pvt.columns, columns);
+	constructSchema('rows', rows);
+	constructSchema('columns', columns);
 
 	app.koUnmap(pvt.dataPoints).filter(function (d) {
 		return d.field != '' && d.aggr != '';
 	}).forEach(function (d) {
 		var key = app.idAble(d.name);
+		var field = app.idAble(d.field);
 
-		var prop = { field: d.field, aggregate: d.aggr, format: '{0:c}' };
+		var prop = { field: field, aggregate: d.aggr, format: '{0:n2}' };
 		if (prop.aggregate == 'avg') {
 			prop.aggregate = 'average';
 		}
+
+		schemaModelFields[field] = { type: 'number' };
 		schemaCubeMeasures[key] = prop;
 		measures.push(key);
 	});
@@ -140,6 +148,9 @@ pvt.render = function () {
 	var config = {
 		filterable: false,
 		reorderable: false,
+		dataCellTemplate: function dataCellTemplate(d) {
+			return '<div class="align-right">' + kendo.toString(d.dataItem.value, "n2") + '</div>';
+		},
 		dataSource: {
 			data: data,
 			schema: {
@@ -158,14 +169,14 @@ pvt.render = function () {
 	};
 
 	app.log('pivot', app.clone(config));
-	$('.pivot').replaceWith('<div class="pivot"></div>');
+	$('.pivot').replaceWith('<div class="pivot ez"></div>');
 	$('.pivot').kendoPivotGrid(config);
 };
 
-var DATATEMP_PIVOT = [{ "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }];
-
 $(function () {
-	pvt.columns([app.koMap({ field: 'customer.channelname', name: 'Product' }), app.koMap({ field: 'product.name', name: 'Product' })]);
+	pvt.columns([app.koMap({ field: 'customer.channelname', name: 'Product' })]);
+
+	// app.koMap({ field: 'product.name', name: 'Product' })
 	pvt.rows([app.koMap({ field: 'customer.branchname', name: 'Branch/RD' })]);
 	pvt.dataPoints([app.koMap({ aggr: 'sum', field: 'value1', name: o['value1'] }), app.koMap({ aggr: 'sum', field: 'value2', name: o['value2'] }), app.koMap({ aggr: 'sum', field: 'value3', name: o['value3'] })]);
 

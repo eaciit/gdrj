@@ -73,29 +73,44 @@ tbl.render = function () {
 	var dataPoints = ko.mapping.toJS(tbl.dataPoints).filter(function (d) {
 		return d.field != '' && d.field != '';
 	}).map(function (d) {
-		return { field: app.idAble(d.field), title: d.name };
+		return {
+			field: app.idAble(d.field),
+			headerTemplate: '<div class="align-right">' + d.name + '</div>',
+			format: '{0:n2}',
+			attributes: { class: 'align-right' },
+			isDataPoint: true
+		};
 	});
 
-	var columns = dimensions.concat(dataPoints).map(function (d) {
+	var columns = dimensions.concat(dataPoints).map(function (d, i) {
 		d.format = '{0:n2}';
+
+		if (i == 0) {
+			d.footerTemplate = 'Total :';
+		}
+
+		if (app.isDefined(d.isDataPoint)) {
+			d.aggregates = ['sum'];
+			d.footerTemplate = '<div class="align-right">#= kendo.toString(sum, "n2") #</div>';
+		}
+
 		return d;
 	});
 
 	var config = {
 		dataSource: {
 			data: tbl.data(),
-			pageSize: 12
+			pageSize: 10,
+			aggregate: [{ field: 'value1', aggregate: 'sum' }, { field: 'value2', aggregate: 'sum' }, { field: 'value3', aggregate: 'sum' }]
 		},
 		pageable: true,
 		columns: columns
 	};
 
 	app.log('table', app.clone(config));
-	$('.table').replaceWith('<div class="tabular-view table"></div>');
-	$('.table').kendoGrid(config);
+	$('.tabular-view').replaceWith('<div class="tabular-view"></div>');
+	$('.tabular-view').kendoGrid(config);
 };
-
-var DATATEMP_TABLE = [{ "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 900, "value2": 600, "value3": 300 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 700, "value2": 700, "value3": 100 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist" }, "value1": 1000, "value2": 800, "value3": 200 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade" }, "value1": 1100, "value2": 900, "value3": 150 }, { "_id": { "customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist" }, "value1": 1100, "value2": 900, "value3": 150 }];
 
 $(function () {
 	tbl.dimensions([app.koMap({ field: 'customer.branchname', name: 'Branch/RD' }), app.koMap({ field: 'product.name', name: 'Product' }), app.koMap({ field: 'customer.channelname', name: 'Product' })]);

@@ -100,7 +100,7 @@ ra.optionAggregates = ko.observableArray([
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
-ra.wrapParam = (type, dimensions, dataPoints) => {
+ra.wrapParam = (type, dimensions = [], dataPoints = []) => {
     return {
         type: type,
         dimensions: dimensions,
@@ -120,20 +120,15 @@ ra.setName = (data, options) => () => {
     }, 150)
 }
 
-ra.refresh = () => {
+rpt.refresh = () => {
     setTimeout(() => {
-        if (app.isDefined(pvt)) {
-            pvt.refresh()
-        }
-        if (app.isDefined(tbl)) {
-            tbl.refresh()
-        }
-        if (app.isDefined(crt)) {
-            crt.refresh()
-        }
-        if (app.isDefined(sct)) {
-            sct.refresh()
-        }
+        ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach((d, i) => {
+            setTimeout(() => {
+                if (app.isDefined(d)) {
+                    window[d].refresh()
+                }
+            }, 1000 * i)
+        })
     }, 100)
 }
 
