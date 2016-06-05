@@ -392,19 +392,16 @@ html, body {
   width: 4px;
 }
 
-.tabular-view tr:not(.total).total td {
-  font-weight: bold;
-}
-.tabular-view tr:not(.total):hover {
+.tabular-view tr:hover {
   background-color: #74B841;
 }
-.tabular-view tr:not(.total):hover td {
+.tabular-view tr:hover td {
   color: white;
 }
-.tabular-view tr:not(.total) th {
+.tabular-view tr th {
   padding: 4px 0px;
 }
-.tabular-view tr:not(.total) td[rowspan] {
+.tabular-view tr td[rowspan] {
   vertical-align: middle;
 }
 

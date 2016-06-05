@@ -43,7 +43,7 @@ bkd.render = () => {
 					return { 
 						_id: v[0]._id,
 						plheader1: v[0].plheader1,
-						plheader1: k,
+						plheader2: k,
 						value: Lazy(v).sum((d) => d.value)
 					}
 				}).toArray()),

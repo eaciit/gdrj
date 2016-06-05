@@ -1,7 +1,5 @@
 'use strict';
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
 
@@ -46,14 +44,14 @@ bkd.render = function () {
 				data: Lazy(bkd.data()).filter(function (d) {
 					return d.plheader1 == e.data.plheader1;
 				}).groupBy('plheader2').map(function (v, k) {
-					var _ref;
-
-					return _ref = {
+					return {
 						_id: v[0]._id,
-						plheader1: v[0].plheader1
-					}, _defineProperty(_ref, 'plheader1', k), _defineProperty(_ref, 'value', Lazy(v).sum(function (d) {
-						return d.value;
-					})), _ref;
+						plheader1: v[0].plheader1,
+						plheader2: k,
+						value: Lazy(v).sum(function (d) {
+							return d.value;
+						})
+					};
 				}).toArray(),
 				pageSize: 10
 			},
