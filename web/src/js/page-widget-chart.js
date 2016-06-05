@@ -41,12 +41,24 @@ crt.configure = (series) => {
 		series: series,
 		seriesColors: app.seriesColorsGodrej,
 		categoryAxis: {
-			field: 'category',
+			field: app.idAble(crt.categoryAxisField()),
 			majorGridLines: { color: '#fafafa' },
 			labels: {
-				rotate: 60,
+				// rotation: 20,
 				font: 'Source Sans Pro 11',
-				template: (d) => app.capitalize(d.value)
+				padding: {
+					top: 30
+				},
+				template: (d) => {
+					let max = 20
+					let text = $.trim(app.capitalize(d.value)).replace(' 0', '');
+
+					if (text.length > max) {
+						return `${text.slice(0, max - 3)}...`
+					}
+
+					return text
+				}
 			}
 		},
 		legend: { 
@@ -58,7 +70,7 @@ crt.configure = (series) => {
 		},
 		tooltip: {
 			visible: true,
-			template: (d) => `${app.capitalize(d.series.name)} on ${app.capitalize(d.dataItem.category)}: ${kendo.toString(d.value, 'n2')}`
+			template: (d) => $.trim(`${app.capitalize(d.series.name)} on ${app.capitalize(d.category)}: ${kendo.toString(d.value, 'n2')}`)
 		}
 	}
 }
@@ -81,6 +93,15 @@ crt.render = () => {
 
 	let config = crt.configure(series)
 	app.log('chart', app.clone(config))
+
+
+	$('#chart').replaceWith(`<div id="chart" style="height: 300px;"></div>`)
+
+	if (crt.data().length > 8) {
+		$('#chart').width(crt.data().length * 130)
+		$('#chart').parent().css('overflow-x', 'scroll')
+	}
+
 	$('#chart').kendoChart(config)
 }
 crt.getParam = () => {

@@ -114,10 +114,10 @@ pvt.render = function () {
 			var key = app.idAble(option.name);
 			var field = app.idAble(d.field);
 
-			schemaModelFields[key] = { type: 'string', field: field };
-			schemaCubeDimensions[key] = { caption: option.name };
+			schemaModelFields[field] = { type: 'string' };
+			schemaCubeDimensions[field] = { caption: key };
 
-			to.push({ name: key, expand: true });
+			to.push({ name: field, expand: true });
 		});
 	};
 
@@ -128,11 +128,14 @@ pvt.render = function () {
 		return d.field != '' && d.aggr != '';
 	}).forEach(function (d) {
 		var key = app.idAble(d.name);
+		var field = app.idAble(d.field);
 
-		var prop = { field: d.field, aggregate: d.aggr, format: '{0:c}' };
+		var prop = { field: field, aggregate: d.aggr, format: '{0:c}' };
 		if (prop.aggregate == 'avg') {
 			prop.aggregate = 'average';
 		}
+
+		schemaModelFields[field] = { type: 'number' };
 		schemaCubeMeasures[key] = prop;
 		measures.push(key);
 	});
@@ -141,7 +144,7 @@ pvt.render = function () {
 		filterable: false,
 		reorderable: false,
 		dataSource: {
-			data: data,
+			data: data.slice(0, 10),
 			schema: {
 				model: {
 					fields: schemaModelFields

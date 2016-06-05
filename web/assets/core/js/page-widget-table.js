@@ -84,7 +84,7 @@ tbl.render = function () {
 	var config = {
 		dataSource: {
 			data: tbl.data(),
-			pageSize: 12
+			pageSize: 10
 		},
 		pageable: true,
 		columns: columns

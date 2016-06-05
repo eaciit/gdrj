@@ -325,6 +325,11 @@ app.newEl = function (s) {
 app.idAble = function (s) {
     return s.replace(/\./g, '_').replace(/\-/g, '_').replace(/\//g, '_').replace(/ /g, '_');
 };
+app.logAble = function () {
+    var args = [].slice.call(arguments);
+    app.log(args);
+    return args[0];
+};
 
 viewModel.StringExt = new Object();
 var s = viewModel.StringExt;

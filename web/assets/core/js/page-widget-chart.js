@@ -16,25 +16,9 @@ crt.setMode = function (what) {
 };
 crt.mode = ko.observable('render');
 crt.configure = function (series) {
-	var data = Lazy(crt.data()).groupBy(function (d) {
-		return d[app.idAble(crt.categoryAxisField())];
-	}).map(function (k, v) {
-		var res = { category: v };
-		res.value1 = Lazy(k).sum(function (d) {
-			return d.value1;
-		});
-		res.value2 = Lazy(k).sum(function (d) {
-			return d.value2;
-		});
-		res.value3 = Lazy(k).sum(function (d) {
-			return d.value3;
-		});
-		return res;
-	}).toArray();
-
 	return {
 		title: crt.title(),
-		dataSource: { data: data },
+		dataSource: { data: crt.data() },
 		seriesDefaults: {
 			type: crt.chartType(),
 			overlay: { gradient: 'none' },
@@ -48,13 +32,23 @@ crt.configure = function (series) {
 		series: series,
 		seriesColors: app.seriesColorsGodrej,
 		categoryAxis: {
-			field: 'category',
+			field: app.idAble(crt.categoryAxisField()),
 			majorGridLines: { color: '#fafafa' },
 			labels: {
-				rotate: 60,
+				// rotation: 20,
 				font: 'Source Sans Pro 11',
+				padding: {
+					top: 30
+				},
 				template: function template(d) {
-					return app.capitalize(d.value);
+					var max = 20;
+					var text = $.trim(app.capitalize(d.value)).replace(' 0', '');
+
+					if (text.length > max) {
+						return text.slice(0, max - 3) + "...";
+					}
+
+					return text;
 				}
 			}
 		},
@@ -68,7 +62,7 @@ crt.configure = function (series) {
 		tooltip: {
 			visible: true,
 			template: function template(d) {
-				return app.capitalize(d.series.name) + " on " + app.capitalize(d.dataItem.category) + ": " + kendo.toString(d.value, 'n2');
+				return $.trim(app.capitalize(d.series.name) + " on " + app.capitalize(d.category) + ": " + kendo.toString(d.value, 'n2'));
 			}
 		}
 	};
@@ -92,6 +86,14 @@ crt.render = function () {
 
 	var config = crt.configure(series);
 	app.log('chart', app.clone(config));
+
+	$('#chart').replaceWith("<div id=\"chart\" style=\"height: 300px;\"></div>");
+
+	if (crt.data().length > 8) {
+		$('#chart').width(crt.data().length * 130);
+		$('#chart').parent().css('overflow-x', 'scroll');
+	}
+
 	$('#chart').kendoChart(config);
 };
 crt.getParam = function () {

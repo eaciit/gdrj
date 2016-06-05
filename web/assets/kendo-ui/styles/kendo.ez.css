@@ -7778,6 +7778,12 @@ input[type="text"].ez {
 .margin-bottom-20 {
   margin-bottom: 20px;
 }
+.margin-right-5 {
+  margin-right: 5px;
+}
+.margin-right-10 {
+  margin-right: 10px;
+}
 .relative {
   position: relative;
 }

@@ -103,10 +103,10 @@ pvt.render = () => {
 				let key = app.idAble(option.name)
 				let field = app.idAble(d.field)
 
-				schemaModelFields[key] = { type: 'string', field: field }
-				schemaCubeDimensions[key] = { caption: option.name }
+				schemaModelFields[field] = { type: 'string' }
+				schemaCubeDimensions[field] = { caption: key }
 
-				to.push({ name: key, expand: true })
+				to.push({ name: field, expand: true })
 			})
 	}
 
@@ -117,11 +117,14 @@ pvt.render = () => {
 		.filter((d) => (d.field != '') && (d.aggr != ''))
 		.forEach((d) => {
 			let key = app.idAble(d.name)
+			let field = app.idAble(d.field)
 
-			let prop = { field: d.field, aggregate: d.aggr, format: '{0:c}' }
+			let prop = { field: field, aggregate: d.aggr, format: '{0:c}' }
 			if (prop.aggregate == 'avg') {
 				prop.aggregate = 'average'
 			}
+
+			schemaModelFields[field] = { type: 'number' }
 			schemaCubeMeasures[key] = prop
 			measures.push(key)
 		})
@@ -130,7 +133,7 @@ pvt.render = () => {
 	    filterable: false,
 	    reorderable: false,
 	    dataSource: {
-			data: data,
+			data: data.slice(0, 10),
 			schema: {
 				model: {
 					fields: schemaModelFields
