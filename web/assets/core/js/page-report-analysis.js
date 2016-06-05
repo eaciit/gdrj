@@ -40,12 +40,14 @@ ra.setName = function (data, options) {
     };
 };
 
-ra.refresh = function () {
+rpt.refresh = function () {
     setTimeout(function () {
-        ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach(function (d) {
-            if (app.isDefined(d)) {
-                window[d].refresh();
-            }
+        ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach(function (d, i) {
+            setTimeout(function () {
+                if (app.isDefined(d)) {
+                    window[d].refresh();
+                }
+            }, 1000 * i);
         });
     }, 100);
 };

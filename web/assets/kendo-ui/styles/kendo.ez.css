@@ -7375,6 +7375,9 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
 .k-grid tr:hover {
   color: white;
 }
+.k-grid tr:not(.k-footer-template):hover {
+  color: #F0F3F4;
+}
 .k-grid .k-grid-header tr:hover {
   background-color: inherit;
 }

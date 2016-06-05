@@ -73,18 +73,35 @@ tbl.render = function () {
 	var dataPoints = ko.mapping.toJS(tbl.dataPoints).filter(function (d) {
 		return d.field != '' && d.field != '';
 	}).map(function (d) {
-		return { field: app.idAble(d.field), title: d.name };
+		return {
+			field: app.idAble(d.field),
+			headerTemplate: '<div class="align-right">' + d.name + '</div>',
+			format: '{0:n2}',
+			attributes: { class: 'align-right' },
+			isDataPoint: true
+		};
 	});
 
-	var columns = dimensions.concat(dataPoints).map(function (d) {
+	var columns = dimensions.concat(dataPoints).map(function (d, i) {
 		d.format = '{0:n2}';
+
+		if (i == 0) {
+			d.footerTemplate = 'Total :';
+		}
+
+		if (app.isDefined(d.isDataPoint)) {
+			d.aggregates = ['sum'];
+			d.footerTemplate = '<div class="align-right">#= kendo.toString(sum, "n2") #</div>';
+		}
+
 		return d;
 	});
 
 	var config = {
 		dataSource: {
 			data: tbl.data(),
-			pageSize: 10
+			pageSize: 10,
+			aggregate: [{ field: 'value1', aggregate: 'sum' }, { field: 'value2', aggregate: 'sum' }, { field: 'value3', aggregate: 'sum' }]
 		},
 		pageable: true,
 		columns: columns

@@ -148,6 +148,9 @@ pvt.render = function () {
 	var config = {
 		filterable: false,
 		reorderable: false,
+		dataCellTemplate: function dataCellTemplate(d) {
+			return '<div class="align-right">' + kendo.toString(d.dataItem.value, "n2") + '</div>';
+		},
 		dataSource: {
 			data: data,
 			schema: {

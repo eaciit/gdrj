@@ -57,17 +57,40 @@ tbl.render = () => {
 		.map((d) => { return { field: app.idAble(d.field), title: d.name } })
 	let dataPoints = ko.mapping.toJS(tbl.dataPoints)
 		.filter((d) => (d.field != '') && (d.field != ''))
-		.map((d) => { return { field: app.idAble(d.field), title: d.name } })
+		.map((d) => { 
+			return { 
+				field: app.idAble(d.field), 
+				headerTemplate: `<div class="align-right">${d.name}</div>`,
+				format: '{0:n2}',
+				attributes: { class: 'align-right' },
+				isDataPoint: true 
+			}
+		})
 
-	let columns = dimensions.concat(dataPoints).map((d) => {
+	let columns = dimensions.concat(dataPoints).map((d, i) => {
 		d.format = '{0:n2}'
+
+		if (i == 0) {
+			d.footerTemplate = 'Total :'
+		}
+
+		if (app.isDefined(d.isDataPoint)) {
+			d.aggregates = ['sum']
+			d.footerTemplate = '<div class="align-right">#= kendo.toString(sum, "n2") #</div>'
+		}
+
 		return d
 	})
 
 	let config = {
 		dataSource: {
 			data: tbl.data(),
-			pageSize: 10
+			pageSize: 10,
+            aggregate: [
+				{ field: 'value1', aggregate: 'sum' },
+				{ field: 'value2', aggregate: 'sum' },
+				{ field: 'value3', aggregate: 'sum' }
+			]
 		},
 		pageable: true,
 		columns: columns

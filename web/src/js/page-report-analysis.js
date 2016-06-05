@@ -120,12 +120,14 @@ ra.setName = (data, options) => () => {
     }, 150)
 }
 
-ra.refresh = () => {
+rpt.refresh = () => {
     setTimeout(() => {
-        ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach((d) => {
-            if (app.isDefined(d)) {
-                window[d].refresh()
-            }
+        ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach((d, i) => {
+            setTimeout(() => {
+                if (app.isDefined(d)) {
+                    window[d].refresh()
+                }
+            }, 1000 * i)
         })
     }, 100)
 }

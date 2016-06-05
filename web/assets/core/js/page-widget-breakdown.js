@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
@@ -8,11 +8,11 @@ bkd.getParam = function () {
 	return ra.wrapParam('analysis_ideas');
 };
 bkd.refresh = function () {
-	bkd.data(DATATEMP_BREAKDOWN);
-	// app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), (res) => {
-	// 	bkd.data(res.Data)
-	bkd.render();
-	// })
+	// bkd.data(DATATEMP_BREAKDOWN)
+	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), function (res) {
+		bkd.data(res.Data);
+		bkd.render();
+	});
 };
 bkd.render = function () {
 	var detailLvl2 = function detailLvl2(e) {
@@ -33,7 +33,7 @@ bkd.render = function () {
 				}).toArray(),
 				pageSize: 10
 			},
-			columns: [{ field: '_id', title: 'ID' }, { field: 'plheader1', title: 'Group 1' }, { field: 'plheader2', title: 'Group 2' }, { field: 'plheader3', title: 'Group 3' }, { field: 'value', title: 'Value', format: '{0:n2}' }],
+			columns: [{ field: '_id', title: 'ID' }, { field: 'plheader1', title: 'Group 1' }, { field: 'plheader2', title: 'Group 2' }, { field: 'plheader3', title: 'Group 3' }, { field: 'value', headerTemplate: '<div class="align-right">Value</div>', format: '{0:n2}', attributes: { class: 'align-right' } }],
 			pageable: true
 		});
 	};
@@ -55,13 +55,11 @@ bkd.render = function () {
 				}).toArray(),
 				pageSize: 10
 			},
-			columns: [{ field: '_id', title: 'ID' }, { field: 'plheader1', title: 'Group 1' }, { field: 'plheader2', title: 'Group 2' }, { field: 'value', title: 'Value', format: '{0:n2}' }],
-			detailInit: detailLvl2,
+			columns: [{ field: '_id', title: 'ID' }, { field: 'plheader1', title: 'Group 1' }, { field: 'plheader2', title: 'Group 2' }, { field: 'value', headerTemplate: '<div class="align-right">Value</div>', format: '{0:n2}', attributes: { class: 'align-right' } }],
+			// detailInit: detailLvl2,
 			pageable: true
 		});
 	};
-
-	var columns = [{ field: '_id', title: 'ID' }, { field: 'plheader1', title: 'Group 1' }, { field: 'plheader2', title: 'Group 2' }, { field: 'plheader3', title: 'Group 3' }, { field: 'value', title: 'Value' }];
 
 	var config = {
 		dataSource: {
@@ -74,9 +72,10 @@ bkd.render = function () {
 					})
 				};
 			}).toArray(),
+			aggregate: [{ field: 'value', aggregate: 'sum' }],
 			pageSize: 10
 		},
-		columns: [{ field: '_id', title: 'ID' }, { field: 'plheader1', title: 'Group 1' }, { field: 'value', title: 'Value', format: '{0:n2}' }],
+		columns: [{ field: '_id', title: 'ID', footerTemplate: 'Total :' }, { field: 'plheader1', title: 'Group 1' }, { field: 'value', headerTemplate: '<div class="align-right">Value</div>', format: '{0:n2}', aggregates: ['sum'], footerTemplate: '<div class="align-right">#= kendo.toString(sum, "n2") #</div>', attributes: { class: 'align-right' } }],
 		detailInit: detailLvl1,
 		// dataBound: function() {
 		// 	this.expandRow(this.tbody.find("tr.k-master-row").first());
@@ -85,7 +84,7 @@ bkd.render = function () {
 	};
 
 	app.log('table', app.clone(config));
-	$('.breakdown-view').replaceWith('<div class="breakdown-view table"></div>');
+	$('.breakdown-view').replaceWith("<div class=\"breakdown-view table\"></div>");
 	$('.breakdown-view').kendoGrid(config);
 };
 

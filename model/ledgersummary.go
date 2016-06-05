@@ -82,7 +82,7 @@ func CalculateLedgerSummaryAnalysisIdea(payload *PivotParam) ([]*toolkit.M, erro
 	q := conn.NewQuery().From(sum.TableName())
 	q = q.Where(filter)
 	q = q.Group("plmodel._id", "plmodel.plheader1", "plmodel.plheader2", "plmodel.plheader3")
-	q = q.Aggr(dbox.AggrSum, "value1", "value1")
+	q = q.Aggr(dbox.AggrSum, "$value1", "value1")
 
 	c, e := q.Cursor(nil)
 	if e != nil {

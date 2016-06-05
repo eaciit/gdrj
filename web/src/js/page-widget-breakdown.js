@@ -4,11 +4,11 @@ let bkd = viewModel.breakdown
 bkd.data = ko.observableArray([])
 bkd.getParam = () => ra.wrapParam('analysis_ideas')
 bkd.refresh = () => {
-	bkd.data(DATATEMP_BREAKDOWN)
-	// app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), (res) => {
-	// 	bkd.data(res.Data)
+	// bkd.data(DATATEMP_BREAKDOWN)
+	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), (res) => {
+		bkd.data(res.Data)
 		bkd.render()
-	// })
+	})
 }
 bkd.render = () => {
 	let detailLvl2 = function (e) {
@@ -30,7 +30,7 @@ bkd.render = () => {
 				{ field: 'plheader1', title: 'Group 1' },
 				{ field: 'plheader2', title: 'Group 2' },
 				{ field: 'plheader3', title: 'Group 3' },
-				{ field: 'value', title: 'Value', format: '{0:n2}' }
+				{ field: 'value', headerTemplate: '<div class="align-right">Value</div>', format: '{0:n2}', attributes: { class: 'align-right' } }
 			],
 			pageable: true,
         });
@@ -53,20 +53,12 @@ bkd.render = () => {
 				{ field: '_id', title: 'ID' },
 				{ field: 'plheader1', title: 'Group 1' },
 				{ field: 'plheader2', title: 'Group 2' },
-				{ field: 'value', title: 'Value', format: '{0:n2}' }
+				{ field: 'value', headerTemplate: '<div class="align-right">Value</div>', format: '{0:n2}', attributes: { class: 'align-right' } }
 			],
-			detailInit: detailLvl2,
+			// detailInit: detailLvl2,
 			pageable: true,
         });
     }
-
-	let columns = [
-		{ field: '_id', title: 'ID' },
-		{ field: 'plheader1', title: 'Group 1' },
-		{ field: 'plheader2', title: 'Group 2' },
-		{ field: 'plheader3', title: 'Group 3' },
-		{ field: 'value', title: 'Value' }
-	]
 
 	let config = {
 		dataSource: {
@@ -77,12 +69,15 @@ bkd.render = () => {
 					value: Lazy(v).sum((d) => d.value)
 				}
 			}).toArray()),
+            aggregate: [
+				{ field: 'value', aggregate: 'sum' }
+			],
 			pageSize: 10
 		},
 		columns: [
-			{ field: '_id', title: 'ID' },
+			{ field: '_id', title: 'ID', footerTemplate: 'Total :' },
 			{ field: 'plheader1', title: 'Group 1' },
-			{ field: 'value', title: 'Value', format: '{0:n2}' }
+			{ field: 'value', headerTemplate: '<div class="align-right">Value</div>', format: '{0:n2}', aggregates: ['sum'], footerTemplate: '<div class="align-right">#= kendo.toString(sum, "n2") #</div>', attributes: { class: 'align-right' } }
 		],
 		detailInit: detailLvl1,
 		// dataBound: function() {

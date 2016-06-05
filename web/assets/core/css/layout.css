@@ -392,19 +392,6 @@ html, body {
   width: 4px;
 }
 
-.tabular-view tr:hover {
-  background-color: #74B841;
-}
-.tabular-view tr:hover td {
-  color: white;
-}
-.tabular-view tr th {
-  padding: 4px 0px;
-}
-.tabular-view tr td[rowspan] {
-  vertical-align: middle;
-}
-
 #outlet-location, #pivot-wrapper {
   min-height: 400px;
 }
