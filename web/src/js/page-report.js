@@ -1,26 +1,11 @@
 // let menuLink = vm.menu()
 // 	.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
 
-// vm.currentMenu(menuLink.title)
-// vm.currentTitle(menuLink.title)
-// vm.breadcrumb([
-// 	{ title: 'Godrej', href: '#' },
-// 	{ title: menuLink.title, href: menuLink.href }
-// ])
-
-let menuLink = vm.menu()
-    .find((d) => d.title == "Report").submenu
-	.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
-
-if (app.isUndefined(menuLink)) {
-	menuLink = '{"title":"","href":"#"}'.toObject()
-}
-
 vm.currentMenu('Report')
-vm.currentTitle(menuLink.title)
+vm.currentTitle('Report')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: menuLink.title, href: menuLink.href }
+	{ title: 'Report', href: '/web/report/all' }
 ])
 
 viewModel.report = new Object()
@@ -253,34 +238,56 @@ rpt.prepareDrag = () => {
 	    connectWith: '.pivot-section'
 	})
 }
+
+rpt.expandToggleContent = () => {
+	let btnExpand = $('.btn-expand')
+	let panel = $('.panel-content-expandable')
+	let panelLeft = $('.panel-content-left')
+	let panelRight = $('.panel-content-right')
+
+	if (panel.hasClass('col-md-12')) {
+		panel.removeClass('col-md-12 no-padding').addClass('col-md-6')
+		panelLeft.addClass('no-padding-left')
+		panelRight.addClass('no-padding-right')
+	} else {
+		panel.removeClass('col-md-6').addClass('col-md-12 no-padding')
+		panelLeft.removeClass('no-padding-left')
+		panelRight.removeClass('no-padding-right')
+	}
+
+	btnExpand.find('.fa').toggleClass('fa-compress')
+
+	let pivot = $('.k-pivot').data('kendoPivotGrid')
+	if (app.isDefined(pivot)) {
+		$('.k-pivot').data('kendoPivotGrid').refresh()
+	}
+
+	let chart = $('.k-chart').data('kendoChart')
+	if (app.isDefined(chart)) {
+		$('.k-chart').data('kendoChart').refresh()
+	}
+}
+
 rpt.init = () => app.noop
 rpt.refresh = () => app.noop
+
+rpt.analysisIdeas = ko.observableArray([])
+rpt.getIdeas = () => {
+	app.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
+		if (!app.isFine(res)) {
+			return;
+		}
+
+		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.name))
+	})
+}
 
 $(() => {
 	let $contentPivot = $('.panel-content-pivot')
 	let $contentMap = $('.panel-content-map')
 	let $btnInfo = $('.btn-info')
 
-	vm.expandToggleContent = (a, b) => {
-		$contentPivot.toggleClass('col-md-12 col-md-6')
-		$contentMap.toggleClass('col-md-12 col-md-6')
-		$btnInfo.find('.fa').toggleClass('fa-compress')
-
-		ol.map._onResize()
-
-		if ($contentPivot.hasClass('col-md-12')) {
-			$contentPivot.removeClass('no-padding-left').addClass('no-padding')
-			$contentMap.removeClass('no-padding-right').addClass('no-padding')
-
-			$contentMap.insertBefore($contentPivot)
-		} else {
-			$contentPivot.removeClass('no-padding').addClass('no-padding-left')
-			$contentMap.removeClass('no-padding').addClass('no-padding-right')
-
-			$contentPivot.insertBefore($contentMap)
-		}
-	}
-
+	rpt.getIdeas()
 	rpt.prepareDrag()
 	rpt.init()
 })

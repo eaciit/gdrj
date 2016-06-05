@@ -1,3 +1,18 @@
+
+
+	{{if eq .subreport "page-report-distribution.html"}}
+		{{template "page-report-distribution.html"}}
+	{{else if eq .subreport "page-report-general-trade.html"}}
+		{{template "page-report-general-trade.html"}}
+	{{else if eq .subreport "page-report-market-efficiency.html"}}
+		{{template "page-report-market-efficiency.html"}}
+	{{else if eq .subreport "page-report-sgna.html"}}
+		{{template "page-report-sgna.html"}}
+	{{else if eq .subreport "page-report-chart-comparison.html"}}
+		{{template "page-report-chart-comparison.html"}}
+	{{end}}
+
+	
 <!DOCTYPE html>
 <html>
 	<head>
