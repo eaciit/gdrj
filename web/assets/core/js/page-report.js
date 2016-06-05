@@ -244,7 +244,7 @@ rpt.expandToggleContent = function () {
 	});
 };
 rpt.getFilterValue = function () {
-	var res = [{ 'Field': 'customer.branchid', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand() }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region() }, { 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() }, { 'Field': 'date.date', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'date.date', 'Op': '$lte', 'Value': rpt.value.To() }];
+	var res = [{ 'Field': 'customer.branchid', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand() }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region() }, { 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() }, { 'Field': 'year', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'year', 'Op': '$lte', 'Value': rpt.value.To() }];
 
 	return res;
 };

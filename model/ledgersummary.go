@@ -84,11 +84,14 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 	fmt.Printf("--- %#v\n", columns)
 	fmt.Printf("--- %#v\n", datapoints)
 
+	fmt.Printf("+++++ %#v\n", *(filter.Value.([]*dbox.Filter)[0]))
+	fmt.Printf("+++++ %#v\n", *(filter.Value.([]*dbox.Filter)[1]))
+
 	res := []*toolkit.M{}
 
 	if payload.Which == "gross_sales_discount_and_net_sales" {
 		gross, err := SummarizeLedgerSum(
-			dbox.And(dbox.Eq("plcode", "PL1")),
+			dbox.And(dbox.Eq("plcode", "PL1"), filter),
 			columns, datapoints, fnTransform)
 		if err != nil {
 			return nil, err
@@ -97,14 +100,14 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 		// return res, nil
 
 		discount, err := SummarizeLedgerSum(
-			dbox.And(dbox.Eq("plcode", "PL2")),
+			dbox.And(dbox.Eq("plcode", "PL2"), filter),
 			columns, datapoints, fnTransform)
 		if err != nil {
 			return nil, err
 		}
 
 		net, err := SummarizeLedgerSum(
-			dbox.And(dbox.Eq("plcode", "PL3")),
+			dbox.And(dbox.Eq("plcode", "PL3"), filter),
 			columns, datapoints, fnTransform)
 		if err != nil {
 			return nil, err
@@ -160,7 +163,6 @@ func SummarizeLedgerSum(
 	q := conn.NewQuery().From(sum.TableName())
 	if filter != nil {
 		q = q.Where(filter)
-		fmt.Println("fiiff", *(filter.Value.([]*dbox.Filter)[0]))
 	}
 
 	if len(columns) > 0 {
@@ -219,15 +221,6 @@ func SummarizeLedgerSum(
 	if e != nil {
 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
 	}
-
-	// if c.Count() > 0 {
-	// 	e = c.Fetch(&ms, 0, false)
-	// 	if e != nil {
-	// 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
-	// 	}
-	// }
-
-	fmt.Println("asdfsafda", len(ms))
 
 	if fnTransform != nil {
 		for idx, m := range ms {
@@ -290,8 +283,6 @@ func (p *PivotParam) ParseDataPoints() (res []string) {
 func (p *PivotParam) ParseFilter() *dbox.Filter {
 	filters := []*dbox.Filter{}
 
-	return dbox.And(filters...)
-
 	for _, each := range p.Filters {
 		field := each.GetString("Field")
 
@@ -306,23 +297,39 @@ func (p *PivotParam) ParseFilter() *dbox.Filter {
 				filters = append(filters, dbox.In(field, values))
 			}
 		case dbox.FilterOpGte:
-			value := each.GetString("Value")
+			var value interface{} = each.GetString("Value")
 
-			if strings.TrimSpace(value) != "" {
+			if value.(string) != "" {
+				if field == "year" {
+					t, err := time.Parse(time.RFC3339Nano, value.(string))
+					if err != nil {
+						fmt.Println(err.Error())
+					} else {
+						value = t.Year()
+					}
+				}
+
 				filters = append(filters, dbox.Gte(field, value))
 			}
 		case dbox.FilterOpLte:
-			value := each.GetString("Value")
+			var value interface{} = each.GetString("Value")
 
-			if strings.TrimSpace(value) != "" {
+			if value.(string) != "" {
+				if field == "year" {
+					t, err := time.Parse(time.RFC3339Nano, value.(string))
+					if err != nil {
+						fmt.Println(err.Error())
+					} else {
+						value = t.Year()
+					}
+				}
+
 				filters = append(filters, dbox.Lte(field, value))
 			}
 		case dbox.FilterOpEqual:
 			value := each.GetString("Value")
 
-			if strings.TrimSpace(value) != "" {
-				filters = append(filters, dbox.Eq(field, value))
-			}
+			filters = append(filters, dbox.Gte(field, value))
 		}
 	}
 

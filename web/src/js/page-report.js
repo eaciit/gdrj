@@ -289,8 +289,8 @@ rpt.getFilterValue = () => {
 		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand() },
 		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region() },
 		{ 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() },
-		{ 'Field': 'date.date', 'Op': '$gte', 'Value': rpt.value.From() },
-		{ 'Field': 'date.date', 'Op': '$lte', 'Value': rpt.value.To() },
+		{ 'Field': 'year', 'Op': '$gte', 'Value': rpt.value.From() },
+		{ 'Field': 'year', 'Op': '$lte', 'Value': rpt.value.To() },
 	]
 
 	return res
