@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
-	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	"time"
 )
 
 type ReportController struct {
@@ -200,86 +198,9 @@ func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interfa
 
 	return res
 }
-func getCursor(obj orm.IModel) dbox.ICursor {
-	c, e := gdrj.Find(obj, nil, nil)
-	if e != nil {
-		return nil
-	}
-	return c
-}
 
-func (m *ReportController) GenerateRandomLedgetSummary(r *knot.WebContext) interface{} {
-	var err error
-	cursor_cc := getCursor(new(gdrj.CostCenter))
-	defer cursor_cc.Close()
-	fmt.Println(cursor_cc.Count())
-	cc := []*gdrj.CostCenter{}
-	if err = cursor_cc.Fetch(&cc, 5, false); err != nil {
-		fmt.Println(err.Error())
-	}
-
-	cursor_pc := getCursor(new(gdrj.ProfitCenter))
-	defer cursor_pc.Close()
-	pc := []*gdrj.ProfitCenter{}
-	if err = cursor_pc.Fetch(&pc, 5, false); err != nil {
-		fmt.Println(err.Error())
-	}
-
-	cursor_cust := getCursor(new(gdrj.Customer))
-	defer cursor_cust.Close()
-	cust := []*gdrj.Customer{}
-	if err = cursor_cust.Fetch(&cust, 5, false); err != nil {
-		fmt.Println(err.Error())
-	}
-
-	cursor_prod := getCursor(new(gdrj.Product))
-	defer cursor_prod.Close()
-	prod := []*gdrj.Product{}
-	if err = cursor_prod.Fetch(&prod, 5, false); err != nil {
-		fmt.Println(err.Error())
-	}
-
-	cursor_plm := getCursor(new(gdrj.PLModel))
-	defer cursor_plm.Close()
-	plm := []*gdrj.PLModel{}
-	if err = cursor_plm.Fetch(&plm, 20, false); err != nil {
-		fmt.Println(err.Error())
-	}
-
-	cursor_ledg := getCursor(new(gdrj.LedgerAccount))
-	defer cursor_ledg.Close()
-	ledg := []*gdrj.LedgerAccount{}
-	if err = cursor_ledg.Fetch(&ledg, 20, false); err != nil {
-		fmt.Println(err.Error())
-	}
-
-	fmt.Println("len", len(cc))
-
-	for i := 0; i < 1000; i++ {
-		date := new(gdrj.Date)
-		date.Date = time.Now()
-		l := new(gdrj.LedgerSummary)
-		l.CC = cc[toolkit.RandInt(len(cc))]
-		l.PC = pc[toolkit.RandInt(len(pc))]
-		l.Customer = cust[toolkit.RandInt(len(cust))]
-		l.Product = prod[toolkit.RandInt(len(prod))]
-		l.LedgerAccount = ledg[toolkit.RandInt(len(ledg))].ID
-		l.PLModel = plm[toolkit.RandInt(20)]
-		l.Date = date
-		l.PCID = l.PC.ID
-		l.CCID = l.CC.ID
-		l.OutletID = l.Customer.ID
-		l.SKUID = l.Product.ID
-		l.PLCode = l.PLModel.ID
-		l.PLGroup1 = l.PLModel.OrderIndex
-		l.Value1 = toolkit.RandFloat(10, 4)
-		l.Value2 = toolkit.RandFloat(10, 4)
-		l.Value3 = toolkit.RandFloat(10, 4)
-
-		l.Save()
-
-		fmt.Println(i, "saved")
-	}
+func (m *ReportController) GenerateRandomLedgerSummary(r *knot.WebContext) interface{} {
+	gocore.GenerateDummyLedgerSummary()
 
 	return "ok"
 }
