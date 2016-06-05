@@ -15,77 +15,47 @@ bkd.refresh = function () {
 	});
 };
 bkd.render = function () {
-	var detailLvl2 = function detailLvl2(e) {
-		$("<div/>").appendTo(e.detailCell).kendoGrid({
-			dataSource: {
-				data: Lazy(bkd.data()).filter(function (d) {
-					return d.plheader2 == e.data.plheader2;
-				}).groupBy('plheader3').map(function (v, k) {
-					return {
-						_id: v[0]._id,
-						plheader1: v[0].plheader1,
-						plheader2: v[0].plheader2,
-						plheader3: k,
-						value: Lazy(v).sum(function (d) {
-							return d.value;
-						})
-					};
-				}).toArray(),
-				pageSize: 10
-			},
-			columns: [{ field: '_id', title: 'ID' }, { field: 'plheader1', title: 'Group 1' }, { field: 'plheader2', title: 'Group 2' }, { field: 'plheader3', title: 'Group 3' }, { field: 'value', headerTemplate: '<div class="align-right">Value</div>', format: '{0:n2}', attributes: { class: 'align-right' } }],
-			pageable: true
-		});
-	};
-
-	var detailLvl1 = function detailLvl1(e) {
-		$("<div/>").appendTo(e.detailCell).kendoGrid({
-			dataSource: {
-				data: Lazy(bkd.data()).filter(function (d) {
-					return d.plheader1 == e.data.plheader1;
-				}).groupBy('plheader2').map(function (v, k) {
-					return {
-						_id: v[0]._id,
-						plheader1: v[0].plheader1,
-						plheader2: k,
-						value: Lazy(v).sum(function (d) {
-							return d.value;
-						})
-					};
-				}).toArray(),
-				pageSize: 10
-			},
-			columns: [{ field: '_id', title: 'ID' }, { field: 'plheader1', title: 'Group 1' }, { field: 'plheader2', title: 'Group 2' }, { field: 'value', headerTemplate: '<div class="align-right">Value</div>', format: '{0:n2}', attributes: { class: 'align-right' } }],
-			// detailInit: detailLvl2,
-			pageable: true
-		});
-	};
-
 	var config = {
+		filterable: false,
+		reorderable: false,
 		dataSource: {
-			data: Lazy(bkd.data()).groupBy('plheader1').map(function (v, k) {
-				return {
-					_id: v[0]._id,
-					plheader1: k,
-					value: Lazy(v).sum(function (d) {
-						return d.value;
-					})
-				};
-			}).toArray(),
-			aggregate: [{ field: 'value', aggregate: 'sum' }],
-			pageSize: 10
-		},
-		columns: [{ field: '_id', title: 'ID', footerTemplate: 'Total :' }, { field: 'plheader1', title: 'Group 1' }, { field: 'value', headerTemplate: '<div class="align-right">Value</div>', format: '{0:n2}', aggregates: ['sum'], footerTemplate: '<div class="align-right">#= kendo.toString(sum, "n2") #</div>', attributes: { class: 'align-right' } }],
-		detailInit: detailLvl1,
-		// dataBound: function() {
-		// 	this.expandRow(this.tbody.find("tr.k-master-row").first());
-		// },
-		pageable: true
+			data: bkd.data(),
+			schema: {
+				model: {
+					fields: {
+						_id: { type: "string" },
+						plheader1: { type: "string" },
+						plheader2: { type: "string" },
+						// plheader3: { type: "string" },
+						value: { type: "number" }
+					}
+				},
+				cube: {
+					dimensions: {
+						_id: { type: "string" },
+						plheader1: { caption: "Group 1" },
+						plheader2: { caption: "Group 2" }
+					},
+					// plheader3: { caption: "Group 3" }
+					measures: {
+						Amount: {
+							field: "value",
+							aggregate: "sum",
+							format: "{0:n2}"
+						}
+					}
+				}
+			},
+			rows: [{ name: "plheader1", expand: true }, { name: "plheader2" }],
+
+			// { name: "plheader3" }
+			measures: ["Amount"]
+		}
 	};
 
-	app.log('table', app.clone(config));
-	$('.breakdown-view').replaceWith("<div class=\"breakdown-view table\"></div>");
-	$('.breakdown-view').kendoGrid(config);
+	app.log('breakdown', app.clone(config));
+	$('.breakdown-view').replaceWith("<div class=\"breakdown-view ez\"></div>");
+	$('.breakdown-view').kendoPivotGrid(config);
 };
 
 $(function () {

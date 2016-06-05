@@ -169,7 +169,7 @@ pvt.render = function () {
 	};
 
 	app.log('pivot', app.clone(config));
-	$('.pivot').replaceWith('<div class="pivot"></div>');
+	$('.pivot').replaceWith('<div class="pivot ez"></div>');
 	$('.pivot').kendoPivotGrid(config);
 };
 

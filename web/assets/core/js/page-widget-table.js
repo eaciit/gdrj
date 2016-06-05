@@ -108,7 +108,7 @@ tbl.render = function () {
 	};
 
 	app.log('table', app.clone(config));
-	$('.tabular-view').replaceWith('<div class="tabular-view table"></div>');
+	$('.tabular-view').replaceWith('<div class="tabular-view"></div>');
 	$('.tabular-view').kendoGrid(config);
 };
 
