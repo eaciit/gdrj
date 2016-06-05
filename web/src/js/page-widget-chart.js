@@ -25,19 +25,9 @@ crt.setMode = (what) => () => {
 }
 crt.mode = ko.observable('render')
 crt.configure = (series) => {
-	let data = Lazy(crt.data())
-		.groupBy((d) => d[app.idAble(crt.categoryAxisField())])
-		.map((k, v) => {
-			let res = { category: v }
-			res.value1 = Lazy(k).sum((d) => d.value1)
-			res.value2 = Lazy(k).sum((d) => d.value2)
-			res.value3 = Lazy(k).sum((d) => d.value3)
-			return res
-		}).toArray()
-
 	return {
 		title: crt.title(),
-		dataSource: { data: data },
+		dataSource: { data: crt.data() },
 		seriesDefaults: {
 			type: crt.chartType(),
 			overlay: { gradient: 'none' },

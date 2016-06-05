@@ -290,6 +290,7 @@ type PivotParam struct {
 	DataPoints []*PivotParamDataPoint  `json:"datapoints"`
 	Which      string                  `json:"which"`
 	Filters    []toolkit.M             `json:"filters"`
+	Type       string                  `json:"type"`
 }
 
 type PivotParamDimensions struct {
