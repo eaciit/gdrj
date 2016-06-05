@@ -28,6 +28,7 @@ type LedgerSummary struct {
 	PCID, CCID, OutletID, SKUID, PLCode, PLOrder string
 	Month                                        time.Month
 	Year                                         int
+	Source string
 }
 
 // month,year
