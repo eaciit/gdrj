@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/eaciit/orm"
+	"github.com/eaciit/orm/v1"
 )
 
 type SalesTrx struct {
 	orm.ModelBase  `bson:"-" json:"-"`
 	ID             string `bson:"_id" json:"_id"`
-	SalesHeaderId  string
+	SalesHeaderID  string
 	LineNo         int
 	SKUID          string
+	SKUID_VDIST    string
 	OutletID       string
 	Date           time.Time
 	SalesQty       float64
@@ -21,6 +22,7 @@ type SalesTrx struct {
 	TaxAmount      float64
 	NetAmount      float64
 
+	HeaderValid bool
 	ProductValid  bool
 	CustomerValid bool
 	PCValid       bool
@@ -40,5 +42,5 @@ func (s *SalesTrx) RecordID() interface{} {
 }
 
 func (s *SalesTrx) PrepareID() interface{} {
-	return fmt.Sprintf("%s_%d", s.SalesHeaderId, s.LineNo)
+	return fmt.Sprintf("%s_%d", s.SalesHeaderID, s.LineNo)
 }

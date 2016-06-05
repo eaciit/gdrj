@@ -179,7 +179,8 @@ func main() {
             st.HeaderValid=false
         }
         st.SKUID=sd.SKUID_SAPBI
-        st.SalesQty=sd.SalesQty
+        st.SKUID_VDIST=sd.SKUID_VDIST
+        st.SalesQty=float64(sd.SalesQty)
         st.GrossAmount=sd.SalesGrossAmount
         st.NetAmount=sd.SalesNetAmount
         
