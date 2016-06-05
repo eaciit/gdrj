@@ -297,6 +297,11 @@ func findSales(lss *map[string]*gdrj.LedgerSummary, id string, defls *gdrj.Ledge
             ls = lsnew
         }
         
+        if !pcs.Has(pcid){
+            toolkit.Printfn("PC %s is not exist", pcid)
+            return nil
+        }
+        
         ls.PCID = pcid
         ls.PC = pcs[ls.PCID].(*gdrj.ProfitCenter) 
         ls.Product = prod 
