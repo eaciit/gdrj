@@ -288,6 +288,11 @@ app.extend = (which, klass) => {
     })
 }
 app.newEl = (s) => $(`<${s} />`)
+app.idAble = (s) => s
+    .replace(/\./g, '_')
+    .replace(/\-/g, '_')
+    .replace(/\//g, '_')
+    .replace(/ /g, '_')
 
 viewModel.StringExt = new Object()
 let s = viewModel.StringExt
