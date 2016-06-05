@@ -1,5 +1,6 @@
 <script src="/res/core/js/page-report.js"></script>
-<style>.k-grid-content-locked { height: inherit !important; }</style>
+<script src="/res/core/js/page-widget-dummy-data.js"></script>
+
 <div>
 {{if eq .id "all"}}
 	<div class="col-md-12 col-sm-12 ez panel-content">
@@ -77,10 +78,10 @@
 		</div>
 		<div class="col-md-12 no-padding hardcore">
 			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
-				{{template "page-widget-table.html"}}
+				{{template "page-widget-breakdown.html"}}
 			</div>
 			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
-				{{template "page-widget-scatter.html"}}
+				{{template "page-widget-table.html"}}
 			</div>
 		</div>
 	</div>

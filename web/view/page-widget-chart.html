@@ -17,9 +17,6 @@
 				<button class="btn btn-sm btn-primary" data-bind="click: crt.refresh, visible: (crt.mode() == 'render')">
 					<i class="fa fa-refresh"></i>
 				</button>
-				<button class="btn btn-sm btn-warning" data-bind="click: crt.setMode('render'), visible: (crt.mode() == '')">
-					<i class="fa fa-arrow-left"></i>
-				</button>
 			</div>
 		</div>
 	</div>
@@ -31,5 +28,4 @@
 		</div>
 		<!-- </div> -->
 	</div>
-	<div class="panel-body" data-bind="visible: crt.mode() == ''"></div>
 </div>

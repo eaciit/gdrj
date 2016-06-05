@@ -7396,6 +7396,9 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
 .k-grid tr td {
   border-width: 1px 0 0 0px;
 }
+.k-grid .k-grid-content-locked {
+  height: inherit !important;
+}
 .k-grid-header th.k-header > .k-link {
   font-weight: bold;
 }

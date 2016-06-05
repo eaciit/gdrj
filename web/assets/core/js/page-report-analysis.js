@@ -13,7 +13,10 @@ ra.optionDimensions = ko.observableArray([{ field: "customer.branchname", name: 
 { field: 'cc.hccgroupid', name: 'Function' }]);
 ra.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 ra.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
-ra.wrapParam = function (type, dimensions, dataPoints) {
+ra.wrapParam = function (type) {
+    var dimensions = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+    var dataPoints = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+
     return {
         type: type,
         dimensions: dimensions,
@@ -39,18 +42,11 @@ ra.setName = function (data, options) {
 
 ra.refresh = function () {
     setTimeout(function () {
-        if (app.isDefined(pvt)) {
-            pvt.refresh();
-        }
-        if (app.isDefined(tbl)) {
-            tbl.refresh();
-        }
-        if (app.isDefined(crt)) {
-            crt.refresh();
-        }
-        if (app.isDefined(sct)) {
-            sct.refresh();
-        }
+        ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach(function (d) {
+            if (app.isDefined(d)) {
+                window[d].refresh();
+            }
+        });
     }, 100);
 };
 
