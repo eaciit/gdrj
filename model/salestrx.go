@@ -2,9 +2,8 @@ package gdrj
 
 import (
 	"fmt"
-	"time"
-
 	"github.com/eaciit/orm/v1"
+	"time"
 )
 
 type SalesTrx struct {
@@ -22,7 +21,7 @@ type SalesTrx struct {
 	TaxAmount      float64
 	NetAmount      float64
 
-	HeaderValid bool
+	HeaderValid   bool
 	ProductValid  bool
 	CustomerValid bool
 	PCValid       bool
