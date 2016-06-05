@@ -322,6 +322,9 @@ app.extend = function (which, klass) {
 app.newEl = function (s) {
     return $('<' + s + ' />');
 };
+app.idAble = function (s) {
+    return s.replace(/\./g, '_').replace(/\-/g, '_').replace(/\//g, '_').replace(/ /g, '_');
+};
 
 viewModel.StringExt = new Object();
 var s = viewModel.StringExt;

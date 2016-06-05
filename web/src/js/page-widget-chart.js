@@ -26,9 +26,8 @@ crt.setMode = (what) => () => {
 crt.mode = ko.observable('render')
 crt.configure = (series) => {
 	let data = Lazy(crt.data())
-		.groupBy((d) => d._id[crt.categoryAxisField()])
+		.groupBy((d) => d[app.idAble(crt.categoryAxisField())])
 		.map((k, v) => {
-			console.log(v, k)
 			let res = { category: v }
 			res.value1 = Lazy(k).sum((d) => d.value1)
 			res.value2 = Lazy(k).sum((d) => d.value2)
@@ -55,6 +54,7 @@ crt.configure = (series) => {
 			field: 'category',
 			majorGridLines: { color: '#fafafa' },
 			labels: {
+				rotate: 60,
 				font: 'Source Sans Pro 11',
 				template: (d) => app.capitalize(d.value)
 			}
@@ -79,19 +79,32 @@ crt.data = ko.observableArray([])
 crt.series = ko.observableArray([])
 
 crt.render = () => {
-	let series = crt.series().map((d) => {
-		if (app.isUndefined(d.name)) {
-			d.name = d.field
-		}
+	let series = ko.mapping.toJS(crt.series)
+		.filter((d) => (d.field != ''))
+		.map((d) => {
+			if (app.isUndefined(d.name)) {
+				d.name = d.field
+			}
 
-		return d
-	})
+			return d
+		})
 
 	let config = crt.configure(series)
 	app.log('chart', app.clone(config))
 	$('#chart').kendoChart(config)
 }
+crt.getParam = () => {
+	let row = ra.optionDimensions().find((d) => (d.field == crt.categoryAxisField()))
+	let dataPoints = ko.mapping.toJS(crt.series)
+		.filter((d) => (d.field != ''))
+		.map((d) => { return { 
+			field: d.field, 
+			name: d.name, 
+			aggr: 'sum'
+		} })
 
+	return ra.wrapParam('chart', [row], dataPoints)
+}
 let DATATEMP_TABLE = [
 	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
 	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
@@ -106,28 +119,12 @@ let DATATEMP_TABLE = [
 	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
 	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 }
 ]
-
-crt.getParam = () => {
-	let row = ra.optionDimensions().find((d) => (d.field == crt.categoryAxisField()))
-	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
-		.filter((d) => (d.field != '') && (d.aggr != ''))
-		.map((d) => { return { 
-			field: d.field, 
-			name: d.name, 
-			aggr: 'sum'
-		} })
-
-	return {
-		dimensions: [row],
-		dataPoints: dataPoints
-	}
-}
 crt.refresh = () => {
-	// pvt.data(DATATEMP_PIVOT)
+	// crt.data(DATATEMP_PIVOT)
 	crt.series([
-		{ field: 'value1', name: 'Gross Sales' },
-		{ field: 'value2', name: 'Discount' },
-		{ field: 'value3', name: 'Net Sales' }
+		app.koMap({ field: 'value1', name: o[`value1`] }),
+		app.koMap({ field: 'value2', name: o[`value2`] }),
+		app.koMap({ field: 'value3', name: o[`value3`] })
 	])
 	app.ajaxPost("/report/summarycalculatedatapivot", crt.getParam(), (res) => {
 		crt.data(res.Data)

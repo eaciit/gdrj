@@ -77,10 +77,7 @@ pvt.getParam = () => {
 			aggr: 'sum'
 		} })
 
-	return {
-		dimensions: dimensions,
-		dataPoints: dataPoints
-	}
+	return ra.wrapParam('pivot', dimensions, dataPoints)
 }
 pvt.refresh = () => {
 	// pvt.data(DATATEMP_PIVOT)
@@ -90,7 +87,7 @@ pvt.refresh = () => {
 	})
 }
 pvt.render = () => {
-	let data = []
+	let data = pvt.data()
 	let schemaModelFields = {}
 	let schemaCubeDimensions = {}
 	let schemaCubeMeasures = {}
@@ -98,29 +95,13 @@ pvt.render = () => {
 	let rows = []
 	let measures = []
 
-	data = pvt.data().map((d) => {
-		let res = {}
-
-		app.forEach(d, (k, v) => {
-			if (k == '_id') {
-				app.forEach(v, (l, m) => {
-					res[l.replace(/\./g, '_')] = m
-				})
-			} else {
-				res[k.replace(/\./g, '_')] = v
-			}
-		})
-
-		return res
-	})
-
 	let constructSchema = (from, to) => {
 		app.koUnmap(from())
 			.filter((d) => (d.field != ''))
 			.forEach((d) => {
 				let option = app.koUnmap(ra.optionDimensions).find((e) => e.field == d.field)
-				let key = option.name.replace(/ /g, '_').replace(/\//g, '_')
-				let field = d.field.replace(/\./g, '_')
+				let key = app.idAble(option.name)
+				let field = app.idAble(d.field)
 
 				schemaModelFields[key] = { type: 'string', field: field }
 				schemaCubeDimensions[key] = { caption: option.name }
@@ -135,9 +116,7 @@ pvt.render = () => {
 	app.koUnmap(pvt.dataPoints)
 		.filter((d) => (d.field != '') && (d.aggr != ''))
 		.forEach((d) => {
-			let key = d.name.replace(/ /g, '_').replace(/\//g, '_')
-			// let field = d.field.replace(/\./g, '_')
-			// schemaModelFields[key] = { type: 'number', field: field }
+			let key = app.idAble(d.name)
 
 			let prop = { field: d.field, aggregate: d.aggr, format: '{0:c}' }
 			if (prop.aggregate == 'avg') {
@@ -167,8 +146,7 @@ pvt.render = () => {
 		}
 	}
 
-	app.log(app.clone(config))
-
+	app.log('pivot', app.clone(config))
 	$('.pivot').replaceWith('<div class="pivot"></div>')
 	$('.pivot').kendoPivotGrid(config)
 }
@@ -197,9 +175,9 @@ $(() => {
 		app.koMap({ field: 'customer.branchname', name: 'Branch/RD' })
 	])
 	pvt.dataPoints([
-		app.koMap({ aggr: 'sum', field: 'value1', name: 'Gross Sales' }),
-		app.koMap({ aggr: 'sum', field: 'value2', name: 'Discount' }),
-		app.koMap({ aggr: 'sum', field: 'value3', name: 'Net Sales' })
+		app.koMap({ aggr: 'sum', field: 'value1', name: o[`value1`] }),
+		app.koMap({ aggr: 'sum', field: 'value2', name: o[`value2`] }),
+		app.koMap({ aggr: 'sum', field: 'value3', name: o[`value3`] })
 	])
 
 	pvt.refresh()

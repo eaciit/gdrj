@@ -35,7 +35,7 @@ func (s *SalesTrx) TableName() string {
 }
 
 func (s *SalesTrx) RecordID() interface{} {
-	s.ID = s.PrepareID()
+	s.ID = s.PrepareID().(string)
 	return s.ID
 }
 
