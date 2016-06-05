@@ -165,12 +165,15 @@ func main() {
             time.Since(t0).String())
     }
     
+    shscount := len(shs)
+    i = 0
     toolkit.Printf("Saving Header")
     for _, sh := range shs{
         sho := sh.(*gdrj.SalesHeader)
+        i++
         if sho.SalesGrossAmount != 0 {
             gdrj.Save(sho)
-            toolkit.Printfn("Saving %s", sho.ID)
         }
+        toolkit.Printfn("%d of %d - Saving %s", i, shscount, sho.ID)
     }
 }
