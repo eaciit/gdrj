@@ -158,7 +158,7 @@ func GenerateDummyLedgerSummary() {
 		}
 	}
 
-	// doGenerate(2015)
+	doGenerate(2015)
 	doGenerate(2016)
 }
 

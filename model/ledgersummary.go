@@ -74,6 +74,42 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 	return
 }
 
+func CalculateLedgerSummaryAnalysisIdea(payload *PivotParam) ([]*toolkit.M, error) {
+	var filter *dbox.Filter = payload.ParseFilter()
+
+	sum := new(LedgerSummary)
+	conn := DB().Connection
+	q := conn.NewQuery().From(sum.TableName())
+	q = q.Where(filter)
+	q = q.Group("plmodel._id", "plmodel.plheader1", "plmodel.plheader2", "plmodel.plheader3")
+	q = q.Aggr(dbox.AggrSum, "value1", "value1")
+
+	c, e := q.Cursor(nil)
+	if e != nil {
+		return nil, errors.New("SummarizedLedgerSum: Preparing cursor error " + e.Error())
+	}
+	defer c.Close()
+
+	ms := []*toolkit.M{}
+	e = c.Fetch(&ms, 0, false)
+	if e != nil {
+		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
+	}
+
+	res := []*toolkit.M{}
+	for _, each := range ms {
+		o := toolkit.M{}
+		o.Set("_id", each.Get("_id").(toolkit.M).Get("plmodel._id"))
+		o.Set("plheader1", each.Get("_id").(toolkit.M).Get("plmodel.plheader1"))
+		o.Set("plheader2", each.Get("_id").(toolkit.M).Get("plmodel.plheader2"))
+		o.Set("plheader3", each.Get("_id").(toolkit.M).Get("plmodel.plheader3"))
+		o.Set("value", each.Get("value1"))
+		res = append(res, &o)
+	}
+
+	return res, nil
+}
+
 func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 	var filter *dbox.Filter = payload.ParseFilter()
 	var columns []string = payload.ParseDimensions()
@@ -290,6 +326,7 @@ type PivotParam struct {
 	DataPoints []*PivotParamDataPoint  `json:"datapoints"`
 	Which      string                  `json:"which"`
 	Filters    []toolkit.M             `json:"filters"`
+	Type       string                  `json:"type"`
 }
 
 type PivotParamDimensions struct {

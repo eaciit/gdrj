@@ -96,32 +96,40 @@ pvt.render = () => {
 	let measures = []
 
 	let constructSchema = (from, to) => {
-		app.koUnmap(from())
+		app.koUnmap(pvt[from]())
 			.filter((d) => (d.field != ''))
 			.forEach((d) => {
 				let option = app.koUnmap(ra.optionDimensions).find((e) => e.field == d.field)
 				let key = app.idAble(option.name)
 				let field = app.idAble(d.field)
 
-				schemaModelFields[key] = { type: 'string', field: field }
-				schemaCubeDimensions[key] = { caption: option.name }
+				schemaModelFields[field] = { type: 'string' }
+				schemaCubeDimensions[field] = { caption: key }
 
-				to.push({ name: key, expand: true })
+				let row = { name: field }
+				if (from == 'rows') {
+					row.expand = true
+				}
+
+				to.push(row)
 			})
 	}
 
-	constructSchema(pvt.rows, rows)
-	constructSchema(pvt.columns, columns)
+	constructSchema('rows', rows)
+	constructSchema('columns', columns)
 	
 	app.koUnmap(pvt.dataPoints)
 		.filter((d) => (d.field != '') && (d.aggr != ''))
 		.forEach((d) => {
 			let key = app.idAble(d.name)
+			let field = app.idAble(d.field)
 
-			let prop = { field: d.field, aggregate: d.aggr, format: '{0:c}' }
+			let prop = { field: field, aggregate: d.aggr, format: '{0:n2}' }
 			if (prop.aggregate == 'avg') {
 				prop.aggregate = 'average'
 			}
+
+			schemaModelFields[field] = { type: 'number' }
 			schemaCubeMeasures[key] = prop
 			measures.push(key)
 		})
@@ -151,25 +159,10 @@ pvt.render = () => {
 	$('.pivot').kendoPivotGrid(config)
 }
 
-let DATATEMP_PIVOT = [
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 900, "value2": 600, "value3": 300 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 900, "value2": 600, "value3": 300 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 700, "value2": 700, "value3": 100 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 700, "value2": 700, "value3": 100 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 }
-]
-
 $(() => {
 	pvt.columns([
 		app.koMap({ field: 'customer.channelname', name: 'Product' }),
-		app.koMap({ field: 'product.name', name: 'Product' })
+		// app.koMap({ field: 'product.name', name: 'Product' })
 	])
 	pvt.rows([
 		app.koMap({ field: 'customer.branchname', name: 'Branch/RD' })

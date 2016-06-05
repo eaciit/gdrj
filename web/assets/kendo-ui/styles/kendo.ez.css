@@ -7396,6 +7396,9 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
 .k-grid tr td {
   border-width: 1px 0 0 0px;
 }
+.k-grid .k-grid-content-locked {
+  height: inherit !important;
+}
 .k-grid-header th.k-header > .k-link {
   font-weight: bold;
 }
@@ -7777,6 +7780,12 @@ input[type="text"].ez {
 }
 .margin-bottom-20 {
   margin-bottom: 20px;
+}
+.margin-right-5 {
+  margin-right: 5px;
+}
+.margin-right-10 {
+  margin-right: 10px;
 }
 .relative {
   position: relative;
