@@ -119,21 +119,21 @@ pvt.render = () => {
 			let key = app.idAble(d.name)
 			let field = app.idAble(d.field)
 
-			let prop = { field: field, aggregate: d.aggr, format: '{0:c}' }
+			let prop = { field: field, aggregate: d.aggr, format: '{0:n2}' }
 			if (prop.aggregate == 'avg') {
 				prop.aggregate = 'average'
 			}
 
 			schemaModelFields[field] = { type: 'number' }
-			schemaCubeMeasures[key.replace(/\_/g, ' ')] = prop
-			measures.push(key.replace(/\_/g, ' '))
+			schemaCubeMeasures[key] = prop
+			measures.push(key)
 		})
 
 	let config = {
 	    filterable: false,
 	    reorderable: false,
 	    dataSource: {
-			data: data.slice(0, 10),
+			data: data,
 			schema: {
 				model: {
 					fields: schemaModelFields
