@@ -58,10 +58,10 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 	filter := dbox.And(dbox.Eq("month", Month),
 		dbox.Eq("year", Year),
 		dbox.Eq("ledgeraccount", LedgerAccount),
-		dbox.Contains("pcid", PCID),
-		dbox.Contains("ccid", CCID),
-		dbox.Contains("outletid", OutletID),
-		dbox.Contains("skuid", SKUID))
+		dbox.Eq("pcid", PCID),
+		dbox.Eq("ccid", CCID),
+		dbox.Eq("outletid", OutletID),
+		dbox.Eq("skuid", SKUID))
 
 	cr, err := Find(new(LedgerSummary), filter, nil)
 	if err != nil {
