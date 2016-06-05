@@ -2,17 +2,17 @@ package gdrj
 
 import (
 	"fmt"
+	"github.com/eaciit/orm/v1"
 	"time"
-
-	"github.com/eaciit/orm"
 )
 
 type SalesTrx struct {
 	orm.ModelBase  `bson:"-" json:"-"`
 	ID             string `bson:"_id" json:"_id"`
-	SalesHeaderId  string
+	SalesHeaderID  string
 	LineNo         int
 	SKUID          string
+	SKUID_VDIST    string
 	OutletID       string
 	Date           time.Time
 	SalesQty       float64
@@ -40,5 +40,5 @@ func (s *SalesTrx) RecordID() interface{} {
 }
 
 func (s *SalesTrx) PrepareID() interface{} {
-	return fmt.Sprintf("%s_%d", s.SalesHeaderId, s.LineNo)
+	return fmt.Sprintf("%s_%d", s.SalesHeaderID, s.LineNo)
 }
