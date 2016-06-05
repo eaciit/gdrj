@@ -15,11 +15,15 @@ bkd.refresh = function () {
 	});
 };
 bkd.render = function () {
+	var data = _.sortBy(bkd.data(), function (d) {
+		return parseInt(d.orderindex.replace("PL", ""), 10);
+	});
+
 	var config = {
 		filterable: false,
 		reorderable: false,
 		dataSource: {
-			data: bkd.data(),
+			data: data,
 			schema: {
 				model: {
 					fields: {
@@ -50,6 +54,23 @@ bkd.render = function () {
 
 			// { name: "plheader3" }
 			measures: ["Amount"]
+		},
+		dataCellTemplate: function dataCellTemplate(d) {
+			return "<div class=\"align-right\">" + kendo.toString(d.dataItem.value, "n2") + "</div>";
+		},
+		dataBound: function dataBound() {
+			$('.breakdown-view .k-grid.k-widget.k-alt tr:first td:first').remove();
+			$('.breakdown-view .k-grid.k-widget.k-alt tr').each(function (i, e) {
+				var target = $(e).find('td:eq(1) span:eq(1)');
+				target.remove();
+
+				$(e).find('[colspan="2"]').attr('colspan', 1);
+
+				// temporary hidden until level 3 is readdy
+				$(e).find('.k-grid-footer').remove();
+			});
+
+			$('.breakdown-view .k-grid-header .k-header').find('span').html('Value');
 		}
 	};
 
