@@ -91,12 +91,7 @@ sct.getParam = () => {
 			aggr: 'sum'
 		} })
 
-	return {
-		dimensions: dimensions,
-		dataPoints: dataPoints,
-		filters: rpt.getFilterValue(),
-		which: o.ID
-	}
+	return ra.wrapParam('scatter', dimensions, dataPoints)
 }
 
 sct.refresh = () => {

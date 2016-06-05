@@ -77,12 +77,7 @@ pvt.getParam = () => {
 			aggr: 'sum'
 		} })
 
-	return {
-		dimensions: dimensions,
-		dataPoints: dataPoints,
-		filters: rpt.getFilterValue(),
-		which: o.ID
-	}
+	return ra.wrapParam('pivot', dimensions, dataPoints)
 }
 pvt.refresh = () => {
 	// pvt.data(DATATEMP_PIVOT)
@@ -105,8 +100,8 @@ pvt.render = () => {
 			.filter((d) => (d.field != ''))
 			.forEach((d) => {
 				let option = app.koUnmap(ra.optionDimensions).find((e) => e.field == d.field)
-				let key = option.name.replace(/ /g, '_').replace(/\//g, '_')
-				let field = d.field.replace(/\./g, '_')
+				let key = app.idAble(option.name)
+				let field = app.idAble(d.field)
 
 				schemaModelFields[key] = { type: 'string', field: field }
 				schemaCubeDimensions[key] = { caption: option.name }
@@ -121,9 +116,7 @@ pvt.render = () => {
 	app.koUnmap(pvt.dataPoints)
 		.filter((d) => (d.field != '') && (d.aggr != ''))
 		.forEach((d) => {
-			let key = d.name.replace(/ /g, '_').replace(/\//g, '_')
-			// let field = d.field.replace(/\./g, '_')
-			// schemaModelFields[key] = { type: 'number', field: field }
+			let key = app.idAble(d.name)
 
 			let prop = { field: d.field, aggregate: d.aggr, format: '{0:c}' }
 			if (prop.aggregate == 'avg') {
@@ -153,10 +146,7 @@ pvt.render = () => {
 		}
 	}
 
-	console.log("pivot", config)
-
-	app.log(app.clone(config))
-
+	app.log('pivot', app.clone(config))
 	$('.pivot').replaceWith('<div class="pivot"></div>')
 	$('.pivot').kendoPivotGrid(config)
 }

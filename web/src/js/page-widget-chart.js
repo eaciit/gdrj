@@ -26,7 +26,7 @@ crt.setMode = (what) => () => {
 crt.mode = ko.observable('render')
 crt.configure = (series) => {
 	let data = Lazy(crt.data())
-		.groupBy((d) => d[crt.categoryAxisField().replace(/\./g, '_')])
+		.groupBy((d) => d[app.idAble(crt.categoryAxisField())])
 		.map((k, v) => {
 			let res = { category: v }
 			res.value1 = Lazy(k).sum((d) => d.value1)
@@ -54,6 +54,7 @@ crt.configure = (series) => {
 			field: 'category',
 			majorGridLines: { color: '#fafafa' },
 			labels: {
+				rotate: 60,
 				font: 'Source Sans Pro 11',
 				template: (d) => app.capitalize(d.value)
 			}
@@ -92,7 +93,18 @@ crt.render = () => {
 	app.log('chart', app.clone(config))
 	$('#chart').kendoChart(config)
 }
+crt.getParam = () => {
+	let row = ra.optionDimensions().find((d) => (d.field == crt.categoryAxisField()))
+	let dataPoints = ko.mapping.toJS(crt.series)
+		.filter((d) => (d.field != ''))
+		.map((d) => { return { 
+			field: d.field, 
+			name: d.name, 
+			aggr: 'sum'
+		} })
 
+	return ra.wrapParam('chart', [row], dataPoints)
+}
 let DATATEMP_TABLE = [
 	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
 	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
@@ -107,24 +119,6 @@ let DATATEMP_TABLE = [
 	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
 	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 }
 ]
-
-crt.getParam = () => {
-	let row = ra.optionDimensions().find((d) => (d.field == crt.categoryAxisField()))
-	let dataPoints = ko.mapping.toJS(crt.series)
-		.filter((d) => (d.field != ''))
-		.map((d) => { return { 
-			field: d.field, 
-			name: d.name, 
-			aggr: 'sum'
-		} })
-
-	return {
-		dimensions: [row],
-		dataPoints: dataPoints,
-		filters: rpt.getFilterValue(),
-		which: o.ID
-	}
-}
 crt.refresh = () => {
 	// crt.data(DATATEMP_PIVOT)
 	crt.series([

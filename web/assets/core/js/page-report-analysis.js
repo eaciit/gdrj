@@ -13,6 +13,15 @@ ra.optionDimensions = ko.observableArray([{ field: "customer.branchname", name: 
 { field: 'cc.hccgroupid', name: 'Function' }]);
 ra.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 ra.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
+ra.wrapParam = function (type, dimensions, dataPoints) {
+    return {
+        type: type,
+        dimensions: dimensions,
+        dataPoints: dataPoints,
+        filters: rpt.getFilterValue(),
+        which: o.ID
+    };
+};
 ra.setName = function (data, options) {
     return function () {
         setTimeout(function () {
