@@ -163,6 +163,7 @@ func processHeader(sh *gdrj.SalesHeader){
     defer crs.Close()
     ecrs = crs.Fetch(&sds,0,false)
     
+    toolkit.Printf("Processing %s", sh.ID)
     func(){
         filter = dbox.Eq("SalesheaderID",sh.ID)
         crs, ecrs :=conn.NewQuery().From("rawsalesdetail_import").Where(filter).Cursor(nil)
@@ -255,7 +256,7 @@ func processHeader(sh *gdrj.SalesHeader){
     }   
     
     for _, ls := range lss{
-        //toolkit.Printfn(toolkit.JsonString(ls))
+        toolkit.Printfn("Saving %s %s %s", ls.LedgerAccount, ls.SKUID, ls.OutletID)
         gdrj.Save(ls)
     }
     //toolkit.Printfn("%s Length: %d 5s",sh.ID,len(sds),toolkit.JsonString(lss))    
