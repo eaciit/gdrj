@@ -136,8 +136,8 @@ pvt.render = function () {
 		}
 
 		schemaModelFields[field] = { type: 'number' };
-		schemaCubeMeasures[key] = prop;
-		measures.push(key);
+		schemaCubeMeasures[key.replace(/\_/g, ' ')] = prop;
+		measures.push(key.replace(/\_/g, ' '));
 	});
 
 	var config = {
