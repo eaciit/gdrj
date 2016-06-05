@@ -111,19 +111,21 @@ ra.setName = (data, options) => () => {
     }, 150)
 }
 
-rpt.refresh = () => {
-    if (app.isDefined(pvt)) {
-        pvt.refresh()
-    }
-    if (app.isDefined(rpt)) {
-        rpt.refresh()
-    }
-    if (app.isDefined(crt)) {
-        crt.refresh()
-    }
-    if (app.isDefined(sct)) {
-        sct.refresh()
-    }
+ra.refresh = () => {
+    setTimeout(() => {
+        if (app.isDefined(pvt)) {
+            pvt.refresh()
+        }
+        if (app.isDefined(tbl)) {
+            tbl.refresh()
+        }
+        if (app.isDefined(crt)) {
+            crt.refresh()
+        }
+        if (app.isDefined(sct)) {
+            sct.refresh()
+        }
+    }, 100)
 }
 
 console.log(o)

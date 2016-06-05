@@ -19,6 +19,11 @@ rpt.masterData = {
 };
 rpt.enableHolder = {};
 rpt.eventChange = {};
+rpt.value = {
+	HQ: ko.observable(false),
+	From: ko.observable(moment().year(2015).month(0).date(1).toDate()),
+	To: ko.observable(moment().year(2016).month(0).date(1).add(-1, 'days').toDate())
+};
 rpt.masterData.Type = ko.observableArray([{ value: 'Mfg', text: 'Mfg' }, { value: 'Branch', text: 'Branch' }]);
 rpt.masterData.HQ = ko.observableArray([{ value: true, text: 'True' }, { value: false, text: 'False' }]);
 rpt.filter.forEach(function (d) {
@@ -27,6 +32,9 @@ rpt.filter.forEach(function (d) {
 			return;
 		}
 
+		if (!rpt.value.hasOwnProperty(e._id)) {
+			rpt.value[e._id] = ko.observableArray([]);
+		}
 		rpt.valueMasterData[e._id] = ko.observableArray([]);
 		rpt.masterData[e._id] = ko.observableArray([]);
 		rpt.enableHolder[e._id] = ko.observable(true);
@@ -89,14 +97,15 @@ rpt.filterMultiSelect = function (d) {
 		filter: 'contains',
 		placeholder: 'Choose items ...',
 		change: rpt.eventChange[d._id],
-		value: rpt.valueMasterData[d._id]
+		value: rpt.value[d._id]
 	};
 
 	if (['HQ', 'Type'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: 'value',
-			dataTextField: 'text'
+			dataTextField: 'text',
+			value: rpt.value[d._id]
 		});
 	} else if (['Customer'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -123,7 +132,8 @@ rpt.filterMultiSelect = function (d) {
 				schema: {
 					data: 'data'
 				}
-			}
+			},
+			value: rpt.value[d._id]
 		});
 	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'LedgerAccount'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -137,7 +147,8 @@ rpt.filterMultiSelect = function (d) {
 				}
 
 				return d._id + ' - ' + app.capitalize(d.Name, true);
-			}
+			},
+			value: rpt.value[d._id]
 		});
 
 		if (d.from == 'Product') {
@@ -159,7 +170,8 @@ rpt.filterMultiSelect = function (d) {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
 			dataTextField: 'Name',
-			enabled: rpt.enableHolder[d._id]
+			enabled: rpt.enableHolder[d._id],
+			value: rpt.value[d._id]
 		});
 
 		if (d.from == 'Region') {
@@ -226,6 +238,15 @@ rpt.expandToggleContent = function () {
 	if (app.isDefined(chart)) {
 		$('.k-chart').data('kendoChart').refresh();
 	}
+
+	$('.k-chart').each(function (i, e) {
+		$(e).data('kendoChart').redraw();
+	});
+};
+rpt.getFilterValue = function () {
+	var res = [{ 'Field': 'customer.branchid', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand() }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region() }, { 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() }, { 'Field': 'date.date', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'date.date', 'Op': '$lte', 'Value': rpt.value.To() }];
+
+	return res;
 };
 
 rpt.init = function () {

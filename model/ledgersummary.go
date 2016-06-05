@@ -184,6 +184,7 @@ type PivotParam struct {
 	Dimensions []*PivotParamDimensions `json:"dimensions"`
 	DataPoints []*PivotParamDataPoint  `json:"datapoints"`
 	PLCode     string                  `json:"plcode"`
+	Filters    []toolkit.M             `json:"filters"`
 }
 
 type PivotParamDimensions struct {
@@ -219,6 +220,46 @@ func (p *PivotParam) ParseDataPoints() (res []string) {
 func (p *PivotParam) ParseFilter() *dbox.Filter {
 	filters := []*dbox.Filter{}
 	filters = append(filters, dbox.Eq("plcode", p.PLCode))
-	fmt.Println("plcode", p.PLCode)
+
+	return dbox.And(filters...)
+
+	for _, each := range p.Filters {
+		field := each.GetString("Field")
+
+		switch each.GetString("Op") {
+		case dbox.FilterOpIn:
+			values := []string{}
+			for _, v := range each.Get("Value").([]interface{}) {
+				values = append(values, v.(string))
+			}
+
+			if len(values) > 0 {
+				filters = append(filters, dbox.In(field, values))
+			}
+		case dbox.FilterOpGte:
+			value := each.GetString("Value")
+
+			if strings.TrimSpace(value) != "" {
+				filters = append(filters, dbox.Gte(field, value))
+			}
+		case dbox.FilterOpLte:
+			value := each.GetString("Value")
+
+			if strings.TrimSpace(value) != "" {
+				filters = append(filters, dbox.Lte(field, value))
+			}
+		case dbox.FilterOpEqual:
+			value := each.GetString("Value")
+
+			if strings.TrimSpace(value) != "" {
+				filters = append(filters, dbox.Eq(field, value))
+			}
+		}
+	}
+
+	for _, each := range filters {
+		fmt.Printf(">>>> %#v\n", *each)
+	}
+
 	return dbox.And(filters...)
 }

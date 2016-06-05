@@ -80,6 +80,7 @@ pvt.getParam = () => {
 	return {
 		dimensions: dimensions,
 		dataPoints: dataPoints,
+		filters: rpt.getFilterValue(),
 		plcode: o.PLCode
 	}
 }

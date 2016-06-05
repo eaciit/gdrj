@@ -114,6 +114,7 @@ crt.getParam = function () {
 	return {
 		dimensions: [row],
 		dataPoints: dataPoints,
+		filters: rpt.getFilterValue(),
 		plcode: o.PLCode
 	};
 };

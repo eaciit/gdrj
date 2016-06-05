@@ -86,6 +86,7 @@ sct.getParam = function () {
 	return {
 		dimensions: dimensions,
 		dataPoints: dataPoints,
+		filters: rpt.getFilterValue(),
 		plcode: o.PLCode
 	};
 };
@@ -101,7 +102,6 @@ sct.render = function () {
 	var config = sct.configure();
 	app.log('scatter', app.clone(config));
 	$('#scatter').kendoChart(config);
-	$('#scatter').data('kendoChart').redraw();
 };
 
 $(function () {
