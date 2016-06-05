@@ -95,7 +95,7 @@ sct.getParam = () => {
 		dimensions: dimensions,
 		dataPoints: dataPoints,
 		filters: rpt.getFilterValue(),
-		plcode: o.PLCode
+		which: o.ID
 	}
 }
 
@@ -113,6 +113,7 @@ sct.render = () => {
 }
 
 $(() => {
+	return
 	sct.xField('value1')
 	sct.yField('value2')
 

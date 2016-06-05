@@ -4,8 +4,6 @@ import (
 	"eaciit/gdrj/model"
 	"eaciit/gdrj/web/helper"
 	"eaciit/gdrj/web/model"
-	"fmt"
-	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -179,16 +177,7 @@ func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interfa
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	var filter *dbox.Filter = payload.ParseFilter()
-	var columns []string = payload.ParseDimensions()
-	var datapoints []string = payload.ParseDataPoints()
-	var fnTransform (func(m *toolkit.M) error) = nil
-
-	fmt.Printf("--- %#v\n", filter)
-	fmt.Printf("--- %#v\n", columns)
-	fmt.Printf("--- %#v\n", datapoints)
-
-	data, err := gdrj.SummarizeLedgerSum(filter, columns, datapoints, fnTransform)
+	data, err := gdrj.CalculateLedgerSummary(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

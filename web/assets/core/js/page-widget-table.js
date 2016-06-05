@@ -55,83 +55,106 @@ tbl.refresh = function () {
 	});
 };
 tbl.render = function () {
-	var tableWrapper = $('.table').empty();
-	var table = app.newEl('table').addClass('table ez').appendTo(tableWrapper);
-	var thead = app.newEl('thead').appendTo(table);
-	var tbody = app.newEl('tbody').appendTo(table);
-
-	if (tbl.dimensions().length + tbl.dataPoints().length > 6) {
-		table.css('min-width', '600px');
-		table.parent().css('overflow-x', 'scroll');
-	} else {
-		table.css('min-width', 'inherit');
-		table.parent().css('overflow-x', 'inherit');
-	}
-
 	var dimensions = app.koUnmap(tbl.dimensions).filter(function (d) {
 		return d.field != '';
+	}).map(function (d) {
+		return { field: d.field.replace(/\./g, '_'), title: d.name };
 	});
-	var dataPoints = app.koUnmap(tbl.dataPoints).filter(function (d) {
-		return d.field != '' && d.aggr != '';
-	});
-
-	// HEADER
-
-	var tr = app.newEl('tr').appendTo(thead);
-
-	dimensions.forEach(function (d) {
-		var th = app.newEl('th').html(d.name).appendTo(thead);
+	var dataPoints = ko.mapping.toJS(tbl.dataPoints).filter(function (d) {
+		return d.field != '' && d.field != '';
+	}).map(function (d) {
+		return { field: d.field.replace(/\./g, '_'), title: d.name };
 	});
 
-	dataPoints.forEach(function (d) {
-		var th = app.newEl('th').html(d.name).appendTo(thead);
+	var columns = dimensions.concat(dataPoints);
+
+	columns.forEach(function (d, i) {
+		d.format = '{0:n2}';
 	});
 
-	// DATA
-
-	var manyDimensions = dimensions.length;
-	var tds = [];
-	var sum = dataPoints.map(function (d) {
-		return 0;
+	$('.table').kendoGrid({
+		dataSource: {
+			data: tbl.data(),
+			pageSize: 12
+		},
+		pageable: true,
+		columns: columns
 	});
+	// let tableWrapper = $('.table').empty()
+	// let table = app.newEl('table').addClass('table ez').appendTo(tableWrapper)
+	// let thead = app.newEl('thead').appendTo(table)
+	// let tbody = app.newEl('tbody').appendTo(table)
 
-	tbl.data().forEach(function (d, i) {
-		var tr = app.newEl('tr').appendTo(tbody);
-		tds[i] = [];
+	// if ((tbl.dimensions().length + tbl.dataPoints().length) > 6) {
+	// 	table.css('min-width', '600px')
+	// 	table.parent().css('overflow-x', 'scroll')
+	// } else {
+	// 	table.css('min-width', 'inherit')
+	// 	table.parent().css('overflow-x', 'inherit')
+	// }
 
-		dimensions.forEach(function (e, j) {
-			var value = d._id[e.field];
-			var td = app.newEl('td').addClass('dimension').appendTo(tr).html(kendo.toString(value, "n2"));
-			tds.push(td);
-			tds[i][j] = td;
-		});
+	// let dimensions = app.koUnmap(tbl.dimensions)
+	// 	.filter((d) => (d.field != ''))
+	// let dataPoints = app.koUnmap(tbl.dataPoints)
+	// 	.filter((d) => (d.field != '') && (d.aggr != ''))
 
-		dataPoints.forEach(function (e, i) {
-			var value = d[e.field];
-			var td = app.newEl('td').appendTo(tr).html(kendo.toString(value, "n2"));
+	// // HEADER
 
-			sum[i] += value;
-		});
+	// let tr = app.newEl('tr').appendTo(thead)
 
-		// dimensions.forEach((d, j) => {
-		// 	let rowspan = dimensions.length - j
+	// dimensions.forEach((d) => {
+	// 	let th = app.newEl('th').html(d.name).appendTo(thead)
+	// })
 
-		// 	if (i % dimensions.length == 0) {
-		// 		tds[i][j].attr('rowspan', rowspan)
-		// 	} else {
-		// 		if (rowspan > 1) {
-		// 			// $(tds[i][j]).remove()
-		// 		}
-		// 	}
-		// })
-	});
+	// dataPoints.forEach((d) => {
+	// 	let th = app.newEl('th').html(d.name).appendTo(thead)
+	// })
 
-	var rowLast = app.newEl('tr').appendTo(tbody).addClass('total');
-	var tdSpace = app.newEl('td').html('&nbsp;').addClass('Total').attr('colspan', dimensions.length).appendTo(rowLast);
+	// // DATA
 
-	dataPoints.forEach(function (e, i) {
-		var td = app.newEl('td').appendTo(rowLast).html(kendo.toString(sum[i], "n2"));
-	});
+	// let manyDimensions = dimensions.length
+	// let tds = []
+	// let sum = dataPoints.map((d) => 0)
+
+	// tbl.data().forEach((d, i) => {
+	// 	let tr = app.newEl('tr').appendTo(tbody)
+	// 	tds[i] = []
+
+	// 	dimensions.forEach((e, j) => {
+	// 		let value = d._id[e.field]
+	// 		let td = app.newEl('td').addClass('dimension').appendTo(tr).html(kendo.toString(value, "n2"))
+	// 		tds.push(td)
+	// 		tds[i][j] = td
+	// 	})
+
+	// 	dataPoints.forEach((e, i) => {
+	// 		let value = d[e.field]
+	// 		let td = app.newEl('td').appendTo(tr).html(kendo.toString(value, "n2"))
+
+	// 		sum[i] += value
+	// 	})
+
+	// 	// dimensions.forEach((d, j) => {
+	// 	// 	let rowspan = dimensions.length - j
+
+	// 	// 	if (i % dimensions.length == 0) {
+	// 	// 		tds[i][j].attr('rowspan', rowspan)
+	// 	// 	} else {
+	// 	// 		if (rowspan > 1) {
+	// 	// 			// $(tds[i][j]).remove()
+	// 	// 		}
+	// 	// 	}
+	// 	// })
+	// })
+
+	// let rowLast = app.newEl('tr').appendTo(tbody).addClass('total')
+	// let tdSpace = app.newEl('td').html('&nbsp;')
+	// 	.addClass('Total')
+	// 	.attr('colspan', dimensions.length).appendTo(rowLast)
+
+	// dataPoints.forEach((e, i) => {
+	// 	let td = app.newEl('td').appendTo(rowLast).html(kendo.toString(sum[i], "n2"))
+	// })
 };
 
 tbl.getParam = function () {
@@ -148,7 +171,7 @@ tbl.getParam = function () {
 		dimensions: dimensions,
 		dataPoints: dataPoints,
 		filters: rpt.getFilterValue(),
-		plcode: o.PLCode
+		which: o.ID
 	};
 };
 

@@ -90,7 +90,7 @@ pvt.getParam = function () {
 		dimensions: dimensions,
 		dataPoints: dataPoints,
 		filters: rpt.getFilterValue(),
-		plcode: o.PLCode
+		which: o.ID
 	};
 };
 pvt.refresh = function () {
@@ -101,29 +101,13 @@ pvt.refresh = function () {
 	});
 };
 pvt.render = function () {
-	var data = [];
+	var data = pvt.data();
 	var schemaModelFields = {};
 	var schemaCubeDimensions = {};
 	var schemaCubeMeasures = {};
 	var columns = [];
 	var rows = [];
 	var measures = [];
-
-	data = pvt.data().map(function (d) {
-		var res = {};
-
-		app.forEach(d, function (k, v) {
-			if (k == '_id') {
-				app.forEach(v, function (l, m) {
-					res[l.replace(/\./g, '_')] = m;
-				});
-			} else {
-				res[k.replace(/\./g, '_')] = v;
-			}
-		});
-
-		return res;
-	});
 
 	var constructSchema = function constructSchema(from, to) {
 		app.koUnmap(from()).filter(function (d) {
@@ -179,6 +163,8 @@ pvt.render = function () {
 			measures: measures
 		}
 	};
+
+	console.log("pivot", config);
 
 	app.log(app.clone(config));
 

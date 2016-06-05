@@ -26,9 +26,8 @@ crt.setMode = (what) => () => {
 crt.mode = ko.observable('render')
 crt.configure = (series) => {
 	let data = Lazy(crt.data())
-		.groupBy((d) => d._id[crt.categoryAxisField()])
+		.groupBy((d) => d[crt.categoryAxisField().replace(/\./g, '_')])
 		.map((k, v) => {
-			console.log(v, k)
 			let res = { category: v }
 			res.value1 = Lazy(k).sum((d) => d.value1)
 			res.value2 = Lazy(k).sum((d) => d.value2)
@@ -123,7 +122,7 @@ crt.getParam = () => {
 		dimensions: [row],
 		dataPoints: dataPoints,
 		filters: rpt.getFilterValue(),
-		plcode: o.PLCode
+		which: o.ID
 	}
 }
 crt.refresh = () => {

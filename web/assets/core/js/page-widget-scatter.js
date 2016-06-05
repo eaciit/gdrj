@@ -87,7 +87,7 @@ sct.getParam = function () {
 		dimensions: dimensions,
 		dataPoints: dataPoints,
 		filters: rpt.getFilterValue(),
-		plcode: o.PLCode
+		which: o.ID
 	};
 };
 
@@ -105,6 +105,7 @@ sct.render = function () {
 };
 
 $(function () {
+	return;
 	sct.xField('value1');
 	sct.yField('value2');
 

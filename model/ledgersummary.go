@@ -74,32 +74,99 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 	return
 }
 
-/*
-[
-    {_id:{col1:"D1",col2:"D2",col3:"D3"},SalesAmount:10,Qty:5,Value:2},
-    {_id:{col1:"D1",col2:"D2",col3:"D4"},SalesAmount:10,Qty:3.2,Value:3},
-]
-row: _id.col1, _id.col2
-col: _id.col3
-*/
+func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
+	var filter *dbox.Filter = payload.ParseFilter()
+	var columns []string = payload.ParseDimensions()
+	var datapoints []string = payload.ParseDataPoints()
+	var fnTransform (func(m *toolkit.M) error) = nil
+
+	fmt.Printf("--- %#v\n", filter)
+	fmt.Printf("--- %#v\n", columns)
+	fmt.Printf("--- %#v\n", datapoints)
+
+	res := []*toolkit.M{}
+
+	if payload.Which == "gross_sales_discount_and_net_sales" {
+		gross, err := SummarizeLedgerSum(
+			dbox.And(dbox.Eq("plcode", "PL1")),
+			columns, datapoints, fnTransform)
+		if err != nil {
+			return nil, err
+		}
+		// res = gross
+		// return res, nil
+
+		discount, err := SummarizeLedgerSum(
+			dbox.And(dbox.Eq("plcode", "PL2")),
+			columns, datapoints, fnTransform)
+		if err != nil {
+			return nil, err
+		}
+
+		net, err := SummarizeLedgerSum(
+			dbox.And(dbox.Eq("plcode", "PL3")),
+			columns, datapoints, fnTransform)
+		if err != nil {
+			return nil, err
+		}
+		all_keys := map[string][]*toolkit.M{}
+
+		for _, cat := range [][]*toolkit.M{gross, discount, net} {
+			for _, each := range cat {
+				keyword := ""
+				for _, s := range columns {
+					keyword = fmt.Sprintf("%s%s", keyword, each.Get("_id").(toolkit.M).GetString(s))
+				}
+
+				if _, ok := all_keys[keyword]; !ok {
+					all_keys[keyword] = []*toolkit.M{each}
+				} else {
+					all_keys[keyword] = append(all_keys[keyword], each)
+				}
+			}
+		}
+
+		for _, rows := range all_keys {
+			row := rows[0]
+
+			for key, val := range row.Get("_id").(toolkit.M) {
+				row.Set(strings.Replace(key, ".", "_", -1), val)
+			}
+
+			row.Unset("_id")
+
+			if len(rows) == 2 {
+				row.Set("value2", rows[1].GetFloat64("value1"))
+			}
+			if len(rows) == 3 {
+				row.Set("value3", rows[2].GetFloat64("value1"))
+			}
+
+			res = append(res, row)
+		}
+	}
+
+	return res, nil
+}
+
 func SummarizeLedgerSum(
 	filter *dbox.Filter,
 	columns []string,
 	datapoints []string,
-	// misal: ["sum:Value1:SalesAmount","sum:Value2:Qty","avg:Value3"]
-	fnTransform func(m *toolkit.M) error) ([]toolkit.M, error) {
+	fnTransform func(m *toolkit.M) error) ([]*toolkit.M, error) {
 	sum := new(LedgerSummary)
 	conn := DB().Connection
 	q := conn.NewQuery().From(sum.TableName())
 	if filter != nil {
 		q = q.Where(filter)
+		fmt.Println("fiiff", *(filter.Value.([]*dbox.Filter)[0]))
 	}
+
 	if len(columns) > 0 {
 		cs := []string{}
 		for i := range columns {
 			cs = append(cs, strings.ToLower(columns[i]))
 		}
-
 		q = q.Group(cs...)
 	}
 	if len(datapoints) == 0 {
@@ -146,7 +213,7 @@ func SummarizeLedgerSum(
 	}
 	defer c.Close()
 
-	ms := []toolkit.M{}
+	ms := []*toolkit.M{}
 	e = c.Fetch(&ms, 0, false)
 	if e != nil {
 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
@@ -159,9 +226,11 @@ func SummarizeLedgerSum(
 	// 	}
 	// }
 
+	fmt.Println("asdfsafda", len(ms))
+
 	if fnTransform != nil {
 		for idx, m := range ms {
-			e = fnTransform(&m)
+			e = fnTransform(m)
 			if e != nil {
 				return nil, errors.New(toolkit.Sprintf("SummarizedLedgerSum: Transform error on index %d, %s",
 					idx, e.Error()))
@@ -183,7 +252,7 @@ func (s *LedgerSummary) Save() error {
 type PivotParam struct {
 	Dimensions []*PivotParamDimensions `json:"dimensions"`
 	DataPoints []*PivotParamDataPoint  `json:"datapoints"`
-	PLCode     string                  `json:"plcode"`
+	Which      string                  `json:"which"`
 	Filters    []toolkit.M             `json:"filters"`
 }
 
@@ -219,7 +288,6 @@ func (p *PivotParam) ParseDataPoints() (res []string) {
 
 func (p *PivotParam) ParseFilter() *dbox.Filter {
 	filters := []*dbox.Filter{}
-	filters = append(filters, dbox.Eq("plcode", p.PLCode))
 
 	return dbox.And(filters...)
 

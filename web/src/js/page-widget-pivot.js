@@ -81,7 +81,7 @@ pvt.getParam = () => {
 		dimensions: dimensions,
 		dataPoints: dataPoints,
 		filters: rpt.getFilterValue(),
-		plcode: o.PLCode
+		which: o.ID
 	}
 }
 pvt.refresh = () => {
@@ -92,29 +92,13 @@ pvt.refresh = () => {
 	})
 }
 pvt.render = () => {
-	let data = []
+	let data = pvt.data()
 	let schemaModelFields = {}
 	let schemaCubeDimensions = {}
 	let schemaCubeMeasures = {}
 	let columns = []
 	let rows = []
 	let measures = []
-
-	data = pvt.data().map((d) => {
-		let res = {}
-
-		app.forEach(d, (k, v) => {
-			if (k == '_id') {
-				app.forEach(v, (l, m) => {
-					res[l.replace(/\./g, '_')] = m
-				})
-			} else {
-				res[k.replace(/\./g, '_')] = v
-			}
-		})
-
-		return res
-	})
 
 	let constructSchema = (from, to) => {
 		app.koUnmap(from())
@@ -168,6 +152,8 @@ pvt.render = () => {
 			measures: measures
 		}
 	}
+
+	console.log("pivot", config)
 
 	app.log(app.clone(config))
 

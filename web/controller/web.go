@@ -1,9 +1,6 @@
 package controller
 
 import (
-	"eaciit/gdrj/model"
-	"eaciit/gdrj/web/model"
-	"fmt"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -162,20 +159,22 @@ func (w *WebController) PageReport(r *knot.WebContext, args []string) interface{
 		return toolkit.M{"subreport": false}
 	}
 
-	row := gocore.AnalysisIdeaGetByID(args[0])
-	fmt.Printf("-----> /report/%s\n", args[0])
-	fmt.Printf("-----> %#v\n", row)
+	var id, name string = args[0], ""
+	var value1, value2, value3 string
 
-	plmodel := new(gdrj.PLModel)
-
-	switch row.ID {
-	case "cost_by_sales":
-		plmodel = gdrj.PLModelGetByID("PL7")
+	switch id {
+	case "gross_sales_discount_and_net_sales":
+		name = "Gross Sales, Discount, and Net Sales"
+		value1 = "Gross Sales"
+		value2 = "Discount"
+		value3 = "Net Sales"
 	}
 
 	return toolkit.M{
-		"subreport": args[0],
-		"row":       row,
-		"plmodel":   *plmodel,
+		"id":     id,
+		"name":   name,
+		"value1": value1,
+		"value2": value2,
+		"value3": value3,
 	}
 }
