@@ -13,6 +13,7 @@ import (
 )
 
 var conn dbox.IConnection
+var count int
 
 func setinitialconnection() {
 	var err error
@@ -124,36 +125,33 @@ func main() {
 	}
     defer crx.Close()
     
-    count := crx.Count()
+    toolkit.Printf("Populating header")
+    count = crx.Count()
     var e error
-    //sd := new(gdrj.SalesDetail)
     i:=0
-    
     t0 := time.Now()
-    isneof:=true
-    for isneof{
-        var shs []gdrj.SalesHeader
-        e=crx.Fetch(&shs,1000,false);
-        if e!=nil{
-            isneof=false
-            break
-        }
-        if len(shs)<1000{
-            isneof=false
-        }
+    var shs []gdrj.SalesHeader
+    e=crx.Fetch(&shs,0,false);
+    if e!=nil {
+        toolkit.Printfn("End: %s", e.Error())
+    } else {
+        toolkit.Printfn("Processing line")
         for _, sh := range shs{
             i++
+            toolkit.Printfn("%d of %d: %s in %s", i, count, sh.ID, time.Since(t0).String())
             processHeader(&sh)
         }
-        toolkit.Printfn("Processing %d of %d in %s", i, count, time.Since(t0).String())
     }
 	toolkit.Println("END...")
 }
+
+var isales int
 
 func processHeader(sh *gdrj.SalesHeader){
     sds:=[]*gdrj.SalesDetail{}
     var sdsi []toolkit.M
     
+    isales++
     filter := dbox.Eq("salesheaderid",sh.ID)
     sh.OutletID = sh.BranchID + sh.OutletID
     crs, ecrs :=gdrj.Find(new(gdrj.SalesDetail), filter, nil)
@@ -163,7 +161,7 @@ func processHeader(sh *gdrj.SalesHeader){
     defer crs.Close()
     ecrs = crs.Fetch(&sds,0,false)
     
-    toolkit.Printf("Processing %s", sh.ID)
+    //toolkit.Printfn("%d of %d - Processing %s", isales, count, sh.ID)
     func(){
         filter = dbox.Eq("SalesheaderID",sh.ID)
         crs, ecrs :=conn.NewQuery().From("rawsalesdetail_import").Where(filter).Cursor(nil)
@@ -256,7 +254,7 @@ func processHeader(sh *gdrj.SalesHeader){
     }   
     
     for _, ls := range lss{
-        toolkit.Printfn("Saving %s %s %s", ls.LedgerAccount, ls.SKUID, ls.OutletID)
+        toolkit.Printfn("Saving %s %s %s", ls.LedgerAccount, ls.Customer.Name, ls.Product.Name)
         gdrj.Save(ls)
     }
     //toolkit.Printfn("%s Length: %d 5s",sh.ID,len(sds),toolkit.JsonString(lss))    

@@ -134,7 +134,8 @@ func main() {
 	crx, err := gdrj.Find(new(gdrj.SalesDetail), 
         //dbox.Eq("salesheaderid","FK/NAS/14002178"),
         nil,
-        toolkit.M{})
+        toolkit.M{}.Set("take",10000))
+        //toolkit.M{})
 	if err != nil {
 		toolkit.Println("Error Found : ", err.Error())
 		os.Exit(1)
