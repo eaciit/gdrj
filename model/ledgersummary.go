@@ -138,9 +138,10 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 			if len(rows) == 2 {
 				row.Set("value2", rows[1].GetFloat64("value1"))
 			}
-			if len(rows) == 3 {
-				row.Set("value3", rows[2].GetFloat64("value1"))
-			}
+			// if len(rows) == 3 {
+			// 	row.Set("value3", rows[2].GetFloat64("value1"))
+			// }
+			row.Set("value3", row.GetFloat64("value1")-row.GetFloat64("value2"))
 
 			res = append(res, row)
 		}
