@@ -11,6 +11,10 @@ import (
 	"github.com/eaciit/toolkit"
 )
 
+var (
+	summaryTableName = "ledgersummariestemp"
+)
+
 type LedgerSummary struct {
 	orm.ModelBase                          `bson:"-" json:"-"`
 	ID                                     string `bson:"_id"`
@@ -77,12 +81,11 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 func CalculateLedgerSummaryAnalysisIdea(payload *PivotParam) ([]*toolkit.M, error) {
 	var filter *dbox.Filter = payload.ParseFilter()
 
-	sum := new(LedgerSummary)
 	conn := DB().Connection
-	q := conn.NewQuery().From(sum.TableName())
+	q := conn.NewQuery().From(summaryTableName)
 	q = q.Where(filter)
 	q = q.Group("plmodel._id", "plmodel.plheader1", "plmodel.plheader2", "plmodel.plheader3")
-	q = q.Aggr(dbox.AggrSum, "value1", "value1")
+	q = q.Aggr(dbox.AggrSum, "$value1", "value1")
 
 	c, e := q.Cursor(nil)
 	if e != nil {
@@ -236,9 +239,8 @@ func SummarizeLedgerSum(
 	columns []string,
 	datapoints []string,
 	fnTransform func(m *toolkit.M) error) ([]*toolkit.M, error) {
-	sum := new(LedgerSummary)
 	conn := DB().Connection
-	q := conn.NewQuery().From(sum.TableName())
+	q := conn.NewQuery().From(summaryTableName)
 	if filter != nil {
 		q = q.Where(filter)
 	}

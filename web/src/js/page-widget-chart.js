@@ -51,7 +51,8 @@ crt.configure = (series) => {
 			position: 'bottom'
 		},
 		valueAxis: {
-			majorGridLines: { color: '#fafafa' }
+			majorGridLines: { color: '#fafafa' },
+			labels: { format: '{0:n2}' }
 		},
 		tooltip: {
 			visible: true,

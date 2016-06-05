@@ -148,6 +148,9 @@ pvt.render = function () {
 	var config = {
 		filterable: false,
 		reorderable: false,
+		dataCellTemplate: function dataCellTemplate(d) {
+			return '<div class="align-right">' + kendo.toString(d.dataItem.value, "n2") + '</div>';
+		},
 		dataSource: {
 			data: data,
 			schema: {
@@ -166,7 +169,7 @@ pvt.render = function () {
 	};
 
 	app.log('pivot', app.clone(config));
-	$('.pivot').replaceWith('<div class="pivot"></div>');
+	$('.pivot').replaceWith('<div class="pivot ez"></div>');
 	$('.pivot').kendoPivotGrid(config);
 };
 

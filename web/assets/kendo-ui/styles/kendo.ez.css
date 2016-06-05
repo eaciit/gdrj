@@ -7375,6 +7375,9 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
 .k-grid tr:hover {
   color: white;
 }
+.k-grid tr:not(.k-footer-template):hover {
+  color: #F0F3F4;
+}
 .k-grid .k-grid-header tr:hover {
   background-color: inherit;
 }
@@ -7420,6 +7423,15 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
 [style="font:12px Arial,Helvetica,sans-serif;"] {
   font: 12px 'Source Sans Pro', 'Lato', 'Open Sans', 'Helvetica Neue', Arial, sans-serif !important;
   opacity: 0.8;
+}
+.ez.k-pivot .k-pivot-rowheaders .k-pivot-toolbar:first-child {
+  display: none;
+}
+.ez.k-pivot .k-pivot-rowheaders .k-pivot-toolbar:nth-child(2) > * {
+  visibility: hidden;
+}
+.ez.k-pivot .k-pivot-table .k-pivot-toolbar:first-child {
+  display: none;
 }
 .ez.input-group .input-group-addon {
   background-color: #F0F3F4;
