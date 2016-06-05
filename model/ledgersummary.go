@@ -84,7 +84,7 @@ func CalculateLedgerSummaryAnalysisIdea(payload *PivotParam) ([]*toolkit.M, erro
 	conn := DB().Connection
 	q := conn.NewQuery().From(summaryTableName)
 	q = q.Where(filter)
-	q = q.Group("plmodel._id", "plmodel.plheader1", "plmodel.plheader2", "plmodel.plheader3")
+	q = q.Group("plmodel._id", "plmodel.orderindex", "plmodel.plheader1", "plmodel.plheader2", "plmodel.plheader3")
 	q = q.Aggr(dbox.AggrSum, "$value1", "value1")
 
 	c, e := q.Cursor(nil)
@@ -103,6 +103,7 @@ func CalculateLedgerSummaryAnalysisIdea(payload *PivotParam) ([]*toolkit.M, erro
 	for _, each := range ms {
 		o := toolkit.M{}
 		o.Set("_id", each.Get("_id").(toolkit.M).Get("plmodel._id"))
+		o.Set("orderindex", each.Get("_id").(toolkit.M).Get("plmodel.orderindex"))
 		o.Set("plheader1", each.Get("_id").(toolkit.M).Get("plmodel.plheader1"))
 		o.Set("plheader2", each.Get("_id").(toolkit.M).Get("plmodel.plheader2"))
 		o.Set("plheader3", each.Get("_id").(toolkit.M).Get("plmodel.plheader3"))

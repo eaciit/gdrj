@@ -264,7 +264,7 @@ rpt.getIdeas = function () {
 		}
 
 		rpt.analysisIdeas(_.sortBy(res.data, function (d) {
-			return d.name;
+			return d.order;
 		}));
 	});
 };

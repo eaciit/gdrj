@@ -11,11 +11,15 @@ bkd.refresh = () => {
 	})
 }
 bkd.render = () => {
+	let data = _.sortBy(bkd.data(), (d) => 
+		parseInt(d.orderindex.replace("PL", ""), 10)
+	)
+
     let config = {
 	    filterable: false,
 	    reorderable: false,
 	    dataSource: {
-	        data: bkd.data(),
+	        data: data,
 	        schema: {
 	            model: {
 	                fields: {
@@ -48,7 +52,22 @@ bkd.render = () => {
 	            // { name: "plheader3" }
 	        ],
 	        measures: ["Amount"]
-	    }
+	    },
+        dataCellTemplate: (d) => `<div class="align-right">${kendo.toString(d.dataItem.value, "n2")}</div>`,
+    	dataBound: () => {
+        	$('.breakdown-view .k-grid.k-widget.k-alt tr:first td:first').remove()
+        	$('.breakdown-view .k-grid.k-widget.k-alt tr').each((i, e) => {
+			    let target = $(e).find('td:eq(1) span:eq(1)')
+			    target.remove()
+
+			    $(e).find('[colspan="2"]').attr('colspan', 1)
+
+			    // temporary hidden until level 3 is readdy
+			    $(e).find('.k-grid-footer').remove()
+			})
+
+        	$('.breakdown-view .k-grid-header .k-header').find('span').html('Value')
+        }
 	}
 
 	app.log('breakdown', app.clone(config))

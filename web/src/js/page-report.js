@@ -306,7 +306,7 @@ rpt.getIdeas = () => {
 			return;
 		}
 
-		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.name))
+		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.order))
 	})
 }
 
