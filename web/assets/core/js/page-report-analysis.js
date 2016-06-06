@@ -16,14 +16,15 @@ ra.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 
 ra.wrapParam = function (type) {
     var dimensions = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
     var dataPoints = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+    var def = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
 
-    return {
+    return $.extend(true, {
         type: type,
         dimensions: dimensions,
         dataPoints: dataPoints,
         filters: rpt.getFilterValue(),
         which: o.ID
-    };
+    }, def);
 };
 ra.setName = function (data, options) {
     return function () {

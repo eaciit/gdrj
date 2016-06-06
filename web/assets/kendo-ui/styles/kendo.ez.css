@@ -7424,13 +7424,13 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
   font: 12px 'Source Sans Pro', 'Lato', 'Open Sans', 'Helvetica Neue', Arial, sans-serif !important;
   opacity: 0.8;
 }
-.ez.k-pivot .k-pivot-rowheaders .k-pivot-toolbar:first-child {
+.ez.k-pivot .k-pivot-rowheaders .k-pivot-toolbar.k-settings-measures {
   display: none;
 }
-.ez.k-pivot .k-pivot-rowheaders .k-pivot-toolbar:nth-child(2) > * {
+.ez.k-pivot .k-pivot-rowheaders .k-pivot-toolbar.k-settings-rows {
   visibility: hidden;
 }
-.ez.k-pivot .k-pivot-table .k-pivot-toolbar:first-child {
+.ez.k-pivot .k-pivot-table .k-pivot-toolbar.k-settings-columns {
   display: none;
 }
 .ez.input-group .input-group-addon {
@@ -7801,6 +7801,9 @@ input[type="text"].ez {
 }
 .relative {
   position: relative;
+}
+.invisible {
+  visibility: hidden;
 }
 .transition-width {
   transition: width ease-in-out 400ms;
