@@ -56,6 +56,10 @@ pvt.removeFrom = (o, which) => {
 	}, () => {
 		let holder = pvt[which]
 
+		if (holder().length == 1) {
+			return
+		}
+
 		if (which == 'dataPoints') {
 			let index = $(o).attr('data-index')
 			app.arrRemoveByIndex(holder, index)
@@ -82,7 +86,9 @@ pvt.getParam = () => {
 pvt.refresh = () => {
 	// pvt.data(DATATEMP_PIVOT)
 	app.ajaxPost("/report/summarycalculatedatapivot", pvt.getParam(), (res) => {
-		pvt.data(res.Data)
+		let orderKey = app.idAble(ko.mapping.toJS(pvt.rows()[0]).field)
+		let data = _.sortBy(res.Data, (o, v) => o[orderKey])
+		pvt.data(data)
 		pvt.render()
 	})
 }
@@ -98,7 +104,7 @@ pvt.render = () => {
 	let constructSchema = (from, to) => {
 		app.koUnmap(pvt[from]())
 			.filter((d) => (d.field != ''))
-			.forEach((d) => {
+			.forEach((d, i) => {
 				let option = app.koUnmap(ra.optionDimensions).find((e) => e.field == d.field)
 				let key = app.idAble(option.name)
 				let field = app.idAble(d.field)
@@ -107,7 +113,7 @@ pvt.render = () => {
 				schemaCubeDimensions[field] = { caption: key }
 
 				let row = { name: field }
-				if (from == 'rows') {
+				if (i == 0) {
 					row.expand = true
 				}
 

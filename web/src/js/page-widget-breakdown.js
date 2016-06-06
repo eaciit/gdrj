@@ -3,8 +3,10 @@ let bkd = viewModel.breakdown
 
 bkd.data = ko.observableArray([])
 bkd.getParam = () => {
+	let orderIndex = { field: 'plmodel.orderindex', name: 'Order' }
+
 	let breakdown = ra.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
-	let dimensions = bkd.dimensions().concat([breakdown])
+	let dimensions = bkd.dimensions().concat([breakdown, orderIndex])
 	let dataPoints = bkd.dataPoints()
 	return ra.wrapParam('analysis_ideas', dimensions, dataPoints, { 
 		which: 'all_plmod'
@@ -13,12 +15,14 @@ bkd.getParam = () => {
 bkd.refresh = () => {
 	// bkd.data(DATATEMP_BREAKDOWN)
 	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), (res) => {
-		bkd.data(res.Data)
+		let data = _.sortBy(res.Data, (o, v) => 
+			parseInt(o.plmodel_orderindex.replace(/PL/g, "")))
+		bkd.data(data)
 		bkd.render()
 	})
 }
 bkd.refreshOnChange = () => {
-	setTimeout(bkd.refresh, 100)
+	// setTimeout(bkd.refresh, 100)
 }
 bkd.breakdownBy = ko.observable('customer.channelname')
 bkd.dimensions = ko.observableArray([

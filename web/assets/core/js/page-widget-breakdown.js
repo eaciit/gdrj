@@ -5,10 +5,12 @@ var bkd = viewModel.breakdown;
 
 bkd.data = ko.observableArray([]);
 bkd.getParam = function () {
+	var orderIndex = { field: 'plmodel.orderindex', name: 'Order' };
+
 	var breakdown = ra.optionDimensions().find(function (d) {
 		return d.field == bkd.breakdownBy();
 	});
-	var dimensions = bkd.dimensions().concat([breakdown]);
+	var dimensions = bkd.dimensions().concat([breakdown, orderIndex]);
 	var dataPoints = bkd.dataPoints();
 	return ra.wrapParam('analysis_ideas', dimensions, dataPoints, {
 		which: 'all_plmod'
@@ -17,12 +19,15 @@ bkd.getParam = function () {
 bkd.refresh = function () {
 	// bkd.data(DATATEMP_BREAKDOWN)
 	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), function (res) {
-		bkd.data(res.Data);
+		var data = _.sortBy(res.Data, function (o, v) {
+			return parseInt(o.plmodel_orderindex.replace(/PL/g, ""));
+		});
+		bkd.data(data);
 		bkd.render();
 	});
 };
 bkd.refreshOnChange = function () {
-	setTimeout(bkd.refresh, 100);
+	// setTimeout(bkd.refresh, 100)
 };
 bkd.breakdownBy = ko.observable('customer.channelname');
 bkd.dimensions = ko.observableArray([{ field: 'plmodel.plheader1', name: 'Group 1' }, { field: 'plmodel.plheader2', name: 'Group 2' }, { field: 'plmodel.plheader3', name: 'Group 3' }]);

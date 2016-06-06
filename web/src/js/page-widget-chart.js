@@ -115,7 +115,7 @@ crt.refresh = () => {
 	})
 }
 crt.refreshOnChange = () => {
-	setTimeout(crt.refresh, 100)
+	// setTimeout(crt.refresh, 100)
 }
 
 $(() => {
