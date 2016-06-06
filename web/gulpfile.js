@@ -52,6 +52,6 @@ gulp.task('compass:watch', ['compass'], () => {
 	gulp.watch(sourcePathSASS, ['compass'])
 })
 
-// let tasks = ['clean', 'babel:watch', 'compass:watch']
-let tasks = ['clean', 'babel:watch', 'less:watch']
+let tasks = ['clean', 'babel:watch', 'compass:watch']
+// let tasks = ['clean', 'babel:watch', 'less:watch']
 gulp.task('default', tasks, noop)
