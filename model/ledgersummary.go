@@ -11,6 +11,10 @@ import (
 	"github.com/eaciit/toolkit"
 )
 
+var (
+	summaryTableName = "ledgersummariestemp"
+)
+
 type LedgerSummary struct {
 	orm.ModelBase                          `bson:"-" json:"-"`
 	ID                                     string `bson:"_id"`
@@ -28,6 +32,7 @@ type LedgerSummary struct {
 	PCID, CCID, OutletID, SKUID, PLCode, PLOrder string
 	Month                                        time.Month
 	Year                                         int
+	Source string
 }
 
 // month,year
@@ -74,32 +79,179 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 	return
 }
 
-/*
-[
-    {_id:{col1:"D1",col2:"D2",col3:"D3"},SalesAmount:10,Qty:5,Value:2},
-    {_id:{col1:"D1",col2:"D2",col3:"D4"},SalesAmount:10,Qty:3.2,Value:3},
-]
-row: _id.col1, _id.col2
-col: _id.col3
-*/
+func CalculateLedgerSummaryAnalysisIdea(payload *PivotParam) ([]*toolkit.M, error) {
+	var filter *dbox.Filter = payload.ParseFilter()
+
+	conn := DB().Connection
+	q := conn.NewQuery().From(summaryTableName)
+	q = q.Where(filter)
+	q = q.Group("plmodel._id", "plmodel.orderindex", "plmodel.plheader1", "plmodel.plheader2", "plmodel.plheader3")
+	q = q.Aggr(dbox.AggrSum, "$value1", "value1")
+
+	c, e := q.Cursor(nil)
+	if e != nil {
+		return nil, errors.New("SummarizedLedgerSum: Preparing cursor error " + e.Error())
+	}
+	defer c.Close()
+
+	ms := []*toolkit.M{}
+	e = c.Fetch(&ms, 0, false)
+	if e != nil {
+		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
+	}
+
+	res := []*toolkit.M{}
+	for _, each := range ms {
+		o := toolkit.M{}
+		o.Set("_id", each.Get("_id").(toolkit.M).Get("plmodel._id"))
+		o.Set("orderindex", each.Get("_id").(toolkit.M).Get("plmodel.orderindex"))
+		o.Set("plheader1", each.Get("_id").(toolkit.M).Get("plmodel.plheader1"))
+		o.Set("plheader2", each.Get("_id").(toolkit.M).Get("plmodel.plheader2"))
+		o.Set("plheader3", each.Get("_id").(toolkit.M).Get("plmodel.plheader3"))
+		o.Set("value", each.Get("value1"))
+		res = append(res, &o)
+	}
+
+	return res, nil
+}
+
+func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
+	var filter *dbox.Filter = payload.ParseFilter()
+	var columns []string = payload.ParseDimensions()
+	var datapoints []string = payload.ParseDataPoints()
+	var fnTransform (func(m *toolkit.M) error) = nil
+
+	fmt.Printf("--- %#v\n", filter)
+	fmt.Printf("--- %#v\n", columns)
+	fmt.Printf("--- %#v\n", datapoints)
+
+	fmt.Printf("+++++ %#v\n", *(filter.Value.([]*dbox.Filter)[0]))
+	fmt.Printf("+++++ %#v\n", *(filter.Value.([]*dbox.Filter)[1]))
+
+	var plFilter1, plFilter2, plFilter3 *dbox.Filter
+
+	if payload.Which == "gross_sales_discount_and_net_sales" {
+		plFilter1 = dbox.Eq("plcode", "PL1")
+		plFilter2 = dbox.Eq("plcode", "PL2")
+		plFilter3 = dbox.Eq("plcode", "PL3")
+	}
+
+	bunchData1, err := SummarizeLedgerSum(
+		dbox.And(plFilter1, filter), columns, datapoints, fnTransform)
+	if err != nil {
+		return nil, err
+	}
+
+	bunchData2, err := SummarizeLedgerSum(
+		dbox.And(plFilter2, filter), columns, datapoints, fnTransform)
+	if err != nil {
+		return nil, err
+	}
+
+	bunchData3, err := SummarizeLedgerSum(
+		dbox.And(plFilter3, filter), columns, datapoints, fnTransform)
+	if err != nil {
+		return nil, err
+	}
+
+	allKeys := map[string]*toolkit.M{}
+	rows := []*toolkit.M{}
+
+	for _, each := range bunchData1 {
+		keyword := ""
+		for _, s := range columns {
+			keyword = fmt.Sprintf("%s%s", keyword, each.Get("_id").(toolkit.M).GetString(s))
+		}
+
+		if _, ok := allKeys[keyword]; !ok {
+			allKeys[keyword] = each
+			rows = append(rows, each)
+
+			for key, val := range *each {
+				if key == "_id" {
+					for skey, sval := range val.(toolkit.M) {
+						each.Set(strings.Replace(skey, ".", "_", -1), sval)
+					}
+				}
+			}
+			each.Unset("_id")
+		} else {
+			current := allKeys[keyword]
+			current.Set("value1", current.GetFloat64("value1")+each.GetFloat64("value1"))
+		}
+	}
+
+	for _, each := range bunchData2 {
+		keyword := ""
+		for _, s := range columns {
+			keyword = fmt.Sprintf("%s%s", keyword, each.Get("_id").(toolkit.M).GetString(s))
+		}
+
+		if _, ok := allKeys[keyword]; !ok {
+			allKeys[keyword] = each
+			rows = append(rows, each)
+			each.Set("value2", each.GetFloat64("value1"))
+			each.Set("value1", 0)
+
+			for key, val := range *each {
+				if key == "_id" {
+					for skey, sval := range val.(toolkit.M) {
+						each.Set(strings.Replace(skey, ".", "_", -1), sval)
+					}
+				}
+			}
+			each.Unset("_id")
+		} else {
+			current := allKeys[keyword]
+			current.Set("value2", current.GetFloat64("value2")+each.GetFloat64("value1"))
+		}
+	}
+
+	for _, each := range bunchData3 {
+		keyword := ""
+		for _, s := range columns {
+			keyword = fmt.Sprintf("%s%s", keyword, each.Get("_id").(toolkit.M).GetString(s))
+		}
+
+		if _, ok := allKeys[keyword]; !ok {
+			allKeys[keyword] = each
+			rows = append(rows, each)
+			each.Set("value3", each.GetFloat64("value1"))
+			each.Set("value1", 0)
+
+			for key, val := range *each {
+				if key == "_id" {
+					for skey, sval := range val.(toolkit.M) {
+						each.Set(strings.Replace(skey, ".", "_", -1), sval)
+					}
+				}
+			}
+			each.Unset("_id")
+		} else {
+			current := allKeys[keyword]
+			current.Set("value3", current.GetFloat64("value3")+each.GetFloat64("value1"))
+		}
+	}
+
+	return rows, nil
+}
+
 func SummarizeLedgerSum(
 	filter *dbox.Filter,
 	columns []string,
 	datapoints []string,
-	// misal: ["sum:Value1:SalesAmount","sum:Value2:Qty","avg:Value3"]
-	fnTransform func(m *toolkit.M) error) ([]toolkit.M, error) {
-	sum := new(LedgerSummary)
+	fnTransform func(m *toolkit.M) error) ([]*toolkit.M, error) {
 	conn := DB().Connection
-	q := conn.NewQuery().From(sum.TableName())
+	q := conn.NewQuery().From(summaryTableName)
 	if filter != nil {
 		q = q.Where(filter)
 	}
+
 	if len(columns) > 0 {
 		cs := []string{}
 		for i := range columns {
 			cs = append(cs, strings.ToLower(columns[i]))
 		}
-
 		q = q.Group(cs...)
 	}
 	if len(datapoints) == 0 {
@@ -146,22 +298,15 @@ func SummarizeLedgerSum(
 	}
 	defer c.Close()
 
-	ms := []toolkit.M{}
+	ms := []*toolkit.M{}
 	e = c.Fetch(&ms, 0, false)
 	if e != nil {
 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
 	}
 
-	// if c.Count() > 0 {
-	// 	e = c.Fetch(&ms, 0, false)
-	// 	if e != nil {
-	// 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
-	// 	}
-	// }
-
 	if fnTransform != nil {
 		for idx, m := range ms {
-			e = fnTransform(&m)
+			e = fnTransform(m)
 			if e != nil {
 				return nil, errors.New(toolkit.Sprintf("SummarizedLedgerSum: Transform error on index %d, %s",
 					idx, e.Error()))
@@ -183,6 +328,9 @@ func (s *LedgerSummary) Save() error {
 type PivotParam struct {
 	Dimensions []*PivotParamDimensions `json:"dimensions"`
 	DataPoints []*PivotParamDataPoint  `json:"datapoints"`
+	Which      string                  `json:"which"`
+	Filters    []toolkit.M             `json:"filters"`
+	Type       string                  `json:"type"`
 }
 
 type PivotParamDimensions struct {
@@ -213,4 +361,64 @@ func (p *PivotParam) ParseDataPoints() (res []string) {
 		res = append(res, strings.Join(parts, ":"))
 	}
 	return
+}
+
+func (p *PivotParam) ParseFilter() *dbox.Filter {
+	filters := []*dbox.Filter{}
+
+	for _, each := range p.Filters {
+		field := each.GetString("Field")
+
+		switch each.GetString("Op") {
+		case dbox.FilterOpIn:
+			values := []string{}
+			for _, v := range each.Get("Value").([]interface{}) {
+				values = append(values, v.(string))
+			}
+
+			if len(values) > 0 {
+				filters = append(filters, dbox.In(field, values))
+			}
+		case dbox.FilterOpGte:
+			var value interface{} = each.GetString("Value")
+
+			if value.(string) != "" {
+				if field == "year" {
+					t, err := time.Parse(time.RFC3339Nano, value.(string))
+					if err != nil {
+						fmt.Println(err.Error())
+					} else {
+						value = t.Year()
+					}
+				}
+
+				filters = append(filters, dbox.Gte(field, value))
+			}
+		case dbox.FilterOpLte:
+			var value interface{} = each.GetString("Value")
+
+			if value.(string) != "" {
+				if field == "year" {
+					t, err := time.Parse(time.RFC3339Nano, value.(string))
+					if err != nil {
+						fmt.Println(err.Error())
+					} else {
+						value = t.Year()
+					}
+				}
+
+				filters = append(filters, dbox.Lte(field, value))
+			}
+		case dbox.FilterOpEqual:
+			value := each.GetString("Value")
+
+			filters = append(filters, dbox.Gte(field, value))
+		}
+	}
+
+	for _, each := range filters {
+		fmt.Printf(">>>> %#v\n", *each)
+	}
+
+	return dbox.And(filters...)
 }

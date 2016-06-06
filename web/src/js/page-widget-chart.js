@@ -1,18 +1,3 @@
-let DATATEMP_PIVOT = [
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 900, "value2": 600, "value3": 300 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 900, "value2": 600, "value3": 300 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 700, "value2": 700, "value3": 100 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 700, "value2": 700, "value3": 100 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 }
-]
-
 viewModel.chart = new Object()
 var crt = viewModel.chart
 
@@ -25,20 +10,9 @@ crt.setMode = (what) => () => {
 }
 crt.mode = ko.observable('render')
 crt.configure = (series) => {
-	let data = Lazy(crt.data())
-		.groupBy((d) => d._id[crt.categoryAxisField()])
-		.map((k, v) => {
-			console.log(v, k)
-			let res = { category: v }
-			res.value1 = Lazy(k).sum((d) => d.value1)
-			res.value2 = Lazy(k).sum((d) => d.value2)
-			res.value3 = Lazy(k).sum((d) => d.value3)
-			return res
-		}).toArray()
-
 	return {
 		title: crt.title(),
-		dataSource: { data: data },
+		dataSource: { data: crt.data() },
 		seriesDefaults: {
 			type: crt.chartType(),
 			overlay: { gradient: 'none' },
@@ -52,11 +26,24 @@ crt.configure = (series) => {
 		series: series,
 		seriesColors: app.seriesColorsGodrej,
 		categoryAxis: {
-			field: 'category',
+			field: app.idAble(crt.categoryAxisField()),
 			majorGridLines: { color: '#fafafa' },
 			labels: {
+				// rotation: 20,
 				font: 'Source Sans Pro 11',
-				template: (d) => app.capitalize(d.value)
+				padding: {
+					top: 30
+				},
+				template: (d) => {
+					let max = 20
+					let text = $.trim(app.capitalize(d.value)).replace(' 0', '');
+
+					if (text.length > max) {
+						return `${text.slice(0, max - 3)}...`
+					}
+
+					return text
+				}
 			}
 		},
 		legend: { 
@@ -64,11 +51,12 @@ crt.configure = (series) => {
 			position: 'bottom'
 		},
 		valueAxis: {
-			majorGridLines: { color: '#fafafa' }
+			majorGridLines: { color: '#fafafa' },
+			labels: { format: '{0:n2}' }
 		},
 		tooltip: {
 			visible: true,
-			template: (d) => `${app.capitalize(d.series.name)} on ${app.capitalize(d.dataItem.category)}: ${kendo.toString(d.value, 'n2')}`
+			template: (d) => $.trim(`${app.capitalize(d.series.name)} on ${app.capitalize(d.category)}: ${kendo.toString(d.value, 'n2')}`)
 		}
 	}
 }
@@ -79,55 +67,47 @@ crt.data = ko.observableArray([])
 crt.series = ko.observableArray([])
 
 crt.render = () => {
-	let series = crt.series().map((d) => {
-		if (app.isUndefined(d.name)) {
-			d.name = d.field
-		}
+	let series = ko.mapping.toJS(crt.series)
+		.filter((d) => (d.field != ''))
+		.map((d) => {
+			if (app.isUndefined(d.name)) {
+				d.name = d.field
+			}
 
-		return d
-	})
+			return d
+		})
 
 	let config = crt.configure(series)
 	app.log('chart', app.clone(config))
+
+
+	$('#chart').replaceWith(`<div id="chart" style="height: 300px;"></div>`)
+
+	if (crt.data().length > 8) {
+		$('#chart').width(crt.data().length * 130)
+		$('#chart').parent().css('overflow-x', 'scroll')
+	}
+
 	$('#chart').kendoChart(config)
 }
-
-let DATATEMP_TABLE = [
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 900, "value2": 600, "value3": 300 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 900, "value2": 600, "value3": 300 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 700, "value2": 700, "value3": 100 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 700, "value2": 700, "value3": 100 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 }
-]
-
 crt.getParam = () => {
 	let row = ra.optionDimensions().find((d) => (d.field == crt.categoryAxisField()))
-	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
-		.filter((d) => (d.field != '') && (d.aggr != ''))
+	let dataPoints = ko.mapping.toJS(crt.series)
+		.filter((d) => (d.field != ''))
 		.map((d) => { return { 
 			field: d.field, 
 			name: d.name, 
 			aggr: 'sum'
 		} })
 
-	return {
-		dimensions: [row],
-		dataPoints: dataPoints
-	}
+	return ra.wrapParam('chart', [row], dataPoints)
 }
 crt.refresh = () => {
-	// pvt.data(DATATEMP_PIVOT)
+	// crt.data(DATATEMP_CHART)
 	crt.series([
-		{ field: 'value1', name: 'Gross Sales' },
-		{ field: 'value2', name: 'Discount' },
-		{ field: 'value3', name: 'Net Sales' }
+		app.koMap({ field: 'value1', name: o[`value1`] }),
+		app.koMap({ field: 'value2', name: o[`value2`] }),
+		app.koMap({ field: 'value3', name: o[`value3`] })
 	])
 	app.ajaxPost("/report/summarycalculatedatapivot", crt.getParam(), (res) => {
 		crt.data(res.Data)

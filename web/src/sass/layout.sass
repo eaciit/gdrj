@@ -413,27 +413,6 @@ html, body
 								bottom: 0
 								width: 4px
 
-.tabular-view
-	tr:not(.total)
-		&.total
-			td
-				font-weight: bold
-
-		&:hover
-			background-color: $color-base-green
-
-			td
-				color: white
-
-		th
-			padding: 4px 0px
-				
-		td
-			&[rowspan]
-				vertical-align: middle
-
-			&.dimension
-
 #outlet-location, #pivot-wrapper
 	min-height: 400px
 
@@ -517,3 +496,12 @@ html, body
 					background-color: $color-base-blue
 					color: white
 					text-decoration: none
+
+.breakdown-view
+	.k-grid-header 
+		.k-header
+			text-align: right
+
+	.k-pivot-rowheaders
+		width: auto !important
+		min-width: 200px !important

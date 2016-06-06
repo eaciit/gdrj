@@ -11,8 +11,20 @@ ra.pivotModel = [{ field: '_id', type: 'string', name: 'ID' }, { field: 'PC._id'
 ra.data = ko.observableArray([]);
 ra.optionDimensions = ko.observableArray([{ field: "customer.branchname", name: 'Branch/RD' }, { field: 'customer.channelname', name: 'Channel' }, { field: 'customer.region', name: 'Geography' }, { field: 'product.name', name: 'Product' }, { field: 'date.year', name: 'Time' }, { field: 'cc.cctypeid', name: 'Cost Type' }, // <<<<< ====================== need to be filled
 { field: 'cc.hccgroupid', name: 'Function' }]);
-ra.optionDataPoints = ko.observableArray([{ field: 'value1', name: 'Value 1' }, { field: 'value2', name: 'Value 2' }, { field: 'value3', name: 'Value 3' }]);
+ra.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 ra.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
+ra.wrapParam = function (type) {
+    var dimensions = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+    var dataPoints = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
+
+    return {
+        type: type,
+        dimensions: dimensions,
+        dataPoints: dataPoints,
+        filters: rpt.getFilterValue(),
+        which: o.ID
+    };
+};
 ra.setName = function (data, options) {
     return function () {
         setTimeout(function () {
@@ -29,13 +41,15 @@ ra.setName = function (data, options) {
 };
 
 rpt.refresh = function () {
-    if (app.isDefined(pvt)) {
-        pvt.refresh();
-    }
-    if (app.isDefined(rpt)) {
-        rpt.refresh();
-    }
-    if (app.isDefined(crt)) {
-        crt.refresh();
-    }
+    setTimeout(function () {
+        ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach(function (d, i) {
+            setTimeout(function () {
+                if (app.isDefined(d)) {
+                    window[d].refresh();
+                }
+            }, 1000 * i);
+        });
+    }, 100);
 };
+
+console.log(o);

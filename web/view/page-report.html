@@ -1,7 +1,8 @@
 <script src="/res/core/js/page-report.js"></script>
+<script src="/res/core/js/page-widget-dummy-data.js"></script>
 
 <div>
-{{if eq .subreport "all"}}
+{{if eq .id "all"}}
 	<div class="col-md-12 col-sm-12 ez panel-content">
 		<div class="panel ez no-padding hardcore">
 			<div class="panel-heading">
@@ -18,6 +19,7 @@
 							<a class="color-base" href="#" data-bind="attr: { 'href': '/web/report/' + $data._id }">
 								<span class="fa fa-file-text-o"></span>
 								&nbsp;&nbsp;
+								<!-- <span data-bind="text: ($index() + 1)"></span> -  -->
 								<span data-bind="text: $data.name"></span>
 							</a>
 						</div>
@@ -55,24 +57,32 @@
 		</div>
 	</div>
 
-	<script>let o = { ID: "{{.row.ID}}", Name: "{{.row.Name}}" }</script>
+	<script>
+	let o = {
+		ID: "{{.id}}",
+		Name: "{{.name}}",
+		value1: "{{.value1}}",
+		value2: "{{.value2}}",
+		value3: "{{.value3}}"
+	}
+	</script>
 	<script src="/res/core/js/page-report-analysis.js"></script>
 
 	<div class="col-md-9 col-sm-9 ez panel-content">
 		<div class="col-md-12 no-padding hardcore">
-			<div class="col-md-6 col-sm-6 no-padding-left hardcore panel-content-expandable panel-content-left">
-				{{template "page-widget-table.html"}}
+			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+				{{template "page-widget-chart.html"}}
 			</div>
-			<div class="col-md-6 col-sm-6 no-padding-right hardcore panel-content-expandable panel-content-right">
+			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
 				{{template "page-widget-pivot.html"}}
 			</div>
 		</div>
 		<div class="col-md-12 no-padding hardcore">
-			<div class="col-md-6 col-sm-6 no-padding-left hardcore panel-content-expandable panel-content-left">
-				{{template "page-widget-chart.html"}}
+			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+				{{template "page-widget-breakdown.html"}}
 			</div>
-			<div class="col-md-6 col-sm-6 no-padding-right hardcore panel-content-expandable panel-content-right">
-				{{template "page-widget-scatter.html"}}
+			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+				{{template "page-widget-table.html"}}
 			</div>
 		</div>
 	</div>

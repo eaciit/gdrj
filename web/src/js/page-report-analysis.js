@@ -90,9 +90,9 @@ ra.optionDimensions = ko.observableArray([
 	{ field: 'cc.hccgroupid', name: 'Function' },
 ])
 ra.optionDataPoints = ko.observableArray([
-    { field: 'value1', name: 'Value 1' },
-    { field: 'value2', name: 'Value 2' },
-    { field: 'value3', name: 'Value 3' }
+    { field: 'value1', name: o['value1'] },
+    { field: 'value2', name: o['value2'] },
+    { field: 'value3', name: o['value3'] }
 ])
 ra.optionAggregates = ko.observableArray([
 	{ aggr: 'sum', name: 'Sum' },
@@ -100,6 +100,15 @@ ra.optionAggregates = ko.observableArray([
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
+ra.wrapParam = (type, dimensions = [], dataPoints = []) => {
+    return {
+        type: type,
+        dimensions: dimensions,
+        dataPoints: dataPoints,
+        filters: rpt.getFilterValue(),
+        which: o.ID
+    }
+}
 ra.setName = (data, options) => () => {
     setTimeout(() => {
         let row = options().find((d) => (d.field == data.field()))
@@ -112,13 +121,15 @@ ra.setName = (data, options) => () => {
 }
 
 rpt.refresh = () => {
-    if (app.isDefined(pvt)) {
-        pvt.refresh()
-    }
-    if (app.isDefined(rpt)) {
-        rpt.refresh()
-    }
-    if (app.isDefined(crt)) {
-        crt.refresh()
-    }
+    setTimeout(() => {
+        ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach((d, i) => {
+            setTimeout(() => {
+                if (app.isDefined(d)) {
+                    window[d].refresh()
+                }
+            }, 1000 * i)
+        })
+    }, 100)
 }
+
+console.log(o)

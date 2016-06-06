@@ -1,24 +1,56 @@
 package gdrj
 
 import (
-	"errors"
-	"github.com/eaciit/dbox"
+	//"errors"
+	//"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
+	"time"
+	"github.com/eaciit/orm/v1"
 )
 
 type PLDataModel struct {
-	LedgerSummary
+	orm.ModelBase                          `bson:"-" json:"-"`
+	ID                                     string `bson:"_id"`
+	PC                                     *ProfitCenter
+	CC                                     *CostCenter
+	CompanyCode                            string
+	//LedgerAccount                          string
+	Customer                               *Customer
+	Product                                *Product
+	Date                                   *Date
+	Value1, Value2, Value3                 float64
+	//EasyForSelect
+	PLGroup1, PLGroup2, PLGroup3, PLGroup4 string
+	PCID, CCID, OutletID, SKUID, PLCode, PLOrder string
+	Month                                        time.Month
+	Year                                         int
+	Source string
 }
 
+// month,year
+func (s *PLDataModel) RecordID() interface{} {
+	return s.ID
+	//return toolkit.Sprintf("%d_%d_%s_%s", s.Date.Year, s.Date.Month, s.CompanyCode, s.LedgerAccount)
+}
+
+func (s *PLDataModel) PrepareID() interface{} {
+	return toolkit.Sprintf("%d_%d_%s_%s_%s_%s_%s_%s",
+		s.Date.Year, s.Date.Month,
+		s.CompanyCode, 
+		s.PLCode, s.OutletID, s.SKUID, s.PCID, s.CCID)
+}
+
+
+func (pldm *PLDataModel) TableName() string {
+	return "pldatamodels"
+}
+
+/*
 type AllocationGroup struct {
 	ByOutlet, BySKU,
 	ByPC, ByCC,
 	ByBrand, ByCostType,
 	ByFunction bool
-}
-
-func (pldm *PLDataModel) TableName() string {
-	return "pldatamodels"
 }
 
 func BuildPLDataModel(conn dbox.IConnection, plcode string, filter *dbox.Filter, ag *AllocationGroup) error {
@@ -52,37 +84,4 @@ func BuildPLDataModel(conn dbox.IConnection, plcode string, filter *dbox.Filter,
 	}
 	return nil
 }
-
-func doBuild(msource toolkit.M, filter *dbox.Filter, ag *AllocationGroup) {
-	//--- get the sales and grouped by required group
-	/*
-	   filterSales := dbox.And(dbox.Eq("plcode","PL008A"), filter)
-	   qsales := conn.NewQuery().From(ls.TableName()).Where(filterSales)
-	   groupbys := []string{}
-	   if ag.ByOutlet {
-	       groupbys = append(groupbys,"outletid")
-	   }
-	   if ag.BySKU {
-	       groupbys = append(groupbys,"skuid")
-	   }
-	   if len(groupbys)>0{
-	       qsales = qsales.Group()
-	   }
-	   qsales = qsales.Group(dbox.AggrSum,"value1")
-	   csales, esales := qsales.Cursor(nil)
-	   if esales!=nil {
-	       return errors.New("BuildPLDataModel: " + esales.Error())
-	   }
-	   defer csales.Close()
-
-	   isneof := true
-	   for isneof{
-	       m := toolkit.M{}
-	       efetch := csales.Fetch(&m, 1, false)
-	       if !m.Has("_id") {
-	           isneof=true
-	           break
-	       }
-	   }
-	*/
-}
+*/

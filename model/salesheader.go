@@ -2,9 +2,10 @@ package gdrj
 
 import (
 	"errors"
+	"time"
+
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	"time"
 )
 
 type SalesHeader struct {
@@ -15,6 +16,9 @@ type SalesHeader struct {
 	OutletID            string
 	SalesTaxAmount      float64
 	SalesDiscountAmount float64
+	SalesGrossAmount    float64
+	SalesNetAmount      float64
+	SalesLine int
 }
 
 func (sh *SalesHeader) RecordID() interface{} {

@@ -7,6 +7,7 @@ import (
 type AnalysisIdea struct {
 	orm.ModelBase `json:"-" bson:"-"`
 	ID            string `json:"_id" bson:"_id"`
+	Order         int    `json:"order" bson:"order"`
 	Name          string `json:"name" bson:"name"`
 }
 

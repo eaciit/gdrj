@@ -288,6 +288,16 @@ app.extend = (which, klass) => {
     })
 }
 app.newEl = (s) => $(`<${s} />`)
+app.idAble = (s) => s
+    .replace(/\./g, '_')
+    .replace(/\-/g, '_')
+    .replace(/\//g, '_')
+    .replace(/ /g, '_')
+app.logAble = function() {
+    let args = [].slice.call(arguments)
+    app.log(args)
+    return args[0]
+}
 
 viewModel.StringExt = new Object()
 let s = viewModel.StringExt

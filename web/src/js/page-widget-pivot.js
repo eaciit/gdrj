@@ -77,10 +77,7 @@ pvt.getParam = () => {
 			aggr: 'sum'
 		} })
 
-	return {
-		dimensions: dimensions,
-		dataPoints: dataPoints
-	}
+	return ra.wrapParam('pivot', dimensions, dataPoints)
 }
 pvt.refresh = () => {
 	// pvt.data(DATATEMP_PIVOT)
@@ -90,7 +87,7 @@ pvt.refresh = () => {
 	})
 }
 pvt.render = () => {
-	let data = []
+	let data = pvt.data()
 	let schemaModelFields = {}
 	let schemaCubeDimensions = {}
 	let schemaCubeMeasures = {}
@@ -98,51 +95,41 @@ pvt.render = () => {
 	let rows = []
 	let measures = []
 
-	data = pvt.data().map((d) => {
-		let res = {}
-
-		app.forEach(d, (k, v) => {
-			if (k == '_id') {
-				app.forEach(v, (l, m) => {
-					res[l.replace(/\./g, '_')] = m
-				})
-			} else {
-				res[k.replace(/\./g, '_')] = v
-			}
-		})
-
-		return res
-	})
-
 	let constructSchema = (from, to) => {
-		app.koUnmap(from())
+		app.koUnmap(pvt[from]())
 			.filter((d) => (d.field != ''))
 			.forEach((d) => {
 				let option = app.koUnmap(ra.optionDimensions).find((e) => e.field == d.field)
-				let key = option.name.replace(/ /g, '_').replace(/\//g, '_')
-				let field = d.field.replace(/\./g, '_')
+				let key = app.idAble(option.name)
+				let field = app.idAble(d.field)
 
-				schemaModelFields[key] = { type: 'string', field: field }
-				schemaCubeDimensions[key] = { caption: option.name }
+				schemaModelFields[field] = { type: 'string' }
+				schemaCubeDimensions[field] = { caption: key }
 
-				to.push({ name: key, expand: true })
+				let row = { name: field }
+				if (from == 'rows') {
+					row.expand = true
+				}
+
+				to.push(row)
 			})
 	}
 
-	constructSchema(pvt.rows, rows)
-	constructSchema(pvt.columns, columns)
+	constructSchema('rows', rows)
+	constructSchema('columns', columns)
 	
 	app.koUnmap(pvt.dataPoints)
 		.filter((d) => (d.field != '') && (d.aggr != ''))
 		.forEach((d) => {
-			let key = d.name.replace(/ /g, '_').replace(/\//g, '_')
-			// let field = d.field.replace(/\./g, '_')
-			// schemaModelFields[key] = { type: 'number', field: field }
+			let key = app.idAble(d.name)
+			let field = app.idAble(d.field)
 
-			let prop = { field: d.field, aggregate: d.aggr, format: '{0:c}' }
+			let prop = { field: field, aggregate: d.aggr, format: '{0:n2}' }
 			if (prop.aggregate == 'avg') {
 				prop.aggregate = 'average'
 			}
+
+			schemaModelFields[field] = { type: 'number' }
 			schemaCubeMeasures[key] = prop
 			measures.push(key)
 		})
@@ -150,6 +137,7 @@ pvt.render = () => {
 	let config = {
 	    filterable: false,
 	    reorderable: false,
+	    dataCellTemplate: (d) => `<div class="align-right">${kendo.toString(d.dataItem.value, "n2")}</div>`,
 	    dataSource: {
 			data: data,
 			schema: {
@@ -167,39 +155,23 @@ pvt.render = () => {
 		}
 	}
 
-	app.log(app.clone(config))
-
-	$('.pivot').replaceWith('<div class="pivot"></div>')
+	app.log('pivot', app.clone(config))
+	$('.pivot').replaceWith('<div class="pivot ez"></div>')
 	$('.pivot').kendoPivotGrid(config)
 }
-
-let DATATEMP_PIVOT = [
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Jakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 900, "value2": 600, "value3": 300 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 900, "value2": 600, "value3": 300 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 700, "value2": 700, "value3": 100 },
-	{"_id": {"customer.branchname": "Malang", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 700, "value2": 700, "value3": 100 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Industrial Trade"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
-	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 }
-]
 
 $(() => {
 	pvt.columns([
 		app.koMap({ field: 'customer.channelname', name: 'Product' }),
-		app.koMap({ field: 'product.name', name: 'Product' })
+		// app.koMap({ field: 'product.name', name: 'Product' })
 	])
 	pvt.rows([
 		app.koMap({ field: 'customer.branchname', name: 'Branch/RD' })
 	])
 	pvt.dataPoints([
-		app.koMap({ aggr: 'sum', field: 'value1', name: 'Gross Sales' }),
-		app.koMap({ aggr: 'sum', field: 'value2', name: 'Discount' }),
-		app.koMap({ aggr: 'sum', field: 'value3', name: 'Net Sales' })
+		app.koMap({ aggr: 'sum', field: 'value1', name: o[`value1`] }),
+		app.koMap({ aggr: 'sum', field: 'value2', name: o[`value2`] }),
+		app.koMap({ aggr: 'sum', field: 'value3', name: o[`value3`] })
 	])
 
 	pvt.refresh()
