@@ -100,6 +100,7 @@ bkd.render = function () {
 			});
 			$('.breakdown-view .k-grid.k-widget:first tr .k-i-arrow-e').removeClass('invisible');
 			$('.breakdown-view .k-grid.k-widget:first tr:last .k-i-arrow-e').addClass('invisible');
+			$('.breakdown-view .k-grid.k-widget:first table:first').css('margin-left', '-32px');
 			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').addClass('invisible');
 			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-header.k-alt span').addClass('invisible');
 		}
