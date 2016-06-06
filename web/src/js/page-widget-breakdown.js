@@ -26,9 +26,9 @@ bkd.refreshOnChange = () => {
 }
 bkd.breakdownBy = ko.observable('customer.channelname')
 bkd.dimensions = ko.observableArray([
-	{ field: 'plmodel.plheader1', name: 'Group 1' },
-	{ field: 'plmodel.plheader2', name: 'Group 2' },
-	{ field: 'plmodel.plheader3', name: 'Group 3' }
+	{ field: 'plmodel.plheader1', name: ' ' },
+	{ field: 'plmodel.plheader2', name: ' ' },
+	{ field: 'plmodel.plheader3', name: ' ' }
 ])
 bkd.dataPoints = ko.observableArray([
 	{ field: "value1", name: "value1", aggr: "sum" }
@@ -84,11 +84,20 @@ bkd.render = () => {
 	        measures: measures
 	    },
         dataCellTemplate: (d) => `<div class="align-right">${kendo.toString(d.dataItem.value, "n2")}</div>`,
-   //  	dataBound: () => {
-			// $('.breakdown-view .k-grid.k-widget').find('span:contains("Group 1"),span:contains("Group 2"),span:contains("Group 3")').each((i, e) => {
-			// 	$(e).hide()
-			// })
-   //      }
+    	dataBound: () => {
+    		$('.breakdown-view .k-grid.k-widget:first [data-path]:first')
+    			.addClass('invisible')
+    		$('.breakdown-view .k-grid.k-widget:first span:contains(" ")')
+				.each((i, e) => {
+    				if ($(e).parent().hasClass('k-grid-footer') && $.trim($(e).html()) == '') {
+	    				$(e).css({ 
+	    					color: 'white', 
+	    					display: 'block', 
+	    					height: '18px'
+	    				})
+    				}
+    			})
+        }
 	}
 
 	app.log('breakdown', app.clone(config))
