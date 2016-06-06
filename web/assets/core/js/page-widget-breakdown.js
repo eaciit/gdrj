@@ -59,18 +59,10 @@ bkd.render = function () {
 			return "<div class=\"align-right\">" + kendo.toString(d.dataItem.value, "n2") + "</div>";
 		},
 		dataBound: function dataBound() {
-			$('.breakdown-view .k-grid.k-widget.k-alt tr:first td:first').remove();
-			$('.breakdown-view .k-grid.k-widget.k-alt tr').each(function (i, e) {
-				var target = $(e).find('td:eq(1) span:eq(1)');
-				target.remove();
-
-				$(e).find('[colspan="2"]').attr('colspan', 1);
-
-				// temporary hidden until level 3 is readdy
-				$(e).find('.k-grid-footer').remove();
-			});
-
-			$('.breakdown-view .k-grid-header .k-header').find('span').html('Value');
+			$('.breakdown-view .invisible').removeClass('invisible');
+			$('.breakdown-view .k-grid.k-widget.k-alt tr:first td:first').hide();
+			$('.breakdown-view .k-grid.k-widget.k-alt tr td span:contains("Group 2")').addClass('invisible');
+			$('.breakdown-view .k-grid.k-widget.k-alt tr:last').addClass('invisible');
 		}
 	};
 
