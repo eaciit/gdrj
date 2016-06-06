@@ -2,32 +2,8 @@
 <script src="/res/core/js/page-widget-dummy-data.js"></script>
 
 <div>
-{{if eq .id "all"}}
-	<div class="col-md-12 col-sm-12 ez panel-content">
-		<div class="panel ez no-padding hardcore">
-			<div class="panel-heading">
-				<h3 class="no-margin">
-					All Analysis Ideas
-				</h3>
-			</div>
-			<div class="panel-body">
-				<p>Click which analysis you want to show.</p>
-
-				<div data-bind="foreach: rpt.analysisIdeas()" class="list-analysis">
-					<div class="col-md-3">
-						<div class="wrapper">
-							<a class="color-base" href="#" data-bind="attr: { 'href': '/web/report/' + $data._id }">
-								<span class="fa fa-file-text-o"></span>
-								&nbsp;&nbsp;
-								<!-- <span data-bind="text: ($index() + 1)"></span> -  -->
-								<span data-bind="text: $data.name"></span>
-							</a>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+{{if eq .id "list"}}
+	{{template "page-report-list.html"}}
 {{else}}
 	<div class="col-md-3 col-sm-3 ez panel-filter">
 		<div class="panel ez no-padding hardcore">
@@ -38,9 +14,9 @@
 						<button class="btn btn-sm btn-primary" data-bind="click: rpt.refresh">
 							<i class="fa fa-refresh"></i>
 						</button>
-						<button class="btn btn-sm btn-info btn-expand" data-bind="click: rpt.expandToggleContent">
+						<!-- <button class="btn btn-sm btn-info btn-expand" data-bind="click: rpt.expandToggleContent">
 							<i class="fa fa-expand"></i>
-						</button>
+						</button> -->
 					</div>
 				</div>
 			</div>
@@ -67,25 +43,11 @@
 	}
 	</script>
 	<script src="/res/core/js/page-report-analysis.js"></script>
-
-	<div class="col-md-9 col-sm-9 ez panel-content">
-		<div class="col-md-12 no-padding hardcore">
-			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
-				{{template "page-widget-chart.html"}}
-			</div>
-			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
-				{{template "page-widget-pivot.html"}}
-			</div>
-		</div>
-		<div class="col-md-12 no-padding hardcore">
-			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
-				{{template "page-widget-breakdown.html"}}
-			</div>
-			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
-				{{template "page-widget-table.html"}}
-			</div>
-		</div>
-	</div>
+	{{if eq .id "dashboard"}}
+		{{template "page-report-dashboard.html"}}
+	{{else if eq .id "gross_sales_discount_and_net_sales"}}
+		{{template "page-report-gross-sales-discount-and-net-sales.html"}}
+	{{end}}
 {{end}}
 
 	

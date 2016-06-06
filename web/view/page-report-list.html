@@ -1,0 +1,25 @@
+<div class="col-md-12 col-sm-12 ez panel-content">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin">
+				All Analysis Ideas
+			</h3>
+		</div>
+		<div class="panel-body">
+			<p>Click which analysis you want to show.</p>
+
+			<div data-bind="foreach: rpt.analysisIdeas()" class="list-analysis">
+				<div class="col-md-3">
+					<div class="wrapper">
+						<a class="color-base" href="#" data-bind="attr: { 'href': '/web/report/' + $data._id }">
+							<span class="fa fa-file-text-o"></span>
+							&nbsp;&nbsp;
+							<!-- <span data-bind="text: ($index() + 1)"></span> -  -->
+							<span data-bind="text: $data.name"></span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -296,7 +296,6 @@ rpt.getFilterValue = () => {
 	return res
 }
 
-rpt.init = () => app.noop
 rpt.refresh = () => app.noop
 
 rpt.analysisIdeas = ko.observableArray([])
@@ -317,5 +316,4 @@ $(() => {
 
 	rpt.getIdeas()
 	rpt.prepareDrag()
-	rpt.init()
 })

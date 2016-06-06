@@ -1,14 +1,16 @@
 viewModel.breakdown = new Object()
 let bkd = viewModel.breakdown
 
+app.log("ANGKA DI PIVOT CLICKABLE, JIKA SALES MAKA AMBIL DARI LEDGER TRANSACTION, SELAINNYA DARI LEDGER SUMMARY")
+
 bkd.data = ko.observableArray([])
 bkd.getParam = () => {
 	let orderIndex = { field: 'plmodel.orderindex', name: 'Order' }
 
-	let breakdown = ra.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
+	let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
 	let dimensions = bkd.dimensions().concat([breakdown, orderIndex])
 	let dataPoints = bkd.dataPoints()
-	return ra.wrapParam('analysis_ideas', dimensions, dataPoints, { 
+	return rpt.wrapParam('analysis_ideas', dimensions, dataPoints, { 
 		which: 'all_plmod'
 	})
 }
@@ -41,7 +43,7 @@ bkd.render = () => {
 	let rows = []
 	let columns = []
 	let measures = []
-	let breakdown = ra.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
+	let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
 
 	app.koUnmap(bkd.dimensions).concat([breakdown]).forEach((d, i) => {
 		let field = app.idAble(d.field)

@@ -249,9 +249,6 @@ rpt.getFilterValue = function () {
 	return res;
 };
 
-rpt.init = function () {
-	return app.noop;
-};
 rpt.refresh = function () {
 	return app.noop;
 };
@@ -276,5 +273,4 @@ $(function () {
 
 	rpt.getIdeas();
 	rpt.prepareDrag();
-	rpt.init();
 });

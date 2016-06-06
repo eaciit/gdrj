@@ -122,14 +122,20 @@ ra.setName = (data, options) => () => {
 
 rpt.refresh = () => {
     setTimeout(() => {
-        ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach((d, i) => {
-            setTimeout(() => {
-                if (app.isDefined(d)) {
-                    window[d].refresh()
-                }
-            }, 1000 * i)
-        })
+        if (o.ID == "gross_sales_discount_and_net_sales") {
+            ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach((d, i) => {
+                setTimeout(() => {
+                    if (app.isDefined(d)) {
+                        window[d].refresh()
+                    }
+                }, 1000 * i)
+            })
+        }
     }, 100)
 }
+
+$(() => {
+    rpt.refresh()
+})
 
 console.log(o)
