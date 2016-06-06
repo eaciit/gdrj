@@ -5,10 +5,12 @@ var bkd = viewModel.breakdown;
 
 bkd.data = ko.observableArray([]);
 bkd.getParam = function () {
+	var orderIndex = { field: 'plmodel.orderindex', name: 'Order' };
+
 	var breakdown = ra.optionDimensions().find(function (d) {
 		return d.field == bkd.breakdownBy();
 	});
-	var dimensions = bkd.dimensions().concat([breakdown]);
+	var dimensions = bkd.dimensions().concat([breakdown, orderIndex]);
 	var dataPoints = bkd.dataPoints();
 	return ra.wrapParam('analysis_ideas', dimensions, dataPoints, {
 		which: 'all_plmod'
@@ -17,15 +19,18 @@ bkd.getParam = function () {
 bkd.refresh = function () {
 	// bkd.data(DATATEMP_BREAKDOWN)
 	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), function (res) {
-		bkd.data(res.Data);
+		var data = _.sortBy(res.Data, function (o, v) {
+			return parseInt(o.plmodel_orderindex.replace(/PL/g, ""));
+		});
+		bkd.data(data);
 		bkd.render();
 	});
 };
 bkd.refreshOnChange = function () {
-	setTimeout(bkd.refresh, 100);
+	// setTimeout(bkd.refresh, 100)
 };
 bkd.breakdownBy = ko.observable('customer.channelname');
-bkd.dimensions = ko.observableArray([{ field: 'plmodel.plheader1', name: 'Group 1' }, { field: 'plmodel.plheader2', name: 'Group 2' }, { field: 'plmodel.plheader3', name: 'Group 3' }]);
+bkd.dimensions = ko.observableArray([{ field: 'plmodel.plheader1', name: ' ' }, { field: 'plmodel.plheader2', name: ' ' }, { field: 'plmodel.plheader3', name: ' ' }]);
 bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "sum" }]);
 bkd.render = function () {
 	var data = bkd.data().slice(0, 100);
@@ -81,14 +86,26 @@ bkd.render = function () {
 		},
 		dataCellTemplate: function dataCellTemplate(d) {
 			return '<div class="align-right">' + kendo.toString(d.dataItem.value, "n2") + '</div>';
+		},
+		dataBound: function dataBound() {
+			$('.breakdown-view .k-grid.k-widget:first [data-path]:first').addClass('invisible');
+			$('.breakdown-view .k-grid.k-widget:first span:contains(" ")').each(function (i, e) {
+				if ($(e).parent().hasClass('k-grid-footer') && $.trim($(e).html()) == '') {
+					$(e).css({
+						color: 'white',
+						display: 'block',
+						height: '18px'
+					});
+				}
+			});
+			$('.breakdown-view .k-grid.k-widget:first tr .k-i-arrow-e').removeClass('invisible');
+			$('.breakdown-view .k-grid.k-widget:first tr:last .k-i-arrow-e').addClass('invisible');
+			$('.breakdown-view .k-grid.k-widget:first table:first').css('margin-left', '-32px');
+			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').addClass('invisible');
+			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-header.k-alt span').addClass('invisible');
 		}
 	};
 
-	//  	dataBound: () => {
-	// $('.breakdown-view .k-grid.k-widget').find('span:contains("Group 1"),span:contains("Group 2"),span:contains("Group 3")').each((i, e) => {
-	// 	$(e).hide()
-	// })
-	//      }
 	app.log('breakdown', app.clone(config));
 	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
 	$('.breakdown-view').kendoPivotGrid(config);

@@ -82,12 +82,12 @@ ra.pivotModel = [
 ra.data = ko.observableArray([])
 ra.optionDimensions = ko.observableArray([
 	{ field: "customer.branchname", name: 'Branch/RD' },
+    { field: "product.brand", name: 'Brand' },
 	{ field: 'customer.channelname', name: 'Channel' },
-	{ field: 'customer.region', name: 'Geography' },
+    { field: 'customer.name', name: 'Outlet' },
 	{ field: 'product.name', name: 'Product' },
-	{ field: 'date.year', name: 'Time' },
-	{ field: 'cc.cctypeid', name: 'Cost Type' }, // <<<<< ====================== need to be filled
-	{ field: 'cc.hccgroupid', name: 'Function' },
+    { field: 'customer.region', name: 'Region' },
+	// { field: 'date.year', name: 'Time' }, // <<<<< ====================== need to be filled
 ])
 ra.optionDataPoints = ko.observableArray([
     { field: 'value1', name: o['value1'] },
