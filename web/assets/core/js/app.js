@@ -43,7 +43,7 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
     var params = typeof data === 'undefined' ? {} : ko.mapping.toJSON(data);
 
     var config = {
-        url: url,
+        url: url.toLowerCase(),
         type: 'post',
         dataType: 'json',
         contentType: 'application/json charset=utf-8',

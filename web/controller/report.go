@@ -4,6 +4,7 @@ import (
 	"eaciit/gdrj/model"
 	"eaciit/gdrj/web/helper"
 	"eaciit/gdrj/web/model"
+	"fmt"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -183,6 +184,26 @@ func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interfa
 	}
 
 	res := new(toolkit.Result)
+	res.SetData(data)
+
+	return res
+}
+
+func (m *ReportController) GetLedgerSummaryDetail(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(gdrj.DetailParam)
+	if err := r.GetPayload(payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	data, err := gdrj.LedgerSummaryGetDetailPivot(payload)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	res := new(toolkit.Result)
+	fmt.Println(res)
 	res.SetData(data)
 
 	return res

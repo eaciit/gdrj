@@ -5,7 +5,9 @@ var bkd = viewModel.breakdown;
 
 app.log("ANGKA DI PIVOT CLICKABLE, JIKA SALES MAKA AMBIL DARI LEDGER TRANSACTION, SELAINNYA DARI LEDGER SUMMARY");
 
+bkd.title = ko.observable('Grid Analysis Ideas');
 bkd.data = ko.observableArray([]);
+bkd.detail = ko.observableArray([]);
 bkd.getParam = function () {
 	var orderIndex = { field: 'plmodel.orderindex', name: 'Order' };
 
@@ -34,6 +36,60 @@ bkd.refreshOnChange = function () {
 bkd.breakdownBy = ko.observable('customer.channelname');
 bkd.dimensions = ko.observableArray([{ field: 'plmodel.plheader1', name: ' ' }, { field: 'plmodel.plheader2', name: ' ' }, { field: 'plmodel.plheader3', name: ' ' }]);
 bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "sum" }]);
+bkd.clickCell = function (o) {
+	var x = $(o).closest("td").index();
+	var y = $(o).closest("tr").index();
+	var cat = $('.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(' + x + ') span').html();
+	var plheader1 = $('.breakdown-view .k-grid.k-widget:eq(0) tr:eq(' + y + ') span:first').html();
+
+	var param = $.extend(true, bkd.getParam(), {
+		breakdownBy: bkd.breakdownBy(),
+		breakdownValue: cat,
+		plheader1: plheader1
+	});
+
+	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
+		var detail = res.Data.map(function (d) {
+			return {
+				ID: d.ID,
+				CostCenter: d.CC.Name,
+				Customer: d.Customer.Name,
+				Channel: d.Customer.ChannelName,
+				Branch: d.Customer.BranchName,
+				Brand: d.Product.Brand,
+				Product: d.Product.Name,
+				Year: d.Year,
+				Amount: d.Value1
+			};
+		});
+
+		bkd.detail(detail);
+		bkd.renderDetail();
+		app.log(res.Data);
+	});
+};
+bkd.renderDetail = function () {
+	$('#modal-detail-ledger-summary').appendTo($('body'));
+	$('#modal-detail-ledger-summary').modal('show');
+
+	var columns = [{ field: 'Year', width: 60, locked: true, footerTemplate: 'Total :' }, { field: 'Amount', width: 80, locked: true, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n2')#</div>", format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'CostCenter', title: 'Cost Center', width: 250 }, { field: 'Customer', width: 250 }, { field: 'Channel', width: 150 }, { field: 'Branch', width: 120 }, { field: 'Brand', width: 100 }, { field: 'Product', width: 250 }];
+	var config = {
+		dataSource: {
+			data: bkd.detail(),
+			pageSize: 5,
+			aggregate: [{ field: "Amount", aggregate: "sum" }]
+		},
+		columns: columns,
+		pageable: true,
+		resizable: false,
+		sortable: true
+	};
+
+	setTimeout(function () {
+		$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
+		$('.grid-detail').kendoGrid(config);
+	}, 300);
+};
 bkd.render = function () {
 	var data = bkd.data().slice(0, 100);
 	var schemaModelFields = {};
@@ -87,7 +143,8 @@ bkd.render = function () {
 			measures: measures
 		},
 		dataCellTemplate: function dataCellTemplate(d) {
-			return '<div class="align-right">' + kendo.toString(d.dataItem.value, "n2") + '</div>';
+			var number = kendo.toString(d.dataItem.value, "n2");
+			return '<div onclick="bkd.clickCell(this)" class="align-right">' + number + '</div>';
 		},
 		dataBound: function dataBound() {
 			$('.breakdown-view .k-grid.k-widget:first [data-path]:first').addClass('invisible');
