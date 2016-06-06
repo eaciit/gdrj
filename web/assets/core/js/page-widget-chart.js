@@ -96,7 +96,7 @@ crt.render = function () {
 	$('#chart').kendoChart(config);
 };
 crt.getParam = function () {
-	var row = ra.optionDimensions().find(function (d) {
+	var row = rpt.optionDimensions().find(function (d) {
 		return d.field == crt.categoryAxisField();
 	});
 	var dataPoints = ko.mapping.toJS(crt.series).filter(function (d) {
@@ -109,7 +109,7 @@ crt.getParam = function () {
 		};
 	});
 
-	return ra.wrapParam('chart', [row], dataPoints);
+	return rpt.wrapParam('chart', [row], dataPoints);
 };
 crt.refresh = function () {
 	// crt.data(DATATEMP_CHART)

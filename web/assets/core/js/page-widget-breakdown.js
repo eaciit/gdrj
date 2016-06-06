@@ -3,16 +3,18 @@
 viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
 
+app.log("ANGKA DI PIVOT CLICKABLE, JIKA SALES MAKA AMBIL DARI LEDGER TRANSACTION, SELAINNYA DARI LEDGER SUMMARY");
+
 bkd.data = ko.observableArray([]);
 bkd.getParam = function () {
 	var orderIndex = { field: 'plmodel.orderindex', name: 'Order' };
 
-	var breakdown = ra.optionDimensions().find(function (d) {
+	var breakdown = rpt.optionDimensions().find(function (d) {
 		return d.field == bkd.breakdownBy();
 	});
 	var dimensions = bkd.dimensions().concat([breakdown, orderIndex]);
 	var dataPoints = bkd.dataPoints();
-	return ra.wrapParam('analysis_ideas', dimensions, dataPoints, {
+	return rpt.wrapParam('analysis_ideas', dimensions, dataPoints, {
 		which: 'all_plmod'
 	});
 };
@@ -40,7 +42,7 @@ bkd.render = function () {
 	var rows = [];
 	var columns = [];
 	var measures = [];
-	var breakdown = ra.optionDimensions().find(function (d) {
+	var breakdown = rpt.optionDimensions().find(function (d) {
 		return d.field == bkd.breakdownBy();
 	});
 

@@ -91,7 +91,7 @@ crt.render = () => {
 	$('#chart').kendoChart(config)
 }
 crt.getParam = () => {
-	let row = ra.optionDimensions().find((d) => (d.field == crt.categoryAxisField()))
+	let row = rpt.optionDimensions().find((d) => (d.field == crt.categoryAxisField()))
 	let dataPoints = ko.mapping.toJS(crt.series)
 		.filter((d) => (d.field != ''))
 		.map((d) => { return { 
@@ -100,7 +100,7 @@ crt.getParam = () => {
 			aggr: 'sum'
 		} })
 
-	return ra.wrapParam('chart', [row], dataPoints)
+	return rpt.wrapParam('chart', [row], dataPoints)
 }
 crt.refresh = () => {
 	// crt.data(DATATEMP_CHART)

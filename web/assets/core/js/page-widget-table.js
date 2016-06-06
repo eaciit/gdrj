@@ -55,7 +55,7 @@ tbl.getParam = function () {
 		return { field: d.field, name: d.name, aggr: 'sum' };
 	});
 
-	return ra.wrapParam('table', dimensions, dataPoints);
+	return rpt.wrapParam('table', dimensions, dataPoints);
 };
 tbl.refresh = function () {
 	// pvt.data(DATATEMP_TABLE)

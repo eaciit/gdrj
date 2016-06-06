@@ -90,7 +90,7 @@ pvt.getParam = function () {
 		};
 	});
 
-	return ra.wrapParam('pivot', dimensions, dataPoints);
+	return rpt.wrapParam('pivot', dimensions, dataPoints);
 };
 pvt.refresh = function () {
 	// pvt.data(DATATEMP_PIVOT)
@@ -116,7 +116,7 @@ pvt.render = function () {
 		app.koUnmap(pvt[from]()).filter(function (d) {
 			return d.field != '';
 		}).forEach(function (d, i) {
-			var option = app.koUnmap(ra.optionDimensions).find(function (e) {
+			var option = app.koUnmap(rpt.optionDimensions).find(function (e) {
 				return e.field == d.field;
 			});
 			var key = app.idAble(option.name);

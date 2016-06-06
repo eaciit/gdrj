@@ -1,3 +1,12 @@
+<script>
+let o = {
+	ID: "{{.id}}",
+	Name: "{{.name}}",
+	value1: "{{.value1}}",
+	value2: "{{.value2}}",
+	value3: "{{.value3}}"
+}
+</script>
 <script src="/res/core/js/page-report.js"></script>
 <script src="/res/core/js/page-widget-dummy-data.js"></script>
 
@@ -32,17 +41,6 @@
 			</div>
 		</div>
 	</div>
-
-	<script>
-	let o = {
-		ID: "{{.id}}",
-		Name: "{{.name}}",
-		value1: "{{.value1}}",
-		value2: "{{.value2}}",
-		value3: "{{.value3}}"
-	}
-	</script>
-	<script src="/res/core/js/page-report-analysis.js"></script>
 	{{if eq .id "dashboard"}}
 		{{template "page-report-dashboard.html"}}
 	{{else if eq .id "gross_sales_discount_and_net_sales"}}
