@@ -160,21 +160,6 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 		}
 	}
 
-	fmt.Println("---------", plKeys, columns, datapoints)
-
-	// db.ledgersummariestemp.aggregate([
-	// 	{ $match: { "plmodel._id": "PL2" } },
-	// 	{ $group: {
-	// 	  _id: {
-	// 	    customer_branchname: "$customer.branchname",
-	// 	    plmodel_plheader1: "$plmodel.plheader1",
-	// 	    plmodel_plheader2: "$plmodel.plheader2",
-	// 	    plmodel_plheader3: "$plmodel.plheader3"
-	// 	  },
-	// 	  total: { $sum: "$value1" }
-	// 	} }
-	// ]);
-
 	allKeys := map[string]*toolkit.M{}
 	rows := []*toolkit.M{}
 

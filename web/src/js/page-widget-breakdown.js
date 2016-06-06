@@ -3,8 +3,10 @@ let bkd = viewModel.breakdown
 
 bkd.data = ko.observableArray([])
 bkd.getParam = () => {
+	let orderIndex = { field: 'plmodel.orderindex', name: 'Order' }
+
 	let breakdown = ra.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
-	let dimensions = bkd.dimensions().concat([breakdown])
+	let dimensions = bkd.dimensions().concat([breakdown, orderIndex])
 	let dataPoints = bkd.dataPoints()
 	return ra.wrapParam('analysis_ideas', dimensions, dataPoints, { 
 		which: 'all_plmod'
@@ -13,18 +15,20 @@ bkd.getParam = () => {
 bkd.refresh = () => {
 	// bkd.data(DATATEMP_BREAKDOWN)
 	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), (res) => {
-		bkd.data(res.Data)
+		let data = _.sortBy(res.Data, (o, v) => 
+			parseInt(o.plmodel_orderindex.replace(/PL/g, "")))
+		bkd.data(data)
 		bkd.render()
 	})
 }
 bkd.refreshOnChange = () => {
-	setTimeout(bkd.refresh, 100)
+	// setTimeout(bkd.refresh, 100)
 }
 bkd.breakdownBy = ko.observable('customer.channelname')
 bkd.dimensions = ko.observableArray([
-	{ field: 'plmodel.plheader1', name: 'Group 1' },
-	{ field: 'plmodel.plheader2', name: 'Group 2' },
-	{ field: 'plmodel.plheader3', name: 'Group 3' }
+	{ field: 'plmodel.plheader1', name: ' ' },
+	{ field: 'plmodel.plheader2', name: ' ' },
+	{ field: 'plmodel.plheader3', name: ' ' }
 ])
 bkd.dataPoints = ko.observableArray([
 	{ field: "value1", name: "value1", aggr: "sum" }
@@ -80,11 +84,25 @@ bkd.render = () => {
 	        measures: measures
 	    },
         dataCellTemplate: (d) => `<div class="align-right">${kendo.toString(d.dataItem.value, "n2")}</div>`,
-   //  	dataBound: () => {
-			// $('.breakdown-view .k-grid.k-widget').find('span:contains("Group 1"),span:contains("Group 2"),span:contains("Group 3")').each((i, e) => {
-			// 	$(e).hide()
-			// })
-   //      }
+    	dataBound: () => {
+    		$('.breakdown-view .k-grid.k-widget:first [data-path]:first')
+    			.addClass('invisible')
+    		$('.breakdown-view .k-grid.k-widget:first span:contains(" ")')
+				.each((i, e) => {
+    				if ($(e).parent().hasClass('k-grid-footer') && $.trim($(e).html()) == '') {
+	    				$(e).css({ 
+	    					color: 'white', 
+	    					display: 'block', 
+	    					height: '18px'
+	    				})
+    				}
+    			})
+    		$('.breakdown-view .k-grid.k-widget:first tr .k-i-arrow-e').removeClass('invisible')
+    		$('.breakdown-view .k-grid.k-widget:first tr:last .k-i-arrow-e').addClass('invisible')
+    		$('.breakdown-view .k-grid.k-widget:first table:first').css('margin-left', '-32px')
+    		$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').addClass('invisible')
+    		$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-header.k-alt span').addClass('invisible')
+        }
 	}
 
 	app.log('breakdown', app.clone(config))

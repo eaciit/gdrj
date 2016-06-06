@@ -120,7 +120,7 @@ crt.refresh = function () {
 	});
 };
 crt.refreshOnChange = function () {
-	setTimeout(crt.refresh, 100);
+	// setTimeout(crt.refresh, 100)
 };
 
 $(function () {

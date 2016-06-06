@@ -60,6 +60,10 @@ pvt.removeFrom = function (o, which) {
 	}, function () {
 		var holder = pvt[which];
 
+		if (holder().length == 1) {
+			return;
+		}
+
 		if (which == 'dataPoints') {
 			var index = $(o).attr('data-index');
 			app.arrRemoveByIndex(holder, index);
@@ -91,7 +95,11 @@ pvt.getParam = function () {
 pvt.refresh = function () {
 	// pvt.data(DATATEMP_PIVOT)
 	app.ajaxPost("/report/summarycalculatedatapivot", pvt.getParam(), function (res) {
-		pvt.data(res.Data);
+		var orderKey = app.idAble(ko.mapping.toJS(pvt.rows()[0]).field);
+		var data = _.sortBy(res.Data, function (o, v) {
+			return o[orderKey];
+		});
+		pvt.data(data);
 		pvt.render();
 	});
 };
@@ -107,7 +115,7 @@ pvt.render = function () {
 	var constructSchema = function constructSchema(from, to) {
 		app.koUnmap(pvt[from]()).filter(function (d) {
 			return d.field != '';
-		}).forEach(function (d) {
+		}).forEach(function (d, i) {
 			var option = app.koUnmap(ra.optionDimensions).find(function (e) {
 				return e.field == d.field;
 			});
@@ -118,7 +126,7 @@ pvt.render = function () {
 			schemaCubeDimensions[field] = { caption: key };
 
 			var row = { name: field };
-			if (from == 'rows') {
+			if (i == 0) {
 				row.expand = true;
 			}
 
