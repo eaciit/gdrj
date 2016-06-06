@@ -177,15 +177,7 @@ func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interfa
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
-	var err error
-	var data interface{}
-
-	if payload.Type == "analysis_ideas" {
-		data, err = gdrj.CalculateLedgerSummaryAnalysisIdea(payload)
-	} else {
-		data, err = gdrj.CalculateLedgerSummary(payload)
-	}
-
+	data, err := gdrj.CalculateLedgerSummary(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}

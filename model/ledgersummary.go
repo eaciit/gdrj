@@ -32,7 +32,7 @@ type LedgerSummary struct {
 	PCID, CCID, OutletID, SKUID, PLCode, PLOrder string
 	Month                                        time.Month
 	Year                                         int
-	Source string
+	Source                                       string
 }
 
 // month,year
@@ -128,108 +128,83 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 	fmt.Printf("+++++ %#v\n", *(filter.Value.([]*dbox.Filter)[0]))
 	fmt.Printf("+++++ %#v\n", *(filter.Value.([]*dbox.Filter)[1]))
 
-	var plFilter1, plFilter2, plFilter3 *dbox.Filter
+	plKeys := []string{}
+	bunchesOfData := [][]*toolkit.M{}
 
-	if payload.Which == "gross_sales_discount_and_net_sales" {
-		plFilter1 = dbox.Eq("plcode", "PL1")
-		plFilter2 = dbox.Eq("plcode", "PL2")
-		plFilter3 = dbox.Eq("plcode", "PL3")
+	switch payload.Which {
+	case "all_plmod":
+		fmt.Println("asdf")
+		// plKeys = []string{"PL1", "PL2", "PL3"} //, "PL2", "PL3", "PL4", "PL5", "PL6", "PL7", "PL8", "PL9", "PL10", "PL11", "PL12", "PL13", "PL14", "PL15", "PL16", "PL17", "PL18", "PL19", "PL20", "PL21", "PL22", "PL23", "PL24", "PL25", "PL26", "PL27", "PL28", "PL29", "PL30", "PL31", "PL32", "PL33", "PL34", "PL35", "PL36", "PL37", "PL38", "PL39", "PL40", "PL41", "PL42", "PL43", "PL44", "PL45", "PL46"}
+	case "gross_sales_discount_and_net_sales":
+		plKeys = []string{"PL1", "PL2", "PL3"}
 	}
 
-	bunchData1, err := SummarizeLedgerSum(
-		dbox.And(plFilter1, filter), columns, datapoints, fnTransform)
-	if err != nil {
-		return nil, err
+	if payload.Which == "all_plmod" {
+		bunchData, err := SummarizeLedgerSum(
+			filter, columns, datapoints, fnTransform)
+		if err != nil {
+			return nil, err
+		}
+
+		bunchesOfData = append(bunchesOfData, bunchData)
+	} else {
+		for _, plKey := range plKeys {
+			plFilter := dbox.Eq("plcode", plKey)
+			bunchData, err := SummarizeLedgerSum(
+				dbox.And(plFilter, filter), columns, datapoints, fnTransform)
+			if err != nil {
+				return nil, err
+			}
+
+			bunchesOfData = append(bunchesOfData, bunchData)
+		}
 	}
 
-	bunchData2, err := SummarizeLedgerSum(
-		dbox.And(plFilter2, filter), columns, datapoints, fnTransform)
-	if err != nil {
-		return nil, err
-	}
+	fmt.Println("---------", plKeys, columns, datapoints)
 
-	bunchData3, err := SummarizeLedgerSum(
-		dbox.And(plFilter3, filter), columns, datapoints, fnTransform)
-	if err != nil {
-		return nil, err
-	}
+	// db.ledgersummariestemp.aggregate([
+	// 	{ $match: { "plmodel._id": "PL2" } },
+	// 	{ $group: {
+	// 	  _id: {
+	// 	    customer_branchname: "$customer.branchname",
+	// 	    plmodel_plheader1: "$plmodel.plheader1",
+	// 	    plmodel_plheader2: "$plmodel.plheader2",
+	// 	    plmodel_plheader3: "$plmodel.plheader3"
+	// 	  },
+	// 	  total: { $sum: "$value1" }
+	// 	} }
+	// ]);
 
 	allKeys := map[string]*toolkit.M{}
 	rows := []*toolkit.M{}
 
-	for _, each := range bunchData1 {
-		keyword := ""
-		for _, s := range columns {
-			keyword = fmt.Sprintf("%s%s", keyword, each.Get("_id").(toolkit.M).GetString(s))
-		}
+	for i, bunch := range bunchesOfData {
+		for _, each := range bunch {
+			keyword := ""
+			for _, s := range columns {
+				keyword = fmt.Sprintf("%s%s", keyword, each.Get("_id").(toolkit.M).GetString(s))
+			}
 
-		if _, ok := allKeys[keyword]; !ok {
-			allKeys[keyword] = each
-			rows = append(rows, each)
+			if _, ok := allKeys[keyword]; !ok {
+				allKeys[keyword] = each
+				rows = append(rows, each)
+				if i > 0 {
+					each.Set(fmt.Sprintf("value%d", i+1), each.GetFloat64("value1"))
+					each.Set("value1", 0)
+				}
 
-			for key, val := range *each {
-				if key == "_id" {
-					for skey, sval := range val.(toolkit.M) {
-						each.Set(strings.Replace(skey, ".", "_", -1), sval)
+				for key, val := range *each {
+					if key == "_id" {
+						for skey, sval := range val.(toolkit.M) {
+							each.Set(strings.Replace(skey, ".", "_", -1), sval)
+						}
 					}
 				}
+				each.Unset("_id")
+			} else {
+				current := allKeys[keyword]
+				current.Set(fmt.Sprintf("value%d", i+1), current.GetFloat64(fmt.Sprintf("value%d", i+1))+each.GetFloat64("value1"))
 			}
-			each.Unset("_id")
-		} else {
-			current := allKeys[keyword]
-			current.Set("value1", current.GetFloat64("value1")+each.GetFloat64("value1"))
-		}
-	}
-
-	for _, each := range bunchData2 {
-		keyword := ""
-		for _, s := range columns {
-			keyword = fmt.Sprintf("%s%s", keyword, each.Get("_id").(toolkit.M).GetString(s))
-		}
-
-		if _, ok := allKeys[keyword]; !ok {
-			allKeys[keyword] = each
-			rows = append(rows, each)
-			each.Set("value2", each.GetFloat64("value1"))
-			each.Set("value1", 0)
-
-			for key, val := range *each {
-				if key == "_id" {
-					for skey, sval := range val.(toolkit.M) {
-						each.Set(strings.Replace(skey, ".", "_", -1), sval)
-					}
-				}
-			}
-			each.Unset("_id")
-		} else {
-			current := allKeys[keyword]
-			current.Set("value2", current.GetFloat64("value2")+each.GetFloat64("value1"))
-		}
-	}
-
-	for _, each := range bunchData3 {
-		keyword := ""
-		for _, s := range columns {
-			keyword = fmt.Sprintf("%s%s", keyword, each.Get("_id").(toolkit.M).GetString(s))
-		}
-
-		if _, ok := allKeys[keyword]; !ok {
-			allKeys[keyword] = each
-			rows = append(rows, each)
-			each.Set("value3", each.GetFloat64("value1"))
-			each.Set("value1", 0)
-
-			for key, val := range *each {
-				if key == "_id" {
-					for skey, sval := range val.(toolkit.M) {
-						each.Set(strings.Replace(skey, ".", "_", -1), sval)
-					}
-				}
-			}
-			each.Unset("_id")
-		} else {
-			current := allKeys[keyword]
-			current.Set("value3", current.GetFloat64("value3")+each.GetFloat64("value1"))
 		}
 	}
 

@@ -100,14 +100,14 @@ ra.optionAggregates = ko.observableArray([
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
-ra.wrapParam = (type, dimensions = [], dataPoints = []) => {
-    return {
+ra.wrapParam = (type, dimensions = [], dataPoints = [], def = {}) => {
+    return $.extend(true, {
         type: type,
         dimensions: dimensions,
         dataPoints: dataPoints,
         filters: rpt.getFilterValue(),
         which: o.ID
-    }
+    }, def)
 }
 ra.setName = (data, options) => () => {
     setTimeout(() => {
