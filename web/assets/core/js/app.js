@@ -330,6 +330,11 @@ app.logAble = function () {
     app.log(args);
     return args[0];
 };
+app.htmlDecode = function (s) {
+    var elem = document.createElement('textarea');
+    elem.innerHTML = s;
+    return elem.value;
+};
 
 viewModel.StringExt = new Object();
 var s = viewModel.StringExt;

@@ -38,15 +38,17 @@ bkd.dataPoints = ko.observableArray([
 	{ field: "value1", name: "value1", aggr: "sum" }
 ])
 bkd.clickCell = (o) => {
+	console.log($(o))
+
 	let x = $(o).closest("td").index()
 	let y = $(o).closest("tr").index()
 	let cat = $(`.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(${x}) span`).html()
-	let plheader1 = $(`.breakdown-view .k-grid.k-widget:eq(0) tr:eq(${y}) span:first`).html()
+	let plheader1 = $(`.breakdown-view .k-grid.k-widget:eq(0) tr:eq(${y}) td:not(.k-first):first > span`).html()
 
 	let param = $.extend(true, bkd.getParam(), { 
-		breakdownBy: bkd.breakdownBy(), 
+		breakdownBy: app.htmlDecode(bkd.breakdownBy()),
 		breakdownValue: cat, 
-		plheader1: plheader1
+		plheader1: app.htmlDecode(plheader1)
 	})
 
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, (res) => {

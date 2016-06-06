@@ -298,6 +298,11 @@ app.logAble = function() {
     app.log(args)
     return args[0]
 }
+app.htmlDecode = (s) => {
+    var elem = document.createElement('textarea');
+    elem.innerHTML = s;
+    return elem.value;
+}
 
 viewModel.StringExt = new Object()
 let s = viewModel.StringExt

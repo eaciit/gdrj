@@ -37,15 +37,17 @@ bkd.breakdownBy = ko.observable('customer.channelname');
 bkd.dimensions = ko.observableArray([{ field: 'plmodel.plheader1', name: ' ' }, { field: 'plmodel.plheader2', name: ' ' }, { field: 'plmodel.plheader3', name: ' ' }]);
 bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "sum" }]);
 bkd.clickCell = function (o) {
+	console.log($(o));
+
 	var x = $(o).closest("td").index();
 	var y = $(o).closest("tr").index();
 	var cat = $('.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(' + x + ') span').html();
-	var plheader1 = $('.breakdown-view .k-grid.k-widget:eq(0) tr:eq(' + y + ') span:first').html();
+	var plheader1 = $('.breakdown-view .k-grid.k-widget:eq(0) tr:eq(' + y + ') td:not(.k-first):first > span').html();
 
 	var param = $.extend(true, bkd.getParam(), {
-		breakdownBy: bkd.breakdownBy(),
+		breakdownBy: app.htmlDecode(bkd.breakdownBy()),
 		breakdownValue: cat,
-		plheader1: plheader1
+		plheader1: app.htmlDecode(plheader1)
 	});
 
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
