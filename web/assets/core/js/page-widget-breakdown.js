@@ -60,6 +60,10 @@ bkd.clickCell = function (o) {
 		plheader3: ''
 	});
 
+	var titleArr = [];
+	var titles = "";
+	var detailTitle = "";
+
 	cellInfo.rowTuple.members.forEach(function (d) {
 		if (d.parentName == undefined) {
 			return;
@@ -68,11 +72,19 @@ bkd.clickCell = function (o) {
 		var key = d.parentName.split('_').reverse()[0];
 		var value = app.htmlDecode(d.name.replace(d.parentName + '&', ''));
 		param[key] = value;
+		titleArr.push(value);
 	});
 
 	if (param.breakdownValue == app.idAble(param.breakdownBy) + '&') {
 		param.breakdownValue = '';
 	}
+
+	$.each(titleArr, function(i, title){
+		titles += title + " » ";
+	})
+
+	titles = titles.substr(0, titles.length-2);
+	detailTitle = (param.breakdownValue != '' ? 'Detail '+titles+' on '+param.breakdownValue : 'Detail '+titles);
 
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
 		var detail = res.Data.map(function (d) {
@@ -91,6 +103,8 @@ bkd.clickCell = function (o) {
 
 		bkd.detail(detail);
 		bkd.renderDetail();
+		$('#modal-title').html(detailTitle);
+		
 	});
 };
 bkd.renderDetail = function () {
@@ -147,7 +161,7 @@ bkd.render = function () {
 	app.koUnmap(bkd.dataPoints).forEach(function (d) {
 		var measurement = 'Amount';
 		var field = app.idAble(d.field);
-		schemaModelFields[field] = { type: 'number' };
+		schemaModelFields[field] = { type: 'number', width: 100};
 		schemaCubeMeasures[measurement] = { field: field, aggregate: 'sum', format: '{0:n2}' };
 		measures.push(measurement);
 	});
@@ -159,7 +173,7 @@ bkd.render = function () {
 			data: data,
 			schema: {
 				model: {
-					fields: schemaModelFields
+					fields: schemaModelFields,
 				},
 				cube: {
 					dimensions: schemaCubeDimensions,
