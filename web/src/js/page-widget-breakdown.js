@@ -7,18 +7,23 @@ bkd.contentIsLoading = ko.observable(false)
 bkd.title = ko.observable('Grid Analysis Ideas')
 bkd.data = ko.observableArray([])
 bkd.detail = ko.observableArray([])
+bkd.limit = ko.observable(10)
 bkd.getParam = () => {
 	let orderIndex = { field: 'plmodel.orderindex', name: 'Order' }
 
 	let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
 	let dimensions = bkd.dimensions().concat([breakdown, orderIndex])
 	let dataPoints = bkd.dataPoints()
-	return rpt.wrapParam('analysis_ideas', dimensions, dataPoints, { 
+	let limit = {limit:bkd.limit}
+
+	let param  = rpt.wrapParam('analysis_ideas', dimensions, dataPoints, { 
 		which: 'all_plmod'
 	})
+	return $.extend(true,param,limit)
 }
 bkd.refresh = () => {
 	// bkd.data(DATATEMP_BREAKDOWN)
+	console.log("cek")
 	bkd.contentIsLoading(true)
 	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), (res) => {
 		let data = _.sortBy(res.Data, (o, v) => 
@@ -34,6 +39,7 @@ bkd.refresh = () => {
 }
 bkd.refreshOnChange = () => {
 	// setTimeout(bkd.refresh, 100)
+	console.log()
 }
 bkd.breakdownBy = ko.observable('customer.channelname')
 bkd.dimensions = ko.observableArray([

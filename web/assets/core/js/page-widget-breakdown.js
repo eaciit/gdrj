@@ -9,6 +9,7 @@ bkd.contentIsLoading = ko.observable(false);
 bkd.title = ko.observable('Grid Analysis Ideas');
 bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
+bkd.limit = ko.observable(10);
 bkd.getParam = function () {
 	var orderIndex = { field: 'plmodel.orderindex', name: 'Order' };
 
@@ -17,12 +18,16 @@ bkd.getParam = function () {
 	});
 	var dimensions = bkd.dimensions().concat([breakdown, orderIndex]);
 	var dataPoints = bkd.dataPoints();
-	return rpt.wrapParam('analysis_ideas', dimensions, dataPoints, {
+	var limit = { limit: bkd.limit };
+
+	var param = rpt.wrapParam('analysis_ideas', dimensions, dataPoints, {
 		which: 'all_plmod'
 	});
+	return $.extend(true, param, limit);
 };
 bkd.refresh = function () {
 	// bkd.data(DATATEMP_BREAKDOWN)
+	console.log("cek");
 	bkd.contentIsLoading(true);
 	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), function (res) {
 		var data = _.sortBy(res.Data, function (o, v) {
@@ -39,6 +44,7 @@ bkd.refresh = function () {
 };
 bkd.refreshOnChange = function () {
 	// setTimeout(bkd.refresh, 100)
+	console.log();
 };
 bkd.breakdownBy = ko.observable('customer.channelname');
 bkd.dimensions = ko.observableArray([{ field: 'plmodel.plheader1', name: ' ' }, { field: 'plmodel.plheader2', name: ' ' }, { field: 'plmodel.plheader3', name: ' ' }]);
