@@ -119,6 +119,13 @@ func prepMaster(){
     }
 }
 
+var (
+    m2015_sales_pct =  1.2917521
+    m2015_disc_pct =  1.1757882
+    m2016_sales_pct =  1.3723250 
+    m2016_disc_Pct =  2.0594582
+)
+
 func main() {
 	//runtime.GOMAXPROCS(runtime.NumCPU())
 	setinitialconnection()
@@ -130,7 +137,7 @@ func main() {
     toolkit.Println("START...")
 
 	crx, err := gdrj.Find(new(gdrj.SalesTrx), 
-        dbox.Eq("pcvalid",false),
+        dbox.Eq("pcvalid",true),
         nil)
         //toolkit.M{}.Set("take",10000))
     if err != nil {
@@ -142,7 +149,15 @@ func main() {
     count = crx.Count()
     i := 0
     t0 := time.Now()
+
+    jobs := make(chan *gdrj.SalesTrx,count)
+    result := make(chan string,count)
     
+    for wi:=0;wi<10;wi++{
+        go worker(wi, jobs, result)
+    }
+
+
     for {
         i++ 
         st := new(gdrj.SalesTrx)
@@ -150,51 +165,41 @@ func main() {
         if e!=nil {
             break
         }
-        
-        if st.SalesQty==0{
-            continue
-        }
-        
-        save := false
-        if !st.CustomerValid{
-            st.OutletID=strings.ToUpper(strings.Trim(st.OutletID," "))
-            if custs.Has(st.OutletID){
-                save = true
-                st.CustomerValid=true
-                st.Customer=custs.Get(st.OutletID).(*gdrj.Customer)
-            }
-        }
-        
-        if !st.ProductValid{
-            if st.SKUID=="" {
-                if vdistskus.Has(st.SKUID_VDIST){
-                    tempSKUID := vdistskus[st.SKUID_VDIST].(string)
-                    if prods.Has(tempSKUID){
-                        st.SKUID=tempSKUID
-                        st.Product=prods.Get(tempSKUID).(*gdrj.Product)
-                        st.ProductValid=true
-                        save = true
-                    }
-                }
-            }
-        }
-        
-        if !st.PCValid{
-            if st.ProductValid && st.CustomerValid{
-                pcid := st.Customer.BranchID + st.Product.BrandCategoryID
-                if pcs.Has(pcid){
-                    st.PCValid=true
-                    st.PC=pcs.Get(pcid).(*gdrj.ProfitCenter)
-                    save = true
-                }
-            }
-        }
-        
-        if save {
-            gdrj.Save(st)
-        }
+        jobs <- st
         toolkit.Printfn("Processing %d of %d %s in %s", 
             i, count, st.SalesHeaderID, 
             time.Since(t0).String())
+    }
+    close(jobs)
+
+    for i:=0;i<count;i++{
+        rout := <-result
+        toolkit.Printfn("Saving %d of %d - %s", i, count, rout)
+    }
+}
+
+func worker(w int, jobs <-chan *gdrj.SalesTrx, result chan<- string){
+    conn, _ := modules.GetDboxIConnection("db_godrej")
+    defer conn.Close()
+    
+    for st := range jobs{
+        st.Year = st.Date.Year()
+        st.Month = int(st.Date.Month())
+        st.Fiscal = func()string{
+            if st.Month>4{
+                return toolkit.Sprintf("%d - %d",st.Year,st.Year+1)
+            }else{
+                return toolkit.Sprintf("%d - %d",st.Year-1,st.Year)
+            }
+        }()
+        if strings.HasPrefix(st.Fiscal,"2014") {
+            st.GrossAmount = st.GrossAmount * m2015_sales_pct
+            st.DiscountAmount = -st.DiscountAmount * m2015_disc_pct
+        } else if strings.HasPrefix(st.Fiscal,"2015") {
+            st.GrossAmount = st.GrossAmount * m2016_sales_pct
+            st.DiscountAmount = -st.DiscountAmount * m2016_disc_Pct
+        }
+        gdrj.Save(st)
+        result <- st.ID
     }
 }
