@@ -161,7 +161,7 @@ bkd.render = function () {
 	app.koUnmap(bkd.dataPoints).forEach(function (d) {
 		var measurement = 'Amount';
 		var field = app.idAble(d.field);
-		schemaModelFields[field] = { type: 'number', width: 100};
+		schemaModelFields[field] = { type: 'number'};
 		schemaCubeMeasures[measurement] = { field: field, aggregate: 'sum', format: '{0:n2}' };
 		measures.push(measurement);
 	});
