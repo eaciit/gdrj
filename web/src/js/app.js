@@ -39,7 +39,7 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
     let params = (typeof data === 'undefined') ? {} : ko.mapping.toJSON(data)
 
     let config = {
-        url: url,
+        url: url.toLowerCase(),
         type: 'post',
         dataType: 'json',
         contentType: 'application/json charset=utf-8',
@@ -297,6 +297,11 @@ app.logAble = function() {
     let args = [].slice.call(arguments)
     app.log(args)
     return args[0]
+}
+app.htmlDecode = (s) => {
+    var elem = document.createElement('textarea');
+    elem.innerHTML = s;
+    return elem.value;
 }
 
 viewModel.StringExt = new Object()

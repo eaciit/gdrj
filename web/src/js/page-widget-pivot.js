@@ -81,7 +81,7 @@ pvt.getParam = () => {
 			aggr: 'sum'
 		} })
 
-	return ra.wrapParam('pivot', dimensions, dataPoints)
+	return rpt.wrapParam('pivot', dimensions, dataPoints)
 }
 pvt.refresh = () => {
 	// pvt.data(DATATEMP_PIVOT)
@@ -105,7 +105,7 @@ pvt.render = () => {
 		app.koUnmap(pvt[from]())
 			.filter((d) => (d.field != ''))
 			.forEach((d, i) => {
-				let option = app.koUnmap(ra.optionDimensions).find((e) => e.field == d.field)
+				let option = app.koUnmap(rpt.optionDimensions).find((e) => e.field == d.field)
 				let key = app.idAble(option.name)
 				let field = app.idAble(d.field)
 

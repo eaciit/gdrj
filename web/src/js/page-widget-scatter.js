@@ -76,7 +76,7 @@ sct.getParam = () => {
 			aggr: 'sum'
 		} })
 
-	return ra.wrapParam('scatter', dimensions, dataPoints)
+	return rpt.wrapParam('scatter', dimensions, dataPoints)
 }
 
 sct.refresh = () => {

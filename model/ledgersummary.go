@@ -11,10 +11,6 @@ import (
 	"github.com/eaciit/toolkit"
 )
 
-var (
-	summaryTableName = "ledgersummariestemp"
-)
-
 type LedgerSummary struct {
 	orm.ModelBase                          `bson:"-" json:"-"`
 	ID                                     string `bson:"_id"`
@@ -49,12 +45,44 @@ func (s *LedgerSummary) PrepareID() interface{} {
 }
 
 func (s *LedgerSummary) TableName() string {
-	return "ledgersummaries"
+	return "ledgersummariestemp" //"ledgersummaries"
 }
 
 func (s *LedgerSummary) PreSave() error {
 	s.ID = s.PrepareID().(string)
 	return nil
+}
+
+func LedgerSummaryGetDetailPivot(payload *DetailParam) ([]*LedgerSummary, error) {
+	filters := []*dbox.Filter{
+		dbox.Eq(payload.BreakdownBy, payload.BreakdownValue),
+		dbox.Eq("plmodel.plheader1", payload.PLHeader1),
+	}
+
+	if payload.PLHeader2 != "" {
+		filters = append(filters, dbox.Eq("plmodel.plheader2", payload.PLHeader2))
+	}
+
+	if payload.PLHeader3 != "" {
+		filters = append(filters, dbox.Eq("plmodel.plheader3", payload.PLHeader3))
+	}
+
+	filter := dbox.And(payload.ParseFilter(), dbox.And(filters...))
+
+	fmt.Println("----", *payload)
+	cursor, err := Find(new(LedgerSummary), filter, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*LedgerSummary{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+	cursor.Close()
+
+	return result, nil
 }
 
 func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string, Year int, Month time.Month) (ls *LedgerSummary) {
@@ -83,7 +111,7 @@ func CalculateLedgerSummaryAnalysisIdea(payload *PivotParam) ([]*toolkit.M, erro
 	var filter *dbox.Filter = payload.ParseFilter()
 
 	conn := DB().Connection
-	q := conn.NewQuery().From(summaryTableName)
+	q := conn.NewQuery().From(new(LedgerSummary).TableName())
 	q = q.Where(filter)
 	q = q.Group("plmodel._id", "plmodel.orderindex", "plmodel.plheader1", "plmodel.plheader2", "plmodel.plheader3")
 	q = q.Aggr(dbox.AggrSum, "$value1", "value1")
@@ -202,7 +230,7 @@ func SummarizeLedgerSum(
 	datapoints []string,
 	fnTransform func(m *toolkit.M) error) ([]*toolkit.M, error) {
 	conn := DB().Connection
-	q := conn.NewQuery().From(summaryTableName)
+	q := conn.NewQuery().From(new(LedgerSummary).TableName())
 	if filter != nil {
 		q = q.Where(filter)
 	}
@@ -283,6 +311,15 @@ func (s *LedgerSummary) Save() error {
 		return errors.New(toolkit.Sprintf("[%v-%v] Error found : ", s.TableName(), "save", e.Error()))
 	}
 	return e
+}
+
+type DetailParam struct {
+	PivotParam
+	BreakdownBy    string `json:"breakdownby"`
+	BreakdownValue string `json:"breakdownvalue"`
+	PLHeader1      string `json:"plheader1"`
+	PLHeader2      string `json:"plheader2"`
+	PLHeader3      string `json:"plheader3"`
 }
 
 type PivotParam struct {
