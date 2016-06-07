@@ -1,5 +1,3 @@
-
-
 let DATATEMP_BREAKDOWN = [
 	{"_id":"PL45","plheader1":"EBITDA","plheader2":"EBITDA","plheader3":"","value":0},
 	{"_id":"PL44","plheader1":"EBIT","plheader2":"EBIT","plheader3":"","value":0},
@@ -106,4 +104,15 @@ let DATATEMP_TABLE = [
 	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Mitu", "customer.channelname": "Motorist"}, "value1": 1000, "value2": 800, "value3": 200 },
 	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Industrial Trade"}, "value1": 1100, "value2": 900, "value3": 150 },
 	{"_id": {"customer.branchname": "Yogyakarta", "product.name": "Hit", "customer.channelname": "Motorist"}, "value1": 1100, "value2": 900, "value3": 150 }
+]
+
+let DATATEMP_CHART_CR = [
+	{ "category": "Jan-2015", "value1": 1000, "value2": 400, "value3": 770 },
+	{ "category": "Apr-2015", "value1": 980, "value2": 450, "value3": 780 },
+	{ "category": "Jul-2015", "value1": 900, "value2": 500, "value3": 800 },
+	{ "category": "Oct-2015", "value1": 850, "value2": 450, "value3": 900 },
+	{ "category": "Jan-2016", "value1": 820, "value2": 470, "value3": 870 },
+	{ "category": "Apr-2016", "value1": 800, "value2": 460, "value3": 910 },
+	{ "category": "Jul-2016", "value1": 790, "value2": 450, "value3": 870 },
+	{ "category": "Oct-2016", "value1": 790, "value2": 550, "value3": 820 },
 ]
