@@ -186,7 +186,7 @@ bkd.render = () => {
 	    	return text
 	    },
         dataCellTemplate: function (d) {
-        	let number = kendo.toString(d.dataItem.value, "n2")
+        	let number = kendo.toString(d.dataItem.value, "n0")
         	return `<div onclick="bkd.clickCell(this)" class="align-right">${number}</div>`
         },
     	dataBound: () => {
