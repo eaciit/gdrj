@@ -53,13 +53,14 @@ bkd.clickCell = (o) => {
 
 	let pivot = $(`.breakdown-view`).data('kendoPivotGrid')
 	let cellInfo = pivot.cellInfo(x, y)
-
-	let param = $.extend(true, bkd.getParam(), { 
-		breakdownBy: app.htmlDecode(bkd.breakdownBy()),
-		breakdownValue: app.htmlDecode(cellInfo.columnTuple.members[0].caption),
-		plheader1: '',
-		plheader2: '',
-		plheader3: '',
+	let param = bkd.getParam()
+	param.plheader1 = ''
+	param.plheader2 = ''
+	param.plheader3 = ''
+	param.filters.push({
+		Field: bkd.breakdownBy(),
+		Op: "$eq",
+		Value: app.htmlDecode(cellInfo.columnTuple.members[0].caption)
 	})
 
 	cellInfo.rowTuple.members.forEach((d) => {
@@ -71,10 +72,6 @@ bkd.clickCell = (o) => {
 		let value = app.htmlDecode(d.name.replace(`${d.parentName}&`, ''))
 		param[key] = value
 	})
-
-	if (param.breakdownValue == `${app.idAble(param.breakdownBy)}&`) {
-		param.breakdownValue = ''
-	}
 
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, (res) => {
 		let detail = res.Data.map((d) => { return {

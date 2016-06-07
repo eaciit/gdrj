@@ -62,13 +62,6 @@ func LedgerSummaryGetDetailPivot(payload *DetailParam) ([]*LedgerSummary, error)
 		dbox.Eq("plmodel.plheader1", payload.PLHeader1),
 	}
 
-	uniq := GetUniqueBreakDown(payload.BreakdownBy)
-	fmt.Println("------- uniq", uniq)
-
-	if payload.BreakdownValue != "" {
-		filters = append(filters, dbox.Eq(payload.BreakdownBy, payload.BreakdownValue))
-	}
-
 	if payload.PLHeader2 != "" {
 		filters = append(filters, dbox.Eq("plmodel.plheader2", payload.PLHeader2))
 	}
@@ -78,6 +71,10 @@ func LedgerSummaryGetDetailPivot(payload *DetailParam) ([]*LedgerSummary, error)
 	}
 
 	filter := dbox.And(payload.ParseFilter(), dbox.And(filters...))
+
+	for _, each := range filters {
+		fmt.Println("++++++", *each)
+	}
 
 	fmt.Println("----", *payload)
 	cursor, err := Find(new(LedgerSummary), filter, nil)
@@ -323,11 +320,9 @@ func (s *LedgerSummary) Save() error {
 
 type DetailParam struct {
 	PivotParam
-	BreakdownBy    string `json:"breakdownby"`
-	BreakdownValue string `json:"breakdownvalue"`
-	PLHeader1      string `json:"plheader1"`
-	PLHeader2      string `json:"plheader2"`
-	PLHeader3      string `json:"plheader3"`
+	PLHeader1 string `json:"plheader1"`
+	PLHeader2 string `json:"plheader2"`
+	PLHeader3 string `json:"plheader3"`
 }
 
 type PivotParam struct {
