@@ -145,18 +145,19 @@ func main() {
     //prepMaster()
     
 	toolkit.Println("START...")
+    seed := 100000
     crx, err := gdrj.Find(new(gdrj.SalesTrx), 
         nil,
         //dbox.Eq("pcvalid",false),
         //nil)
-        toolkit.M{}.Set("take",1000000))
+        toolkit.M{}.Set("take",seed))
     if err != nil {
 		toolkit.Println("Error Found : ", err.Error())
 		os.Exit(1)
 	}
     defer crx.Close()
     
-    count = 1000000//crx.Count()
+    count = seed//crx.Count()
     i := 0
     t0 = time.Now()
     jobs := make(chan *gdrj.SalesTrx, count)
@@ -165,7 +166,7 @@ func main() {
     //--- prepare worker
     p := new(progress)
     p.count = count
-    for w:=0;w<50;w++{
+    for w:=0;w<5;w++{
         go worker(w, jobs, result, p)
     }
     
@@ -180,11 +181,9 @@ func main() {
         
         jobs <- st
         
-        /*
         toolkit.Printfn("Processing %d of %d %s in %s", 
             i, count, st.SalesHeaderID, 
             time.Since(t0).String())
-        */
     }
     close(jobs)
     
