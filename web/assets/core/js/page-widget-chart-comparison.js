@@ -7,6 +7,7 @@ ccr.data = ko.observableArray([]);
 ccr.title = ko.observable('Chart Comparison');
 ccr.contentIsLoading = ko.observable(false);
 ccr.categoryAxisField = ko.observable('category');
+ccr.breakdownBy = ko.observable('');
 
 ccr.refresh = function () {
 	ccr.data(DATATEMP_CHART_CR);
@@ -93,12 +94,12 @@ ccr.render = function () {
 		};
 	};
 
+	var chartContainer = $('.chart-container');
+	chartContainer.empty();
+
 	app.forEach(ccr.data(), function (k, v) {
-		var chartContainer = $('.chart-container');
 		var html = $($('#template-chart-comparison').html());
 		var config = configure(v);
-
-		console.log("======", k, v, config);
 
 		html.appendTo(chartContainer);
 		html.find('.title').html(k);
