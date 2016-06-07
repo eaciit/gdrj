@@ -433,5 +433,4 @@ rpt.refresh = function () {
 
 $(() => {
 	rpt.getIdeas()
-	rpt.refresh()
 })

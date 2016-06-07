@@ -301,5 +301,4 @@ rpt.refresh = function () {
 
 $(function () {
 	rpt.getIdeas();
-	rpt.refresh();
 });
