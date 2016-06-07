@@ -139,7 +139,8 @@ func main() {
 	toolkit.Println("START...")
 	crx, err := gdrj.Find(new(gdrj.SalesTrx),
 		dbox.Eq("pcvalid", true),
-		toolkit.M{}.Set("take",1200))
+		//toolkit.M{}.Set("take",1200))
+		nil)
 	if err != nil {
 		toolkit.Println("Error Found : ", err.Error())
 		os.Exit(1)
