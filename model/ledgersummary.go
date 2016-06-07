@@ -192,7 +192,7 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 		for _, each := range bunch {
 			keyword := ""
 			for _, s := range columns {
-				keyword = fmt.Sprintf("%s%s", keyword, each.Get("_id").(toolkit.M).GetString(s))
+				keyword = fmt.Sprintf("%s%v", keyword, each.Get("_id").(toolkit.M).Get(s))
 			}
 
 			if _, ok := allKeys[keyword]; !ok {
