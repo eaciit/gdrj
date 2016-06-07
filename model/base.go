@@ -103,12 +103,17 @@ type Date struct {
 	YearTxt    string
 	QuarterTxt string
 	Year       int
+	Fiscal string
 }
 
 func NewDate(yr, mth, dt int) *Date {
+	return SetDate(time.Date(yr, time.Month(mth), dt, 0, 0, 0, 0, time.UTC))
+}
+
+func SetDate(dt time.Time) *Date{
 	d := new(Date)
-	d.Date = time.Date(yr, time.Month(mth), dt, 0, 0, 0, 0, time.UTC)
-	d.ID = toolkit.Date2String(d.Date, "YYYYMMDD")
+	d.Date = dt
+	d.ID = toolkit.Date2String(d.Date, "YYYYMMdd")
 	d.Month = d.Date.Month()
 	d.Year = d.Date.Year()
 	d.Quarter = int(math.Ceil(float64(d.Month)/3.0) - 1.0)
@@ -118,9 +123,11 @@ func NewDate(yr, mth, dt int) *Date {
 	if d.Quarter < 4 {
 		d.QuarterTxt = toolkit.Sprintf("%d-%d Q%d",
 			d.Year, d.Year+1, d.Quarter)
+		d.Fiscal = toolkit.Sprintf("%d-%d", d.Year-1, d.Year)
 	} else {
 		d.QuarterTxt = toolkit.Sprintf("%d-%d Q%d",
 			d.Year-1, d.Year, d.Quarter)
+		d.Fiscal = toolkit.Sprintf("%d-%d", d.Year, d.Year+1)
 	}
 	return d
 }

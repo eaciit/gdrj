@@ -157,7 +157,6 @@ func main() {
         go worker(wi, jobs, result)
     }
 
-
     for {
         i++ 
         st := new(gdrj.SalesTrx)
@@ -174,7 +173,9 @@ func main() {
 
     for i:=0;i<count;i++{
         rout := <-result
-        toolkit.Printfn("Saving %d of %d - %s", i, count, rout)
+        toolkit.Printfn("Saving %d of %d - %s in %s", 
+            i, count, rout,
+            time.Since(t0).String())
     }
 }
 
