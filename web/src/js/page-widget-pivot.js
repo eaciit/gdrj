@@ -81,7 +81,7 @@ pvt.getParam = () => {
 			aggr: 'sum'
 		} })
 
-	return rpt.wrapParam('pivot', dimensions, dataPoints)
+	return rpt.wrapParam(dimensions, dataPoints)
 }
 pvt.refresh = () => {
 	// pvt.data(DATATEMP_PIVOT)
