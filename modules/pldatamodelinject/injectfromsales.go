@@ -9,10 +9,13 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
+    "sync"
 )
 
 var conn dbox.IConnection
 var count int
+var wg *sync.WaitGroup
+var mtx *sync.Mutex
 
 func setinitialconnection() {
 	var err error

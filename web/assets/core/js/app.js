@@ -43,7 +43,7 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
     var params = typeof data === 'undefined' ? {} : ko.mapping.toJSON(data);
 
     var config = {
-        url: url,
+        url: url.toLowerCase(),
         type: 'post',
         dataType: 'json',
         contentType: 'application/json charset=utf-8',
@@ -329,6 +329,11 @@ app.logAble = function () {
     var args = [].slice.call(arguments);
     app.log(args);
     return args[0];
+};
+app.htmlDecode = function (s) {
+    var elem = document.createElement('textarea');
+    elem.innerHTML = s;
+    return elem.value;
 };
 
 viewModel.StringExt = new Object();

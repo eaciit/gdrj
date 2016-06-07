@@ -160,18 +160,18 @@ var oc_zdp_width,
         box_border_color: '#BCE8F1',          // stroke color of boxes
         box_border_radius: 2,                 // border radius of boxes in pixels
         box_border_width: 1,                  // border with of boxes in pixels
-        box_fix_width: 150,                  // set fix width for boxes in pixels
+        box_fix_width: 170,                  // set fix width for boxes in pixels
         box_fix_height: null,                 // set fix height for boxes in pixels
         box_root_node_width: null,            // override fix width and max text width
         box_root_node_height: null,           // override fix height and size defined by text length
         box_html_template: null,              // id of element with template; Depends on jsrender and jQuery libraries!
-        line_color:     '#A4ADB1',            // color of connectors
-        title_color:    '#3A87AD',            // color of titles
-        subtitle_color: '#1A678D',            // color of subtitles
-        title_font_size: 15,                  // size of font used for displaying titles inside boxes
-        subtitle_font_size: 10,               // size of font used for displaying subtitles inside boxes
+        line_color:     '#53999E',            // color of connectors
+        title_color:    '#FFFFFF',            // color of titles
+        subtitle_color: '#FFFFFF',            // color of subtitles
+        title_font_size: 18,                  // size of font used for displaying titles inside boxes
+        subtitle_font_size: 12,               // size of font used for displaying subtitles inside boxes
         title_char_size: [7, 12.5],           // size (x, y) of a char of the font used for displaying titles
-        subtitle_char_size: [5, 10],          // size (x, y) of a char of the font used for displaying subtitles
+        subtitle_char_size: [10, 15],          // size (x, y) of a char of the font used for displaying subtitles
         max_text_width: 0,                    // max width (in chars) of each line of text ('0' for no limit)
         text_font: '"Source Sans Pro", "Open Sans", "Helvetica Neue", Helvetica, Arial', // font family to use (should be monospaced)
         use_images: false,                    // use images within boxes?
@@ -1010,50 +1010,49 @@ var oc_zdp_width,
 
         if (node.children !== undefined){
             if (node.children.length == 1){
-                options.box_color = "#F7D9D9";
-                options.box_color_hover = "#FDE9E9";
-                options.box_border_color = "#F1BCD0";
-                options.subtitle_color = "#8D1A1A";
-                options.title_color = "#AD3A3A";
+                options.box_color = "#DD4B39";
+                options.box_color_hover = "#EC644B";
+                options.box_border_color = "#D91E18";
+           
             } else if (node.children.length == 2) {
-                options.box_color = "#D9EDF7";
-                options.box_color_hover = "#E9FDF7";
-                options.box_border_color = "#BCE8F1";
-                options.subtitle_color = "#1A678D";
-                options.title_color = "#3A87AD";
+                options.box_color = "#009ABF";
+                options.box_color_hover = "#05a1c4";
+                options.box_border_color = "#30888e";
+                options.subtitle_color = "#FFFFFF";
+                options.title_color = "#FFFFFF";
             } else if (node.children.length == 3){
-                options.box_color = "#D9F7DB";
-                options.box_color_hover = "#EFFDE9";
+                options.box_color = "#00A65A";
+                options.box_color_hover = "#4caa4e";
                 options.box_border_color = "#C7F1BC";
-                options.subtitle_color = "#1A8D1E";
-                options.title_color = "#3AAD3E";
+                options.subtitle_color = "#FFFFFF";
+                options.title_color = "#FFFFFF";
             } else if (node.children.length > 3) {
-                options.box_color = "#D9F7F4";
-                options.box_color_hover = "#E9FDF9";
-                options.box_border_color = "#BCF1EC";
-                options.title_color = "#1A8D82";
-                options.subtitle_color = "#3AAD9D";
+                options.box_color = "#00C0EF";
+                options.box_color_hover = "#14d1fc";
+                options.box_border_color = "#04bee8";
+                options.title_color = "#FCFCFC";
+                options.subtitle_color = "#FCFCFC";
             } else {
-                options.box_color = "#F1F1F1";
-                options.box_color_hover = "#FBFBFB";
-                options.box_border_color = "#E6E6E6";
-                options.title_color = "#A0A7A4";
-                options.subtitle_color = "#8A8C8E";
+                 options.box_color = "#6F808A";
+                options.box_color_hover = "#76858e";
+                options.box_border_color = "#6f7c84";
+                options.title_color = "#FCFCFC";
+                options.subtitle_color = "#FCFCFC";
             }
         } else {
-            options.box_color = "#F1F1F1";
-            options.box_color_hover = "#FBFBFB";
-            options.box_border_color = "#E6E6E6";
-            options.title_color = "#A0A7A4";
-            options.subtitle_color = "#8A8C8E";
+            options.box_color = "#6F808A";
+            options.box_color_hover = "#76858e";
+            options.box_border_color = "#6f7c84";
+            options.title_color = "#FCFCFC";
+            options.subtitle_color = "#FCFCFC";
         }
 
         if (typeof node.is_root != "undefined") {
-            options.box_color = "#F7EED9";
-            options.box_color_hover = "#FDF7E9";
-            options.box_border_color = "#F1DEBC";
-            options.title_color = "#AD7A3A";
-            options.subtitle_color = "#8D5A1A";
+            options.box_color = "#F39C12";
+            options.box_color_hover = "#f7a52a";
+            options.box_border_color = "#ef9610";
+            options.title_color = "#FFFFFF";
+            options.subtitle_color = "#FFFFFF";
         }
 
         // debug
@@ -1225,6 +1224,7 @@ var oc_zdp_width,
                     subtitle.attr('font-family', options.text_font);
                     subtitle.attr('font-size', options.subtitle_font_size);
                     subtitle.attr('fill', options.subtitle_color);
+                    subtitle.attr('letter-spacing','0.6px')
                 }
             }
         }
