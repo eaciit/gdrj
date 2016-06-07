@@ -337,37 +337,17 @@ rpt.filterMultiSelect = (d) => {
 	return config
 }
 
-rpt.expandToggleContent = () => {
-	let btnExpand = $('.btn-expand')
-	let panel = $('.panel-content-expandable')
-	let panelLeft = $('.panel-content-left')
-	let panelRight = $('.panel-content-right')
+rpt.toggleFilter = () => {
+	let panelFilter = $('.panel-filter')
+	let panelContent = $('.panel-content')
 
-	if (panel.hasClass('col-md-12')) {
-		panel.removeClass('col-md-12 no-padding').addClass('col-md-6')
-		panelLeft.addClass('no-padding-left')
-		panelRight.addClass('no-padding-right')
+	if (panelFilter.is(':visible')) {
+		panelFilter.hide()
+		panelContent.attr('class', 'col-md-12 col-sm-12 ez panel-content')
 	} else {
-		panel.removeClass('col-md-6').addClass('col-md-12 no-padding')
-		panelLeft.removeClass('no-padding-left')
-		panelRight.removeClass('no-padding-right')
+		panelFilter.show()
+		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content')
 	}
-
-	btnExpand.find('.fa').toggleClass('fa-compress')
-
-	let pivot = $('.k-pivot').data('kendoPivotGrid')
-	if (app.isDefined(pivot)) {
-		$('.k-pivot').data('kendoPivotGrid').refresh()
-	}
-
-	let chart = $('.k-chart').data('kendoChart')
-	if (app.isDefined(chart)) {
-		$('.k-chart').data('kendoChart').refresh()
-	}
-
-	$('.k-chart').each((i, e) => {
-		$(e).data('kendoChart').redraw()
-	})
 }
 rpt.getFilterValue = () => {
 	let res = [
@@ -385,51 +365,44 @@ rpt.getFilterValue = () => {
 rpt.getIdeas = () => {
 	app.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
 		if (!app.isFine(res)) {
-			return;
+			return
 		}
 
 		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.order))
 	})
 }
-
-rpt.wrapParam = function (type) {
-    var dimensions = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-    var dataPoints = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
-    var def = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
-
-    return $.extend(true, {
-        type: type,
+rpt.wrapParam = (dimensions = [], dataPoints = []) => {
+    return {
         dimensions: dimensions,
         dataPoints: dataPoints,
         filters: rpt.getFilterValue(),
         which: o.ID
-    }, def);
-};
+    }
+}
+
 rpt.setName = function (data, options) {
     return function () {
         setTimeout(function () {
             var row = options().find(function (d) {
-                return d.field == data.field();
-            });
+                return d.field == data.field()
+            })
             if (app.isDefined(row)) {
-                data.name(row.name);
+                data.name(row.name)
             }
 
-            console.log(app.koUnmap(data), options());
-        }, 150);
-    };
-};
+            console.log(app.koUnmap(data), options())
+        }, 150)
+    }
+}
 rpt.refresh = function () {
-    setTimeout(function () {
-        ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach(function (d, i) {
-            setTimeout(function () {
-                if (app.isDefined(window[d])) {
-                    window[d].refresh();
-                }
-            }, 1000 * i);
-        });
-    }, 100);
-};
+    ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach(function (d, i) {
+        setTimeout(function () {
+            if (app.isDefined(window[d])) {
+                window[d].refresh()
+            }
+        }, 1000 * i)
+    })
+}
 
 $(() => {
 	rpt.getIdeas()

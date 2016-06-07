@@ -109,7 +109,7 @@ crt.getParam = function () {
 		};
 	});
 
-	return rpt.wrapParam('chart', [row], dataPoints);
+	return rpt.wrapParam([row], dataPoints);
 };
 crt.refresh = function () {
 	// crt.data(DATATEMP_CHART)

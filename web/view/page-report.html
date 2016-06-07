@@ -14,18 +14,15 @@ let o = {
 {{if eq .id "list"}}
 	{{template "page-report-list.html"}}
 {{else}}
-	<div class="col-md-3 col-sm-3 ez panel-filter">
+	<div class="col-md-3 col-sm-3 ez panel-filter" style="display: none;">
 		<div class="panel ez no-padding hardcore">
 			<div class="panel-heading">
 				<h3 class="no-margin">Filter</h3>
 				<div class="panel-nav-button">
 					<div class="form-group relative align-right no-margin no-padding hardcore">
-						<button class="btn btn-sm btn-primary" data-bind="click: rpt.refresh">
+						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: bkd.refresh" title="Refresh">
 							<i class="fa fa-refresh"></i>
 						</button>
-						<!-- <button class="btn btn-sm btn-info btn-expand" data-bind="click: rpt.expandToggleContent">
-							<i class="fa fa-expand"></i>
-						</button> -->
 					</div>
 				</div>
 			</div>
@@ -41,6 +38,7 @@ let o = {
 			</div>
 		</div>
 	</div>
+	<div class="col-md-12 col-sm-12 ez panel-content">
 	{{if eq .id "dashboard"}}
 		{{template "page-report-dashboard.html"}}
 		<script>
@@ -55,6 +53,7 @@ let o = {
 	{{else if eq .id "gross_sales_discount_and_net_sales"}}
 		{{template "page-report-gross-sales-discount-and-net-sales.html"}}
 	{{end}}
+	</div>
 {{end}}
 
 	

@@ -90,7 +90,7 @@ pvt.getParam = function () {
 		};
 	});
 
-	return rpt.wrapParam('pivot', dimensions, dataPoints);
+	return rpt.wrapParam(dimensions, dataPoints);
 };
 pvt.refresh = function () {
 	// pvt.data(DATATEMP_PIVOT)

@@ -42,7 +42,7 @@ tbl.getParam = () => {
 		.filter((d) => (d.field != '') && (d.field != ''))
 		.map((d) => { return { field: d.field, name: d.name, aggr: 'sum' } })
 
-	return rpt.wrapParam('table', dimensions, dataPoints)
+	return rpt.wrapParam(dimensions, dataPoints)
 }
 tbl.refresh = () => {
 	// pvt.data(DATATEMP_TABLE)

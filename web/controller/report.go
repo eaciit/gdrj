@@ -189,6 +189,39 @@ func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interfa
 	return res
 }
 
+func (m *ReportController) GetSalesHeaderList(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	result, err := gdrj.GetSalesHeaderList()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return result
+}
+
+func (m *ReportController) GetDecreasedQty(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	result, err := gdrj.GetDecreasedQty()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return result
+}
+
+func (m *ReportController) GetIncreasedSales(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	result, err := gdrj.GetIncreasedSales()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return result
+}
+
 func (m *ReportController) GetLedgerSummaryDetail(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 

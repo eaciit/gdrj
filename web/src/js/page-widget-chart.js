@@ -100,7 +100,7 @@ crt.getParam = () => {
 			aggr: 'sum'
 		} })
 
-	return rpt.wrapParam('chart', [row], dataPoints)
+	return rpt.wrapParam([row], dataPoints)
 }
 crt.refresh = () => {
 	// crt.data(DATATEMP_CHART)

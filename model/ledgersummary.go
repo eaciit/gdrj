@@ -53,9 +53,12 @@ func (s *LedgerSummary) PreSave() error {
 	return nil
 }
 
+func GetUniqueBreakDown(breakdown string) []string {
+	return nil
+}
+
 func LedgerSummaryGetDetailPivot(payload *DetailParam) ([]*LedgerSummary, error) {
 	filters := []*dbox.Filter{
-		dbox.Eq(payload.BreakdownBy, payload.BreakdownValue),
 		dbox.Eq("plmodel.plheader1", payload.PLHeader1),
 	}
 
@@ -67,9 +70,12 @@ func LedgerSummaryGetDetailPivot(payload *DetailParam) ([]*LedgerSummary, error)
 		filters = append(filters, dbox.Eq("plmodel.plheader3", payload.PLHeader3))
 	}
 
+	for _, each := range filters {
+		fmt.Println("++++++", *each)
+	}
+
 	filter := dbox.And(payload.ParseFilter(), dbox.And(filters...))
 
-	fmt.Println("----", *payload)
 	cursor, err := Find(new(LedgerSummary), filter, nil)
 	if err != nil {
 		return nil, err
@@ -105,6 +111,72 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 	cr.Close()
 
 	return
+}
+
+func GetSalesHeaderList() (toolkit.Ms, error) {
+	conn := DB().Connection
+	q := conn.NewQuery().From(new(LedgerSummary).TableName())
+	q = q.Group("plmodel.plheader1")
+	c, e := q.Cursor(nil)
+	if e != nil {
+		return nil, errors.New("GetSalesHeaderList: Preparing cursor error " + e.Error())
+	}
+	defer c.Close()
+
+	result := toolkit.Ms{}
+	e = c.Fetch(&result, 0, false)
+	if e != nil {
+		return nil, errors.New("GetSalesHeaderList: Fetch cursor error " + e.Error())
+	}
+
+	return result, nil
+
+}
+
+func GetDecreasedQty() (toolkit.Ms, error) {
+	result := toolkit.M{}
+	results := toolkit.Ms{}
+	results = append(results, result)
+	ls := new(LedgerSummary)
+	lsList := []*LedgerSummary{}
+	quartal := toolkit.M{}
+	// quartalList := toolkit.Ms{}
+
+	cls, err := Find(new(LedgerSummary), nil, nil)
+	if err != nil {
+		return nil, errors.New("GetSalesHeaderList: Preparing cursor error " + err.Error())
+	}
+
+	defer cls.Close()
+
+	for err = cls.Fetch(ls, 1, false); err == nil; {
+		ls = new(LedgerSummary)
+		lsList = append(lsList, ls)
+		quartal.Set("product", ls.SKUID)
+		quartal.Set("qty", ls.Value3)
+		quartal.Set("year", ls.Year)
+		switch {
+		case ls.Month >= 1 && ls.Month <= 3:
+			quartal.Set("quartal", "q1")
+		case ls.Month >= 4 && ls.Month <= 6:
+			quartal.Set("quartal", "q2")
+		case ls.Month >= 7 && ls.Month <= 9:
+			quartal.Set("quartal", "q3")
+		case ls.Month >= 10 && ls.Month <= 12:
+			quartal.Set("quartal", "q4")
+		}
+		err = cls.Fetch(ls, 1, false)
+	}
+
+	return results, nil
+}
+
+func GetIncreasedSales() (toolkit.Ms, error) {
+	result := toolkit.M{}
+	results := toolkit.Ms{}
+	results = append(results, result)
+
+	return results, nil
 }
 
 func CalculateLedgerSummaryAnalysisIdea(payload *PivotParam) ([]*toolkit.M, error) {
@@ -149,37 +221,28 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 	var datapoints []string = payload.ParseDataPoints()
 	var fnTransform (func(m *toolkit.M) error) = nil
 
-	fmt.Printf("--- %#v\n", filter)
-	fmt.Printf("--- %#v\n", columns)
-	fmt.Printf("--- %#v\n", datapoints)
-
-	fmt.Printf("+++++ %#v\n", *(filter.Value.([]*dbox.Filter)[0]))
-	fmt.Printf("+++++ %#v\n", *(filter.Value.([]*dbox.Filter)[1]))
-
 	plKeys := []string{}
 	bunchesOfData := [][]*toolkit.M{}
 
 	switch payload.Which {
-	case "all_plmod":
-		fmt.Println("asdf")
-		// plKeys = []string{"PL1", "PL2", "PL3"} //, "PL2", "PL3", "PL4", "PL5", "PL6", "PL7", "PL8", "PL9", "PL10", "PL11", "PL12", "PL13", "PL14", "PL15", "PL16", "PL17", "PL18", "PL19", "PL20", "PL21", "PL22", "PL23", "PL24", "PL25", "PL26", "PL27", "PL28", "PL29", "PL30", "PL31", "PL32", "PL33", "PL34", "PL35", "PL36", "PL37", "PL38", "PL39", "PL40", "PL41", "PL42", "PL43", "PL44", "PL45", "PL46"}
 	case "gross_sales_discount_and_net_sales":
-		plKeys = []string{"PL1", "PL2", "PL3"}
-	}
+		{
+			plKeys = []string{"PL1", "PL2", "PL3"}
+			for _, plKey := range plKeys {
+				plFilter := dbox.Eq("plcode", plKey)
+				bunchData, err := SummarizeLedgerSum(
+					dbox.And(plFilter, filter), columns, datapoints, fnTransform)
+				if err != nil {
+					return nil, err
+				}
 
-	if payload.Which == "all_plmod" {
-		bunchData, err := SummarizeLedgerSum(
-			filter, columns, datapoints, fnTransform)
-		if err != nil {
-			return nil, err
+				bunchesOfData = append(bunchesOfData, bunchData)
+			}
 		}
-
-		bunchesOfData = append(bunchesOfData, bunchData)
-	} else {
-		for _, plKey := range plKeys {
-			plFilter := dbox.Eq("plcode", plKey)
+	default:
+		{
 			bunchData, err := SummarizeLedgerSum(
-				dbox.And(plFilter, filter), columns, datapoints, fnTransform)
+				filter, columns, datapoints, fnTransform)
 			if err != nil {
 				return nil, err
 			}
@@ -195,7 +258,7 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 		for _, each := range bunch {
 			keyword := ""
 			for _, s := range columns {
-				keyword = fmt.Sprintf("%s%s", keyword, each.Get("_id").(toolkit.M).GetString(s))
+				keyword = fmt.Sprintf("%s%v", keyword, each.Get("_id").(toolkit.M).Get(s))
 			}
 
 			if _, ok := allKeys[keyword]; !ok {
@@ -315,11 +378,9 @@ func (s *LedgerSummary) Save() error {
 
 type DetailParam struct {
 	PivotParam
-	BreakdownBy    string `json:"breakdownby"`
-	BreakdownValue string `json:"breakdownvalue"`
-	PLHeader1      string `json:"plheader1"`
-	PLHeader2      string `json:"plheader2"`
-	PLHeader3      string `json:"plheader3"`
+	PLHeader1 string `json:"plheader1"`
+	PLHeader2 string `json:"plheader2"`
+	PLHeader3 string `json:"plheader3"`
 }
 
 type PivotParam struct {
@@ -327,7 +388,6 @@ type PivotParam struct {
 	DataPoints []*PivotParamDataPoint  `json:"datapoints"`
 	Which      string                  `json:"which"`
 	Filters    []toolkit.M             `json:"filters"`
-	Type       string                  `json:"type"`
 }
 
 type PivotParamDimensions struct {
@@ -409,7 +469,7 @@ func (p *PivotParam) ParseFilter() *dbox.Filter {
 		case dbox.FilterOpEqual:
 			value := each.GetString("Value")
 
-			filters = append(filters, dbox.Gte(field, value))
+			filters = append(filters, dbox.Eq(field, value))
 		}
 	}
 

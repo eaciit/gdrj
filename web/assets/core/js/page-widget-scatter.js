@@ -81,7 +81,7 @@ sct.getParam = function () {
 		};
 	});
 
-	return rpt.wrapParam('scatter', dimensions, dataPoints);
+	return rpt.wrapParam(dimensions, dataPoints);
 };
 
 sct.refresh = function () {
