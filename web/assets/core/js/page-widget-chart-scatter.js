@@ -12,10 +12,9 @@ rs.pplheader = ko.observable('Net Sales');
 rs.optionDimensionSelect = ko.observableArray([{ field: 'Net Sales', name: 'Net Sales' }, { field: 'EBIT', name: 'EBIT' }, { field: 'Cost of Goods Sold', name: 'Cost of Goods Sold' }]);
 
 rs.refresh = function () {
-    var dimensions = [{ "field": "plmodel.plheader1", "name": "plheader1" }, { "field": rs.breakdownBy(), "name": "Channel" } // ====== THE BREAKDOWN
-    ];
+    var dimensions = [{ "field": "plmodel.plheader1", "name": "plheader1" }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
     var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
-    var param = rpt.wrapParam("asdasdas", dimensions, dataPoints);
+    var param = rpt.wrapParam(dimensions, dataPoints);
     param.filters.push({
         "Op": "$eq",
         "Field": "plmodel.plheader1",
@@ -57,7 +56,7 @@ rs.generateReport = function (data1, data2) {
             // 	opacity: 0,
             // 	width: 0
             // },
-            visible: false,
+            opacity: 0,
             markers: {
                 type: 'cross',
                 size: 8
@@ -75,7 +74,7 @@ rs.generateReport = function (data1, data2) {
             }
         },
         categoryAxis: {
-            categories: ['', '', '', '2015', '', '', '', '', '', '', '', '2016', '', '', ''],
+            categories: ['aaa', 'aaaa', 'aaaa', 'aaaa \n 2015', '', '', '', '', '', '', '', '2016', '', '', ''],
             majorGridLines: {
                 visible: false
             }
@@ -88,5 +87,7 @@ rs.generateReport = function (data1, data2) {
 };
 
 $(function () {
+    rpt.value.From(moment("2015-02-02").toDate());
+    rpt.value.To(moment("2016-02-02").toDate());
     rs.refresh();
 });

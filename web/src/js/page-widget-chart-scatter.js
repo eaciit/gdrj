@@ -18,12 +18,13 @@ rs.optionDimensionSelect = ko.observableArray([
 rs.refresh = () => {
 	let dimensions = [
 		{ "field": "plmodel.plheader1", "name": "plheader1" },
-		{ "field": rs.breakdownBy(), "name": "Channel" }  // ====== THE BREAKDOWN
+		{ "field": rs.breakdownBy(), "name": "Channel" },
+		{ "field": "year", "name": "Year" }
 	]
 	let dataPoints = [
 		{field: "value1", name: "value1", aggr: "sum"}
 	]
-	let param = rpt.wrapParam("asdasdas", dimensions, dataPoints)
+	let param = rpt.wrapParam(dimensions, dataPoints)
 	param.filters.push({
 	    "Op": "$eq",
 	    "Field": "plmodel.plheader1",
@@ -65,7 +66,7 @@ rs.generateReport = (data1, data2) => {
             // 	opacity: 0,
             // 	width: 0
             // },
-            visible: false,
+            opacity: 0,
             markers : {
             	type: 'cross',
 				size: 8
@@ -83,7 +84,7 @@ rs.generateReport = (data1, data2) => {
             }
         },
         categoryAxis: {
-            categories: ['', '', '', '2015', '', '', '', '', '', '', '', '2016', '', '', '' ],
+            categories: ['aaa', 'aaaa', 'aaaa', 'aaaa \n 2015', '', '', '', '', '', '', '', '2016', '', '', '' ],
             majorGridLines: {
                 visible: false
             }
@@ -96,5 +97,7 @@ rs.generateReport = (data1, data2) => {
 }
 
 $(() => {
+	rpt.value.From(moment("2015-02-02").toDate())
+	rpt.value.To(moment("2016-02-02").toDate())
 	rs.refresh()
 })
