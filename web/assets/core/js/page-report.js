@@ -210,37 +210,9 @@ rpt.filterMultiSelect = function (d) {
 	return config;
 };
 
-rpt.expandToggleContent = function () {
-	var btnExpand = $('.btn-expand');
-	var panel = $('.panel-content-expandable');
-	var panelLeft = $('.panel-content-left');
-	var panelRight = $('.panel-content-right');
-
-	if (panel.hasClass('col-md-12')) {
-		panel.removeClass('col-md-12 no-padding').addClass('col-md-6');
-		panelLeft.addClass('no-padding-left');
-		panelRight.addClass('no-padding-right');
-	} else {
-		panel.removeClass('col-md-6').addClass('col-md-12 no-padding');
-		panelLeft.removeClass('no-padding-left');
-		panelRight.removeClass('no-padding-right');
-	}
-
-	btnExpand.find('.fa').toggleClass('fa-compress');
-
-	var pivot = $('.k-pivot').data('kendoPivotGrid');
-	if (app.isDefined(pivot)) {
-		$('.k-pivot').data('kendoPivotGrid').refresh();
-	}
-
-	var chart = $('.k-chart').data('kendoChart');
-	if (app.isDefined(chart)) {
-		$('.k-chart').data('kendoChart').refresh();
-	}
-
-	$('.k-chart').each(function (i, e) {
-		$(e).data('kendoChart').redraw();
-	});
+rpt.toggleFilter = function () {
+	$('.panel-filter').toggle('show');
+	$('.panel-content').toggleClass('col-md-12 col-sm-12 ez panel-content');
 };
 rpt.getFilterValue = function () {
 	var res = [{ 'Field': 'customer.branchid', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand() }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region() }, { 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() }, { 'Field': 'year', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'year', 'Op': '$lte', 'Value': rpt.value.To() }];
@@ -259,20 +231,18 @@ rpt.getIdeas = function () {
 		}));
 	});
 };
+rpt.wrapParam = function () {
+	var dimensions = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+	var dataPoints = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
-rpt.wrapParam = function (type) {
-	var dimensions = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-	var dataPoints = arguments.length <= 2 || arguments[2] === undefined ? [] : arguments[2];
-	var def = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
-
-	return $.extend(true, {
-		type: type,
+	return {
 		dimensions: dimensions,
 		dataPoints: dataPoints,
 		filters: rpt.getFilterValue(),
 		which: o.ID
-	}, def);
+	};
 };
+
 rpt.setName = function (data, options) {
 	return function () {
 		setTimeout(function () {
@@ -288,15 +258,13 @@ rpt.setName = function (data, options) {
 	};
 };
 rpt.refresh = function () {
-	setTimeout(function () {
-		['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach(function (d, i) {
-			setTimeout(function () {
-				if (app.isDefined(window[d])) {
-					window[d].refresh();
-				}
-			}, 1000 * i);
-		});
-	}, 100);
+	['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach(function (d, i) {
+		setTimeout(function () {
+			if (app.isDefined(window[d])) {
+				window[d].refresh();
+			}
+		}, 1000 * i);
+	});
 };
 
 $(function () {
