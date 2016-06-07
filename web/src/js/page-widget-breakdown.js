@@ -123,7 +123,7 @@ bkd.renderDetail = () => {
 	}, 300)
 }
 bkd.render = () => {
-	let data = bkd.data().slice(0, 100)
+	let data = bkd.data()
 	let schemaModelFields = {}
 	let schemaCubeDimensions = {}
 	let schemaCubeMeasures = {}

@@ -113,7 +113,7 @@ bkd.renderDetail = function () {
 	}, 300);
 };
 bkd.render = function () {
-	var data = bkd.data().slice(0, 100);
+	var data = bkd.data();
 	var schemaModelFields = {};
 	var schemaCubeDimensions = {};
 	var schemaCubeMeasures = {};
