@@ -178,7 +178,7 @@ bkd.render = function () {
 			return text;
 		},
 		dataCellTemplate: function dataCellTemplate(d) {
-			var number = kendo.toString(d.dataItem.value, "n2");
+			var number = kendo.toString(d.dataItem.value, "n0");
 			return '<div onclick="bkd.clickCell(this)" class="align-right">' + number + '</div>';
 		},
 		dataBound: function dataBound() {

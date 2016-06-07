@@ -211,8 +211,16 @@ rpt.filterMultiSelect = function (d) {
 };
 
 rpt.toggleFilter = function () {
-	$('.panel-filter').toggle('show');
-	$('.panel-content').toggleClass('col-md-12 col-sm-12 ez panel-content');
+	var panelFilter = $('.panel-filter');
+	var panelContent = $('.panel-content');
+
+	if (panelFilter.is(':visible')) {
+		panelFilter.hide();
+		panelContent.attr('class', 'col-md-12 col-sm-12 ez panel-content');
+	} else {
+		panelFilter.show();
+		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content');
+	}
 };
 rpt.getFilterValue = function () {
 	var res = [{ 'Field': 'customer.branchid', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand() }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region() }, { 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() }, { 'Field': 'year', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'year', 'Op': '$lte', 'Value': rpt.value.To() }];
