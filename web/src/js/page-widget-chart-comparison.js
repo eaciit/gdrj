@@ -53,46 +53,62 @@ ccr.render = () => {
 		}
 	]
 
-	let config = {
-		dataSource: {
-			data: ccr.data()
-		},
-		series: series,
-		seriesColors: ["#5499C7", "#ff8d00", "#678900", "#ffb53c", "#396000"],
-		seriesDefaults: {
-            type: "line",
-            style: "smooth"
-		},
-		categoryAxis: {
-			baseUnit: "month",
-			field: ccr.categoryAxisField(),
-			majorGridLines: {
-				color: '#fafafa'
+	let configure = (data) => {
+		return {
+			dataSource: {
+				data: data
 			},
-			labels: {
-				font: 'Source Sans Pro 11',
-				// template: (d) => `${app.capitalize(d.value).slice(0, 3)}`
+			series: series,
+			seriesColors: ["#5499C7", "#ff8d00", "#678900", "#ffb53c", "#396000"],
+			seriesDefaults: {
+	            type: "line",
+	            style: "smooth"
+			},
+			categoryAxis: {
+				baseUnit: "month",
+				field: ccr.categoryAxisField(),
+				majorGridLines: {
+					color: '#fafafa'
+				},
+				labels: {
+					font: 'Source Sans Pro 11',
+					rotation: 40
+					// template: (d) => `${app.capitalize(d.value).slice(0, 3)}`
+				}
+			},
+			legend: {
+				position: 'bottom'
+			},
+			valueAxis: {
+				majorGridLines: {
+					color: '#fafafa'
+				},
+			},
+			tooltip: {
+				visible: true,
+				template: (d) => `${d.series.name} on ${d.category}: ${kendo.toString(d.value, 'n2')}`
 			}
-		},
-		legend: {
-			position: 'bottom'
-		},
-		valueAxis: {
-			majorGridLines: {
-				color: '#fafafa'
-			},
-		},
-		tooltip: {
-			visible: true,
-			template: (d) => `${d.series.name} on ${d.category}: ${kendo.toString(d.value, 'n2')}`
 		}
 	}
 
-	$('.chart').replaceWith('<div class="chart"></div>')
-	$('.chart').kendoChart(config)
+	app.forEach(ccr.data(), (k, v) => {
+		let chartContainer = $('.chart-container')
+		let html = $($('#template-chart-comparison').html())
+		let config = configure(v)
+
+		console.log("======", k, v, config)
+
+		html.appendTo(chartContainer)
+		html.find('.title').html(k)
+		html.find('.chart').kendoChart(config)
+	})
 }
 
-rpt.toggleFilterCallback = ccr.refresh
+rpt.toggleFilterCallback = () => {
+	$('.chart-container .k-chart').each((i, e) => {
+		$(e).data('kendoChart').redraw()
+	})
+}
 
 $(() => {
 	ccr.refresh()

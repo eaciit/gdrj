@@ -53,48 +53,64 @@ ccr.render = function () {
 		}
 	}];
 
-	var config = {
-		dataSource: {
-			data: ccr.data()
-		},
-		series: series,
-		seriesColors: ["#5499C7", "#ff8d00", "#678900", "#ffb53c", "#396000"],
-		seriesDefaults: {
-			type: "line",
-			style: "smooth"
-		},
-		categoryAxis: {
-			baseUnit: "month",
-			field: ccr.categoryAxisField(),
-			majorGridLines: {
-				color: '#fafafa'
+	var configure = function configure(data) {
+		return {
+			dataSource: {
+				data: data
 			},
-			labels: {
-				font: 'Source Sans Pro 11'
+			series: series,
+			seriesColors: ["#5499C7", "#ff8d00", "#678900", "#ffb53c", "#396000"],
+			seriesDefaults: {
+				type: "line",
+				style: "smooth"
+			},
+			categoryAxis: {
+				baseUnit: "month",
+				field: ccr.categoryAxisField(),
+				majorGridLines: {
+					color: '#fafafa'
+				},
+				labels: {
+					font: 'Source Sans Pro 11',
+					rotation: 40
+					// template: (d) => `${app.capitalize(d.value).slice(0, 3)}`
+				}
+			},
+			legend: {
+				position: 'bottom'
+			},
+			valueAxis: {
+				majorGridLines: {
+					color: '#fafafa'
+				}
+			},
+			tooltip: {
+				visible: true,
+				template: function template(d) {
+					return d.series.name + ' on ' + d.category + ': ' + kendo.toString(d.value, 'n2');
+				}
 			}
-		},
-		// template: (d) => `${app.capitalize(d.value).slice(0, 3)}`
-		legend: {
-			position: 'bottom'
-		},
-		valueAxis: {
-			majorGridLines: {
-				color: '#fafafa'
-			}
-		},
-		tooltip: {
-			visible: true,
-			template: function template(d) {
-				return d.series.name + ' on ' + d.category + ': ' + kendo.toString(d.value, 'n2');
-			}
-		}
+		};
 	};
 
-	$('.chart').replaceWith('<div class="chart"></div>');
-	$('.chart').kendoChart(config);
+	app.forEach(ccr.data(), function (k, v) {
+		var chartContainer = $('.chart-container');
+		var html = $($('#template-chart-comparison').html());
+		var config = configure(v);
+
+		console.log("======", k, v, config);
+
+		html.appendTo(chartContainer);
+		html.find('.title').html(k);
+		html.find('.chart').kendoChart(config);
+	});
 };
 
-rpt.toggleFilterCallback = ccr.refresh;
+rpt.toggleFilterCallback = function () {
+	$('.chart-container .k-chart').each(function (i, e) {
+		$(e).data('kendoChart').redraw();
+	});
+};
 
 $(function () {
 	ccr.refresh();
