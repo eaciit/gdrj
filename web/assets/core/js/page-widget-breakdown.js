@@ -46,17 +46,15 @@ bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "s
 bkd.clickCell = function (o) {
 	var x = $(o).closest("td").index();
 	var y = $(o).closest("tr").index();
-	var cat = $('.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(' + x + ') span').html();
-	var plheader1 = $('.breakdown-view .k-grid.k-widget:eq(0) tr:eq(' + y + ') td:not(.k-first):first > span').html();
-
-	var tr = $('.breakdown-view .k-grid.k-widget:eq(0) tr:eq(' + y + ')');
+	// let cat = $(`.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(${x}) span`).html()
+	// let plheader1 = $(`.breakdown-view .k-grid.k-widget:eq(0) tr:eq(${y}) td:not(.k-first):first > span`).html()
 
 	var pivot = $('.breakdown-view').data('kendoPivotGrid');
 	var cellInfo = pivot.cellInfo(x, y);
 
 	var param = $.extend(true, bkd.getParam(), {
 		breakdownBy: app.htmlDecode(bkd.breakdownBy()),
-		breakdownValue: app.htmlDecode(cat),
+		breakdownValue: app.htmlDecode(cellInfo.columnTuple.members[0].caption),
 		plheader1: '',
 		plheader2: '',
 		plheader3: ''
@@ -71,8 +69,6 @@ bkd.clickCell = function (o) {
 		var value = app.htmlDecode(d.name.replace(d.parentName + '&', ''));
 		param[key] = value;
 	});
-
-	app.log("------", param);
 
 	if (param.breakdownValue == app.idAble(param.breakdownBy) + '&') {
 		param.breakdownValue = '';
@@ -174,7 +170,16 @@ bkd.render = function () {
 			columns: columns,
 			measures: measures
 		},
-		dataCellTemplate: function dataCellTemplate(d, e) {
+		columnHeaderTemplate: function columnHeaderTemplate(d) {
+			var text = d.member.caption;
+
+			if (text == '') {
+				text = '&nbsp;';
+			}
+
+			return text;
+		},
+		dataCellTemplate: function dataCellTemplate(d) {
 			var number = kendo.toString(d.dataItem.value, "n2");
 			return '<div onclick="bkd.clickCell(this)" class="align-right">' + number + '</div>';
 		},

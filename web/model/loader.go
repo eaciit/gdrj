@@ -121,6 +121,12 @@ func GenerateDummyLedgerSummary() {
 
 				date := new(gdrj.Date)
 				date.Date = time.Now()
+				date.Month = time.Month(toolkit.RandInt(12))
+				date.Quarter = toolkit.RandInt(4)
+				date.QuarterTxt = toolkit.RandomString(10)
+				date.YearTxt = toolkit.RandomString(10)
+				date.Year = toolkit.RandInt(4)
+
 				l := new(gdrj.LedgerSummary)
 				l.Customer = arr_custs[toolkit.RandInt(len(arr_custs))]
 				l.Product = arr_prods[toolkit.RandInt(len(arr_prods))]
