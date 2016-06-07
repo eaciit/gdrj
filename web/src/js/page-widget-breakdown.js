@@ -38,18 +38,39 @@ bkd.dataPoints = ko.observableArray([
 	{ field: "value1", name: "value1", aggr: "sum" }
 ])
 bkd.clickCell = (o) => {
-	console.log($(o))
-
 	let x = $(o).closest("td").index()
 	let y = $(o).closest("tr").index()
 	let cat = $(`.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(${x}) span`).html()
 	let plheader1 = $(`.breakdown-view .k-grid.k-widget:eq(0) tr:eq(${y}) td:not(.k-first):first > span`).html()
 
+	let tr = $(`.breakdown-view .k-grid.k-widget:eq(0) tr:eq(${y})`)
+
+	let pivot = $(`.breakdown-view`).data('kendoPivotGrid')
+	let cellInfo = pivot.cellInfo(x, y)
+
 	let param = $.extend(true, bkd.getParam(), { 
 		breakdownBy: app.htmlDecode(bkd.breakdownBy()),
-		breakdownValue: cat, 
-		plheader1: app.htmlDecode(plheader1)
+		breakdownValue: app.htmlDecode(cat),
+		plheader1: '',
+		plheader2: '',
+		plheader3: '',
 	})
+
+	cellInfo.rowTuple.members.forEach((d) => {
+		if (d.parentName == undefined) {
+			return
+		}
+
+		let key = d.parentName.split('_').reverse()[0]
+		let value = app.htmlDecode(d.name.replace(`${d.parentName}&`, ''))
+		param[key] = value
+	})
+
+	app.log("------", param)
+
+	if (param.breakdownValue == `${app.idAble(param.breakdownBy)}&`) {
+		param.breakdownValue = ''
+	}
 
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, (res) => {
 		let detail = res.Data.map((d) => { return {
@@ -66,7 +87,6 @@ bkd.clickCell = (o) => {
 
 		bkd.detail(detail)
 		bkd.renderDetail()
-		app.log(res.Data)
 	})
 }
 bkd.renderDetail = () => {
@@ -152,7 +172,7 @@ bkd.render = () => {
 	        columns: columns,
 	        measures: measures
 	    },
-        dataCellTemplate: function (d) {
+        dataCellTemplate: function (d, e) {
         	let number = kendo.toString(d.dataItem.value, "n2")
         	return `<div onclick="bkd.clickCell(this)" class="align-right">${number}</div>`
         },

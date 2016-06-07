@@ -37,18 +37,39 @@ bkd.breakdownBy = ko.observable('customer.channelname');
 bkd.dimensions = ko.observableArray([{ field: 'plmodel.plheader1', name: ' ' }, { field: 'plmodel.plheader2', name: ' ' }, { field: 'plmodel.plheader3', name: ' ' }]);
 bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "sum" }]);
 bkd.clickCell = function (o) {
-	console.log($(o));
-
 	var x = $(o).closest("td").index();
 	var y = $(o).closest("tr").index();
 	var cat = $('.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(' + x + ') span').html();
 	var plheader1 = $('.breakdown-view .k-grid.k-widget:eq(0) tr:eq(' + y + ') td:not(.k-first):first > span').html();
 
+	var tr = $('.breakdown-view .k-grid.k-widget:eq(0) tr:eq(' + y + ')');
+
+	var pivot = $('.breakdown-view').data('kendoPivotGrid');
+	var cellInfo = pivot.cellInfo(x, y);
+
 	var param = $.extend(true, bkd.getParam(), {
 		breakdownBy: app.htmlDecode(bkd.breakdownBy()),
-		breakdownValue: cat,
-		plheader1: app.htmlDecode(plheader1)
+		breakdownValue: app.htmlDecode(cat),
+		plheader1: '',
+		plheader2: '',
+		plheader3: ''
 	});
+
+	cellInfo.rowTuple.members.forEach(function (d) {
+		if (d.parentName == undefined) {
+			return;
+		}
+
+		var key = d.parentName.split('_').reverse()[0];
+		var value = app.htmlDecode(d.name.replace(d.parentName + '&', ''));
+		param[key] = value;
+	});
+
+	app.log("------", param);
+
+	if (param.breakdownValue == app.idAble(param.breakdownBy) + '&') {
+		param.breakdownValue = '';
+	}
 
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
 		var detail = res.Data.map(function (d) {
@@ -67,7 +88,6 @@ bkd.clickCell = function (o) {
 
 		bkd.detail(detail);
 		bkd.renderDetail();
-		app.log(res.Data);
 	});
 };
 bkd.renderDetail = function () {
@@ -144,7 +164,7 @@ bkd.render = function () {
 			columns: columns,
 			measures: measures
 		},
-		dataCellTemplate: function dataCellTemplate(d) {
+		dataCellTemplate: function dataCellTemplate(d, e) {
 			var number = kendo.toString(d.dataItem.value, "n2");
 			return '<div onclick="bkd.clickCell(this)" class="align-right">' + number + '</div>';
 		},

@@ -54,18 +54,23 @@ func (s *LedgerSummary) PreSave() error {
 }
 
 func LedgerSummaryGetDetailPivot(payload *DetailParam) ([]*LedgerSummary, error) {
-	var filter *dbox.Filter = payload.ParseFilter()
-
-	fmt.Println("------", filter)
-
-	filter = dbox.And(
-		filter,
+	filters := []*dbox.Filter{
 		dbox.Eq(payload.BreakdownBy, payload.BreakdownValue),
 		dbox.Eq("plmodel.plheader1", payload.PLHeader1),
-	)
+	}
+
+	if payload.PLHeader2 != "" {
+		filters = append(filters, dbox.Eq("plmodel.plheader2", payload.PLHeader2))
+	}
+
+	if payload.PLHeader3 != "" {
+		filters = append(filters, dbox.Eq("plmodel.plheader3", payload.PLHeader3))
+	}
+
+	filter := dbox.And(payload.ParseFilter(), dbox.And(filters...))
 
 	fmt.Println("----", *payload)
-	cursor, err := Find( /*new(LedgerSummary)*/ new(LedgerSummary), filter, nil)
+	cursor, err := Find(new(LedgerSummary), filter, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -313,6 +318,8 @@ type DetailParam struct {
 	BreakdownBy    string `json:"breakdownby"`
 	BreakdownValue string `json:"breakdownvalue"`
 	PLHeader1      string `json:"plheader1"`
+	PLHeader2      string `json:"plheader2"`
+	PLHeader3      string `json:"plheader3"`
 }
 
 type PivotParam struct {
