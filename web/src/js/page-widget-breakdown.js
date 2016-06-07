@@ -47,17 +47,15 @@ bkd.dataPoints = ko.observableArray([
 bkd.clickCell = (o) => {
 	let x = $(o).closest("td").index()
 	let y = $(o).closest("tr").index()
-	let cat = $(`.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(${x}) span`).html()
-	let plheader1 = $(`.breakdown-view .k-grid.k-widget:eq(0) tr:eq(${y}) td:not(.k-first):first > span`).html()
-
-	let tr = $(`.breakdown-view .k-grid.k-widget:eq(0) tr:eq(${y})`)
+	// let cat = $(`.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(${x}) span`).html()
+	// let plheader1 = $(`.breakdown-view .k-grid.k-widget:eq(0) tr:eq(${y}) td:not(.k-first):first > span`).html()
 
 	let pivot = $(`.breakdown-view`).data('kendoPivotGrid')
 	let cellInfo = pivot.cellInfo(x, y)
 
 	let param = $.extend(true, bkd.getParam(), { 
 		breakdownBy: app.htmlDecode(bkd.breakdownBy()),
-		breakdownValue: app.htmlDecode(cat),
+		breakdownValue: app.htmlDecode(cellInfo.columnTuple.members[0].caption),
 		plheader1: '',
 		plheader2: '',
 		plheader3: '',
@@ -72,8 +70,6 @@ bkd.clickCell = (o) => {
 		let value = app.htmlDecode(d.name.replace(`${d.parentName}&`, ''))
 		param[key] = value
 	})
-
-	app.log("------", param)
 
 	if (param.breakdownValue == `${app.idAble(param.breakdownBy)}&`) {
 		param.breakdownValue = ''
@@ -182,7 +178,16 @@ bkd.render = () => {
 	        columns: columns,
 	        measures: measures
 	    },
-        dataCellTemplate: function (d, e) {
+	    columnHeaderTemplate: function (d) {
+	    	let text = d.member.caption
+
+	    	if (text == '') {
+	    		text = '&nbsp;'
+	    	}
+
+	    	return text
+	    },
+        dataCellTemplate: function (d) {
         	let number = kendo.toString(d.dataItem.value, "n2")
         	return `<div onclick="bkd.clickCell(this)" class="align-right">${number}</div>`
         },
