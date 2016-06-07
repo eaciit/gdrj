@@ -252,10 +252,10 @@ func main() {
             time.Since(t0).String())
 	}
 
-	toolkit.Printfn("Saving data")
 	count = len(models)
 	i = 0
-
+	toolkit.Printfn("Saving data %d records", count)
+	
 	jobs := make(chan *gdrj.PLDataModel, count)
 	result := make(chan string, count)
 
@@ -282,7 +282,8 @@ func worker(wi int, jobs <-chan *gdrj.PLDataModel, r chan<- string){
 
 	for m := range jobs{
 		m.ID = m.PrepareID().(string)
-		gdrj.Save(m)
+		//gdrj.Save(m)
+		workerConn.NewQuery().From(m.TableName()).Save().Exec(toolkit.M{}.Set("data",m))
 		r <- m.ID
 	}
 }
