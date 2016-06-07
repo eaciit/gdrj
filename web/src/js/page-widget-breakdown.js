@@ -3,6 +3,7 @@ let bkd = viewModel.breakdown
 
 app.log("ANGKA DI PIVOT CLICKABLE, JIKA SALES MAKA AMBIL DARI LEDGER TRANSACTION, SELAINNYA DARI LEDGER SUMMARY")
 
+bkd.contentIsLoading = ko.observable(false)
 bkd.title = ko.observable('Grid Analysis Ideas')
 bkd.data = ko.observableArray([])
 bkd.detail = ko.observableArray([])
@@ -18,11 +19,17 @@ bkd.getParam = () => {
 }
 bkd.refresh = () => {
 	// bkd.data(DATATEMP_BREAKDOWN)
+	bkd.contentIsLoading(true)
 	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), (res) => {
 		let data = _.sortBy(res.Data, (o, v) => 
 			parseInt(o.plmodel_orderindex.replace(/PL/g, "")))
 		bkd.data(data)
+		bkd.emptyGrid()
+		bkd.contentIsLoading(false)
 		bkd.render()
+	}, () => {
+		bkd.emptyGrid()
+		bkd.contentIsLoading(false)
 	})
 }
 bkd.refreshOnChange = () => {
@@ -122,8 +129,11 @@ bkd.renderDetail = () => {
 		$('.grid-detail').kendoGrid(config)
 	}, 300)
 }
+bkd.emptyGrid = () => {
+	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
+}
 bkd.render = () => {
-	let data = bkd.data().slice(0, 100)
+	let data = bkd.data()
 	let schemaModelFields = {}
 	let schemaCubeDimensions = {}
 	let schemaCubeMeasures = {}
@@ -198,7 +208,7 @@ bkd.render = () => {
 	}
 
 	app.log('breakdown', app.clone(config))
-	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
+	bkd.emptyGrid()
 	$('.breakdown-view').kendoPivotGrid(config)
 }
 

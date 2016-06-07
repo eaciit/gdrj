@@ -5,18 +5,19 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 viewModel.app = new Object();
 var app = viewModel.app;
 
-app.dev = true;
+app.ajaxAutoLoader = ko.observable(true);
+app.dev = ko.observable(true);
 app.loader = ko.observable(false);
 app.noop = function () {};
 app.log = function () {
-    if (!app.dev) {
+    if (!app.dev()) {
         return;
     }
 
     console.log.apply(console, [].slice.call(arguments));
 };
 app.error = function () {
-    if (!app.dev) {
+    if (!app.dev()) {
         return;
     }
 
@@ -82,7 +83,9 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
             app.loader(true);
         }
     } else {
-        app.loader(true);
+        if (app.ajaxAutoLoader) {
+            app.loader(true);
+        }
     }
 
     return $.ajax(config);
@@ -334,6 +337,24 @@ app.htmlDecode = function (s) {
     var elem = document.createElement('textarea');
     elem.innerHTML = s;
     return elem.value;
+};
+app.runAfter = function () {
+    for (var _len = arguments.length, jobs = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        jobs[_key - 1] = arguments[_key];
+    }
+
+    var delay = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+
+    var doWork = function doWork() {
+        jobs.forEach(function (job) {
+            job();
+        });
+    };
+
+    var timeout = setTimeout(function () {
+        return doWork;
+    }, delay);
+    return timeout;
 };
 
 viewModel.StringExt = new Object();

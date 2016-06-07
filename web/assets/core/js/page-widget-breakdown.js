@@ -5,6 +5,7 @@ var bkd = viewModel.breakdown;
 
 app.log("ANGKA DI PIVOT CLICKABLE, JIKA SALES MAKA AMBIL DARI LEDGER TRANSACTION, SELAINNYA DARI LEDGER SUMMARY");
 
+bkd.contentIsLoading = ko.observable(false);
 bkd.title = ko.observable('Grid Analysis Ideas');
 bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
@@ -22,12 +23,18 @@ bkd.getParam = function () {
 };
 bkd.refresh = function () {
 	// bkd.data(DATATEMP_BREAKDOWN)
+	bkd.contentIsLoading(true);
 	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), function (res) {
 		var data = _.sortBy(res.Data, function (o, v) {
 			return parseInt(o.plmodel_orderindex.replace(/PL/g, ""));
 		});
 		bkd.data(data);
+		bkd.emptyGrid();
+		bkd.contentIsLoading(false);
 		bkd.render();
+	}, function () {
+		bkd.emptyGrid();
+		bkd.contentIsLoading(false);
 	});
 };
 bkd.refreshOnChange = function () {
@@ -112,8 +119,11 @@ bkd.renderDetail = function () {
 		$('.grid-detail').kendoGrid(config);
 	}, 300);
 };
+bkd.emptyGrid = function () {
+	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
+};
 bkd.render = function () {
-	var data = bkd.data().slice(0, 100);
+	var data = bkd.data();
 	var schemaModelFields = {};
 	var schemaCubeDimensions = {};
 	var schemaCubeMeasures = {};
@@ -188,7 +198,7 @@ bkd.render = function () {
 	};
 
 	app.log('breakdown', app.clone(config));
-	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
+	bkd.emptyGrid();
 	$('.breakdown-view').kendoPivotGrid(config);
 };
 
