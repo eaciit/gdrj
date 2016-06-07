@@ -122,11 +122,11 @@ func SetDate(dt time.Time) *Date{
 	}
 	if d.Month < 4 {
 		d.QuarterTxt = toolkit.Sprintf("%d-%d Q%d",
-			d.Year, d.Year+1, d.Quarter)
+			d.Year-1, d.Year, d.Quarter)
 		d.Fiscal = toolkit.Sprintf("%d-%d", d.Year-1, d.Year)
 	} else {
 		d.QuarterTxt = toolkit.Sprintf("%d-%d Q%d",
-			d.Year-1, d.Year, d.Quarter)
+			d.Year, d.Year+1, d.Quarter)
 		d.Fiscal = toolkit.Sprintf("%d-%d", d.Year, d.Year+1)
 	}
 	return d

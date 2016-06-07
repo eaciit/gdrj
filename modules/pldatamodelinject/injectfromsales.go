@@ -158,7 +158,7 @@ func main() {
 		}
 
 		i++
-		if !st.HeaderValid || !st.PCValid {
+		if !st.HeaderValid {
 			continue
 		}
 
@@ -196,6 +196,9 @@ func main() {
 			mdl.PLGroup2 = ledg.H2
 			mdl.PLGroup3 = ledg.H3
 			mdl.Source = "SalesVDist"
+			mdl.Value1 = 0
+			mdl.Value2 = 0
+			mdl.Value3 = 0
 			models[idsales] = mdl
 		}
 		mdl.Value1 += st.GrossAmount
@@ -219,6 +222,9 @@ func main() {
 				mdisc.PLGroup1 = ledg.H1
 				mdisc.PLGroup2 = ledg.H2
 				mdisc.PLGroup3 = ledg.H3
+				mdisc.Value1 = 0
+				mdisc.Value2 = 0
+				mdisc.Value3 = 0
 				mdisc.Source = "SalesVDist"
 				models[iddiscount] = mdisc
 			}
@@ -241,6 +247,9 @@ func main() {
 				mns.PLGroup2 = "Net Sales"
 				mns.PLGroup3 = "Net Sales"
 				mns.Source = "SalesVDist"
+				mns.Value1 = 0
+				mns.Value2 = 0
+				mns.Value3 = 0
 				models[id_netsales] = mns
 			}
 		mns.Value1 += st.GrossAmount + st.DiscountAmount
@@ -274,6 +283,7 @@ func main() {
 		toolkit.Printfn("Saving %d of %d - %s in %s", ri, count, mid, 
             time.Since(t0).String())
 	}
+	toolkit.Printfn("Done %s", time.Since(t0).String())
 }
 
 func worker(wi int, jobs <-chan *gdrj.PLDataModel, r chan<- string){
