@@ -5,6 +5,7 @@ var bkd = viewModel.breakdown;
 
 app.log("ANGKA DI PIVOT CLICKABLE, JIKA SALES MAKA AMBIL DARI LEDGER TRANSACTION, SELAINNYA DARI LEDGER SUMMARY");
 
+bkd.contentIsLoading = ko.observable(false);
 bkd.title = ko.observable('Grid Analysis Ideas');
 bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
@@ -16,18 +17,25 @@ bkd.getParam = function () {
 	});
 	var dimensions = bkd.dimensions().concat([breakdown, orderIndex]);
 	var dataPoints = bkd.dataPoints();
-	return rpt.wrapParam('analysis_ideas', dimensions, dataPoints, {
-		which: 'all_plmod'
-	});
+	return rpt.wrapParam(dimensions, dataPoints);
 };
 bkd.refresh = function () {
+	var param = $.extend(true, bkd.getParam(), {
+		breakdownBy: bkd.breakdownBy()
+	});
 	// bkd.data(DATATEMP_BREAKDOWN)
-	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), function (res) {
+	bkd.contentIsLoading(true);
+	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
 		var data = _.sortBy(res.Data, function (o, v) {
 			return parseInt(o.plmodel_orderindex.replace(/PL/g, ""));
 		});
 		bkd.data(data);
+		bkd.emptyGrid();
+		bkd.contentIsLoading(false);
 		bkd.render();
+	}, function () {
+		bkd.emptyGrid();
+		bkd.contentIsLoading(false);
 	});
 };
 bkd.refreshOnChange = function () {
@@ -39,20 +47,19 @@ bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "s
 bkd.clickCell = function (o) {
 	var x = $(o).closest("td").index();
 	var y = $(o).closest("tr").index();
-	var cat = $('.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(' + x + ') span').html();
-	var plheader1 = $('.breakdown-view .k-grid.k-widget:eq(0) tr:eq(' + y + ') td:not(.k-first):first > span').html();
-
-	var tr = $('.breakdown-view .k-grid.k-widget:eq(0) tr:eq(' + y + ')');
+	// let cat = $(`.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(${x}) span`).html()
+	// let plheader1 = $(`.breakdown-view .k-grid.k-widget:eq(0) tr:eq(${y}) td:not(.k-first):first > span`).html()
 
 	var pivot = $('.breakdown-view').data('kendoPivotGrid');
 	var cellInfo = pivot.cellInfo(x, y);
-
-	var param = $.extend(true, bkd.getParam(), {
-		breakdownBy: app.htmlDecode(bkd.breakdownBy()),
-		breakdownValue: app.htmlDecode(cat),
-		plheader1: '',
-		plheader2: '',
-		plheader3: ''
+	var param = bkd.getParam();
+	param.plheader1 = '';
+	param.plheader2 = '';
+	param.plheader3 = '';
+	param.filters.push({
+		Field: bkd.breakdownBy(),
+		Op: "$eq",
+		Value: app.htmlDecode(cellInfo.columnTuple.members[0].caption)
 	});
 
 	cellInfo.rowTuple.members.forEach(function (d) {
@@ -64,12 +71,6 @@ bkd.clickCell = function (o) {
 		var value = app.htmlDecode(d.name.replace(d.parentName + '&', ''));
 		param[key] = value;
 	});
-
-	app.log("------", param);
-
-	if (param.breakdownValue == app.idAble(param.breakdownBy) + '&') {
-		param.breakdownValue = '';
-	}
 
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
 		var detail = res.Data.map(function (d) {
@@ -112,8 +113,11 @@ bkd.renderDetail = function () {
 		$('.grid-detail').kendoGrid(config);
 	}, 300);
 };
+bkd.emptyGrid = function () {
+	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
+};
 bkd.render = function () {
-	var data = bkd.data().slice(0, 100);
+	var data = bkd.data();
 	var schemaModelFields = {};
 	var schemaCubeDimensions = {};
 	var schemaCubeMeasures = {};
@@ -164,8 +168,17 @@ bkd.render = function () {
 			columns: columns,
 			measures: measures
 		},
-		dataCellTemplate: function dataCellTemplate(d, e) {
-			var number = kendo.toString(d.dataItem.value, "n2");
+		columnHeaderTemplate: function columnHeaderTemplate(d) {
+			var text = d.member.caption;
+
+			if (text == '') {
+				text = '&nbsp;';
+			}
+
+			return text;
+		},
+		dataCellTemplate: function dataCellTemplate(d) {
+			var number = kendo.toString(d.dataItem.value, "n0");
 			return '<div onclick="bkd.clickCell(this)" class="align-right">' + number + '</div>';
 		},
 		dataBound: function dataBound() {
@@ -183,12 +196,14 @@ bkd.render = function () {
 			$('.breakdown-view .k-grid.k-widget:first tr:last .k-i-arrow-e').addClass('invisible');
 			$('.breakdown-view .k-grid.k-widget:first table:first').css('margin-left', '-32px');
 			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').addClass('invisible');
+			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').parent().css('color', 'transparent');
+			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').parent().next().css('color', 'transparent');
 			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-header.k-alt span').addClass('invisible');
 		}
 	};
 
 	app.log('breakdown', app.clone(config));
-	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
+	bkd.emptyGrid();
 	$('.breakdown-view').kendoPivotGrid(config);
 };
 

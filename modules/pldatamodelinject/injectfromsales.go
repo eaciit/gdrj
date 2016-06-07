@@ -137,7 +137,7 @@ func main() {
 
 	toolkit.Println("START...")
 	crx, err := gdrj.Find(new(gdrj.SalesTrx),
-		nil,
+		dbox.Eq("pcvalid",true),
 		toolkit.M{})
 	if err != nil {
 		toolkit.Println("Error Found : ", err.Error())
@@ -223,22 +223,67 @@ func main() {
 				models[iddiscount] = mdisc
 			}
 			mdisc.Value1 += st.DiscountAmount
-            mdl.Value3 += st.SalesQty
-            mdl.Value2 = mdl.Value1 / mdl.Value3
+            mdisc.Value3 += st.SalesQty
+            mdisc.Value2 = mdisc.Value1 / mdisc.Value3
 		}
+
+		id_netsales := toolkit.Sprintf("%d_%d_%s_%s_%s_%s_%s_%s",
+				st.Date.Year, st.Date.Month,
+				"ID11", 
+				"PL8A", st.OutletID, st.SKUID, st.PC.ID, "")
+		mns, bdisc := models[id_netsales]
+			if !bdisc {
+				mns = new(gdrj.PLDataModel)
+				*mns = *mdl
+				mns.PLCode = "PL08A"
+				mns.PLOrder = "PL009"
+				mns.PLGroup1 = "Net Sales"
+				mns.PLGroup2 = "Net Sales"
+				mns.PLGroup3 = "Net Sales"
+				mns.Source = "SalesVDist"
+				models[id_netsales] = mns
+			}
+		mns.Value1 += st.GrossAmount + st.DiscountAmount
+		mns.Value3 += st.SalesQty
+		mns.Value2 = mns.Value1 / mns.Value3
+
 		toolkit.Printfn("Calc %d of %d - %s %s %s in %s", i, count, st.SalesHeaderID, 
             st.Customer.Name, st.Product.Name, 
             time.Since(t0).String())
 	}
 
-	toolkit.Printfn("Saving data")
 	count = len(models)
 	i = 0
+	toolkit.Printfn("Saving data %d records", count)
+	
+	jobs := make(chan *gdrj.PLDataModel, count)
+	result := make(chan string, count)
+
+	for w:=0;w<10;w++{
+		go worker(w,jobs,result)
+	}
+
 	for _, m := range models {
 		i++
-		m.ID = m.PrepareID().(string)
-		gdrj.Save(m)
-		toolkit.Printfn("Saving %d of %d - %s in %s", i, count, m.ID, 
+		jobs <- m
+	}
+	close(jobs)
+
+	for ri:=0;ri<count;ri++{
+		mid := <-result
+		toolkit.Printfn("Saving %d of %d - %s in %s", ri, count, mid, 
             time.Since(t0).String())
+	}
+}
+
+func worker(wi int, jobs <-chan *gdrj.PLDataModel, r chan<- string){
+	workerConn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerConn.Close()
+
+	for m := range jobs{
+		m.ID = m.PrepareID().(string)
+		//gdrj.Save(m)
+		workerConn.NewQuery().From(m.TableName()).Save().Exec(toolkit.M{}.Set("data",m))
+		r <- m.ID
 	}
 }

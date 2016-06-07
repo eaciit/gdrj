@@ -1,18 +1,19 @@
 viewModel.app = new Object()
 let app = viewModel.app
 
-app.dev = true
+app.ajaxAutoLoader = ko.observable(true)
+app.dev = ko.observable(true)
 app.loader = ko.observable(false)
 app.noop = (() => {})
 app.log = function () {
-    if (!app.dev) {
+    if (!app.dev()) {
         return
     }
 
     console.log.apply(console, [].slice.call(arguments))
 }
 app.error = function () {
-    if (!app.dev) {
+    if (!app.dev()) {
         return
     }
 
@@ -78,7 +79,9 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
             app.loader(true)
         }
     } else {
-        app.loader(true)
+        if (app.ajaxAutoLoader) {
+            app.loader(true)
+        }
     }
 
     return $.ajax(config)
@@ -302,6 +305,14 @@ app.htmlDecode = (s) => {
     var elem = document.createElement('textarea');
     elem.innerHTML = s;
     return elem.value;
+}
+app.runAfter = (delay = 0, ...jobs) => {
+    let doWork = () => {
+        jobs.forEach((job) => { job() })
+    }
+
+    let timeout = setTimeout(() => doWork, delay)
+    return timeout
 }
 
 viewModel.StringExt = new Object()

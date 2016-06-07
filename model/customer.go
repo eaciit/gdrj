@@ -39,6 +39,7 @@ type Customer struct {
 	Region            string
 	AreaID            string
 	AreaName          string
+	VDIST_ID          string
 }
 
 func (c *Customer) RecordID() interface{} {
