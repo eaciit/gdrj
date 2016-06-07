@@ -9,7 +9,9 @@ rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
 rs.pplheader = ko.observable('Net Sales');
 
-rs.optionDimensionSelect = ko.observableArray([{ field: 'Net Sales', name: 'Net Sales' }, { field: 'EBIT', name: 'EBIT' }, { field: 'Cost of Goods Sold', name: 'Cost of Goods Sold' }]);
+rs.optionDimensionSelect = ko.observableArray([
+// { field: 'Net Sales', name: 'Net Sales' },
+{ field: 'EBIT', name: 'EBIT' }, { field: 'Cost of Goods Sold', name: 'Cost of Goods Sold' }]);
 
 rs.refresh = function () {
     var dimensions = [{ "field": "plmodel.plheader1", "name": "plheader1" }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];

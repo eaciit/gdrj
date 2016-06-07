@@ -10,7 +10,7 @@ rs.breakdownBy = ko.observable('customer.channelname')
 rs.pplheader = ko.observable('Net Sales')
 
 rs.optionDimensionSelect = ko.observableArray([
-	{ field: 'Net Sales', name: 'Net Sales' },
+	// { field: 'Net Sales', name: 'Net Sales' },
     { field: 'EBIT', name: 'EBIT' },
 	{ field: 'Cost of Goods Sold', name: 'Cost of Goods Sold' },
 ])
