@@ -107,6 +107,72 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 	return
 }
 
+func GetSalesHeaderList() (toolkit.Ms, error) {
+	conn := DB().Connection
+	q := conn.NewQuery().From(new(LedgerSummary).TableName())
+	q = q.Group("plmodel.plheader1")
+	c, e := q.Cursor(nil)
+	if e != nil {
+		return nil, errors.New("GetSalesHeaderList: Preparing cursor error " + e.Error())
+	}
+	defer c.Close()
+
+	result := toolkit.Ms{}
+	e = c.Fetch(&result, 0, false)
+	if e != nil {
+		return nil, errors.New("GetSalesHeaderList: Fetch cursor error " + e.Error())
+	}
+
+	return result, nil
+
+}
+
+func GetDecreasedQty() (toolkit.Ms, error) {
+	result := toolkit.M{}
+	results := toolkit.Ms{}
+	results = append(results, result)
+	ls := new(LedgerSummary)
+	lsList := []*LedgerSummary{}
+	quartal := toolkit.M{}
+	// quartalList := toolkit.Ms{}
+
+	cls, err := Find(new(LedgerSummary), nil, nil)
+	if err != nil {
+		return nil, errors.New("GetSalesHeaderList: Preparing cursor error " + err.Error())
+	}
+
+	defer cls.Close()
+
+	for err = cls.Fetch(ls, 1, false); err == nil; {
+		ls = new(LedgerSummary)
+		lsList = append(lsList, ls)
+		quartal.Set("product", ls.SKUID)
+		quartal.Set("qty", ls.Value3)
+		quartal.Set("year", ls.Year)
+		switch {
+		case ls.Month >= 1 && ls.Month <= 3:
+			quartal.Set("quartal", "q1")
+		case ls.Month >= 4 && ls.Month <= 6:
+			quartal.Set("quartal", "q2")
+		case ls.Month >= 7 && ls.Month <= 9:
+			quartal.Set("quartal", "q3")
+		case ls.Month >= 10 && ls.Month <= 12:
+			quartal.Set("quartal", "q4")
+		}
+		err = cls.Fetch(ls, 1, false)
+	}
+
+	return results, nil
+}
+
+func GetIncreasedSales() (toolkit.Ms, error) {
+	result := toolkit.M{}
+	results := toolkit.Ms{}
+	results = append(results, result)
+
+	return results, nil
+}
+
 func CalculateLedgerSummaryAnalysisIdea(payload *PivotParam) ([]*toolkit.M, error) {
 	var filter *dbox.Filter = payload.ParseFilter()
 
