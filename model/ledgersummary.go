@@ -70,13 +70,12 @@ func LedgerSummaryGetDetailPivot(payload *DetailParam) ([]*LedgerSummary, error)
 		filters = append(filters, dbox.Eq("plmodel.plheader3", payload.PLHeader3))
 	}
 
-	filter := dbox.And(payload.ParseFilter(), dbox.And(filters...))
-
 	for _, each := range filters {
 		fmt.Println("++++++", *each)
 	}
 
-	fmt.Println("----", *payload)
+	filter := dbox.And(payload.ParseFilter(), dbox.And(filters...))
+
 	cursor, err := Find(new(LedgerSummary), filter, nil)
 	if err != nil {
 		return nil, err
@@ -155,13 +154,6 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 	var columns []string = payload.ParseDimensions()
 	var datapoints []string = payload.ParseDataPoints()
 	var fnTransform (func(m *toolkit.M) error) = nil
-
-	fmt.Printf("--- %#v\n", filter)
-	fmt.Printf("--- %#v\n", columns)
-	fmt.Printf("--- %#v\n", datapoints)
-
-	fmt.Printf("+++++ %#v\n", *(filter.Value.([]*dbox.Filter)[0]))
-	fmt.Printf("+++++ %#v\n", *(filter.Value.([]*dbox.Filter)[1]))
 
 	plKeys := []string{}
 	bunchesOfData := [][]*toolkit.M{}
@@ -411,7 +403,7 @@ func (p *PivotParam) ParseFilter() *dbox.Filter {
 		case dbox.FilterOpEqual:
 			value := each.GetString("Value")
 
-			filters = append(filters, dbox.Gte(field, value))
+			filters = append(filters, dbox.Eq(field, value))
 		}
 	}
 
