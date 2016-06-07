@@ -338,8 +338,16 @@ rpt.filterMultiSelect = (d) => {
 }
 
 rpt.toggleFilter = () => {
-	$('.panel-filter').toggle('show')
-	$('.panel-content').toggleClass('col-md-12 col-sm-12 ez panel-content')
+	let panelFilter = $('.panel-filter')
+	let panelContent = $('.panel-content')
+
+	if (panelFilter.is(':visible')) {
+		panelFilter.hide()
+		panelContent.attr('class', 'col-md-12 col-sm-12 ez panel-content')
+	} else {
+		panelFilter.show()
+		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content')
+	}
 }
 rpt.getFilterValue = () => {
 	let res = [
