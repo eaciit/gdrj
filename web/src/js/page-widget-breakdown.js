@@ -13,14 +13,15 @@ bkd.getParam = () => {
 	let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
 	let dimensions = bkd.dimensions().concat([breakdown, orderIndex])
 	let dataPoints = bkd.dataPoints()
-	return rpt.wrapParam('analysis_ideas', dimensions, dataPoints, { 
-		which: 'all_plmod'
-	})
+	return rpt.wrapParam(dimensions, dataPoints)
 }
 bkd.refresh = () => {
+	let param = $.extend(true, bkd.getParam(), {
+		breakdownBy: bkd.breakdownBy()
+	})
 	// bkd.data(DATATEMP_BREAKDOWN)
 	bkd.contentIsLoading(true)
-	app.ajaxPost("/report/summarycalculatedatapivot", bkd.getParam(), (res) => {
+	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
 		let data = _.sortBy(res.Data, (o, v) => 
 			parseInt(o.plmodel_orderindex.replace(/PL/g, "")))
 		bkd.data(data)
@@ -208,6 +209,8 @@ bkd.render = () => {
     		$('.breakdown-view .k-grid.k-widget:first tr:last .k-i-arrow-e').addClass('invisible')
     		$('.breakdown-view .k-grid.k-widget:first table:first').css('margin-left', '-32px')
     		$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').addClass('invisible')
+    		$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').parent().css('color', 'transparent')
+    		$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').parent().next().css('color', 'transparent')
     		$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-header.k-alt span').addClass('invisible')
         }
 	}

@@ -53,10 +53,20 @@ func (s *LedgerSummary) PreSave() error {
 	return nil
 }
 
+func GetUniqueBreakDown(breakdown string) []string {
+	return nil
+}
+
 func LedgerSummaryGetDetailPivot(payload *DetailParam) ([]*LedgerSummary, error) {
 	filters := []*dbox.Filter{
-		dbox.Eq(payload.BreakdownBy, payload.BreakdownValue),
 		dbox.Eq("plmodel.plheader1", payload.PLHeader1),
+	}
+
+	uniq := GetUniqueBreakDown(payload.BreakdownBy)
+	fmt.Println("------- uniq", uniq)
+
+	if payload.BreakdownValue != "" {
+		filters = append(filters, dbox.Eq(payload.BreakdownBy, payload.BreakdownValue))
 	}
 
 	if payload.PLHeader2 != "" {
@@ -160,26 +170,24 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 	bunchesOfData := [][]*toolkit.M{}
 
 	switch payload.Which {
-	case "all_plmod":
-		fmt.Println("asdf")
-		// plKeys = []string{"PL1", "PL2", "PL3"} //, "PL2", "PL3", "PL4", "PL5", "PL6", "PL7", "PL8", "PL9", "PL10", "PL11", "PL12", "PL13", "PL14", "PL15", "PL16", "PL17", "PL18", "PL19", "PL20", "PL21", "PL22", "PL23", "PL24", "PL25", "PL26", "PL27", "PL28", "PL29", "PL30", "PL31", "PL32", "PL33", "PL34", "PL35", "PL36", "PL37", "PL38", "PL39", "PL40", "PL41", "PL42", "PL43", "PL44", "PL45", "PL46"}
 	case "gross_sales_discount_and_net_sales":
-		plKeys = []string{"PL1", "PL2", "PL3"}
-	}
+		{
+			plKeys = []string{"PL1", "PL2", "PL3"}
+			for _, plKey := range plKeys {
+				plFilter := dbox.Eq("plcode", plKey)
+				bunchData, err := SummarizeLedgerSum(
+					dbox.And(plFilter, filter), columns, datapoints, fnTransform)
+				if err != nil {
+					return nil, err
+				}
 
-	if payload.Which == "all_plmod" {
-		bunchData, err := SummarizeLedgerSum(
-			filter, columns, datapoints, fnTransform)
-		if err != nil {
-			return nil, err
+				bunchesOfData = append(bunchesOfData, bunchData)
+			}
 		}
-
-		bunchesOfData = append(bunchesOfData, bunchData)
-	} else {
-		for _, plKey := range plKeys {
-			plFilter := dbox.Eq("plcode", plKey)
+	default:
+		{
 			bunchData, err := SummarizeLedgerSum(
-				dbox.And(plFilter, filter), columns, datapoints, fnTransform)
+				filter, columns, datapoints, fnTransform)
 			if err != nil {
 				return nil, err
 			}
@@ -327,7 +335,6 @@ type PivotParam struct {
 	DataPoints []*PivotParamDataPoint  `json:"datapoints"`
 	Which      string                  `json:"which"`
 	Filters    []toolkit.M             `json:"filters"`
-	Type       string                  `json:"type"`
 }
 
 type PivotParamDimensions struct {
