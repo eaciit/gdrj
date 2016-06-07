@@ -442,6 +442,22 @@ body {
   border: 1px solid 1px solid rgba(164, 173, 177, 0.19);
   box-sizing: content-box;
 }
+.chart-comparison .each-chart {
+  padding: 5px;
+}
+.chart-comparison .each-chart .wrapper {
+  border: 1px solid #f0f3f4;
+  padding: 10px;
+}
+.chart-comparison .each-chart .wrapper .title {
+  padding-bottom: 3px;
+  font-weight: bold;
+  border-bottom: 1px solid #f0f3f4;
+  font-size: 16px;
+}
+.chart-comparison .each-chart .wrapper .chart {
+  height: 300px;
+}
 .list-analysis {
   margin-bottom: 10px;
 }

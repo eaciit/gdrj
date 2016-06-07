@@ -20,8 +20,11 @@ let o = {
 				<h3 class="no-margin">Filter</h3>
 				<div class="panel-nav-button">
 					<div class="form-group relative align-right no-margin no-padding hardcore">
-						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: bkd.refresh" title="Refresh">
+						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refresh" title="Refresh">
 							<i class="fa fa-refresh"></i>
+						</button>
+						<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+							<i class="fa fa-filter"></i>
 						</button>
 					</div>
 				</div>
@@ -40,15 +43,34 @@ let o = {
 	</div>
 	<div class="col-md-12 col-sm-12 ez panel-content">
 	{{if eq .id "dashboard"}}
-		{{template "page-report-dashboard.html"}}
+		<div class="col-md-12 col-sm-12 no-padding hardcore">
+			{{template "page-widget-breakdown.html"}}
+		</div>
+
 		<script>
-			vm.currentMenu('Dashboard')
-			vm.currentTitle('Dashboard')
-			// bkd.title('P&L Analytic')
+			// vm.currentMenu('Dashboard')
+			// vm.currentTitle('Dashboard')
+			bkd.title('P&L Analytic')
 			vm.breadcrumb([
 				{ title: 'Godrej', href: '#' },
 				{ title: 'Daashboard', href: '/web/report/dashboard' }
 			])
+			rpt.refresh = () => bkd.refresh
+		</script>
+	{{else if eq .id "chart_comparison"}}
+		<div class="col-md-12 col-sm-12 no-padding hardcore">
+			{{template "page-widget-chart-comparison.html"}}
+		</div>
+
+		<script>
+			// vm.currentMenu('Dashboard')
+			// vm.currentTitle('Dashboard')
+			ccr.title('Chart Comparison')
+			vm.breadcrumb([
+				{ title: 'Godrej', href: '#' },
+				{ title: 'Chart Comparison', href: '/web/report/chart_comparison' }
+			])
+			rpt.refresh = () => ccr.refresh
 		</script>
 	{{else if eq .id "gross_sales_discount_and_net_sales"}}
 		{{template "page-report-gross-sales-discount-and-net-sales.html"}}

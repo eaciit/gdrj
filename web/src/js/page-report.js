@@ -337,6 +337,7 @@ rpt.filterMultiSelect = (d) => {
 	return config
 }
 
+rpt.toggleFilterCallback = app.noop
 rpt.toggleFilter = () => {
 	let panelFilter = $('.panel-filter')
 	let panelContent = $('.panel-content')
@@ -348,6 +349,8 @@ rpt.toggleFilter = () => {
 		panelFilter.show()
 		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content')
 	}
+
+	rpt.toggleFilterCallback()
 }
 rpt.getFilterValue = () => {
 	let res = [
