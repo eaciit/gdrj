@@ -93,10 +93,9 @@ bkd.renderDetailSalesTrans = function (breakdown) {
 
 	var columns = [
 	// { field: '_id', title: 'ID', width: 100, locked: true },
-	{ field: 'date', title: 'Date', width: 100, locked: true, template: function template(d) {
-			return moment(d.dataItem.date).format('DD/MM/YYYY HH:mm');
-		}
-	}, { field: "grossamount", title: 'Gross', width: 100 }, { field: "discountamount", title: 'Discount', width: 100 }, { field: "netamount", title: 'Net Sales', width: 100 }, { field: "salesqty", title: 'Sales Qty', width: 100 }, { field: "customer.branchname", title: 'Branch', width: 100 }, { field: "product.name", title: 'Branch', width: 100 }, { field: "product.brand", title: 'Brand', width: 100 }];
+	{ field: 'date', title: 'Date', width: 150, locked: true, template: function template(d) {
+			return moment(d.date).format('DD/MM/YYYY HH:mm');
+		} }, { field: "grossamount", headerTemplate: '<div class="align-right">Gross</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "discountamount", headerTemplate: '<div class="align-right">Discount</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "netamount", headerTemplate: '<div class="align-right">Net Sales</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "salesqty", headerTemplate: '<div class="align-right">Sales Qty</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "customer.branchname", title: 'Branch', width: 100 }, { field: "product.name", title: 'Product', width: 250 }, { field: "product.brand", title: 'Brand', width: 100 }];
 
 	var config = {
 		dataSource: {
@@ -104,7 +103,7 @@ bkd.renderDetailSalesTrans = function (breakdown) {
 				read: function read(options) {
 					var param = options.data;
 					param.tablename = "browsesalestrxs";
-					param[bkd.breakdownBy()] = breakdown;
+					param[bkd.breakdownBy()] = [breakdown];
 
 					if (app.isUndefined(param.page)) {
 						param = $.extend(true, param, {
