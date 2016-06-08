@@ -189,7 +189,7 @@ func main() {
 	toolkit.Println("START...")
 	crx, err := conn.NewQuery().From("cogs_import").
 		Where(dbox.Ne("COGS_Amount",0)).
-		Take(10).
+		//Take(10).
 		Cursor(nil)
 	if err != nil {
 		toolkit.Println("Error Found : ", err.Error())
