@@ -175,19 +175,20 @@ bkd.render = function () {
 	var trTopBody = app.newEl('tr').appendTo(tableContent);
 
 	header.forEach(function (d) {
-		var tdTopBody = app.newEl('th').css('width', 150).css('text-align', 'right').html(d).appendTo(trTopBody);
+		var tdTopBody = app.newEl('th').css('width', 150).css('text-align', 'right').html(d == '' ? 'No Name' : d).appendTo(trTopBody);
 	});
 
 	app.newEl('th').css('width', 150).css('text-align', 'right').html('Total').appendTo(trTopBody);
 
+	var values = [];
 	var i = 0;
-	var j = 0;
 
 	Lazy(data).groupBy(function (v) {
 		return v.plmodel_plheader1;
 	}).map(function (v, k) {
 		return app.o({ key: k, data: v });
-	}).each(function (d, i) {
+	}).each(function (d) {
+		values[i] = [];
 		var total = 0;
 
 		var trHeader = app.newEl('tr').appendTo(tableHeader);
@@ -202,6 +203,7 @@ bkd.render = function () {
 			return app.o({ key: k, data: v });
 		}).toArray();
 
+		var j = 0;
 		header.forEach(function (d) {
 			var val = Lazy(rowHeader1).filter(function (e) {
 				return e.key == d;
@@ -210,7 +212,13 @@ bkd.render = function () {
 					return e.value1;
 				});
 			});
+			values[i][j] = val;
 			total += val;
+
+			if (j > 0) {
+
+				var _tdEachCell = app.newEl('td').appendTo(trBody).html(kendo.toString(val, 'n0')).css('text-align', 'right').width(80);
+			}
 
 			var tdEachCell = app.newEl('td').appendTo(trBody).html(kendo.toString(val, 'n0')).css('text-align', 'right').width(80);
 
@@ -221,6 +229,8 @@ bkd.render = function () {
 
 		i++;
 	});
+
+	console.log("=====", values);
 };
 
 $(function () {

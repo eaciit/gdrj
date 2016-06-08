@@ -192,7 +192,7 @@ bkd.render = () => {
 		let tdTopBody = app.newEl('th')
 			.css('width', 150)
 			.css('text-align', 'right')
-			.html(d)
+			.html(d == '' ? 'No Name' : d)
 			.appendTo(trTopBody)
 	})
 
@@ -202,13 +202,14 @@ bkd.render = () => {
 		.html('Total')
 		.appendTo(trTopBody)
 
+	let values = []
 	let i = 0
-	let j = 0
 
 	Lazy(data)
 		.groupBy((v) => v.plmodel_plheader1)
 		.map((v, k) => app.o({ key: k, data: v }))
-		.each((d, i) => {
+		.each((d) => {
+			values[i] = []
 			let total = 0
 
 			let trHeader = app.newEl('tr')
@@ -226,18 +227,30 @@ bkd.render = () => {
 				.map((v, k) => app.o({ key: k, data: v }))
 				.toArray()
 
+			let j = 0
 			header.forEach((d) => {
 				let val = Lazy(rowHeader1)
 					.filter((e) => e.key == d)
 					.sum((e) => Lazy(e.data)
 					.sum((e) => e.value1))
+				values[i][j] = val
 				total += val
+
+				if (j > 0) {
+
+					let tdEachCell = app.newEl('td')
+						.appendTo(trBody)
+						.html(kendo.toString(val, 'n0'))
+						.css('text-align', 'right')
+						.width(80)
+				}
 
 				let tdEachCell = app.newEl('td')
 					.appendTo(trBody)
 					.html(kendo.toString(val, 'n0'))
 					.css('text-align', 'right')
 					.width(80)
+
 
 				j++
 			})
@@ -250,6 +263,8 @@ bkd.render = () => {
 
 			i++
 		})
+
+	console.log("=====", values)
 }
 
 $(() => {
