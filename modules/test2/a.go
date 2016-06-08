@@ -364,6 +364,6 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 					os.Exit(1)
 				}
 			}
+			result <- "OK"
 		}
-		result <- "OK"
 }
