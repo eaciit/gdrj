@@ -35,8 +35,9 @@ rs.refresh = function () {
 	rs.contentIsLoading(true);
 	var dimensions = [{ "field": "plmodel.plheader1", "name": "plheader1" }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
 	var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
-	var param = rpt.wrapParam(dimensions, dataPoints);
-	var param1 = $.extend(true, param, {
+	var base = rpt.wrapParam(dimensions, dataPoints);
+	var param = app.clone(base);
+	param.filters.push({
 		"Op": "$eq",
 		"Field": "plmodel.plheader1",
 		"Value": rs.pplheader()
@@ -48,7 +49,8 @@ rs.refresh = function () {
 			return app.o({ _id: v, data: k });
 		}).toArray();
 
-		var param1 = $.extend(true, param.filter, {
+		var param = app.clone(base);
+		param.filters.push({
 			"Op": "$eq",
 			"Field": "plmodel.plheader1",
 			"Value": 'Net Sales'
@@ -58,8 +60,10 @@ rs.refresh = function () {
 			var dataall2 = Lazy(res2.Data).groupBy(function (f) {
 				return f['year'];
 			}).map(function (k, v) {
-				return { _id: v, data: k };
-			});
+				return app.o({ _id: v, data: k });
+			}).toArray();
+
+			var max = 0;
 
 			rs.datascatter([]);
 			var title = Lazy(rpt.optionDimensions()).findWhere({ field: rs.breakdownBy() }).title;
@@ -74,17 +78,21 @@ rs.refresh = function () {
 					return e.value1;
 				}); // by net sales
 
-				var maxNetSales = Lazy(currentDataAll2.data).max(function (e) {
+				var maxNetSales = Lazy(currentDataAll.data).max(function (e) {
 					return e.value1;
 				}).value1;
 				var percentage = totalDataAll / totalDataAll2 * 100;
+				var percentageToMaxSales = percentage * maxNetSales / 100;
 
-				var valueByPercentage = percentage * 100 / maxNetSales;
-				console.log("=========", currentDataAll, currentDataAll2, totalDataAll, totalDataAll2, maxNetSales);
+				max = Lazy([max, maxNetSales]).max(function (d) {
+					return d;
+				});
+				console.log('max', max, 'breakdown', totalDataAll, 'netsales', totalDataAll2, 'maxnetsales', maxNetSales, 'percentage', percentage, 'safsf', percentageToMaxSales);
 
 				for (var a in dataall[i].data) {
 					rs.datascatter.push({
-						pplheader: 0,
+						pplheader: percentageToMaxSales,
+						pplheaderPercent: percentage,
 						value1: dataall[i].data[a].value1,
 						title: dataall[i].data[a][title],
 						header: dataall[i].data[a].plmodel_plheader1,
@@ -100,14 +108,13 @@ rs.refresh = function () {
 					});
 				}
 			}
-			rs.generateReport(header[0]._id, header[1]._id);
+			rs.generateReport(dataall[0]._id, dataall[1]._id, max);
 		});
 	});
 };
 
-rs.generateReport = function (yexwar1, year2) {
+rs.generateReport = function (year1, year2, max) {
 	rs.contentIsLoading(false);
-	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>');
 	$('#scatter-view').width(rs.datascatter().length * 100);
 	$("#scatter-view").kendoChart({
 		dataSource: {
@@ -131,7 +138,7 @@ rs.generateReport = function (yexwar1, year2) {
 			width: 3,
 			tooltip: {
 				visible: true,
-				template: "#: dataItem.title # : #: kendo.toString(dataItem.pplheader, 'pplheader') # %"
+				template: "#: dataItem.title # : #: kendo.toString(dataItem.pplheaderPercent, 'n2') # %"
 			},
 			markers: {
 				visible: false

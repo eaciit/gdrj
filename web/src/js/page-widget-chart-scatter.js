@@ -41,8 +41,9 @@ rs.refresh = () => {
 	let dataPoints = [
 		{ field: "value1", name: "value1", aggr: "sum" }
 	]
-	let param = rpt.wrapParam(dimensions, dataPoints)
-	let param1 = $.extend(true, param, {
+	let base = rpt.wrapParam(dimensions, dataPoints)
+	let param = app.clone(base)
+	param.filters.push({
 	    "Op": "$eq",
 	    "Field": "plmodel.plheader1",
 	    "Value": rs.pplheader()
@@ -53,7 +54,8 @@ rs.refresh = () => {
 			.map((k, v) => app.o({ _id: v, data: k }))
 			.toArray()
 
-		let param1 = $.extend(true, param.filter, {
+		let param = app.clone(base)
+		param.filters.push({
 		    "Op": "$eq",
 		    "Field": "plmodel.plheader1",
 		    "Value": 'Net Sales'
@@ -62,9 +64,10 @@ rs.refresh = () => {
 		app.ajaxPost("/report/summarycalculatedatapivot", param, (res2) => {
 			let dataall2 = Lazy(res2.Data)
 				.groupBy((f) => f['year'])
-				.map((k, v) => {
-					return { _id: v, data: k }
-				})
+				.map((k, v) => app.o({ _id: v, data: k }))
+				.toArray()
+
+			let max = 0
 
 			rs.datascatter([])
 			let title = Lazy(rpt.optionDimensions()).findWhere({field: rs.breakdownBy()}).title
@@ -75,15 +78,17 @@ rs.refresh = () => {
 				let totalDataAll = Lazy(currentDataAll.data).sum((e) => e.value1)   // by breakdown
 				let totalDataAll2 = Lazy(currentDataAll2.data).sum((e) => e.value1) // by net sales
 
-				let maxNetSales = Lazy(currentDataAll2.data).max((e) => e.value1).value1
+				let maxNetSales = Lazy(currentDataAll.data).max((e) => e.value1).value1
 				let percentage = totalDataAll / totalDataAll2 * 100
+				let percentageToMaxSales = percentage * maxNetSales / 100
 
-				let valueByPercentage = percentage * 100 / maxNetSales
-				console.log("=========", currentDataAll, currentDataAll2, totalDataAll, totalDataAll2, maxNetSales)
+				max = Lazy([max, maxNetSales]).max((d) => d)
+				console.log('max', max, 'breakdown', totalDataAll, 'netsales', totalDataAll2, 'maxnetsales', maxNetSales, 'percentage', percentage, 'safsf', percentageToMaxSales)
 
 				for (let a in dataall[i].data){
 					rs.datascatter.push({
-						pplheader: 0,
+						pplheader: percentageToMaxSales,
+						pplheaderPercent: percentage,
 						value1: dataall[i].data[a].value1,
 						title: dataall[i].data[a][title],
 						header: dataall[i].data[a].plmodel_plheader1,
@@ -99,14 +104,13 @@ rs.refresh = () => {
 					})
 				}
 			}
-			rs.generateReport(header[0]._id, header[1]._id)
+			rs.generateReport(dataall[0]._id, dataall[1]._id, max)
 		})
 	})
 }
 
-rs.generateReport = (yexwar1, year2) => {
+rs.generateReport = (year1, year2, max) => {
 	rs.contentIsLoading(false)
-	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>')
     $('#scatter-view').width(rs.datascatter().length * 100)
 	$("#scatter-view").kendoChart({
 		dataSource: {
@@ -130,7 +134,7 @@ rs.generateReport = (yexwar1, year2) => {
 			width: 3, 
             tooltip: {
 				visible: true,
-				template: "#: dataItem.title # : #: kendo.toString(dataItem.pplheader, 'pplheader') # %"
+				template: "#: dataItem.title # : #: kendo.toString(dataItem.pplheaderPercent, 'n2') # %"
 			},
 			markers: {
 				visible: false
@@ -155,7 +159,7 @@ rs.generateReport = (yexwar1, year2) => {
 			},
             label: {
             	format: "{0}%"
-            }
+            },
         },
         categoryAxis: [{
             field: 'title',
@@ -164,7 +168,7 @@ rs.generateReport = (yexwar1, year2) => {
             },
 			majorGridLines: {
 				color: '#fafafa'
-			},
+			}
 		}, {
         	categories: [year1, year2],
 			line: { visible: false }
