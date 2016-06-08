@@ -157,7 +157,7 @@ func prepMaster() {
 		if !exist {
 			a = new(alloc)
 		}
-		a.Total = ratio.Ratio
+		a.Total += ratio.Ratio
 		a.Ratios = append(a.Ratios, ratio)
 		ratios[ratioid] = a
 	}
@@ -188,7 +188,8 @@ func main() {
 
 	toolkit.Println("START...")
 	crx, err := conn.NewQuery().From("cogs_import").
-		//Take(1000).
+		Where(dbox.Ne("COGS_Amount",0)).
+		Take(10).
 		Cursor(nil)
 	if err != nil {
 		toolkit.Println("Error Found : ", err.Error())
@@ -230,15 +231,22 @@ func main() {
 				ocogs.Labour = mcogs.GetFloat64("LC_Amount")
 				ocogs.Energy = mcogs.GetFloat64("PF_Amount")
 				ocogs.Depreciation = mcogs.GetFloat64("Depre_Amount")
+				toolkit.Printfn("Processing %d of %d (%d/%) - %s in %s", 
+					i, count, 
+					i*100/count, 
+					toolkit.JsonString(ocogs),
+					time.Since(t0).String())
 				jobs <- ocogs
 			}
 		}
 
+		/*
 		if i >= limit {
 			toolkit.Printfn("Calc %d of %d (%dpct) in %s", i, count, i*100/count,
 				time.Since(t0).String())
 			limit += step
 		}
+		*/
 
 		if len(acogs) < 1000 {
 			break
@@ -298,6 +306,8 @@ func worker(wi int, jobs <-chan *cogs, r chan<- string) {
 func (c *cogs) CreatePLModel(outletid string, ratio float64, conn dbox.IConnection) error {
 	ratio = -ratio
 	if c.RM != 0 {
+		//rm := ratio * c.RM
+		//toolkit.Printfn("Ratio: %f value: %f", ratio, rm)
 		gdrj.GetPLModel("PL9", "ID11",
 			c.Year, c.Month, outletid, c.SKUID, "", "",
 			ratio*c.RM, 0, 0, "COGS", conn,
@@ -332,16 +342,16 @@ func (c *cogs) CreatePLModel(outletid string, ratio float64, conn dbox.IConnecti
 	if c.Depreciation != 0 {
 		gdrj.GetPLModel("PL21", "ID11",
 			c.Year, c.Month, outletid, c.SKUID, "", "",
-			ratio*c.Energy, 0, 0, "COGS", conn,
+			ratio*c.Depreciation, 0, 0, "COGS", conn,
 			custs, prods, pcs, ccs, plmodels,
 			false, true)
 	}
 
 	c.OtherCost = c.COGS - c.RM - c.Labour - c.Energy - c.FixedCost - c.Depreciation
-	if c.Depreciation != 0 {
+	if c.OtherCost != 0 {
 		gdrj.GetPLModel("PL20", "ID11",
 			c.Year, c.Month, outletid, c.SKUID, "", "",
-			ratio*c.Energy, 0, 0, "COGS", conn,
+			ratio*c.OtherCost, 0, 0, "COGS", conn,
 			custs, prods, pcs, ccs, plmodels,
 			false, true)
 	}

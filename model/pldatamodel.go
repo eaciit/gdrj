@@ -143,9 +143,9 @@ func GetPLModel(plcode, companyid string,
 				pldatamodel.PLGroup2=plm.PLHeader2
 				pldatamodel.PLGroup3=plm.PLHeader3
 			}
-			pldatamodel.Value1 +=pldatamodel.Value1
-			pldatamodel.Value2 +=pldatamodel.Value2
-			pldatamodel.Value3 +=pldatamodel.Value3
+			pldatamodel.Value1 +=value1
+			pldatamodel.Value2 +=value2
+			pldatamodel.Value3 +=value3
 			pldatamodel.ID = pldatamodel.PrepareID().(string)
 			if save {
 				plconn.NewQuery().From(pldatamodel.TableName()).

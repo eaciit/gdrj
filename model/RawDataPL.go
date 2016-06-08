@@ -29,6 +29,7 @@ type RawDataPL struct {
 	AmountinIDR        float64
 	AmountinUSD        float64
 	Other              string
+	RDoutletID string
 	Src                string
 }
 
