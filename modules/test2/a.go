@@ -10,8 +10,10 @@ import (
 	"github.com/eaciit/toolkit"
     "time"
 	"strings"
+	"sync"
 )
 
+var mutex = new(sync.Mutex)
 var conn dbox.IConnection
 
 func setinitialconnection() {
@@ -353,6 +355,7 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 					multiplier=-1
 				}
 				
+				mutex.Lock()
 				insert := true
 				if !lsexist{
 					//-- need to grand rls again
@@ -396,6 +399,7 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 					os.Exit(1)
 				}
 				pldatas[rls.ID]=rls
+				mutex.Unlock()
 			}
 			result <- "OK"
 		}
