@@ -4,14 +4,13 @@ import (
 	//"errors"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	"time"
 )
 
 type SalesRatio struct {
 	orm.ModelBase       `json:"-" bson:"-"`
 	ID                  string `json:"_id" bson:"_id"`
 	Year                int
-	Month               time.Month
+	Month               int
 	OutletID            string
 	SKUID               string
 	Ratio          float64
