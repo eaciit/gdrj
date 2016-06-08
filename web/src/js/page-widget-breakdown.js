@@ -1,12 +1,14 @@
 viewModel.breakdown = new Object()
 let bkd = viewModel.breakdown
 
+bkd.keyOrder = ko.observable('plmodel.orderindex') //plorder
+bkd.keyPLHeader1 = ko.observable('plmodel.plheader1') //plgroup1
 bkd.contentIsLoading = ko.observable(false)
 bkd.title = ko.observable('P&L Analytic')
 bkd.data = ko.observableArray([])
 bkd.detail = ko.observableArray([])
 bkd.getParam = () => {
-	let orderIndex = { field: 'plorder', name: 'Order' }
+	let orderIndex = { field: bkd.keyOrder(), name: 'Order' }
 
 	let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
 	let dimensions = bkd.dimensions().concat([breakdown, orderIndex])
@@ -21,7 +23,7 @@ bkd.refresh = () => {
 	bkd.contentIsLoading(true)
 	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
 		let data = _.sortBy(res.Data, (o, v) => 
-			parseInt(o.plorder.replace(/PL/g, "")))
+			parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, "")))
 		bkd.data(data)
 		bkd.emptyGrid()
 		bkd.contentIsLoading(false)
@@ -37,7 +39,7 @@ bkd.refreshOnChange = () => {
 }
 bkd.breakdownBy = ko.observable('customer.channelname')
 bkd.dimensions = ko.observableArray([
-	{ field: 'plgroup1', name: ' ' },
+	{ field: bkd.keyPLHeader1(), name: ' ' },
 	// { field: 'plmodel.plheader2', name: ' ' },
 	// { field: 'plmodel.plheader3', name: ' ' }
 ])
@@ -47,7 +49,7 @@ bkd.dataPoints = ko.observableArray([
 bkd.clickCell = (pnl, breakdown) => {
 	let pivot = $(`.breakdown-view`).data('kendoPivotGrid')
 	let param = bkd.getParam()
-	param.plgroup1 = pnl
+	param.plheader1 = pnl
 	param.filters.push({
 		Field: bkd.breakdownBy(),
 		Op: "$eq",
@@ -110,38 +112,58 @@ bkd.emptyGrid = () => {
 }
 bkd.render = () => {
 	let data = bkd.data()
-	let schemaModelFields = {}
-	let schemaCubeDimensions = {}
-	let schemaCubeMeasures = {}
+	let header = [] 
 	let rows = []
-	let columns = []
-	let measures = []
-	let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
+	let total = 0
 
-	app.koUnmap(bkd.dimensions).concat([breakdown]).forEach((d, i) => {
-		let field = app.idAble(d.field)
-		schemaModelFields[field] = { type: 'string' }
-		schemaCubeDimensions[field] = { caption: d.name }
+	Lazy(data)
+		.groupBy((d) => d[app.idAble(bkd.keyPLHeader1())])
+		.each((v, pnl) => {
+			let i = 0
+			let row = {
+				pnl: pnl,
+				pnlTotal: 0,
+				pnlOrder: v[0][app.idAble(bkd.keyOrder())]
+			}
 
-		if (field.indexOf('plheader') > -1) {
-			rows.push({ name: field, expand: (rows.length == 0) })
-		} else {
-			columns.push({ name: field, expand: true })
-		}
+			let data = Lazy(v)
+				.groupBy((e) => e[app.idAble(bkd.breakdownBy())])
+				.each((w, dimension) => {
+					let key = `value${i}`
+					let value = Lazy(w).sum((x) => x.value1)
+					row[key] = value
+					header[`value${i}`] = dimension
+					row.pnlTotal += value
+					total += value
+					i++
 
-		rows = rows.slice(0, 2)
+					if (header.filter((d) => d.key == key).length == 0) {
+						header.push({
+							key: key,
+							title: dimension
+						})
+					}
+				})
+			rows.push(row)
+		})
+
+	header = Lazy(header)
+		.sortBy((d) => d.title)
+		.toArray()
+
+	rows = Lazy(rows)
+		.sortBy((d) => d.pnlOrder)
+		.toArray()
+
+	rows.forEach((d, i) => {
+		header.forEach((j) => {
+			let percent = app.NaNable(d[j.key]) / d.pnlTotal * 100
+			d[j.key.replace(/value/g, 'percent')] = percent
+		})
 	})
 
-	app.koUnmap(bkd.dataPoints).forEach((d) => {
-		let measurement = 'Amount'
-		let field = app.idAble(d.field)
-		schemaModelFields[field] = { type: 'number' }
-		schemaCubeMeasures[measurement] = { field: field, aggregate: 'sum', format: '{0:n2}' }
-		measures.push(measurement)
-	})
-
-	bkd.emptyGrid()
-	let wrapper = app.newEl('div').addClass('pivot-pnl')
+	let wrapper = app.newEl('div')
+		.addClass('pivot-pnl')
 		.appendTo($('.breakdown-view'))
 
 	let tableHeaderWrap = app.newEl('div')
@@ -160,123 +182,125 @@ bkd.render = () => {
 		.addClass('table')
 		.appendTo(tableContentWrap)
 
-	let header = Lazy(data)
-		.groupBy((d) => d[app.idAble(bkd.breakdownBy())])
-		.map((v, k) => k)
-		.sortBy((k) => k)
-		.toArray()
-			
-	let trTopHeader = app.newEl('tr')
+	let trHeader1 = app.newEl('tr')
 		.appendTo(tableHeader)
 
-	let tdTopHead = app.newEl('th')
-		.appendTo(trTopHeader)
-		.html("P&L")
-
-	let trTopBody = app.newEl('tr')
-		.appendTo(tableContent)
-
-	let columnWidth = 150
-
-	header.forEach((d) => {
-		let tdTopBody = app.newEl('th')
-			.width(columnWidth)
-			.addClass('align-right')
-			.html(d == '' ? 'No Name' : d)
-			.appendTo(trTopBody)
-	})
+	app.newEl('th')
+		.html('P&L')
+		.appendTo(trHeader1)
 
 	app.newEl('th')
-		.addClass('align-right bold')
 		.html('Total')
-		.appendTo(trTopHeader)
+		.addClass('align-right')
+		.appendTo(trHeader1)
 
-	tableContent.css('min-width', columnWidth * header.length)
+	let trContent1 = app.newEl('tr')
+		.appendTo(tableContent)
 
-	let totalAll = 0
-	let values = []
-	let i = 0
+	let colWidth = 150
+	let colPercentWidth = 40
+	let totalWidth = 0
 
-	Lazy(data)
-		.groupBy((v) => v.plgroup1)
-		.map((v, k) => app.o({ key: k, data: v }))
-		.each((d, r) => {
-			values[i] = []
-			let total = 0
+	header.forEach((d, i) => {
+		app.newEl('th')
+			.html(app.nbspAble(d.title, 'Unnamed'))
+			.addClass('align-right')
+			.appendTo(trContent1)
+			.width(colWidth)
 
-			let trHeader = app.newEl('tr')
-				.appendTo(tableHeader)
+		app.newEl('th')
+			.html('%')
+			.addClass('align-right')
+			.appendTo(trContent1)
+			.width(colPercentWidth)
 
-			let tdHead = app.newEl('td')
-				.appendTo(trHeader)
-				.html(d.key)
+		totalWidth += colWidth + colPercentWidth
+	})
 
-			let trBody = app.newEl('tr')
-				.appendTo(tableContent)
+	tableContent.css('min-width', totalWidth)
 
-			let rowHeader1 = Lazy(d.data)
-				.groupBy((k) => k[app.idAble(bkd.breakdownBy())])
-				.map((v, k) => app.o({ key: k, data: v }))
-				.toArray()
+	let pnlTotalSum = 0
 
-			let j = 0
-			header.forEach((d) => {
-				let val = Lazy(rowHeader1)
-					.filter((e) => e.key == d)
-					.sum((e) => Lazy(e.data)
-					.sum((e) => e.value1))
-				values[i][j] = val
-				total += val
-				totalAll += val
+	rows.forEach((d, i) => {
+		pnlTotalSum += d.pnlTotal
 
-				let tdEachCell = app.newEl('td')
-					.appendTo(trBody)
-					.html(kendo.toString(val, 'n0'))
-					.addClass('align-right')
+		let trHeader = app.newEl('tr')
+			.appendTo(tableHeader)
 
-				tdEachCell.on('click', () => {
-					bkd.clickCell(r, d)
-				})
+		app.newEl('td')
+			.html(d.pnl)
+			.appendTo(trHeader)
 
-				j++
+		let pnlTotal = kendo.toString(d.pnlTotal, 'n0')
+		app.newEl('td')
+			.html(pnlTotal)
+			.addClass('align-right')
+			.appendTo(trHeader)
+
+		let trContent = app.newEl('tr')
+			.appendTo(tableContent)
+
+		header.forEach((e, f) => {
+			let value = kendo.toString(d[e.key], 'n0')
+			let percentage = kendo.toString(d[e.key.replace(/value/g, 'percent')], 'n0')
+
+			if ($.trim(value) == '') {
+				value = 0
+			}
+
+			let cell = app.newEl('td')
+				.html(value)
+				.addClass('align-right')
+				.appendTo(trContent)
+
+			cell.on('click', () => {
+				bkd.clickCell(d.pnl, e.title)
 			})
 
 			app.newEl('td')
-				.appendTo(trHeader)
-				.html(kendo.toString(total, 'n0'))
-				.addClass('align-right bold')
-
-			i++
+				.html(percentage)
+				.addClass('align-right')
+				.appendTo(trContent)
 		})
-
-	let trHeadFooter = app.newEl('tr')
-		.appendTo(tableHeader)
-		.addClass('footer')
-
-	let tdHeadFooter = app.newEl('td')
-		.addClass('bold footer')
-		.appendTo(trHeadFooter)
-		.html('Total')
-
-	let trBodyFooter = app.newEl('tr')
-		.appendTo(tableContent)
-		.addClass('footer')
-
-	let tdBodyFooter = app.newEl('td')
-		.addClass('bold align-right')
-		.appendTo(trHeadFooter)
-		.html(kendo.toString(totalAll, 'n0'))
-
-	header.forEach((d, i) => {
-		let columnTotal = Lazy(values).sum((e) => e[i])
-
-		let tdEachCell = app.newEl('td')
-			.appendTo(trBodyFooter)
-			.html(kendo.toString(columnTotal, 'n0'))
-			.addClass('align-right bold')
 	})
 
-	console.log("=====", values)
+	return
+
+	let trHeaderTotal = app.newEl('tr')
+		.addClass('footer')
+		.appendTo(tableHeader)
+
+	app.newEl('td')
+		.html('Total')
+		.appendTo(trHeaderTotal)
+
+	let totalAll = kendo.toString(pnlTotalSum, 'n0')
+	app.newEl('td')
+		.html(totalAll)
+		.addClass('align-right')
+		.appendTo(trHeaderTotal)
+
+	let trContentTotal = app.newEl('tr')
+		.addClass('footer')
+		.appendTo(tableContent)
+
+	header.forEach((e) => {
+		let sum = kendo.toString(Lazy(rows).sum((g) => app.NaNable(g[e.key])), 'n0')
+		let percentage = kendo.toString(sum / rows[0][e.key] * 100, 'n0')
+
+		app.newEl('td')
+			.html(sum)
+			.addClass('align-right')
+			.appendTo(trContentTotal)
+
+		app.newEl('td')
+			.html(percentage)
+			.addClass('align-right')
+			.appendTo(trContentTotal)
+	})
+
+	console.log("----", header)
+	console.log("----", rows)
 }
 
 $(() => {
