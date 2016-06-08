@@ -46,7 +46,7 @@ bkd.refreshOnChange = function () {
 	// setTimeout(bkd.refresh, 100)
 };
 bkd.breakdownBy = ko.observable('customer.channelname');
-bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy);
+bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy());
 
 bkd.dimensions = ko.observableArray([{ field: bkd.keyPLHeader1(), name: ' ' }]);
 
@@ -63,7 +63,6 @@ bkd.clickCell = function (pnl, breakdown) {
 		Value: breakdown
 	});
 	param.note = 'pnl lvl 1';
-
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
 		var detail = res.Data.map(function (d) {
 			return {

@@ -41,7 +41,7 @@ bkd.refreshOnChange = () => {
 	// setTimeout(bkd.refresh, 100)
 }
 bkd.breakdownBy = ko.observable('customer.channelname')
-bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy)
+bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy())
 
 bkd.dimensions = ko.observableArray([
 	{ field: bkd.keyPLHeader1(), name: ' ' },
@@ -61,7 +61,6 @@ bkd.clickCell = (pnl, breakdown) => {
 		Value: breakdown
 	})
 	param.note = 'pnl lvl 1'
-
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, (res) => {
 		let detail = res.Data.map((d) => { return {
 			ID: d.ID,
