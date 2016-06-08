@@ -160,6 +160,7 @@ func prepMaster() {
 		a.Total += ratio.Ratio
 		a.Ratios = append(a.Ratios, ratio)
 		ratios[ratioid] = a
+		ratio = new(gdrj.SalesRatio)
 	}
 }
 
