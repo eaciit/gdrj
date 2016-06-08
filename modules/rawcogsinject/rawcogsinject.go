@@ -188,7 +188,7 @@ func main() {
 
 	toolkit.Println("START...")
 	crx, err := conn.NewQuery().From("cogs_import").
-		Take(1000).
+		//Take(1000).
 		Cursor(nil)
 	if err != nil {
 		toolkit.Println("Error Found : ", err.Error())
