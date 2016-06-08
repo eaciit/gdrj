@@ -110,6 +110,47 @@ func processData(data []*gdrj.KeyCustName, count int) {
 	}
 }*/
 
+/*func getReportCursor(obj orm.IModel) dbox.ICursor {
+	c, e := gdrj.Find(obj, nil, nil)
+	if e != nil {
+		return nil
+	}
+	return c
+}
+
+func addReportChannel() {
+	cust := new(gdrj.Customer)
+	custs := []*gdrj.Customer{}
+	ccust := getReportCursor(cust)
+	defer ccust.Close()
+	var e error
+	count := ccust.Count()
+	i := 0
+	t0 := time.Now()
+	for e = ccust.Fetch(cust, 1, false); e == nil; {
+		custs = append(custs, cust)
+		cust = new(gdrj.Customer)
+		e = ccust.Fetch(cust, 1, false)
+	}
+
+	for _, val := range custs {
+		i++
+		switch val.ChannelID {
+		case "I1":
+			val.ReportChannel = "RD"
+		case "I2":
+			val.ReportChannel = "MT"
+		default:
+			val.ReportChannel = "GT"
+		}
+		toolkit.Printfn("Processing %d of %d %s in %s",
+			i, count, val.ReportChannel,
+			time.Since(t0).String())
+		val.Save()
+	}
+
+}*/
+
 func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
