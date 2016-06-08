@@ -13,6 +13,7 @@ db.indexMetaData = ko.observable(0);
 db.tableName = ko.observable("");
 db.isNew = ko.observable(false);
 db.configData = ko.mapping.fromJS({});
+db.isLoading = ko.observable(false);
 
 db.getMasterDataBrowser = function () {
 	db.masterDataBrowser([]);
@@ -148,18 +149,6 @@ db.selectedTableName = ko.computed(function () {
 	return row.TableNames;
 }, db);
 db.selectedTableID = ko.observable('');
-db.selectTable = function (e) {
-	db.cleanLeftFilter();
-	var dataItem = this.dataItem(e.item);
-
-	if (dataItem._id == '') {
-		db.cleanLeftFilter();
-		db.cleanRightGrid();
-	} else {
-		db.cleanRightGrid();
-		db.createDataBrowser(dataItem._id);
-	}
-};
 db.saveChanges = function () {
 	var data = {};
 	ko.mapping.toJS(db.metaData()).map(function (d) {
@@ -185,6 +174,10 @@ db.saveChanges = function () {
 	});
 };
 db.refreshDataBrowser = function () {
+	if ($("#grid-databrowser-decription").is(":empty")) {
+		db.createDataBrowser(db.selectedTableID());
+		return;
+	}
 	$('#grid-databrowser-decription').ecDataBrowser("postDataFilter");
 };
 

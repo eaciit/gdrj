@@ -76,6 +76,67 @@ bkd.clickCell = (pnl, breakdown) => {
 		bkd.renderDetail()
 	})
 }
+bkd.renderDetailSalesTrans = () => {
+	$('#modal-detail-ledger-summary').appendTo($('body'))
+	$('#modal-detail-ledger-summary').modal('show')
+
+	let columns = [
+		{ field: '_id', title: 'ID', width: 100, locked: true },
+		{ field: 'date', title: 'Date', width: 100, locked: true },
+		{ field: "grossamount", title: 'Gross', width: 100 },
+		{ field: "discountamount", title: 'Discount', width: 100 },
+		{ field: "netamount", title: 'Net Sales', width: 100 },
+		{ field: "salesqty", title: 'Sales Qty', width: 100 },
+		{ field: "customer.branchname", title: 'Branch', width: 100 },
+		{ field: "product.name", title: 'Branch', width: 100 },
+		{ field: "product.brand", title: 'Brand', width: 100 },
+	]
+
+	let config = {
+		dataSource: {
+			transport: {
+			    read: (options) => {
+			    	let param = options.data
+			    	param.tablename = "browsesalestrxs"
+
+			    	if (app.isUndefined(param.page)) {
+			    		param = $.extend(true, param, {
+			    			take: 5,
+			    			skip: 0,
+			    			page: 1,
+			    			pageSize: 5	
+			    		})
+			    	}
+
+		            $.ajax({
+		                type: "POST",
+						url: "/databrowser/getdatabrowser",
+		                contentType: "application/json; charset=utf-8",
+		                dataType: 'json',
+		                data: JSON.stringify(param),
+		                success: (res) => {
+		                    options.success(res.data)
+		                }
+		            });
+		        },
+		        pageSize: 5
+			},
+			schema: {
+			    data: (d) => d.DataValue,
+			    total: (d) => d.DataCount
+			},
+			serverPaging: true,
+			columns: []
+		},
+		sortable: true,
+        pageable: true,
+        scrollable: true,
+		columns: columns,
+	}
+
+	$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
+	$('.grid-detail').kendoGrid(config)
+}
 bkd.renderDetail = () => {
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')

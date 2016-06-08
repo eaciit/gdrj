@@ -15,6 +15,7 @@ db.indexMetaData = ko.observable(0)
 db.tableName = ko.observable("")
 db.isNew = ko.observable(false)
 db.configData = ko.mapping.fromJS({})
+db.isLoading = ko.observable(false)
 
 db.getMasterDataBrowser = () => {
 	db.masterDataBrowser([])
@@ -166,18 +167,6 @@ db.selectedTableName = ko.computed(() => {
 	return row.TableNames
 }, db)
 db.selectedTableID = ko.observable('')
-db.selectTable = function (e) {
-	db.cleanLeftFilter()
-	let dataItem = this.dataItem(e.item)
-
-	if (dataItem._id == '') {
-		db.cleanLeftFilter()
-		db.cleanRightGrid()
-	} else {
-		db.cleanRightGrid()
-		db.createDataBrowser(dataItem._id)
-	}
-}
 db.saveChanges = () => {
 	let data = {}
 	ko.mapping.toJS(db.metaData()).map((d) => {
@@ -203,6 +192,10 @@ db.saveChanges = () => {
 	})
 }
 db.refreshDataBrowser = () => {
+	if ($("#grid-databrowser-decription").is(":empty")) {
+		db.createDataBrowser(db.selectedTableID())
+		return
+	}
 	$('#grid-databrowser-decription').ecDataBrowser("postDataFilter")
 }
 

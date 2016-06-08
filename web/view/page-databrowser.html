@@ -12,8 +12,8 @@
 				<h3 class="no-margin">Filter</h3>
 				<div class="panel-nav-button">
 					<div class="form-group relative align-right no-margin no-padding hardcore">
-						<button class="btn btn-sm btn-primary" data-bind="click: db.refreshDataBrowser">
-							<i class="fa fa-refresh"></i> Reload Data
+						<button class="btn btn-sm btn-primary tooltipster" title="Refresh" data-bind="click: db.refreshDataBrowser">
+							<i class="fa fa-refresh"></i>
 						</button>
 					</div>
 				</div>
@@ -24,7 +24,7 @@
 					<div class="form-group form-group-table-name">
 						<div class="input-group input-group-sm ez width-full">
 							<span class="input-group-addon width-100 align-right">Table Name</span>
-							<select data-bind="kendoDropDownList: { data: db.masterDataBrowser, dataTextField: 'TableNames', dataValueField: '_id', optionLabel: 'Click to select one ...', value: db.selectedTableID, select: db.selectTable }" style="width: 100%"></select>
+							<select data-bind="kendoDropDownList: { data: db.masterDataBrowser, dataTextField: 'TableNames', dataValueField: '_id', optionLabel: 'Click to select one ...', value: db.selectedTableID, filter: 'contains' }" style="width: 100%"></select>
 						</div>
 					</div>
 				</div>
@@ -42,14 +42,19 @@
 					Data
 				</h3>
 				<div class="panel-nav-button" data-bind="visible: db.selectedTableID() != ''">
-					<button class="btn btn-primary btn-sm" data-bind="click: db.newData">
-						<i class="fa fa-plus"></i> New Data
+					<button class="btn btn-primary btn-sm tooltipster" title="Add new data" data-bind="click: db.newData">
+						<i class="fa fa-plus"></i>
+					</button>
+					<button class="btn btn-sm btn-primary tooltipster" title="Refresh" data-bind="click: db.refreshDataBrowser">
+						<i class="fa fa-refresh"></i>
 					</button>
 				</div>
 			</div>
 			<div class="panel-body">
-				{{template "_loader.html"}}
-				<div data-bind="visible: !app.loader()">
+				<div data-bind="visible: db.isLoading">
+					{{template "_loader.html"}}
+				</div>
+				<div data-bind="visible: !db.isLoading()">
 					<p data-bind="visible: db.selectedTableID() != ''">
 						Data on table <span class="tag bg-orange" data-bind="text: db.selectedTableName"></span>.
 					</p>
