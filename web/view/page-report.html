@@ -49,6 +49,9 @@ let o = {
 		<div class="col-md-12 col-sm-12 no-padding hardcore">
 			{{template "page-widget-chart-scatter.html"}}
 		</div>
+		<div class="col-md-12 col-sm-12 no-padding hardcore">
+			{{template "page-widget-chart-comparison.html"}}
+		</div>
 
 		<script>
 			// vm.currentMenu('Dashboard')
@@ -58,25 +61,29 @@ let o = {
 				{ title: 'Godrej', href: '#' },
 				{ title: 'Daashboard', href: '/web/report/dashboard' }
 			])
-			rpt.refresh = () => bkd.refresh
-		</script>
-	{{else if eq .id "chart_comparison"}}
-		<div class="col-md-12 col-sm-12 no-padding hardcore">
-			{{template "page-widget-chart-comparison.html"}}
-		</div>
-
-		<script>
-			// vm.currentMenu('Dashboard')
-			// vm.currentTitle('Dashboard')
-			ccr.title('Chart Comparison')
-			vm.breadcrumb([
-				{ title: 'Godrej', href: '#' },
-				{ title: 'Chart Comparison', href: '/web/report/chart_comparison' }
-			])
-			rpt.refresh = () => ccr.refresh
+			rpt.refresh = () => {
+				bkd.refresh()
+				ccr.refresh()
+			}
 		</script>
 	{{else if eq .id "gross_sales_discount_and_net_sales"}}
-		{{template "page-report-gross-sales-discount-and-net-sales.html"}}
+		<div class="col-md-12 no-padding hardcore">
+			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+				{{template "page-widget-chart.html"}}
+			</div>
+			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+				{{template "page-widget-pivot.html"}}
+			</div>
+		</div>
+		<div class="col-md-12 no-padding hardcore">
+			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+				{{template "page-widget-breakdown.html"}}
+			</div>
+			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+				{{template "page-widget-table.html"}}
+			</div>
+		</div>
+
 	{{end}}
 	</div>
 {{end}}

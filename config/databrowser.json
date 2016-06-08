@@ -196,6 +196,22 @@
                 "Sortable": true,
                 "IsAdd": true,
                 "IsEdit": true
+            },
+            {
+                "AdvanceFilter": false,
+                "Aggregate": "",
+                "Align": "Left",
+                "DataType": "string",
+                "Field": "customer.channelname",
+                "Format": "",
+                "HiddenField": false,
+                "Label": "Channel",
+                "Lookup": true,
+                "ShowIndex": 2,
+                "SimpleFilter": true,
+                "Sortable": true,
+                "IsAdd": true,
+                "IsEdit": true
             }
         ]
     },
