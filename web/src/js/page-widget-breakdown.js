@@ -2,7 +2,7 @@ viewModel.breakdown = new Object()
 let bkd = viewModel.breakdown
 
 bkd.contentIsLoading = ko.observable(false)
-bkd.title = ko.observable('Grid Analysis Ideas')
+bkd.title = ko.observable('P&L Analytic')
 bkd.data = ko.observableArray([])
 bkd.detail = ko.observableArray([])
 bkd.getParam = () => {

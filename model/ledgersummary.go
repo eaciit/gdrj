@@ -3,12 +3,12 @@ package gdrj
 import (
 	"errors"
 	"fmt"
-	"strings"
-	"time"
-
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
+	"sort"
+	"strings"
+	"time"
 )
 
 type LedgerSummary struct {
@@ -134,48 +134,194 @@ func GetSalesHeaderList() (toolkit.Ms, error) {
 }
 
 func GetDecreasedQty() (toolkit.Ms, error) {
-	result := toolkit.M{}
-	results := toolkit.Ms{}
-	results = append(results, result)
 	ls := new(LedgerSummary)
 	lsList := []*LedgerSummary{}
-	quartal := toolkit.M{}
-	// quartalList := toolkit.Ms{}
 
 	cls, err := Find(new(LedgerSummary), nil, nil)
 	if err != nil {
-		return nil, errors.New("GetSalesHeaderList: Preparing cursor error " + err.Error())
+		return nil, errors.New("GetDecreasedQty: Preparing cursor error " + err.Error())
 	}
 
 	defer cls.Close()
 
 	for err = cls.Fetch(ls, 1, false); err == nil; {
-		ls = new(LedgerSummary)
 		lsList = append(lsList, ls)
-		quartal.Set("product", ls.SKUID)
-		quartal.Set("qty", ls.Value3)
-		quartal.Set("year", ls.Year)
-		switch {
-		case ls.Month >= 1 && ls.Month <= 3:
-			quartal.Set("quartal", "q1")
-		case ls.Month >= 4 && ls.Month <= 6:
-			quartal.Set("quartal", "q2")
-		case ls.Month >= 7 && ls.Month <= 9:
-			quartal.Set("quartal", "q3")
-		case ls.Month >= 10 && ls.Month <= 12:
-			quartal.Set("quartal", "q4")
-		}
+		ls = new(LedgerSummary)
 		err = cls.Fetch(ls, 1, false)
 	}
 
+	product := toolkit.M{}
+	for _, ledSum := range lsList {
+		if ledSum.SKUID != "" {
+			id := ledSum.SKUID + "_"
+			switch {
+			case ledSum.Month >= 1 && ledSum.Month <= 3:
+				id += toolkit.ToString(ledSum.Year) + "_" + "Q1"
+				if product.Has(id) {
+					product.Set(id, product.GetFloat64(id)+ledSum.Value3)
+				} else {
+					product.Set(id, ledSum.Value3)
+				}
+			case ledSum.Month >= 4 && ledSum.Month <= 6:
+				id += toolkit.ToString(ledSum.Year) + "_" + "Q2"
+				if product.Has(id) {
+					product.Set(id, product.GetFloat64(id)+ledSum.Value3)
+				} else {
+					product.Set(id, ledSum.Value3)
+				}
+			case ledSum.Month >= 7 && ledSum.Month <= 9:
+				id += toolkit.ToString(ledSum.Year) + "_" + "Q3"
+				if product.Has(id) {
+					product.Set(id, product.GetFloat64(id)+ledSum.Value3)
+				} else {
+					product.Set(id, ledSum.Value3)
+				}
+			case ledSum.Month >= 10 && ledSum.Month <= 12:
+				id += toolkit.ToString(ledSum.Year) + "_" + "Q4"
+				if product.Has(id) {
+					product.Set(id, product.GetFloat64(id)+ledSum.Value3)
+				} else {
+					product.Set(id, ledSum.Value3)
+				}
+			}
+		}
+	}
+
+	var keys []string
+	for k := range product {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	results := toolkit.Ms{}
+	result := toolkit.M{}
+	prevSKUID := ""
+	var prevVal float64
+	var isLess bool
+	var listProd = []string{}
+	var listVal = []float64{}
+	for i, key := range keys {
+		i++
+		split := strings.Split(key, "_")
+		listVal = append(listVal, product.GetFloat64(key))
+		if prevSKUID == split[0] {
+			if isLess == true {
+				if prevVal < product.GetFloat64(key) {
+					isLess = false
+				} else {
+					if i%8 == 0 {
+						listProd = append(listProd, prevSKUID)
+						result.Set(split[0], listVal)
+						results = append(results, result)
+					} else {
+						prevVal = product.GetFloat64(key)
+					}
+				}
+			}
+		} else {
+			listVal = []float64{}
+			listVal = append(listVal, product.GetFloat64(key))
+			prevVal = product.GetFloat64(key)
+			prevSKUID = split[0]
+			isLess = true
+		}
+	}
 	return results, nil
 }
 
 func GetIncreasedSales() (toolkit.Ms, error) {
-	result := toolkit.M{}
-	results := toolkit.Ms{}
-	results = append(results, result)
+	ls := new(LedgerSummary)
+	lsList := []*LedgerSummary{}
 
+	cls, err := Find(new(LedgerSummary), nil, nil)
+	if err != nil {
+		return nil, errors.New("GetDecreasedQty: Preparing cursor error " + err.Error())
+	}
+
+	defer cls.Close()
+
+	for err = cls.Fetch(ls, 1, false); err == nil; {
+		lsList = append(lsList, ls)
+		ls = new(LedgerSummary)
+		err = cls.Fetch(ls, 1, false)
+	}
+
+	product := toolkit.M{}
+	for _, ledSum := range lsList {
+		if ledSum.SKUID != "" {
+			id := ledSum.SKUID + "_"
+			switch {
+			case ledSum.Month >= 1 && ledSum.Month <= 3:
+				id += toolkit.ToString(ledSum.Year) + "_" + "Q1"
+				if product.Has(id) {
+					product.Set(id, product.GetFloat64(id)+ledSum.Value1)
+				} else {
+					product.Set(id, ledSum.Value1)
+				}
+			case ledSum.Month >= 4 && ledSum.Month <= 6:
+				id += toolkit.ToString(ledSum.Year) + "_" + "Q2"
+				if product.Has(id) {
+					product.Set(id, product.GetFloat64(id)+ledSum.Value1)
+				} else {
+					product.Set(id, ledSum.Value1)
+				}
+			case ledSum.Month >= 7 && ledSum.Month <= 9:
+				id += toolkit.ToString(ledSum.Year) + "_" + "Q3"
+				if product.Has(id) {
+					product.Set(id, product.GetFloat64(id)+ledSum.Value1)
+				} else {
+					product.Set(id, ledSum.Value1)
+				}
+			case ledSum.Month >= 10 && ledSum.Month <= 12:
+				id += toolkit.ToString(ledSum.Year) + "_" + "Q4"
+				if product.Has(id) {
+					product.Set(id, product.GetFloat64(id)+ledSum.Value1)
+				} else {
+					product.Set(id, ledSum.Value1)
+				}
+			}
+		}
+	}
+
+	var keys []string
+	for k := range product {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	results := toolkit.Ms{}
+	result := toolkit.M{}
+	prevSKUID := ""
+	var prevVal float64
+	var isGreater bool
+	var listProd = []string{}
+	var listVal = []float64{}
+	for i, key := range keys {
+		i++
+		split := strings.Split(key, "_")
+		listVal = append(listVal, product.GetFloat64(key))
+		if prevSKUID == split[0] {
+			if isGreater == true {
+				if prevVal > product.GetFloat64(key) {
+					isGreater = false
+				} else {
+					if i%8 == 0 {
+						listProd = append(listProd, prevSKUID)
+						result.Set(split[0], listVal)
+						results = append(results, result)
+					} else {
+						prevVal = product.GetFloat64(key)
+					}
+				}
+			}
+		} else {
+			listVal = []float64{}
+			listVal = append(listVal, product.GetFloat64(key))
+			prevVal = product.GetFloat64(key)
+			prevSKUID = split[0]
+			isGreater = true
+		}
+	}
 	return results, nil
 }
 

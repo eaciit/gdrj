@@ -4,7 +4,7 @@ viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
 
 bkd.contentIsLoading = ko.observable(false);
-bkd.title = ko.observable('Grid Analysis Ideas');
+bkd.title = ko.observable('P&L Analytic');
 bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
 bkd.getParam = function () {
