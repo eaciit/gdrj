@@ -21,7 +21,7 @@ bkd.refresh = () => {
 	bkd.contentIsLoading(true)
 	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
 		let data = _.sortBy(res.Data, (o, v) => 
-			parseInt(o.plmodel_orderindex.replace(/PL/g, "")))
+			parseInt(o.orderIndex.replace(/PL/g, "")))
 		bkd.data(data)
 		bkd.emptyGrid()
 		bkd.contentIsLoading(false)
