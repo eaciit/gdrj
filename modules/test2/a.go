@@ -218,7 +218,7 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 	defer workerconn.Close()
 
 		for v:= range jobs{
-			if v.Src=="31052016SAP_SALESRD" || v.Src=="31052016SAP_DISC-RDJKT" || v.Src==""{
+			if v.Src=="31052016SAP_SALESRD" || v.Src=="31052016SAP_DISC-RDJKT" || v.Src=="" || v.AmountinIDR==0 {
 				result <- "NOK"
 				continue
 			}
