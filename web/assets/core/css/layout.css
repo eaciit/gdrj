@@ -458,6 +458,42 @@ body {
 .chart-comparison .each-chart .wrapper .chart {
   height: 300px;
 }
+.pivot-pnl {
+  position: relative;
+}
+.pivot-pnl .table-header {
+  overflow-x: scroll;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 300px;
+  border-right: 1px solid #F0F3F4;
+}
+.pivot-pnl .table-content {
+  overflow-x: scroll;
+  margin-left: 300px;
+}
+.pivot-pnl table {
+  margin-bottom: 0;
+}
+.pivot-pnl table tr th {
+  border-color: #F0F3F4;
+  background-color: #f0f3f4;
+}
+.pivot-pnl table tr td {
+  padding: 4px 8px;
+  border-color: #F0F3F4;
+}
+.pivot-pnl table tr.footer td {
+  padding: 8px;
+  line-height: 1.42857143;
+  border-bottom: 1px solid #F0F3F4;
+  background-color: #f0f3f4;
+}
+.pivot-pnl table tr:hover td {
+  background-color: #74B841;
+  color: white;
+}
 .list-analysis {
   margin-bottom: 10px;
 }

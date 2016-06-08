@@ -183,6 +183,10 @@ func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interfa
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	if payload.Note == "pnl lvl 1" {
+		data = gdrj.CalculatePNLLevel1(data, payload)
+	}
+
 	res := new(toolkit.Result)
 	res.SetData(data)
 

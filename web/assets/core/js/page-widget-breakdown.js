@@ -3,14 +3,12 @@
 viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
 
-app.log("ANGKA DI PIVOT CLICKABLE, JIKA SALES MAKA AMBIL DARI LEDGER TRANSACTION, SELAINNYA DARI LEDGER SUMMARY");
-
 bkd.contentIsLoading = ko.observable(false);
 bkd.title = ko.observable('P&L Analytic');
 bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
 bkd.getParam = function () {
-	var orderIndex = { field: 'plmodel.orderindex', name: 'Order' };
+	var orderIndex = { field: 'plorder', name: 'Order' };
 
 	var breakdown = rpt.optionDimensions().find(function (d) {
 		return d.field == bkd.breakdownBy();
@@ -27,12 +25,13 @@ bkd.refresh = function () {
 	bkd.contentIsLoading(true);
 	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
 		var data = _.sortBy(res.Data, function (o, v) {
-			return parseInt(o.plmodel_orderindex.replace(/PL/g, ""));
+			return parseInt(o.plorder.replace(/PL/g, ""));
 		});
 		bkd.data(data);
 		bkd.emptyGrid();
 		bkd.contentIsLoading(false);
 		bkd.render();
+		window.data = res.Data;
 	}, function () {
 		bkd.emptyGrid();
 		bkd.contentIsLoading(false);
@@ -42,35 +41,21 @@ bkd.refreshOnChange = function () {
 	// setTimeout(bkd.refresh, 100)
 };
 bkd.breakdownBy = ko.observable('customer.channelname');
-bkd.dimensions = ko.observableArray([{ field: 'plmodel.plheader1', name: ' ' }, { field: 'plmodel.plheader2', name: ' ' }, { field: 'plmodel.plheader3', name: ' ' }]);
-bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "sum" }]);
-bkd.clickCell = function (o) {
-	var x = $(o).closest("td").index();
-	var y = $(o).closest("tr").index();
-	// let cat = $(`.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(${x}) span`).html()
-	// let plheader1 = $(`.breakdown-view .k-grid.k-widget:eq(0) tr:eq(${y}) td:not(.k-first):first > span`).html()
+bkd.dimensions = ko.observableArray([{ field: 'plgroup1', name: ' ' }]);
 
+// { field: 'plmodel.plheader2', name: ' ' },
+// { field: 'plmodel.plheader3', name: ' ' }
+bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "sum" }]);
+bkd.clickCell = function (pnl, breakdown) {
 	var pivot = $('.breakdown-view').data('kendoPivotGrid');
-	var cellInfo = pivot.cellInfo(x, y);
 	var param = bkd.getParam();
-	param.plheader1 = '';
-	param.plheader2 = '';
-	param.plheader3 = '';
+	param.plgroup1 = pnl;
 	param.filters.push({
 		Field: bkd.breakdownBy(),
 		Op: "$eq",
-		Value: app.htmlDecode(cellInfo.columnTuple.members[0].caption)
+		Value: breakdown
 	});
-
-	cellInfo.rowTuple.members.forEach(function (d) {
-		if (d.parentName == undefined) {
-			return;
-		}
-
-		var key = d.parentName.split('_').reverse()[0];
-		var value = app.htmlDecode(d.name.replace(d.parentName + '&', ''));
-		param[key] = value;
-	});
+	param.note = 'pnl lvl 1';
 
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
 		var detail = res.Data.map(function (d) {
@@ -95,7 +80,9 @@ bkd.renderDetail = function () {
 	$('#modal-detail-ledger-summary').appendTo($('body'));
 	$('#modal-detail-ledger-summary').modal('show');
 
-	var columns = [{ field: 'Year', width: 60, locked: true, footerTemplate: 'Total :' }, { field: 'Amount', width: 80, locked: true, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}', attributes: { class: 'align-right' } }, { field: 'CostCenter', title: 'Cost Center', width: 250 }, { field: 'Customer', width: 250 }, { field: 'Channel', width: 150 }, { field: 'Branch', width: 120 }, { field: 'Brand', width: 100 }, { field: 'Product', width: 250 }];
+	var columns = [{ field: 'Year', width: 60, locked: true, footerTemplate: 'Total :' }, { field: 'Amount', width: 80, locked: true, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: function footerTemplate(d) {
+			return kendo.toString(d.Amount.sum, 'n0');
+		}, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: 'CostCenter', title: 'Cost Center', width: 250 }, { field: 'Customer', width: 250 }, { field: 'Channel', width: 150 }, { field: 'Branch', width: 120 }, { field: 'Brand', width: 100 }, { field: 'Product', width: 250 }];
 	var config = {
 		dataSource: {
 			data: bkd.detail(),
@@ -150,61 +137,109 @@ bkd.render = function () {
 		measures.push(measurement);
 	});
 
-	var config = {
-		filterable: false,
-		reorderable: false,
-		dataSource: {
-			data: data,
-			schema: {
-				model: {
-					fields: schemaModelFields
-				},
-				cube: {
-					dimensions: schemaCubeDimensions,
-					measures: schemaCubeMeasures
-				}
-			},
-			rows: rows,
-			columns: columns,
-			measures: measures
-		},
-		columnHeaderTemplate: function columnHeaderTemplate(d) {
-			var text = d.member.caption;
-
-			if (text == '') {
-				text = '&nbsp;';
-			}
-
-			return text;
-		},
-		dataCellTemplate: function dataCellTemplate(d) {
-			var number = kendo.toString(d.dataItem.value, "n0");
-			return '<div onclick="bkd.clickCell(this)" class="align-right">' + number + '</div>';
-		},
-		dataBound: function dataBound() {
-			$('.breakdown-view .k-grid.k-widget:first [data-path]:first').addClass('invisible');
-			$('.breakdown-view .k-grid.k-widget:first span:contains(" ")').each(function (i, e) {
-				if ($(e).parent().hasClass('k-grid-footer') && $.trim($(e).html()) == '') {
-					$(e).css({
-						color: 'white',
-						display: 'block',
-						height: '18px'
-					});
-				}
-			});
-			$('.breakdown-view .k-grid.k-widget:first tr .k-i-arrow-e').removeClass('invisible');
-			$('.breakdown-view .k-grid.k-widget:first tr:last .k-i-arrow-e').addClass('invisible');
-			$('.breakdown-view .k-grid.k-widget:first table:first').css('margin-left', '-32px');
-			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').addClass('invisible');
-			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').parent().css('color', 'transparent');
-			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-i-arrow-s').parent().next().css('color', 'transparent');
-			$('.breakdown-view .k-grid.k-widget:eq(1) .k-grid-header tr:first .k-header.k-alt span').addClass('invisible');
-		}
-	};
-
-	app.log('breakdown', app.clone(config));
 	bkd.emptyGrid();
-	$('.breakdown-view').kendoPivotGrid(config);
+	var wrapper = app.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
+
+	var tableHeaderWrap = app.newEl('div').addClass('table-header').appendTo(wrapper);
+
+	var tableHeader = app.newEl('table').addClass('table').appendTo(tableHeaderWrap);
+
+	var tableContentWrap = app.newEl('div').appendTo(wrapper).addClass('table-content');
+
+	var tableContent = app.newEl('table').addClass('table').appendTo(tableContentWrap);
+
+	var header = Lazy(data).groupBy(function (d) {
+		return d[app.idAble(bkd.breakdownBy())];
+	}).map(function (v, k) {
+		return k;
+	}).sortBy(function (k) {
+		return k;
+	}).toArray();
+
+	var trTopHeader = app.newEl('tr').appendTo(tableHeader);
+
+	var tdTopHead = app.newEl('th').appendTo(trTopHeader).html("P&L");
+
+	var trTopBody = app.newEl('tr').appendTo(tableContent);
+
+	var columnWidth = 150;
+
+	header.forEach(function (d) {
+		var tdTopBody = app.newEl('th').width(columnWidth).addClass('align-right').html(d == '' ? 'No Name' : d).appendTo(trTopBody);
+	});
+
+	app.newEl('th').addClass('align-right bold').html('Total').appendTo(trTopHeader);
+
+	tableContent.css('min-width', columnWidth * header.length);
+
+	var totalAll = 0;
+	var values = [];
+	var i = 0;
+
+	Lazy(data).groupBy(function (v) {
+		return v.plgroup1;
+	}).map(function (v, k) {
+		return app.o({ key: k, data: v });
+	}).each(function (d, r) {
+		values[i] = [];
+		var total = 0;
+
+		var trHeader = app.newEl('tr').appendTo(tableHeader);
+
+		var tdHead = app.newEl('td').appendTo(trHeader).html(d.key);
+
+		var trBody = app.newEl('tr').appendTo(tableContent);
+
+		var rowHeader1 = Lazy(d.data).groupBy(function (k) {
+			return k[app.idAble(bkd.breakdownBy())];
+		}).map(function (v, k) {
+			return app.o({ key: k, data: v });
+		}).toArray();
+
+		var j = 0;
+		header.forEach(function (d) {
+			var val = Lazy(rowHeader1).filter(function (e) {
+				return e.key == d;
+			}).sum(function (e) {
+				return Lazy(e.data).sum(function (e) {
+					return e.value1;
+				});
+			});
+			values[i][j] = val;
+			total += val;
+			totalAll += val;
+
+			var tdEachCell = app.newEl('td').appendTo(trBody).html(kendo.toString(val, 'n0')).addClass('align-right');
+
+			tdEachCell.on('click', function () {
+				bkd.clickCell(r, d);
+			});
+
+			j++;
+		});
+
+		app.newEl('td').appendTo(trHeader).html(kendo.toString(total, 'n0')).addClass('align-right bold');
+
+		i++;
+	});
+
+	var trHeadFooter = app.newEl('tr').appendTo(tableHeader).addClass('footer');
+
+	var tdHeadFooter = app.newEl('td').addClass('bold footer').appendTo(trHeadFooter).html('Total');
+
+	var trBodyFooter = app.newEl('tr').appendTo(tableContent).addClass('footer');
+
+	var tdBodyFooter = app.newEl('td').addClass('bold align-right').appendTo(trHeadFooter).html(kendo.toString(totalAll, 'n0'));
+
+	header.forEach(function (d, i) {
+		var columnTotal = Lazy(values).sum(function (e) {
+			return e[i];
+		});
+
+		var tdEachCell = app.newEl('td').appendTo(trBodyFooter).html(kendo.toString(columnTotal, 'n0')).addClass('align-right bold');
+	});
+
+	console.log("=====", values);
 };
 
 $(function () {
