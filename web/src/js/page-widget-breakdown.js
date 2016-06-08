@@ -136,7 +136,8 @@ bkd.renderDetailSalesTrans = (breakdown) => {
 			    total: (d) => d.DataCount
 			},
 			serverPaging: true,
-			columns: []
+			columns: [],
+			pageSize: 5,
 		},
 		sortable: true,
         pageable: true,

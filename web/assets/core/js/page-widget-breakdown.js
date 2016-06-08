@@ -136,7 +136,8 @@ bkd.renderDetailSalesTrans = function (breakdown) {
 				}
 			},
 			serverPaging: true,
-			columns: []
+			columns: [],
+			pageSize: 5
 		},
 		sortable: true,
 		pageable: true,
