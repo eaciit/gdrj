@@ -19,6 +19,31 @@ app.error = function () {
 
     console.error.apply(console, [].slice.call(arguments))
 }
+app.isLastItem = (o, d) => (o.indexOf(d) + 1) == o.length
+app.NaNable = (o, dv = 0) => isNaN(o) ? dv : o
+app.nbspAble = (o, dv = '&nbsp;') => ($.trim(o) == '') ? dv : o
+app.allKeys = (o) => {
+    let keys = []
+    for (let k in o) {
+        if (o.hasOwnProperty(k)) {
+            keys.push(String(k))
+        }
+    }
+    return keys
+}
+app.length = (o) => {
+    if (o instanceof Object) {
+        let i = 0
+        for (let k in o) {
+            if (o.hasOwnProperty(k)) {
+                i++
+            }
+        }
+        return i
+    }
+
+    return o.length
+}
 app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
     let startReq = moment()
     let callbackScheduler = (callback) => {
@@ -86,6 +111,7 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
 
     return $.ajax(config)
 }
+app.o = (raw) => raw
 app.seriesColorsGodrej = ['#3498DB', '#28B463', '#F39C12']
 app.randomRange = (min, max) => (Math.floor(Math.random() * (max - min + 1)) + min)
 app.capitalize = (d) => `${d[0].toUpperCase()}${d.slice(1)}`

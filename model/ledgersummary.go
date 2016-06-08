@@ -3,6 +3,7 @@ package gdrj
 import (
 	"errors"
 	"fmt"
+	// . "github.com/ahmetalpbalkan/go-linq"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
@@ -45,7 +46,10 @@ func (s *LedgerSummary) PrepareID() interface{} {
 }
 
 func (s *LedgerSummary) TableName() string {
-	return "ledgersummariestemp" //"ledgersummaries"
+	return "ledgersummariestemp" //"ledgersummaries"// "pldatamodels" //
+
+	// 	go.eaciit.com:27123
+	// go.eaciit.com:27123
 }
 
 func (s *LedgerSummary) PreSave() error {
@@ -522,6 +526,21 @@ func (s *LedgerSummary) Save() error {
 	return e
 }
 
+func CalculatePNLLevelX(data []*toolkit.M, payload *PivotParam) []*toolkit.M {
+	if payload.Note == "pnl lvl 1" {
+
+		// 		From(data).GroupBy(func(T) T {
+		// T.(*toolkit.M).
+		// 		}, func(T) T {
+
+		// 		})
+		// data = gdrj.CalculatePNLLevel1(data, payload)
+		return data
+	}
+
+	return data
+}
+
 type DetailParam struct {
 	PivotParam
 	PLHeader1 string `json:"plheader1"`
@@ -534,6 +553,7 @@ type PivotParam struct {
 	DataPoints []*PivotParamDataPoint  `json:"datapoints"`
 	Which      string                  `json:"which"`
 	Filters    []toolkit.M             `json:"filters"`
+	Note       string                  `json:"note"`
 }
 
 type PivotParamDimensions struct {
