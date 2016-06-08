@@ -60,7 +60,7 @@ ccr.render = () => {
 				data: data
 			},
 			series: series,
-			seriesColors: ["#5499C7", "#ff8d00", "#678900", "#ffb53c", "#396000"],
+			seriesColors: ["#5499C7", "#ff8d00", "#678900"],
 			seriesDefaults: {
 	            type: "line",
 	            style: "smooth"

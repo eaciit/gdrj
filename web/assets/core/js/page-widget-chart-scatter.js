@@ -22,7 +22,12 @@ rs.getSalesHeaderList = function () {
 			return item.field == 'Net Sales';
 		});
 		rs.refresh();
-		rs.pplheader('EBIT');
+		setTimeout(function () {
+			rs.pplheader('');
+			setTimeout(function () {
+				rs.pplheader('EBIT');
+			}, 300);
+		}, 300);
 	});
 };
 
@@ -31,7 +36,7 @@ rs.refresh = function () {
 	var dimensions = [{ "field": "plmodel.plheader1", "name": "plheader1" }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
 	var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 	var param = rpt.wrapParam(dimensions, dataPoints);
-	param.filters.push({
+	var param1 = $.extend(true, param, {
 		"Op": "$eq",
 		"Field": "plmodel.plheader1",
 		"Value": rs.pplheader()
@@ -40,15 +45,15 @@ rs.refresh = function () {
 		var dataall = Lazy(res.Data).groupBy(function (f) {
 			return f['year'];
 		}).map(function (k, v) {
-			return { _id: v, data: k };
+			return app.o({ _id: v, data: k });
 		}).toArray();
 
-		param.filters = [];
-		param.filters.push({
+		var param1 = $.extend(true, param.filter, {
 			"Op": "$eq",
 			"Field": "plmodel.plheader1",
 			"Value": 'Net Sales'
 		});
+
 		app.ajaxPost("/report/summarycalculatedatapivot", param, function (res2) {
 			var dataall2 = Lazy(res2.Data).groupBy(function (f) {
 				return f['year'];
@@ -64,23 +69,23 @@ rs.refresh = function () {
 
 				var totalDataAll = Lazy(currentDataAll.data).sum(function (e) {
 					return e.value1;
-				});
+				}); // by breakdown
 				var totalDataAll2 = Lazy(currentDataAll2.data).sum(function (e) {
 					return e.value1;
-				});
+				}); // by net sales
 
 				var maxNetSales = Lazy(currentDataAll2.data).max(function (e) {
 					return e.value1;
 				}).value1;
-				var percentage = totalDataAll2 / totalDataAll;
-				var v = maxNetSales * 120;
-				var meanYear = (dataall[i].data.length / 2).toFixed(0) - 1;
-				var expandpersent = maxNetSales * (percentage / 120);
+				var percentage = totalDataAll / totalDataAll2 * 100;
+
+				var valueByPercentage = percentage * 100 / maxNetSales;
+				console.log("=========", currentDataAll, currentDataAll2, totalDataAll, totalDataAll2, maxNetSales);
 
 				for (var a in dataall[i].data) {
 					rs.datascatter.push({
-						pplheader: percentage,
-						value1: dataall[i].data[a].value1 / expandpersent * 120,
+						pplheader: 0,
+						value1: dataall[i].data[a].value1,
 						title: dataall[i].data[a][title],
 						header: dataall[i].data[a].plmodel_plheader1,
 						year: dataall[i].data[a].year
@@ -95,13 +100,14 @@ rs.refresh = function () {
 					});
 				}
 			}
-			rs.generateReport(dataall[0]._id, dataall[1]._id);
+			rs.generateReport(header[0]._id, header[1]._id);
 		});
 	});
 };
 
-rs.generateReport = function (year1, year2) {
+rs.generateReport = function (yexwar1, year2) {
 	rs.contentIsLoading(false);
+	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>');
 	$('#scatter-view').width(rs.datascatter().length * 100);
 	$("#scatter-view").kendoChart({
 		dataSource: {
@@ -118,13 +124,11 @@ rs.generateReport = function (year1, year2) {
 			type: "line",
 			missingValues: "gap"
 		},
-		// stack: {
-		//     type: "100%"
-		// }
+		seriesColors: ["#ff8d00", "#678900"],
 		series: [{
 			name: "PPL Header",
 			field: 'pplheader',
-			color: "#f3ac32",
+			width: 3,
 			tooltip: {
 				visible: true,
 				template: "#: dataItem.title # : #: kendo.toString(dataItem.pplheader, 'pplheader') # %"
@@ -134,21 +138,23 @@ rs.generateReport = function (year1, year2) {
 			}
 		}, {
 			name: "Dimension",
-			color: "red",
 			field: "value1",
+			width: 3,
 			opacity: 0,
 			markers: {
 				type: 'cross',
-				size: 8
+				size: 12
 			},
 			tooltip: {
 				visible: true,
-				template: "#: dataItem.title # : #: kendo.toString(dataItem.value1, 'n2') # %"
+				template: function template(d) {
+					return d.dataItem.title + " on " + d.dataItem.year + ": " + kendo.toString(d.value, 'n0');
+				}
 			}
 		}],
 		valueAxis: {
 			majorGridLines: {
-				visible: false
+				color: '#fafafa'
 			},
 			label: {
 				format: "{0}%"
@@ -156,18 +162,19 @@ rs.generateReport = function (year1, year2) {
 		},
 		categoryAxis: [{
 			field: 'title',
+			labels: {
+				rotation: 20
+			},
 			majorGridLines: {
-				visible: false
-			} }, {
+				color: '#fafafa'
+			}
+		}, {
 			categories: [year1, year2],
 			line: { visible: false }
 		}]
 	});
 };
 
-//       labels: {
-// 	rotation: 60
-// }
 $(function () {
 	rpt.value.From(moment("2015-02-02").toDate());
 	rpt.value.To(moment("2016-02-02").toDate());
