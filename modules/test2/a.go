@@ -353,6 +353,7 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 					multiplier=-1
 				}
 				
+				insert := true
 				if !lsexist{
 					//-- need to grand rls again
 					rls = new(gdrj.PLDataModel)
@@ -363,7 +364,6 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 					//-- end
 
 					//-- get existing values
-					/*
 					els := new(gdrj.PLDataModel)
 					cls,_ := workerconn.NewQuery().From(ls.TableName()).
 						Where(dbox.Eq("_id",rls.ID)).Cursor(nil)
@@ -371,17 +371,26 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 					if ecls==nil{
 						rls.Value1=els.Value1
 					}
+					insert=false
 					cls.Close()
-					*/
 				} 
 				
 				rls.Value1 += ls.Value1 * r.Ratio/total * multiplier
-				err = workerconn.NewQuery().
-					SetConfig("multiexec",true).
-					From(ls.TableName()).
-					Where(dbox.Eq("_id", rls.ID)).
-					Save().
-					Exec(toolkit.M{}.Set("data",rls))
+				if insert{
+					err = workerconn.NewQuery().
+						SetConfig("multiexec",true).
+						From(ls.TableName()).
+						//Where(dbox.Eq("_id", rls.ID)).
+						Insert().
+						Exec(toolkit.M{}.Set("data",rls))
+				} else {
+					err = workerconn.NewQuery().
+						SetConfig("multiexec",true).
+						From(ls.TableName()).
+						//Where(dbox.Eq("_id", rls.ID)).
+						Update().
+						Exec(toolkit.M{}.Set("data",rls))
+				}
 				if err != nil {
 					toolkit.Println("Error Found : ", err.Error())
 					os.Exit(1)
