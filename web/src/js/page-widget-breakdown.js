@@ -6,7 +6,7 @@ bkd.title = ko.observable('P&L Analytic')
 bkd.data = ko.observableArray([])
 bkd.detail = ko.observableArray([])
 bkd.getParam = () => {
-	let orderIndex = { field: 'plmodel.orderindex', name: 'Order' }
+	let orderIndex = { field: 'plorder', name: 'Order' }
 
 	let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
 	let dimensions = bkd.dimensions().concat([breakdown, orderIndex])
@@ -37,9 +37,9 @@ bkd.refreshOnChange = () => {
 }
 bkd.breakdownBy = ko.observable('customer.channelname')
 bkd.dimensions = ko.observableArray([
-	{ field: 'plmodel.plheader1', name: ' ' },
-	{ field: 'plmodel.plheader2', name: ' ' },
-	{ field: 'plmodel.plheader3', name: ' ' }
+	{ field: 'plgroup1', name: ' ' },
+	// { field: 'plmodel.plheader2', name: ' ' },
+	// { field: 'plmodel.plheader3', name: ' ' }
 ])
 bkd.dataPoints = ko.observableArray([
 	{ field: "value1", name: "value1", aggr: "sum" }
@@ -47,14 +47,13 @@ bkd.dataPoints = ko.observableArray([
 bkd.clickCell = (pnl, breakdown) => {
 	let pivot = $(`.breakdown-view`).data('kendoPivotGrid')
 	let param = bkd.getParam()
-	param.plheader1 = pnl
-	param.plheader2 = ''
-	param.plheader3 = ''
+	param.plgroup1 = pnl
 	param.filters.push({
 		Field: bkd.breakdownBy(),
 		Op: "$eq",
 		Value: breakdown
 	})
+	param.note = 'pnl lvl 1'
 
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, (res) => {
 		let detail = res.Data.map((d) => { return {
@@ -199,7 +198,7 @@ bkd.render = () => {
 	let i = 0
 
 	Lazy(data)
-		.groupBy((v) => v.plmodel_plheader1)
+		.groupBy((v) => v.plgroup1)
 		.map((v, k) => app.o({ key: k, data: v }))
 		.each((d, r) => {
 			values[i] = []

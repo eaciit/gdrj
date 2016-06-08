@@ -8,7 +8,7 @@ bkd.title = ko.observable('P&L Analytic');
 bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
 bkd.getParam = function () {
-	var orderIndex = { field: 'plmodel.orderindex', name: 'Order' };
+	var orderIndex = { field: 'plorder', name: 'Order' };
 
 	var breakdown = rpt.optionDimensions().find(function (d) {
 		return d.field == bkd.breakdownBy();
@@ -41,19 +41,21 @@ bkd.refreshOnChange = function () {
 	// setTimeout(bkd.refresh, 100)
 };
 bkd.breakdownBy = ko.observable('customer.channelname');
-bkd.dimensions = ko.observableArray([{ field: 'plmodel.plheader1', name: ' ' }, { field: 'plmodel.plheader2', name: ' ' }, { field: 'plmodel.plheader3', name: ' ' }]);
+bkd.dimensions = ko.observableArray([{ field: 'plgroup1', name: ' ' }]);
+
+// { field: 'plmodel.plheader2', name: ' ' },
+// { field: 'plmodel.plheader3', name: ' ' }
 bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "sum" }]);
 bkd.clickCell = function (pnl, breakdown) {
 	var pivot = $('.breakdown-view').data('kendoPivotGrid');
 	var param = bkd.getParam();
-	param.plheader1 = pnl;
-	param.plheader2 = '';
-	param.plheader3 = '';
+	param.plgroup1 = pnl;
 	param.filters.push({
 		Field: bkd.breakdownBy(),
 		Op: "$eq",
 		Value: breakdown
 	});
+	param.note = 'pnl lvl 1';
 
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
 		var detail = res.Data.map(function (d) {
@@ -175,7 +177,7 @@ bkd.render = function () {
 	var i = 0;
 
 	Lazy(data).groupBy(function (v) {
-		return v.plmodel_plheader1;
+		return v.plgroup1;
 	}).map(function (v, k) {
 		return app.o({ key: k, data: v });
 	}).each(function (d, r) {
