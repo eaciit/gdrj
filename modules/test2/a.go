@@ -179,18 +179,22 @@ func main() {
 	iseof := false
 	for !iseof {
 		arrpl := []*gdrj.RawDataPL{}
-		_ = crx.Fetch(&arrpl, 1000, false)
-
-		if len(arrpl) < 1000 {
-			iseof = true
+		e := crx.Fetch(&arrpl, 1000, false)
+		if e!=nil{
+			iseof=true
+			break
 		}
-
+		
 		for _, v := range arrpl {
 			jobs <- v
 			ci++
 		}
 
 		toolkit.Printfn("Processing %d of %d in %s", ci, count, time.Since(t0).String())
+	
+		if len(arrpl) < 1000 {
+			iseof = true
+		}
 	}
 
 	toolkit.Println("Saving")
