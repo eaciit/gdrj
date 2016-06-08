@@ -157,7 +157,7 @@ func prepMaster() {
 		if !exist {
 			a = new(alloc)
 		}
-		a.Total = ratio.Ratio
+		a.Total += ratio.Ratio
 		a.Ratios = append(a.Ratios, ratio)
 		ratios[ratioid] = a
 	}
@@ -306,8 +306,8 @@ func worker(wi int, jobs <-chan *cogs, r chan<- string) {
 func (c *cogs) CreatePLModel(outletid string, ratio float64, conn dbox.IConnection) error {
 	ratio = -ratio
 	if c.RM != 0 {
-		rm := ratio * c.RM
-		toolkit.Printfn("Ratio: %f value: %f", ratio, rm)
+		//rm := ratio * c.RM
+		//toolkit.Printfn("Ratio: %f value: %f", ratio, rm)
 		gdrj.GetPLModel("PL9", "ID11",
 			c.Year, c.Month, outletid, c.SKUID, "", "",
 			ratio*c.RM, 0, 0, "COGS", conn,
