@@ -16,7 +16,10 @@ rpt.pivotModel = [{ field: '_id', type: 'string', name: 'ID' }, { field: 'PC._id
 
 rpt.analysisIdeas = ko.observableArray([]);
 rpt.data = ko.observableArray([]);
-rpt.optionDimensions = ko.observableArray([{ field: "customer.branchname", name: 'Branch/RD' }, { field: "product.brand", name: 'Brand' }, { field: 'customer.channelname', name: 'Channel' }, { field: 'customer.name', name: 'Outlet' }, { field: 'product.name', name: 'Product' }, { field: 'customer.region', name: 'Region' }]);
+rpt.optionDimensions = ko.observableArray([{ field: "customer.branchname", name: 'Channel' }, { field: "product.brand", name: 'Brand' }, { field: 'customer.channelname', name: 'Channel' },
+//    { field: 'customer.name', name: 'Outlet' },
+// { field: 'product.name', name: 'Product' },
+{ field: 'customer.region', name: 'Region' }]);
 rpt.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
 rpt.mode = ko.observable('render');

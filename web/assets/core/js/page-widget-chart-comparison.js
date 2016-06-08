@@ -26,7 +26,7 @@ ccr.render = function () {
 			}
 		}
 	}, {
-		name: 'Sales',
+		name: 'Qty',
 		field: 'value2',
 		width: 3,
 		markers: {
@@ -37,7 +37,7 @@ ccr.render = function () {
 			}
 		}
 	}, {
-		name: 'Average',
+		name: 'Sales',
 		field: 'value3',
 		type: 'bar',
 		width: 3,

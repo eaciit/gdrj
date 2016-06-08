@@ -608,6 +608,59 @@ html, body{
 	}
 }
 
+.pivot-pnl {
+	position: relative;
+
+	.table-header {
+		overflow-x: scroll;
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 300px;
+		border-right: 1px solid @color-base-grey;
+	}
+
+	.table-content {
+		overflow-x: scroll;
+		margin-left: 300px;
+	}
+
+	table {
+		margin-bottom: 0;
+
+		tr {
+			th {
+				border-color: @color-base-grey;
+				// background-color: @color-base-grey;
+    			// color: white;
+    			// font-weight: normal;
+			}
+			td {
+				padding: 2px 8px;
+				border-color: @color-base-grey;
+			}
+
+			&.footer {
+				td {
+					padding: 8px;
+	    			line-height: 1.42857143;
+	    			border-bottom: 1px solid @color-base-grey;
+					// background-color: @color-base-grey;
+	    			// color: white;
+	    			// font-weight: normal;
+				}
+			}
+
+			&:hover {
+				td {
+					background-color: @color-base-green;
+					color: white;
+				}
+			}
+		}
+	}
+}
+
 .list-analysis{
 	margin-bottom: 10px;
 	

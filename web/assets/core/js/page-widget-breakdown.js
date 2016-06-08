@@ -3,8 +3,6 @@
 viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
 
-app.log("ANGKA DI PIVOT CLICKABLE, JIKA SALES MAKA AMBIL DARI LEDGER TRANSACTION, SELAINNYA DARI LEDGER SUMMARY");
-
 bkd.contentIsLoading = ko.observable(false);
 bkd.title = ko.observable('Grid Analysis Ideas');
 bkd.data = ko.observableArray([]);
@@ -45,32 +43,16 @@ bkd.refreshOnChange = function () {
 bkd.breakdownBy = ko.observable('customer.channelname');
 bkd.dimensions = ko.observableArray([{ field: 'plmodel.plheader1', name: ' ' }, { field: 'plmodel.plheader2', name: ' ' }, { field: 'plmodel.plheader3', name: ' ' }]);
 bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "sum" }]);
-bkd.clickCell = function (o) {
-	var x = $(o).closest("td").index();
-	var y = $(o).closest("tr").index();
-	// let cat = $(`.breakdown-view .k-grid-header-wrap table tr:eq(1) th:eq(${x}) span`).html()
-	// let plheader1 = $(`.breakdown-view .k-grid.k-widget:eq(0) tr:eq(${y}) td:not(.k-first):first > span`).html()
-
+bkd.clickCell = function (pnl, breakdown) {
 	var pivot = $('.breakdown-view').data('kendoPivotGrid');
-	var cellInfo = pivot.cellInfo(x, y);
 	var param = bkd.getParam();
-	param.plheader1 = '';
+	param.plheader1 = pnl;
 	param.plheader2 = '';
 	param.plheader3 = '';
 	param.filters.push({
 		Field: bkd.breakdownBy(),
 		Op: "$eq",
-		Value: app.htmlDecode(cellInfo.columnTuple.members[0].caption)
-	});
-
-	cellInfo.rowTuple.members.forEach(function (d) {
-		if (d.parentName == undefined) {
-			return;
-		}
-
-		var key = d.parentName.split('_').reverse()[0];
-		var value = app.htmlDecode(d.name.replace(d.parentName + '&', ''));
-		param[key] = value;
+		Value: breakdown
 	});
 
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
@@ -153,12 +135,14 @@ bkd.render = function () {
 
 	bkd.emptyGrid();
 	var wrapper = app.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
-	var tableHeader = app.newEl('table').appendTo(wrapper).css({
-		float: 'left',
-		width: '200px'
-	});
 
-	var tableContent = app.newEl('table').appendTo(wrapper);
+	var tableHeaderWrap = app.newEl('div').addClass('table-header').appendTo(wrapper);
+
+	var tableHeader = app.newEl('table').addClass('table').appendTo(tableHeaderWrap);
+
+	var tableContentWrap = app.newEl('div').appendTo(wrapper).addClass('table-content');
+
+	var tableContent = app.newEl('table').addClass('table').appendTo(tableContentWrap);
 
 	var header = Lazy(data).groupBy(function (d) {
 		return d[app.idAble(bkd.breakdownBy())];
@@ -174,12 +158,17 @@ bkd.render = function () {
 
 	var trTopBody = app.newEl('tr').appendTo(tableContent);
 
+	var columnWidth = 150;
+
 	header.forEach(function (d) {
-		var tdTopBody = app.newEl('th').css('width', 150).css('text-align', 'right').html(d == '' ? 'No Name' : d).appendTo(trTopBody);
+		var tdTopBody = app.newEl('th').width(columnWidth).addClass('align-right').html(d == '' ? 'No Name' : d).appendTo(trTopBody);
 	});
 
-	app.newEl('th').css('width', 150).css('text-align', 'right').html('Total').appendTo(trTopBody);
+	app.newEl('th').addClass('align-right bold').html('Total').appendTo(trTopHeader);
 
+	tableContent.css('min-width', columnWidth * header.length);
+
+	var totalAll = 0;
 	var values = [];
 	var i = 0;
 
@@ -187,7 +176,7 @@ bkd.render = function () {
 		return v.plmodel_plheader1;
 	}).map(function (v, k) {
 		return app.o({ key: k, data: v });
-	}).each(function (d) {
+	}).each(function (d, r) {
 		values[i] = [];
 		var total = 0;
 
@@ -214,20 +203,36 @@ bkd.render = function () {
 			});
 			values[i][j] = val;
 			total += val;
+			totalAll += val;
 
-			if (j > 0) {
+			var tdEachCell = app.newEl('td').appendTo(trBody).html(kendo.toString(val, 'n0')).addClass('align-right');
 
-				var _tdEachCell = app.newEl('td').appendTo(trBody).html(kendo.toString(val, 'n0')).css('text-align', 'right').width(80);
-			}
-
-			var tdEachCell = app.newEl('td').appendTo(trBody).html(kendo.toString(val, 'n0')).css('text-align', 'right').width(80);
+			tdEachCell.on('click', function () {
+				bkd.clickCell(r, d);
+			});
 
 			j++;
 		});
 
-		app.newEl('td').appendTo(trBody).html(kendo.toString(total, 'n0')).css('text-align', 'right').width(80);
+		app.newEl('td').appendTo(trHeader).html(kendo.toString(total, 'n0')).addClass('align-right bold');
 
 		i++;
+	});
+
+	var trHeadFooter = app.newEl('tr').appendTo(tableHeader).addClass('footer');
+
+	var tdHeadFooter = app.newEl('td').addClass('bold footer').appendTo(trHeadFooter).html('Total');
+
+	var trBodyFooter = app.newEl('tr').appendTo(tableContent).addClass('footer');
+
+	var tdBodyFooter = app.newEl('td').addClass('bold align-right').appendTo(trHeadFooter).html(kendo.toString(totalAll, 'n0'));
+
+	header.forEach(function (d, i) {
+		var columnTotal = Lazy(values).sum(function (e) {
+			return e[i];
+		});
+
+		var tdEachCell = app.newEl('td').appendTo(trBodyFooter).html(kendo.toString(columnTotal, 'n0')).addClass('align-right bold');
 	});
 
 	console.log("=====", values);
