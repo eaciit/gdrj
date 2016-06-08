@@ -21,92 +21,89 @@ rs.getSalesHeaderList = () => {
 			.toArray()
 		rs.optionDimensionSelect(data)
 		rs.optionDimensionSelect.remove( (item) => { return item.field == 'Net Sales'; } )
-		rs.pplheader('EBIT')
 		rs.refresh()
+		rs.pplheader('EBIT')
 	})
 }
 
 rs.refresh = () => {
-	setTimeout(function () {
-		let dimensions = [
-			{ "field": "plmodel.plheader1", "name": "plheader1" },
-			{ "field": rs.breakdownBy(), "name": "Channel" },
-			{ "field": "year", "name": "Year" }
-		]
-		let dataPoints = [
-			{field: "value1", name: "value1", aggr: "sum"}
-		]
-		let param = rpt.wrapParam(dimensions, dataPoints)
+	rs.contentIsLoading(true)
+	let dimensions = [
+		{ "field": "plmodel.plheader1", "name": "plheader1" },
+		{ "field": rs.breakdownBy(), "name": "Channel" },
+		{ "field": "year", "name": "Year" }
+	]
+	let dataPoints = [
+		{field: "value1", name: "value1", aggr: "sum"}
+	]
+	let param = rpt.wrapParam(dimensions, dataPoints)
+	param.filters.push({
+	    "Op": "$eq",
+	    "Field": "plmodel.plheader1",
+	    "Value": rs.pplheader()
+	})
+	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
+		let dataall = Lazy(res.Data)
+			.groupBy((f) => f['year'])
+			.map((k, v) => { 
+				return { _id: v, data: k } 
+			})
+			.toArray()
+
+		param.filters = []
 		param.filters.push({
 		    "Op": "$eq",
 		    "Field": "plmodel.plheader1",
-		    "Value": rs.pplheader()
+		    "Value": 'Net Sales'
 		})
-		app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
-			let dataall = Lazy(res.Data)
+		app.ajaxPost("/report/summarycalculatedatapivot", param, (res2) => {
+			let dataall2 = Lazy(res2.Data)
 				.groupBy((f) => f['year'])
-				.map((k, v) => { 
-					return { _id: v, data: k } 
+				.map((k, v) => {
+					return { _id: v, data: k }
 				})
-				.toArray()
 
-			param.filters = []
-			param.filters.push({
-			    "Op": "$eq",
-			    "Field": "plmodel.plheader1",
-			    "Value": 'Net Sales'
-			})
-			app.ajaxPost("/report/summarycalculatedatapivot", param, (res2) => {
-				let dataall2 = Lazy(res2.Data)
-					.groupBy((f) => f['year'])
-					.map((k, v) => {
-						return { _id: v, data: k }
+			rs.datascatter([])
+			let title = Lazy(rpt.optionDimensions()).findWhere({field: rs.breakdownBy()}).title
+			for (let i in dataall){
+				let currentDataAll = Lazy(dataall).findWhere({ _id: dataall[i]._id })
+				let currentDataAll2 = Lazy(dataall2).findWhere({ _id: dataall[i]._id })
+
+				let totalDataAll = Lazy(currentDataAll.data).sum((e) => e.value1)
+				let totalDataAll2 = Lazy(currentDataAll2.data).sum((e) => e.value1)
+
+				let maxNetSales = Lazy(currentDataAll2.data).max((e) => e.value1).value1
+				let percentage = (totalDataAll2/totalDataAll)
+				let v = maxNetSales * 120
+				let meanYear = (dataall[i].data.length/2).toFixed(0)-1
+				let expandpersent = (maxNetSales*(percentage/120))
+
+				for (let a in dataall[i].data){
+					rs.datascatter.push({
+						pplheader: percentage,
+						value1: (dataall[i].data[a].value1/expandpersent)*120,
+						title: dataall[i].data[a][title],
+						header: dataall[i].data[a].plmodel_plheader1,
+						year: dataall[i].data[a].year
 					})
-
-				rs.datascatter([])
-				let title = Lazy(rpt.optionDimensions()).findWhere({field: rs.breakdownBy()}).title
-				for (let i in dataall){
-					let currentDataAll = Lazy(dataall).findWhere({ _id: dataall[i]._id })
-					let currentDataAll2 = Lazy(dataall2).findWhere({ _id: dataall[i]._id })
-
-					let totalDataAll = Lazy(currentDataAll.data).sum((e) => e.value1)
-					let totalDataAll2 = Lazy(currentDataAll2.data).sum((e) => e.value1)
-
-					let maxNetSales = Lazy(currentDataAll2.data).max((e) => e.value1).value1
-					let percentage = (maxNetSales/2) / totalDataAll2
-					let v = maxNetSales * 100
-					let meanYear = (dataall[i].data.length/2).toFixed(0)-1
-					let titleValue = ''
-
-					for (let a in dataall[i].data){
-						titleValue = dataall[i].data[a][title]
-						if (a == meanYear)
-							titleValue = titleValue + '\n ' + dataall[i].data[a].year
-						rs.datascatter.push({
-							pplheader: percentage*100,
-							value1: dataall[i].data[a].value1/(maxNetSales/2)*100,
-							title: titleValue,
-							header: dataall[i].data[a].plmodel_plheader1,
-							year: dataall[i].data[a].year
-						})
-					}
-					if(i == 0){
-						rs.datascatter.push({
-							pplheader: null,
-							value1: null,
-							title: '',
-							header: null
-						})
-					}
 				}
-				rs.generateReport()
-			})
+				if(i == 0){
+					rs.datascatter.push({
+						pplheader: null,
+						value1: null,
+						title: '',
+						header: null
+					})
+				}
+			}
+			rs.generateReport(dataall[0]._id, dataall[1]._id)
 		})
 	})
 }
 
-rs.generateReport = () => {
-    $('#scatter-view').width(rs.datascatter().length * 120)
+rs.generateReport = (year1, year2) => {
+	rs.contentIsLoading(false)
+    $('#scatter-view').width(rs.datascatter().length * 100)
 	$("#scatter-view").kendoChart({
 		dataSource: {
             data: rs.datascatter()
@@ -115,7 +112,8 @@ rs.generateReport = () => {
             text: ""
         },
         legend: {
-            visible: false
+            visible: true,
+            position: "bottom"
         },
         seriesDefaults: {
             type: "line",
@@ -125,15 +123,18 @@ rs.generateReport = () => {
             // }
         },
         series: [{
-            name: "PPL",
+            name: "PPL Header",
             field: 'pplheader',
             color: "#f3ac32",
             tooltip: {
 				visible: true,
-				template: "#: dataItem.title # - #: kendo.toString(dataItem.pplheader, 'pplheader') #"
+				template: "#: dataItem.title # : #: kendo.toString(dataItem.pplheader, 'pplheader') # %"
 			},
+			markers: {
+				visible: false
+			}
         }, {
-            name: "PPL",
+            name: "Dimension",
             color: "red",
             field: "value1",
             opacity: 0,
@@ -143,33 +144,29 @@ rs.generateReport = () => {
             },
             tooltip: {
 				visible: true,
-				template: "#: dataItem.title # - #: kendo.toString(dataItem.value1, 'n2') #"
+				template: "#: dataItem.title # : #: kendo.toString(dataItem.value1, 'n2') # %"
 			},
         }],
         valueAxis: {
-            line: {
-                visible: false
-            },
-            minorGridLines: {
-                visible: true
-            },
+            majorGridLines: {
+		      visible: false
+		    },
             label: {
-            	template: "#: value #%"
+            	format: "{0}%"
             }
         },
-        categoryAxis: {
+        categoryAxis: [{
             field: 'title',
             majorGridLines: {
                 visible: false
-            },
+            }}, {
+            	categories: [year1, year2],
+    			line: { visible: false }
+            }
+        ],
       //       labels: {
 		    // 	rotation: 60
 		    // }
-        },
-        tooltip: {
-            visible: true,
-            template: "#= series.name #: #= value #"
-        }
     });
 }
 
