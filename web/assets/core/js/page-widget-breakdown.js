@@ -25,6 +25,7 @@ bkd.refresh = function () {
 		breakdownBy: bkd.breakdownBy(),
 		limit: bkd.limit()
 	});
+	bkd.oldBreakdownBy(bkd.breakdownBy());
 	// bkd.data(DATATEMP_BREAKDOWN)
 	bkd.contentIsLoading(true);
 	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
@@ -45,6 +46,8 @@ bkd.refreshOnChange = function () {
 	// setTimeout(bkd.refresh, 100)
 };
 bkd.breakdownBy = ko.observable('customer.channelname');
+bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy());
+
 bkd.dimensions = ko.observableArray([{ field: bkd.keyPLHeader1(), name: ' ' }]);
 
 // { field: 'plmodel.plheader2', name: ' ' },
@@ -55,12 +58,11 @@ bkd.clickCell = function (pnl, breakdown) {
 	var param = bkd.getParam();
 	param.plheader1 = pnl;
 	param.filters.push({
-		Field: bkd.breakdownBy(),
+		Field: bkd.oldBreakdownBy(),
 		Op: "$eq",
 		Value: breakdown
 	});
 	param.note = 'pnl lvl 1';
-
 	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
 		var detail = res.Data.map(function (d) {
 			return {
@@ -79,6 +81,61 @@ bkd.clickCell = function (pnl, breakdown) {
 		bkd.detail(detail);
 		bkd.renderDetail();
 	});
+};
+bkd.renderDetailSalesTrans = function () {
+	$('#modal-detail-ledger-summary').appendTo($('body'));
+	$('#modal-detail-ledger-summary').modal('show');
+
+	var columns = [{ field: '_id', title: 'ID', width: 100, locked: true }, { field: 'date', title: 'Date', width: 100, locked: true }, { field: "grossamount", title: 'Gross', width: 100 }, { field: "discountamount", title: 'Discount', width: 100 }, { field: "netamount", title: 'Net Sales', width: 100 }, { field: "salesqty", title: 'Sales Qty', width: 100 }, { field: "customer.branchname", title: 'Branch', width: 100 }, { field: "product.name", title: 'Branch', width: 100 }, { field: "product.brand", title: 'Brand', width: 100 }];
+
+	var config = {
+		dataSource: {
+			transport: {
+				read: function read(options) {
+					var param = options.data;
+					param.tablename = "browsesalestrxs";
+
+					if (app.isUndefined(param.page)) {
+						param = $.extend(true, param, {
+							take: 5,
+							skip: 0,
+							page: 1,
+							pageSize: 5
+						});
+					}
+
+					$.ajax({
+						type: "POST",
+						url: "/databrowser/getdatabrowser",
+						contentType: "application/json; charset=utf-8",
+						dataType: 'json',
+						data: JSON.stringify(param),
+						success: function success(res) {
+							options.success(res.data);
+						}
+					});
+				},
+				pageSize: 5
+			},
+			schema: {
+				data: function data(d) {
+					return d.DataValue;
+				},
+				total: function total(d) {
+					return d.DataCount;
+				}
+			},
+			serverPaging: true,
+			columns: []
+		},
+		sortable: true,
+		pageable: true,
+		scrollable: true,
+		columns: columns
+	};
+
+	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
+	$('.grid-detail').kendoGrid(config);
 };
 bkd.renderDetail = function () {
 	$('#modal-detail-ledger-summary').appendTo($('body'));
