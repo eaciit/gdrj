@@ -363,6 +363,7 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 					//-- end
 
 					//-- get existing values
+					/*
 					els := new(gdrj.PLDataModel)
 					cls,_ := workerconn.NewQuery().From(ls.TableName()).
 						Where(dbox.Eq("_id",rls.ID)).Cursor(nil)
@@ -371,12 +372,14 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 						rls.Value1=els.Value1
 					}
 					cls.Close()
+					*/
 				} 
 				
 				rls.Value1 += ls.Value1 * r.Ratio/total * multiplier
 				err = workerconn.NewQuery().
-					SetConfig("multiexec",true).
+					//SetConfig("multiexec",true).
 					From(ls.TableName()).
+					Where(dbox.Eq("_id", rls.ID)).
 					Save().
 					Exec(toolkit.M{}.Set("data",rls))
 				if err != nil {
