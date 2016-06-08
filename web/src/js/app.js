@@ -19,6 +19,31 @@ app.error = function () {
 
     console.error.apply(console, [].slice.call(arguments))
 }
+app.isLastItem = (o, d) => (o.indexOf(d) + 1) == o.length
+app.NaNable = (o, dv = 0) => isNaN(o) ? dv : o
+app.nbspAble = (o, dv = '&nbsp;') => ($.trim(o) == '') ? dv : o
+app.allKeys = (o) => {
+    let keys = []
+    for (let k in o) {
+        if (o.hasOwnProperty(k)) {
+            keys.push(String(k))
+        }
+    }
+    return keys
+}
+app.length = (o) => {
+    if (o instanceof Object) {
+        let i = 0
+        for (let k in o) {
+            if (o.hasOwnProperty(k)) {
+                i++
+            }
+        }
+        return i
+    }
+
+    return o.length
+}
 app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
     let startReq = moment()
     let callbackScheduler = (callback) => {

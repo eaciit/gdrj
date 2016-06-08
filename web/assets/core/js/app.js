@@ -23,6 +23,39 @@ app.error = function () {
 
     console.error.apply(console, [].slice.call(arguments));
 };
+app.isLastItem = function (o, d) {
+    return o.indexOf(d) + 1 == o.length;
+};
+app.NaNable = function (o) {
+    var dv = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+    return isNaN(o) ? dv : o;
+};
+app.nbspAble = function (o) {
+    var dv = arguments.length <= 1 || arguments[1] === undefined ? '&nbsp;' : arguments[1];
+    return $.trim(o) == '' ? dv : o;
+};
+app.allKeys = function (o) {
+    var keys = [];
+    for (var k in o) {
+        if (o.hasOwnProperty(k)) {
+            keys.push(String(k));
+        }
+    }
+    return keys;
+};
+app.length = function (o) {
+    if (o instanceof Object) {
+        var i = 0;
+        for (var k in o) {
+            if (o.hasOwnProperty(k)) {
+                i++;
+            }
+        }
+        return i;
+    }
+
+    return o.length;
+};
 app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
     var startReq = moment();
     var callbackScheduler = function callbackScheduler(callback) {

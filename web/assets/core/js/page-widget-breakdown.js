@@ -3,12 +3,14 @@
 viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
 
+bkd.keyOrder = ko.observable('plmodel.orderindex'); //plorder
+bkd.keyPLHeader1 = ko.observable('plmodel.plheader1'); //plgroup1
 bkd.contentIsLoading = ko.observable(false);
 bkd.title = ko.observable('P&L Analytic');
 bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
 bkd.getParam = function () {
-	var orderIndex = { field: 'plorder', name: 'Order' };
+	var orderIndex = { field: bkd.keyOrder(), name: 'Order' };
 
 	var breakdown = rpt.optionDimensions().find(function (d) {
 		return d.field == bkd.breakdownBy();
@@ -25,7 +27,7 @@ bkd.refresh = function () {
 	bkd.contentIsLoading(true);
 	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
 		var data = _.sortBy(res.Data, function (o, v) {
-			return parseInt(o.plorder.replace(/PL/g, ""));
+			return parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, ""));
 		});
 		bkd.data(data);
 		bkd.emptyGrid();
@@ -41,7 +43,7 @@ bkd.refreshOnChange = function () {
 	// setTimeout(bkd.refresh, 100)
 };
 bkd.breakdownBy = ko.observable('customer.channelname');
-bkd.dimensions = ko.observableArray([{ field: 'plgroup1', name: ' ' }]);
+bkd.dimensions = ko.observableArray([{ field: bkd.keyPLHeader1(), name: ' ' }]);
 
 // { field: 'plmodel.plheader2', name: ' ' },
 // { field: 'plmodel.plheader3', name: ' ' }
@@ -49,7 +51,7 @@ bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "s
 bkd.clickCell = function (pnl, breakdown) {
 	var pivot = $('.breakdown-view').data('kendoPivotGrid');
 	var param = bkd.getParam();
-	param.plgroup1 = pnl;
+	param.plheader1 = pnl;
 	param.filters.push({
 		Field: bkd.breakdownBy(),
 		Op: "$eq",
@@ -105,39 +107,60 @@ bkd.emptyGrid = function () {
 };
 bkd.render = function () {
 	var data = bkd.data();
-	var schemaModelFields = {};
-	var schemaCubeDimensions = {};
-	var schemaCubeMeasures = {};
+	var header = [];
 	var rows = [];
-	var columns = [];
-	var measures = [];
-	var breakdown = rpt.optionDimensions().find(function (d) {
-		return d.field == bkd.breakdownBy();
+	var total = 0;
+
+	Lazy(data).groupBy(function (d) {
+		return d[app.idAble(bkd.keyPLHeader1())];
+	}).each(function (v, pnl) {
+		var i = 0;
+		var row = {
+			pnl: pnl,
+			pnlTotal: 0,
+			pnlOrder: v[0][app.idAble(bkd.keyOrder())]
+		};
+
+		var data = Lazy(v).groupBy(function (e) {
+			return e[app.idAble(bkd.breakdownBy())];
+		}).each(function (w, dimension) {
+			var key = 'value' + i;
+			var value = Lazy(w).sum(function (x) {
+				return x.value1;
+			});
+			row[key] = value;
+			header['value' + i] = dimension;
+			row.pnlTotal += value;
+			total += value;
+			i++;
+
+			if (header.filter(function (d) {
+				return d.key == key;
+			}).length == 0) {
+				header.push({
+					key: key,
+					title: dimension
+				});
+			}
+		});
+		rows.push(row);
 	});
 
-	app.koUnmap(bkd.dimensions).concat([breakdown]).forEach(function (d, i) {
-		var field = app.idAble(d.field);
-		schemaModelFields[field] = { type: 'string' };
-		schemaCubeDimensions[field] = { caption: d.name };
+	header = Lazy(header).sortBy(function (d) {
+		return d.title;
+	}).toArray();
 
-		if (field.indexOf('plheader') > -1) {
-			rows.push({ name: field, expand: rows.length == 0 });
-		} else {
-			columns.push({ name: field, expand: true });
-		}
+	rows = Lazy(rows).sortBy(function (d) {
+		return d.pnlOrder;
+	}).toArray();
 
-		rows = rows.slice(0, 2);
+	rows.forEach(function (d, i) {
+		header.forEach(function (j) {
+			var percent = app.NaNable(d[j.key]) / d.pnlTotal * 100;
+			d[j.key.replace(/value/g, 'percent')] = percent;
+		});
 	});
 
-	app.koUnmap(bkd.dataPoints).forEach(function (d) {
-		var measurement = 'Amount';
-		var field = app.idAble(d.field);
-		schemaModelFields[field] = { type: 'number' };
-		schemaCubeMeasures[measurement] = { field: field, aggregate: 'sum', format: '{0:n2}' };
-		measures.push(measurement);
-	});
-
-	bkd.emptyGrid();
 	var wrapper = app.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
 
 	var tableHeaderWrap = app.newEl('div').addClass('table-header').appendTo(wrapper);
@@ -148,98 +171,252 @@ bkd.render = function () {
 
 	var tableContent = app.newEl('table').addClass('table').appendTo(tableContentWrap);
 
-	var header = Lazy(data).groupBy(function (d) {
-		return d[app.idAble(bkd.breakdownBy())];
-	}).map(function (v, k) {
-		return k;
-	}).sortBy(function (k) {
-		return k;
-	}).toArray();
+	var trHeader1 = app.newEl('tr').appendTo(tableHeader);
 
-	var trTopHeader = app.newEl('tr').appendTo(tableHeader);
+	app.newEl('th').html('P&L').appendTo(trHeader1);
 
-	var tdTopHead = app.newEl('th').appendTo(trTopHeader).html("P&L");
+	app.newEl('th').html('Total').addClass('align-right').appendTo(trHeader1);
 
-	var trTopBody = app.newEl('tr').appendTo(tableContent);
+	var trContent1 = app.newEl('tr').appendTo(tableContent);
 
-	var columnWidth = 150;
+	var colWidth = 150;
+	var colPercentWidth = 40;
+	var totalWidth = 0;
 
-	header.forEach(function (d) {
-		var tdTopBody = app.newEl('th').width(columnWidth).addClass('align-right').html(d == '' ? 'No Name' : d).appendTo(trTopBody);
+	header.forEach(function (d, i) {
+		app.newEl('th').html(app.nbspAble(d.title, 'Unnamed')).addClass('align-right').appendTo(trContent1).width(colWidth);
+
+		app.newEl('th').html('%').addClass('align-right').appendTo(trContent1).width(colPercentWidth);
+
+		totalWidth += colWidth + colPercentWidth;
 	});
 
-	app.newEl('th').addClass('align-right bold').html('Total').appendTo(trTopHeader);
+	tableContent.css('min-width', totalWidth);
 
-	tableContent.css('min-width', columnWidth * header.length);
+	var pnlTotalSum = 0;
 
-	var totalAll = 0;
-	var values = [];
-	var i = 0;
-
-	Lazy(data).groupBy(function (v) {
-		return v.plgroup1;
-	}).map(function (v, k) {
-		return app.o({ key: k, data: v });
-	}).each(function (d, r) {
-		values[i] = [];
-		var total = 0;
+	rows.forEach(function (d, i) {
+		pnlTotalSum += d.pnlTotal;
 
 		var trHeader = app.newEl('tr').appendTo(tableHeader);
 
-		var tdHead = app.newEl('td').appendTo(trHeader).html(d.key);
+		app.newEl('td').html(d.pnl).appendTo(trHeader);
 
-		var trBody = app.newEl('tr').appendTo(tableContent);
+		var pnlTotal = kendo.toString(d.pnlTotal, 'n0');
+		app.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
 
-		var rowHeader1 = Lazy(d.data).groupBy(function (k) {
-			return k[app.idAble(bkd.breakdownBy())];
-		}).map(function (v, k) {
-			return app.o({ key: k, data: v });
-		}).toArray();
+		var trContent = app.newEl('tr').appendTo(tableContent);
 
-		var j = 0;
-		header.forEach(function (d) {
-			var val = Lazy(rowHeader1).filter(function (e) {
-				return e.key == d;
-			}).sum(function (e) {
-				return Lazy(e.data).sum(function (e) {
-					return e.value1;
-				});
-			});
-			values[i][j] = val;
-			total += val;
-			totalAll += val;
+		header.forEach(function (e, f) {
+			var value = kendo.toString(d[e.key], 'n0');
+			var percentage = kendo.toString(d[e.key.replace(/value/g, 'percent')], 'n0');
 
-			var tdEachCell = app.newEl('td').appendTo(trBody).html(kendo.toString(val, 'n0')).addClass('align-right');
+			if ($.trim(value) == '') {
+				value = 0;
+			}
 
-			tdEachCell.on('click', function () {
-				bkd.clickCell(r, d);
+			var cell = app.newEl('td').html(value).addClass('align-right').appendTo(trContent);
+
+			cell.on('click', function () {
+				bkd.clickCell(d.pnl, e.title);
 			});
 
-			j++;
+			app.newEl('td').html(percentage).addClass('align-right').appendTo(trContent);
 		});
-
-		app.newEl('td').appendTo(trHeader).html(kendo.toString(total, 'n0')).addClass('align-right bold');
-
-		i++;
 	});
 
-	var trHeadFooter = app.newEl('tr').appendTo(tableHeader).addClass('footer');
+	var trHeaderTotal = app.newEl('tr').addClass('footer').appendTo(tableHeader);
 
-	var tdHeadFooter = app.newEl('td').addClass('bold footer').appendTo(trHeadFooter).html('Total');
+	app.newEl('td').html('Total').appendTo(trHeaderTotal);
 
-	var trBodyFooter = app.newEl('tr').appendTo(tableContent).addClass('footer');
+	var totalAll = kendo.toString(pnlTotalSum, 'n0');
+	app.newEl('td').html(totalAll).addClass('align-right').appendTo(trHeaderTotal);
 
-	var tdBodyFooter = app.newEl('td').addClass('bold align-right').appendTo(trHeadFooter).html(kendo.toString(totalAll, 'n0'));
+	var trContentTotal = app.newEl('tr').addClass('footer').appendTo(tableContent);
 
-	header.forEach(function (d, i) {
-		var columnTotal = Lazy(values).sum(function (e) {
-			return e[i];
-		});
+	header.forEach(function (e) {
+		var sum = kendo.toString(Lazy(rows).sum(function (g) {
+			return app.NaNable(g[e.key]);
+		}), 'n0');
+		var percentage = kendo.toString(sum / rows[0][e.key] * 100, 'n0');
 
-		var tdEachCell = app.newEl('td').appendTo(trBodyFooter).html(kendo.toString(columnTotal, 'n0')).addClass('align-right bold');
+		app.newEl('td').html(sum).addClass('align-right').appendTo(trContentTotal);
+
+		app.newEl('td').html(percentage).addClass('align-right').appendTo(trContentTotal);
 	});
 
-	console.log("=====", values);
+	console.log("----", header);
+	console.log("----", rows);
+
+	return;
+
+	// let schemaModelFields = {}
+	// let schemaCubeDimensions = {}
+	// let schemaCubeMeasures = {}
+	// let rows = []
+	// let columns = []
+	// let measures = []
+	// let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
+
+	// app.koUnmap(bkd.dimensions).concat([breakdown]).forEach((d, i) => {
+	// 	let field = app.idAble(d.field)
+	// 	schemaModelFields[field] = { type: 'string' }
+	// 	schemaCubeDimensions[field] = { caption: d.name }
+
+	// 	if (field.indexOf('plheader') > -1) {
+	// 		rows.push({ name: field, expand: (rows.length == 0) })
+	// 	} else {
+	// 		columns.push({ name: field, expand: true })
+	// 	}
+
+	// 	rows = rows.slice(0, 2)
+	// })
+
+	// app.koUnmap(bkd.dataPoints).forEach((d) => {
+	// 	let measurement = 'Amount'
+	// 	let field = app.idAble(d.field)
+	// 	schemaModelFields[field] = { type: 'number' }
+	// 	schemaCubeMeasures[measurement] = { field: field, aggregate: 'sum', format: '{0:n0}' }
+	// 	measures.push(measurement)
+	// })
+
+	// bkd.emptyGrid()
+	// let wrapper = app.newEl('div').addClass('pivot-pnl')
+	// 	.appendTo($('.breakdown-view'))
+
+	// let tableHeaderWrap = app.newEl('div')
+	// 	.addClass('table-header')
+	// 	.appendTo(wrapper)
+
+	// let tableHeader = app.newEl('table')
+	// 	.addClass('table')
+	// 	.appendTo(tableHeaderWrap)
+
+	// let tableContentWrap = app.newEl('div')
+	// 	.appendTo(wrapper)
+	// 	.addClass('table-content')
+
+	// let tableContent = app.newEl('table')
+	// 	.addClass('table')
+	// 	.appendTo(tableContentWrap)
+
+	// let header = Lazy(data)
+	// 	.groupBy((d) => d[app.idAble(bkd.breakdownBy())])
+	// 	.map((v, k) => k)
+	// 	.sortBy((k) => k)
+	// 	.toArray()
+
+	// let trTopHeader = app.newEl('tr')
+	// 	.appendTo(tableHeader)
+
+	// let tdTopHead = app.newEl('th')
+	// 	.appendTo(trTopHeader)
+	// 	.html("P&L")
+
+	// let trTopBody = app.newEl('tr')
+	// 	.appendTo(tableContent)
+
+	// let columnWidth = 150
+
+	// header.forEach((d) => {
+	// 	let tdTopBody = app.newEl('th')
+	// 		.width(columnWidth)
+	// 		.addClass('align-right')
+	// 		.html(d == '' ? 'No Name' : d)
+	// 		.appendTo(trTopBody)
+	// })
+
+	// app.newEl('th')
+	// 	.addClass('align-right bold')
+	// 	.html('Total')
+	// 	.appendTo(trTopHeader)
+
+	// tableContent.css('min-width', columnWidth * header.length)
+
+	// let totalAll = 0
+	// let values = []
+	// let i = 0
+
+	// Lazy(data)
+	// 	.groupBy((v) => v[app.idAble(bkd.keyPLHeader1())])
+	// 	.map((v, k) => app.o({ key: k, data: v }))
+	// 	.each((d, r) => {
+	// 		values[i] = []
+	// 		let total = 0
+
+	// 		let trHeader = app.newEl('tr')
+	// 			.appendTo(tableHeader)
+
+	// 		let tdHead = app.newEl('td')
+	// 			.appendTo(trHeader)
+	// 			.html(d.key)
+
+	// 		let trBody = app.newEl('tr')
+	// 			.appendTo(tableContent)
+
+	// 		let rowHeader1 = Lazy(d.data)
+	// 			.groupBy((k) => k[app.idAble(bkd.breakdownBy())])
+	// 			.map((v, k) => app.o({ key: k, data: v }))
+	// 			.toArray()
+
+	// 		let j = 0
+	// 		header.forEach((d) => {
+	// 			let val = Lazy(rowHeader1)
+	// 				.filter((e) => e.key == d)
+	// 				.sum((e) => Lazy(e.data)
+	// 				.sum((e) => e.value1))
+	// 			values[i][j] = val
+	// 			total += val
+	// 			totalAll += val
+
+	// 			let tdEachCell = app.newEl('td')
+	// 				.appendTo(trBody)
+	// 				.html(kendo.toString(val, 'n0'))
+	// 				.addClass('align-right')
+
+	// 			tdEachCell.on('click', () => {
+	// 				bkd.clickCell(r, d)
+	// 			})
+
+	// 			j++
+	// 		})
+
+	// 		app.newEl('td')
+	// 			.appendTo(trHeader)
+	// 			.html(kendo.toString(total, 'n0'))
+	// 			.addClass('align-right bold')
+
+	// 		i++
+	// 	})
+
+	// let trHeadFooter = app.newEl('tr')
+	// 	.appendTo(tableHeader)
+	// 	.addClass('footer')
+
+	// let tdHeadFooter = app.newEl('td')
+	// 	.addClass('bold footer')
+	// 	.appendTo(trHeadFooter)
+	// 	.html('Total')
+
+	// let trBodyFooter = app.newEl('tr')
+	// 	.appendTo(tableContent)
+	// 	.addClass('footer')
+
+	// let tdBodyFooter = app.newEl('td')
+	// 	.addClass('bold align-right')
+	// 	.appendTo(trHeadFooter)
+	// 	.html(kendo.toString(totalAll, 'n0'))
+
+	// header.forEach((d, i) => {
+	// 	let columnTotal = Lazy(values).sum((e) => e[i])
+
+	// 	let tdEachCell = app.newEl('td')
+	// 		.appendTo(trBodyFooter)
+	// 		.html(kendo.toString(columnTotal, 'n0'))
+	// 		.addClass('align-right bold')
+	// })
+
+	// console.log("=====", values)
 };
 
 $(function () {
