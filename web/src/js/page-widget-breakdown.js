@@ -4,7 +4,7 @@ let bkd = viewModel.breakdown
 app.log("ANGKA DI PIVOT CLICKABLE, JIKA SALES MAKA AMBIL DARI LEDGER TRANSACTION, SELAINNYA DARI LEDGER SUMMARY")
 
 bkd.contentIsLoading = ko.observable(false)
-bkd.title = ko.observable('Grid Analysis Ideas')
+bkd.title = ko.observable('P&L Analytic')
 bkd.data = ko.observableArray([])
 bkd.detail = ko.observableArray([])
 bkd.getParam = () => {
@@ -96,7 +96,7 @@ bkd.renderDetail = () => {
 
 	let columns = [
 		{ field: 'Year', width: 60, locked: true, footerTemplate: 'Total :' },
-		{ field: 'Amount', width: 80, locked: true, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n2')#</div>", format: '{0:n2}', attributes: { class: 'align-right' } },
+		{ field: 'Amount', width: 80, locked: true, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}', attributes: { class: 'align-right' } },
 		{ field: 'CostCenter', title: 'Cost Center', width: 250 },
 		{ field: 'Customer', width: 250 },
 		{ field: 'Channel', width: 150 },

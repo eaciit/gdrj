@@ -1,0 +1,27 @@
+<script src="/res/core/js/page-widget-chart-comparison.js"></script>
+
+<div class="panel ez no-padding hardcore chart-comparison">
+	<div class="panel-heading">
+		<h3 class="no-margin" data-bind="text: ccr.title"></h3>
+		<div class="panel-nav-button" data-bind="visible: !ccr.contentIsLoading()">
+			<div class="form-inline">
+				<button class="btn btn-sm btn-primary tooltipster" data-bind="click: ccr.refresh" title="Refresh">
+					<i class="fa fa-refresh"></i>
+				</button>
+				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+					<i class="fa fa-filter"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel-body">
+		<div data-bind="visible: ccr.contentIsLoading">
+			{{template "_loader.html"}}
+		</div>
+
+		<div data-bind="visible: !ccr.contentIsLoading()">
+			<div class="chart-container"></div>
+		</div>
+	</div>
+</div>
