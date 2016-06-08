@@ -174,7 +174,9 @@ bkd.render = () => {
 
 	let header = Lazy(data)
 		.groupBy((d) => d[app.idAble(bkd.breakdownBy())])
-		.map((v, k) => k).toArray()
+		.map((v, k) => k)
+		.sortBy((k) => k)
+		.toArray()
 			
 	let trTopHeader = app.newEl('tr')
 		.appendTo(tableHeader)
@@ -194,6 +196,12 @@ bkd.render = () => {
 			.appendTo(trTopBody)
 	})
 
+	app.newEl('th')
+		.css('width', 150)
+		.css('text-align', 'right')
+		.html('Total')
+		.appendTo(trTopBody)
+
 	let i = 0
 	let j = 0
 
@@ -201,6 +209,7 @@ bkd.render = () => {
 		.groupBy((v) => v.plmodel_plheader1)
 		.map((v, k) => app.o({ key: k, data: v }))
 		.each((d, i) => {
+			let total = 0
 
 			let trHeader = app.newEl('tr')
 				.appendTo(tableHeader)
@@ -218,13 +227,11 @@ bkd.render = () => {
 				.toArray()
 
 			header.forEach((d) => {
-				let val = Lazy(rowHeader1).filter((e) => e.key == d).sum((e) => Lazy(e.data).sum((e) => e.value1))
-				// if (row != undefined) {
-				// 	val = Lazy(row.data).sum((g) => g.value1)
-				// }
-
-				console.log("------", d, val)
-				// console.log("----", d, Lazy(rowHeader1).filter((e) => e[bkd.breakdownBy()] == d).toArray())
+				let val = Lazy(rowHeader1)
+					.filter((e) => e.key == d)
+					.sum((e) => Lazy(e.data)
+					.sum((e) => e.value1))
+				total += val
 
 				let tdEachCell = app.newEl('td')
 					.appendTo(trBody)
@@ -234,6 +241,12 @@ bkd.render = () => {
 
 				j++
 			})
+
+			app.newEl('td')
+				.appendTo(trBody)
+				.html(kendo.toString(total, 'n0'))
+				.css('text-align', 'right')
+				.width(80)
 
 			i++
 		})

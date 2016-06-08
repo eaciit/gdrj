@@ -164,6 +164,8 @@ bkd.render = function () {
 		return d[app.idAble(bkd.breakdownBy())];
 	}).map(function (v, k) {
 		return k;
+	}).sortBy(function (k) {
+		return k;
 	}).toArray();
 
 	var trTopHeader = app.newEl('tr').appendTo(tableHeader);
@@ -176,6 +178,8 @@ bkd.render = function () {
 		var tdTopBody = app.newEl('th').css('width', 150).css('text-align', 'right').html(d).appendTo(trTopBody);
 	});
 
+	app.newEl('th').css('width', 150).css('text-align', 'right').html('Total').appendTo(trTopBody);
+
 	var i = 0;
 	var j = 0;
 
@@ -184,6 +188,7 @@ bkd.render = function () {
 	}).map(function (v, k) {
 		return app.o({ key: k, data: v });
 	}).each(function (d, i) {
+		var total = 0;
 
 		var trHeader = app.newEl('tr').appendTo(tableHeader);
 
@@ -205,17 +210,14 @@ bkd.render = function () {
 					return e.value1;
 				});
 			});
-			// if (row != undefined) {
-			// 	val = Lazy(row.data).sum((g) => g.value1)
-			// }
-
-			console.log("------", d, val);
-			// console.log("----", d, Lazy(rowHeader1).filter((e) => e[bkd.breakdownBy()] == d).toArray())
+			total += val;
 
 			var tdEachCell = app.newEl('td').appendTo(trBody).html(kendo.toString(val, 'n0')).css('text-align', 'right').width(80);
 
 			j++;
 		});
+
+		app.newEl('td').appendTo(trBody).html(kendo.toString(total, 'n0')).css('text-align', 'right').width(80);
 
 		i++;
 	});
