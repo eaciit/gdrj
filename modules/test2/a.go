@@ -374,7 +374,11 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 				} 
 				
 				rls.Value1 += ls.Value1 * r.Ratio/total * multiplier
-				err = workerconn.NewQuery().From(ls.TableName()).Save().Exec(toolkit.M{}.Set("data",rls))
+				err = workerconn.NewQuery().
+					SetConfig("multiexec",true).
+					From(ls.TableName()).
+					Save().
+					Exec(toolkit.M{}.Set("data",rls))
 				if err != nil {
 					toolkit.Println("Error Found : ", err.Error())
 					os.Exit(1)
