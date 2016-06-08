@@ -7,6 +7,7 @@ app.log("ANGKA DI PIVOT CLICKABLE, JIKA SALES MAKA AMBIL DARI LEDGER TRANSACTION
 
 bkd.contentIsLoading = ko.observable(false);
 bkd.title = ko.observable('Grid Analysis Ideas');
+bkd.detailTitle = ko.observable('Detail');
 bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
 bkd.getParam = function () {
@@ -103,7 +104,7 @@ bkd.clickCell = function (o) {
 
 		bkd.detail(detail);
 		bkd.renderDetail();
-		$('#modal-title').html(detailTitle);
+		bkd.detailTitle(detailTitle);
 		
 	});
 };
