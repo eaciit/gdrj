@@ -31,8 +31,8 @@
 			{{template "_loader.html"}}
 		</div>
 
-		<div data-bind="visible: !rs.contentIsLoading()">
-			<div class="scatter-view ez"></div>
+		<div data-bind="visible: !rs.contentIsLoading()" style="overflow-x: scroll;">
+			<div id="scatter-view" style="height: 350px;"></div>
 		</div>
 	</div>
 </div>
