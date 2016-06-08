@@ -25,7 +25,7 @@ bkd.refresh = function () {
 	bkd.contentIsLoading(true);
 	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
 		var data = _.sortBy(res.Data, function (o, v) {
-			return parseInt(o.orderIndex.replace(/PL/g, ""));
+			return parseInt(o.plorder.replace(/PL/g, ""));
 		});
 		bkd.data(data);
 		bkd.emptyGrid();
