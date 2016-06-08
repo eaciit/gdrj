@@ -52,6 +52,11 @@ bkd.dataPoints = ko.observableArray([
 	{ field: "value1", name: "value1", aggr: "sum" }
 ])
 bkd.clickCell = (pnl, breakdown) => {
+	if (pnl == "Net Sales") {
+		bkd.renderDetailSalesTrans(breakdown)
+		return
+	}
+
 	let pivot = $(`.breakdown-view`).data('kendoPivotGrid')
 	let param = bkd.getParam()
 	param.plheader1 = pnl
@@ -78,13 +83,16 @@ bkd.clickCell = (pnl, breakdown) => {
 		bkd.renderDetail()
 	})
 }
-bkd.renderDetailSalesTrans = () => {
+bkd.renderDetailSalesTrans = (breakdown) => {
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
 
 	let columns = [
-		{ field: '_id', title: 'ID', width: 100, locked: true },
-		{ field: 'date', title: 'Date', width: 100, locked: true },
+		// { field: '_id', title: 'ID', width: 100, locked: true },
+		{ field: 'date', title: 'Date', width: 100, locked: true, template: (d) => {
+			console.log(d);
+			return moment(d.dataItem.date).format('DD/MM/YYYY HH:mm')
+		},
 		{ field: "grossamount", title: 'Gross', width: 100 },
 		{ field: "discountamount", title: 'Discount', width: 100 },
 		{ field: "netamount", title: 'Net Sales', width: 100 },
@@ -100,6 +108,7 @@ bkd.renderDetailSalesTrans = () => {
 			    read: (options) => {
 			    	let param = options.data
 			    	param.tablename = "browsesalestrxs"
+			    	param[bkd.breakdownBy()] = breakdown
 
 			    	if (app.isUndefined(param.page)) {
 			    		param = $.extend(true, param, {

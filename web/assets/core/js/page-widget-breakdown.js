@@ -54,6 +54,11 @@ bkd.dimensions = ko.observableArray([{ field: bkd.keyPLHeader1(), name: ' ' }]);
 // { field: 'plmodel.plheader3', name: ' ' }
 bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "sum" }]);
 bkd.clickCell = function (pnl, breakdown) {
+	if (pnl == "Net Sales") {
+		bkd.renderDetailSalesTrans(breakdown);
+		return;
+	}
+
 	var pivot = $('.breakdown-view').data('kendoPivotGrid');
 	var param = bkd.getParam();
 	param.plheader1 = pnl;
@@ -82,11 +87,16 @@ bkd.clickCell = function (pnl, breakdown) {
 		bkd.renderDetail();
 	});
 };
-bkd.renderDetailSalesTrans = function () {
+bkd.renderDetailSalesTrans = function (breakdown) {
 	$('#modal-detail-ledger-summary').appendTo($('body'));
 	$('#modal-detail-ledger-summary').modal('show');
 
-	var columns = [{ field: '_id', title: 'ID', width: 100, locked: true }, { field: 'date', title: 'Date', width: 100, locked: true }, { field: "grossamount", title: 'Gross', width: 100 }, { field: "discountamount", title: 'Discount', width: 100 }, { field: "netamount", title: 'Net Sales', width: 100 }, { field: "salesqty", title: 'Sales Qty', width: 100 }, { field: "customer.branchname", title: 'Branch', width: 100 }, { field: "product.name", title: 'Branch', width: 100 }, { field: "product.brand", title: 'Brand', width: 100 }];
+	var columns = [
+	// { field: '_id', title: 'ID', width: 100, locked: true },
+	{ field: 'date', title: 'Date', width: 100, locked: true, template: function template(d) {
+			return moment(d.dataItem.date).format('DD/MM/YYYY HH:mm');
+		}
+	}, { field: "grossamount", title: 'Gross', width: 100 }, { field: "discountamount", title: 'Discount', width: 100 }, { field: "netamount", title: 'Net Sales', width: 100 }, { field: "salesqty", title: 'Sales Qty', width: 100 }, { field: "customer.branchname", title: 'Branch', width: 100 }, { field: "product.name", title: 'Branch', width: 100 }, { field: "product.brand", title: 'Brand', width: 100 }];
 
 	var config = {
 		dataSource: {
@@ -94,6 +104,7 @@ bkd.renderDetailSalesTrans = function () {
 				read: function read(options) {
 					var param = options.data;
 					param.tablename = "browsesalestrxs";
+					param[bkd.breakdownBy()] = breakdown;
 
 					if (app.isUndefined(param.page)) {
 						param = $.extend(true, param, {
