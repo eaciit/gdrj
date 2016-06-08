@@ -6,6 +6,7 @@ var bkd = viewModel.breakdown;
 bkd.keyOrder = ko.observable('plmodel.orderindex'); //plorder
 bkd.keyPLHeader1 = ko.observable('plmodel.plheader1'); //plgroup1
 bkd.contentIsLoading = ko.observable(false);
+bkd.popupIsLoading = ko.observable(false);
 bkd.title = ko.observable('P&L Analytic');
 bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
@@ -59,35 +60,10 @@ bkd.clickCell = function (pnl, breakdown) {
 		return;
 	}
 
-	var pivot = $('.breakdown-view').data('kendoPivotGrid');
-	var param = bkd.getParam();
-	param.plheader1 = pnl;
-	param.filters.push({
-		Field: bkd.oldBreakdownBy(),
-		Op: "$eq",
-		Value: breakdown
-	});
-	param.note = 'pnl lvl 1';
-	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
-		var detail = res.Data.map(function (d) {
-			return {
-				ID: d.ID,
-				CostCenter: d.CC.Name,
-				Customer: d.Customer.Name,
-				Channel: d.Customer.ChannelName,
-				Branch: d.Customer.BranchName,
-				Brand: d.Product.Brand,
-				Product: d.Product.Name,
-				Year: d.Year,
-				Amount: d.Value1
-			};
-		});
-
-		bkd.detail(detail);
-		bkd.renderDetail();
-	});
+	bkd.renderDetail(pnl, breakdown);
 };
 bkd.renderDetailSalesTrans = function (breakdown) {
+	bkd.popupIsLoading(true);
 	$('#modal-detail-ledger-summary').appendTo($('body'));
 	$('#modal-detail-ledger-summary').modal('show');
 
@@ -121,7 +97,13 @@ bkd.renderDetailSalesTrans = function (breakdown) {
 						dataType: 'json',
 						data: JSON.stringify(param),
 						success: function success(res) {
-							options.success(res.data);
+							bkd.popupIsLoading(false);
+							setTimeout(function () {
+								options.success(res.data);
+							}, 200);
+						},
+						error: function error() {
+							bkd.popupIsLoading(false);
 						}
 					});
 				},
@@ -147,29 +129,61 @@ bkd.renderDetailSalesTrans = function (breakdown) {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
 	$('.grid-detail').kendoGrid(config);
 };
-bkd.renderDetail = function () {
+bkd.renderDetail = function (pnl, breakdown) {
+	bkd.popupIsLoading(true);
 	$('#modal-detail-ledger-summary').appendTo($('body'));
 	$('#modal-detail-ledger-summary').modal('show');
 
-	var columns = [{ field: 'Year', width: 60, locked: true, footerTemplate: 'Total :' }, { field: 'Amount', width: 80, locked: true, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: function footerTemplate(d) {
-			return kendo.toString(d.Amount.sum, 'n0');
-		}, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: 'CostCenter', title: 'Cost Center', width: 250 }, { field: 'Customer', width: 250 }, { field: 'Channel', width: 150 }, { field: 'Branch', width: 120 }, { field: 'Brand', width: 100 }, { field: 'Product', width: 250 }];
-	var config = {
-		dataSource: {
-			data: bkd.detail(),
-			pageSize: 5,
-			aggregate: [{ field: "Amount", aggregate: "sum" }]
-		},
-		columns: columns,
-		pageable: true,
-		resizable: false,
-		sortable: true
-	};
+	var render = function render() {
+		var columns = [{ field: 'Year', width: 60, locked: true, footerTemplate: 'Total :' }, { field: 'Amount', width: 80, locked: true, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: function footerTemplate(d) {
+				return kendo.toString(d.Amount.sum, 'n0');
+			}, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: 'CostCenter', title: 'Cost Center', width: 250 }, { field: 'Customer', width: 250 }, { field: 'Channel', width: 150 }, { field: 'Branch', width: 120 }, { field: 'Brand', width: 100 }, { field: 'Product', width: 250 }];
+		var config = {
+			dataSource: {
+				data: bkd.detail(),
+				pageSize: 5,
+				aggregate: [{ field: "Amount", aggregate: "sum" }]
+			},
+			columns: columns,
+			pageable: true,
+			resizable: false,
+			sortable: true
+		};
 
-	setTimeout(function () {
 		$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
 		$('.grid-detail').kendoGrid(config);
-	}, 300);
+	};
+
+	var pivot = $('.breakdown-view').data('kendoPivotGrid');
+	var param = bkd.getParam();
+	param.plheader1 = pnl;
+	param.filters.push({
+		Field: bkd.oldBreakdownBy(),
+		Op: "$eq",
+		Value: breakdown
+	});
+	param.note = 'pnl lvl 1';
+	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
+		var detail = res.Data.map(function (d) {
+			return {
+				ID: d.ID,
+				CostCenter: d.CC.Name,
+				Customer: d.Customer.Name,
+				Channel: d.Customer.ChannelName,
+				Branch: d.Customer.BranchName,
+				Brand: d.Product.Brand,
+				Product: d.Product.Name,
+				Year: d.Year,
+				Amount: d.Value1
+			};
+		});
+
+		bkd.detail(detail);
+		bkd.popupIsLoading(false);
+		setTimeout(render, 200);
+	}, function () {
+		bkd.popupIsLoading(false);
+	});
 };
 bkd.emptyGrid = function () {
 	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
