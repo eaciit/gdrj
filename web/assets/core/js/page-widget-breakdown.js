@@ -9,6 +9,7 @@ bkd.contentIsLoading = ko.observable(false);
 bkd.title = ko.observable('P&L Analytic');
 bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
+bkd.limit = ko.observable(10);
 bkd.getParam = function () {
 	var orderIndex = { field: bkd.keyOrder(), name: 'Order' };
 
@@ -21,7 +22,8 @@ bkd.getParam = function () {
 };
 bkd.refresh = function () {
 	var param = $.extend(true, bkd.getParam(), {
-		breakdownBy: bkd.breakdownBy()
+		breakdownBy: bkd.breakdownBy(),
+		limit: bkd.limit()
 	});
 	// bkd.data(DATATEMP_BREAKDOWN)
 	bkd.contentIsLoading(true);
