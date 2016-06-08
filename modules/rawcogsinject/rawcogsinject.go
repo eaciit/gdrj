@@ -332,16 +332,16 @@ func (c *cogs) CreatePLModel(outletid string, ratio float64, conn dbox.IConnecti
 	if c.Depreciation != 0 {
 		gdrj.GetPLModel("PL21", "ID11",
 			c.Year, c.Month, outletid, c.SKUID, "", "",
-			ratio*c.Energy, 0, 0, "COGS", conn,
+			ratio*c.Depreciation, 0, 0, "COGS", conn,
 			custs, prods, pcs, ccs, plmodels,
 			false, true)
 	}
 
 	c.OtherCost = c.COGS - c.RM - c.Labour - c.Energy - c.FixedCost - c.Depreciation
-	if c.Depreciation != 0 {
+	if c.OtherCost != 0 {
 		gdrj.GetPLModel("PL20", "ID11",
 			c.Year, c.Month, outletid, c.SKUID, "", "",
-			ratio*c.Energy, 0, 0, "COGS", conn,
+			ratio*c.OtherCost, 0, 0, "COGS", conn,
 			custs, prods, pcs, ccs, plmodels,
 			false, true)
 	}
