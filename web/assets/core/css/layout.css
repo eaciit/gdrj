@@ -478,6 +478,7 @@ body {
 }
 .pivot-pnl table tr th {
   border-color: #F0F3F4;
+  background-color: #f0f3f4;
 }
 .pivot-pnl table tr td {
   padding: 4px 8px;
@@ -487,6 +488,7 @@ body {
   padding: 8px;
   line-height: 1.42857143;
   border-bottom: 1px solid #F0F3F4;
+  background-color: #f0f3f4;
 }
 .pivot-pnl table tr:hover td {
   background-color: #74B841;
