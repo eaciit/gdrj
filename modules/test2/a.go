@@ -377,7 +377,7 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 				
 				rls.Value1 += ls.Value1 * r.Ratio/total * multiplier
 				err = workerconn.NewQuery().
-					//SetConfig("multiexec",true).
+					SetConfig("multiexec",true).
 					From(ls.TableName()).
 					Where(dbox.Eq("_id", rls.ID)).
 					Save().
