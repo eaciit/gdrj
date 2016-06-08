@@ -213,7 +213,7 @@ func main() {
 			limit += step
 		}
 	}
-
+	close(result)
 
 	count = len(pldatas)
 	jobSave := make(chan *gdrj.PLDataModel,count)
@@ -226,17 +226,19 @@ func main() {
 	for _, pldm := range pldatas{
 		jobSave <- pldm
 	}
+	close(jobSave)
 
 	step = count / 100
 	limit = step
 	for ri := 0; ri < count; ri++ {
 		<-result
 		if ri >= limit {
-			toolkit.Printfn("Accumulating %d of %d (%dpct) in %s", ri, count, ri*100/count,
+			toolkit.Printfn("Saving %d of %d (%dpct) in %s", ri, count, ri*100/count,
 				time.Since(t0).String())
 			limit += step
 		}
 	}
+	close(resultSave)
 	toolkit.Printfn("Done %s", time.Since(t0).String())
 }
 
