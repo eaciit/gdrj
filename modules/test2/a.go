@@ -355,6 +355,7 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 				
 				if !lsexist{
 					//-- need to grand rls again
+					rls = new(gdrj.PLDataModel)
 					*rls = *ls
 					rls.OutletID = r.OutletID
 					rls.SKUID = r.SKUID 
