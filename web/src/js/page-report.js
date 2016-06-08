@@ -130,8 +130,8 @@ rpt.optionDimensions = ko.observableArray([
 	{ field: "customer.branchname", name: 'Branch/RD', title: 'customer_branchname' },
     { field: "product.brand", name: 'Brand', title: 'product_brand' },
 	{ field: 'customer.channelname', name: 'Channel', title: 'customer_channelname' },
-    { field: 'customer.name', name: 'Outlet', title: 'customer_name' },
-	{ field: 'product.name', name: 'Product', title: 'product_name' },
+    // { field: 'customer.name', name: 'Outlet', title: 'customer_name' },
+	// { field: 'product.name', name: 'Product', title: 'product_name' },
     { field: 'customer.region', name: 'Region', title: 'customer_region' },
 ])
 rpt.optionDataPoints = ko.observableArray([

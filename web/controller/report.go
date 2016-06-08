@@ -183,6 +183,7 @@ func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interfa
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	data = gdrj.CalculatePNLLevelX(data, payload)
 	res := new(toolkit.Result)
 	res.SetData(data)
 

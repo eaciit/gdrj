@@ -2,9 +2,9 @@ package gdrj
 
 import (
 	//"errors"
-	//"github.com/eaciit/dbox"
+	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
-	"time"
+	//"time"
 	"github.com/eaciit/orm/v1"
 )
 
@@ -22,14 +22,14 @@ type PLDataModel struct {
 	//EasyForSelect
 	PLGroup1, PLGroup2, PLGroup3, PLGroup4 string
 	PCID, CCID, OutletID, SKUID, PLCode, PLOrder string
-	Month                                        time.Month
+	Month                                        int
 	Year                                         int
 	Source string
 }
 
 // month,year
 func (s *PLDataModel) RecordID() interface{} {
-	return s.ID
+	return s.PrepareID()
 	//return toolkit.Sprintf("%d_%d_%s_%s", s.Date.Year, s.Date.Month, s.CompanyCode, s.LedgerAccount)
 }
 
@@ -83,5 +83,73 @@ func BuildPLDataModel(conn dbox.IConnection, plcode string, filter *dbox.Filter,
 		// go doBuild(msource, filter, ag)
 	}
 	return nil
+
+
 }
 */
+
+
+func GetPLModel(plcode, companyid string, 
+		yr, month int, outletid, skuid, pcid, ccid string, 
+		value1, value2, value3 float64, 
+		source string,
+		plconn dbox.IConnection, 
+		custs, products, profitcenters, costcenters, plmodels toolkit.M,
+		addtoexisting bool, save bool) *PLDataModel{
+			pldatamodel := new(PLDataModel)
+			pldatamodel.CompanyCode = companyid
+			pldatamodel.Year = yr
+			pldatamodel.Month = month
+			pldatamodel.Date = NewDate(yr,month,1)
+			pldatamodel.OutletID = outletid
+			pldatamodel.SKUID = skuid
+			pldatamodel.PLCode = plcode
+			pldatamodel.Source = source
+			if addtoexisting{
+				existing, e := func()(*PLDataModel, error){
+					existing := new(PLDataModel)
+					cur,_ := plconn.NewQuery().From(existing.TableName()).
+						Where(dbox.Eq("_id", pldatamodel.RecordID())).
+						Cursor(nil)
+					defer cur.Close()
+					e:=cur.Fetch(existing,1,true)
+					return existing, e
+				}()
+				if e==nil {
+					*pldatamodel=*existing
+				}
+			}
+			if custs.Has(pldatamodel.OutletID){
+				pldatamodel.Customer=custs.Get(pldatamodel.OutletID).(*Customer)
+			}
+			if products.Has(pldatamodel.SKUID){
+				pldatamodel.Product=products.Get(pldatamodel.SKUID).(*Product)
+			}
+			if pcid=="" && pldatamodel.Customer!=nil && pldatamodel.Product!=nil {
+				pcid = pldatamodel.Customer.BranchID + pldatamodel.Product.BrandCategoryID
+			}
+			if profitcenters.Has(pcid){
+				pldatamodel.PC=profitcenters.Get(pcid).(*ProfitCenter)
+			}
+			if ccid!="" && costcenters!=nil && costcenters.Has(ccid){
+				pldatamodel.CC=costcenters.Get(ccid).(*CostCenter)
+			}
+			pldatamodel.PCID=pcid
+			pldatamodel.CCID=ccid
+			if plmodels.Has(plcode){
+				plm:=plmodels.Get(plcode).(PLModel)
+				pldatamodel.PLOrder=plm.OrderIndex
+				pldatamodel.PLGroup1=plm.PLHeader1
+				pldatamodel.PLGroup2=plm.PLHeader2
+				pldatamodel.PLGroup3=plm.PLHeader3
+			}
+			pldatamodel.Value1 +=pldatamodel.Value1
+			pldatamodel.Value2 +=pldatamodel.Value2
+			pldatamodel.Value3 +=pldatamodel.Value3
+			pldatamodel.ID = pldatamodel.PrepareID().(string)
+			if save {
+				plconn.NewQuery().From(pldatamodel.TableName()).
+					Save().Exec(toolkit.M{}.Set("data",pldatamodel))
+			}
+			return pldatamodel
+}

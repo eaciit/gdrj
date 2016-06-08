@@ -5,6 +5,7 @@ ccr.data = ko.observableArray([])
 ccr.title = ko.observable('Chart Comparison')
 ccr.contentIsLoading = ko.observable(false)
 ccr.categoryAxisField = ko.observable('category')
+ccr.breakdownBy = ko.observable('')
 
 ccr.refresh = () => {
 	ccr.data(DATATEMP_CHART_CR)
@@ -24,7 +25,7 @@ ccr.render = () => {
 				}
 			}
 		}, { 
-			name: 'Sales', 
+			name: 'Qty', 
 			field: 'value2', 
 			width: 3, 
 			markers: {
@@ -35,7 +36,7 @@ ccr.render = () => {
 				}
 			}
 		}, { 
-			name: 'Average', 
+			name: 'Sales', 
 			field: 'value3', 
 			type: 'bar', 
 			width: 3, 
@@ -91,12 +92,12 @@ ccr.render = () => {
 		}
 	}
 
+	let chartContainer = $('.chart-container')
+	chartContainer.empty()
+
 	app.forEach(ccr.data(), (k, v) => {
-		let chartContainer = $('.chart-container')
 		let html = $($('#template-chart-comparison').html())
 		let config = configure(v)
-
-		console.log("======", k, v, config)
 
 		html.appendTo(chartContainer)
 		html.find('.title').html(k)

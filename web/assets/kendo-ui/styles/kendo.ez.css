@@ -7358,7 +7358,7 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
   box-shadow: inherit;
 }
 .k-grid td {
-  padding: .5em .6em;
+  padding: 4px 8px;
 }
 .k-widget.k-multiselect.k-header,
 .k-widget.k-multiselect.k-header .k-multiselect-wrap.k-floatwrap {
