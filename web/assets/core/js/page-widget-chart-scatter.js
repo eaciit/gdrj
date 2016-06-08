@@ -72,7 +72,7 @@ rs.refresh = function () {
 					var maxNetSales = Lazy(currentDataAll2.data).max(function (e) {
 						return e.value1;
 					}).value1;
-					var percentage = totalDataAll / totalDataAll2;
+					var percentage = maxNetSales / 2 / totalDataAll2;
 					var v = maxNetSales * 100;
 					var meanYear = (dataall[i].data.length / 2).toFixed(0) - 1;
 					var titleValue = '';
@@ -82,7 +82,7 @@ rs.refresh = function () {
 						if (a == meanYear) titleValue = titleValue + '\n ' + dataall[i].data[a].year;
 						rs.datascatter.push({
 							pplheader: percentage * 100,
-							value1: dataall[i].data[a].value1 / maxNetSales * 100,
+							value1: dataall[i].data[a].value1 / (maxNetSales / 2) * 100,
 							title: titleValue,
 							header: dataall[i].data[a].plmodel_plheader1,
 							year: dataall[i].data[a].year
@@ -104,7 +104,8 @@ rs.refresh = function () {
 };
 
 rs.generateReport = function () {
-	$(".scatter-view").kendoChart({
+	$('#scatter-view').width(rs.datascatter().length * 120);
+	$("#scatter-view").kendoChart({
 		dataSource: {
 			data: rs.datascatter()
 		},

@@ -73,7 +73,7 @@ rs.refresh = () => {
 					let totalDataAll2 = Lazy(currentDataAll2.data).sum((e) => e.value1)
 
 					let maxNetSales = Lazy(currentDataAll2.data).max((e) => e.value1).value1
-					let percentage = totalDataAll / totalDataAll2
+					let percentage = (maxNetSales/2) / totalDataAll2
 					let v = maxNetSales * 100
 					let meanYear = (dataall[i].data.length/2).toFixed(0)-1
 					let titleValue = ''
@@ -84,7 +84,7 @@ rs.refresh = () => {
 							titleValue = titleValue + '\n ' + dataall[i].data[a].year
 						rs.datascatter.push({
 							pplheader: percentage*100,
-							value1: dataall[i].data[a].value1/maxNetSales*100,
+							value1: dataall[i].data[a].value1/(maxNetSales/2)*100,
 							title: titleValue,
 							header: dataall[i].data[a].plmodel_plheader1,
 							year: dataall[i].data[a].year
@@ -106,7 +106,8 @@ rs.refresh = () => {
 }
 
 rs.generateReport = () => {
-	$(".scatter-view").kendoChart({
+    $('#scatter-view').width(rs.datascatter().length * 120)
+	$("#scatter-view").kendoChart({
 		dataSource: {
             data: rs.datascatter()
         },
