@@ -341,16 +341,27 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 			}
 
 			for _, r := range rs{
-				ls.ID = ls.PrepareID().(string)
-				rls, lsexist := pldatas[ls.ID]
+				lsexist := false
+				rls := new(gdrj.PLDataModel)
+				*rls = *ls
+				rls.OutletID = r.OutletID
+				rls.SKUID = r.SKUID 
+				rls.ID = rls.PrepareID().(string)
+				rls, lsexist = pldatas[rls.ID]
 				multiplier:=float64(1)
 				if v.Src!="30052016SAP_EXPORT"{
 					multiplier=-1
 				}
 				
 				if !lsexist{
-					rls = new(gdrj.PLDataModel)
+					//-- need to grand rls again
 					*rls = *ls
+					rls.OutletID = r.OutletID
+					rls.SKUID = r.SKUID 
+					rls.ID = rls.PrepareID().(string)
+					//-- end
+
+					//-- get existing values
 					els := new(gdrj.PLDataModel)
 					cls,_ := workerconn.NewQuery().From(ls.TableName()).
 						Where(dbox.Eq("_id",rls.ID)).Cursor(nil)
@@ -367,6 +378,7 @@ func worker(wi int, jobs <-chan *gdrj.RawDataPL, result chan<- string){
 					toolkit.Println("Error Found : ", err.Error())
 					os.Exit(1)
 				}
+				pldatas[rls.ID]=rls
 			}
 			result <- "OK"
 		}
