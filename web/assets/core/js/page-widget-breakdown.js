@@ -25,6 +25,7 @@ bkd.refresh = function () {
 		breakdownBy: bkd.breakdownBy(),
 		limit: bkd.limit()
 	});
+	bkd.oldBreakdownBy(bkd.breakdownBy());
 	// bkd.data(DATATEMP_BREAKDOWN)
 	bkd.contentIsLoading(true);
 	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
@@ -45,6 +46,8 @@ bkd.refreshOnChange = function () {
 	// setTimeout(bkd.refresh, 100)
 };
 bkd.breakdownBy = ko.observable('customer.channelname');
+bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy);
+
 bkd.dimensions = ko.observableArray([{ field: bkd.keyPLHeader1(), name: ' ' }]);
 
 // { field: 'plmodel.plheader2', name: ' ' },
@@ -55,7 +58,7 @@ bkd.clickCell = function (pnl, breakdown) {
 	var param = bkd.getParam();
 	param.plheader1 = pnl;
 	param.filters.push({
-		Field: bkd.breakdownBy(),
+		Field: bkd.oldBreakdownBy(),
 		Op: "$eq",
 		Value: breakdown
 	});
