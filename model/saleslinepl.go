@@ -109,8 +109,14 @@ func TrxToSalesPL(conn dbox.IConnection,
 	branchSales := masters.Get("branchsales").(map[string]float64)
 	brandSales := masters.Get("brandsales").(map[string]float64)
 
-	brandSale, _ := brandSales[pl.Product.Brand]
-	branchSale, _ := branchSales[pl.Customer.BranchID]
+    var brandSale, branchSale float64
+    if pl.Product!=nil{
+	    brandSale, _ = brandSales[pl.Product.Brand]
+    }
+
+    if pl.Customer!=nil{
+	    branchSale, _ = branchSales[pl.Customer.BranchID]
+    }
 
 	if globalSales != 0 {
 		pl.RatioToGlobalSales = pl.NetAmount / globalSales
