@@ -216,7 +216,7 @@ func main() {
 	limit:=step
 	i:=0
 	for{
-		//stx := new(gdrj.SalesTrx)
+		/*
 		buffersize:=1000
 		stxs := []*gdrj.SalesTrx{}
 		e := c.Fetch(&stxs,buffersize,false)
@@ -224,6 +224,12 @@ func main() {
 			break
 		}
 		for _, stx := range stxs{
+		*/
+			stx := new(gdrj.SalesTrx)
+			e := c.Fetch(stx,1,false)
+			if e!=nil{
+				break
+			}
 			globalSales+=stx.NetAmount
 			
 			if stx.Customer!=nil{
@@ -253,10 +259,12 @@ func main() {
 					i, count, float64(i) * float64(100)/float64(count), time.Since(t0).String())
 				limit += step
 			}
+		/*
 		}
 		if len(stxs)<buffersize{
 			break
 		}
+		*/
 	}
 
 	jobs := make(chan *gdrj.SalesTrx, count)
@@ -278,7 +286,7 @@ func main() {
 		}
 
 		if i==1000{
-			break
+			//break
 		}
 
 		i++
