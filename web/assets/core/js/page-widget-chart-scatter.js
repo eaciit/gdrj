@@ -11,19 +11,22 @@ rs.breakDownNetSales = ko.observable('Net Sales');
 rs.pplheader = ko.observable('Direct Labor');
 rs.datascatter = ko.observableArray([]);
 rs.plheader = ko.observable('plgroup3');
+rs.plheader1 = ko.observable('plgroup1');
+rs.chartComparisonNote = ko.observable('');
 
 rs.optionDimensionSelect = ko.observableArray([]);
 
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/GetSalesHeaderList", {}, function (res) {
 		var data = Lazy(res).map(function (k, v) {
-			return { field: k._id[rs.plheader()], name: k._id[rs.plheader()] };
+			// return {field: k._id[rs.plheader1()], name: k._id[rs.plheader1()]}
+			return { field: k, name: k };
 		}).toArray();
 		rs.optionDimensionSelect(data);
 		rs.optionDimensionSelect.remove(function (item) {
 			return item.field == rs.breakDownNetSales();
 		});
-		rs.refresh();
+		rs.refresh(true);
 		setTimeout(function () {
 			rs.pplheader('');
 		}, 300);
@@ -31,6 +34,8 @@ rs.getSalesHeaderList = function () {
 };
 
 rs.refresh = function () {
+	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
 	rs.contentIsLoading(true);
 	var dimensions = [{ "field": rs.plheader(), "name": rs.plheader() }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
 	var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
@@ -77,7 +82,7 @@ rs.refresh = function () {
 					return e.value1;
 				}); // by net sales
 
-				var maxNetSales = Lazy(currentDataAll.data).max(function (e) {
+				var maxNetSales = Lazy(currentDataAll2.data).max(function (e) {
 					return e.value1;
 				}).value1;
 				var percentage = totalDataAll / totalDataAll2 * 100;
@@ -97,7 +102,7 @@ rs.refresh = function () {
 						header: dataall[i].data[a].plmodel_plheader1,
 						year: dataall[i].data[a].year
 					});
-					console.log('asd ', dataall[i].data[a].value1, 'ddd ', dataall[i].data[a].value1 / maxNetSales * 100);
+					console.log('dddd ', dataall[i].data[a].value1, dataall[i].data[a].value1 / maxNetSales * 100, dataall[i].data[a].value1 / percentageToMaxSales * 100);
 				}
 				if (i == 0) {
 					rs.datascatter.push({
@@ -108,10 +113,22 @@ rs.refresh = function () {
 					});
 				}
 			}
+			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+			rs.chartComparisonNote("Last refreshed on: " + date);
 			rs.generateReport(dataall[0]._id, dataall[1]._id, max);
+		}, function () {
+			rs.contentIsLoading(false);
+		}, {
+			cache: useCache == true ? 'pivot chart2' : false
 		});
+	}, function () {
+		rs.contentIsLoading(false);
+	}, {
+		cache: useCache == true ? 'pivot chart1' : false
 	});
 };
+
+rs.calculationPercentage = function (data) {};
 
 rs.generateReport = function (year1, year2, max) {
 	rs.contentIsLoading(false);
