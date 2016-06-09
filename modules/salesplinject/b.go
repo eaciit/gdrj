@@ -4,6 +4,7 @@ import (
 	"eaciit/gdrj/model"
 	"eaciit/gdrj/modules"
 	"os"
+	"runtime"
 
 	"strings"
 	"sync"
@@ -43,126 +44,241 @@ func getCursor(obj orm.IModel) dbox.ICursor {
 	return c
 }
 
-func prepMaster() {
-	pc := new(gdrj.ProfitCenter)
-	cc := new(gdrj.CostCenter)
-	prod := new(gdrj.Product)
-	ledger := new(gdrj.LedgerMaster)
-
-	cpc := getCursor(pc)
-	defer cpc.Close()
-	var e error
-	for e = cpc.Fetch(pc, 1, false); e == nil; {
-		pcs.Set(pc.ID, pc)
-		pc = new(gdrj.ProfitCenter)
-		e = cpc.Fetch(pc, 1, false)
-	}
-
-	ccc := getCursor(cc)
-	defer ccc.Close()
-	for e = ccc.Fetch(cc, 1, false); e == nil; {
-		ccs.Set(cc.ID, cc)
-		cc = new(gdrj.CostCenter)
-		e = ccc.Fetch(cc, 1, false)
-	}
-
-	cprod := getCursor(prod)
-	defer cprod.Close()
-	for e = cprod.Fetch(prod, 1, false); e == nil; {
-		prods.Set(prod.ID, prod)
-		prod = new(gdrj.Product)
-		e = cprod.Fetch(prod, 1, false)
-	}
-
-	cledger := getCursor(ledger)
-	defer cledger.Close()
-	for e = cledger.Fetch(ledger, 1, false); e == nil; {
-		ledgers.Set(ledger.ID, ledger)
-		ledger = new(gdrj.LedgerMaster)
-		e = cledger.Fetch(ledger, 1, false)
-	}
-
-	cust := new(gdrj.Customer)
-	ccust := getCursor(cust)
-	defer ccust.Close()
-	for e = ccust.Fetch(cust, 1, false); e == nil; {
-		custs.Set(cust.ID, cust)
-		cust = new(gdrj.Customer)
-		e = ccust.Fetch(cust, 1, false)
-	}
-
-	plmodel := new(gdrj.PLModel)
-	cplmodel := getCursor(plmodel)
-	defer cplmodel.Close()
-	for e = cplmodel.Fetch(plmodel, 1, false); e == nil; {
-		plmodels.Set(plmodel.ID, plmodel)
-		plmodel = new(gdrj.PLModel)
-		e = cplmodel.Fetch(plmodel, 1, false)
-	}
-
-	toolkit.Println("--> Brand")
-	brand := new(gdrj.HBrandCategory)
-	cbrand := getCursor(plmodel)
-	defer cbrand.Close()
-	for e = cbrand.Fetch(brand, 1, false); e == nil; {
-		brands.Set(brand.ID, brand)
-		brand = new(gdrj.HBrandCategory)
-		e = cbrand.Fetch(brand, 1, false)
-	}
-
-	toolkit.Println("--> Sales Ratio")
-	ratio := new(gdrj.SalesRatio)
-	cratios := getCursor(ratio)
-	defer cratios.Close()
+func BuildMap(holder interface{},
+	fnModel func()orm.IModel,
+	fnIter func(holder interface{}, obj interface{}))interface{}{
+	crx := getCursor(fnModel())
+	defer crx.Close()
 	for {
-		efetch := cratios.Fetch(ratio, 1, false)
-		if efetch != nil {
+		s := fnModel()
+		e := crx.Fetch(s,1,false)
+		if e!=nil {
 			break
 		}
-		ratioid := toolkit.Sprintf("%d_%d_%s", ratio.Year, ratio.Month, ratio.BranchID)
-		a, exist := ratios[ratioid]
-		if !exist {
-			a = []gdrj.SalesRatio{}
-		}
-		a = append(a, *ratio)
-		ratio = new(gdrj.SalesRatio)
-		ratios[ratioid] = a
+		fnIter(holder, s)
 	}
+	return holder
+}
+
+func prepMaster() {
+	toolkit.Println("--> Ledger")
+	ledgers:=BuildMap(map[string]gdrj.LedgerMaster{},
+		func()orm.IModel{
+			return new(gdrj.LedgerMaster)
+		},
+		func(holder, obj interface{}){
+			h:=holder.(map[string]gdrj.LedgerMaster)
+			o:=obj.(*gdrj.LedgerMaster)
+			h[o.ID]=*o
+		}).(map[string]gdrj.LedgerMaster)
+	masters.Set("ledger", ledgers)
+	
+	toolkit.Println("--> PL Model")
+	masters.Set("plmodel", BuildMap(map[string]gdrj.PLModel{},
+		func()orm.IModel{
+			return new(gdrj.PLModel)
+		},
+		func(holder, obj interface{}){
+			h:=holder.(map[string]gdrj.PLModel)
+			o:=obj.(*gdrj.PLModel)
+			h[o.ID]=*o
+		}).(map[string]gdrj.PLModel))
+
+	toolkit.Println("--> COGS")
+	masters.Set("cogs", BuildMap(map[string]*gdrj.COGSConsolidate{},
+		func()orm.IModel{
+			return new(gdrj.COGSConsolidate)
+		},
+		func(holder, obj interface{}){
+			h:=holder.(map[string]*gdrj.COGSConsolidate)
+			o:=obj.(*gdrj.COGSConsolidate)
+			cogsid := toolkit.Sprintf("%d_%d_%s", o.Year, int(o.Month), o.SAPCode)
+			h[cogsid]=o
+		}).(map[string]*gdrj.COGSConsolidate))
+
+	freights := map[string]*gdrj.RawDataPL{}
+	promos := map[string]*gdrj.RawDataPL{}
+	sgas := map[string]map[string]*gdrj.RawDataPL{}
+
+	toolkit.Println("--> RAW Data PL")
+	masters.Set("rpl", BuildMap(nil,
+		func()orm.IModel{
+			return new(gdrj.RawDataPL)
+		},
+		func(holder, obj interface{}){
+			o:=obj.(*gdrj.RawDataPL)
+			if strings.Contains(o.Src,"RD") || strings.Contains(o.Src,"EXPORT"){
+				return
+			}
+			
+			if strings.HasSuffix(o.Src,"FREIGHT"){
+				freightid := toolkit.Sprintf("%d_%d_%s", o.Year, o.Period, o.BusA)
+				frg, exist := freights[freightid]
+				if !exist{
+					frg=new(gdrj.RawDataPL)
+				}
+				frg.AmountinIDR +=o.AmountinIDR
+				freights[freightid]=frg
+			} else if strings.HasSuffix(o.Src,"SGAPL"){
+				if strings.Contains(o.Grouping,"Factory"){
+					return
+				}
+
+				groupingid:=strings.Replace(o.Grouping," - Office","",-1)
+				sgaid := toolkit.Sprintf("%d_%d", o.Year, o.Period)
+				asga, exist := sgas[sgaid]
+				if !exist{
+					asga = map[string]*gdrj.RawDataPL{}	
+				}
+				sga, exist := asga[groupingid]
+				if !exist{
+					sga=new(gdrj.RawDataPL)
+					*sga=*o
+				}
+				sga.AmountinIDR +=o.AmountinIDR
+				asga[groupingid]=sga
+			} else {
+				apgrouping := "promo"
+				if strings.Contains(o.APGrouping,"CD"){
+					apgrouping="bonus"
+				} else if strings.Contains(o.APGrouping,"Advert"){
+					apgrouping = "atl"
+				} else if strings.Contains(o.APGrouping,"SPG"){
+					apgrouping = "spg"
+				}
+				ledger, exist := ledgers[o.Account]
+				if exist{
+					title := strings.ToLower(ledger.Title)
+					if strings.Contains(title,"gondola") || strings.Contains(title,"motoris") || strings.Contains(title,"mailer"){
+						apgrouping = "Gondola"
+					} 
+				}
+				promoid := toolkit.Sprintf("%d_%d_%s", o.Year, o.Period, apgrouping)
+				prm, exist := promos[promoid]
+				if !exist{
+					prm=new(gdrj.RawDataPL)
+				}
+				prm.AmountinIDR +=o.AmountinIDR
+				promos[promoid]=prm
+			}
+		}))
+
+		masters.Set("freight",freights)
+		masters.Set("promo",promos)
+		masters.Set("sga",sgas)
 }
 
 var pldatas = map[string]*gdrj.PLDataModel{}
 
+var t0 time.Time
+
 func main() {
-	//runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	setinitialconnection()
 	defer gdrj.CloseDb()
 
+	t0 = time.Now()
 	toolkit.Println("Reading Master")
 	prepMaster()
 
-	pldm := new(gdrj.PLDataModel)
+	spl := new(gdrj.SalesPL)
 	toolkit.Println("Delete existing")
-	/*
-    conn.NewQuery().From(pldm.TableName()).Where(dbox.Eq("source", "30052016SAP_EXPORT")).Delete().Exec(nil)
-	conn.NewQuery().From(pldm.TableName()).Where(dbox.Eq("source", "31052016SAP_FREIGHT")).Delete().Exec(nil)
-	conn.NewQuery().From(pldm.TableName()).Where(dbox.Eq("source", "31052016SAP_SUSEMI")).Delete().Exec(nil)
-	conn.NewQuery().From(pldm.TableName()).Where(dbox.Eq("source", "31052016SAP_APINTRA")).Delete().Exec(nil)
-	conn.NewQuery().From(pldm.TableName()).Where(dbox.Eq("source", "30052016SAP_SGAPL")).Delete().Exec(nil)
-	conn.NewQuery().From(pldm.TableName()).Where(dbox.Eq("source", "31052016SAP_MEGASARI")).Delete().Exec(nil)
-	conn.NewQuery().From(pldm.TableName()).Where(dbox.Eq("source", "31052016SAP_SALESRD")).Delete().Exec(nil)
-	conn.NewQuery().From(pldm.TableName()).Where(dbox.Eq("source", "31052016SAP_DISC-RDJKT")).Delete().Exec(nil)
-    */
+	conn.NewQuery().From(spl.TableName()).Delete().Exec(nil)
 
-	toolkit.Println("START...")
-	crx, err := conn.NewQuery().From(pldm.TableName()).
-        Group("year","period","account","busa").
-        Cursor(nil)
-	if err != nil {
-		toolkit.Println("Error Found : ", err.Error())
-		os.Exit(1)
+	c, _ := gdrj.Find(new(gdrj.SalesTrx),nil,nil)
+	defer c.Close()
+
+	globalSales:=float64(0)
+	branchSales:=map[string]float64{}
+	brandSales:=map[string]float64{}
+
+	count := c.Count()
+	toolkit.Printfn("Calc ratio ... %d records", count)
+	step:=count/1000
+	limit:=step
+	i:=0
+	for{
+		stx := new(gdrj.SalesTrx)
+		e := c.Fetch(stx,1,false)
+		if e!=nil{
+			break
+		}
+
+		globalSales+=stx.NetAmount
+		
+		if stx.Customer!=nil{
+			branchSale, _:=branchSales[stx.Customer.BranchID]
+			branchSale+=stx.NetAmount
+			branchSales[stx.Customer.BranchID]=branchSale
+		}
+
+		if stx.Product!=nil{
+			brandSale, _:=brandSales[stx.Product.Brand]
+			brandSale+=stx.NetAmount
+			brandSales[stx.Product.Brand]=brandSale
+		}
+
+		masters.Set("globalsales",globalSales)
+		masters.Set("branchsales",branchSales)
+		masters.Set("brandsales",brandSales)
+
+		i++
+		if i>=limit{
+			toolkit.Printfn("Calculating %d of %d (%.2f pct) in %s", 
+				i, count, float64(i) * float64(100)/float64(count), time.Since(t0).String())
+			limit += step
+		}
 	}
-    defer crx.Close()
 
-    count:=crx.Count()
-    for i:=0
+	jobs := make(chan *gdrj.SalesTrx, count)
+	result := make(chan string, count)
+	for wi:=0;wi<10;wi++{
+		go workerProc(wi, jobs, result)
+	}
+
+	c.ResetFetch()
+	toolkit.Printfn("START ... %d records", count)
+	step = count/100
+	limit = step
+	i=0
+	for{
+		stx := new(gdrj.SalesTrx)
+		e := c.Fetch(stx,1,false)
+		if e!=nil{
+			break
+		}
+
+		i++
+		jobs <- stx
+		if i>=limit{
+			toolkit.Printfn("Processing %d of %d (%d pct) in %s", 
+				i, count, i * 100/count, time.Since(t0).String())
+			limit += step
+		}
+	}
+	close(jobs)
+
+	count = i
+	step = count/100
+	limit = step
+	for ri:=0;ri<i;ri++{
+		<- result
+		
+		if ri>=limit{
+			toolkit.Printfn("Saving %d of %d (%d pct) in %s", 
+				ri, count, ri * 100/count, time.Since(t0).String())
+			limit += step
+		}
+	}
+}
+
+func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string){
+	workerConn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerConn.Close()
+
+	var j *gdrj.SalesTrx
+	for j = range jobs{
+		spl := gdrj.TrxToSalesPL(workerConn, j, masters)
+		result <- spl.ID
+	}
 }
