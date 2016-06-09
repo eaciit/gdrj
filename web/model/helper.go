@@ -18,7 +18,7 @@ func (l *Login) GetConnectionInfo(db_type string) (string, *dbox.ConnectionInfo)
 			setting, _ = toolkit.ToM(val)
 		}
 	}
-	setting.Set("timeout", 3600)
+	// setting.Set("timeout", 3600)
 
 	ci := dbox.ConnectionInfo{
 		conf.GetString("host"),
