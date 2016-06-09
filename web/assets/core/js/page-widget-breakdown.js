@@ -3,8 +3,8 @@
 viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
 
-bkd.keyOrder = ko.observable('plorder'); //plmodel.orderindex') //plorder
-bkd.keyPLHeader1 = ko.observable('plgroup3'); //plmodel.plheader1') //plgroup1
+bkd.keyOrder = ko.observable('plorder');
+bkd.keyPLHeader = ko.observable('plgroup3');
 bkd.contentIsLoading = ko.observable(false);
 bkd.popupIsLoading = ko.observable(false);
 bkd.title = ko.observable('P&L Analytic');
@@ -47,7 +47,7 @@ bkd.refreshOnChange = function () {
 bkd.breakdownBy = ko.observable('customer.channelname');
 bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy());
 
-bkd.dimensions = ko.observableArray([{ field: bkd.keyPLHeader1(), name: ' ' }]);
+bkd.dimensions = ko.observableArray([{ field: bkd.keyPLHeader(), name: ' ' }]);
 
 // { field: 'plmodel.plheader2', name: ' ' },
 // { field: 'plmodel.plheader3', name: ' ' }
@@ -194,7 +194,7 @@ bkd.render = function () {
 	var total = 0;
 
 	Lazy(data).groupBy(function (d) {
-		return d[app.idAble(bkd.keyPLHeader1())];
+		return d[app.idAble(bkd.keyPLHeader())];
 	}).each(function (v, pnl) {
 		var i = 0;
 		var row = {

@@ -371,74 +371,30 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 	var datapoints []string = payload.ParseDataPoints()
 	var fnTransform (func(m *toolkit.M) error) = nil
 
-	plKeys := []string{}
-	bunchesOfData := [][]*toolkit.M{}
-
-	fmt.Println("hhhh")
-
-	switch payload.Which {
-	case "gross_sales_discount_and_net_sales":
-		{
-			plKeys = []string{"PL1", "PL2", "PL3"}
-			for _, plKey := range plKeys {
-				plFilter := dbox.Eq("plcode", plKey)
-				bunchData, err := SummarizeLedgerSum(
-					dbox.And(plFilter, filter), columns, datapoints, fnTransform)
-				if err != nil {
-					return nil, err
-				}
-
-				bunchesOfData = append(bunchesOfData, bunchData)
-			}
-		}
-	default:
-		{
-			bunchData, err := SummarizeLedgerSum(
-				filter, columns, datapoints, fnTransform)
-			if err != nil {
-				return nil, err
-			}
-
-			bunchesOfData = append(bunchesOfData, bunchData)
-		}
+	bunchData, err := SummarizeLedgerSum(filter, columns, datapoints, fnTransform)
+	if err != nil {
+		return nil, err
 	}
 
-	allKeys := map[string]*toolkit.M{}
 	rows := []*toolkit.M{}
 
-	fmt.Println("ssss")
+	for _, each := range bunchData {
+		row := toolkit.M{}
 
-	for i, bunch := range bunchesOfData {
-		for _, each := range bunch {
-			keyword := ""
-			for _, s := range columns {
-				keyword = fmt.Sprintf("%s%v", keyword, each.Get("_id").(toolkit.M).Get(s))
-			}
-
-			if _, ok := allKeys[keyword]; !ok {
-				allKeys[keyword] = each
-				rows = append(rows, each)
-				if i > 0 {
-					each.Set(fmt.Sprintf("value%d", i+1), each.GetFloat64("value1"))
-					each.Set("value1", 0)
-				}
-
-				for key, val := range *each {
-					if key == "_id" {
-						for skey, sval := range val.(toolkit.M) {
-							each.Set(strings.Replace(skey, ".", "_", -1), sval)
-						}
-					}
-				}
-				each.Unset("_id")
-			} else {
-				current := allKeys[keyword]
-				current.Set(fmt.Sprintf("value%d", i+1), current.GetFloat64(fmt.Sprintf("value%d", i+1))+each.GetFloat64("value1"))
-			}
+		for _, eachCol := range payload.Dimensions {
+			key := strings.Replace(eachCol.Field, ".", "_", -1)
+			val := each.Get("_id").(toolkit.M).Get(key)
+			row.Set(key, val)
 		}
-	}
 
-	fmt.Println("gggg")
+		for _, eachRow := range payload.DataPoints {
+			key := strings.Replace(eachRow.Field, ".", "_", -1)
+			val := each.Get(key)
+			row.Set(key, val)
+		}
+
+		rows = append(rows, &row)
+	}
 
 	return rows, nil
 }
