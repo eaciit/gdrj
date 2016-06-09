@@ -22,7 +22,11 @@ func (s *SalesPLParam) GetPLModels() ([]*PLModel, error) {
 	defer q.Close()
 
 	if len(s.PLs) > 0 {
-		q = q.Where(dbox.In("_id", s.PLs))
+		filters := []*dbox.Filter{}
+		for _, pl := range s.PLs {
+			filters = append(filters, dbox.Eq("_id", pl))
+		}
+		q = q.Where(dbox.Or(filters...))
 	}
 
 	csr, err := q.Cursor(nil)
@@ -55,7 +59,6 @@ func (s *SalesPLParam) GetData() ([]*toolkit.M, error) {
 	if len(s.Groups) > 0 {
 		q = q.Group(s.Groups...)
 	}
-
 	for _, plmod := range plmodels {
 		op := fmt.Sprintf("$%s", s.Aggr)
 		field := fmt.Sprintf("$pldatas.%s.amount", plmod.ID)
@@ -169,8 +172,6 @@ func (s *SalesPLDetailParam) GetData() ([]*toolkit.M, error) {
 	if e != nil {
 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
 	}
-
-	fmt.Println("------", *(ms[0]))
 
 	return ms, nil
 }

@@ -115,37 +115,6 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 	return
 }
 
-func GetSalesHeaderList() ([]string, error) {
-	conn := DB().Connection
-	q := conn.NewQuery().From("plmodel")
-	q = q.Group("plheader1", "plheader2", "plheader3")
-	c, e := q.Cursor(nil)
-	if e != nil {
-		return nil, errors.New("GetSalesHeaderList: Preparing cursor error " + e.Error())
-	}
-	defer c.Close()
-
-	data := toolkit.Ms{}
-	e = c.Fetch(&data, 0, false)
-	if e != nil {
-		return nil, errors.New("GetSalesHeaderList: Fetch cursor error " + e.Error())
-	}
-
-	result := []string{}
-	for _, val := range data {
-		_data, _ := toolkit.ToM(val["_id"])
-		for _, vals := range _data {
-			valString := toolkit.ToString(vals)
-			if !toolkit.HasMember(result, valString) && valString != "" {
-				result = append(result, valString)
-			}
-		}
-	}
-
-	return result, nil
-
-}
-
 func CalculateLedgerSummaryAnalysisIdea(payload *PivotParam) ([]*toolkit.M, error) {
 	var filter *dbox.Filter = payload.ParseFilter()
 
