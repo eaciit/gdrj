@@ -3,43 +3,34 @@
 viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
 
-bkd.keyOrder = ko.observable('plorder');
-bkd.keyPLHeader = ko.observable('plgroup3');
 bkd.contentIsLoading = ko.observable(false);
 bkd.popupIsLoading = ko.observable(false);
 bkd.title = ko.observable('P&L Analytic');
-bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
 bkd.limit = ko.observable(10);
 bkd.breakdownNote = ko.observable('');
-bkd.getParam = function () {
-	var orderIndex = { field: bkd.keyOrder(), name: 'Order' };
-	var breakdown = rpt.optionDimensions().find(function (d) {
-		return d.field == bkd.breakdownBy();
-	});
-	var dimensions = bkd.dimensions().concat([breakdown, orderIndex]);
-	var dataPoints = bkd.dataPoints();
-	return rpt.wrapParam(dimensions, dataPoints);
-};
+
+bkd.data = ko.observableArray([]);
+bkd.plmodels = ko.observableArray([]);
+
 bkd.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
-	var param = $.extend(true, bkd.getParam(), {
-		breakdownBy: bkd.breakdownBy(),
-		limit: bkd.limit()
-	});
+	var param = {};
+	param.pls = [];
+	param.groups = [bkd.breakdownBy()];
+	param.aggr = 'sum';
+	param.filters = []; // rpt.getFilterValue()
+
 	bkd.oldBreakdownBy(bkd.breakdownBy());
 	bkd.contentIsLoading(true);
 
-	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
-		var data = _.sortBy(res.Data, function (o, v) {
-			return parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, ""));
-		});
-
+	app.ajaxPost("/report/getpnldata", param, function (res) {
 		var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 		bkd.breakdownNote('Last refreshed on: ' + date);
 
-		bkd.data(data);
+		bkd.data(res.Data.Data);
+		bkd.plmodels(res.Data.PLModels);
 		bkd.emptyGrid();
 		bkd.contentIsLoading(false);
 		bkd.render();
@@ -50,25 +41,22 @@ bkd.refresh = function () {
 		cache: useCache == true ? 'breakdown chart' : false
 	});
 };
-bkd.refreshOnChange = function () {
-	// setTimeout(bkd.refresh, 100)
-};
+
 bkd.breakdownBy = ko.observable('customer.channelname');
 bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy());
 
-bkd.dimensions = ko.observableArray([{ field: bkd.keyPLHeader(), name: ' ' }]);
+bkd.clickCell = function (plcode, breakdown) {
+	// if (pnl == "Net Sales") {
+	// 	bkd.renderDetailSalesTrans(breakdown)
+	// 	return
+	// }
 
-// { field: 'plmodel.plheader2', name: ' ' },
-// { field: 'plmodel.plheader3', name: ' ' }
-bkd.dataPoints = ko.observableArray([{ field: "value1", name: "value1", aggr: "sum" }]);
-bkd.clickCell = function (pnl, breakdown) {
-	if (pnl == "Net Sales") {
-		bkd.renderDetailSalesTrans(breakdown);
-		return;
-	}
-
-	bkd.renderDetail(pnl, breakdown);
+	bkd.renderDetail(plcode, breakdown);
 };
+bkd.emptyGrid = function () {
+	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
+};
+
 bkd.renderDetailSalesTrans = function (breakdown) {
 	bkd.popupIsLoading(true);
 	$('#modal-detail-ledger-summary').appendTo($('body'));
@@ -137,20 +125,28 @@ bkd.renderDetailSalesTrans = function (breakdown) {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
 	$('.grid-detail').kendoGrid(config);
 };
-bkd.renderDetail = function (pnl, breakdown) {
+bkd.renderDetail = function (plcode, breakdown) {
 	bkd.popupIsLoading(true);
 	$('#modal-detail-ledger-summary').appendTo($('body'));
 	$('#modal-detail-ledger-summary').modal('show');
 
 	var render = function render() {
-		var columns = [{ field: 'Year', width: 60, locked: true, footerTemplate: 'Total :' }, { field: 'Amount', width: 80, locked: true, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: function footerTemplate(d) {
-				return kendo.toString(d.Amount.sum, 'n0');
-			}, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: 'CostCenter', title: 'Cost Center', width: 250 }, { field: 'Customer', width: 250 }, { field: 'Channel', width: 150 }, { field: 'Branch', width: 120 }, { field: 'Brand', width: 100 }, { field: 'Product', width: 250 }];
+		var columns = [{ title: 'Date', width: 120, locked: true, footerTemplate: 'Total :', template: function template(d) {
+				return moment(d.date.date).format('DD/MM/YYYY HH:mm');
+			}, attributes: { class: 'bold' } },
+		// { field: `pldatas.${plcode}.amount`, width: 120, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => d[`pldatas.${plcode}.amount`].sum, format: '{0:n2}', attributes: { class: 'align-right' } },
+		{ field: 'grossamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Gross</div>", footerTemplate: function footerTemplate(d) {
+				return '<div class="align-right">' + kendo.toString(d.grossamount.sum, 'n0') + '</div>';
+			}, format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'discountamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Discount</div>", footerTemplate: function footerTemplate(d) {
+				return '<div class="align-right">' + kendo.toString(d.discountamount.sum, 'n0') + '</div>';
+			}, format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'netamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Net Sales</div>", footerTemplate: function footerTemplate(d) {
+				return '<div class="align-right">' + kendo.toString(d.netamount.sum, 'n0') + '</div>';
+			}, format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'cc.name', title: 'Cost Center', width: 250 }, { field: 'customer.name', title: 'Outlet', width: 250 }, { field: 'customer.branchname', title: 'Branch', width: 150 }, { field: 'customer.channelname', title: 'Channel', width: 120 }, { field: 'product.brand', title: 'Brand', width: 100 }, { field: 'product.name', title: 'Product', width: 250 }];
 		var config = {
 			dataSource: {
 				data: bkd.detail(),
 				pageSize: 5,
-				aggregate: [{ field: "Amount", aggregate: "sum" }]
+				aggregate: [{ field: "netamount", aggregate: "sum" }, { field: "grossamount", aggregate: "sum" }, { field: "discountamount", aggregate: "sum" }, { field: 'pldatas.' + plcode + '.amount', aggregate: 'sum' }]
 			},
 			columns: columns,
 			pageable: true,
@@ -162,94 +158,42 @@ bkd.renderDetail = function (pnl, breakdown) {
 		$('.grid-detail').kendoGrid(config);
 	};
 
-	var pivot = $('.breakdown-view').data('kendoPivotGrid');
-	var param = bkd.getParam();
-	param[bkd.keyPLHeader()] = pnl;
-	param.filters.push({
-		Field: bkd.oldBreakdownBy(),
-		Op: "$eq",
-		Value: breakdown
-	});
-	param.note = 'pnl lvl 1';
-	app.ajaxPost('/report/GetLedgerSummaryDetail', param, function (res) {
-		var detail = res.Data.map(function (d) {
-			return {
-				ID: d.ID,
-				CostCenter: d.CC.Name,
-				Customer: d.Customer.Name,
-				Channel: d.Customer.ChannelName,
-				Branch: d.Customer.BranchName,
-				Brand: d.Product.Brand,
-				Product: d.Product.Name,
-				Year: d.Year,
-				Amount: d.Value1
-			};
-		});
+	var param = {};
+	param.PLCode = plcode;
+	param.BreakdownBy = bkd.breakdownBy();
+	param.BreakdownValue = breakdown;
+	param.filters = []; // rpt.getFilterValue()
 
-		bkd.detail(detail);
+	app.ajaxPost('/report/getpnldatadetail', param, function (res) {
+		bkd.detail(res.Data);
 		bkd.popupIsLoading(false);
 		setTimeout(render, 200);
 	}, function () {
 		bkd.popupIsLoading(false);
 	});
 };
-bkd.emptyGrid = function () {
-	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
-};
 bkd.render = function () {
-	var data = bkd.data();
-	var header = [];
 	var rows = [];
-	var total = 0;
-
-	Lazy(data).groupBy(function (d) {
-		return d[app.idAble(bkd.keyPLHeader())];
-	}).each(function (v, pnl) {
-		var i = 0;
-		var row = {
-			pnl: pnl,
-			pnlTotal: 0,
-			pnlOrder: v[0][app.idAble(bkd.keyOrder())]
-		};
-
-		var data = Lazy(v).groupBy(function (e) {
-			return $.trim(app.whenVoid(e[app.idAble(bkd.breakdownBy())], ''));
-		}).each(function (w, dimension) {
-			var key = 'value' + i;
-			var value = Lazy(w).sum(function (x) {
-				return x.value1;
-			});
-			row[key] = value;
-			header['value' + i] = dimension;
-			row.pnlTotal += value;
-			total += value;
-			i++;
-
-			if (header.filter(function (d) {
-				return d.key == key;
-			}).length == 0) {
-				header.push({
-					key: key,
-					title: dimension
-				});
-			}
+	var data = _.sortBy(bkd.data(), function (d) {
+		return d._id[app.idAble(bkd.breakdownBy())];
+	});
+	var plmodels = _.sortBy(bkd.plmodels(), function (d) {
+		return parseInt(d.OrderIndex.replace(/PL/g, ''));
+	});
+	plmodels.forEach(function (d) {
+		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
+		data.forEach(function (e) {
+			var breakdown = e._id[app.idAble(bkd.breakdownBy())];
+			var value = e[d._id];
+			row[breakdown] = value;
+			row.PNLTotal += value;
+		});
+		data.forEach(function (e) {
+			var breakdown = e._id[app.idAble(bkd.breakdownBy())];
+			var value = e[d._id] / row.PNLTotal * 100;
+			row[breakdown + ' %'] = value;
 		});
 		rows.push(row);
-	});
-
-	header = Lazy(header).sortBy(function (d) {
-		return d.title;
-	}).toArray();
-
-	rows = Lazy(rows).sortBy(function (d) {
-		return d.pnlOrder;
-	}).toArray();
-
-	rows.forEach(function (d, i) {
-		header.forEach(function (j) {
-			var percent = app.NaNable(d[j.key]) / d.pnlTotal * 100;
-			d[j.key.replace(/value/g, 'percent')] = percent;
-		});
 	});
 
 	var wrapper = app.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
@@ -273,9 +217,10 @@ bkd.render = function () {
 	var colWidth = 150;
 	var colPercentWidth = 60;
 	var totalWidth = 0;
+	var pnlTotalSum = 0;
 
-	header.forEach(function (d, i) {
-		app.newEl('th').html(app.nbspAble(d.title, 'Unnamed')).addClass('align-right').appendTo(trContent1).width(colWidth);
+	data.forEach(function (d, i) {
+		app.newEl('th').html(app.nbspAble(d._id[app.idAble(bkd.breakdownBy())], 'Uncategorized')).addClass('align-right').appendTo(trContent1).width(colWidth);
 
 		app.newEl('th').html('%').addClass('align-right cell-percentage').appendTo(trContent1).width(colPercentWidth);
 
@@ -284,23 +229,22 @@ bkd.render = function () {
 
 	tableContent.css('min-width', totalWidth);
 
-	var pnlTotalSum = 0;
-
 	rows.forEach(function (d, i) {
-		pnlTotalSum += d.pnlTotal;
+		pnlTotalSum += d.PNLTotal;
 
 		var trHeader = app.newEl('tr').appendTo(tableHeader);
 
-		app.newEl('td').html(d.pnl).appendTo(trHeader);
+		app.newEl('td').html(d.PNL).appendTo(trHeader);
 
-		var pnlTotal = kendo.toString(d.pnlTotal, 'n0');
+		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
 		app.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
 
 		var trContent = app.newEl('tr').appendTo(tableContent);
 
-		header.forEach(function (e, f) {
-			var value = kendo.toString(d[e.key], 'n0');
-			var percentage = kendo.toString(d[e.key.replace(/value/g, 'percent')], 'n0');
+		data.forEach(function (e, f) {
+			var key = e._id[app.idAble(bkd.breakdownBy())];
+			var value = kendo.toString(d[key], 'n0');
+			var percentage = kendo.toString(d[key + ' %'], 'n2');
 
 			if ($.trim(value) == '') {
 				value = 0;
@@ -309,7 +253,7 @@ bkd.render = function () {
 			var cell = app.newEl('td').html(value).addClass('align-right').appendTo(trContent);
 
 			cell.on('click', function () {
-				bkd.clickCell(d.pnl, e.title);
+				bkd.clickCell(d.PLCode, key);
 			});
 
 			app.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
@@ -337,11 +281,8 @@ bkd.render = function () {
 
 		app.newEl('td').html(percentage).addClass('align-right').appendTo(trContentTotal);
 	});
-
-	console.log("----", header);
-	console.log("----", rows);
 };
 
 $(function () {
-	bkd.refresh(true);
+	bkd.refresh(false);
 });

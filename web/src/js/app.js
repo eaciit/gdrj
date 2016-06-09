@@ -73,8 +73,8 @@ app.ajaxPost = (url, data = {}, callbackSuccess = app.noop, callbackError = app.
     let params = ko.mapping.toJSON(app.noob)
     try { params = ko.mapping.toJSON(data) } catch (err) { }
 
-    let cache = app.getPropVal(otherConfig, 'cache', '')
-    if (cache !== '') {
+    let cache = app.getPropVal(otherConfig, 'cache', false)
+    if (cache !== false) {
         if (app.hasProp(localStorage, cache)) {
             let data = JSON.parse(localStorage[cache])
             callbackSuccess(data)

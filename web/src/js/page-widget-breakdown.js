@@ -1,38 +1,32 @@
 viewModel.breakdown = new Object()
 let bkd = viewModel.breakdown
 
-bkd.keyOrder = ko.observable('plorder')
-bkd.keyPLHeader = ko.observable('plgroup3')
 bkd.contentIsLoading = ko.observable(false)
 bkd.popupIsLoading = ko.observable(false)
 bkd.title = ko.observable('P&L Analytic')
-bkd.data = ko.observableArray([])
 bkd.detail = ko.observableArray([])
 bkd.limit = ko.observable(10)
 bkd.breakdownNote = ko.observable('')
-bkd.getParam = () => {
-	let orderIndex = { field: bkd.keyOrder(), name: 'Order' }
-	let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
-	let dimensions = bkd.dimensions().concat([breakdown, orderIndex])
-	let dataPoints = bkd.dataPoints()
-	return rpt.wrapParam(dimensions, dataPoints)
-}
+
+bkd.data = ko.observableArray([])
+bkd.plmodels = ko.observableArray([])
+
 bkd.refresh = (useCache = false) => {
-	let param = $.extend(true, bkd.getParam(), {
-		breakdownBy: bkd.breakdownBy(),
-		limit: bkd.limit()
-	})
+	let param = {}
+	param.pls = []
+	param.groups = [bkd.breakdownBy()]
+	param.aggr = 'sum'
+	param.filters = [] // rpt.getFilterValue()
+	
 	bkd.oldBreakdownBy(bkd.breakdownBy())
 	bkd.contentIsLoading(true)
 
-	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
-		let data = _.sortBy(res.Data, (o, v) => 
-			parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, "")))
-
+	app.ajaxPost("/report/getpnldata", param, (res) => {
 		let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 		bkd.breakdownNote(`Last refreshed on: ${date}`)
 
-		bkd.data(data)
+		bkd.data(res.Data.Data)
+		bkd.plmodels(res.Data.PLModels)
 		bkd.emptyGrid()
 		bkd.contentIsLoading(false)
 		bkd.render()
@@ -43,28 +37,22 @@ bkd.refresh = (useCache = false) => {
 		cache: (useCache == true) ? 'breakdown chart' : false
 	})
 }
-bkd.refreshOnChange = () => {
-	// setTimeout(bkd.refresh, 100)
-}
+
 bkd.breakdownBy = ko.observable('customer.channelname')
 bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy())
 
-bkd.dimensions = ko.observableArray([
-	{ field: bkd.keyPLHeader(), name: ' ' },
-	// { field: 'plmodel.plheader2', name: ' ' },
-	// { field: 'plmodel.plheader3', name: ' ' }
-])
-bkd.dataPoints = ko.observableArray([
-	{ field: "value1", name: "value1", aggr: "sum" }
-])
-bkd.clickCell = (pnl, breakdown) => {
-	if (pnl == "Net Sales") {
-		bkd.renderDetailSalesTrans(breakdown)
-		return
-	}
+bkd.clickCell = (plcode, breakdown) => {
+	// if (pnl == "Net Sales") {
+	// 	bkd.renderDetailSalesTrans(breakdown)
+	// 	return
+	// }
 
-	bkd.renderDetail(pnl, breakdown)
+	bkd.renderDetail(plcode, breakdown)
 }
+bkd.emptyGrid = () => {
+	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
+}
+
 bkd.renderDetailSalesTrans = (breakdown) => {
 	bkd.popupIsLoading(true)
 	$('#modal-detail-ledger-summary').appendTo($('body'))
@@ -137,28 +125,34 @@ bkd.renderDetailSalesTrans = (breakdown) => {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
 	$('.grid-detail').kendoGrid(config)
 }
-bkd.renderDetail = (pnl, breakdown) => {
+bkd.renderDetail = (plcode, breakdown) => {
 	bkd.popupIsLoading(true)
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
 
 	let render = () => {
 		let columns = [
-			{ field: 'Year', width: 60, locked: true, footerTemplate: 'Total :' },
-			{ field: 'Amount', width: 80, locked: true, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => kendo.toString(d.Amount.sum, 'n0'), format: '{0:n0}', attributes: { class: 'align-right' } },
-			{ field: 'CostCenter', title: 'Cost Center', width: 250 },
-			{ field: 'Customer', width: 250 },
-			{ field: 'Channel', width: 150 },
-			{ field: 'Branch', width: 120 },
-			{ field: 'Brand', width: 100 },
-			{ field: 'Product', width: 250 },
+			{ title: 'Date', width: 120, locked: true, footerTemplate: 'Total :', template: (d) => moment(d.date.date).format('DD/MM/YYYY HH:mm'), attributes: { class: 'bold' } },
+			// { field: `pldatas.${plcode}.amount`, width: 120, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => d[`pldatas.${plcode}.amount`].sum, format: '{0:n2}', attributes: { class: 'align-right' } },
+			{ field: 'grossamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Gross</div>", footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.grossamount.sum, 'n0')}</div>`, format: '{0:n2}', attributes: { class: 'align-right' } },
+			{ field: 'discountamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Discount</div>", footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.discountamount.sum, 'n0')}</div>`, format: '{0:n2}', attributes: { class: 'align-right' } },
+			{ field: 'netamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Net Sales</div>", footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.netamount.sum, 'n0')}</div>`, format: '{0:n2}', attributes: { class: 'align-right' } },
+			{ field: 'cc.name', title: 'Cost Center', width: 250 },
+			{ field: 'customer.name', title: 'Outlet', width: 250 },
+			{ field: 'customer.branchname', title: 'Branch', width: 150 },
+			{ field: 'customer.channelname', title: 'Channel', width: 120 },
+			{ field: 'product.brand', title: 'Brand', width: 100 },
+			{ field: 'product.name', title: 'Product', width: 250 },
 		]
 		let config = {
 			dataSource: {
 				data: bkd.detail(),
 				pageSize: 5,
 				aggregate: [
-					{ field: "Amount", aggregate: "sum" }
+					{ field: "netamount", aggregate: "sum" },
+					{ field: "grossamount", aggregate: "sum" },
+					{ field: "discountamount", aggregate: "sum" },
+					{ field: `pldatas.${plcode}.amount`, aggregate: 'sum' }
 				]
 			},
 			columns: columns,
@@ -171,88 +165,38 @@ bkd.renderDetail = (pnl, breakdown) => {
 		$('.grid-detail').kendoGrid(config)
 	}
 
-	let pivot = $(`.breakdown-view`).data('kendoPivotGrid')
-	let param = bkd.getParam()
-	param[bkd.keyPLHeader()] = pnl
-	param.filters.push({
-		Field: bkd.oldBreakdownBy(),
-		Op: "$eq",
-		Value: breakdown
-	})
-	param.note = 'pnl lvl 1'
-	app.ajaxPost('/report/GetLedgerSummaryDetail', param, (res) => {
-		let detail = res.Data.map((d) => { return {
-			ID: d.ID,
-			CostCenter: d.CC.Name,
-			Customer: d.Customer.Name,
-			Channel: d.Customer.ChannelName,
-			Branch: d.Customer.BranchName,
-			Brand: d.Product.Brand,
-			Product: d.Product.Name,
-			Year: d.Year,
-			Amount: d.Value1
-		} })
+	let param = {}
+	param.PLCode = plcode
+	param.BreakdownBy = bkd.breakdownBy()
+	param.BreakdownValue = breakdown
+	param.filters = [] // rpt.getFilterValue()
 
-		bkd.detail(detail)
+	app.ajaxPost('/report/getpnldatadetail', param, (res) => {
+		bkd.detail(res.Data)
 		bkd.popupIsLoading(false)
 		setTimeout(render, 200)
 	}, () => {
 		bkd.popupIsLoading(false)
 	})
 }
-bkd.emptyGrid = () => {
-	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
-}
 bkd.render = () => {
-	let data = bkd.data()
-	let header = [] 
 	let rows = []
-	let total = 0
-
-	Lazy(data)
-		.groupBy((d) => d[app.idAble(bkd.keyPLHeader())])
-		.each((v, pnl) => {
-			let i = 0
-			let row = {
-				pnl: pnl,
-				pnlTotal: 0,
-				pnlOrder: v[0][app.idAble(bkd.keyOrder())]
-			}
-
-			let data = Lazy(v)
-				.groupBy((e) => $.trim(app.whenVoid(e[app.idAble(bkd.breakdownBy())], '')))
-				.each((w, dimension) => {
-					let key = `value${i}`
-					let value = Lazy(w).sum((x) => x.value1)
-					row[key] = value
-					header[`value${i}`] = dimension
-					row.pnlTotal += value
-					total += value
-					i++
-
-					if (header.filter((d) => d.key == key).length == 0) {
-						header.push({
-							key: key,
-							title: dimension
-						})
-					}
-				})
-			rows.push(row)
+	let data = _.sortBy(bkd.data(), (d) => d._id[app.idAble(bkd.breakdownBy())])
+	let plmodels = _.sortBy(bkd.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
+	plmodels.forEach((d) => {
+		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
+		data.forEach((e) => {
+			let breakdown = e._id[app.idAble(bkd.breakdownBy())]
+			let value = e[d._id]
+			row[breakdown] = value
+			row.PNLTotal += value
 		})
-
-	header = Lazy(header)
-		.sortBy((d) => d.title)
-		.toArray()
-
-	rows = Lazy(rows)
-		.sortBy((d) => d.pnlOrder)
-		.toArray()
-
-	rows.forEach((d, i) => {
-		header.forEach((j) => {
-			let percent = app.NaNable(d[j.key]) / d.pnlTotal * 100
-			d[j.key.replace(/value/g, 'percent')] = percent
+		data.forEach((e) => {
+			let breakdown = e._id[app.idAble(bkd.breakdownBy())]
+			let value = e[d._id] / row.PNLTotal * 100
+			row[`${breakdown} %`] = value
 		})
+		rows.push(row)
 	})
 
 	let wrapper = app.newEl('div')
@@ -293,10 +237,11 @@ bkd.render = () => {
 	let colWidth = 150
 	let colPercentWidth = 60
 	let totalWidth = 0
+	let pnlTotalSum = 0
 
-	header.forEach((d, i) => {
+	data.forEach((d, i) => {
 		app.newEl('th')
-			.html(app.nbspAble(d.title, 'Unnamed'))
+			.html(app.nbspAble(d._id[app.idAble(bkd.breakdownBy())], 'Uncategorized'))
 			.addClass('align-right')
 			.appendTo(trContent1)
 			.width(colWidth)
@@ -312,19 +257,17 @@ bkd.render = () => {
 
 	tableContent.css('min-width', totalWidth)
 
-	let pnlTotalSum = 0
-
 	rows.forEach((d, i) => {
-		pnlTotalSum += d.pnlTotal
+		pnlTotalSum += d.PNLTotal
 
 		let trHeader = app.newEl('tr')
 			.appendTo(tableHeader)
 
 		app.newEl('td')
-			.html(d.pnl)
+			.html(d.PNL)
 			.appendTo(trHeader)
 
-		let pnlTotal = kendo.toString(d.pnlTotal, 'n0')
+		let pnlTotal = kendo.toString(d.PNLTotal, 'n0')
 		app.newEl('td')
 			.html(pnlTotal)
 			.addClass('align-right')
@@ -333,9 +276,10 @@ bkd.render = () => {
 		let trContent = app.newEl('tr')
 			.appendTo(tableContent)
 
-		header.forEach((e, f) => {
-			let value = kendo.toString(d[e.key], 'n0')
-			let percentage = kendo.toString(d[e.key.replace(/value/g, 'percent')], 'n0')
+		data.forEach((e, f) => {
+			let key = e._id[app.idAble(bkd.breakdownBy())]
+			let value = kendo.toString(d[key], 'n0')
+			let percentage = kendo.toString(d[`${key} %`], 'n2')
 
 			if ($.trim(value) == '') {
 				value = 0
@@ -347,7 +291,7 @@ bkd.render = () => {
 				.appendTo(trContent)
 
 			cell.on('click', () => {
-				bkd.clickCell(d.pnl, e.title)
+				bkd.clickCell(d.PLCode, key)
 			})
 
 			app.newEl('td')
@@ -391,11 +335,8 @@ bkd.render = () => {
 			.addClass('align-right')
 			.appendTo(trContentTotal)
 	})
-
-	console.log("----", header)
-	console.log("----", rows)
 }
 
 $(() => {
-	bkd.refresh(true)
+	bkd.refresh(false)
 })

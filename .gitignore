@@ -25,3 +25,5 @@ _testmain.go
 
 node_modules
 .sass-cache
+
+config/databases.json

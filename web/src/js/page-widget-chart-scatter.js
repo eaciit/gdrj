@@ -7,131 +7,101 @@ let dataPoints = [
 rs.contentIsLoading = ko.observable(false)
 rs.title = ko.observable('P&L Analytic')
 rs.breakdownBy = ko.observable('customer.channelname')
-rs.breakDownNetSales = ko.observable('Net Sales')
-rs.pplheader = ko.observable('Direct Labor')
-rs.datascatter = ko.observableArray([])
-rs.plheader = ko.observable('plgroup3')
-rs.plheader1 = ko.observable('plgroup1')
+rs.selectedPNLNetSales = ko.observable("PL3")
+rs.selectedPNL = ko.observable("PL5")
 rs.chartComparisonNote = ko.observable('')
-
 rs.optionDimensionSelect = ko.observableArray([])
 
 rs.getSalesHeaderList = () => {
-	app.ajaxPost(`/report/GetSalesHeaderList`, {}, (res) => {
-		let data = Lazy(res)
-			.map((k, v) => { 
-				// return {field: k._id[rs.plheader1()], name: k._id[rs.plheader1()]}
-				return {field: k, name: k}
-			})
-			.toArray()
+	app.ajaxPost("/report/getplmodel", {}, (res) => {
+		let data = res.map((d) => app.o({ field: d._id, name: d.PLHeader3 }))
+			.filter((d) => d.PLHeader3 !== rs.selectedPNLNetSales())
 		rs.optionDimensionSelect(data)
-		rs.optionDimensionSelect.remove( (item) => { return item.field == rs.breakDownNetSales(); } )
-		rs.refresh(true)
-		setTimeout(() => { 
-			rs.pplheader('')
+
+		let prev = rs.selectedPNL()
+		rs.selectedPNL('')
+		setTimeout(() => {
+			rs.selectedPNL(prev)
+			rs.refresh(false)
 		}, 300)
 	})
 }
 
 rs.refresh = (useCache = false) => {
 	rs.contentIsLoading(true)
-	let dimensions = [
-		{ "field": rs.plheader(), "name": rs.plheader() },
-		{ "field": rs.breakdownBy(), "name": "Channel" },
-		{ "field": "year", "name": "Year" }
-	]
-	let dataPoints = [
-		{ field: "value1", name: "value1", aggr: "sum" }
-	]
-	let base = rpt.wrapParam(dimensions, dataPoints)
-	let param = app.clone(base)
-	param.filters.push({
-	    "Op": "$eq",
-	    "Field": rs.plheader(),
-	    "Value": rs.pplheader()
-	})
-	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
-		let dataall = Lazy(res.Data)
-			.groupBy((f) => f['year'])
-			.map((k, v) => app.o({ _id: v, data: k }))
-			.toArray()
 
-		let param = app.clone(base)
-		param.filters.push({
-		    "Op": "$eq",
-		    "Field": rs.plheader(),
-		    "Value": rs.breakDownNetSales()
-		})
+	let param1 = {}
+	param1.pls = [rs.selectedPNL()]
+	param1.groups = [rs.breakdownBy(), 'date.year']
+	param1.aggr = 'sum'
+	param1.filters = [] // rpt.getFilterValue()
+	
+	app.ajaxPost("/report/getpnldata", param1, (res1) => {
+		let date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+		rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
-		app.ajaxPost("/report/summarycalculatedatapivot", param, (res2) => {
-			let dataall2 = Lazy(res2.Data)
-				.groupBy((f) => f['year'])
-				.map((k, v) => app.o({ _id: v, data: k }))
-				.toArray()
+		let param2 = {}
+		param2.pls = [rs.selectedPNLNetSales()]
+		param2.groups = [rs.breakdownBy(), 'date.year']
+		param2.aggr = 'sum'
+		param2.filters = [] // rpt.getFilterValue()
 
-			let max = 0
-
-			rs.datascatter([])
-			let title = Lazy(rpt.optionDimensions()).findWhere({field: rs.breakdownBy()}).title
-			for (let i in dataall){
-				let currentDataAll = Lazy(dataall).findWhere({ _id: dataall[i]._id })
-				let currentDataAll2 = Lazy(dataall2).findWhere({ _id: dataall[i]._id })
-
-				let totalDataAll = Lazy(currentDataAll.data).sum((e) => e.value1)   // by breakdown
-				let totalDataAll2 = Lazy(currentDataAll2.data).sum((e) => e.value1) // by net sales
-
-				let maxNetSales = Lazy(currentDataAll2.data).max((e) => e.value1).value1
-				let percentage = totalDataAll / totalDataAll2 * 100
-				let percentageToMaxSales = percentage * maxNetSales / 100
-
-				max = Lazy([max, maxNetSales]).max((d) => d)
-				console.log('max', max, 'breakdown', totalDataAll, 'netsales', totalDataAll2, 'maxnetsales', maxNetSales, 'percentage', percentage, 'safsf', percentageToMaxSales)
-
-				for (let a in dataall[i].data){
-					rs.datascatter.push({
-						pplheader: percentageToMaxSales,
-						pplheaderPercent: percentage,
-						value1: dataall[i].data[a].value1/maxNetSales*100,
-						title: dataall[i].data[a][title],
-						header: dataall[i].data[a].plmodel_plheader1,
-						year: dataall[i].data[a].year
-					})
-					console.log('dddd ',dataall[i].data[a].value1, dataall[i].data[a].value1/maxNetSales*100, dataall[i].data[a].value1/percentageToMaxSales*100)
-				}
-				if(i == 0){
-					rs.datascatter.push({
-						pplheader: null,
-						value1: null,
-						title: '',
-						header: null
-					})
-				}
-			}
-			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+		app.ajaxPost("/report/getpnldata", param2, (res2) => {
+			let date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			rs.chartComparisonNote(`Last refreshed on: ${date}`)
-			rs.generateReport(dataall[0]._id, dataall[1]._id, max)
+
+			let dataAllPNL = res1.Data.Data
+			let dataAllPNLNetSales = res2.Data.Data
+
+			let years = _.map(_.groupBy(dataAllPNL, (d) => d._id.date_year), (v, k) => k)
+
+			let maxData = _.max(dataAllPNL.concat(dataAllPNLNetSales), (d) => d[rs.selectedPNL()])[rs.selectedPNL()]
+			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x[rs.selectedPNL()], 0)
+			let countPNL = dataAllPNL.length
+			let avgPNL = sumPNL / countPNL
+
+			let dataScatter = []
+
+			dataAllPNL.forEach((d) => {
+				dataScatter.push({
+					category: app.nbspAble(d._id[app.idAble(rs.breakdownBy())], 'Uncategorized'),
+					year: d._id.date_year,
+					scatterValue: d[rs.selectedPNL()],
+					scatterPercentage: d[rs.selectedPNL()] / maxData,
+					lineAvg: avgPNL,
+					linePercentage: avgPNL / maxData
+				})
+			})
+
+			rs.contentIsLoading(false)
+			rs.generateReport(dataScatter, years)
 		}, () => {
 			rs.contentIsLoading(false)
 		}, {
-			cache: (useCache == true) ? 'pivot chart2' : false
+			cache: (useCache == true) ? 'pivot chart' : false
 		})
+
 	}, () => {
 		rs.contentIsLoading(false)
 	}, {
-		cache: (useCache == true) ? 'pivot chart1' : false
+		cache: (useCache == true) ? 'pivot chart' : false
 	})
 }
 
-rs.calculationPercentage = (data) => {
+rs.generateReport = (data, years) => {
+	let max = _.max(_.map(data, (d) => d.linePercentage)
+		.concat(_.map(data, (d) => d.scatterPercentage)))
 
-}
+	let netSalesTite = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNLNetSales()).name
+	let breakdownTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNL()).name
 
-rs.generateReport = (year1, year2, max) => {
-	rs.contentIsLoading(false)
-    $('#scatter-view').width(rs.datascatter().length * 100)
+	console.log("-----", years, data)
+
+	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>')
+    $('#scatter-view').width(data.length * 100)
 	$("#scatter-view").kendoChart({
 		dataSource: {
-            data: rs.datascatter()
+            data: data
         },
         title: {
             text: ""
@@ -146,19 +116,19 @@ rs.generateReport = (year1, year2, max) => {
         },
 		seriesColors: ["#ff8d00", "#678900"],
         series: [{
-            name: "PPL Header",
-            field: 'pplheaderPercent',
+            name: `Percentage of ${breakdownTitle} to ${netSalesTite}`,
+            field: 'linePercentage',
 			width: 3, 
             tooltip: {
 				visible: true,
-				template: "#: dataItem.title # : #: kendo.toString(dataItem.pplheaderPercent, 'n2') # %"
+				template: `Percentage of ${breakdownTitle} - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.linePercentage, 'n2') # %`
 			},
 			markers: {
 				visible: false
 			}
         }, {
-            name: "Dimension",
-            field: "value1",
+            name: `Percentage of ${breakdownTitle}`,
+            field: "scatterPercentage",
 			width: 3, 
             opacity: 0,
             markers : {
@@ -167,7 +137,7 @@ rs.generateReport = (year1, year2, max) => {
             },
             tooltip: {
 				visible: true,
-				template: (d) => `${d.dataItem.title} on ${d.dataItem.year}: ${kendo.toString(d.value, 'n2')}`
+				template: `Percentage of ${breakdownTitle} to ${netSalesTite} at #: dataItem.year #: #: kendo.toString(dataItem.scatterPercentage, 'n2') # %`
 			},
         }],
         valueAxis: {
@@ -179,7 +149,7 @@ rs.generateReport = (year1, year2, max) => {
             },
         },
         categoryAxis: [{
-            field: 'title',
+            field: 'category',
             labels: {
             	rotation: 20
             },
@@ -187,15 +157,16 @@ rs.generateReport = (year1, year2, max) => {
 				color: '#fafafa'
 			}
 		}, {
-        	categories: [year1, year2],
-			line: { visible: false }
+        	categories: years,
+			line: {
+				visible: false
+			}
         }],
-    });
+    })
 }
 
 $(() => {
 	rpt.value.From(moment("2015-02-02").toDate())
 	rpt.value.To(moment("2016-02-02").toDate())
-	// rs.refresh()
 	rs.getSalesHeaderList()
 })
