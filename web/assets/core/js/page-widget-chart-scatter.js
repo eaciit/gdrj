@@ -77,7 +77,7 @@ rs.refresh = function () {
 					return e.value1;
 				}); // by net sales
 
-				var maxNetSales = Lazy(currentDataAll.data).max(function (e) {
+				var maxNetSales = Lazy(currentDataAll2.data).max(function (e) {
 					return e.value1;
 				}).value1;
 				var percentage = totalDataAll / totalDataAll2 * 100;
@@ -86,7 +86,6 @@ rs.refresh = function () {
 				max = Lazy([max, maxNetSales]).max(function (d) {
 					return d;
 				});
-				console.log('max', max, 'breakdown', totalDataAll, 'netsales', totalDataAll2, 'maxnetsales', maxNetSales, 'percentage', percentage, 'safsf', percentageToMaxSales);
 
 				for (var a in dataall[i].data) {
 					rs.datascatter.push({
@@ -97,7 +96,6 @@ rs.refresh = function () {
 						header: dataall[i].data[a].plmodel_plheader1,
 						year: dataall[i].data[a].year
 					});
-					console.log('asd ', dataall[i].data[a].value1, 'ddd ', dataall[i].data[a].value1 / maxNetSales * 100);
 				}
 				if (i == 0) {
 					rs.datascatter.push({

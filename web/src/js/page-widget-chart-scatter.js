@@ -77,12 +77,11 @@ rs.refresh = () => {
 				let totalDataAll = Lazy(currentDataAll.data).sum((e) => e.value1)   // by breakdown
 				let totalDataAll2 = Lazy(currentDataAll2.data).sum((e) => e.value1) // by net sales
 
-				let maxNetSales = Lazy(currentDataAll.data).max((e) => e.value1).value1
+				let maxNetSales = Lazy(currentDataAll2.data).max((e) => e.value1).value1
 				let percentage = totalDataAll / totalDataAll2 * 100
 				let percentageToMaxSales = percentage * maxNetSales / 100
 
 				max = Lazy([max, maxNetSales]).max((d) => d)
-				console.log('max', max, 'breakdown', totalDataAll, 'netsales', totalDataAll2, 'maxnetsales', maxNetSales, 'percentage', percentage, 'safsf', percentageToMaxSales)
 
 				for (let a in dataall[i].data){
 					rs.datascatter.push({
@@ -93,7 +92,6 @@ rs.refresh = () => {
 						header: dataall[i].data[a].plmodel_plheader1,
 						year: dataall[i].data[a].year
 					})
-					console.log('asd ' ,dataall[i].data[a].value1, 'ddd ', dataall[i].data[a].value1/maxNetSales*100)
 				}
 				if(i == 0){
 					rs.datascatter.push({
