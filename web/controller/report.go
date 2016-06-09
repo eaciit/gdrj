@@ -212,10 +212,26 @@ func (m *ReportController) GetDecreasedQty(r *knot.WebContext) interface{} {
 	return result
 }
 
-func (m *ReportController) GetIncreasedSales(r *knot.WebContext) interface{} {
+func (m *ReportController) GetIncreasedPrice(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	result, err := gdrj.GetIncreasedSales()
+	result, err := gdrj.GetIncreasedPrice()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return result
+}
+
+func (m *ReportController) GetOutletIDList(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := toolkit.M{}
+	if err := r.GetPayload(&payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	result, err := gdrj.GetOutletID(payload)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
