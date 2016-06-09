@@ -97,7 +97,7 @@ func GenerateDummyLedgerSummary() {
 			plmod.OrderIndex = eachPNL.GetString("OrderIndex")
 			plmod.PLHeader1 = eachPNL.GetString("PLHeader1")
 			plmod.PLHeader2 = eachPNL.GetString("PLHeader2")
-			plmod.PLHeader3 = eachPNL.GetString("PLHeader3")
+			plmod.PLHeader3 = eachPNL.GetString("PLHeader2")
 			plmod.Amount = eachPNL.GetFloat64("Amount")
 
 			totalPercentage := 0.0

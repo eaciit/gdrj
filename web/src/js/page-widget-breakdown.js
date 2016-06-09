@@ -2,7 +2,7 @@ viewModel.breakdown = new Object()
 let bkd = viewModel.breakdown
 
 bkd.keyOrder = ko.observable('plorder')//plmodel.orderindex') //plorder
-bkd.keyPLHeader1 = ko.observable('plgroup1')//plmodel.plheader1') //plgroup1
+bkd.keyPLHeader1 = ko.observable('plgroup3')//plmodel.plheader1') //plgroup1
 bkd.contentIsLoading = ko.observable(false)
 bkd.popupIsLoading = ko.observable(false)
 bkd.title = ko.observable('P&L Analytic')
