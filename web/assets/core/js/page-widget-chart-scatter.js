@@ -37,23 +37,23 @@ rs.refresh = function () {
 
 	var param1 = {};
 	param1.pls = [rs.selectedPNL()];
-	param1.groups = [bkd.breakdownBy(), 'date.year'];
+	param1.groups = [rs.breakdownBy(), 'date.year'];
 	param1.aggr = 'sum';
 	param1.filters = []; // rpt.getFilterValue()
 
 	app.ajaxPost("/report/getpnldata", param1, function (res1) {
 		var date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss");
-		bkd.breakdownNote("Last refreshed on: " + date);
+		rs.chartComparisonNote("Last refreshed on: " + date);
 
 		var param2 = {};
 		param2.pls = [rs.selectedPNLNetSales()];
-		param2.groups = [bkd.breakdownBy(), 'date.year'];
+		param2.groups = [rs.breakdownBy(), 'date.year'];
 		param2.aggr = 'sum';
 		param2.filters = []; // rpt.getFilterValue()
 
 		app.ajaxPost("/report/getpnldata", param2, function (res2) {
 			var date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss");
-			bkd.breakdownNote("Last refreshed on: " + date);
+			rs.chartComparisonNote("Last refreshed on: " + date);
 
 			var dataAllPNL = res1.Data.Data;
 			var dataAllPNLNetSales = res2.Data.Data;
@@ -89,12 +89,12 @@ rs.refresh = function () {
 			rs.contentIsLoading(false);
 			rs.generateReport(dataScatter, years);
 		}, function () {
-			bkd.contentIsLoading(false);
+			rs.contentIsLoading(false);
 		}, {
 			cache: useCache == true ? 'pivot chart' : false
 		});
 	}, function () {
-		bkd.contentIsLoading(false);
+		rs.contentIsLoading(false);
 	}, {
 		cache: useCache == true ? 'pivot chart' : false
 	});
@@ -113,6 +113,8 @@ rs.generateReport = function (data, years) {
 	var breakdownTitle = rs.optionDimensionSelect().find(function (d) {
 		return d.field == rs.selectedPNL();
 	}).name;
+
+	console.log("-----", years, data);
 
 	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>');
 	$('#scatter-view').width(data.length * 100);

@@ -32,23 +32,23 @@ rs.refresh = (useCache = false) => {
 
 	let param1 = {}
 	param1.pls = [rs.selectedPNL()]
-	param1.groups = [bkd.breakdownBy(), 'date.year']
+	param1.groups = [rs.breakdownBy(), 'date.year']
 	param1.aggr = 'sum'
 	param1.filters = [] // rpt.getFilterValue()
 	
 	app.ajaxPost("/report/getpnldata", param1, (res1) => {
 		let date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-		bkd.breakdownNote(`Last refreshed on: ${date}`)
+		rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
 		let param2 = {}
 		param2.pls = [rs.selectedPNLNetSales()]
-		param2.groups = [bkd.breakdownBy(), 'date.year']
+		param2.groups = [rs.breakdownBy(), 'date.year']
 		param2.aggr = 'sum'
 		param2.filters = [] // rpt.getFilterValue()
 
 		app.ajaxPost("/report/getpnldata", param2, (res2) => {
 			let date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-			bkd.breakdownNote(`Last refreshed on: ${date}`)
+			rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
 			let dataAllPNL = res1.Data.Data
 			let dataAllPNLNetSales = res2.Data.Data
@@ -76,13 +76,13 @@ rs.refresh = (useCache = false) => {
 			rs.contentIsLoading(false)
 			rs.generateReport(dataScatter, years)
 		}, () => {
-			bkd.contentIsLoading(false)
+			rs.contentIsLoading(false)
 		}, {
 			cache: (useCache == true) ? 'pivot chart' : false
 		})
 
 	}, () => {
-		bkd.contentIsLoading(false)
+		rs.contentIsLoading(false)
 	}, {
 		cache: (useCache == true) ? 'pivot chart' : false
 	})
@@ -94,6 +94,8 @@ rs.generateReport = (data, years) => {
 
 	let netSalesTite = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNLNetSales()).name
 	let breakdownTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNL()).name
+
+	console.log("-----", years, data)
 
 	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>')
     $('#scatter-view').width(data.length * 100)
