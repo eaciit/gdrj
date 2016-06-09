@@ -17,79 +17,97 @@ func getCursor(obj orm.IModel) dbox.ICursor {
 	return c
 }
 
+func LoadMasterToMemory() (
+	map[string]*gdrj.ProfitCenter,
+	map[string]*gdrj.CostCenter,
+	map[string]*gdrj.LedgerAccount,
+	map[string]*gdrj.Product,
+	map[string]*gdrj.Customer,
+	[]*gdrj.ProfitCenter,
+	[]*gdrj.CostCenter,
+	[]*gdrj.LedgerAccount,
+	[]*gdrj.Product,
+	[]*gdrj.Customer,
+) {
+	var e error
+	pcs := map[string]*gdrj.ProfitCenter{}
+	ccs := map[string]*gdrj.CostCenter{}
+	ledgers := map[string]*gdrj.LedgerAccount{}
+	prods := map[string]*gdrj.Product{}
+	custs := map[string]*gdrj.Customer{}
+
+	arr_pcs := []*gdrj.ProfitCenter{}
+	arr_ccs := []*gdrj.CostCenter{}
+	arr_ledgers := []*gdrj.LedgerAccount{}
+	arr_prods := []*gdrj.Product{}
+	arr_custs := []*gdrj.Customer{}
+
+	pc := new(gdrj.ProfitCenter)
+	cc := new(gdrj.CostCenter)
+	prod := new(gdrj.Product)
+	ledger := new(gdrj.LedgerAccount)
+	cust := new(gdrj.Customer)
+
+	cpc := getCursor(pc)
+	defer cpc.Close()
+	for e = cpc.Fetch(pc, 1, false); e == nil; {
+		pcs[pc.ID] = pc
+		arr_pcs = append(arr_pcs, pc)
+		pc = new(gdrj.ProfitCenter)
+		e = cpc.Fetch(pc, 1, false)
+	}
+	fmt.Println("done fetching profit center", len(arr_pcs))
+
+	ccc := getCursor(cc)
+	defer ccc.Close()
+	for e = ccc.Fetch(cc, 1, false); e == nil; {
+		ccs[cc.ID] = cc
+		arr_ccs = append(arr_ccs, cc)
+		cc = new(gdrj.CostCenter)
+		e = ccc.Fetch(cc, 1, false)
+	}
+	fmt.Println("done fetching cost center", len(arr_ccs))
+
+	cprod := getCursor(prod)
+	defer cprod.Close()
+	for e = cprod.Fetch(prod, 1, false); e == nil; {
+		prods[prod.ID] = prod
+		arr_prods = append(arr_prods, prod)
+		prod = new(gdrj.Product)
+		e = cprod.Fetch(prod, 1, false)
+	}
+	fmt.Println("done fetching product", len(arr_prods))
+
+	cledger := getCursor(ledger)
+	defer cledger.Close()
+	for e = cledger.Fetch(ledger, 1, false); e == nil; {
+		ledgers[ledger.ID] = ledger
+		arr_ledgers = append(arr_ledgers, ledger)
+		ledger = new(gdrj.LedgerAccount)
+		e = cledger.Fetch(ledger, 1, false)
+	}
+	fmt.Println("done fetching ledger account", len(arr_ledgers))
+
+	ccust := getCursor(cust)
+	defer ccust.Close()
+	for e = ccust.Fetch(cust, 1, false); e == nil; {
+		custs[cust.ID] = cust
+		arr_custs = append(arr_custs, cust)
+		cust = new(gdrj.Customer)
+		e = ccust.Fetch(cust, 1, false)
+	}
+	fmt.Println("done fetching customer", len(arr_custs))
+
+	return pcs, ccs, ledgers, prods, custs, arr_pcs, arr_ccs, arr_ledgers, arr_prods, arr_custs
+}
+
 func GenerateDummyLedgerSummary() {
 	doGenerate := func(year int) {
+		max := 1000
 		data := map[int][]toolkit.M{2015: plmodel_2015, 2016: plmodel_2016}
 
-		var e error
-		pcs := map[string]*gdrj.ProfitCenter{}
-		ccs := map[string]*gdrj.CostCenter{}
-		ledgers := map[string]*gdrj.LedgerAccount{}
-		prods := map[string]*gdrj.Product{}
-		custs := map[string]*gdrj.Customer{}
-		max := 1000
-
-		arr_pcs := []*gdrj.ProfitCenter{}
-		arr_ccs := []*gdrj.CostCenter{}
-		arr_ledgers := []*gdrj.LedgerAccount{}
-		arr_prods := []*gdrj.Product{}
-		arr_custs := []*gdrj.Customer{}
-
-		pc := new(gdrj.ProfitCenter)
-		cc := new(gdrj.CostCenter)
-		prod := new(gdrj.Product)
-		ledger := new(gdrj.LedgerAccount)
-		cust := new(gdrj.Customer)
-
-		cpc := getCursor(pc)
-		defer cpc.Close()
-		for e = cpc.Fetch(pc, 1, false); e == nil; {
-			pcs[pc.ID] = pc
-			arr_pcs = append(arr_pcs, pc)
-			pc = new(gdrj.ProfitCenter)
-			e = cpc.Fetch(pc, 1, false)
-		}
-		fmt.Println("done fetching profit center", len(arr_pcs))
-
-		ccc := getCursor(cc)
-		defer ccc.Close()
-		for e = ccc.Fetch(cc, 1, false); e == nil; {
-			ccs[cc.ID] = cc
-			arr_ccs = append(arr_ccs, cc)
-			cc = new(gdrj.CostCenter)
-			e = ccc.Fetch(cc, 1, false)
-		}
-		fmt.Println("done fetching cost center", len(arr_ccs))
-
-		cprod := getCursor(prod)
-		defer cprod.Close()
-		for e = cprod.Fetch(prod, 1, false); e == nil; {
-			prods[prod.ID] = prod
-			arr_prods = append(arr_prods, prod)
-			prod = new(gdrj.Product)
-			e = cprod.Fetch(prod, 1, false)
-		}
-		fmt.Println("done fetching product", len(arr_prods))
-
-		cledger := getCursor(ledger)
-		defer cledger.Close()
-		for e = cledger.Fetch(ledger, 1, false); e == nil; {
-			ledgers[ledger.ID] = ledger
-			arr_ledgers = append(arr_ledgers, ledger)
-			ledger = new(gdrj.LedgerAccount)
-			e = cledger.Fetch(ledger, 1, false)
-		}
-		fmt.Println("done fetching ledger account", len(arr_ledgers))
-
-		ccust := getCursor(cust)
-		defer ccust.Close()
-		for e = ccust.Fetch(cust, 1, false); e == nil; {
-			custs[cust.ID] = cust
-			arr_custs = append(arr_custs, cust)
-			cust = new(gdrj.Customer)
-			e = ccust.Fetch(cust, 1, false)
-		}
-		fmt.Println("done fetching customer", len(arr_custs))
+		pcs, ccs, ledgers, prods, custs, arr_pcs, arr_ccs, arr_ledgers, arr_prods, arr_custs := LoadMasterToMemory()
+		_, _, _, _, _, _, _, _, _ = ccs, ledgers, prods, custs, ccs, ledgers, prods, custs, arr_ledgers
 
 		for _, eachPNL := range data[year] {
 			plmod := new(gdrj.PLModel)
@@ -166,6 +184,83 @@ func GenerateDummyLedgerSummary() {
 
 	doGenerate(2015)
 	doGenerate(2016)
+}
+
+func GenerateDummySalesLinePL() {
+	doGenerate := func(year int) {
+		max := 1000
+		data := map[int][]toolkit.M{2015: plmodel_2015, 2016: plmodel_2016}
+
+		pcs, ccs, ledgers, prods, custs, arr_pcs, arr_ccs, arr_ledgers, arr_prods, arr_custs := LoadMasterToMemory()
+
+		_, _, _, _, _, _, _, _, _ = ccs, ledgers, prods, custs, ccs, ledgers, prods, custs, arr_ledgers
+
+		for i := 0; i < max; i++ {
+			date := new(gdrj.Date)
+			date.Date = time.Now()
+			date.Month = time.Month(toolkit.RandInt(12))
+			date.Quarter = toolkit.RandInt(4)
+			date.QuarterTxt = fmt.Sprintf("%v", date.Quarter)
+			date.Year = year
+			date.YearTxt = fmt.Sprintf("%v", year)
+
+			l := new(gdrj.SalesPL)
+			l.Customer = arr_custs[toolkit.RandInt(len(arr_custs))]
+			l.Product = arr_prods[toolkit.RandInt(len(arr_prods))]
+			l.CC = arr_ccs[toolkit.RandInt(len(arr_ccs))]
+			l.PC = pcs[l.Product.PCID]
+			l.Date = date
+
+			if l.PC == nil {
+				l.PC = arr_pcs[toolkit.RandInt(len(arr_pcs))]
+			}
+
+			l.SalesQty = toolkit.RandFloat(1000, 2)
+			l.GrossAmount = toolkit.RandFloat(10000, 2)
+			l.DiscountAmount = toolkit.RandFloat(10000, 2)
+			l.TaxAmount = toolkit.RandFloat(10000, 2)
+			l.NetAmount = toolkit.RandFloat(10000, 2)
+
+			l.SKUID = l.Product.ID
+			l.SKUID_VDIST = l.Product.ID
+			l.OutletID = l.Customer.ID
+
+			l.RatioToGlobalSales = toolkit.RandFloat(10, 2)
+			l.RatioToBranchSales = toolkit.RandFloat(10, 2)
+			l.RatioToBrandSales = toolkit.RandFloat(10, 2)
+			l.RatioToSKUSales = toolkit.RandFloat(10, 2)
+
+			l.PLDatas = map[string]*gdrj.PLData{}
+
+			for _, eachPNL := range data[year] {
+				pl := new(gdrj.PLData)
+				pl.PLCode = eachPNL.GetString("_id")
+				pl.Group1 = eachPNL.GetString("PLHeader1")
+				pl.Group2 = eachPNL.GetString("PLHeader2")
+				pl.Group3 = eachPNL.GetString("PLHeader2")
+				pl.Amount = eachPNL.GetFloat64("Amount")
+
+				l.PLDatas[pl.PLCode] = pl
+			}
+
+			l.Save()
+
+			fmt.Println("saved", l.Customer.ID, l.Product.ID, l.PC.ID, l.CC.ID)
+		}
+	}
+
+	doGenerate(2015)
+	doGenerate(2016)
+
+	for _, each := range plmodel_2015 {
+		plm := new(gdrj.PLModel)
+		plm.ID = each.GetString("_id")
+		plm.OrderIndex = each.GetString("OrderIndex")
+		plm.PLHeader1 = each.GetString("PLHeader1")
+		plm.PLHeader2 = each.GetString("PLHeader2")
+		plm.PLHeader3 = each.GetString("PLHeader2")
+		plm.Save()
+	}
 }
 
 var plmodel_2015 = []toolkit.M{

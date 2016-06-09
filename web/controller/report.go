@@ -4,7 +4,6 @@ import (
 	"eaciit/gdrj/model"
 	"eaciit/gdrj/web/helper"
 	"eaciit/gdrj/web/model"
-	"fmt"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -170,24 +169,6 @@ func (m *ReportController) GetDataAnalysisIdea(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, res, "")
 }
 
-func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-	res := new(toolkit.Result)
-
-	payload := new(gdrj.PivotParam)
-	if err := r.GetPayload(payload); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	data, err := gdrj.CalculateLedgerSummary(payload)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	res.SetData(data)
-
-	return res
-}
-
 func (m *ReportController) GetSalesHeaderList(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -237,21 +218,63 @@ func (m *ReportController) GetOutletIDList(r *knot.WebContext) interface{} {
 	return result
 }
 
-func (m *ReportController) GetLedgerSummaryDetail(r *knot.WebContext) interface{} {
+func (m *ReportController) GetPLModel(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	payload := new(gdrj.DetailParam)
-	if err := r.GetPayload(payload); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	data, err := gdrj.LedgerSummaryGetDetailPivot(payload)
+	result, err := gdrj.PLModelGetAll()
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
 
+	return result
+}
+
+func (m *ReportController) GetPNLData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
 	res := new(toolkit.Result)
-	fmt.Println(res)
+
+	payload := new(gdrj.SalesPLParam)
+	if err := r.GetPayload(payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	data, err := payload.GetData()
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	plmodels, err := gdrj.PLModelGetAll()
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	res.SetData(toolkit.M{
+		"Data":     data,
+		"PLModels": plmodels,
+	})
+
+	return res
+}
+
+func (m *ReportController) GetPNLDataDetail(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	res := new(toolkit.Result)
+
+	payload := new(gdrj.SalesPLDetailParam)
+	if err := r.GetPayload(payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	data, err := payload.GetData()
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
 	res.SetData(data)
 
 	return res
@@ -259,6 +282,8 @@ func (m *ReportController) GetLedgerSummaryDetail(r *knot.WebContext) interface{
 
 func (m *ReportController) GenerateRandomLedgerSummary(r *knot.WebContext) interface{} {
 	return "ok"
+
+	gocore.GenerateDummySalesLinePL()
 	gocore.GenerateDummyLedgerSummary()
 
 	return "ok"
