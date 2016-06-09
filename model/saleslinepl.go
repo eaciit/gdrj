@@ -8,6 +8,7 @@ import (
 
 type PLData struct {
 	PLCode                 string
+    PLOrder int
 	Group1, Group2, Group3 string
 	Amount                 float64
 }
