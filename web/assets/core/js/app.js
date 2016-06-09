@@ -99,8 +99,8 @@ app.ajaxPost = function (url) {
         params = ko.mapping.toJSON(data);
     } catch (err) {}
 
-    var cache = app.getPropVal(otherConfig, 'cache', '');
-    if (cache !== '') {
+    var cache = app.getPropVal(otherConfig, 'cache', false);
+    if (cache !== false) {
         if (app.hasProp(localStorage, cache)) {
             var _data = JSON.parse(localStorage[cache]);
             callbackSuccess(_data);

@@ -4,7 +4,6 @@ import (
 	"eaciit/gdrj/model"
 	"eaciit/gdrj/web/helper"
 	"eaciit/gdrj/web/model"
-	"fmt"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -230,7 +229,7 @@ func (m *ReportController) GetPLModel(r *knot.WebContext) interface{} {
 	return result
 }
 
-func (m *ReportController) CalculateData(r *knot.WebContext) interface{} {
+func (m *ReportController) GetPNLData(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	res := new(toolkit.Result)
 
@@ -253,35 +252,29 @@ func (m *ReportController) CalculateData(r *knot.WebContext) interface{} {
 	}
 
 	res.SetData(toolkit.M{
-		"data":     data,
-		"plmodels": plmodels,
+		"Data":     data,
+		"PLModels": plmodels,
 	})
 
 	return res
-	// param = {
-	//     pls: [],
-	//     groups: ["customer.channelname"],
-	//     aggr: "sum",
-	//     filters: []
-	// }
-	// app.ajaxPost("/report/calculatedata", param)
 }
 
-func (m *ReportController) GetLedgerSummaryDetail(r *knot.WebContext) interface{} {
+func (m *ReportController) GetPNLDataDetail(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
-
-	payload := new(gdrj.DetailParam)
-	if err := r.GetPayload(payload); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	data, err := gdrj.LedgerSummaryGetDetailPivot(payload)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
 	res := new(toolkit.Result)
-	fmt.Println(res)
+
+	payload := new(gdrj.SalesPLDetailParam)
+	if err := r.GetPayload(payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	data, err := payload.GetData()
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
 	res.SetData(data)
 
 	return res

@@ -137,6 +137,44 @@ func (p *SalesPLParam) ParseFilter() *dbox.Filter {
 	return dbox.And(filters...)
 }
 
+type SalesPLDetailParam struct {
+	SalesPLParam
+
+	PLCode         string `json:"plcode"`
+	BreakdownBy    string `json:"breakdownby"`
+	BreakdownValue string `json:"breakdownvalue"`
+}
+
+func (s *SalesPLDetailParam) GetData() ([]*toolkit.M, error) {
+	q := DB().Connection.NewQuery().From(new(SalesPL).TableName())
+	defer q.Close()
+
+	filter := dbox.Eq(s.BreakdownBy, s.BreakdownValue)
+	if len(s.Filters) > 0 {
+		filter = dbox.And(filter, s.ParseFilter())
+	}
+
+	q.Select("_id", "cc.name", "customer.name", "customer.channelname", "customer.branchname", "product.name", "product.brand", "date.date", fmt.Sprintf("pldatas.%s.amount", s.PLCode), "salesqty", "grossamount", "discountamount", "taxamount", "netamount")
+
+	q = q.Where(filter)
+
+	c, e := q.Cursor(nil)
+	if e != nil {
+		return nil, errors.New("SummarizedLedgerSum: Preparing cursor error " + e.Error())
+	}
+	defer c.Close()
+
+	ms := []*toolkit.M{}
+	e = c.Fetch(&ms, 0, false)
+	if e != nil {
+		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
+	}
+
+	fmt.Println("------", *(ms[0]))
+
+	return ms, nil
+}
+
 func (s *SalesPL) Save() error {
 	e := Save(s)
 	if e != nil {
