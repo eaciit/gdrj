@@ -7,9 +7,9 @@ let dataPoints = [
 rs.contentIsLoading = ko.observable(false)
 rs.title = ko.observable('P&L Analytic')
 rs.breakdownBy = ko.observable('customer.channelname')
-rs.pplheader = ko.observable('Direct Expense')
+rs.pplheader = ko.observable('Direct Labor')
 rs.datascatter = ko.observableArray([])
-rs.plheader = ko.observable('plgroup3') //plmodel.plheader1
+rs.plheader = ko.observable('plgroup1') //plmodel.plheader1
 
 rs.optionDimensionSelect = ko.observableArray([])
 
@@ -87,11 +87,12 @@ rs.refresh = () => {
 					rs.datascatter.push({
 						pplheader: percentageToMaxSales,
 						pplheaderPercent: percentage,
-						value1: dataall[i].data[a].value1,
+						value1: dataall[i].data[a].value1/maxNetSales*100,
 						title: dataall[i].data[a][title],
 						header: dataall[i].data[a].plmodel_plheader1,
 						year: dataall[i].data[a].year
 					})
+					console.log('asd ' ,dataall[i].data[a].value1, 'ddd ', dataall[i].data[a].value1/maxNetSales*100)
 				}
 				if(i == 0){
 					rs.datascatter.push({
@@ -128,7 +129,7 @@ rs.generateReport = (year1, year2, max) => {
 		seriesColors: ["#ff8d00", "#678900"],
         series: [{
             name: "PPL Header",
-            field: 'pplheader',
+            field: 'pplheaderPercent',
 			width: 3, 
             tooltip: {
 				visible: true,
@@ -148,7 +149,7 @@ rs.generateReport = (year1, year2, max) => {
             },
             tooltip: {
 				visible: true,
-				template: (d) => `${d.dataItem.title} on ${d.dataItem.year}: ${kendo.toString(d.value, 'n0')}`
+				template: (d) => `${d.dataItem.title} on ${d.dataItem.year}: ${kendo.toString(d.value, 'n2')}`
 			},
         }],
         valueAxis: {
