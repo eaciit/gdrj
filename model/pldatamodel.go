@@ -154,25 +154,135 @@ func GetPLModel(plcode, companyid string,
 	return pldatamodel
 }
 
-func getDataMapping(value string) (toolkit.M, []string, error) {
+func getData(value interface{}, aggrOp string) (toolkit.Ms, error) {
 	conn := DB().Connection
 	q := conn.NewQuery().From(new(PLDataModel).TableName()).Where(dbox.Eq("plcode", "PL08A"))
-	q = q.Group("skuid", "date.quartertxt").Aggr(dbox.AggrSum, value, "value")
+	q = q.Group("skuid", "date.quartertxt").Aggr(aggrOp, value, "value")
 	c, e := q.Cursor(nil)
 	if e != nil {
-		return nil, nil, errors.New("Preparing cursor error " + e.Error())
+		return nil, errors.New("Preparing cursor error " + e.Error())
 	}
 	defer c.Close()
-	count := c.Count()
 
 	data := toolkit.Ms{}
 	toolkit.Println("preparing to fetch")
 	t0 := time.Now()
 	e = c.Fetch(&data, 0, false)
 	if e != nil {
-		return nil, nil, errors.New("Fetch cursor error " + e.Error())
+		return nil, errors.New("Fetch cursor error " + e.Error())
 	}
-	toolkit.Printfn("Fetching %d data in %s", count, time.Since(t0).String())
+	toolkit.Printfn("Fetching %d data in %s", toolkit.SliceLen(data), time.Since(t0).String())
+
+	return data, nil
+
+}
+
+func dataRemap(data toolkit.Ms) toolkit.M {
+	value := toolkit.M{}
+	var keys []string
+	for _, k := range data {
+		_data, _ := toolkit.ToM(k["_id"])
+		id := _data.GetString("skuid") + "_" + _data.GetString("date_quartertxt")
+		value.Set(id, k["value"])
+		keys = append(keys, id)
+	}
+	sort.Strings(keys)
+
+	valueList := toolkit.M{}
+	prevSKUID := ""
+	var listVal = []float64{}
+	var count int
+	for i, key := range keys {
+		split := strings.Split(key, "_")
+		if i == 0 {
+			prevSKUID = split[0]
+		}
+		listVal = append(listVal, value.GetFloat64(key))
+		if prevSKUID == split[0] {
+			if count == 8 {
+				valueList.Set(split[0], listVal)
+			}
+		} else {
+			if prevSKUID != split[0] {
+				if count < 8 && count > 1 {
+					for i := toolkit.SliceLen(listVal); i < 8; i++ {
+						listVal = append(listVal, 0)
+					}
+					valueList.Set(split[0], listVal)
+				}
+			}
+			count = 1
+			listVal = []float64{}
+			listVal = append(listVal, value.GetFloat64(key))
+			prevSKUID = split[0]
+		}
+		count++
+	}
+
+	return valueList
+}
+
+func getPriceList(productList toolkit.M) (toolkit.Ms, error) {
+	data, err := getData("$value2", dbox.AggrAvr)
+	if err != nil {
+		return nil, errors.New("GetPriceList: Fetch cursor error " + err.Error())
+	}
+
+	priceList := dataRemap(data)
+
+	results, err := getOutletList(productList, priceList)
+	if err != nil {
+		return nil, errors.New("GetPriceList: " + err.Error())
+	}
+
+	return results, nil
+}
+
+func getOutletList(productList toolkit.M, priceList toolkit.M) (toolkit.Ms, error) {
+	data, err := getData(1, dbox.AggrSum)
+	if err != nil {
+		return nil, errors.New("GetOutletList: Fetch cursor error " + err.Error())
+	}
+
+	prods := toolkit.M{}
+	prod := new(Product)
+	cprod, err := Find(prod, nil, nil)
+	if err != nil {
+		return nil, errors.New("GetOutletList: Fetch cursor error " + err.Error())
+	}
+	defer cprod.Close()
+	for err = cprod.Fetch(prod, 1, false); err == nil; {
+		prods.Set(prod.ID, prod.Name)
+		prod = new(Product)
+		err = cprod.Fetch(prod, 1, false)
+	}
+	outletList := dataRemap(data)
+
+	/*outletList := toolkit.M{}
+	for _, k := range data {
+		_data, _ := toolkit.ToM(k["_id"])
+		outletList.Set(_data.GetString("skuid"), k["value"])
+	}*/
+
+	results := toolkit.Ms{}
+	for key := range productList {
+		result := toolkit.M{}
+		result.Set("skuid", key)
+		result.Set("productName", prods.GetString(key))
+		result.Set("qty", productList[key])
+		result.Set("price", priceList[key])
+		result.Set("outletList", outletList[key])
+		results = append(results, result)
+	}
+
+	return results, nil
+}
+
+func GetDecreasedQty() (toolkit.Ms, error) {
+	data, err := getData("$value3", dbox.AggrSum)
+	if err != nil {
+		return nil, errors.New("GetDecreasedQty: Fetch cursor error " + err.Error())
+	}
 
 	product := toolkit.M{}
 	var keys []string
@@ -182,81 +292,26 @@ func getDataMapping(value string) (toolkit.M, []string, error) {
 		product.Set(id, k["value"])
 		keys = append(keys, id)
 	}
-	toolkit.Printfn("Remapping data in %s", time.Since(t0).String())
 
 	sort.Strings(keys)
 
-	return product, keys, nil
-
-}
-
-func GetIncreasedPrice() (toolkit.Ms, error) {
-	product, keys, err := getDataMapping("$value2")
-	if err != nil {
-		return nil, errors.New("GetIncreasedPrice: Fetch cursor error " + err.Error())
-	}
-
-	results := toolkit.Ms{}
-	prevSKUID := ""
-	var prevVal float64
-	var isGreater bool
-	var listVal = []float64{}
-	var count int
-	for _, key := range keys {
-		result := toolkit.M{}
-		split := strings.Split(key, "_")
-		listVal = append(listVal, product.GetFloat64(key))
-		if prevSKUID == split[0] {
-			if isGreater == true {
-				if prevVal < product.GetFloat64(key) && product.GetFloat64(key) != 0 {
-					if count == 8 {
-						result.Set(split[0], listVal)
-						results = append(results, result)
-					} else {
-						prevVal = product.GetFloat64(key)
-					}
-				} else {
-					isGreater = false
-				}
-			}
-		} else {
-			count = 1
-			listVal = []float64{}
-			listVal = append(listVal, product.GetFloat64(key))
-			prevVal = product.GetFloat64(key)
-			prevSKUID = split[0]
-			isGreater = true
-		}
-		count++
-	}
-
-	return results, nil
-}
-
-func GetDecreasedQty() (toolkit.Ms, error) {
-	product, keys, err := getDataMapping("$value3")
-	if err != nil {
-		return nil, errors.New("GetDecreasedSales: Fetch cursor error " + err.Error())
-	}
-
-	results := toolkit.Ms{}
-	skuidList := []string{}
+	result := toolkit.M{}
 	prevSKUID := ""
 	var prevVal float64
 	var isLess bool
 	var listVal = []float64{}
 	var count int
-	for _, key := range keys {
-		result := toolkit.M{}
+	for i, key := range keys {
 		split := strings.Split(key, "_")
+		if i == 0 {
+			prevSKUID = split[0]
+		}
 		listVal = append(listVal, product.GetFloat64(key))
 		if prevSKUID == split[0] {
 			if isLess == true {
-				if prevVal > product.GetFloat64(key) && product.GetFloat64(key) != 0 {
+				if prevVal > product.GetFloat64(key) && product.GetFloat64(key) != 0 && prevVal != 0 {
 					if count == 8 {
 						result.Set(split[0], listVal)
-						skuidList = append(skuidList, split[0])
-						results = append(results, result)
 					} else {
 						prevVal = product.GetFloat64(key)
 					}
@@ -265,13 +320,11 @@ func GetDecreasedQty() (toolkit.Ms, error) {
 				}
 			}
 		} else {
-			if count < 8 && count > 2 {
+			if count < 8 && count > 1 {
 				for i := toolkit.SliceLen(listVal); i < 8; i++ {
 					listVal = append(listVal, 0)
 				}
 				result.Set(split[0], listVal)
-				skuidList = append(skuidList, split[0])
-				results = append(results, result)
 			}
 			count = 1
 			listVal = []float64{}
@@ -282,41 +335,11 @@ func GetDecreasedQty() (toolkit.Ms, error) {
 		}
 		count++
 	}
+
+	results, err := getPriceList(result)
+	if err != nil {
+		return nil, errors.New("GetDecreasedQty: " + err.Error())
+	}
+
 	return results, nil
-}
-
-func GetOutletID(payload toolkit.M) (toolkit.M, error) {
-	conn := DB().Connection
-	q := conn.NewQuery().From(new(PLDataModel).TableName()).
-		Where(dbox.And(dbox.Eq("plcode", "PL08A"), dbox.Eq("skuid", payload.GetString("skuid"))))
-	q = q.Group("date.quartertxt", "outletid")
-	c, e := q.Cursor(nil)
-	if e != nil {
-		return nil, errors.New("GetOutletID: Preparing cursor error " + e.Error())
-	}
-	defer c.Close()
-
-	data := toolkit.Ms{}
-	toolkit.Println("preparing to fetch")
-	t0 := time.Now()
-	e = c.Fetch(&data, 0, false)
-	if e != nil {
-		return nil, errors.New("GetOutletID: Fetch cursor error " + e.Error())
-	}
-	toolkit.Printfn("Fetching %d data in %s", c.Count(), time.Since(t0).String())
-
-	result := toolkit.M{}
-	for _, val := range data {
-		_data, _ := toolkit.ToM(val["_id"])
-		key := _data.GetString("date_quartertxt")
-		if result.Has(key) {
-			outletList := result[key].([]string)
-			outletList = append(outletList, _data.GetString("outletid"))
-			result.Set(key, outletList)
-		} else {
-			result.Set(key, []string{_data.GetString("outletid")})
-		}
-	}
-
-	return result, nil
 }
