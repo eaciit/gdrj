@@ -8,7 +8,7 @@ rs.contentIsLoading = ko.observable(false);
 rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
 rs.selectedPNLNetSales = ko.observable("PL3");
-rs.selectedPNL = ko.observable("PL7");
+rs.selectedPNL = ko.observable("PL74C");
 rs.chartComparisonNote = ko.observable('');
 rs.optionDimensionSelect = ko.observableArray([]);
 
