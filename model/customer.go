@@ -26,12 +26,15 @@ type Customer struct {
 	BranchName        string
 	CustAddr1         string
 	CustAddr2         string
+	IsRD 			  bool
 	DepoID            string
 	DepoName          string
 	KeyAccount        string
 	CustType          string
 	ChannelID         string
 	ChannelName       string
+	ReportChannel	  string
+	ChannelOrRD		  string
 	CustomerGroup     string
 	CustomerGroupName string
 	National          string
