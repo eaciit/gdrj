@@ -2,8 +2,9 @@ package gdrj
 
 import (
 	"fmt"
-	"github.com/eaciit/orm/v1"
 	"time"
+
+	"github.com/eaciit/orm/v1"
 )
 
 type SalesTrx struct {
@@ -15,8 +16,8 @@ type SalesTrx struct {
 	SKUID_VDIST    string
 	OutletID       string
 	Date           time.Time
-	Year, Month int
-	Fiscal string
+	Year, Month    int
+	Fiscal         string
 	SalesQty       float64
 	GrossAmount    float64
 	DiscountAmount float64

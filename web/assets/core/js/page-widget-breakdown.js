@@ -11,6 +11,7 @@ bkd.title = ko.observable('P&L Analytic');
 bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
 bkd.limit = ko.observable(10);
+bkd.breakdownNote = ko.observable('');
 bkd.getParam = function () {
 	var orderIndex = { field: bkd.keyOrder(), name: 'Order' };
 	var breakdown = rpt.optionDimensions().find(function (d) {
@@ -21,27 +22,32 @@ bkd.getParam = function () {
 	return rpt.wrapParam(dimensions, dataPoints);
 };
 bkd.refresh = function () {
+	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
 	var param = $.extend(true, bkd.getParam(), {
 		breakdownBy: bkd.breakdownBy(),
 		limit: bkd.limit()
 	});
 	bkd.oldBreakdownBy(bkd.breakdownBy());
-	// bkd.data(DATATEMP_BREAKDOWN)
 	bkd.contentIsLoading(true);
+
 	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
 		var data = _.sortBy(res.Data, function (o, v) {
 			return parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, ""));
 		});
 
-		console.log(data);
+		var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+		bkd.breakdownNote('Last refreshed on: ' + date);
+
 		bkd.data(data);
 		bkd.emptyGrid();
 		bkd.contentIsLoading(false);
 		bkd.render();
-		window.data = res.Data;
 	}, function () {
 		bkd.emptyGrid();
 		bkd.contentIsLoading(false);
+	}, {
+		cache: useCache == true ? 'breakdown chart' : false
 	});
 };
 bkd.refreshOnChange = function () {
@@ -158,7 +164,7 @@ bkd.renderDetail = function (pnl, breakdown) {
 
 	var pivot = $('.breakdown-view').data('kendoPivotGrid');
 	var param = bkd.getParam();
-	param.plheader1 = pnl;
+	param[bkd.keyPLHeader()] = pnl;
 	param.filters.push({
 		Field: bkd.oldBreakdownBy(),
 		Op: "$eq",
@@ -207,7 +213,7 @@ bkd.render = function () {
 		};
 
 		var data = Lazy(v).groupBy(function (e) {
-			return e[app.idAble(bkd.breakdownBy())];
+			return $.trim(app.whenVoid(e[app.idAble(bkd.breakdownBy())], ''));
 		}).each(function (w, dimension) {
 			var key = 'value' + i;
 			var value = Lazy(w).sum(function (x) {
@@ -265,13 +271,13 @@ bkd.render = function () {
 	var trContent1 = app.newEl('tr').appendTo(tableContent);
 
 	var colWidth = 150;
-	var colPercentWidth = 40;
+	var colPercentWidth = 60;
 	var totalWidth = 0;
 
 	header.forEach(function (d, i) {
 		app.newEl('th').html(app.nbspAble(d.title, 'Unnamed')).addClass('align-right').appendTo(trContent1).width(colWidth);
 
-		app.newEl('th').html('%').addClass('align-right').appendTo(trContent1).width(colPercentWidth);
+		app.newEl('th').html('%').addClass('align-right cell-percentage').appendTo(trContent1).width(colPercentWidth);
 
 		totalWidth += colWidth + colPercentWidth;
 	});
@@ -306,7 +312,7 @@ bkd.render = function () {
 				bkd.clickCell(d.pnl, e.title);
 			});
 
-			app.newEl('td').html(percentage).addClass('align-right').appendTo(trContent);
+			app.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
 		});
 	});
 
@@ -337,5 +343,5 @@ bkd.render = function () {
 };
 
 $(function () {
-	bkd.refresh();
+	bkd.refresh(true);
 });
