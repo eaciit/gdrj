@@ -1,10 +1,9 @@
 viewModel.app = new Object()
 let app = viewModel.app
 
-app.ajaxAutoLoader = ko.observable(true)
 app.dev = ko.observable(true)
-app.loader = ko.observable(false)
 app.noop = (() => {})
+app.noob = {}
 app.log = function () {
     if (!app.dev()) {
         return
@@ -44,25 +43,27 @@ app.length = (o) => {
 
     return o.length
 }
-app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
-    let startReq = moment()
-    let callbackScheduler = (callback) => {
-        app.loader(false)
-        callback()
+app.getPropVal = (o, key, dv = null) => {
+    if (!o.hasOwnProperty(key)) {
+        return dv
     }
 
-    if (typeof callbackSuccess == 'object') {
-        otherConfig = callbackSuccess
-        callbackSuccess = app.noop
-        callbackError = app.noop
-    } 
+    return isUndefined(d[key]) ? dv : d[key]
+}
+app.hasProp = (o, key) => o.hasOwnProperty(key)
+app.ajaxPost = (url, data = {}, callbackSuccess = app.noop, callbackError = app.noop, otherConfig = app.noob) => {
+    let startReq = moment()
 
-    if (typeof callbackError == 'object') {
-        otherConfig = callbackError
-        callbackError = app.noop
-    } 
+    let params = ko.mapping.toJSON(app.noob)
+    try { params = ko.mapping.toJSON(data) } catch (err) { }
 
-    let params = (typeof data === 'undefined') ? {} : ko.mapping.toJSON(data)
+    let cacheKey = `cache_url_${app.idAble(url)}_timestamp_${moment().format("YYYYMMDD")}`
+    if (app.getPropVal(otherConfig, 'useCache') == true) {
+        if (app.hasProp(localStorage, key)) {
+            let data = ko.mapping.toJSON(localStorage[key])
+            callbackScheduler(() => { callbackSuccess(data) })
+        }
+    }
 
     let config = {
         url: url.toLowerCase(),
@@ -71,18 +72,11 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
         contentType: 'application/json charset=utf-8',
         data: params,
         success: (a) => {
-            callbackScheduler(() => {
-                if (callbackSuccess) {
-                    callbackSuccess(a)
-                }
-            })
+            callbackSuccess(a)
+            localStorage[cacheKey] = JSON.stringify(a)
         },
         error: (a, b, c) => {
-            callbackScheduler(() => {
-                if (callbackError) {
-                    callbackError(a, b, c)
-                }
-            })
+            callbackError(a, b, c)
         }
     }
 
@@ -95,20 +89,7 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
         config.processData = false
     }
 
-    if (otherConfig != undefined) {
-        config = $.extend(true, config, otherConfig)
-    }
-
-    if (config.hasOwnProperty('withLoader')) {
-        if (config.withLoader) {
-            app.loader(true)
-        }
-    } else {
-        if (app.ajaxAutoLoader) {
-            app.loader(true)
-        }
-    }
-
+    config = $.extend(true, config, otherConfig)
     return $.ajax(config)
 }
 app.o = (raw) => raw

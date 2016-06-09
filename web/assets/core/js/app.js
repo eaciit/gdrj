@@ -5,10 +5,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 viewModel.app = new Object();
 var app = viewModel.app;
 
-app.ajaxAutoLoader = ko.observable(true);
 app.dev = ko.observable(true);
-app.loader = ko.observable(false);
 app.noop = function () {};
+app.noob = {};
 app.log = function () {
     if (!app.dev()) {
         return;
@@ -56,25 +55,42 @@ app.length = function (o) {
 
     return o.length;
 };
-app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig) {
+app.getPropVal = function (o, key) {
+    var dv = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
+
+    if (!o.hasOwnProperty(key)) {
+        return dv;
+    }
+
+    return isUndefined(d[key]) ? dv : d[key];
+};
+app.hasProp = function (o, key) {
+    return o.hasOwnProperty(key);
+};
+app.ajaxPost = function (url) {
+    var data = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var callbackSuccess = arguments.length <= 2 || arguments[2] === undefined ? app.noop : arguments[2];
+    var callbackError = arguments.length <= 3 || arguments[3] === undefined ? app.noop : arguments[3];
+    var otherConfig = arguments.length <= 4 || arguments[4] === undefined ? app.noob : arguments[4];
+
     var startReq = moment();
-    var callbackScheduler = function callbackScheduler(callback) {
-        app.loader(false);
-        callback();
-    };
 
-    if ((typeof callbackSuccess === 'undefined' ? 'undefined' : _typeof(callbackSuccess)) == 'object') {
-        otherConfig = callbackSuccess;
-        callbackSuccess = app.noop;
-        callbackError = app.noop;
+    var params = ko.mapping.toJSON(app.noob);
+    try {
+        params = ko.mapping.toJSON(data);
+    } catch (err) {}
+
+    var cacheKey = 'cache_url_' + app.idAble(url) + '_timestamp_' + moment().format("YYYYMMDD");
+    if (app.getPropVal(otherConfig, 'useCache') == true) {
+        if (app.hasProp(localStorage, key)) {
+            (function () {
+                var data = ko.mapping.toJSON(localStorage[key]);
+                callbackScheduler(function () {
+                    callbackSuccess(data);
+                });
+            })();
+        }
     }
-
-    if ((typeof callbackError === 'undefined' ? 'undefined' : _typeof(callbackError)) == 'object') {
-        otherConfig = callbackError;
-        callbackError = app.noop;
-    }
-
-    var params = typeof data === 'undefined' ? {} : ko.mapping.toJSON(data);
 
     var config = {
         url: url.toLowerCase(),
@@ -83,18 +99,11 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         contentType: 'application/json charset=utf-8',
         data: params,
         success: function success(a) {
-            callbackScheduler(function () {
-                if (callbackSuccess) {
-                    callbackSuccess(a);
-                }
-            });
+            callbackSuccess(a);
+            localStorage[cacheKey] = JSON.stringify(a);
         },
         error: function error(a, b, c) {
-            callbackScheduler(function () {
-                if (callbackError) {
-                    callbackError(a, b, c);
-                }
-            });
+            callbackError(a, b, c);
         }
     };
 
@@ -107,20 +116,7 @@ app.ajaxPost = function (url, data, callbackSuccess, callbackError, otherConfig)
         config.processData = false;
     }
 
-    if (otherConfig != undefined) {
-        config = $.extend(true, config, otherConfig);
-    }
-
-    if (config.hasOwnProperty('withLoader')) {
-        if (config.withLoader) {
-            app.loader(true);
-        }
-    } else {
-        if (app.ajaxAutoLoader) {
-            app.loader(true);
-        }
-    }
-
+    config = $.extend(true, config, otherConfig);
     return $.ajax(config);
 };
 app.o = function (raw) {
@@ -267,9 +263,9 @@ app.forEach = function (d, callback) {
     }
 
     if (d instanceof Object) {
-        for (var key in d) {
-            if (d.hasOwnProperty(key)) {
-                callback(key, d[key]);
+        for (var _key in d) {
+            if (d.hasOwnProperty(_key)) {
+                callback(_key, d[_key]);
             }
         }
     }
@@ -375,8 +371,8 @@ app.htmlDecode = function (s) {
     return elem.value;
 };
 app.runAfter = function () {
-    for (var _len = arguments.length, jobs = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        jobs[_key - 1] = arguments[_key];
+    for (var _len = arguments.length, jobs = Array(_len > 1 ? _len - 1 : 0), _key2 = 1; _key2 < _len; _key2++) {
+        jobs[_key2 - 1] = arguments[_key2];
     }
 
     var delay = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];

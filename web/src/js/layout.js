@@ -96,7 +96,6 @@ vm.prepareToggleFilter = () => {
 	})
 }
 vm.prepareLoader = () => {
-	app.loader(true)
 	$('.loader canvas').each((i, cvs) => {
 		let ctx = cvs.getContext("2d")
 		let sA = (Math.PI / 180) * 45
