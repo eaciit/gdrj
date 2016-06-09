@@ -10,10 +10,8 @@ bkd.data = ko.observableArray([])
 bkd.detail = ko.observableArray([])
 bkd.limit = ko.observable(10)
 bkd.getParam = () => {
-	let orderIndex = { field: bkd.keyOrder(), name: 'Order' }
-
 	let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
-	let dimensions = bkd.dimensions().concat([breakdown, orderIndex])
+	let dimensions = bkd.dimensions().concat([breakdown])
 	let dataPoints = bkd.dataPoints()
 	return rpt.wrapParam(dimensions, dataPoints)
 }
@@ -26,8 +24,9 @@ bkd.refresh = () => {
 	// bkd.data(DATATEMP_BREAKDOWN)
 	bkd.contentIsLoading(true)
 	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
-		let data = _.sortBy(res.Data, (o, v) => 
-			parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, "")))
+		// let data = _.sortBy(res.Data, (o, v) => 
+			// parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, "")))
+		let data = res.Data
 		bkd.data(data)
 		bkd.emptyGrid()
 		bkd.contentIsLoading(false)
@@ -210,7 +209,7 @@ bkd.render = () => {
 			let row = {
 				pnl: pnl,
 				pnlTotal: 0,
-				pnlOrder: v[0][app.idAble(bkd.keyOrder())]
+				pnlOrder: "A", // v[0][app.idAble(bkd.keyOrder())]
 			}
 
 			let data = Lazy(v)

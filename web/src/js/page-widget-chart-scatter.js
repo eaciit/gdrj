@@ -7,7 +7,7 @@ let dataPoints = [
 rs.contentIsLoading = ko.observable(false)
 rs.title = ko.observable('P&L Analytic')
 rs.breakdownBy = ko.observable('customer.channelname')
-rs.pplheader = ko.observable('EBIT')
+rs.pplheader = ko.observable('Direct Expense')
 rs.datascatter = ko.observableArray([])
 
 rs.optionDimensionSelect = ko.observableArray([])
@@ -24,9 +24,6 @@ rs.getSalesHeaderList = () => {
 		rs.refresh()
 		setTimeout(() => { 
 			rs.pplheader('')
-			setTimeout(() => {
-				rs.pplheader('EBIT')
-			}, 300)
 		}, 300)
 	})
 }

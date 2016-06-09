@@ -12,12 +12,10 @@ bkd.data = ko.observableArray([]);
 bkd.detail = ko.observableArray([]);
 bkd.limit = ko.observable(10);
 bkd.getParam = function () {
-	var orderIndex = { field: bkd.keyOrder(), name: 'Order' };
-
 	var breakdown = rpt.optionDimensions().find(function (d) {
 		return d.field == bkd.breakdownBy();
 	});
-	var dimensions = bkd.dimensions().concat([breakdown, orderIndex]);
+	var dimensions = bkd.dimensions().concat([breakdown]);
 	var dataPoints = bkd.dataPoints();
 	return rpt.wrapParam(dimensions, dataPoints);
 };
@@ -30,9 +28,9 @@ bkd.refresh = function () {
 	// bkd.data(DATATEMP_BREAKDOWN)
 	bkd.contentIsLoading(true);
 	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
-		var data = _.sortBy(res.Data, function (o, v) {
-			return parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, ""));
-		});
+		// let data = _.sortBy(res.Data, (o, v) =>
+		// parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, "")))
+		var data = res.Data;
 		bkd.data(data);
 		bkd.emptyGrid();
 		bkd.contentIsLoading(false);
@@ -201,9 +199,9 @@ bkd.render = function () {
 		var row = {
 			pnl: pnl,
 			pnlTotal: 0,
-			pnlOrder: v[0][app.idAble(bkd.keyOrder())]
-		};
+			pnlOrder: "A" };
 
+		// v[0][app.idAble(bkd.keyOrder())]
 		var data = Lazy(v).groupBy(function (e) {
 			return e[app.idAble(bkd.breakdownBy())];
 		}).each(function (w, dimension) {
