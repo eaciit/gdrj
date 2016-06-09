@@ -145,7 +145,7 @@ func GenerateDummyLedgerSummary() {
 				l.OutletID = l.Customer.ID
 				l.SKUID = l.Product.ID
 				l.PLCode = l.PLModel.ID
-				l.PLGroup1 = l.PLModel.OrderIndex
+				l.PLOrder = l.PLModel.OrderIndex
 				l.Value1 = plmod.Amount * percentage
 				l.PLGroup1 = l.PLModel.PLHeader1
 				l.PLGroup2 = l.PLModel.PLHeader2
