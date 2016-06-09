@@ -9,6 +9,7 @@ rs.title = ko.observable('P&L Analytic')
 rs.breakdownBy = ko.observable('customer.channelname')
 rs.pplheader = ko.observable('EBIT')
 rs.datascatter = ko.observableArray([])
+rs.plheader = ko.observable('plmodel.plheader1')
 
 rs.optionDimensionSelect = ko.observableArray([])
 
@@ -16,7 +17,7 @@ rs.getSalesHeaderList = () => {
 	app.ajaxPost(`/report/GetSalesHeaderList`, {}, (res) => {
 		let data = Lazy(res)
 			.map((k, v) => { 
-				return {field: k._id['plmodel.plheader1'], name: k._id['plmodel.plheader1']}
+				return {field: k._id[plheader], name: k._id[plheader]}
 			})
 			.toArray()
 		rs.optionDimensionSelect(data)
@@ -34,7 +35,7 @@ rs.getSalesHeaderList = () => {
 rs.refresh = () => {
 	rs.contentIsLoading(true)
 	let dimensions = [
-		{ "field": "plmodel.plheader1", "name": "plheader1" },
+		{ "field": plheader, "name": "plheader1" },
 		{ "field": rs.breakdownBy(), "name": "Channel" },
 		{ "field": "year", "name": "Year" }
 	]
@@ -45,7 +46,7 @@ rs.refresh = () => {
 	let param = app.clone(base)
 	param.filters.push({
 	    "Op": "$eq",
-	    "Field": "plmodel.plheader1",
+	    "Field": plheader,
 	    "Value": rs.pplheader()
 	})
 	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
@@ -57,7 +58,7 @@ rs.refresh = () => {
 		let param = app.clone(base)
 		param.filters.push({
 		    "Op": "$eq",
-		    "Field": "plmodel.plheader1",
+		    "Field": plheader,
 		    "Value": 'Net Sales'
 		})
 
