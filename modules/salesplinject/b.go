@@ -123,8 +123,9 @@ func prepMaster() {
 				return
 			}
 			
+			dt := time.Date(o.Year, time.Month(o.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0,3,0)
 			if strings.HasSuffix(o.Src,"FREIGHT"){
-				freightid := toolkit.Sprintf("%d_%d_%s", o.Year, o.Period, o.BusA)
+				freightid := toolkit.Sprintf("%d_%d_%s", dt.Year(), int(dt.Month()), o.BusA)
 				frg, exist := freights[freightid]
 				if !exist{
 					frg=new(gdrj.RawDataPL)
@@ -137,7 +138,7 @@ func prepMaster() {
 				}
 
 				groupingid:=strings.Replace(o.Grouping," - Office","",-1)
-				sgaid := toolkit.Sprintf("%d_%d", o.Year, o.Period)
+				sgaid := toolkit.Sprintf("%d_%d", dt.Year(), dt.Month())
 				asga, exist := sgas[sgaid]
 				if !exist{
 					asga = map[string]*gdrj.RawDataPL{}	
@@ -165,7 +166,8 @@ func prepMaster() {
 						apgrouping = "Gondola"
 					} 
 				}
-				promoid := toolkit.Sprintf("%d_%d_%s", o.Year, o.Period, apgrouping)
+				promoid := toolkit.Sprintf("%d_%d_%s", 
+					dt.Year(), dt.Month(), apgrouping)
 				prm, exist := promos[promoid]
 				if !exist{
 					prm=new(gdrj.RawDataPL)
