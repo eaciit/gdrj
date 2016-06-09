@@ -488,21 +488,6 @@ func (s *LedgerSummary) Save() error {
 	return e
 }
 
-func CalculatePNLLevelX(data []*toolkit.M, payload *PivotParam) []*toolkit.M {
-	if payload.Note == "pnl lvl 1" {
-
-		// 		From(data).GroupBy(func(T) T {
-		// T.(*toolkit.M).
-		// 		}, func(T) T {
-
-		// 		})
-		// data = gdrj.CalculatePNLLevel1(data, payload)
-		return data
-	}
-
-	return data
-}
-
 type DetailParam struct {
 	PivotParam
 	PLHeader1 string `json:"plheader1"`
@@ -601,9 +586,9 @@ func (p *PivotParam) ParseFilter() *dbox.Filter {
 		}
 	}
 
-	for _, each := range filters {
-		fmt.Printf(">>>> %#v\n", *each)
-	}
+	// for _, each := range filters {
+	// fmt.Printf(">>>> %#v\n", *each)
+	// }
 
 	return dbox.And(filters...)
 }
