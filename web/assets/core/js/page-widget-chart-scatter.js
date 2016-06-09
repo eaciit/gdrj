@@ -11,13 +11,15 @@ rs.breakDownNetSales = ko.observable('Net Sales');
 rs.pplheader = ko.observable('Direct Labor');
 rs.datascatter = ko.observableArray([]);
 rs.plheader = ko.observable('plgroup3');
+rs.plheader1 = ko.observable('plgroup1');
 
 rs.optionDimensionSelect = ko.observableArray([]);
 
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/GetSalesHeaderList", {}, function (res) {
 		var data = Lazy(res).map(function (k, v) {
-			return { field: k._id[rs.plheader()], name: k._id[rs.plheader()] };
+			// return {field: k._id[rs.plheader1()], name: k._id[rs.plheader1()]}
+			return { field: v, name: v };
 		}).toArray();
 		rs.optionDimensionSelect(data);
 		rs.optionDimensionSelect.remove(function (item) {
@@ -86,6 +88,7 @@ rs.refresh = function () {
 				max = Lazy([max, maxNetSales]).max(function (d) {
 					return d;
 				});
+				console.log('max', max, 'breakdown', totalDataAll, 'netsales', totalDataAll2, 'maxnetsales', maxNetSales, 'percentage', percentage, 'safsf', percentageToMaxSales);
 
 				for (var a in dataall[i].data) {
 					rs.datascatter.push({
@@ -96,6 +99,7 @@ rs.refresh = function () {
 						header: dataall[i].data[a].plmodel_plheader1,
 						year: dataall[i].data[a].year
 					});
+					console.log('dddd ', dataall[i].data[a].value1, dataall[i].data[a].value1 / maxNetSales * 100, dataall[i].data[a].value1 / percentageToMaxSales * 100);
 				}
 				if (i == 0) {
 					rs.datascatter.push({
