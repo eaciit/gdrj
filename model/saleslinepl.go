@@ -118,7 +118,7 @@ func TrxToSalesPL(conn dbox.IConnection,
 	    branchSale, _ = branchSales[pl.Customer.BranchID]
     }
 
-	if globalSales != 0 {
+    if globalSales != 0 {
 		pl.RatioToGlobalSales = pl.NetAmount / globalSales
 	}
 
@@ -221,7 +221,7 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 	pl.AddData("PL74", energyAmount, plmodels)
 	pl.AddData("Pl20", otherAmount, plmodels)
 	pl.AddData("PL21", energyAmount, plmodels)
-	pl.AddData("PL74B", cogsAmount, plmodels)
+	//pl.AddData("PL74B", cogsAmount, plmodels)
 }
 
 func (pl *SalesPL) CalcFreight(masters toolkit.M) {
@@ -288,7 +288,7 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
 	}
 	ledgers := masters.Get("ledger").(map[string]*LedgerMaster)
 	for _, raw := range raws {
-		plcode := "PL94A"
+		plcode := "PL34"
 		ledger, exist := ledgers[raw.Account]
 		if exist {
 			plcode = ledger.PLCode
