@@ -172,6 +172,7 @@ func (m *ReportController) GetDataAnalysisIdea(r *knot.WebContext) interface{} {
 
 func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+	res := new(toolkit.Result)
 
 	payload := new(gdrj.PivotParam)
 	if err := r.GetPayload(payload); err != nil {
@@ -182,9 +183,6 @@ func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interfa
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
-
-	data = gdrj.CalculatePNLLevelX(data, payload)
-	res := new(toolkit.Result)
 	res.SetData(data)
 
 	return res
@@ -260,6 +258,7 @@ func (m *ReportController) GetLedgerSummaryDetail(r *knot.WebContext) interface{
 }
 
 func (m *ReportController) GenerateRandomLedgerSummary(r *knot.WebContext) interface{} {
+	return "ok"
 	gocore.GenerateDummyLedgerSummary()
 
 	return "ok"

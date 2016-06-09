@@ -7,9 +7,10 @@ let dataPoints = [
 rs.contentIsLoading = ko.observable(false)
 rs.title = ko.observable('P&L Analytic')
 rs.breakdownBy = ko.observable('customer.channelname')
+rs.breakDownNetSales = ko.observable('Net Sales')
 rs.pplheader = ko.observable('Direct Labor')
 rs.datascatter = ko.observableArray([])
-rs.plheader = ko.observable('plgroup1') //plmodel.plheader1
+rs.plheader = ko.observable('plgroup3')
 
 rs.optionDimensionSelect = ko.observableArray([])
 
@@ -21,7 +22,7 @@ rs.getSalesHeaderList = () => {
 			})
 			.toArray()
 		rs.optionDimensionSelect(data)
-		rs.optionDimensionSelect.remove( (item) => { return item.field == 'Net Sales'; } )
+		rs.optionDimensionSelect.remove( (item) => { return item.field == rs.breakDownNetSales(); } )
 		rs.refresh()
 		setTimeout(() => { 
 			rs.pplheader('')
@@ -56,7 +57,7 @@ rs.refresh = () => {
 		param.filters.push({
 		    "Op": "$eq",
 		    "Field": rs.plheader(),
-		    "Value": 'Net Sales'
+		    "Value": rs.breakDownNetSales()
 		})
 
 		app.ajaxPost("/report/summarycalculatedatapivot", param, (res2) => {

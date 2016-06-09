@@ -7,9 +7,10 @@ var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 rs.contentIsLoading = ko.observable(false);
 rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
+rs.breakDownNetSales = ko.observable('Net Sales');
 rs.pplheader = ko.observable('Direct Labor');
 rs.datascatter = ko.observableArray([]);
-rs.plheader = ko.observable('plgroup1'); //plmodel.plheader1
+rs.plheader = ko.observable('plgroup3');
 
 rs.optionDimensionSelect = ko.observableArray([]);
 
@@ -20,7 +21,7 @@ rs.getSalesHeaderList = function () {
 		}).toArray();
 		rs.optionDimensionSelect(data);
 		rs.optionDimensionSelect.remove(function (item) {
-			return item.field == 'Net Sales';
+			return item.field == rs.breakDownNetSales();
 		});
 		rs.refresh();
 		setTimeout(function () {
@@ -51,7 +52,7 @@ rs.refresh = function () {
 		param.filters.push({
 			"Op": "$eq",
 			"Field": rs.plheader(),
-			"Value": 'Net Sales'
+			"Value": rs.breakDownNetSales()
 		});
 
 		app.ajaxPost("/report/summarycalculatedatapivot", param, function (res2) {
