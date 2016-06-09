@@ -4,6 +4,7 @@ let bkd = viewModel.breakdown
 bkd.keyOrder = ko.observable('plmodel.orderindex') //plorder
 bkd.keyPLHeader1 = ko.observable('plmodel.plheader1') //plgroup1
 bkd.contentIsLoading = ko.observable(false)
+bkd.popupIsLoading = ko.observable(false)
 bkd.title = ko.observable('P&L Analytic')
 bkd.data = ko.observableArray([])
 bkd.detail = ko.observableArray([])
@@ -57,33 +58,10 @@ bkd.clickCell = (pnl, breakdown) => {
 		return
 	}
 
-	let pivot = $(`.breakdown-view`).data('kendoPivotGrid')
-	let param = bkd.getParam()
-	param.plheader1 = pnl
-	param.filters.push({
-		Field: bkd.oldBreakdownBy(),
-		Op: "$eq",
-		Value: breakdown
-	})
-	param.note = 'pnl lvl 1'
-	app.ajaxPost('/report/GetLedgerSummaryDetail', param, (res) => {
-		let detail = res.Data.map((d) => { return {
-			ID: d.ID,
-			CostCenter: d.CC.Name,
-			Customer: d.Customer.Name,
-			Channel: d.Customer.ChannelName,
-			Branch: d.Customer.BranchName,
-			Brand: d.Product.Brand,
-			Product: d.Product.Name,
-			Year: d.Year,
-			Amount: d.Value1
-		} })
-
-		bkd.detail(detail)
-		bkd.renderDetail()
-	})
+	bkd.renderDetail(pnl, breakdown)
 }
 bkd.renderDetailSalesTrans = (breakdown) => {
+	bkd.popupIsLoading(true)
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
 
@@ -125,7 +103,13 @@ bkd.renderDetailSalesTrans = (breakdown) => {
 		                dataType: 'json',
 		                data: JSON.stringify(param),
 		                success: (res) => {
-		                    options.success(res.data)
+							bkd.popupIsLoading(false)
+							setTimeout(() => {
+								options.success(res.data)
+							}, 200)
+		                },
+		                error: () => {
+							bkd.popupIsLoading(false)
 		                }
 		            });
 		        },
@@ -148,38 +132,68 @@ bkd.renderDetailSalesTrans = (breakdown) => {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
 	$('.grid-detail').kendoGrid(config)
 }
-bkd.renderDetail = () => {
+bkd.renderDetail = (pnl, breakdown) => {
+	bkd.popupIsLoading(true)
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
 
-	let columns = [
-		{ field: 'Year', width: 60, locked: true, footerTemplate: 'Total :' },
-		{ field: 'Amount', width: 80, locked: true, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => kendo.toString(d.Amount.sum, 'n0'), format: '{0:n0}', attributes: { class: 'align-right' } },
-		{ field: 'CostCenter', title: 'Cost Center', width: 250 },
-		{ field: 'Customer', width: 250 },
-		{ field: 'Channel', width: 150 },
-		{ field: 'Branch', width: 120 },
-		{ field: 'Brand', width: 100 },
-		{ field: 'Product', width: 250 },
-	]
-	let config = {
-		dataSource: {
-			data: bkd.detail(),
-			pageSize: 5,
-			aggregate: [
-				{ field: "Amount", aggregate: "sum" }
-			]
-		},
-		columns: columns,
-		pageable: true,
-		resizable: false,
-		sortable: true
-	}
+	let render = () => {
+		let columns = [
+			{ field: 'Year', width: 60, locked: true, footerTemplate: 'Total :' },
+			{ field: 'Amount', width: 80, locked: true, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => kendo.toString(d.Amount.sum, 'n0'), format: '{0:n0}', attributes: { class: 'align-right' } },
+			{ field: 'CostCenter', title: 'Cost Center', width: 250 },
+			{ field: 'Customer', width: 250 },
+			{ field: 'Channel', width: 150 },
+			{ field: 'Branch', width: 120 },
+			{ field: 'Brand', width: 100 },
+			{ field: 'Product', width: 250 },
+		]
+		let config = {
+			dataSource: {
+				data: bkd.detail(),
+				pageSize: 5,
+				aggregate: [
+					{ field: "Amount", aggregate: "sum" }
+				]
+			},
+			columns: columns,
+			pageable: true,
+			resizable: false,
+			sortable: true
+		}
 
-	setTimeout(() => {
 		$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
 		$('.grid-detail').kendoGrid(config)
-	}, 300)
+	}
+
+	let pivot = $(`.breakdown-view`).data('kendoPivotGrid')
+	let param = bkd.getParam()
+	param.plheader1 = pnl
+	param.filters.push({
+		Field: bkd.oldBreakdownBy(),
+		Op: "$eq",
+		Value: breakdown
+	})
+	param.note = 'pnl lvl 1'
+	app.ajaxPost('/report/GetLedgerSummaryDetail', param, (res) => {
+		let detail = res.Data.map((d) => { return {
+			ID: d.ID,
+			CostCenter: d.CC.Name,
+			Customer: d.Customer.Name,
+			Channel: d.Customer.ChannelName,
+			Branch: d.Customer.BranchName,
+			Brand: d.Product.Brand,
+			Product: d.Product.Name,
+			Year: d.Year,
+			Amount: d.Value1
+		} })
+
+		bkd.detail(detail)
+		bkd.popupIsLoading(false)
+		setTimeout(render, 200)
+	}, () => {
+		bkd.popupIsLoading(false)
+	})
 }
 bkd.emptyGrid = () => {
 	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
