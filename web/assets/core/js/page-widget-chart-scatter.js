@@ -9,13 +9,14 @@ rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
 rs.pplheader = ko.observable('Direct Expense');
 rs.datascatter = ko.observableArray([]);
+rs.plheader = ko.observable('plgroup3'); //plmodel.plheader1
 
 rs.optionDimensionSelect = ko.observableArray([]);
 
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/GetSalesHeaderList", {}, function (res) {
 		var data = Lazy(res).map(function (k, v) {
-			return { field: k._id['plgroup1'], name: k._id['plgroup1'] };
+			return { field: k._id[rs.plheader()], name: k._id[rs.plheader()] };
 		}).toArray();
 		rs.optionDimensionSelect(data);
 		rs.optionDimensionSelect.remove(function (item) {
@@ -30,13 +31,13 @@ rs.getSalesHeaderList = function () {
 
 rs.refresh = function () {
 	rs.contentIsLoading(true);
-	var dimensions = [{ "field": "plgroup1", "name": "plheader1" }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
+	var dimensions = [{ "field": rs.plheader(), "name": rs.plheader() }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
 	var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 	var base = rpt.wrapParam(dimensions, dataPoints);
 	var param = app.clone(base);
 	param.filters.push({
 		"Op": "$eq",
-		"Field": "plgroup1",
+		"Field": rs.plheader(),
 		"Value": rs.pplheader()
 	});
 	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
@@ -49,7 +50,7 @@ rs.refresh = function () {
 		var param = app.clone(base);
 		param.filters.push({
 			"Op": "$eq",
-			"Field": "plgroup1",
+			"Field": rs.plheader(),
 			"Value": 'Net Sales'
 		});
 
