@@ -46,7 +46,7 @@ func (s *LedgerSummary) PrepareID() interface{} {
 }
 
 func (s *LedgerSummary) TableName() string {
-	return "ledgersummariestemp" //"ledgersummaries"// "pldatamodels" //
+	return "pldatamodels" //"ledgersummaries"// "pldatamodels" //
 
 	// 	go.eaciit.com:27123
 	// go.eaciit.com:27123
