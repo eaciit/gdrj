@@ -7,39 +7,38 @@ var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 rs.contentIsLoading = ko.observable(false);
 rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
-rs.pplheader = ko.observable('EBIT');
+rs.breakDownNetSales = ko.observable('Net Sales');
+rs.pplheader = ko.observable('Direct Labor');
 rs.datascatter = ko.observableArray([]);
+rs.plheader = ko.observable('plgroup3');
 
 rs.optionDimensionSelect = ko.observableArray([]);
 
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/GetSalesHeaderList", {}, function (res) {
 		var data = Lazy(res).map(function (k, v) {
-			return { field: k._id['plmodel.plheader1'], name: k._id['plmodel.plheader1'] };
+			return { field: k._id[rs.plheader()], name: k._id[rs.plheader()] };
 		}).toArray();
 		rs.optionDimensionSelect(data);
 		rs.optionDimensionSelect.remove(function (item) {
-			return item.field == 'Net Sales';
+			return item.field == rs.breakDownNetSales();
 		});
 		rs.refresh();
 		setTimeout(function () {
 			rs.pplheader('');
-			setTimeout(function () {
-				rs.pplheader('EBIT');
-			}, 300);
 		}, 300);
 	});
 };
 
 rs.refresh = function () {
 	rs.contentIsLoading(true);
-	var dimensions = [{ "field": "plmodel.plheader1", "name": "plheader1" }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
+	var dimensions = [{ "field": rs.plheader(), "name": rs.plheader() }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
 	var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 	var base = rpt.wrapParam(dimensions, dataPoints);
 	var param = app.clone(base);
 	param.filters.push({
 		"Op": "$eq",
-		"Field": "plmodel.plheader1",
+		"Field": rs.plheader(),
 		"Value": rs.pplheader()
 	});
 	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
@@ -52,8 +51,8 @@ rs.refresh = function () {
 		var param = app.clone(base);
 		param.filters.push({
 			"Op": "$eq",
-			"Field": "plmodel.plheader1",
-			"Value": 'Net Sales'
+			"Field": rs.plheader(),
+			"Value": rs.breakDownNetSales()
 		});
 
 		app.ajaxPost("/report/summarycalculatedatapivot", param, function (res2) {
@@ -93,11 +92,12 @@ rs.refresh = function () {
 					rs.datascatter.push({
 						pplheader: percentageToMaxSales,
 						pplheaderPercent: percentage,
-						value1: dataall[i].data[a].value1,
+						value1: dataall[i].data[a].value1 / maxNetSales * 100,
 						title: dataall[i].data[a][title],
 						header: dataall[i].data[a].plmodel_plheader1,
 						year: dataall[i].data[a].year
 					});
+					console.log('asd ', dataall[i].data[a].value1, 'ddd ', dataall[i].data[a].value1 / maxNetSales * 100);
 				}
 				if (i == 0) {
 					rs.datascatter.push({
@@ -134,7 +134,7 @@ rs.generateReport = function (year1, year2, max) {
 		seriesColors: ["#ff8d00", "#678900"],
 		series: [{
 			name: "PPL Header",
-			field: 'pplheader',
+			field: 'pplheaderPercent',
 			width: 3,
 			tooltip: {
 				visible: true,
@@ -155,7 +155,7 @@ rs.generateReport = function (year1, year2, max) {
 			tooltip: {
 				visible: true,
 				template: function template(d) {
-					return d.dataItem.title + " on " + d.dataItem.year + ": " + kendo.toString(d.value, 'n0');
+					return d.dataItem.title + " on " + d.dataItem.year + ": " + kendo.toString(d.value, 'n2');
 				}
 			}
 		}],

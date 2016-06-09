@@ -7,7 +7,6 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	"sort"
 	"strings"
 	"time"
 )
@@ -46,7 +45,7 @@ func (s *LedgerSummary) PrepareID() interface{} {
 }
 
 func (s *LedgerSummary) TableName() string {
-	return "ledgersummariestemp" //"ledgersummaries"// "pldatamodels" //
+	return "pldatamodels" //"ledgersummaries"// "pldatamodels" //
 
 	// 	go.eaciit.com:27123
 	// go.eaciit.com:27123
@@ -117,216 +116,35 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 	return
 }
 
-func GetSalesHeaderList() (toolkit.Ms, error) {
+func GetSalesHeaderList() ([]string, error) {
 	conn := DB().Connection
-	q := conn.NewQuery().From(new(LedgerSummary).TableName())
-	q = q.Group("plmodel.plheader1")
+	q := conn.NewQuery().From("plmodel")
+	q = q.Group("plheader1", "plheader2", "plheader3")
 	c, e := q.Cursor(nil)
 	if e != nil {
 		return nil, errors.New("GetSalesHeaderList: Preparing cursor error " + e.Error())
 	}
 	defer c.Close()
 
-	result := toolkit.Ms{}
-	e = c.Fetch(&result, 0, false)
+	data := toolkit.Ms{}
+	e = c.Fetch(&data, 0, false)
 	if e != nil {
 		return nil, errors.New("GetSalesHeaderList: Fetch cursor error " + e.Error())
 	}
 
+	result := []string{}
+	for _, val := range data {
+		_data, _ := toolkit.ToM(val["_id"])
+		for _, vals := range _data {
+			valString := toolkit.ToString(vals)
+			if !toolkit.HasMember(result, valString) && valString != "" {
+				result = append(result, valString)
+			}
+		}
+	}
+
 	return result, nil
 
-}
-
-func GetDecreasedQty() (toolkit.Ms, error) {
-	ls := new(LedgerSummary)
-	lsList := []*LedgerSummary{}
-
-	cls, err := Find(new(LedgerSummary), nil, nil)
-	if err != nil {
-		return nil, errors.New("GetDecreasedQty: Preparing cursor error " + err.Error())
-	}
-
-	defer cls.Close()
-
-	for err = cls.Fetch(ls, 1, false); err == nil; {
-		lsList = append(lsList, ls)
-		ls = new(LedgerSummary)
-		err = cls.Fetch(ls, 1, false)
-	}
-
-	product := toolkit.M{}
-	for _, ledSum := range lsList {
-		if ledSum.SKUID != "" {
-			id := ledSum.SKUID + "_"
-			switch {
-			case ledSum.Month >= 1 && ledSum.Month <= 3:
-				id += toolkit.ToString(ledSum.Year) + "_" + "Q1"
-				if product.Has(id) {
-					product.Set(id, product.GetFloat64(id)+ledSum.Value3)
-				} else {
-					product.Set(id, ledSum.Value3)
-				}
-			case ledSum.Month >= 4 && ledSum.Month <= 6:
-				id += toolkit.ToString(ledSum.Year) + "_" + "Q2"
-				if product.Has(id) {
-					product.Set(id, product.GetFloat64(id)+ledSum.Value3)
-				} else {
-					product.Set(id, ledSum.Value3)
-				}
-			case ledSum.Month >= 7 && ledSum.Month <= 9:
-				id += toolkit.ToString(ledSum.Year) + "_" + "Q3"
-				if product.Has(id) {
-					product.Set(id, product.GetFloat64(id)+ledSum.Value3)
-				} else {
-					product.Set(id, ledSum.Value3)
-				}
-			case ledSum.Month >= 10 && ledSum.Month <= 12:
-				id += toolkit.ToString(ledSum.Year) + "_" + "Q4"
-				if product.Has(id) {
-					product.Set(id, product.GetFloat64(id)+ledSum.Value3)
-				} else {
-					product.Set(id, ledSum.Value3)
-				}
-			}
-		}
-	}
-
-	var keys []string
-	for k := range product {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	results := toolkit.Ms{}
-	result := toolkit.M{}
-	prevSKUID := ""
-	var prevVal float64
-	var isLess bool
-	var listProd = []string{}
-	var listVal = []float64{}
-	for i, key := range keys {
-		i++
-		split := strings.Split(key, "_")
-		listVal = append(listVal, product.GetFloat64(key))
-		if prevSKUID == split[0] {
-			if isLess == true {
-				if prevVal < product.GetFloat64(key) {
-					isLess = false
-				} else {
-					if i%8 == 0 {
-						listProd = append(listProd, prevSKUID)
-						result.Set(split[0], listVal)
-						results = append(results, result)
-					} else {
-						prevVal = product.GetFloat64(key)
-					}
-				}
-			}
-		} else {
-			listVal = []float64{}
-			listVal = append(listVal, product.GetFloat64(key))
-			prevVal = product.GetFloat64(key)
-			prevSKUID = split[0]
-			isLess = true
-		}
-	}
-	return results, nil
-}
-
-func GetIncreasedSales() (toolkit.Ms, error) {
-	ls := new(LedgerSummary)
-	lsList := []*LedgerSummary{}
-
-	cls, err := Find(new(LedgerSummary), nil, nil)
-	if err != nil {
-		return nil, errors.New("GetDecreasedQty: Preparing cursor error " + err.Error())
-	}
-
-	defer cls.Close()
-
-	for err = cls.Fetch(ls, 1, false); err == nil; {
-		lsList = append(lsList, ls)
-		ls = new(LedgerSummary)
-		err = cls.Fetch(ls, 1, false)
-	}
-
-	product := toolkit.M{}
-	for _, ledSum := range lsList {
-		if ledSum.SKUID != "" {
-			id := ledSum.SKUID + "_"
-			switch {
-			case ledSum.Month >= 1 && ledSum.Month <= 3:
-				id += toolkit.ToString(ledSum.Year) + "_" + "Q1"
-				if product.Has(id) {
-					product.Set(id, product.GetFloat64(id)+ledSum.Value1)
-				} else {
-					product.Set(id, ledSum.Value1)
-				}
-			case ledSum.Month >= 4 && ledSum.Month <= 6:
-				id += toolkit.ToString(ledSum.Year) + "_" + "Q2"
-				if product.Has(id) {
-					product.Set(id, product.GetFloat64(id)+ledSum.Value1)
-				} else {
-					product.Set(id, ledSum.Value1)
-				}
-			case ledSum.Month >= 7 && ledSum.Month <= 9:
-				id += toolkit.ToString(ledSum.Year) + "_" + "Q3"
-				if product.Has(id) {
-					product.Set(id, product.GetFloat64(id)+ledSum.Value1)
-				} else {
-					product.Set(id, ledSum.Value1)
-				}
-			case ledSum.Month >= 10 && ledSum.Month <= 12:
-				id += toolkit.ToString(ledSum.Year) + "_" + "Q4"
-				if product.Has(id) {
-					product.Set(id, product.GetFloat64(id)+ledSum.Value1)
-				} else {
-					product.Set(id, ledSum.Value1)
-				}
-			}
-		}
-	}
-
-	var keys []string
-	for k := range product {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	results := toolkit.Ms{}
-	result := toolkit.M{}
-	prevSKUID := ""
-	var prevVal float64
-	var isGreater bool
-	var listProd = []string{}
-	var listVal = []float64{}
-	for i, key := range keys {
-		i++
-		split := strings.Split(key, "_")
-		listVal = append(listVal, product.GetFloat64(key))
-		if prevSKUID == split[0] {
-			if isGreater == true {
-				if prevVal > product.GetFloat64(key) {
-					isGreater = false
-				} else {
-					if i%8 == 0 {
-						listProd = append(listProd, prevSKUID)
-						result.Set(split[0], listVal)
-						results = append(results, result)
-					} else {
-						prevVal = product.GetFloat64(key)
-					}
-				}
-			}
-		} else {
-			listVal = []float64{}
-			listVal = append(listVal, product.GetFloat64(key))
-			prevVal = product.GetFloat64(key)
-			prevSKUID = split[0]
-			isGreater = true
-		}
-	}
-	return results, nil
 }
 
 func CalculateLedgerSummaryAnalysisIdea(payload *PivotParam) ([]*toolkit.M, error) {
@@ -371,67 +189,29 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 	var datapoints []string = payload.ParseDataPoints()
 	var fnTransform (func(m *toolkit.M) error) = nil
 
-	plKeys := []string{}
-	bunchesOfData := [][]*toolkit.M{}
-
-	switch payload.Which {
-	case "gross_sales_discount_and_net_sales":
-		{
-			plKeys = []string{"PL1", "PL2", "PL3"}
-			for _, plKey := range plKeys {
-				plFilter := dbox.Eq("plcode", plKey)
-				bunchData, err := SummarizeLedgerSum(
-					dbox.And(plFilter, filter), columns, datapoints, fnTransform)
-				if err != nil {
-					return nil, err
-				}
-
-				bunchesOfData = append(bunchesOfData, bunchData)
-			}
-		}
-	default:
-		{
-			bunchData, err := SummarizeLedgerSum(
-				filter, columns, datapoints, fnTransform)
-			if err != nil {
-				return nil, err
-			}
-
-			bunchesOfData = append(bunchesOfData, bunchData)
-		}
+	bunchData, err := SummarizeLedgerSum(filter, columns, datapoints, fnTransform)
+	if err != nil {
+		return nil, err
 	}
 
-	allKeys := map[string]*toolkit.M{}
 	rows := []*toolkit.M{}
 
-	for i, bunch := range bunchesOfData {
-		for _, each := range bunch {
-			keyword := ""
-			for _, s := range columns {
-				keyword = fmt.Sprintf("%s%v", keyword, each.Get("_id").(toolkit.M).Get(s))
-			}
+	for _, each := range bunchData {
+		row := toolkit.M{}
 
-			if _, ok := allKeys[keyword]; !ok {
-				allKeys[keyword] = each
-				rows = append(rows, each)
-				if i > 0 {
-					each.Set(fmt.Sprintf("value%d", i+1), each.GetFloat64("value1"))
-					each.Set("value1", 0)
-				}
-
-				for key, val := range *each {
-					if key == "_id" {
-						for skey, sval := range val.(toolkit.M) {
-							each.Set(strings.Replace(skey, ".", "_", -1), sval)
-						}
-					}
-				}
-				each.Unset("_id")
-			} else {
-				current := allKeys[keyword]
-				current.Set(fmt.Sprintf("value%d", i+1), current.GetFloat64(fmt.Sprintf("value%d", i+1))+each.GetFloat64("value1"))
-			}
+		for _, eachCol := range payload.Dimensions {
+			key := strings.Replace(eachCol.Field, ".", "_", -1)
+			val := each.Get("_id").(toolkit.M).Get(key)
+			row.Set(key, val)
 		}
+
+		for _, eachRow := range payload.DataPoints {
+			key := strings.Replace(eachRow.Field, ".", "_", -1)
+			val := each.Get(key)
+			row.Set(key, val)
+		}
+
+		rows = append(rows, &row)
 	}
 
 	return rows, nil
@@ -524,21 +304,6 @@ func (s *LedgerSummary) Save() error {
 		return errors.New(toolkit.Sprintf("[%v-%v] Error found : ", s.TableName(), "save", e.Error()))
 	}
 	return e
-}
-
-func CalculatePNLLevelX(data []*toolkit.M, payload *PivotParam) []*toolkit.M {
-	if payload.Note == "pnl lvl 1" {
-
-		// 		From(data).GroupBy(func(T) T {
-		// T.(*toolkit.M).
-		// 		}, func(T) T {
-
-		// 		})
-		// data = gdrj.CalculatePNLLevel1(data, payload)
-		return data
-	}
-
-	return data
 }
 
 type DetailParam struct {
@@ -639,9 +404,9 @@ func (p *PivotParam) ParseFilter() *dbox.Filter {
 		}
 	}
 
-	for _, each := range filters {
-		fmt.Printf(">>>> %#v\n", *each)
-	}
+	// for _, each := range filters {
+	// fmt.Printf(">>>> %#v\n", *each)
+	// }
 
 	return dbox.And(filters...)
 }

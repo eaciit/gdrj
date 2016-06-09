@@ -1,8 +1,8 @@
 viewModel.breakdown = new Object()
 let bkd = viewModel.breakdown
 
-bkd.keyOrder = ko.observable('plmodel.orderindex') //plorder
-bkd.keyPLHeader1 = ko.observable('plmodel.plheader1') //plgroup1
+bkd.keyOrder = ko.observable('plorder')
+bkd.keyPLHeader = ko.observable('plgroup3')
 bkd.contentIsLoading = ko.observable(false)
 bkd.popupIsLoading = ko.observable(false)
 bkd.title = ko.observable('P&L Analytic')
@@ -11,7 +11,6 @@ bkd.detail = ko.observableArray([])
 bkd.limit = ko.observable(10)
 bkd.getParam = () => {
 	let orderIndex = { field: bkd.keyOrder(), name: 'Order' }
-
 	let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
 	let dimensions = bkd.dimensions().concat([breakdown, orderIndex])
 	let dataPoints = bkd.dataPoints()
@@ -28,6 +27,8 @@ bkd.refresh = () => {
 	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
 		let data = _.sortBy(res.Data, (o, v) => 
 			parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, "")))
+
+		console.log(data)
 		bkd.data(data)
 		bkd.emptyGrid()
 		bkd.contentIsLoading(false)
@@ -45,7 +46,7 @@ bkd.breakdownBy = ko.observable('customer.channelname')
 bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy())
 
 bkd.dimensions = ko.observableArray([
-	{ field: bkd.keyPLHeader1(), name: ' ' },
+	{ field: bkd.keyPLHeader(), name: ' ' },
 	// { field: 'plmodel.plheader2', name: ' ' },
 	// { field: 'plmodel.plheader3', name: ' ' }
 ])
@@ -120,7 +121,8 @@ bkd.renderDetailSalesTrans = (breakdown) => {
 			    total: (d) => d.DataCount
 			},
 			serverPaging: true,
-			columns: []
+			columns: [],
+			pageSize: 5,
 		},
 		sortable: true,
         pageable: true,
@@ -204,7 +206,7 @@ bkd.render = () => {
 	let total = 0
 
 	Lazy(data)
-		.groupBy((d) => d[app.idAble(bkd.keyPLHeader1())])
+		.groupBy((d) => d[app.idAble(bkd.keyPLHeader())])
 		.each((v, pnl) => {
 			let i = 0
 			let row = {

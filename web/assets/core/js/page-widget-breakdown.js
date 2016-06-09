@@ -3,8 +3,8 @@
 viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
 
-bkd.keyOrder = ko.observable('plmodel.orderindex'); //plorder
-bkd.keyPLHeader1 = ko.observable('plmodel.plheader1'); //plgroup1
+bkd.keyOrder = ko.observable('plorder');
+bkd.keyPLHeader = ko.observable('plgroup3');
 bkd.contentIsLoading = ko.observable(false);
 bkd.popupIsLoading = ko.observable(false);
 bkd.title = ko.observable('P&L Analytic');
@@ -13,7 +13,6 @@ bkd.detail = ko.observableArray([]);
 bkd.limit = ko.observable(10);
 bkd.getParam = function () {
 	var orderIndex = { field: bkd.keyOrder(), name: 'Order' };
-
 	var breakdown = rpt.optionDimensions().find(function (d) {
 		return d.field == bkd.breakdownBy();
 	});
@@ -33,6 +32,8 @@ bkd.refresh = function () {
 		var data = _.sortBy(res.Data, function (o, v) {
 			return parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, ""));
 		});
+
+		console.log(data);
 		bkd.data(data);
 		bkd.emptyGrid();
 		bkd.contentIsLoading(false);
@@ -49,7 +50,7 @@ bkd.refreshOnChange = function () {
 bkd.breakdownBy = ko.observable('customer.channelname');
 bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy());
 
-bkd.dimensions = ko.observableArray([{ field: bkd.keyPLHeader1(), name: ' ' }]);
+bkd.dimensions = ko.observableArray([{ field: bkd.keyPLHeader(), name: ' ' }]);
 
 // { field: 'plmodel.plheader2', name: ' ' },
 // { field: 'plmodel.plheader3', name: ' ' }
@@ -118,7 +119,8 @@ bkd.renderDetailSalesTrans = function (breakdown) {
 				}
 			},
 			serverPaging: true,
-			columns: []
+			columns: [],
+			pageSize: 5
 		},
 		sortable: true,
 		pageable: true,
@@ -195,7 +197,7 @@ bkd.render = function () {
 	var total = 0;
 
 	Lazy(data).groupBy(function (d) {
-		return d[app.idAble(bkd.keyPLHeader1())];
+		return d[app.idAble(bkd.keyPLHeader())];
 	}).each(function (v, pnl) {
 		var i = 0;
 		var row = {

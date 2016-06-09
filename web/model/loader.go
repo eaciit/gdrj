@@ -97,7 +97,7 @@ func GenerateDummyLedgerSummary() {
 			plmod.OrderIndex = eachPNL.GetString("OrderIndex")
 			plmod.PLHeader1 = eachPNL.GetString("PLHeader1")
 			plmod.PLHeader2 = eachPNL.GetString("PLHeader2")
-			plmod.PLHeader3 = eachPNL.GetString("PLHeader3")
+			plmod.PLHeader3 = eachPNL.GetString("PLHeader2")
 			plmod.Amount = eachPNL.GetFloat64("Amount")
 
 			totalPercentage := 0.0
@@ -145,7 +145,7 @@ func GenerateDummyLedgerSummary() {
 				l.OutletID = l.Customer.ID
 				l.SKUID = l.Product.ID
 				l.PLCode = l.PLModel.ID
-				l.PLGroup1 = l.PLModel.OrderIndex
+				l.PLOrder = l.PLModel.OrderIndex
 				l.Value1 = plmod.Amount * percentage
 				l.PLGroup1 = l.PLModel.PLHeader1
 				l.PLGroup2 = l.PLModel.PLHeader2

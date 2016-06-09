@@ -7,8 +7,10 @@ let dataPoints = [
 rs.contentIsLoading = ko.observable(false)
 rs.title = ko.observable('P&L Analytic')
 rs.breakdownBy = ko.observable('customer.channelname')
-rs.pplheader = ko.observable('EBIT')
+rs.breakDownNetSales = ko.observable('Net Sales')
+rs.pplheader = ko.observable('Direct Labor')
 rs.datascatter = ko.observableArray([])
+rs.plheader = ko.observable('plgroup3')
 
 rs.optionDimensionSelect = ko.observableArray([])
 
@@ -16,17 +18,14 @@ rs.getSalesHeaderList = () => {
 	app.ajaxPost(`/report/GetSalesHeaderList`, {}, (res) => {
 		let data = Lazy(res)
 			.map((k, v) => { 
-				return {field: k._id['plmodel.plheader1'], name: k._id['plmodel.plheader1']}
+				return {field: k._id[rs.plheader()], name: k._id[rs.plheader()]}
 			})
 			.toArray()
 		rs.optionDimensionSelect(data)
-		rs.optionDimensionSelect.remove( (item) => { return item.field == 'Net Sales'; } )
+		rs.optionDimensionSelect.remove( (item) => { return item.field == rs.breakDownNetSales(); } )
 		rs.refresh()
 		setTimeout(() => { 
 			rs.pplheader('')
-			setTimeout(() => {
-				rs.pplheader('EBIT')
-			}, 300)
 		}, 300)
 	})
 }
@@ -34,7 +33,7 @@ rs.getSalesHeaderList = () => {
 rs.refresh = () => {
 	rs.contentIsLoading(true)
 	let dimensions = [
-		{ "field": "plmodel.plheader1", "name": "plheader1" },
+		{ "field": rs.plheader(), "name": rs.plheader() },
 		{ "field": rs.breakdownBy(), "name": "Channel" },
 		{ "field": "year", "name": "Year" }
 	]
@@ -45,7 +44,7 @@ rs.refresh = () => {
 	let param = app.clone(base)
 	param.filters.push({
 	    "Op": "$eq",
-	    "Field": "plmodel.plheader1",
+	    "Field": rs.plheader(),
 	    "Value": rs.pplheader()
 	})
 	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
@@ -57,8 +56,8 @@ rs.refresh = () => {
 		let param = app.clone(base)
 		param.filters.push({
 		    "Op": "$eq",
-		    "Field": "plmodel.plheader1",
-		    "Value": 'Net Sales'
+		    "Field": rs.plheader(),
+		    "Value": rs.breakDownNetSales()
 		})
 
 		app.ajaxPost("/report/summarycalculatedatapivot", param, (res2) => {
@@ -89,11 +88,12 @@ rs.refresh = () => {
 					rs.datascatter.push({
 						pplheader: percentageToMaxSales,
 						pplheaderPercent: percentage,
-						value1: dataall[i].data[a].value1,
+						value1: dataall[i].data[a].value1/maxNetSales*100,
 						title: dataall[i].data[a][title],
 						header: dataall[i].data[a].plmodel_plheader1,
 						year: dataall[i].data[a].year
 					})
+					console.log('asd ' ,dataall[i].data[a].value1, 'ddd ', dataall[i].data[a].value1/maxNetSales*100)
 				}
 				if(i == 0){
 					rs.datascatter.push({
@@ -130,7 +130,7 @@ rs.generateReport = (year1, year2, max) => {
 		seriesColors: ["#ff8d00", "#678900"],
         series: [{
             name: "PPL Header",
-            field: 'pplheader',
+            field: 'pplheaderPercent',
 			width: 3, 
             tooltip: {
 				visible: true,
@@ -150,7 +150,7 @@ rs.generateReport = (year1, year2, max) => {
             },
             tooltip: {
 				visible: true,
-				template: (d) => `${d.dataItem.title} on ${d.dataItem.year}: ${kendo.toString(d.value, 'n0')}`
+				template: (d) => `${d.dataItem.title} on ${d.dataItem.year}: ${kendo.toString(d.value, 'n2')}`
 			},
         }],
         valueAxis: {

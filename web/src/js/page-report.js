@@ -154,8 +154,8 @@ rpt.enableHolder = {}
 rpt.eventChange = {}
 rpt.value = {
 	HQ: ko.observable(false),
-	From: ko.observable(moment().year(2016).month(1).date(1).toDate()),
-	To: ko.observable(moment().year(2016).month(11).date(1).toDate())
+	From: ko.observable(moment().year(2014).month(1).date(1).toDate()),
+	To: ko.observable(moment().year(2017).month(11).date(1).toDate())
 }
 rpt.masterData.Type = ko.observableArray([
 	{ value: 'Mfg', text: 'Mfg' },
