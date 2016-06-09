@@ -48,8 +48,24 @@ app.getPropVal = (o, key, dv = null) => {
         return dv
     }
 
-    return isUndefined(d[key]) ? dv : d[key]
+    return app.isUndefined(o[key]) ? dv : o[key]
 }
+app.isVoid = (o) => {
+    if (app.isUndefined(o)) {
+        return true
+    }
+    if (o == null) {
+        return true
+    }
+    if (typeof o == 'string') {
+        if ($.trim(o) == '') {
+            return true
+        }
+    }
+
+    return false
+}
+app.whenVoid = (o, df = null) => app.isVoid(o) ? df : o
 app.hasProp = (o, key) => o.hasOwnProperty(key)
 app.ajaxPost = (url, data = {}, callbackSuccess = app.noop, callbackError = app.noop, otherConfig = app.noob) => {
     let startReq = moment()
@@ -57,11 +73,12 @@ app.ajaxPost = (url, data = {}, callbackSuccess = app.noop, callbackError = app.
     let params = ko.mapping.toJSON(app.noob)
     try { params = ko.mapping.toJSON(data) } catch (err) { }
 
-    let cacheKey = `cache_url_${app.idAble(url)}_timestamp_${moment().format("YYYYMMDD")}`
-    if (app.getPropVal(otherConfig, 'useCache') == true) {
-        if (app.hasProp(localStorage, key)) {
-            let data = ko.mapping.toJSON(localStorage[key])
-            callbackScheduler(() => { callbackSuccess(data) })
+    let cache = app.getPropVal(otherConfig, 'cache', '')
+    if (cache !== '') {
+        if (app.hasProp(localStorage, cache)) {
+            let data = JSON.parse(localStorage[cache])
+            callbackSuccess(data)
+            return
         }
     }
 
@@ -72,8 +89,12 @@ app.ajaxPost = (url, data = {}, callbackSuccess = app.noop, callbackError = app.
         contentType: 'application/json charset=utf-8',
         data: params,
         success: (a) => {
+            if (cache !== '') {
+                a.time = moment.now()
+                localStorage[cache] = JSON.stringify(a)
+            }
+            
             callbackSuccess(a)
-            localStorage[cacheKey] = JSON.stringify(a)
         },
         error: (a, b, c) => {
             callbackError(a, b, c)

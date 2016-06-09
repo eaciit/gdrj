@@ -9,6 +9,7 @@ bkd.title = ko.observable('P&L Analytic')
 bkd.data = ko.observableArray([])
 bkd.detail = ko.observableArray([])
 bkd.limit = ko.observable(10)
+bkd.breakdownNote = ko.observable('')
 bkd.getParam = () => {
 	let orderIndex = { field: bkd.keyOrder(), name: 'Order' }
 	let breakdown = rpt.optionDimensions().find((d) => (d.field == bkd.breakdownBy()))
@@ -16,27 +17,30 @@ bkd.getParam = () => {
 	let dataPoints = bkd.dataPoints()
 	return rpt.wrapParam(dimensions, dataPoints)
 }
-bkd.refresh = () => {
+bkd.refresh = (useCache = false) => {
 	let param = $.extend(true, bkd.getParam(), {
 		breakdownBy: bkd.breakdownBy(),
 		limit: bkd.limit()
 	})
 	bkd.oldBreakdownBy(bkd.breakdownBy())
-	// bkd.data(DATATEMP_BREAKDOWN)
 	bkd.contentIsLoading(true)
+
 	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
 		let data = _.sortBy(res.Data, (o, v) => 
 			parseInt(o[app.idAble(bkd.keyOrder())].replace(/PL/g, "")))
 
-		console.log(data)
+		let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+		bkd.breakdownNote(`Last refreshed on: ${date}`)
+
 		bkd.data(data)
 		bkd.emptyGrid()
 		bkd.contentIsLoading(false)
 		bkd.render()
-		window.data = res.Data
 	}, () => {
 		bkd.emptyGrid()
 		bkd.contentIsLoading(false)
+	}, {
+		cache: (useCache == true) ? 'breakdown chart' : false
 	})
 }
 bkd.refreshOnChange = () => {
@@ -169,7 +173,7 @@ bkd.renderDetail = (pnl, breakdown) => {
 
 	let pivot = $(`.breakdown-view`).data('kendoPivotGrid')
 	let param = bkd.getParam()
-	param.plheader1 = pnl
+	param[bkd.keyPLHeader()] = pnl
 	param.filters.push({
 		Field: bkd.oldBreakdownBy(),
 		Op: "$eq",
@@ -216,7 +220,7 @@ bkd.render = () => {
 			}
 
 			let data = Lazy(v)
-				.groupBy((e) => e[app.idAble(bkd.breakdownBy())])
+				.groupBy((e) => $.trim(app.whenVoid(e[app.idAble(bkd.breakdownBy())], '')))
 				.each((w, dimension) => {
 					let key = `value${i}`
 					let value = Lazy(w).sum((x) => x.value1)
@@ -287,7 +291,7 @@ bkd.render = () => {
 		.appendTo(tableContent)
 
 	let colWidth = 150
-	let colPercentWidth = 40
+	let colPercentWidth = 60
 	let totalWidth = 0
 
 	header.forEach((d, i) => {
@@ -299,7 +303,7 @@ bkd.render = () => {
 
 		app.newEl('th')
 			.html('%')
-			.addClass('align-right')
+			.addClass('align-right cell-percentage')
 			.appendTo(trContent1)
 			.width(colPercentWidth)
 
@@ -347,8 +351,8 @@ bkd.render = () => {
 			})
 
 			app.newEl('td')
-				.html(percentage)
-				.addClass('align-right')
+				.html(`${percentage} %`)
+				.addClass('align-right cell-percentage')
 				.appendTo(trContent)
 		})
 	})
@@ -393,5 +397,5 @@ bkd.render = () => {
 }
 
 $(() => {
-	bkd.refresh()
+	bkd.refresh(true)
 })
