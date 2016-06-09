@@ -182,5 +182,5 @@ rpt.toggleFilterCallback = () => {
 }
 
 $(() => {
-	ccr.getDecreasedQty(false)
+	// ccr.getDecreasedQty(false)
 })

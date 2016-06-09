@@ -180,6 +180,11 @@ bkd.renderDetail = (plcode, breakdown) => {
 	})
 }
 bkd.render = () => {
+	if (bkd.data().length == 0) {
+		$('.breakdown-view').html('No data found.')
+		return
+	}
+	
 	let rows = []
 	let data = _.sortBy(bkd.data(), (d) => d._id[app.idAble(bkd.breakdownBy())])
 	let plmodels = _.sortBy(bkd.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
@@ -187,13 +192,13 @@ bkd.render = () => {
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
 		data.forEach((e) => {
 			let breakdown = e._id[app.idAble(bkd.breakdownBy())]
-			let value = e[d._id]
+			let value = e[d._id]; value = app.validateNumber(value)
 			row[breakdown] = value
 			row.PNLTotal += value
 		})
 		data.forEach((e) => {
 			let breakdown = e._id[app.idAble(bkd.breakdownBy())]
-			let value = e[d._id] / row.PNLTotal * 100
+			let value = e[d._id] / row.PNLTotal * 100; value = app.validateNumber(value)
 			row[`${breakdown} %`] = value
 		})
 		rows.push(row)

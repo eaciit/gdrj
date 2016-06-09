@@ -22,6 +22,10 @@ app.error = function () {
 
     console.error.apply(console, [].slice.call(arguments));
 };
+app.validateNumber = function (d) {
+    var df = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+    return isNaN(d) || !isFinite(d) ? df : d;
+};
 app.isLastItem = function (o, d) {
     return o.indexOf(d) + 1 == o.length;
 };

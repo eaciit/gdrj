@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
+	"math"
+	"strings"
 	"time"
 )
 
@@ -75,6 +77,18 @@ func (s *SalesPLParam) GetData() ([]*toolkit.M, error) {
 	e = c.Fetch(&ms, 0, false)
 	if e != nil {
 		return nil, errors.New("SummarizedLedgerSum: Fetch cursor error " + e.Error())
+	}
+
+	for _, each := range ms {
+		for key := range *each {
+			if strings.Contains(key, "PL") {
+				val := each.GetFloat64(key)
+				if math.IsNaN(val) {
+					each.Set(key, 0)
+				}
+			}
+		}
+		fmt.Printf("------ %#v\n", each)
 	}
 
 	return ms, nil

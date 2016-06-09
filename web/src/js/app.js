@@ -18,6 +18,7 @@ app.error = function () {
 
     console.error.apply(console, [].slice.call(arguments))
 }
+app.validateNumber = (d, df = 0) => (isNaN(d) || !isFinite(d)) ? df : d
 app.isLastItem = (o, d) => (o.indexOf(d) + 1) == o.length
 app.NaNable = (o, dv = 0) => isNaN(o) ? dv : o
 app.nbspAble = (o, dv = '&nbsp;') => ($.trim(o) == '') ? dv : o
