@@ -10,7 +10,7 @@ import (
 
 type PLDataModel struct {
 	orm.ModelBase                          `bson:"-" json:"-"`
-	ID                                     string `bson:"_id"`
+	ID                                     string `bson:"_id" json:"_id"`
 	PC                                     *ProfitCenter
 	CC                                     *CostCenter
 	CompanyCode                            string
