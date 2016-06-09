@@ -32,6 +32,7 @@ type Customer struct {
 	CustType          string
 	ChannelID         string
 	ChannelName       string
+	ReportChannel     string
 	CustomerGroup     string
 	CustomerGroupName string
 	National          string
