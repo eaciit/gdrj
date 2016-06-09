@@ -12,6 +12,7 @@ rs.pplheader = ko.observable('Direct Labor')
 rs.datascatter = ko.observableArray([])
 rs.plheader = ko.observable('plgroup3')
 rs.plheader1 = ko.observable('plgroup1')
+rs.chartComparisonNote = ko.observable('')
 
 rs.optionDimensionSelect = ko.observableArray([])
 
@@ -25,14 +26,14 @@ rs.getSalesHeaderList = () => {
 			.toArray()
 		rs.optionDimensionSelect(data)
 		rs.optionDimensionSelect.remove( (item) => { return item.field == rs.breakDownNetSales(); } )
-		rs.refresh()
+		rs.refresh(true)
 		setTimeout(() => { 
 			rs.pplheader('')
 		}, 300)
 	})
 }
 
-rs.refresh = () => {
+rs.refresh = (useCache = false) => {
 	rs.contentIsLoading(true)
 	let dimensions = [
 		{ "field": rs.plheader(), "name": rs.plheader() },
@@ -106,9 +107,23 @@ rs.refresh = () => {
 					})
 				}
 			}
+			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+			rs.chartComparisonNote(`Last refreshed on: ${date}`)
 			rs.generateReport(dataall[0]._id, dataall[1]._id, max)
+		}, () => {
+			rs.contentIsLoading(false)
+		}, {
+			cache: (useCache == true) ? 'pivot chart2' : false
 		})
+	}, () => {
+		rs.contentIsLoading(false)
+	}, {
+		cache: (useCache == true) ? 'pivot chart1' : false
 	})
+}
+
+rs.calculationPercentage = (data) => {
+
 }
 
 rs.generateReport = (year1, year2, max) => {

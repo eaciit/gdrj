@@ -12,6 +12,7 @@ rs.pplheader = ko.observable('Direct Labor');
 rs.datascatter = ko.observableArray([]);
 rs.plheader = ko.observable('plgroup3');
 rs.plheader1 = ko.observable('plgroup1');
+rs.chartComparisonNote = ko.observable('');
 
 rs.optionDimensionSelect = ko.observableArray([]);
 
@@ -25,7 +26,7 @@ rs.getSalesHeaderList = function () {
 		rs.optionDimensionSelect.remove(function (item) {
 			return item.field == rs.breakDownNetSales();
 		});
-		rs.refresh();
+		rs.refresh(true);
 		setTimeout(function () {
 			rs.pplheader('');
 		}, 300);
@@ -33,6 +34,8 @@ rs.getSalesHeaderList = function () {
 };
 
 rs.refresh = function () {
+	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
 	rs.contentIsLoading(true);
 	var dimensions = [{ "field": rs.plheader(), "name": rs.plheader() }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
 	var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
@@ -110,10 +113,22 @@ rs.refresh = function () {
 					});
 				}
 			}
+			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+			rs.chartComparisonNote("Last refreshed on: " + date);
 			rs.generateReport(dataall[0]._id, dataall[1]._id, max);
+		}, function () {
+			rs.contentIsLoading(false);
+		}, {
+			cache: useCache == true ? 'pivot chart2' : false
 		});
+	}, function () {
+		rs.contentIsLoading(false);
+	}, {
+		cache: useCache == true ? 'pivot chart1' : false
 	});
 };
+
+rs.calculationPercentage = function (data) {};
 
 rs.generateReport = function (year1, year2, max) {
 	rs.contentIsLoading(false);

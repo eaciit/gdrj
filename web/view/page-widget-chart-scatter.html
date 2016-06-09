@@ -19,7 +19,7 @@
 					</div>
 					<div class="clearfix"></div>
 				</div>
-				<button class="btn btn-sm btn-primary" data-bind="click: rs.refresh">
+				<button class="btn btn-sm btn-primary" data-bind="click: function(){rs.refresh(false)}">
 					<i class="fa fa-refresh"></i>
 				</button>
 			</div>
@@ -33,6 +33,7 @@
 
 		<div class="scatter-view-container" data-bind="visible: !rs.contentIsLoading()">
 			<div id="scatter-view" style="height: 350px;"></div>
+        	<div class="small-note" data-bind="text: rs.chartComparisonNote"></div>
 		</div>
 	</div>
 </div>
