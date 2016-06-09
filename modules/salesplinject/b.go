@@ -279,6 +279,8 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string){
 	var j *gdrj.SalesTrx
 	for j = range jobs{
 		spl := gdrj.TrxToSalesPL(workerConn, j, masters)
+		workerConn.NewQuery().From(spl.TableName()).
+			Save().Exec(toolkit.M{}.Set("data",spl))
 		result <- spl.ID
 	}
 }
