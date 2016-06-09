@@ -7,15 +7,16 @@ var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 rs.contentIsLoading = ko.observable(false);
 rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
-rs.pplheader = ko.observable('EBIT');
+rs.pplheader = ko.observable('Direct Expense');
 rs.datascatter = ko.observableArray([]);
+rs.plheader = ko.observable('plgroup3'); //plmodel.plheader1
 
 rs.optionDimensionSelect = ko.observableArray([]);
 
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/GetSalesHeaderList", {}, function (res) {
 		var data = Lazy(res).map(function (k, v) {
-			return { field: k._id['plmodel.plheader1'], name: k._id['plmodel.plheader1'] };
+			return { field: k._id[rs.plheader()], name: k._id[rs.plheader()] };
 		}).toArray();
 		rs.optionDimensionSelect(data);
 		rs.optionDimensionSelect.remove(function (item) {
@@ -24,22 +25,19 @@ rs.getSalesHeaderList = function () {
 		rs.refresh();
 		setTimeout(function () {
 			rs.pplheader('');
-			setTimeout(function () {
-				rs.pplheader('EBIT');
-			}, 300);
 		}, 300);
 	});
 };
 
 rs.refresh = function () {
 	rs.contentIsLoading(true);
-	var dimensions = [{ "field": "plmodel.plheader1", "name": "plheader1" }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
+	var dimensions = [{ "field": rs.plheader(), "name": rs.plheader() }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
 	var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 	var base = rpt.wrapParam(dimensions, dataPoints);
 	var param = app.clone(base);
 	param.filters.push({
 		"Op": "$eq",
-		"Field": "plmodel.plheader1",
+		"Field": rs.plheader(),
 		"Value": rs.pplheader()
 	});
 	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
@@ -52,7 +50,7 @@ rs.refresh = function () {
 		var param = app.clone(base);
 		param.filters.push({
 			"Op": "$eq",
-			"Field": "plmodel.plheader1",
+			"Field": rs.plheader(),
 			"Value": 'Net Sales'
 		});
 

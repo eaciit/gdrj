@@ -2,6 +2,7 @@ package gocore
 
 import (
 	"eaciit/gdrj/model"
+	"fmt"
 	"github.com/eaciit/acl"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
@@ -19,6 +20,11 @@ func (l *Login) GetConnectionInfo(db_type string) (string, *dbox.ConnectionInfo)
 		}
 	}
 	setting.Set("timeout", 3600)
+
+	if setting.GetString("_id") == "db_acl" {
+		setting.Set("timeout", 3)
+		fmt.Printf("++++ %#v\n", setting)
+	}
 
 	ci := dbox.ConnectionInfo{
 		conf.GetString("host"),

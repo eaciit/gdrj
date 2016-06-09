@@ -45,7 +45,7 @@ func (s *LedgerSummary) PrepareID() interface{} {
 }
 
 func (s *LedgerSummary) TableName() string {
-	return "ledgersummariestemp" //"ledgersummaries"// "pldatamodels" //
+	return "pldatamodels" //"ledgersummaries"// "pldatamodels" //
 
 	// 	go.eaciit.com:27123
 	// go.eaciit.com:27123
@@ -118,8 +118,8 @@ func GetLedgerSummaryByDetail(LedgerAccount, PCID, CCID, OutletID, SKUID string,
 
 func GetSalesHeaderList() (toolkit.Ms, error) {
 	conn := DB().Connection
-	q := conn.NewQuery().From(new(LedgerSummary).TableName())
-	q = q.Group("plmodel.plheader1")
+	q := conn.NewQuery().From("plmodel")
+	q = q.Group("plheader1")
 	c, e := q.Cursor(nil)
 	if e != nil {
 		return nil, errors.New("GetSalesHeaderList: Preparing cursor error " + e.Error())
@@ -181,6 +181,8 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 	plKeys := []string{}
 	bunchesOfData := [][]*toolkit.M{}
 
+	fmt.Println("hhhh")
+
 	switch payload.Which {
 	case "gross_sales_discount_and_net_sales":
 		{
@@ -211,6 +213,8 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 	allKeys := map[string]*toolkit.M{}
 	rows := []*toolkit.M{}
 
+	fmt.Println("ssss")
+
 	for i, bunch := range bunchesOfData {
 		for _, each := range bunch {
 			keyword := ""
@@ -240,6 +244,8 @@ func CalculateLedgerSummary(payload *PivotParam) ([]*toolkit.M, error) {
 			}
 		}
 	}
+
+	fmt.Println("gggg")
 
 	return rows, nil
 }
