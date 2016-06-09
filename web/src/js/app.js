@@ -1,10 +1,9 @@
 viewModel.app = new Object()
 let app = viewModel.app
 
-app.ajaxAutoLoader = ko.observable(true)
 app.dev = ko.observable(true)
-app.loader = ko.observable(false)
 app.noop = (() => {})
+app.noob = {}
 app.log = function () {
     if (!app.dev()) {
         return
@@ -44,25 +43,44 @@ app.length = (o) => {
 
     return o.length
 }
-app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
-    let startReq = moment()
-    let callbackScheduler = (callback) => {
-        app.loader(false)
-        callback()
+app.getPropVal = (o, key, dv = null) => {
+    if (!o.hasOwnProperty(key)) {
+        return dv
     }
 
-    if (typeof callbackSuccess == 'object') {
-        otherConfig = callbackSuccess
-        callbackSuccess = app.noop
-        callbackError = app.noop
-    } 
+    return app.isUndefined(o[key]) ? dv : o[key]
+}
+app.isVoid = (o) => {
+    if (app.isUndefined(o)) {
+        return true
+    }
+    if (o == null) {
+        return true
+    }
+    if (typeof o == 'string') {
+        if ($.trim(o) == '') {
+            return true
+        }
+    }
 
-    if (typeof callbackError == 'object') {
-        otherConfig = callbackError
-        callbackError = app.noop
-    } 
+    return false
+}
+app.whenVoid = (o, df = null) => app.isVoid(o) ? df : o
+app.hasProp = (o, key) => o.hasOwnProperty(key)
+app.ajaxPost = (url, data = {}, callbackSuccess = app.noop, callbackError = app.noop, otherConfig = app.noob) => {
+    let startReq = moment()
 
-    let params = (typeof data === 'undefined') ? {} : ko.mapping.toJSON(data)
+    let params = ko.mapping.toJSON(app.noob)
+    try { params = ko.mapping.toJSON(data) } catch (err) { }
+
+    let cache = app.getPropVal(otherConfig, 'cache', '')
+    if (cache !== '') {
+        if (app.hasProp(localStorage, cache)) {
+            let data = JSON.parse(localStorage[cache])
+            callbackSuccess(data)
+            return
+        }
+    }
 
     let config = {
         url: url.toLowerCase(),
@@ -71,18 +89,15 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
         contentType: 'application/json charset=utf-8',
         data: params,
         success: (a) => {
-            callbackScheduler(() => {
-                if (callbackSuccess) {
-                    callbackSuccess(a)
-                }
-            })
+            if (cache !== '') {
+                a.time = moment.now()
+                localStorage[cache] = JSON.stringify(a)
+            }
+            
+            callbackSuccess(a)
         },
         error: (a, b, c) => {
-            callbackScheduler(() => {
-                if (callbackError) {
-                    callbackError(a, b, c)
-                }
-            })
+            callbackError(a, b, c)
         }
     }
 
@@ -95,20 +110,7 @@ app.ajaxPost = (url, data, callbackSuccess, callbackError, otherConfig) => {
         config.processData = false
     }
 
-    if (otherConfig != undefined) {
-        config = $.extend(true, config, otherConfig)
-    }
-
-    if (config.hasOwnProperty('withLoader')) {
-        if (config.withLoader) {
-            app.loader(true)
-        }
-    } else {
-        if (app.ajaxAutoLoader) {
-            app.loader(true)
-        }
-    }
-
+    config = $.extend(true, config, otherConfig)
     return $.ajax(config)
 }
 app.o = (raw) => raw

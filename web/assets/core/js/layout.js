@@ -74,7 +74,6 @@ vm.prepareToggleFilter = function () {
 	});
 };
 vm.prepareLoader = function () {
-	app.loader(true);
 	$('.loader canvas').each(function (i, cvs) {
 		var ctx = cvs.getContext("2d");
 		var sA = Math.PI / 180 * 45;
