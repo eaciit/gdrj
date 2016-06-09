@@ -181,7 +181,7 @@ func (pl *SalesPL) CalcSales(masters toolkit.M) {
 		//pl.AddData("PL8A", pl.GrossAmount, plmodels)
 	} else {
 		pl.AddData("PL1", pl.GrossAmount, plmodels)
-		pl.AddData("PL7", pl.GrossAmount, plmodels)
+		pl.AddData("PL7", pl.DiscountAmount, plmodels)
 		//pl.AddData("PL8A", pl.GrossAmount, plmodels)
 	}
 }
@@ -204,8 +204,12 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 		return
 	}
 
-	cogsAmount := -cogsSchema.COGS_Amount * pl.NetAmount / cogsSchema.NPS_Amount
-	rmAmount := cogsSchema.RM_Amount * cogsAmount / cogsSchema.COGS_Amount
+    cogsAmount := float64(0)
+    if cogsSchema.NPS_Amount != 0 {
+	    cogsAmount = -cogsSchema.COGS_Amount * pl.NetAmount / cogsSchema.NPS_Amount
+    }
+	
+    rmAmount := cogsSchema.RM_Amount * cogsAmount / cogsSchema.COGS_Amount
 	lcAmount := cogsSchema.LC_Amount * cogsAmount / cogsSchema.COGS_Amount
 	energyAmount := cogsSchema.PF_Amount * cogsAmount / cogsSchema.COGS_Amount
 	depreciation := cogsSchema.Depre_Amount * cogsAmount / cogsSchema.COGS_Amount
