@@ -3,8 +3,6 @@
 viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
 
-bkd.keyOrder = ko.observable('plorder');
-bkd.keyPLHeader = ko.observable('plgroup3');
 bkd.contentIsLoading = ko.observable(false);
 bkd.popupIsLoading = ko.observable(false);
 bkd.title = ko.observable('P&L Analytic');
@@ -222,7 +220,7 @@ bkd.render = function () {
 	var pnlTotalSum = 0;
 
 	data.forEach(function (d, i) {
-		app.newEl('th').html(app.nbspAble(d._id[app.idAble(bkd.breakdownBy())], 'Unnamed')).addClass('align-right').appendTo(trContent1).width(colWidth);
+		app.newEl('th').html(app.nbspAble(d._id[app.idAble(bkd.breakdownBy())], 'Uncategorized')).addClass('align-right').appendTo(trContent1).width(colWidth);
 
 		app.newEl('th').html('%').addClass('align-right cell-percentage').appendTo(trContent1).width(colPercentWidth);
 

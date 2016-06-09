@@ -7,28 +7,25 @@ var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 rs.contentIsLoading = ko.observable(false);
 rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
-rs.breakDownNetSales = ko.observable('Net Sales');
-rs.pplheader = ko.observable('Direct Labor');
-rs.datascatter = ko.observableArray([]);
-rs.plheader = ko.observable('plgroup3');
-rs.plheader1 = ko.observable('plgroup1');
+rs.selectedPNLNetSales = ko.observable("PL3");
+rs.selectedPNL = ko.observable("PL5");
 rs.chartComparisonNote = ko.observable('');
-
 rs.optionDimensionSelect = ko.observableArray([]);
 
 rs.getSalesHeaderList = function () {
-	app.ajaxPost("/report/GetSalesHeaderList", {}, function (res) {
-		var data = Lazy(res).map(function (k, v) {
-			// return {field: k._id[rs.plheader1()], name: k._id[rs.plheader1()]}
-			return { field: k, name: k };
-		}).toArray();
-		rs.optionDimensionSelect(data);
-		rs.optionDimensionSelect.remove(function (item) {
-			return item.field == rs.breakDownNetSales();
+	app.ajaxPost("/report/getplmodel", {}, function (res) {
+		var data = res.map(function (d) {
+			return app.o({ field: d._id, name: d.PLHeader3 });
+		}).filter(function (d) {
+			return d.PLHeader3 !== rs.selectedPNLNetSales();
 		});
-		rs.refresh(true);
+		rs.optionDimensionSelect(data);
+
+		var prev = rs.selectedPNL();
+		rs.selectedPNL('');
 		setTimeout(function () {
-			rs.pplheader('');
+			rs.selectedPNL(prev);
+			rs.refresh(false);
 		}, 300);
 	});
 };
@@ -37,105 +34,91 @@ rs.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
 	rs.contentIsLoading(true);
-	var dimensions = [{ "field": rs.plheader(), "name": rs.plheader() }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
-	var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
-	var base = rpt.wrapParam(dimensions, dataPoints);
-	var param = app.clone(base);
-	param.filters.push({
-		"Op": "$eq",
-		"Field": rs.plheader(),
-		"Value": rs.pplheader()
-	});
-	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
-		var dataall = Lazy(res.Data).groupBy(function (f) {
-			return f['year'];
-		}).map(function (k, v) {
-			return app.o({ _id: v, data: k });
-		}).toArray();
 
-		var param = app.clone(base);
-		param.filters.push({
-			"Op": "$eq",
-			"Field": rs.plheader(),
-			"Value": rs.breakDownNetSales()
-		});
+	var param1 = {};
+	param1.pls = [rs.selectedPNL()];
+	param1.groups = [bkd.breakdownBy(), 'date.year'];
+	param1.aggr = 'sum';
+	param1.filters = []; // rpt.getFilterValue()
 
-		app.ajaxPost("/report/summarycalculatedatapivot", param, function (res2) {
-			var dataall2 = Lazy(res2.Data).groupBy(function (f) {
-				return f['year'];
-			}).map(function (k, v) {
-				return app.o({ _id: v, data: k });
-			}).toArray();
+	app.ajaxPost("/report/getpnldata", param1, function (res1) {
+		var date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+		bkd.breakdownNote("Last refreshed on: " + date);
 
-			var max = 0;
+		var param2 = {};
+		param2.pls = [rs.selectedPNLNetSales()];
+		param2.groups = [bkd.breakdownBy(), 'date.year'];
+		param2.aggr = 'sum';
+		param2.filters = []; // rpt.getFilterValue()
 
-			rs.datascatter([]);
-			var title = Lazy(rpt.optionDimensions()).findWhere({ field: rs.breakdownBy() }).title;
-			for (var i in dataall) {
-				var currentDataAll = Lazy(dataall).findWhere({ _id: dataall[i]._id });
-				var currentDataAll2 = Lazy(dataall2).findWhere({ _id: dataall[i]._id });
+		app.ajaxPost("/report/getpnldata", param2, function (res2) {
+			var date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+			bkd.breakdownNote("Last refreshed on: " + date);
 
-				var totalDataAll = Lazy(currentDataAll.data).sum(function (e) {
-					return e.value1;
-				}); // by breakdown
-				var totalDataAll2 = Lazy(currentDataAll2.data).sum(function (e) {
-					return e.value1;
-				}); // by net sales
+			var dataAllPNL = res1.Data.Data;
+			var dataAllPNLNetSales = res2.Data.Data;
 
-				var maxNetSales = Lazy(currentDataAll2.data).max(function (e) {
-					return e.value1;
-				}).value1;
-				var percentage = totalDataAll / totalDataAll2 * 100;
-				var percentageToMaxSales = percentage * maxNetSales / 100;
+			var years = _.map(_.groupBy(dataAllPNL, function (d) {
+				return d._id.date_year;
+			}), function (v, k) {
+				return k;
+			});
 
-				max = Lazy([max, maxNetSales]).max(function (d) {
-					return d;
+			var maxData = _.max(dataAllPNL.concat(dataAllPNLNetSales), function (d) {
+				return d[rs.selectedPNL()];
+			})[rs.selectedPNL()];
+			var sumPNL = _.reduce(dataAllPNL, function (m, x) {
+				return m + x[rs.selectedPNL()];
+			}, 0);
+			var countPNL = dataAllPNL.length;
+			var avgPNL = sumPNL / countPNL;
+
+			var dataScatter = [];
+
+			dataAllPNL.forEach(function (d) {
+				dataScatter.push({
+					category: app.nbspAble(d._id[app.idAble(rs.breakdownBy())], 'Uncategorized'),
+					year: d._id.date_year,
+					scatterValue: d[rs.selectedPNL()],
+					scatterPercentage: d[rs.selectedPNL()] / maxData,
+					lineAvg: avgPNL,
+					linePercentage: avgPNL / maxData
 				});
-				console.log('max', max, 'breakdown', totalDataAll, 'netsales', totalDataAll2, 'maxnetsales', maxNetSales, 'percentage', percentage, 'safsf', percentageToMaxSales);
+			});
 
-				for (var a in dataall[i].data) {
-					rs.datascatter.push({
-						pplheader: percentageToMaxSales,
-						pplheaderPercent: percentage,
-						value1: dataall[i].data[a].value1 / maxNetSales * 100,
-						title: dataall[i].data[a][title],
-						header: dataall[i].data[a].plmodel_plheader1,
-						year: dataall[i].data[a].year
-					});
-					console.log('dddd ', dataall[i].data[a].value1, dataall[i].data[a].value1 / maxNetSales * 100, dataall[i].data[a].value1 / percentageToMaxSales * 100);
-				}
-				if (i == 0) {
-					rs.datascatter.push({
-						pplheader: null,
-						value1: null,
-						title: '',
-						header: null
-					});
-				}
-			}
-			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
-			rs.chartComparisonNote("Last refreshed on: " + date);
-			rs.generateReport(dataall[0]._id, dataall[1]._id, max);
-		}, function () {
 			rs.contentIsLoading(false);
+			rs.generateReport(dataScatter, years);
+		}, function () {
+			bkd.contentIsLoading(false);
 		}, {
-			cache: useCache == true ? 'pivot chart2' : false
+			cache: useCache == true ? 'pivot chart' : false
 		});
 	}, function () {
-		rs.contentIsLoading(false);
+		bkd.contentIsLoading(false);
 	}, {
-		cache: useCache == true ? 'pivot chart1' : false
+		cache: useCache == true ? 'pivot chart' : false
 	});
 };
 
-rs.calculationPercentage = function (data) {};
+rs.generateReport = function (data, years) {
+	var max = _.max(_.map(data, function (d) {
+		return d.linePercentage;
+	}).concat(_.map(data, function (d) {
+		return d.scatterPercentage;
+	})));
 
-rs.generateReport = function (year1, year2, max) {
-	rs.contentIsLoading(false);
-	$('#scatter-view').width(rs.datascatter().length * 100);
+	var netSalesTite = rs.optionDimensionSelect().find(function (d) {
+		return d.field == rs.selectedPNLNetSales();
+	}).name;
+	var breakdownTitle = rs.optionDimensionSelect().find(function (d) {
+		return d.field == rs.selectedPNL();
+	}).name;
+
+	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>');
+	$('#scatter-view').width(data.length * 100);
 	$("#scatter-view").kendoChart({
 		dataSource: {
-			data: rs.datascatter()
+			data: data
 		},
 		title: {
 			text: ""
@@ -150,19 +133,19 @@ rs.generateReport = function (year1, year2, max) {
 		},
 		seriesColors: ["#ff8d00", "#678900"],
 		series: [{
-			name: "PPL Header",
-			field: 'pplheaderPercent',
+			name: "Percentage of " + breakdownTitle + " to " + netSalesTite,
+			field: 'linePercentage',
 			width: 3,
 			tooltip: {
 				visible: true,
-				template: "#: dataItem.title # : #: kendo.toString(dataItem.pplheaderPercent, 'n2') # %"
+				template: "Percentage of " + breakdownTitle + " - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.linePercentage, 'n2') # %"
 			},
 			markers: {
 				visible: false
 			}
 		}, {
-			name: "Dimension",
-			field: "value1",
+			name: "Percentage of " + breakdownTitle,
+			field: "scatterPercentage",
 			width: 3,
 			opacity: 0,
 			markers: {
@@ -171,9 +154,7 @@ rs.generateReport = function (year1, year2, max) {
 			},
 			tooltip: {
 				visible: true,
-				template: function template(d) {
-					return d.dataItem.title + " on " + d.dataItem.year + ": " + kendo.toString(d.value, 'n2');
-				}
+				template: "Percentage of " + breakdownTitle + " to " + netSalesTite + " at #: dataItem.year #: #: kendo.toString(dataItem.scatterPercentage, 'n2') # %"
 			}
 		}],
 		valueAxis: {
@@ -185,7 +166,7 @@ rs.generateReport = function (year1, year2, max) {
 			}
 		},
 		categoryAxis: [{
-			field: 'title',
+			field: 'category',
 			labels: {
 				rotation: 20
 			},
@@ -193,8 +174,10 @@ rs.generateReport = function (year1, year2, max) {
 				color: '#fafafa'
 			}
 		}, {
-			categories: [year1, year2],
-			line: { visible: false }
+			categories: years,
+			line: {
+				visible: false
+			}
 		}]
 	});
 };
@@ -202,6 +185,5 @@ rs.generateReport = function (year1, year2, max) {
 $(function () {
 	rpt.value.From(moment("2015-02-02").toDate());
 	rpt.value.To(moment("2016-02-02").toDate());
-	// rs.refresh()
 	rs.getSalesHeaderList();
 });

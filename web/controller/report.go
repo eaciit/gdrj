@@ -169,17 +169,6 @@ func (m *ReportController) GetDataAnalysisIdea(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, res, "")
 }
 
-func (m *ReportController) GetSalesHeaderList(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	result, err := gdrj.GetSalesHeaderList()
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	return result
-}
-
 func (m *ReportController) GetDecreasedQty(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 

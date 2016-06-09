@@ -1,8 +1,6 @@
 viewModel.breakdown = new Object()
 let bkd = viewModel.breakdown
 
-bkd.keyOrder = ko.observable('plorder')
-bkd.keyPLHeader = ko.observable('plgroup3')
 bkd.contentIsLoading = ko.observable(false)
 bkd.popupIsLoading = ko.observable(false)
 bkd.title = ko.observable('P&L Analytic')
@@ -243,7 +241,7 @@ bkd.render = () => {
 
 	data.forEach((d, i) => {
 		app.newEl('th')
-			.html(app.nbspAble(d._id[app.idAble(bkd.breakdownBy())], 'Unnamed'))
+			.html(app.nbspAble(d._id[app.idAble(bkd.breakdownBy())], 'Uncategorized'))
 			.addClass('align-right')
 			.appendTo(trContent1)
 			.width(colWidth)
