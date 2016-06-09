@@ -119,7 +119,41 @@ func TrxToSalesPL(conn dbox.IConnection,
 	pl.CalcPromo(masters)
 	pl.CalcSGA(masters)
 
+    pl.CalcSum(masters)
+
 	return pl
+}
+
+func (pl *SalesPL) CalcSum(masters toolkit.M){
+    var netsales, cogs, grossmargin, sellingexpense, 
+        sga, ebit float64
+    
+    plmodels := masters.Get("plmodel").(map[string]*PLModel)
+	for _, v := range pl.PLDatas{
+        if v.Group1=="Net Sales" {
+            netsales += v.Amount
+            ebit += v.Amount   
+            grossmargin += v.Amount 
+        } else if v.Group1=="Direct Expense" || v.Group1=="Indirect Expense" {
+            cogs += v.Amount
+            ebit += v.Amount   
+            grossmargin += v.Amount
+        } else if v.Group1=="Freight Expense" || v.Group1=="Royalties & Trademark Exp" ||
+            v.Group1=="Advt & Promo Expenses" {
+                sellingexpense += v.Amount
+                ebit += v.Amount
+        } else if v.Group1=="G&A Expenses" {
+            sga += v.Amount
+            ebit += v.Amount
+        }
+    }
+
+    pl.AddData("PL8A", netsales, plmodels)
+    pl.AddData("PL74B", cogs, plmodels)
+    pl.AddData("PL74C", grossmargin, plmodels)
+    pl.AddData("PL32B", sellingexpense, plmodels)
+    pl.AddData("PL94A", sga, plmodels)
+    pl.AddData("PL94C", ebit, plmodels)
 }
 
 func (pl *SalesPL) CalcSales(masters toolkit.M) {
@@ -127,11 +161,11 @@ func (pl *SalesPL) CalcSales(masters toolkit.M) {
 	if pl.Customer.IsRD {
 		pl.AddData("PL2", pl.GrossAmount, plmodels)
 		pl.AddData("PL8", pl.DiscountAmount, plmodels)
-		pl.AddData("PL8A", pl.GrossAmount, plmodels)
+		//pl.AddData("PL8A", pl.GrossAmount, plmodels)
 	} else {
 		pl.AddData("PL1", pl.GrossAmount, plmodels)
 		pl.AddData("PL7", pl.GrossAmount, plmodels)
-		pl.AddData("PL8A", pl.GrossAmount, plmodels)
+		//pl.AddData("PL8A", pl.GrossAmount, plmodels)
 	}
 }
 
@@ -153,7 +187,7 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 		return
 	}
 
-	cogsAmount := cogsSchema.COGS_Amount * pl.NetAmount / cogsSchema.NPS_Amount
+	cogsAmount := -cogsSchema.COGS_Amount * pl.NetAmount / cogsSchema.NPS_Amount
 	rmAmount := cogsSchema.RM_Amount * cogsAmount / cogsSchema.COGS_Amount
 	lcAmount := cogsSchema.LC_Amount * cogsAmount / cogsSchema.COGS_Amount
 	energyAmount := cogsSchema.PF_Amount * cogsAmount / cogsSchema.COGS_Amount
@@ -173,7 +207,7 @@ func (pl *SalesPL) CalcFreight(masters toolkit.M) {
     if masters.Has("freight")==false{
         return
     }
-    freights := masters.Get("freight").(map[string]RawDataPL)
+    freights := masters.Get("freight").(map[string]*RawDataPL)
 
     freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.BranchID)
     f, exist := freights[freightid]
@@ -182,7 +216,7 @@ func (pl *SalesPL) CalcFreight(masters toolkit.M) {
     }
     
     plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL23",f.AmountinIDR*pl.RatioToBranchSales,plmodels)
+	pl.AddData("PL23",-f.AmountinIDR*pl.RatioToBranchSales,plmodels)
 }
 
 func (pl *SalesPL) CalcPromo(masters toolkit.M) {
@@ -207,18 +241,18 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
     fBtlOtherpromo := find("promo")
     
     plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL28",fAtl.AmountinIDR*pl.RatioToBranchSales,plmodels)
-    pl.AddData("PL29",fBtlBonus.AmountinIDR*pl.RatioToBranchSales,plmodels)
-    pl.AddData("PL30",fBtlGondola.AmountinIDR*pl.RatioToBranchSales,plmodels)
-    pl.AddData("PL31",fBtlOtherpromo.AmountinIDR*pl.RatioToBranchSales,plmodels)
-    pl.AddData("PL32",fBtlSPG.AmountinIDR*pl.RatioToBranchSales,plmodels)
+	pl.AddData("PL28",-fAtl.AmountinIDR*pl.RatioToBranchSales,plmodels)
+    pl.AddData("PL29",-fBtlBonus.AmountinIDR*pl.RatioToBranchSales,plmodels)
+    pl.AddData("PL30",-fBtlGondola.AmountinIDR*pl.RatioToBranchSales,plmodels)
+    pl.AddData("PL31",-fBtlOtherpromo.AmountinIDR*pl.RatioToBranchSales,plmodels)
+    pl.AddData("PL32",-fBtlSPG.AmountinIDR*pl.RatioToBranchSales,plmodels)
 }
 
 func (pl *SalesPL) CalcSGA(masters toolkit.M) {
     if masters.Has("sga")==false || masters.Has("ledger")==false{
         return
     }
-    sgas := masters.Get("sga").(map[string]map[string]RawDataPL)
+    sgas := masters.Get("sga").(map[string]map[string]*RawDataPL)
 
     plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	sgaid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
@@ -227,11 +261,11 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
         return        
     }
 
-    ccs := map[string]CostCenter{}
+    ccs := map[string]*CostCenter{}
     if masters.Has("cc"){
-        ccs = masters.Get("cc").(map[string]CostCenter)
+        ccs = masters.Get("cc").(map[string]*CostCenter)
     }
-    ledgers := masters.Get("ledger").(map[string]LedgerMaster)
+    ledgers := masters.Get("ledger").(map[string]*LedgerMaster)
     for _, raw := range raws{
         plcode := "PL94A"
         ledger, exist := ledgers[raw.Account]
@@ -243,7 +277,7 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
         if exist {
             ccgroup = cc.CostGroup01
         }
-        pl.AddDataCC(plcode,pl.RatioToBrandSales*raw.AmountinIDR,ccgroup,plmodels)
+        pl.AddDataCC(plcode,-pl.RatioToBrandSales*raw.AmountinIDR,ccgroup,plmodels)
     }
 }
 
@@ -271,5 +305,11 @@ func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, mode
         pl_m.Group3=ccgroup
     }
 	pl_m.Amount += amount
+    if pl.PLDatas==nil{
+        pl.PLDatas=map[string]*PLData{}
+    }
+    if ccgroup!=""{
+        plcode = plcode + "_" + ccgroup
+    }
 	pl.PLDatas[plcode] = pl_m
 }

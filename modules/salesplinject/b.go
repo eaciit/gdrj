@@ -61,28 +61,40 @@ func BuildMap(holder interface{},
 }
 
 func prepMaster() {
+	toolkit.Println("--> CC")
+	ccs:=BuildMap(map[string]*gdrj.CostCenter{},
+		func()orm.IModel{
+			return new(gdrj.CostCenter)
+		},
+		func(holder, obj interface{}){
+			h:=holder.(map[string]*gdrj.CostCenter)
+			o:=obj.(*gdrj.CostCenter)
+			h[o.ID]=o
+		}).(map[string]*gdrj.CostCenter)
+	masters.Set("costcenter", ccs)
+
 	toolkit.Println("--> Ledger")
-	ledgers:=BuildMap(map[string]gdrj.LedgerMaster{},
+	ledgers:=BuildMap(map[string]*gdrj.LedgerMaster{},
 		func()orm.IModel{
 			return new(gdrj.LedgerMaster)
 		},
 		func(holder, obj interface{}){
-			h:=holder.(map[string]gdrj.LedgerMaster)
+			h:=holder.(map[string]*gdrj.LedgerMaster)
 			o:=obj.(*gdrj.LedgerMaster)
-			h[o.ID]=*o
-		}).(map[string]gdrj.LedgerMaster)
+			h[o.ID]=o
+		}).(map[string]*gdrj.LedgerMaster)
 	masters.Set("ledger", ledgers)
 	
 	toolkit.Println("--> PL Model")
-	masters.Set("plmodel", BuildMap(map[string]gdrj.PLModel{},
+	masters.Set("plmodel", BuildMap(map[string]*gdrj.PLModel{},
 		func()orm.IModel{
 			return new(gdrj.PLModel)
 		},
 		func(holder, obj interface{}){
-			h:=holder.(map[string]gdrj.PLModel)
+			h:=holder.(map[string]*gdrj.PLModel)
 			o:=obj.(*gdrj.PLModel)
-			h[o.ID]=*o
-		}).(map[string]gdrj.PLModel))
+			h[o.ID]=o
+		}).(map[string]*gdrj.PLModel))
 
 	toolkit.Println("--> COGS")
 	masters.Set("cogs", BuildMap(map[string]*gdrj.COGSConsolidate{},
@@ -223,6 +235,11 @@ func main() {
 		masters.Set("brandsales",brandSales)
 
 		i++
+
+		if i==1000{
+			break
+		}
+
 		if i>=limit{
 			toolkit.Printfn("Calculating %d of %d (%.2f pct) in %s", 
 				i, count, float64(i) * float64(100)/float64(count), time.Since(t0).String())
@@ -245,6 +262,10 @@ func main() {
 		stx := new(gdrj.SalesTrx)
 		e := c.Fetch(stx,1,false)
 		if e!=nil{
+			break
+		}
+
+		if i==1000{
 			break
 		}
 
