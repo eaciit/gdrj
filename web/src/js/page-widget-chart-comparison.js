@@ -64,7 +64,6 @@ ccr.refresh = () => {
 	ccr.render()
 }
 ccr.render = () => {
-
 	let configure = (data, full) => {
 		let series = [
 			{ 
@@ -164,7 +163,7 @@ ccr.render = () => {
 		}
 	}
 
-	let chartContainer = $('.chart-container')
+	let chartContainer = $('.chart-comparison')
 	chartContainer.empty()
 	for (var e in ccr.data()){
 		let html = $($('#template-chart-comparison').html())
@@ -177,7 +176,7 @@ ccr.render = () => {
 }
 
 rpt.toggleFilterCallback = () => {
-	$('.chart-container .k-chart').each((i, e) => {
+	$('.chart-comparison .k-chart').each((i, e) => {
 		$(e).data('kendoChart').redraw()
 	})
 }

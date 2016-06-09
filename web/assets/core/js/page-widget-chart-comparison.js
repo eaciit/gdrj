@@ -69,7 +69,6 @@ ccr.refresh = function () {
 	ccr.render();
 };
 ccr.render = function () {
-
 	var configure = function configure(data, full) {
 		var series = [{
 			name: 'Price',
@@ -166,7 +165,7 @@ ccr.render = function () {
 		};
 	};
 
-	var chartContainer = $('.chart-container');
+	var chartContainer = $('.chart-comparison');
 	chartContainer.empty();
 	for (var e in ccr.data()) {
 		var html = $($('#template-chart-comparison').html());
@@ -179,7 +178,7 @@ ccr.render = function () {
 };
 
 rpt.toggleFilterCallback = function () {
-	$('.chart-container .k-chart').each(function (i, e) {
+	$('.chart-comparison .k-chart').each(function (i, e) {
 		$(e).data('kendoChart').redraw();
 	});
 };
