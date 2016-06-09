@@ -16,7 +16,7 @@ rs.getSalesHeaderList = () => {
 	app.ajaxPost(`/report/GetSalesHeaderList`, {}, (res) => {
 		let data = Lazy(res)
 			.map((k, v) => { 
-				return {field: k._id['plmodel.plheader1'], name: k._id['plmodel.plheader1']}
+				return {field: k._id['plgroup1'], name: k._id['plgroup1']}
 			})
 			.toArray()
 		rs.optionDimensionSelect(data)
@@ -34,7 +34,7 @@ rs.getSalesHeaderList = () => {
 rs.refresh = () => {
 	rs.contentIsLoading(true)
 	let dimensions = [
-		{ "field": "plmodel.plheader1", "name": "plheader1" },
+		{ "field": "plgroup1", "name": "plheader1" },
 		{ "field": rs.breakdownBy(), "name": "Channel" },
 		{ "field": "year", "name": "Year" }
 	]
@@ -45,7 +45,7 @@ rs.refresh = () => {
 	let param = app.clone(base)
 	param.filters.push({
 	    "Op": "$eq",
-	    "Field": "plmodel.plheader1",
+	    "Field": "plgroup1",
 	    "Value": rs.pplheader()
 	})
 	app.ajaxPost("/report/summarycalculatedatapivot", param, (res) => {
@@ -57,7 +57,7 @@ rs.refresh = () => {
 		let param = app.clone(base)
 		param.filters.push({
 		    "Op": "$eq",
-		    "Field": "plmodel.plheader1",
+		    "Field": "plgroup1",
 		    "Value": 'Net Sales'
 		})
 

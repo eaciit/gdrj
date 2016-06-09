@@ -15,7 +15,7 @@ rs.optionDimensionSelect = ko.observableArray([]);
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/GetSalesHeaderList", {}, function (res) {
 		var data = Lazy(res).map(function (k, v) {
-			return { field: k._id['plmodel.plheader1'], name: k._id['plmodel.plheader1'] };
+			return { field: k._id['plgroup1'], name: k._id['plgroup1'] };
 		}).toArray();
 		rs.optionDimensionSelect(data);
 		rs.optionDimensionSelect.remove(function (item) {
@@ -33,13 +33,13 @@ rs.getSalesHeaderList = function () {
 
 rs.refresh = function () {
 	rs.contentIsLoading(true);
-	var dimensions = [{ "field": "plmodel.plheader1", "name": "plheader1" }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
+	var dimensions = [{ "field": "plgroup1", "name": "plheader1" }, { "field": rs.breakdownBy(), "name": "Channel" }, { "field": "year", "name": "Year" }];
 	var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 	var base = rpt.wrapParam(dimensions, dataPoints);
 	var param = app.clone(base);
 	param.filters.push({
 		"Op": "$eq",
-		"Field": "plmodel.plheader1",
+		"Field": "plgroup1",
 		"Value": rs.pplheader()
 	});
 	app.ajaxPost("/report/summarycalculatedatapivot", param, function (res) {
@@ -52,7 +52,7 @@ rs.refresh = function () {
 		var param = app.clone(base);
 		param.filters.push({
 			"Op": "$eq",
-			"Field": "plmodel.plheader1",
+			"Field": "plgroup1",
 			"Value": 'Net Sales'
 		});
 
