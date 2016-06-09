@@ -9,46 +9,58 @@ ccr.title = ko.observable('Chart Comparison');
 ccr.contentIsLoading = ko.observable(false);
 ccr.categoryAxisField = ko.observable('category');
 ccr.breakdownBy = ko.observable('');
-ccr.limitchart = ko.observable(3);
+ccr.limitchart = ko.observable(4);
 
-ccr.dummyJson = [{
-	skuid: "1239123",
-	productname: "HIT",
-	qty: [1, 2, 3, 4, 5, 6, 0, 0],
-	price: [10, 20, 30, 40, 50, 60, 0, 0],
-	outlet: [10, 20, 30, 40, 50, 60, 70, 80]
-}, {
-	skuid: "1239123",
-	productname: "Mitu",
-	qty: [1, 2, 3, 4, 5, 6, 7, 8],
-	price: [10, 20, 30, 40, 50, 60, 70, 80],
-	outlet: [10, 20, 30, 40, 50, 60, 70, 80]
-}];
+ccr.getDecreasedQty = function () {
+	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
+	ccr.contentIsLoading(true);
+	app.ajaxPost('/report/GetDecreasedQty', {}, function (res) {
+		ccr.dataComparison(res);
+		ccr.refresh();
+		ccr.contentIsLoading(false);
+	}, function () {
+		ccr.contentIsLoading(false);
+	}, {
+		cache: useCache == true ? 'chart comparison' : false
+	});
+};
 ccr.refresh = function () {
-	ccr.dataComparison(ccr.dummyJson);
+	// ccr.dataComparison(ccr.dummyJson)
 	var tempdata = [];
 	var qty = 0;
 	var price = 0;
+	var outlet = 0;
+	var maxline = 0;
+	var maxprice = 0;
+	var maxqty = 0;
 	var quarter = [];
 	for (var i in ccr.dataComparison()) {
-		qty = _.filter(ccr.dummyJson[i].qty, function (resqty) {
-			return resqty == 0;
-		}).length;
-		price = _.filter(ccr.dummyJson[i].price, function (resprice) {
-			return resprice == 0;
-		}).length;
-		quarter = [];
-		for (var a in ccr.dummyJson[i].qty) {
-			quarter.push('Quarter ' + (parseInt(a) + 1));
+		if (ccr.dataComparison()[i].productName != undefined) {
+			qty = _.filter(ccr.dataComparison()[i].qty, function (resqty) {
+				return resqty == 0;
+			}).length;
+			price = _.filter(ccr.dataComparison()[i].price, function (resprice) {
+				return resprice == 0;
+			}).length;
+			maxprice = _.max(ccr.dataComparison()[i].price);
+			maxqty = _.max(ccr.dataComparison()[i].qty);
+			if (maxprice > maxqty) maxline = maxprice;else maxline = maxqty;
+			outlet = _.max(ccr.dataComparison()[i].outletList);
+			quarter = [];
+			for (var a in ccr.dataComparison()[i].qty) {
+				quarter.push('Quarter ' + (parseInt(a) + 1));
+			}
+			tempdata.push({
+				qty: qty,
+				price: price,
+				quarter: quarter,
+				maxoutlet: outlet + outlet / 2,
+				maxline: maxline + maxline / 4,
+				productName: ccr.dataComparison()[i].productName,
+				data: ccr.dataComparison()[i]
+			});
 		}
-		tempdata.push({
-			qty: qty,
-			price: price,
-			quarter: quarter,
-			productname: ccr.dummyJson[i].productname,
-			data: ccr.dummyJson[i]
-		});
 	}
 	var sortPriceQty = _.take(_.sortBy(tempdata, function (item) {
 		return [item.qty, item.price];
@@ -58,7 +70,7 @@ ccr.refresh = function () {
 };
 ccr.render = function () {
 
-	var configure = function configure(data, quarter) {
+	var configure = function configure(data, full) {
 		var series = [{
 			name: 'Price',
 			// field: 'value1',
@@ -70,7 +82,8 @@ ccr.render = function () {
 				border: {
 					width: 3
 				}
-			}
+			},
+			axis: "priceqty"
 		}, {
 			name: 'Qty',
 			// field: 'value2',
@@ -82,11 +95,12 @@ ccr.render = function () {
 				border: {
 					width: 3
 				}
-			}
+			},
+			axis: "priceqty"
 		}, {
 			name: 'Outlet',
 			// field: 'value3',
-			data: data.outlet,
+			data: data.outletList,
 			type: 'bar',
 			width: 3,
 			overlay: {
@@ -99,7 +113,8 @@ ccr.render = function () {
 				visible: true,
 				style: 'smooth',
 				type: 'bar'
-			}
+			},
+			axis: "outlet"
 		}];
 		return {
 			// dataSource: {
@@ -114,7 +129,7 @@ ccr.render = function () {
 			categoryAxis: {
 				baseUnit: "month",
 				// field: ccr.categoryAxisField(),
-				categories: quarter,
+				categories: full.quarter,
 				majorGridLines: {
 					color: '#fafafa'
 				},
@@ -127,11 +142,21 @@ ccr.render = function () {
 			legend: {
 				position: 'bottom'
 			},
-			valueAxis: {
+			valueAxes: [{
+				name: "priceqty",
+				title: { text: "Qty & Price" },
 				majorGridLines: {
 					color: '#fafafa'
-				}
-			},
+				},
+				max: full.maxline
+			}, {
+				name: "outlet",
+				title: { text: "Outlet" },
+				majorGridLines: {
+					color: '#fafafa'
+				},
+				max: full.maxoutlet
+			}],
 			tooltip: {
 				visible: true,
 				template: function template(d) {
@@ -145,10 +170,10 @@ ccr.render = function () {
 	chartContainer.empty();
 	for (var e in ccr.data()) {
 		var html = $($('#template-chart-comparison').html());
-		var config = configure(ccr.data()[e].data, ccr.data()[e].quarter);
+		var config = configure(ccr.data()[e].data, ccr.data()[e]);
 
 		html.appendTo(chartContainer);
-		html.find('.title').html(ccr.data()[e].data.productname);
+		html.find('.title').html(ccr.data()[e].data.productName);
 		html.find('.chart').kendoChart(config);
 	}
 };
@@ -160,5 +185,5 @@ rpt.toggleFilterCallback = function () {
 };
 
 $(function () {
-	ccr.refresh();
+	ccr.getDecreasedQty(false);
 });
