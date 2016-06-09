@@ -20,7 +20,7 @@ rs.getSalesHeaderList = () => {
 		let data = Lazy(res)
 			.map((k, v) => { 
 				// return {field: k._id[rs.plheader1()], name: k._id[rs.plheader1()]}
-				return {field: v, name: v}
+				return {field: k, name: k}
 			})
 			.toArray()
 		rs.optionDimensionSelect(data)

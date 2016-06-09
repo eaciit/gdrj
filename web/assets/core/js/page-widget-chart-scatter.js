@@ -19,7 +19,7 @@ rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/GetSalesHeaderList", {}, function (res) {
 		var data = Lazy(res).map(function (k, v) {
 			// return {field: k._id[rs.plheader1()], name: k._id[rs.plheader1()]}
-			return { field: v, name: v };
+			return { field: k, name: k };
 		}).toArray();
 		rs.optionDimensionSelect(data);
 		rs.optionDimensionSelect.remove(function (item) {
