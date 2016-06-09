@@ -254,6 +254,7 @@ func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, mode
 	pl_m, exist := pl.PLDatas[plcode]
 	if !exist {
 		pl_m = new(PLData)
+        pl_m.PLOrder = m.OrderIndex
 		pl_m.Group1 = m.PLHeader1
 		pl_m.Group2 = m.PLHeader2
 		pl_m.Group3 = m.PLHeader3
