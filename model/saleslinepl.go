@@ -8,7 +8,7 @@ import (
 
 type PLData struct {
 	PLCode                 string
-    PLOrder string
+	PLOrder                string
 	Group1, Group2, Group3 string
 	Amount                 float64
 }
@@ -71,7 +71,7 @@ func TrxToSalesPL(conn dbox.IConnection,
 	pl.Customer = trx.Customer
 	pl.Product = trx.Product
 
-    //-- classing
+	//-- classing
 	if pl.Customer == nil {
 		c := new(Customer)
 		c.BranchID = "CD02"
@@ -105,13 +105,24 @@ func TrxToSalesPL(conn dbox.IConnection,
 	}
 	//-- end of classing
 
-    globalSales := masters.Get("globalsales").(float64)
-    branchSales := masters.Get("branchsales").(map[string]float64)
-    brandSales := masters.Get("brandsales").(map[string]float64)
+	globalSales := masters.Get("globalsales").(float64)
+	branchSales := masters.Get("branchsales").(map[string]float64)
+	brandSales := masters.Get("brandsales").(map[string]float64)
 
-    pl.RatioToGlobalSales = pl.NetAmount / globalSales
-    pl.RatioToBrandSales = pl.NetAmount / brandSales[pl.Product.Brand]
-    pl.RatioToBranchSales = pl.NetAmount / branchSales[pl.Customer.BranchID]
+	brandSale, _ := brandSales[pl.Product.Brand]
+	branchSale, _ := branchSales[pl.Customer.BranchID]
+
+	if globalSales != 0 {
+		pl.RatioToGlobalSales = pl.NetAmount / globalSales
+	}
+
+	if brandSale != 0 {
+		pl.RatioToBrandSales = pl.NetAmount / brandSale
+	}
+
+	if branchSale != 0 {
+		pl.RatioToBranchSales = pl.NetAmount / branchSale
+	}
 
 	pl.CalcSales(masters)
 	pl.CalcCOGS(masters)
@@ -119,41 +130,41 @@ func TrxToSalesPL(conn dbox.IConnection,
 	pl.CalcPromo(masters)
 	pl.CalcSGA(masters)
 
-    pl.CalcSum(masters)
+	pl.CalcSum(masters)
 
 	return pl
 }
 
-func (pl *SalesPL) CalcSum(masters toolkit.M){
-    var netsales, cogs, grossmargin, sellingexpense, 
-        sga, ebit float64
-    
-    plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	for _, v := range pl.PLDatas{
-        if v.Group1=="Net Sales" {
-            netsales += v.Amount
-            ebit += v.Amount   
-            grossmargin += v.Amount 
-        } else if v.Group1=="Direct Expense" || v.Group1=="Indirect Expense" {
-            cogs += v.Amount
-            ebit += v.Amount   
-            grossmargin += v.Amount
-        } else if v.Group1=="Freight Expense" || v.Group1=="Royalties & Trademark Exp" ||
-            v.Group1=="Advt & Promo Expenses" {
-                sellingexpense += v.Amount
-                ebit += v.Amount
-        } else if v.Group1=="G&A Expenses" {
-            sga += v.Amount
-            ebit += v.Amount
-        }
-    }
+func (pl *SalesPL) CalcSum(masters toolkit.M) {
+	var netsales, cogs, grossmargin, sellingexpense,
+		sga, ebit float64
 
-    pl.AddData("PL8A", netsales, plmodels)
-    pl.AddData("PL74B", cogs, plmodels)
-    pl.AddData("PL74C", grossmargin, plmodels)
-    pl.AddData("PL32B", sellingexpense, plmodels)
-    pl.AddData("PL94A", sga, plmodels)
-    pl.AddData("PL94C", ebit, plmodels)
+	plmodels := masters.Get("plmodel").(map[string]*PLModel)
+	for _, v := range pl.PLDatas {
+		if v.Group1 == "Net Sales" {
+			netsales += v.Amount
+			ebit += v.Amount
+			grossmargin += v.Amount
+		} else if v.Group1 == "Direct Expense" || v.Group1 == "Indirect Expense" {
+			cogs += v.Amount
+			ebit += v.Amount
+			grossmargin += v.Amount
+		} else if v.Group1 == "Freight Expense" || v.Group1 == "Royalties & Trademark Exp" ||
+			v.Group1 == "Advt & Promo Expenses" {
+			sellingexpense += v.Amount
+			ebit += v.Amount
+		} else if v.Group1 == "G&A Expenses" {
+			sga += v.Amount
+			ebit += v.Amount
+		}
+	}
+
+	pl.AddData("PL8A", netsales, plmodels)
+	pl.AddData("PL74B", cogs, plmodels)
+	pl.AddData("PL74C", grossmargin, plmodels)
+	pl.AddData("PL32B", sellingexpense, plmodels)
+	pl.AddData("PL94A", sga, plmodels)
+	pl.AddData("PL94C", ebit, plmodels)
 }
 
 func (pl *SalesPL) CalcSales(masters toolkit.M) {
@@ -204,88 +215,88 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 }
 
 func (pl *SalesPL) CalcFreight(masters toolkit.M) {
-    if masters.Has("freight")==false{
-        return
-    }
-    freights := masters.Get("freight").(map[string]*RawDataPL)
+	if masters.Has("freight") == false {
+		return
+	}
+	freights := masters.Get("freight").(map[string]*RawDataPL)
 
-    freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.BranchID)
-    f, exist := freights[freightid]
-    if !exist{
-        return
-    }
-    
-    plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL23",-f.AmountinIDR*pl.RatioToBranchSales,plmodels)
+	freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.BranchID)
+	f, exist := freights[freightid]
+	if !exist {
+		return
+	}
+
+	plmodels := masters.Get("plmodel").(map[string]*PLModel)
+	pl.AddData("PL23", -f.AmountinIDR*pl.RatioToBranchSales, plmodels)
 }
 
 func (pl *SalesPL) CalcPromo(masters toolkit.M) {
-    if masters.Has("promo")==false{
-        return
-    }
-    promos := masters.Get("promo").(map[string]*RawDataPL)
+	if masters.Has("promo") == false {
+		return
+	}
+	promos := masters.Get("promo").(map[string]*RawDataPL)
 
-    find := func(x string)*RawDataPL{
-        freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, x)
-        f, exist := promos[freightid]
-        if !exist{
-            return &RawDataPL{}
-        }
-        return f
-    }
+	find := func(x string) *RawDataPL {
+		freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, x)
+		f, exist := promos[freightid]
+		if !exist {
+			return &RawDataPL{}
+		}
+		return f
+	}
 
-    fAtl := find("atl")
-    fBtlBonus := find("bonus")
-    fBtlGondola := find("gondola")
-    fBtlSPG := find("spg")
-    fBtlOtherpromo := find("promo")
-    
-    plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL28",-fAtl.AmountinIDR*pl.RatioToBranchSales,plmodels)
-    pl.AddData("PL29",-fBtlBonus.AmountinIDR*pl.RatioToBranchSales,plmodels)
-    pl.AddData("PL30",-fBtlGondola.AmountinIDR*pl.RatioToBranchSales,plmodels)
-    pl.AddData("PL31",-fBtlOtherpromo.AmountinIDR*pl.RatioToBranchSales,plmodels)
-    pl.AddData("PL32",-fBtlSPG.AmountinIDR*pl.RatioToBranchSales,plmodels)
+	fAtl := find("atl")
+	fBtlBonus := find("bonus")
+	fBtlGondola := find("gondola")
+	fBtlSPG := find("spg")
+	fBtlOtherpromo := find("promo")
+
+	plmodels := masters.Get("plmodel").(map[string]*PLModel)
+	pl.AddData("PL28", -fAtl.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	pl.AddData("PL29", -fBtlBonus.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	pl.AddData("PL30", -fBtlGondola.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	pl.AddData("PL31", -fBtlOtherpromo.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	pl.AddData("PL32", -fBtlSPG.AmountinIDR*pl.RatioToBranchSales, plmodels)
 }
 
 func (pl *SalesPL) CalcSGA(masters toolkit.M) {
-    if masters.Has("sga")==false || masters.Has("ledger")==false{
-        return
-    }
-    sgas := masters.Get("sga").(map[string]map[string]*RawDataPL)
+	if masters.Has("sga") == false || masters.Has("ledger") == false {
+		return
+	}
+	sgas := masters.Get("sga").(map[string]map[string]*RawDataPL)
 
-    plmodels := masters.Get("plmodel").(map[string]*PLModel)
+	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	sgaid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
-    raws, exist := sgas[sgaid]
-    if !exist{
-        return        
-    }
+	raws, exist := sgas[sgaid]
+	if !exist {
+		return
+	}
 
-    ccs := map[string]*CostCenter{}
-    if masters.Has("cc"){
-        ccs = masters.Get("cc").(map[string]*CostCenter)
-    }
-    ledgers := masters.Get("ledger").(map[string]*LedgerMaster)
-    for _, raw := range raws{
-        plcode := "PL94A"
-        ledger, exist := ledgers[raw.Account]
-        if exist{
-           plcode = ledger.PLCode 
-        }
-        cc, exist := ccs[raw.CCID]
-        ccgroup := "Other"
-        if exist {
-            ccgroup = cc.CostGroup01
-        }
-        pl.AddDataCC(plcode,-pl.RatioToBrandSales*raw.AmountinIDR,ccgroup,plmodels)
-    }
+	ccs := map[string]*CostCenter{}
+	if masters.Has("cc") {
+		ccs = masters.Get("cc").(map[string]*CostCenter)
+	}
+	ledgers := masters.Get("ledger").(map[string]*LedgerMaster)
+	for _, raw := range raws {
+		plcode := "PL94A"
+		ledger, exist := ledgers[raw.Account]
+		if exist {
+			plcode = ledger.PLCode
+		}
+		cc, exist := ccs[raw.CCID]
+		ccgroup := "Other"
+		if exist {
+			ccgroup = cc.CostGroup01
+		}
+		pl.AddDataCC(plcode, -pl.RatioToBrandSales*raw.AmountinIDR, ccgroup, plmodels)
+	}
 }
 
-func (pl *SalesPL) AddData(plcode string, amount float64,models map[string]*PLModel){
-	pl.AddDataCC(plcode,amount,"",models)
+func (pl *SalesPL) AddData(plcode string, amount float64, models map[string]*PLModel) {
+	pl.AddDataCC(plcode, amount, "", models)
 }
 
-func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, models map[string]*PLModel){
+func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, models map[string]*PLModel) {
 	if amount == 0 {
 		return
 	}
@@ -296,20 +307,20 @@ func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, mode
 	pl_m, exist := pl.PLDatas[plcode]
 	if !exist {
 		pl_m = new(PLData)
-        pl_m.PLOrder = m.OrderIndex
+		pl_m.PLOrder = m.OrderIndex
 		pl_m.Group1 = m.PLHeader1
 		pl_m.Group2 = m.PLHeader2
 		pl_m.Group3 = m.PLHeader3
 	}
-    if ccgroup!=""{
-        pl_m.Group3=ccgroup
-    }
+	if ccgroup != "" {
+		pl_m.Group3 = ccgroup
+	}
 	pl_m.Amount += amount
-    if pl.PLDatas==nil{
-        pl.PLDatas=map[string]*PLData{}
-    }
-    if ccgroup!=""{
-        plcode = plcode + "_" + ccgroup
-    }
+	if pl.PLDatas == nil {
+		pl.PLDatas = map[string]*PLData{}
+	}
+	if ccgroup != "" {
+		plcode = plcode + "_" + ccgroup
+	}
 	pl.PLDatas[plcode] = pl_m
 }
