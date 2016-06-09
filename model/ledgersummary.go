@@ -3,7 +3,6 @@ package gdrj
 import (
 	"errors"
 	"fmt"
-	// . "github.com/ahmetalpbalkan/go-linq"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"

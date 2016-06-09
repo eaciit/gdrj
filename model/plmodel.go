@@ -30,6 +30,22 @@ func PLModelGetByID(id string) *PLModel {
 	return t
 }
 
+func PLModelGetAll() ([]*PLModel, error) {
+	cursor, err := DB().Find(new(PLModel), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*PLModel{}
+	err = cursor.Fetch(&result, 0, false)
+	if err != nil {
+		return nil, err
+	}
+	cursor.Close()
+
+	return result, nil
+}
+
 func (t *PLModel) Save() error {
 	e := Save(t)
 	if e != nil {

@@ -170,24 +170,6 @@ func (m *ReportController) GetDataAnalysisIdea(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, res, "")
 }
 
-func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-	res := new(toolkit.Result)
-
-	payload := new(gdrj.PivotParam)
-	if err := r.GetPayload(payload); err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	data, err := gdrj.CalculateLedgerSummary(payload)
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-	res.SetData(data)
-
-	return res
-}
-
 func (m *ReportController) GetSalesHeaderList(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -237,6 +219,54 @@ func (m *ReportController) GetOutletIDList(r *knot.WebContext) interface{} {
 	return result
 }
 
+func (m *ReportController) GetPLModel(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	result, err := gdrj.PLModelGetAll()
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	return result
+}
+
+func (m *ReportController) CalculateData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	res := new(toolkit.Result)
+
+	payload := new(gdrj.SalesPLParam)
+	if err := r.GetPayload(payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	data, err := payload.GetData()
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	plmodels, err := gdrj.PLModelGetAll()
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	res.SetData(toolkit.M{
+		"data":     data,
+		"plmodels": plmodels,
+	})
+
+	return res
+	// param = {
+	//     pls: [],
+	//     groups: ["customer.channelname"],
+	//     aggr: "sum",
+	//     filters: []
+	// }
+	// app.ajaxPost("/report/calculatedata", param)
+}
+
 func (m *ReportController) GetLedgerSummaryDetail(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -259,6 +289,8 @@ func (m *ReportController) GetLedgerSummaryDetail(r *knot.WebContext) interface{
 
 func (m *ReportController) GenerateRandomLedgerSummary(r *knot.WebContext) interface{} {
 	return "ok"
+
+	gocore.GenerateDummySalesLinePL()
 	gocore.GenerateDummyLedgerSummary()
 
 	return "ok"
