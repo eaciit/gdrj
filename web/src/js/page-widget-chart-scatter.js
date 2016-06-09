@@ -11,6 +11,8 @@ rs.breakDownNetSales = ko.observable('Net Sales')
 rs.pplheader = ko.observable('Direct Labor')
 rs.datascatter = ko.observableArray([])
 rs.plheader = ko.observable('plgroup3')
+rs.plheader1 = ko.observable('plgroup1')
+rs.chartComparisonNote = ko.observable('')
 
 rs.optionDimensionSelect = ko.observableArray([])
 
@@ -18,19 +20,20 @@ rs.getSalesHeaderList = () => {
 	app.ajaxPost(`/report/GetSalesHeaderList`, {}, (res) => {
 		let data = Lazy(res)
 			.map((k, v) => { 
-				return {field: k._id[rs.plheader()], name: k._id[rs.plheader()]}
+				// return {field: k._id[rs.plheader1()], name: k._id[rs.plheader1()]}
+				return {field: k, name: k}
 			})
 			.toArray()
 		rs.optionDimensionSelect(data)
 		rs.optionDimensionSelect.remove( (item) => { return item.field == rs.breakDownNetSales(); } )
-		rs.refresh()
+		rs.refresh(true)
 		setTimeout(() => { 
 			rs.pplheader('')
 		}, 300)
 	})
 }
 
-rs.refresh = () => {
+rs.refresh = (useCache = false) => {
 	rs.contentIsLoading(true)
 	let dimensions = [
 		{ "field": rs.plheader(), "name": rs.plheader() },
@@ -77,7 +80,7 @@ rs.refresh = () => {
 				let totalDataAll = Lazy(currentDataAll.data).sum((e) => e.value1)   // by breakdown
 				let totalDataAll2 = Lazy(currentDataAll2.data).sum((e) => e.value1) // by net sales
 
-				let maxNetSales = Lazy(currentDataAll.data).max((e) => e.value1).value1
+				let maxNetSales = Lazy(currentDataAll2.data).max((e) => e.value1).value1
 				let percentage = totalDataAll / totalDataAll2 * 100
 				let percentageToMaxSales = percentage * maxNetSales / 100
 
@@ -93,7 +96,7 @@ rs.refresh = () => {
 						header: dataall[i].data[a].plmodel_plheader1,
 						year: dataall[i].data[a].year
 					})
-					console.log('asd ' ,dataall[i].data[a].value1, 'ddd ', dataall[i].data[a].value1/maxNetSales*100)
+					console.log('dddd ',dataall[i].data[a].value1, dataall[i].data[a].value1/maxNetSales*100, dataall[i].data[a].value1/percentageToMaxSales*100)
 				}
 				if(i == 0){
 					rs.datascatter.push({
@@ -104,9 +107,23 @@ rs.refresh = () => {
 					})
 				}
 			}
+			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+			rs.chartComparisonNote(`Last refreshed on: ${date}`)
 			rs.generateReport(dataall[0]._id, dataall[1]._id, max)
+		}, () => {
+			rs.contentIsLoading(false)
+		}, {
+			cache: (useCache == true) ? 'pivot chart2' : false
 		})
+	}, () => {
+		rs.contentIsLoading(false)
+	}, {
+		cache: (useCache == true) ? 'pivot chart1' : false
 	})
+}
+
+rs.calculationPercentage = (data) => {
+
 }
 
 rs.generateReport = (year1, year2, max) => {
