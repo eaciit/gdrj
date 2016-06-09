@@ -18,7 +18,7 @@ body {
   opacity: 0.4;
 }
 .app {
-  background-color: #f0f3f4;
+  background-color: #F0F3F4;
   transition: 600ms ease-in-out opacity;
 }
 .app-wrapper {
@@ -451,13 +451,13 @@ body {
   padding: 5px;
 }
 .chart-comparison .each-chart .wrapper {
-  border: 1px solid #f0f3f4;
+  border: 1px solid #F0F3F4;
   padding: 10px;
 }
 .chart-comparison .each-chart .wrapper .title {
   padding-bottom: 3px;
   font-weight: bold;
-  border-bottom: 1px solid #f0f3f4;
+  border-bottom: 1px solid #F0F3F4;
   font-size: 16px;
 }
 .chart-comparison .each-chart .wrapper .chart {
@@ -465,6 +465,9 @@ body {
 }
 .pivot-pnl {
   position: relative;
+  height: 300px;
+  overflow-y: scroll;
+  border-bottom: 1px solid #F0F3F4;
 }
 .pivot-pnl .table-header {
   overflow-x: scroll;
@@ -483,7 +486,7 @@ body {
 }
 .pivot-pnl table tr th {
   border-color: #F0F3F4;
-  background-color: #f0f3f4;
+  background-color: #F0F3F4;
 }
 .pivot-pnl table tr td {
   padding: 4px 8px;
@@ -493,7 +496,7 @@ body {
   padding: 8px;
   line-height: 1.42857143;
   border-bottom: 1px solid #F0F3F4;
-  background-color: #f0f3f4;
+  background-color: #F0F3F4;
 }
 .pivot-pnl table tr:hover td {
   background-color: #74B841;

@@ -173,6 +173,11 @@ bkd.renderDetail = function (plcode, breakdown) {
 	});
 };
 bkd.render = function () {
+	if (bkd.data().length == 0) {
+		$('.breakdown-view').html('No data found.');
+		return;
+	}
+
 	var rows = [];
 	var data = _.sortBy(bkd.data(), function (d) {
 		return d._id[app.idAble(bkd.breakdownBy())];
@@ -184,13 +189,13 @@ bkd.render = function () {
 		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
 		data.forEach(function (e) {
 			var breakdown = e._id[app.idAble(bkd.breakdownBy())];
-			var value = e[d._id];
+			var value = e[d._id];value = app.validateNumber(value);
 			row[breakdown] = value;
 			row.PNLTotal += value;
 		});
 		data.forEach(function (e) {
 			var breakdown = e._id[app.idAble(bkd.breakdownBy())];
-			var value = e[d._id] / row.PNLTotal * 100;
+			var value = e[d._id] / row.PNLTotal * 100;value = app.validateNumber(value);
 			row[breakdown + ' %'] = value;
 		});
 		rows.push(row);

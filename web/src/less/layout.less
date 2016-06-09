@@ -22,7 +22,7 @@ html, body{
 }
 
 .app{
-	background-color: #f0f3f4;
+	background-color: @color-base-grey;
 	transition: 600ms ease-in-out opacity;
 }
 
@@ -104,7 +104,7 @@ html, body{
 		margin: 0px -10px;
 
 		h3{
-			border-bottom: 1px solid #F0F3F4;
+			border-bottom: 1px solid @color-base-grey;
 			padding-bottom: 7px;
 		}
 	}
@@ -379,8 +379,8 @@ html, body{
 			}
 
 			.k-dropdown-wrap.k-state-hover{
-				background-color: #F0F3F4;
-				border-color: #F0F3F4;
+				background-color: @color-base-grey;
+				border-color: @color-base-grey;
 			}
 		}
 	}
@@ -595,13 +595,13 @@ html, body{
     	padding: 5px;
 
     	.wrapper {
-			border: 1px solid #f0f3f4;
+			border: 1px solid @color-base-grey;
     		padding: 10px;
 
 	    	.title {
 			    padding-bottom: 3px;
 			    font-weight: bold;
-			    border-bottom: 1px solid #f0f3f4;
+			    border-bottom: 1px solid @color-base-grey;
 			    font-size: 16px;
 	    	}
 
@@ -613,7 +613,10 @@ html, body{
 }
 
 .pivot-pnl {
-	position: relative;
+    position: relative;
+    height: 300px;
+    overflow-y: scroll;
+    border-bottom: 1px solid @color-base-grey;
 
 	.table-header {
 		overflow-x: scroll;
@@ -635,7 +638,7 @@ html, body{
 		tr {
 			th {
 				border-color: @color-base-grey;
-				background-color: #f0f3f4;
+				background-color: @color-base-grey;
     			// color: white;
     			// font-weight: normal;
 			}
@@ -649,7 +652,7 @@ html, body{
 					padding: 8px;
 	    			line-height: 1.42857143;
 	    			border-bottom: 1px solid @color-base-grey;
-					background-color: #f0f3f4;
+					background-color: @color-base-grey;
 	    			// color: white;
 	    			// font-weight: normal;
 				}
