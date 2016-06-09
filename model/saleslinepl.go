@@ -8,6 +8,7 @@ import (
 
 type PLData struct {
 	PLCode                 string
+    PLOrder string
 	Group1, Group2, Group3 string
 	Amount                 float64
 }
@@ -49,7 +50,7 @@ func (s *SalesPL) RecordID() interface{} {
 	return s.ID
 }
 
-func (s *SalesPL) Build(conn dbox.IConnection,
+func TrxToSalesPL(conn dbox.IConnection,
 	trx *SalesTrx,
 	masters toolkit.M) *SalesPL {
 
@@ -70,7 +71,7 @@ func (s *SalesPL) Build(conn dbox.IConnection,
 	pl.Customer = trx.Customer
 	pl.Product = trx.Product
 
-	//-- classing
+    //-- classing
 	if pl.Customer == nil {
 		c := new(Customer)
 		c.BranchID = "CD02"
@@ -103,6 +104,14 @@ func (s *SalesPL) Build(conn dbox.IConnection,
 		p.Name = "Other"
 	}
 	//-- end of classing
+
+    globalSales := masters.Get("globalsales").(float64)
+    branchSales := masters.Get("branchsales").(map[string]float64)
+    brandSales := masters.Get("brandsales").(map[string]float64)
+
+    pl.RatioToGlobalSales = pl.NetAmount / globalSales
+    pl.RatioToBrandSales = pl.NetAmount / brandSales[pl.Product.Brand]
+    pl.RatioToBranchSales = pl.NetAmount / branchSales[pl.Customer.BranchID]
 
 	pl.CalcSales(masters)
 	pl.CalcCOGS(masters)
@@ -180,13 +189,13 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
     if masters.Has("promo")==false{
         return
     }
-    freights := masters.Get("promo").(map[string]RawDataPL)
+    promos := masters.Get("promo").(map[string]*RawDataPL)
 
-    find := func(x string)RawDataPL{
+    find := func(x string)*RawDataPL{
         freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, x)
-        f, exist := freights[freightid]
+        f, exist := promos[freightid]
         if !exist{
-            return RawDataPL{}
+            return &RawDataPL{}
         }
         return f
     }
@@ -195,7 +204,7 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
     fBtlBonus := find("bonus")
     fBtlGondola := find("gondola")
     fBtlSPG := find("spg")
-    fBtlOtherpromo := find("otherpromo")
+    fBtlOtherpromo := find("promo")
     
     plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	pl.AddData("PL28",fAtl.AmountinIDR*pl.RatioToBranchSales,plmodels)
@@ -209,7 +218,7 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
     if masters.Has("sga")==false || masters.Has("ledger")==false{
         return
     }
-    sgas := masters.Get("sga").(map[string][]RawDataPL)
+    sgas := masters.Get("sga").(map[string]map[string]RawDataPL)
 
     plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	sgaid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
@@ -253,6 +262,7 @@ func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, mode
 	pl_m, exist := pl.PLDatas[plcode]
 	if !exist {
 		pl_m = new(PLData)
+        pl_m.PLOrder = m.OrderIndex
 		pl_m.Group1 = m.PLHeader1
 		pl_m.Group2 = m.PLHeader2
 		pl_m.Group3 = m.PLHeader3
