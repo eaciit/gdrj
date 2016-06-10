@@ -87,6 +87,8 @@ rs.refresh = function () {
 				});
 			});
 
+			console.log("-----", years, dataScatter, maxData);
+
 			rs.contentIsLoading(false);
 			rs.generateReport(dataScatter, years);
 		}, function () {
@@ -114,8 +116,6 @@ rs.generateReport = function (data, years) {
 	var breakdownTitle = rs.optionDimensionSelect().find(function (d) {
 		return d.field == rs.selectedPNL();
 	}).name;
-
-	console.log("-----", years, data);
 
 	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>');
 	$('#scatter-view').width(data.length * 100);

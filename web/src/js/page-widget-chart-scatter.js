@@ -74,6 +74,9 @@ rs.refresh = (useCache = false) => {
 				})
 			})
 
+			console.log("-----", years, dataScatter, maxData)
+
+
 			rs.contentIsLoading(false)
 			rs.generateReport(dataScatter, years)
 		}, () => {
@@ -95,8 +98,6 @@ rs.generateReport = (data, years) => {
 
 	let netSalesTite = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNLNetSales()).name
 	let breakdownTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNL()).name
-
-	console.log("-----", years, data)
 
 	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>')
     $('#scatter-view').width(data.length * 100)
