@@ -26,6 +26,7 @@ gr.templateGrants = {
 gr.templateFilter = {
     search: ""
 };
+gr.contentIsLoading = ko.observable(false);
 gr.TableColumns = ko.observableArray([{ headerTemplate: "<center><input type='checkbox' class='deletecheckall' onclick=\"gr.checkDeleteData(this, 'deleteall', 'all')\"/></center>", attributes: { style: "text-align: center;" }, width: 40, template: function template(d) {
         return ["<input type='checkbox' class='deletecheck' idcheck='" + d._id + "' onclick=\"gr.checkDeleteData(this, 'delete')\" />"].join(" ");
     } }, {
@@ -172,6 +173,7 @@ gr.saveChanges = function () {
 };
 
 gr.refreshData = function () {
+    gr.contentIsLoading(true);
     $('.grid-group').data('kendoGrid').dataSource.read();
     gr.tempCheckIdDelete([]);
     ko.mapping.fromJS(gr.templateGroup, gr.config);
@@ -228,7 +230,7 @@ gr.generateGrid = function () {
             schema: {
                 data: function data(res) {
                     gr.selectedTableID("show");
-                    app.loader(false);
+                    gr.contentIsLoading(false);
                     return res.data.Datas;
                 },
                 total: "data.total"
