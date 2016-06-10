@@ -186,19 +186,26 @@ bkd.render = () => {
 	}
 	
 	let rows = []
-	let data = _.sortBy(bkd.data(), (d) => d._id[app.idAble(bkd.breakdownBy())])
+	let data = _.map(bkd.data(), (d) => {
+		if (String(d._id.pl) != String(d._id.fiscal)) {
+			d._id.pl = `${d._id.pl} ${d._id.fiscal}`
+		}
+
+		return d 
+	})
+	data = _.sortBy(bkd.data(), (d) => d._id.pl)
 	let plmodels = _.sortBy(bkd.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
 	plmodels.forEach((d) => {
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
 		data.forEach((e) => {
-			let breakdown = e._id[app.idAble(bkd.breakdownBy())]
-			let value = e[d._id]; value = app.validateNumber(value)
+			let breakdown = e._id.pl
+			let value = e[`total${d._id}`]; value = app.validateNumber(value)
 			row[breakdown] = value
 			row.PNLTotal += value
 		})
 		data.forEach((e) => {
-			let breakdown = e._id[app.idAble(bkd.breakdownBy())]
-			let value = e[d._id] / row.PNLTotal * 100; value = app.validateNumber(value)
+			let breakdown = e._id.pl
+			let value = e[`total${d._id}`] / row.PNLTotal * 100; value = app.validateNumber(value)
 			row[`${breakdown} %`] = value
 		})
 		rows.push(row)
@@ -239,14 +246,22 @@ bkd.render = () => {
 	let trContent1 = app.newEl('tr')
 		.appendTo(tableContent)
 
-	let colWidth = 150
+	let colWidth = 160
 	let colPercentWidth = 60
 	let totalWidth = 0
 	let pnlTotalSum = 0
 
+	if (bkd.breakdownBy() == "customer.branchname") {
+		colWidth = 200
+	}
+
+	if (bkd.breakdownBy() == "customer.region") {
+		colWidth = 230
+	}
+
 	data.forEach((d, i) => {
 		app.newEl('th')
-			.html(app.nbspAble(d._id[app.idAble(bkd.breakdownBy())], 'Uncategorized'))
+			.html(app.nbspAble(d._id.pl, 'Uncategorized'))
 			.addClass('align-right')
 			.appendTo(trContent1)
 			.width(colWidth)
@@ -282,7 +297,7 @@ bkd.render = () => {
 			.appendTo(tableContent)
 
 		data.forEach((e, f) => {
-			let key = e._id[app.idAble(bkd.breakdownBy())]
+			let key = e._id.pl
 			let value = kendo.toString(d[key], 'n0')
 			let percentage = kendo.toString(d[`${key} %`], 'n2')
 

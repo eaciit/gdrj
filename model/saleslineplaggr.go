@@ -50,7 +50,7 @@ func (s *SalesPLParam) GetData() ([]*toolkit.M, error) {
 	// if err != nil {
 	// 	return nil, err
 	// }
-	var yo string
+	var yo = "plby_fiscal_only"
 
 	// q := DB().Connection.NewQuery().From(new(SalesPL).TableName())
 	// defer q.Close()
@@ -71,21 +71,20 @@ func (s *SalesPLParam) GetData() ([]*toolkit.M, error) {
 		if s.Groups[0] == "customer.channelname" {
 			yo = "plby_fiscal_channel"
 		} else if s.Groups[0] == "customer.branchname" {
-			yo = "plby_fiscal_branchs"
+			yo = "plby_fiscal_branch"
 		} else if s.Groups[0] == "customer.region" {
 			yo = "plby_fiscal_region"
 		} else if s.Groups[0] == "product.brand" {
 			yo = "plby_fiscal_brand"
 		}
-	} else {
-		yo = "plby_fiscal_only"
 	}
-    q := DB().Connection.NewQuery().From(yo)
-    defer q.Close()
 
-    if len(s.Filters) > 0 {
-        q = q.Where(s.ParseFilter())
-    }
+	q := DB().Connection.NewQuery().From(yo)
+	defer q.Close()
+
+	if len(s.Filters) > 0 {
+		q = q.Where(s.ParseFilter())
+	}
 
 	c, e := q.Cursor(nil)
 	if e != nil {

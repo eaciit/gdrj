@@ -465,7 +465,6 @@ body {
 }
 .pivot-pnl {
   position: relative;
-  height: 300px;
   overflow-y: scroll;
   border-bottom: 1px solid #F0F3F4;
 }

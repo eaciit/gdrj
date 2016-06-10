@@ -127,6 +127,7 @@ rpt.pivotModel = [
 rpt.analysisIdeas = ko.observableArray([])
 rpt.data = ko.observableArray([])
 rpt.optionDimensions = ko.observableArray([
+	{ field: "", name: 'None', title: '' },
 	{ field: "customer.branchname", name: 'Branch/RD', title: 'customer_branchname' },
     { field: "product.brand", name: 'Brand', title: 'product_brand' },
 	{ field: 'customer.channelname', name: 'Channel', title: 'customer_channelname' },

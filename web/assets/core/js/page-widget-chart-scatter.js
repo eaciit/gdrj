@@ -8,7 +8,7 @@ rs.contentIsLoading = ko.observable(false);
 rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
 rs.selectedPNLNetSales = ko.observable("PL3");
-rs.selectedPNL = ko.observable("PL7");
+rs.selectedPNL = ko.observable("PL74C");
 rs.chartComparisonNote = ko.observable('');
 rs.optionDimensionSelect = ko.observableArray([]);
 
@@ -58,17 +58,18 @@ rs.refresh = function () {
 			var dataAllPNL = res1.Data.Data;
 			var dataAllPNLNetSales = res2.Data.Data;
 
+			var selectedPNL = "total" + rs.selectedPNL();
 			var years = _.map(_.groupBy(dataAllPNL, function (d) {
-				return d._id.date_year;
+				return d._id.fiscal;
 			}), function (v, k) {
 				return k;
 			});
 
 			var maxData = _.max(dataAllPNL.concat(dataAllPNLNetSales), function (d) {
-				return d[rs.selectedPNL()];
-			})[rs.selectedPNL()];
+				return d[selectedPNL];
+			})[selectedPNL];
 			var sumPNL = _.reduce(dataAllPNL, function (m, x) {
-				return m + x[rs.selectedPNL()];
+				return m + x[selectedPNL];
 			}, 0);
 			var countPNL = dataAllPNL.length;
 			var avgPNL = sumPNL / countPNL;
@@ -77,14 +78,16 @@ rs.refresh = function () {
 
 			dataAllPNL.forEach(function (d) {
 				dataScatter.push({
-					category: app.nbspAble(d._id[app.idAble(rs.breakdownBy())], 'Uncategorized'),
-					year: d._id.date_year,
-					scatterValue: d[rs.selectedPNL()],
-					scatterPercentage: d[rs.selectedPNL()] / maxData,
+					category: app.nbspAble(d._id.pl + " " + d._id.fiscal, 'Uncategorized'),
+					year: d._id.fiscal,
+					scatterValue: d[selectedPNL],
+					scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData),
 					lineAvg: avgPNL,
-					linePercentage: avgPNL / maxData
+					linePercentage: avgPNL / (maxData == 0 ? 1 : maxData)
 				});
 			});
+
+			console.log("-----", years, dataScatter, maxData);
 
 			rs.contentIsLoading(false);
 			rs.generateReport(dataScatter, years);
@@ -113,8 +116,6 @@ rs.generateReport = function (data, years) {
 	var breakdownTitle = rs.optionDimensionSelect().find(function (d) {
 		return d.field == rs.selectedPNL();
 	}).name;
-
-	console.log("-----", years, data);
 
 	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>');
 	$('#scatter-view').width(data.length * 100);
