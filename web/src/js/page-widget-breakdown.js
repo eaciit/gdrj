@@ -186,7 +186,13 @@ bkd.render = () => {
 	}
 	
 	let rows = []
-	let data = _.map(bkd.data(), (d) => { d._id.pl = `${d._id.pl} ${d._id.fiscal}`; return d })
+	let data = _.map(bkd.data(), (d) => {
+		if (String(d._id.pl) != String(d._id.fiscal)) {
+			d._id.pl = `${d._id.pl} ${d._id.fiscal}`
+		}
+		
+		return d 
+	})
 	data = _.sortBy(bkd.data(), (d) => d._id.pl)
 	let plmodels = _.sortBy(bkd.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
 	plmodels.forEach((d) => {

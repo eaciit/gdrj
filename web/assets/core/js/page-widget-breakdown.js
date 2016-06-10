@@ -180,7 +180,11 @@ bkd.render = function () {
 
 	var rows = [];
 	var data = _.map(bkd.data(), function (d) {
-		d._id.pl = d._id.pl + ' ' + d._id.fiscal;return d;
+		if (String(d._id.pl) != String(d._id.fiscal)) {
+			d._id.pl = d._id.pl + ' ' + d._id.fiscal;
+		}
+
+		return d;
 	});
 	data = _.sortBy(bkd.data(), function (d) {
 		return d._id.pl;
