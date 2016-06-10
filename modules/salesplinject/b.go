@@ -150,6 +150,7 @@ func prepMaster() {
 				}
 				sga.AmountinIDR +=o.AmountinIDR
 				asga[groupingid]=sga
+				sgas[sgaid]=asga
 			} else {
 				apgrouping := "promo"
 				if strings.Contains(o.APGrouping,"CD"){
@@ -195,11 +196,14 @@ func main() {
 	toolkit.Println("Reading Master")
 	prepMaster()
 
-	spl := new(gdrj.SalesPL)
-	toolkit.Println("Delete existing")
-	conn.NewQuery().From(spl.TableName()).Delete().Exec(nil)
+	//spl := new(gdrj.SalesPL)
+	//toolkit.Println("Delete existing")
+	//conn.NewQuery().From(spl.TableName()).Delete().Exec(nil)
 
-	c, _ := gdrj.Find(new(gdrj.SalesTrx),nil,nil)
+	var f *dbox.Filter
+	//f = dbox.And(dbox.Eq("year",2014),dbox.Eq("month",9))
+	//f = dbox.Eq("_id","CN/BBD/14000019_1")
+	c, _ := gdrj.Find(new(gdrj.SalesTrx),f,nil)
 	defer c.Close()
 
 	globalSales:=float64(0)
@@ -212,41 +216,55 @@ func main() {
 	limit:=step
 	i:=0
 	for{
-		stx := new(gdrj.SalesTrx)
-		e := c.Fetch(stx,1,false)
+		/*
+		buffersize:=1000
+		stxs := []*gdrj.SalesTrx{}
+		e := c.Fetch(&stxs,buffersize,false)
 		if e!=nil{
 			break
 		}
+		for _, stx := range stxs{
+		*/
+			stx := new(gdrj.SalesTrx)
+			e := c.Fetch(stx,1,false)
+			if e!=nil{
+				break
+			}
+			globalSales+=stx.NetAmount
+			
+			if stx.Customer!=nil{
+				branchSale, _:=branchSales[stx.Customer.BranchID]
+				branchSale+=stx.NetAmount
+				branchSales[stx.Customer.BranchID]=branchSale
+			}
 
-		globalSales+=stx.NetAmount
-		
-		if stx.Customer!=nil{
-			branchSale, _:=branchSales[stx.Customer.BranchID]
-			branchSale+=stx.NetAmount
-			branchSales[stx.Customer.BranchID]=branchSale
+			if stx.Product!=nil{
+				brandSale, _:=brandSales[stx.Product.Brand]
+				brandSale+=stx.NetAmount
+				brandSales[stx.Product.Brand]=brandSale
+			}
+
+			masters.Set("globalsales",globalSales)
+			masters.Set("branchsales",branchSales)
+			masters.Set("brandsales",brandSales)
+
+			i++
+
+			if i==1000{
+				//break
+			}
+
+			if i>=limit{
+				toolkit.Printfn("Calculating %d of %d (%.2f pct) in %s", 
+					i, count, float64(i) * float64(100)/float64(count), time.Since(t0).String())
+				limit += step
+			}
+		/*
 		}
-
-		if stx.Product!=nil{
-			brandSale, _:=brandSales[stx.Product.Brand]
-			brandSale+=stx.NetAmount
-			brandSales[stx.Product.Brand]=brandSale
+		if len(stxs)<buffersize{
+			break
 		}
-
-		masters.Set("globalsales",globalSales)
-		masters.Set("branchsales",branchSales)
-		masters.Set("brandsales",brandSales)
-
-		i++
-
-		if i==1000{
-			//break
-		}
-
-		if i>=limit{
-			toolkit.Printfn("Calculating %d of %d (%.2f pct) in %s", 
-				i, count, float64(i) * float64(100)/float64(count), time.Since(t0).String())
-			limit += step
-		}
+		*/
 	}
 
 	jobs := make(chan *gdrj.SalesTrx, count)
