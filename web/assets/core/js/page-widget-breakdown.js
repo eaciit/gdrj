@@ -179,8 +179,11 @@ bkd.render = function () {
 	}
 
 	var rows = [];
-	var data = _.sortBy(bkd.data(), function (d) {
-		return d._id[app.idAble(bkd.breakdownBy())];
+	var data = _.map(bkd.data(), function (d) {
+		d._id.pl = d._id.pl + ' ' + d._id.fiscal;return d;
+	});
+	data = _.sortBy(bkd.data(), function (d) {
+		return d._id.pl;
 	});
 	var plmodels = _.sortBy(bkd.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
@@ -188,14 +191,14 @@ bkd.render = function () {
 	plmodels.forEach(function (d) {
 		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
 		data.forEach(function (e) {
-			var breakdown = e._id[app.idAble(bkd.breakdownBy())];
-			var value = e[d._id];value = app.validateNumber(value);
+			var breakdown = e._id.pl;
+			var value = e['total' + d._id];value = app.validateNumber(value);
 			row[breakdown] = value;
 			row.PNLTotal += value;
 		});
 		data.forEach(function (e) {
-			var breakdown = e._id[app.idAble(bkd.breakdownBy())];
-			var value = e[d._id] / row.PNLTotal * 100;value = app.validateNumber(value);
+			var breakdown = e._id.pl;
+			var value = e['total' + d._id] / row.PNLTotal * 100;value = app.validateNumber(value);
 			row[breakdown + ' %'] = value;
 		});
 		rows.push(row);
@@ -219,13 +222,17 @@ bkd.render = function () {
 
 	var trContent1 = app.newEl('tr').appendTo(tableContent);
 
-	var colWidth = 150;
+	var colWidth = 160;
 	var colPercentWidth = 60;
 	var totalWidth = 0;
 	var pnlTotalSum = 0;
 
+	if (bkd.breakdownBy() == "customer.branchname") {
+		colWidth = 200;
+	}
+
 	data.forEach(function (d, i) {
-		app.newEl('th').html(app.nbspAble(d._id[app.idAble(bkd.breakdownBy())], 'Uncategorized')).addClass('align-right').appendTo(trContent1).width(colWidth);
+		app.newEl('th').html(app.nbspAble(d._id.pl, 'Uncategorized')).addClass('align-right').appendTo(trContent1).width(colWidth);
 
 		app.newEl('th').html('%').addClass('align-right cell-percentage').appendTo(trContent1).width(colPercentWidth);
 
@@ -247,7 +254,7 @@ bkd.render = function () {
 		var trContent = app.newEl('tr').appendTo(tableContent);
 
 		data.forEach(function (e, f) {
-			var key = e._id[app.idAble(bkd.breakdownBy())];
+			var key = e._id.pl;
 			var value = kendo.toString(d[key], 'n0');
 			var percentage = kendo.toString(d[key + ' %'], 'n2');
 
