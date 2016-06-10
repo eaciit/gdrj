@@ -253,14 +253,37 @@ bkd.render = function () {
 		pnlTotalSum += d.PNLTotal;
 
 		var trHeader = app.newEl('tr').appendTo(tableHeader);
+		trHeader.attr("id","rowiD"+i);
+		trHeader.attr("rowContentID",i);
+		trHeader.hover(function(){
+			var i = $(this).attr("rowContentID");
+	    	trContent.css({"background":"#74B841","color":"#fff"});
+			$(this).css({"background":"#74B841","color":"#fff"});
+		}, 
+		function () {
+	    	trContent.css({"background":"","color":""});
+	    	$(this).css({"background":"","color":""});
 
+		});
 		app.newEl('td').html(d.PNL).appendTo(trHeader);
 
 		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
 		app.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
 
-		var trContent = app.newEl('tr').appendTo(tableContent);
+		var trContent = app.newEl('tr');
+		trContent.attr("id","rowContentID"+i);
+		trContent.attr("rowContentID",i);
+		trContent.hover(function(){
+			var i = $(this).attr("rowContentID");
+	    	trHeader.css({"background":"#74B841","color":"#fff"});
+			$(this).css({"background":"#74B841","color":"#fff"});
+		}, 
+		function () {
+	    	trHeader.css({"background":"","color":""});
+	    	$(this).css({"background":"","color":""});
 
+		});
+		trContent.appendTo(tableContent);
 		data.forEach(function (e, f) {
 			var key = e._id.pl;
 			var value = kendo.toString(d[key], 'n0');
@@ -279,6 +302,8 @@ bkd.render = function () {
 			app.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
 		});
 	});
+
+	
 
 	return;
 
