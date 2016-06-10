@@ -46,26 +46,46 @@ func (s *SalesPLParam) GetPLModels() ([]*PLModel, error) {
 }
 
 func (s *SalesPLParam) GetData() ([]*toolkit.M, error) {
-	plmodels, err := s.GetPLModels()
-	if err != nil {
-		return nil, err
-	}
+	// plmodels, err := s.GetPLModels()
+	// if err != nil {
+	// 	return nil, err
+	// }
+	var yo string
 
-	q := DB().Connection.NewQuery().From(new(SalesPL).TableName())
-	defer q.Close()
+	// q := DB().Connection.NewQuery().From(new(SalesPL).TableName())
+	// defer q.Close()
 
-	if len(s.Filters) > 0 {
-		q = q.Where(s.ParseFilter())
-	}
+	// if len(s.Filters) > 0 {
+	// 	q = q.Where(s.ParseFilter())
+	// }
 
-	if len(s.Groups) > 0 {
-		q = q.Group(s.Groups...)
+	// if len(s.Groups) > 0 {
+	// 	q = q.Group(s.Groups...)
+	// }
+	// for _, plmod := range plmodels {
+	// 	op := fmt.Sprintf("$%s", s.Aggr)
+	// 	field := fmt.Sprintf("$pldatas.%s.amount", plmod.ID)
+	// 	q = q.Aggr(op, field, plmod.ID)
+	// }
+	if len(s.Groups[0]) > 0 {
+		if s.Groups[0] == "customer.channelname" {
+			yo = "plby_fiscal_channel"
+		} else if s.Groups[0] == "customer.branchname" {
+			yo = "plby_fiscal_branchs"
+		} else if s.Groups[0] == "customer.region" {
+			yo = "plby_fiscal_region"
+		} else if s.Groups[0] == "product.brand" {
+			yo = "plby_fiscal_brand"
+		}
+	} else {
+		yo = "plby_fiscal_only"
 	}
-	for _, plmod := range plmodels {
-		op := fmt.Sprintf("$%s", s.Aggr)
-		field := fmt.Sprintf("$pldatas.%s.amount", plmod.ID)
-		q = q.Aggr(op, field, plmod.ID)
-	}
+    q := DB().Connection.NewQuery().From(yo)
+    defer q.Close()
+
+    if len(s.Filters) > 0 {
+        q = q.Where(s.ParseFilter())
+    }
 
 	c, e := q.Cursor(nil)
 	if e != nil {
