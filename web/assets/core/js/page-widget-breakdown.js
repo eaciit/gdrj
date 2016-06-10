@@ -235,6 +235,10 @@ bkd.render = function () {
 		colWidth = 200;
 	}
 
+	if (bkd.breakdownBy() == "customer.region") {
+		colWidth = 230;
+	}
+
 	data.forEach(function (d, i) {
 		app.newEl('th').html(app.nbspAble(d._id.pl, 'Uncategorized')).addClass('align-right').appendTo(trContent1).width(colWidth);
 

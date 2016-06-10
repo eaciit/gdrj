@@ -190,7 +190,7 @@ bkd.render = () => {
 		if (String(d._id.pl) != String(d._id.fiscal)) {
 			d._id.pl = `${d._id.pl} ${d._id.fiscal}`
 		}
-		
+
 		return d 
 	})
 	data = _.sortBy(bkd.data(), (d) => d._id.pl)
@@ -253,6 +253,10 @@ bkd.render = () => {
 
 	if (bkd.breakdownBy() == "customer.branchname") {
 		colWidth = 200
+	}
+
+	if (bkd.breakdownBy() == "customer.region") {
+		colWidth = 230
 	}
 
 	data.forEach((d, i) => {
