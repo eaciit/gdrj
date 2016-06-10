@@ -53,10 +53,11 @@ rs.refresh = (useCache = false) => {
 			let dataAllPNL = res1.Data.Data
 			let dataAllPNLNetSales = res2.Data.Data
 
-			let years = _.map(_.groupBy(dataAllPNL, (d) => d._id.date_year), (v, k) => k)
+			let selectedPNL = `total${rs.selectedPNL()}`
+			let years = _.map(_.groupBy(dataAllPNL, (d) => d._id.fiscal), (v, k) => k)
 
-			let maxData = _.max(dataAllPNL.concat(dataAllPNLNetSales), (d) => d[rs.selectedPNL()])[rs.selectedPNL()]
-			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x[rs.selectedPNL()], 0)
+			let maxData = _.max(dataAllPNL.concat(dataAllPNLNetSales), (d) => d[selectedPNL])[selectedPNL]
+			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x[selectedPNL], 0)
 			let countPNL = dataAllPNL.length
 			let avgPNL = sumPNL / countPNL
 
@@ -64,12 +65,12 @@ rs.refresh = (useCache = false) => {
 
 			dataAllPNL.forEach((d) => {
 				dataScatter.push({
-					category: app.nbspAble(d._id[app.idAble(rs.breakdownBy())], 'Uncategorized'),
-					year: d._id.date_year,
-					scatterValue: d[rs.selectedPNL()],
-					scatterPercentage: d[rs.selectedPNL()] / maxData,
+					category: app.nbspAble(`${d._id.pl} ${d._id.fiscal}`, 'Uncategorized'),
+					year: d._id.fiscal,
+					scatterValue: d[selectedPNL],
+					scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData),
 					lineAvg: avgPNL,
-					linePercentage: avgPNL / maxData
+					linePercentage: avgPNL / (maxData == 0 ? 1 : maxData)
 				})
 			})
 

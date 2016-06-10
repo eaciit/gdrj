@@ -58,17 +58,18 @@ rs.refresh = function () {
 			var dataAllPNL = res1.Data.Data;
 			var dataAllPNLNetSales = res2.Data.Data;
 
+			var selectedPNL = "total" + rs.selectedPNL();
 			var years = _.map(_.groupBy(dataAllPNL, function (d) {
-				return d._id.date_year;
+				return d._id.fiscal;
 			}), function (v, k) {
 				return k;
 			});
 
 			var maxData = _.max(dataAllPNL.concat(dataAllPNLNetSales), function (d) {
-				return d[rs.selectedPNL()];
-			})[rs.selectedPNL()];
+				return d[selectedPNL];
+			})[selectedPNL];
 			var sumPNL = _.reduce(dataAllPNL, function (m, x) {
-				return m + x[rs.selectedPNL()];
+				return m + x[selectedPNL];
 			}, 0);
 			var countPNL = dataAllPNL.length;
 			var avgPNL = sumPNL / countPNL;
@@ -77,12 +78,12 @@ rs.refresh = function () {
 
 			dataAllPNL.forEach(function (d) {
 				dataScatter.push({
-					category: app.nbspAble(d._id[app.idAble(rs.breakdownBy())], 'Uncategorized'),
-					year: d._id.date_year,
-					scatterValue: d[rs.selectedPNL()],
-					scatterPercentage: d[rs.selectedPNL()] / maxData,
+					category: app.nbspAble(d._id.pl + " " + d._id.fiscal, 'Uncategorized'),
+					year: d._id.fiscal,
+					scatterValue: d[selectedPNL],
+					scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData),
 					lineAvg: avgPNL,
-					linePercentage: avgPNL / maxData
+					linePercentage: avgPNL / (maxData == 0 ? 1 : maxData)
 				});
 			});
 
