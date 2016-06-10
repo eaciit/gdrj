@@ -69,6 +69,7 @@ func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 	if err != nil {
 		return helper.CreateResult(false, "", err.Error())
 	}
+	gocore.WriteLog(sessid, "login", r.Request.URL.String())
 	r.SetSession("sessionid", sessid)
 
 	return helper.CreateResult(true, toolkit.M{}.Set("status", true).Set("sessionid", sessid), "Login Success")
@@ -76,6 +77,7 @@ func (l *LoginController) ProcessLogin(r *knot.WebContext) interface{} {
 
 func (l *LoginController) Logout(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
+	gocore.WriteLog(r.Session("sessionid", ""), "logout", r.Request.URL.String())
 	r.SetSession("sessionid", "")
 	return helper.CreateResult(true, nil, "Logout Success")
 }

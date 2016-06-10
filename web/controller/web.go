@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"eaciit/gdrj/web/model"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -33,6 +34,7 @@ func (w *WebController) Login(r *knot.WebContext) interface{} {
 }
 
 func (w *WebController) DataBrowser(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
@@ -42,6 +44,7 @@ func (w *WebController) DataBrowser(r *knot.WebContext) interface{} {
 }
 
 func (w *WebController) UploadData(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
@@ -50,43 +53,8 @@ func (w *WebController) UploadData(r *knot.WebContext) interface{} {
 	return true
 }
 
-func (w *WebController) ReportDistribution(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputTemplate
-	r.Config.LayoutTemplate = LayoutFile
-	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = View("page-report.html")
-
-	return toolkit.M{"subreport": "page-report-distribution.html"}
-}
-
-func (w *WebController) ReportGeneralTrade(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputTemplate
-	r.Config.LayoutTemplate = LayoutFile
-	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = View("page-report.html")
-
-	return toolkit.M{"subreport": "page-report-general-trade.html"}
-}
-
-func (w *WebController) ReportMarketEfficiency(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputTemplate
-	r.Config.LayoutTemplate = LayoutFile
-	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = View("page-report.html")
-
-	return toolkit.M{"subreport": "page-report-market-efficiency.html"}
-}
-
-func (w *WebController) ReportSGNA(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputTemplate
-	r.Config.LayoutTemplate = LayoutFile
-	r.Config.IncludeFiles = IncludeFiles
-	r.Config.ViewName = View("page-report.html")
-
-	return toolkit.M{"subreport": "page-report-sgna.html"}
-}
-
 func (w *WebController) ReportChartComparison(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
@@ -96,6 +64,7 @@ func (w *WebController) ReportChartComparison(r *knot.WebContext) interface{} {
 }
 
 func (w *WebController) AllocationFlow(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
@@ -105,6 +74,7 @@ func (w *WebController) AllocationFlow(r *knot.WebContext) interface{} {
 }
 
 func (w *WebController) Access(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
@@ -114,6 +84,7 @@ func (w *WebController) Access(r *knot.WebContext) interface{} {
 }
 
 func (w *WebController) Group(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
@@ -123,6 +94,7 @@ func (w *WebController) Group(r *knot.WebContext) interface{} {
 }
 
 func (w *WebController) Session(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
@@ -132,6 +104,7 @@ func (w *WebController) Session(r *knot.WebContext) interface{} {
 }
 
 func (w *WebController) User(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
@@ -141,6 +114,7 @@ func (w *WebController) User(r *knot.WebContext) interface{} {
 }
 
 func (w *WebController) Organization(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
@@ -150,6 +124,7 @@ func (w *WebController) Organization(r *knot.WebContext) interface{} {
 }
 
 func (w *WebController) PageReport(r *knot.WebContext, args []string) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
 	r.Config.IncludeFiles = IncludeFiles
