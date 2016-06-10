@@ -42,8 +42,10 @@
 				</div>
 			</div>
 			<div class="panel-body">
-				{{template "_loader.html"}}
-				<div data-bind="visible: !app.loader()">
+				<div data-bind="visible: ss.contentIsLoading">
+					{{template "_loader.html"}}
+				</div>
+				<div data-bind="visible: !ss.contentIsLoading()">
 					<p data-bind="visible: ss.selectedTableID() != ''">
 						Data on table <span class="tag bg-orange">session</span>.
 					</p>

@@ -49,8 +49,10 @@
 				</div>
 			</div>
 			<div class="panel-body">
-				{{template "_loader.html"}}
-				<div data-bind="visible: !app.loader()">
+				<div data-bind="visible: gr.contentIsLoading">
+					{{template "_loader.html"}}
+				</div>
+				<div data-bind="visible: !gr.contentIsLoading()">
 					<p data-bind="visible: gr.selectedTableID() != ''">
 						Data on table <span class="tag bg-orange">group</span>.
 					</p>

@@ -49,8 +49,10 @@
 				</div>
 			</div>
 			<div class="panel-body">
-				{{template "_loader.html"}}
-				<div data-bind="visible: !app.loader()">
+				<div data-bind="visible: us.contentIsLoading">
+					{{template "_loader.html"}}
+				</div>
+				<div data-bind="visible: !us.contentIsLoading()">
 					<p data-bind="visible: us.selectedTableID() != ''">
 						Data on table <span class="tag bg-orange">user</span>.
 					</p>
