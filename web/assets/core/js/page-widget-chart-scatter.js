@@ -105,7 +105,7 @@ rs.refresh = function () {
 
 				dataAllPNL.forEach(function (d) {
 					dataScatter.push({
-						category: app.nbspAble(d._id["_id_" + app.idAble(rs.selectedPNL())] + " " + d._id._id_date_year, 'Uncategorized'),
+						category: app.nbspAble(d._id["_id_" + app.idAble(rs.breakdownBy())] + " " + d._id._id_date_year, 'Uncategorized'),
 						year: d._id.fiscal,
 						scatterValue: d[selectedPNL],
 						scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData) * 100,
