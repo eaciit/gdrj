@@ -68,16 +68,33 @@ rs.refresh = function () {
 
 				var selectedPNL = "" + rs.selectedPNL();
 				var years = _.map(_.groupBy(dataAllPNL, function (d) {
-					return d._id.date_year;
+					return d._id._id_date_year;
 				}), function (v, k) {
 					return k;
 				});
 
-				var maxData = _.maxBy(_.filter(dataAllPNL.concat(dataAllPNLNetSales), function (d) {
-					return d[selectedPNL] != 0;
-				}), function (d) {
-					return d[selectedPNL];
-				})[selectedPNL];
+				console.log("+++++", dataAllPNL, rs.selectedPNL());
+				var maxData1 = 0;
+				try {
+					maxData1 = _.maxBy(_.filter(dataAllPNL, function (d) {
+						return d[rs.selectedPNL()] != 0;
+					}), function (d) {
+						return d[rs.selectedPNL()];
+					})[rs.selectedPNL()];
+				} catch (err) {}
+
+				console.log("+++++", dataAllPNLNetSales, rs.selectedPNLNetSales());
+				var maxData2 = 0;
+				try {
+					maxData2 = _.maxBy(_.filter(dataAllPNLNetSales, function (d) {
+						return d[rs.selectedPNLNetSales()] != 0;
+					}), function (d) {
+						return d[rs.selectedPNLNetSales()];
+					})[rs.selectedPNLNetSales()];
+				} catch (err) {}
+
+				var maxData = _.max([maxData1, maxData2]);
+
 				var sumPNL = _.reduce(dataAllPNL, function (m, x) {
 					return m + x[selectedPNL];
 				}, 0);
@@ -88,7 +105,7 @@ rs.refresh = function () {
 
 				dataAllPNL.forEach(function (d) {
 					dataScatter.push({
-						category: app.nbspAble(d._id[app.idAble(rs.selectedPNL())] + " " + d._id.date_year, 'Uncategorized'),
+						category: app.nbspAble(d._id["_id_" + app.idAble(rs.selectedPNL())] + " " + d._id._id_date_year, 'Uncategorized'),
 						year: d._id.fiscal,
 						scatterValue: d[selectedPNL],
 						scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData) * 100,
