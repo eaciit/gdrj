@@ -13,10 +13,13 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
+
+	"flag"
 )
 
 var mutex = new(sync.Mutex)
 var conn dbox.IConnection
+var compute string
 
 func setinitialconnection() {
 	var err error
@@ -37,7 +40,7 @@ func setinitialconnection() {
 var masters = toolkit.M{}
 
 func getCursor(obj orm.IModel) dbox.ICursor {
-	c, e := gdrj.Find(obj, nil, nil)
+	c, e := gdrj.Find(obj, nil, toolkit.M{}.Set("take",10))
 	if e != nil {
 		return nil
 	}
@@ -188,6 +191,9 @@ var pldatas = map[string]*gdrj.PLDataModel{}
 var t0 time.Time
 
 func main() {
+	flag.StringVar(&compute, "compute", "all", "type of computation will be run")
+	flag.Parse()
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	setinitialconnection()
 	defer gdrj.CloseDb()
@@ -274,7 +280,7 @@ func main() {
 	}
 
 	c.ResetFetch()
-	toolkit.Printfn("START ... %d records", count)
+	toolkit.Printfn("START ... %d records - computation type: %s", count, compute)
 	step = count/100
 	limit = step
 	i=0
@@ -319,7 +325,8 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string){
 
 	var j *gdrj.SalesTrx
 	for j = range jobs{
-		spl := gdrj.TrxToSalesPL(workerConn, j, masters)
+		spl := gdrj.TrxToSalesPL(workerConn, j, masters, 
+			toolkit.M{}.Set("compute", compute))
 		workerConn.NewQuery().From(spl.TableName()).
 			Save().Exec(toolkit.M{}.Set("data",spl))
 		result <- spl.ID

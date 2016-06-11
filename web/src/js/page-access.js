@@ -24,6 +24,7 @@ ac.templateAccess = {
 ac.templateFilter = {
     search: "",
 }
+ac.contentIsLoading = ko.observable(false)
 ac.AccessColumns = ko.observableArray([
 	{ headerTemplate: "<center><input type='checkbox' class='deletecheckall' onclick=\"ac.checkDeleteData(this, 'deleteall', 'all')\"/></center>", attributes: { style: "text-align: center;" }, width: 40, template: function (d) {
         return [
@@ -142,6 +143,7 @@ ac.saveChanges = () => {
 }
 
 ac.refreshDataBrowser = () => {
+    ac.contentIsLoading(true)
 	$('.grid-access').data('kendoGrid').dataSource.read()
     ac.tempCheckIdDelete([])
     ko.mapping.fromJS(ac.templateAccess, ac.config)
@@ -197,9 +199,9 @@ ac.generateGrid = () => {
             },
             schema: {
                 data: function(res){
-                    ac.selectedTableID("show");
-                    app.loader(false);
-                    return res.data.Datas;
+                    ac.selectedTableID("show")
+                    ac.contentIsLoading(false)
+                    return res.data.Datas
                 },
                 total: "data.total"
             },

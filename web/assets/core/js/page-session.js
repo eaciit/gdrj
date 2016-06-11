@@ -13,10 +13,12 @@ ss.templateFilter = {
 
 ss.TableColumns = ko.observableArray([{ field: "status", title: "" }, { field: "loginid", title: "Username" }, { field: "created", title: "Created", template: '# if (created == "0001-01-01T00:00:00Z") {#-#} else {# #:moment(created).utc().format("DD-MMM-YYYY HH:mm:ss")# #}#' }, { field: "expired", title: "Expired", template: '# if (expired == "0001-01-01T00:00:00Z") {#-#} else {# #:moment(expired).utc().format("DD-MMM-YYYY HH:mm:ss")# #}#' }, { field: "duration", title: "Active In", template: '#= kendo.toString(duration, "n2")# H' }, { title: "Action", width: 80, attributes: { class: "align-center" }, template: "#if(status=='ACTIVE'){# <button data-value='#:_id #' onclick='ses.setexpired(\"#: _id #\", \"#: loginid #\")' name='expired' type='button' class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' title='Set Expired'><span class='fa fa-times'></span></button> #}else{# #}#" }]);
 
+ss.contentIsLoading = ko.observable(false);
 ss.selectedTableID = ko.observable("");
 ss.filter = ko.mapping.fromJS(ss.templateFilter);
 
 ss.refreshData = function () {
+    ss.contentIsLoading(true);
     $('.grid-session').data('kendoGrid').dataSource.read();
 };
 
@@ -51,7 +53,7 @@ ss.generateGrid = function () {
             schema: {
                 data: function data(res) {
                     ss.selectedTableID("show");
-                    app.loader(false);
+                    ss.contentIsLoading(false);
                     return res.data.Datas;
                 },
                 total: "data.total"

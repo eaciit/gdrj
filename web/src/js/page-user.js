@@ -43,6 +43,7 @@ us.templateSelectGrant = {
 	DataAccess: []
 }
 
+us.contentIsLoading = ko.observable(false)
 us.TableColumns = ko.observableArray([
     { headerTemplate: "<center><input type='checkbox' class='deletecheckall' onclick=\"us.checkDeleteData(this, 'deleteall', 'all')\"/></center>", attributes: { style: "text-align: center;" }, width: 40, template: function (d) {
         return [
@@ -300,6 +301,7 @@ us.saveChanges = () => {
 }
 
 us.refreshData = () => {
+    us.contentIsLoading(true)
 	$('.grid-user').data('kendoGrid').dataSource.read()
     ko.mapping.fromJS(us.templateUser, us.config)
 }
@@ -355,7 +357,7 @@ us.generateGrid = () => {
             schema: {
                 data: function(res){
                     us.selectedTableID("show");
-                    app.loader(false);
+                    us.contentIsLoading(false);
                     return res.data.Datas;
                 },
                 total: "data.total"

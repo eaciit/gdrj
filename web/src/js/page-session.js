@@ -22,10 +22,12 @@ ss.TableColumns = ko.observableArray([
 	{ title: "Action", width: 80, attributes: { class: "align-center" }, template:"#if(status=='ACTIVE'){# <button data-value='#:_id #' onclick='ses.setexpired(\"#: _id #\", \"#: loginid #\")' name='expired' type='button' class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' title='Set Expired'><span class='fa fa-times'></span></button> #}else{# #}#" }
 ])
 
+ss.contentIsLoading = ko.observable(false)
 ss.selectedTableID = ko.observable("")
 ss.filter = ko.mapping.fromJS(ss.templateFilter)
 
 ss.refreshData = () => {
+    ss.contentIsLoading(true)
 	$('.grid-session').data('kendoGrid').dataSource.read()
 }
 
@@ -60,7 +62,7 @@ ss.generateGrid = () => {
             schema: {
                 data: function(res){
                     ss.selectedTableID("show");
-                    app.loader(false);
+                    ss.contentIsLoading(false);
                     return res.data.Datas;
                 },
                 total: "data.total"

@@ -4,6 +4,7 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
+    "strings"
 )
 
 type PLData struct {
@@ -52,7 +53,8 @@ func (s *SalesPL) RecordID() interface{} {
 
 func TrxToSalesPL(conn dbox.IConnection,
 	trx *SalesTrx,
-	masters toolkit.M) *SalesPL {
+	masters toolkit.M,
+    config toolkit.M) *SalesPL {
 
 	pl := new(SalesPL)
 	pl.ID = trx.ID
@@ -130,12 +132,28 @@ func TrxToSalesPL(conn dbox.IConnection,
 		pl.RatioToBranchSales = pl.NetAmount / branchSale
 	}
 
-	pl.CalcSales(masters)
-	pl.CalcCOGS(masters)
-	pl.CalcFreight(masters)
-	pl.CalcPromo(masters)
-	pl.CalcSGA(masters)
-
+    compute := strings.ToLower(config.Get("compute","all").(string)) 
+    if compute=="all"{
+        pl.CalcSales(masters)
+        pl.CalcCOGS(masters)
+        pl.CalcFreight(masters)
+        pl.CalcPromo(masters)
+        pl.CalcSGA(masters)
+    } else if compute=="sales"{
+        pl.CalcSales(masters)
+    } else if compute=="cogs" {
+        pl.CalcCOGS(masters)
+    } else if compute=="freight" {
+        pl.CalcFreight(masters)
+    } else if compute=="promo"{
+        pl.CalcPromo(masters)
+    } else if compute=="sga" {
+        pl.CalcSGA(masters)
+    } else if compute=="rawdatapl" {
+        pl.CalcFreight(masters)
+        pl.CalcPromo(masters)
+        pl.CalcSGA(masters)
+    }
 	pl.CalcSum(masters)
 
 	return pl

@@ -118,7 +118,7 @@ rs.generateReport = function (data, years) {
 	}).name;
 
 	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>');
-	$('#scatter-view').width(data.length * 100);
+	if (data.length * 100 > $('#scatter-view').parent().width()) $('#scatter-view').width(data.length * 100);else $('#scatter-view').css('width', '100%');
 	$("#scatter-view").kendoChart({
 		dataSource: {
 			data: data
