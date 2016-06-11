@@ -53,6 +53,22 @@ bkd.clickCell = function (plcode, breakdown) {
 
 	bkd.renderDetail(plcode, breakdown);
 };
+bkd.clickExpand = function (e) {
+	var right = $(e).find('i.fa-chevron-right').length;
+	var down = $(e).find('i.fa-chevron-down').length;
+	if (right > 0) {
+		$(e).find('i').removeClass('fa-chevron-right');
+		$(e).find('i').addClass('fa-chevron-down');
+		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', '');
+		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
+	}
+	if (down > 0) {
+		$(e).find('i').removeClass('fa-chevron-down');
+		$(e).find('i').addClass('fa-chevron-right');
+		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
+		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
+	}
+};
 bkd.emptyGrid = function () {
 	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
 };
@@ -239,6 +255,21 @@ bkd.render = function () {
 		colWidth = 230;
 	}
 
+	var grouppl1 = _.map(_.groupBy(bkd.plmodels(), function (d) {
+		return d.PLHeader1;
+	}), function (k, v) {
+		return { data: k, key: v };
+	});
+	var grouppl2 = _.map(_.groupBy(bkd.plmodels(), function (d) {
+		return d.PLHeader2;
+	}), function (k, v) {
+		return { data: k, key: v };
+	});
+	var grouppl3 = _.map(_.groupBy(bkd.plmodels(), function (d) {
+		return d.PLHeader3;
+	}), function (k, v) {
+		return { data: k, key: v };
+	});
 	data.forEach(function (d, i) {
 		app.newEl('th').html(app.nbspAble(d._id.pl, 'Uncategorized')).addClass('align-right').appendTo(trContent1).width(colWidth);
 
@@ -246,20 +277,28 @@ bkd.render = function () {
 
 		totalWidth += colWidth + colPercentWidth;
 	});
+	// console.log('data ', data)
 
 	tableContent.css('min-width', totalWidth);
 
+	// console.log('row ', rows)
 	rows.forEach(function (d, i) {
 		pnlTotalSum += d.PNLTotal;
 
-		var trHeader = app.newEl('tr').appendTo(tableHeader);
+		var PL = d.PLCode;
+		PL = PL.replace(/\s+/g, '');
+		var trHeader = app.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).appendTo(tableHeader);
 
-		app.newEl('td').html(d.PNL).appendTo(trHeader);
+		trHeader.on('click', function () {
+			bkd.clickExpand(trHeader);
+		});
+
+		app.newEl('td').html('<i></i>' + d.PNL).appendTo(trHeader);
 
 		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
 		app.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
 
-		var trContent = app.newEl('tr').appendTo(tableContent);
+		var trContent = app.newEl('tr').addClass('column' + PL).attr('idpl', PL).appendTo(tableContent);
 
 		data.forEach(function (e, f) {
 			var key = e._id.pl;
@@ -278,6 +317,94 @@ bkd.render = function () {
 
 			app.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
 		});
+	});
+
+	var $trElem = void 0,
+	    $columnElem = void 0;
+	var resg1 = void 0,
+	    resg2 = void 0,
+	    resg3 = void 0,
+	    PLyo = void 0,
+	    PLyo2 = void 0,
+	    child = 0,
+	    parenttr = 0,
+	    textPL = void 0;
+	$(".table-header tbody>tr").each(function (i) {
+		if (i > 0) {
+			$trElem = $(this);
+			resg1 = _.find(grouppl1, function (o) {
+				return o.key == $trElem.find('td:eq(0)').text();
+			});
+			resg2 = _.find(grouppl2, function (o) {
+				return o.key == $trElem.find('td:eq(0)').text();
+			});
+			resg3 = _.find(grouppl3, function (o) {
+				return o.key == $trElem.find('td:eq(0)').text();
+			});
+			if (resg1 == undefined) {
+				if (resg2 != undefined) {
+					textPL = _.find(resg2.data, function (o) {
+						return o._id == $trElem.attr("idheaderpl");
+					});
+					PLyo = _.find(rows, function (o) {
+						return o.PNL == textPL.PLHeader1;
+					});
+					PLyo2 = _.find(rows, function (o) {
+						return o.PLCode == textPL._id;
+					});
+					$trElem.find('td:eq(0)').css('padding-left', '40px');
+					$trElem.attr('idparent', PLyo.PLCode);
+					child = $('tr[idparent=' + PLyo.PLCode + ']').length;
+					$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
+					$columnElem.attr('idcontparent', PLyo.PLCode);
+					if (child > 1) {
+						$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
+						$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
+					} else {
+						$trElem.insertAfter($('tr.header' + PLyo.PLCode));
+						$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
+					}
+				} else if (resg2 == undefined) {
+					if (resg3 != undefined) {
+						PLyo = _.find(rows, function (o) {
+							return o.PNL == resg3.data[0].PLHeader2;
+						});
+						PLyo2 = _.find(rows, function (o) {
+							return o.PNL == resg3.data[0].PLHeader3;
+						});
+						$trElem.find('td:eq(0)').css('padding-left', '60px');
+						if (PLyo == undefined) {
+							PLyo = _.find(rows, function (o) {
+								return o.PNL == resg3.data[0].PLHeader1;
+							});
+							if (PLyo != undefined) $trElem.find('td:eq(0)').css('padding-left', '40px');
+						}
+						$trElem.attr('idparent', PLyo.PLCode);
+						child = $('tr[idparent=' + PLyo.PLCode + ']').length;
+						$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
+						$columnElem.attr('idcontparent', PLyo.PLCode);
+						if (child > 1) {
+							$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
+							$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
+						} else {
+							$trElem.insertAfter($('tr.header' + PLyo.PLCode));
+							$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
+						}
+					}
+				}
+			}
+		}
+	});
+
+	$(".table-header tbody>tr").each(function (i) {
+		$trElem = $(this);
+		parenttr = $('tr[idparent=' + $trElem.attr('idheaderpl') + ']').length;
+		if (parenttr > 0) {
+			$trElem.addClass('dd');
+			$trElem.find('td:eq(0)>i').addClass('fa fa-chevron-right').css('margin-right', '5px');
+			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
+			$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
+		}
 	});
 
 	return;

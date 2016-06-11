@@ -49,6 +49,22 @@ bkd.clickCell = (plcode, breakdown) => {
 
 	bkd.renderDetail(plcode, breakdown)
 }
+bkd.clickExpand = (e) => {
+	let right = $(e).find('i.fa-chevron-right').length
+	let down = $(e).find('i.fa-chevron-down').length
+	if (right > 0){
+		$(e).find('i').removeClass('fa-chevron-right')
+		$(e).find('i').addClass('fa-chevron-down')
+		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
+		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
+	}
+	if (down > 0) {
+		$(e).find('i').removeClass('fa-chevron-down')
+		$(e).find('i').addClass('fa-chevron-right')
+		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
+		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
+	}
+}
 bkd.emptyGrid = () => {
 	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
 }
@@ -259,6 +275,9 @@ bkd.render = () => {
 		colWidth = 230
 	}
 
+	let grouppl1 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
+	let grouppl2 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
+	let grouppl3 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
 		app.newEl('th')
 			.html(app.nbspAble(d._id.pl, 'Uncategorized'))
@@ -274,17 +293,27 @@ bkd.render = () => {
 
 		totalWidth += colWidth + colPercentWidth
 	})
+	// console.log('data ', data)
 
 	tableContent.css('min-width', totalWidth)
 
+	// console.log('row ', rows)
 	rows.forEach((d, i) => {
 		pnlTotalSum += d.PNLTotal
 
+		let PL = d.PLCode
+		PL = PL.replace(/\s+/g, '')
 		let trHeader = app.newEl('tr')
+			.addClass(`header${PL}`)
+			.attr(`idheaderpl`, PL)
 			.appendTo(tableHeader)
 
+		trHeader.on('click', () => {
+			bkd.clickExpand(trHeader)
+		})
+
 		app.newEl('td')
-			.html(d.PNL)
+			.html('<i></i>' + d.PNL)
 			.appendTo(trHeader)
 
 		let pnlTotal = kendo.toString(d.PNLTotal, 'n0')
@@ -294,6 +323,8 @@ bkd.render = () => {
 			.appendTo(trHeader)
 
 		let trContent = app.newEl('tr')
+			.addClass(`column${PL}`)
+			.attr(`idpl`, PL)
 			.appendTo(tableContent)
 
 		data.forEach((e, f) => {
@@ -319,6 +350,74 @@ bkd.render = () => {
 				.addClass('align-right cell-percentage')
 				.appendTo(trContent)
 		})
+	})
+
+	let $trElem, $columnElem
+	let resg1, resg2, resg3, PLyo, PLyo2, child = 0, parenttr = 0, textPL
+	$(".table-header tbody>tr").each(function( i ) {
+		if (i > 0){
+			$trElem = $(this)
+			resg1 = _.find(grouppl1, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
+			resg2 = _.find(grouppl2, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
+			resg3 = _.find(grouppl3, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
+			if (resg1 == undefined){
+				if (resg2 != undefined){ 
+					textPL = _.find(resg2.data, function(o) { return o._id == $trElem.attr("idheaderpl") })
+					PLyo = _.find(rows, function(o) { return o.PNL == textPL.PLHeader1 })
+					PLyo2 = _.find(rows, function(o) { return o.PLCode == textPL._id })
+					$trElem.find('td:eq(0)').css('padding-left','40px')
+					$trElem.attr('idparent', PLyo.PLCode)
+					child = $(`tr[idparent=${PLyo.PLCode}]`).length
+					$columnElem = $(`.table-content tr.column${PLyo2.PLCode}`)
+					$columnElem.attr('idcontparent', PLyo.PLCode)
+					if (child > 1){
+						$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+						$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+					}
+					else{
+						$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
+						$columnElem.insertAfter($(`tr.column${PLyo.PLCode}`))
+					}
+				} else if (resg2 == undefined){
+					if (resg3 != undefined){
+						PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader2 })
+						PLyo2 = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader3 })
+						$trElem.find('td:eq(0)').css('padding-left','60px')
+						if (PLyo == undefined){
+							PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader1 })
+							if(PLyo != undefined)
+								$trElem.find('td:eq(0)').css('padding-left','40px')
+						}
+						$trElem.attr('idparent', PLyo.PLCode)
+						child = $(`tr[idparent=${PLyo.PLCode}]`).length
+						$columnElem = $(`.table-content tr.column${PLyo2.PLCode}`)
+						$columnElem.attr('idcontparent', PLyo.PLCode)
+						if (child > 1){
+							$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+							$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+						}
+						else{
+							$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
+							$columnElem.insertAfter($(`tr.column${PLyo.PLCode}`))
+						}
+					}
+				}
+			}
+
+		}
+	})
+
+	$(".table-header tbody>tr").each(function( i ) {
+		$trElem = $(this)
+		parenttr = $(`tr[idparent=${$trElem.attr('idheaderpl')}]`).length
+		if (parenttr>0){
+			$trElem.addClass('dd')
+			$trElem.find(`td:eq(0)>i`)
+				.addClass('fa fa-chevron-right')
+				.css('margin-right', '5px')
+			$(`tr[idparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
+			$(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
+		}
 	})
 
 	return
@@ -355,6 +454,7 @@ bkd.render = () => {
 			.addClass('align-right')
 			.appendTo(trContentTotal)
 	})
+
 }
 
 $(() => {
