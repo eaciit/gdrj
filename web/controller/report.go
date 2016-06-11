@@ -292,19 +292,19 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 		return res
 	}
 
-	if gocore.GetConfig(tableName) != nil {
+	if knot.SharedObject().Get(tableName, "") != "" {
 		res.SetError(errors.New("still processing, might take a while"))
 		return res
 	}
 
 	go func() {
-		gocore.SetConfig(tableName, "MANGSTABS!")
+		knot.SharedObject().Set(tableName, "MANGSTABS!")
 		err = payload.GeneratePLData()
 		if err != nil {
-			gocore.SetConfig(tableName, nil)
+			knot.SharedObject().Unset(tableName)
 		}
 
-		gocore.SetConfig(tableName, nil)
+		knot.SharedObject().Unset(tableName)
 	}()
 
 	return res
