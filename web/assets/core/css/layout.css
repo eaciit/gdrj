@@ -530,6 +530,9 @@ body {
 .breakdown-view table tr.hover {
   background-color: #74B841;
 }
+.breakdown-view table tr.hover td {
+  color: white;
+}
 .scatter-view-container {
   overflow-x: scroll;
 }
