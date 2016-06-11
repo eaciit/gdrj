@@ -4,6 +4,8 @@ import (
 	"eaciit/gdrj/model"
 	"eaciit/gdrj/web/helper"
 	"eaciit/gdrj/web/model"
+	"errors"
+	// "fmt"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -238,6 +240,72 @@ func (m *ReportController) GetPNLDataDetail(r *knot.WebContext) interface{} {
 	}
 
 	res.SetData(data)
+
+	return res
+}
+
+func (m *ReportController) CheckPNLDataNew(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	res := new(toolkit.Result)
+
+	payload := new(gdrj.PLFinderParam)
+	if err := r.GetPayload(payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	tableName := payload.GetTableName()
+	if gocore.GetConfig(tableName) == "" {
+		res.SetError(errors.New("still processing, might take a while"))
+		return res
+	}
+
+	return res
+}
+
+func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	res := new(toolkit.Result)
+
+	payload := new(gdrj.PLFinderParam)
+	if err := r.GetPayload(payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	ok, err := payload.CountPLData()
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	tableName := payload.GetTableName()
+
+	if ok {
+		data, err := payload.GetPLData()
+		if err != nil {
+			res.SetError(err)
+			return res
+		}
+
+		res.SetData(data)
+		return res
+	}
+
+	if gocore.GetConfig(tableName) != nil {
+		res.SetError(errors.New("still processing, might take a while"))
+		return res
+	}
+
+	go func() {
+		gocore.SetConfig(tableName, "MANGSTABS!")
+		err = payload.GeneratePLData()
+		if err != nil {
+			gocore.SetConfig(tableName, nil)
+		}
+
+		gocore.SetConfig(tableName, nil)
+	}()
 
 	return res
 }
