@@ -466,9 +466,20 @@ bkd.render = () => {
 			.addClass('align-right')
 			.appendTo(trContentTotal)
 	})
+}
 
+bkd.prepareEvents = () => {
+	$('.breakdown-view').on('mouseover', 'tr', function () {
+		let index = $(this).index()
+        let elh = $(`.breakdown-view .table-header tr:eq(${index})`).addClass('hover')
+        let elc = $(`.breakdown-view .table-content tr:eq(${index})`).addClass('hover')
+	})
+	$('.breakdown-view').on('mouseleave', 'tr', function () {
+		$('.breakdown-view tr.hover').removeClass('hover')
+	})
 }
 
 $(() => {
 	bkd.refresh(false)
+	bkd.prepareEvents()
 })
