@@ -7,7 +7,7 @@ let dataPoints = [
 rs.contentIsLoading = ko.observable(false)
 rs.title = ko.observable('P&L Analytic')
 rs.breakdownBy = ko.observable('customer.channelname')
-rs.selectedPNLNetSales = ko.observable("PL8A")
+rs.selectedPNLNetSales = ko.observable("PL8A") // PL1
 rs.selectedPNL = ko.observable("PL74C")
 rs.chartComparisonNote = ko.observable('')
 rs.optionDimensionSelect = ko.observableArray([])
@@ -75,8 +75,8 @@ rs.refresh = (useCache = false) => {
 				try {
 					maxData2 = _.maxBy(_.filter(dataAllPNLNetSales, (d) => d[rs.selectedPNLNetSales()] != 0), (d) => d[rs.selectedPNLNetSales()])[rs.selectedPNLNetSales()]
 				} catch (err) { }
-				
 				let maxData = _.max([maxData1, maxData2])
+				console.log("+++++========", maxData1, maxData2)
 
 				let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x[selectedPNL], 0)
 				let countPNL = dataAllPNL.length
@@ -87,7 +87,7 @@ rs.refresh = (useCache = false) => {
 				dataAllPNL.forEach((d) => {
 					dataScatter.push({
 						category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
-						year: d._id.fiscal,
+						year: d._id._id_date_year,
 						scatterValue: d[selectedPNL],
 						scatterPercentage: (d[selectedPNL] / (maxData == 0 ? 1 : maxData)) * 100,
 						lineAvg: avgPNL,

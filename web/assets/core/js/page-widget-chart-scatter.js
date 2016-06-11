@@ -7,7 +7,7 @@ var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 rs.contentIsLoading = ko.observable(false);
 rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
-rs.selectedPNLNetSales = ko.observable("PL8A");
+rs.selectedPNLNetSales = ko.observable("PL8A"); // PL1
 rs.selectedPNL = ko.observable("PL74C");
 rs.chartComparisonNote = ko.observable('');
 rs.optionDimensionSelect = ko.observableArray([]);
@@ -92,8 +92,8 @@ rs.refresh = function () {
 						return d[rs.selectedPNLNetSales()];
 					})[rs.selectedPNLNetSales()];
 				} catch (err) {}
-
 				var maxData = _.max([maxData1, maxData2]);
+				console.log("+++++========", maxData1, maxData2);
 
 				var sumPNL = _.reduce(dataAllPNL, function (m, x) {
 					return m + x[selectedPNL];
@@ -106,7 +106,7 @@ rs.refresh = function () {
 				dataAllPNL.forEach(function (d) {
 					dataScatter.push({
 						category: app.nbspAble(d._id["_id_" + app.idAble(rs.breakdownBy())] + " " + d._id._id_date_year, 'Uncategorized'),
-						year: d._id.fiscal,
+						year: d._id._id_date_year,
 						scatterValue: d[selectedPNL],
 						scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData) * 100,
 						lineAvg: avgPNL,
