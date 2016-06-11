@@ -20,26 +20,37 @@ bkd.refresh = function () {
 	param.pls = [];
 	param.groups = [bkd.breakdownBy()];
 	param.aggr = 'sum';
-	param.filters = []; // rpt.getFilterValue()
+	param.filters = rpt.getFilterValue();
 
 	bkd.oldBreakdownBy(bkd.breakdownBy());
 	bkd.contentIsLoading(true);
 
-	app.ajaxPost("/report/getpnldata", param, function (res) {
-		var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
-		bkd.breakdownNote('Last refreshed on: ' + date);
+	var fetch = function fetch() {
+		app.ajaxPost("/report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
 
-		bkd.data(res.Data.Data);
-		bkd.plmodels(res.Data.PLModels);
-		bkd.emptyGrid();
-		bkd.contentIsLoading(false);
-		bkd.render();
-	}, function () {
-		bkd.emptyGrid();
-		bkd.contentIsLoading(false);
-	}, {
-		cache: useCache == true ? 'breakdown chart' : false
-	});
+			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+			bkd.breakdownNote('Last refreshed on: ' + date);
+
+			bkd.data(res.Data.Data);
+			bkd.plmodels(res.Data.PLModels);
+			bkd.emptyGrid();
+			bkd.contentIsLoading(false);
+			bkd.render();
+		}, function () {
+			bkd.emptyGrid();
+			bkd.contentIsLoading(false);
+		}, {
+			cache: useCache == true ? 'breakdown chart' : false
+		});
+	};
+
+	fetch();
 };
 
 bkd.breakdownBy = ko.observable('customer.channelname');
@@ -195,15 +206,15 @@ bkd.render = function () {
 	}
 
 	var rows = [];
-	var data = _.map(bkd.data(), function (d) {
-		if (String(d._id.pl) != String(d._id.fiscal)) {
-			d._id.pl = d._id.pl + ' ' + d._id.fiscal;
-		}
+	// let data = _.map(bkd.data(), (d) => {
+	// 	if (String(d._id[`_id_${app.idAble(bkd.breakdownBy())}`]) != String(d._id.fiscal)) {
+	// 		d._id[`_id_${app.idAble(bkd.breakdownBy())}`] = `${d._id[`_id_${app.idAble(bkd.breakdownBy())}`]} ${d._id.fiscal}`
+	// 	}
 
-		return d;
-	});
-	data = _.sortBy(bkd.data(), function (d) {
-		return d._id.pl;
+	// 	return d
+	// })
+	var data = _.sortBy(bkd.data(), function (d) {
+		return d._id['_id_' + app.idAble(bkd.breakdownBy())];
 	});
 	var plmodels = _.sortBy(bkd.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
@@ -211,14 +222,14 @@ bkd.render = function () {
 	plmodels.forEach(function (d) {
 		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
 		data.forEach(function (e) {
-			var breakdown = e._id.pl;
-			var value = e['total' + d._id];value = app.validateNumber(value);
+			var breakdown = e._id['_id_' + app.idAble(bkd.breakdownBy())];
+			var value = e['' + d._id];value = app.validateNumber(value);
 			row[breakdown] = value;
 			row.PNLTotal += value;
 		});
 		data.forEach(function (e) {
-			var breakdown = e._id.pl;
-			var value = e['total' + d._id] / row.PNLTotal * 100;value = app.validateNumber(value);
+			var breakdown = e._id['_id_' + app.idAble(bkd.breakdownBy())];
+			var value = e['' + d._id] / row.PNLTotal * 100;value = app.validateNumber(value);
 			row[breakdown + ' %'] = value;
 		});
 		rows.push(row);
@@ -271,7 +282,7 @@ bkd.render = function () {
 		return { data: k, key: v };
 	});
 	data.forEach(function (d, i) {
-		app.newEl('th').html(app.nbspAble(d._id.pl, 'Uncategorized')).addClass('align-right').appendTo(trContent1).width(colWidth);
+		app.newEl('th').html(app.nbspAble(d._id['_id_' + app.idAble(bkd.breakdownBy())], 'Uncategorized')).addClass('align-right').appendTo(trContent1).width(colWidth);
 
 		app.newEl('th').html('%').addClass('align-right cell-percentage').appendTo(trContent1).width(colPercentWidth);
 
@@ -301,8 +312,9 @@ bkd.render = function () {
 		var trContent = app.newEl('tr').addClass('column' + PL).attr('idpl', PL).appendTo(tableContent);
 
 		data.forEach(function (e, f) {
-			var key = e._id.pl;
+			var key = e._id['_id_' + app.idAble(bkd.breakdownBy())];
 			var value = kendo.toString(d[key], 'n0');
+
 			var percentage = kendo.toString(d[key + ' %'], 'n2');
 
 			if ($.trim(value) == '') {
@@ -402,8 +414,8 @@ bkd.render = function () {
 		if (parenttr > 0) {
 			$trElem.addClass('dd');
 			$trElem.find('td:eq(0)>i').addClass('fa fa-chevron-right').css('margin-right', '5px');
-			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
-			$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
+			// $(`tr[idparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
+			// $(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
 		}
 	});
 

@@ -6,6 +6,7 @@ import (
 	"github.com/eaciit/toolkit"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"math"
 	"sort"
 	"strings"
 	"time"
@@ -18,8 +19,10 @@ type Filter struct {
 }
 
 type PLFinderParam struct {
-	Breakdowns []string  `json:"breakdown"`
+	PLs        []string  `json:"pls"`
+	Breakdowns []string  `json:"groups"`
 	Filters    []*Filter `json:"filters"`
+	Aggr       string    `json:"aggr"`
 }
 
 func (s *PLFinderParam) ParseFilter() *dbox.Filter {
@@ -125,10 +128,62 @@ func (s *PLFinderParam) CountPLData() (bool, error) {
 	return (csr.Count() > 0), nil
 }
 
+func (s *PLFinderParam) GetPLModels() ([]*PLModel, error) {
+	res := []*PLModel{}
+
+	q := DB().Connection.NewQuery().From(new(PLModel).TableName())
+	defer q.Close()
+
+	if len(s.PLs) > 0 {
+		filters := []*dbox.Filter{}
+		for _, pl := range s.PLs {
+			filters = append(filters, dbox.Eq("_id", pl))
+		}
+		q = q.Where(dbox.Or(filters...))
+	}
+
+	csr, err := q.Cursor(nil)
+	if err != nil {
+		return nil, err
+	}
+	defer csr.Close()
+
+	err = csr.Fetch(&res, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	tableName := s.GetTableName()
+	plmodels, err := s.GetPLModels()
+	if err != nil {
+		return nil, err
+	}
 
-	csr, err := DB().Connection.NewQuery().From(tableName).Cursor(nil)
+	q := DB().Connection.NewQuery().From(tableName)
+	// if len(s.Filters) > 0 {
+	// 	q = q.Where(s.ParseFilter())
+	// }
+
+	for _, breakdown := range s.Breakdowns {
+		brkdwn := fmt.Sprintf("_id.%s", strings.Replace(breakdown, ".", "_", -1))
+		q = q.Group(brkdwn)
+		fmt.Println("---- group by", brkdwn)
+	}
+
+	fmt.Println("---- group from", tableName)
+
+	for _, plmod := range plmodels {
+		op := fmt.Sprintf("$%s", s.Aggr)
+		field := fmt.Sprintf("$%s", plmod.ID)
+		q = q.Aggr(op, field, plmod.ID)
+		fmt.Println("---- group by", op, field, plmod.ID)
+	}
+
+	csr, err := q.Cursor(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -138,6 +193,18 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	err = csr.Fetch(&res, 0, false)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, each := range res {
+		for key := range *each {
+			if strings.Contains(key, "PL") {
+				val := each.GetFloat64(key)
+				if math.IsNaN(val) {
+					each.Set(key, 0)
+				}
+			}
+		}
+		fmt.Printf("------ %#v\n", each)
 	}
 
 	return res, nil

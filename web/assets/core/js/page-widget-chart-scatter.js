@@ -39,72 +39,83 @@ rs.refresh = function () {
 	param1.pls = [rs.selectedPNL()];
 	param1.groups = [rs.breakdownBy(), 'date.year'];
 	param1.aggr = 'sum';
-	param1.filters = []; // rpt.getFilterValue()
+	param1.filters = rpt.getFilterValue();
 
-	app.ajaxPost("/report/getpnldata", param1, function (res1) {
-		var date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss");
-		rs.chartComparisonNote("Last refreshed on: " + date);
+	var fetch = function fetch() {
+		app.ajaxPost("/report/getpnldatanew", param1, function (res1) {
+			if (res1.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
 
-		var param2 = {};
-		param2.pls = [rs.selectedPNLNetSales()];
-		param2.groups = [rs.breakdownBy(), 'date.year'];
-		param2.aggr = 'sum';
-		param2.filters = []; // rpt.getFilterValue()
-
-		app.ajaxPost("/report/getpnldata", param2, function (res2) {
-			var date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+			var date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			rs.chartComparisonNote("Last refreshed on: " + date);
 
-			var dataAllPNL = res1.Data.Data;
-			var dataAllPNLNetSales = res2.Data.Data;
+			var param2 = {};
+			param2.pls = [rs.selectedPNLNetSales()];
+			param2.groups = [rs.breakdownBy(), 'date.year'];
+			param2.aggr = 'sum';
+			param2.filters = rpt.getFilterValue();
 
-			var selectedPNL = "total" + rs.selectedPNL();
-			var years = _.map(_.groupBy(dataAllPNL, function (d) {
-				return d._id.fiscal;
-			}), function (v, k) {
-				return k;
-			});
+			app.ajaxPost("/report/getpnldatanew", param2, function (res2) {
+				var date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+				rs.chartComparisonNote("Last refreshed on: " + date);
 
-			var maxData = _.maxBy(_.filter(dataAllPNL.concat(dataAllPNLNetSales), function (d) {
-				return d[selectedPNL] != 0;
-			}), function (d) {
-				return d[selectedPNL];
-			})[selectedPNL];
-			var sumPNL = _.reduce(dataAllPNL, function (m, x) {
-				return m + x[selectedPNL];
-			}, 0);
-			var countPNL = dataAllPNL.length;
-			var avgPNL = sumPNL / countPNL;
+				var dataAllPNL = res1.Data.Data;
+				var dataAllPNLNetSales = res2.Data.Data;
 
-			var dataScatter = [];
-
-			dataAllPNL.forEach(function (d) {
-				dataScatter.push({
-					category: app.nbspAble(d._id.pl + " " + d._id.fiscal, 'Uncategorized'),
-					year: d._id.fiscal,
-					scatterValue: d[selectedPNL],
-					scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData) * 100,
-					lineAvg: avgPNL,
-					linePercentage: avgPNL / (maxData == 0 ? 1 : maxData) * 100
+				var selectedPNL = "" + rs.selectedPNL();
+				var years = _.map(_.groupBy(dataAllPNL, function (d) {
+					return d._id.date_year;
+				}), function (v, k) {
+					return k;
 				});
 
-				console.log("---->>>>-", avgPNL, d[selectedPNL], maxData);
+				var maxData = _.maxBy(_.filter(dataAllPNL.concat(dataAllPNLNetSales), function (d) {
+					return d[selectedPNL] != 0;
+				}), function (d) {
+					return d[selectedPNL];
+				})[selectedPNL];
+				var sumPNL = _.reduce(dataAllPNL, function (m, x) {
+					return m + x[selectedPNL];
+				}, 0);
+				var countPNL = dataAllPNL.length;
+				var avgPNL = sumPNL / countPNL;
+
+				var dataScatter = [];
+
+				dataAllPNL.forEach(function (d) {
+					dataScatter.push({
+						category: app.nbspAble(d._id[app.idAble(rs.selectedPNL())] + " " + d._id.date_year, 'Uncategorized'),
+						year: d._id.fiscal,
+						scatterValue: d[selectedPNL],
+						scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData) * 100,
+						lineAvg: avgPNL,
+						linePercentage: avgPNL / (maxData == 0 ? 1 : maxData) * 100
+					});
+
+					console.log("---->>>>-", avgPNL, d[selectedPNL], maxData);
+				});
+
+				console.log("-----", years, dataScatter, maxData);
+
+				rs.contentIsLoading(false);
+				rs.generateReport(dataScatter, years);
+			}, function () {
+				rs.contentIsLoading(false);
+			}, {
+				cache: useCache == true ? 'pivot chart' : false
 			});
-
-			console.log("-----", years, dataScatter, maxData);
-
-			rs.contentIsLoading(false);
-			rs.generateReport(dataScatter, years);
 		}, function () {
 			rs.contentIsLoading(false);
 		}, {
 			cache: useCache == true ? 'pivot chart' : false
 		});
-	}, function () {
-		rs.contentIsLoading(false);
-	}, {
-		cache: useCache == true ? 'pivot chart' : false
-	});
+	};
+
+	fetch();
 };
 
 rs.generateReport = function (data, years) {

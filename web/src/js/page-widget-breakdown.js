@@ -16,26 +16,37 @@ bkd.refresh = (useCache = false) => {
 	param.pls = []
 	param.groups = [bkd.breakdownBy()]
 	param.aggr = 'sum'
-	param.filters = [] // rpt.getFilterValue()
+	param.filters = rpt.getFilterValue()
 	
 	bkd.oldBreakdownBy(bkd.breakdownBy())
 	bkd.contentIsLoading(true)
 
-	app.ajaxPost("/report/getpnldata", param, (res) => {
-		let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-		bkd.breakdownNote(`Last refreshed on: ${date}`)
+	let fetch = () => {
+		app.ajaxPost("/report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
+			}
 
-		bkd.data(res.Data.Data)
-		bkd.plmodels(res.Data.PLModels)
-		bkd.emptyGrid()
-		bkd.contentIsLoading(false)
-		bkd.render()
-	}, () => {
-		bkd.emptyGrid()
-		bkd.contentIsLoading(false)
-	}, {
-		cache: (useCache == true) ? 'breakdown chart' : false
-	})
+			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+			bkd.breakdownNote(`Last refreshed on: ${date}`)
+
+			bkd.data(res.Data.Data)
+			bkd.plmodels(res.Data.PLModels)
+			bkd.emptyGrid()
+			bkd.contentIsLoading(false)
+			bkd.render()
+		}, () => {
+			bkd.emptyGrid()
+			bkd.contentIsLoading(false)
+		}, {
+			cache: (useCache == true) ? 'breakdown chart' : false
+		})
+	}
+
+	fetch()
 }
 
 bkd.breakdownBy = ko.observable('customer.channelname')
@@ -202,26 +213,26 @@ bkd.render = () => {
 	}
 	
 	let rows = []
-	let data = _.map(bkd.data(), (d) => {
-		if (String(d._id.pl) != String(d._id.fiscal)) {
-			d._id.pl = `${d._id.pl} ${d._id.fiscal}`
-		}
+	// let data = _.map(bkd.data(), (d) => {
+	// 	if (String(d._id[`_id_${app.idAble(bkd.breakdownBy())}`]) != String(d._id.fiscal)) {
+	// 		d._id[`_id_${app.idAble(bkd.breakdownBy())}`] = `${d._id[`_id_${app.idAble(bkd.breakdownBy())}`]} ${d._id.fiscal}`
+	// 	}
 
-		return d 
-	})
-	data = _.sortBy(bkd.data(), (d) => d._id.pl)
+	// 	return d 
+	// })
+	let data = _.sortBy(bkd.data(), (d) => d._id[`_id_${app.idAble(bkd.breakdownBy())}`])
 	let plmodels = _.sortBy(bkd.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
 	plmodels.forEach((d) => {
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
 		data.forEach((e) => {
-			let breakdown = e._id.pl
-			let value = e[`total${d._id}`]; value = app.validateNumber(value)
+			let breakdown = e._id[`_id_${app.idAble(bkd.breakdownBy())}`]
+			let value = e[`${d._id}`]; value = app.validateNumber(value)
 			row[breakdown] = value
 			row.PNLTotal += value
 		})
 		data.forEach((e) => {
-			let breakdown = e._id.pl
-			let value = e[`total${d._id}`] / row.PNLTotal * 100; value = app.validateNumber(value)
+			let breakdown = e._id[`_id_${app.idAble(bkd.breakdownBy())}`]
+			let value = e[`${d._id}`] / row.PNLTotal * 100; value = app.validateNumber(value)
 			row[`${breakdown} %`] = value
 		})
 		rows.push(row)
@@ -280,7 +291,7 @@ bkd.render = () => {
 	let grouppl3 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
 		app.newEl('th')
-			.html(app.nbspAble(d._id.pl, 'Uncategorized'))
+			.html(app.nbspAble(d._id[`_id_${app.idAble(bkd.breakdownBy())}`], 'Uncategorized'))
 			.addClass('align-right')
 			.appendTo(trContent1)
 			.width(colWidth)
@@ -328,8 +339,9 @@ bkd.render = () => {
 			.appendTo(tableContent)
 
 		data.forEach((e, f) => {
-			let key = e._id.pl
+			let key = e._id[`_id_${app.idAble(bkd.breakdownBy())}`]
 			let value = kendo.toString(d[key], 'n0')
+
 			let percentage = kendo.toString(d[`${key} %`], 'n2')
 
 			if ($.trim(value) == '') {
@@ -415,8 +427,8 @@ bkd.render = () => {
 			$trElem.find(`td:eq(0)>i`)
 				.addClass('fa fa-chevron-right')
 				.css('margin-right', '5px')
-			$(`tr[idparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
-			$(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
+			// $(`tr[idparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
+			// $(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
 		}
 	})
 

@@ -34,63 +34,74 @@ rs.refresh = (useCache = false) => {
 	param1.pls = [rs.selectedPNL()]
 	param1.groups = [rs.breakdownBy(), 'date.year']
 	param1.aggr = 'sum'
-	param1.filters = [] // rpt.getFilterValue()
+	param1.filters = rpt.getFilterValue()
 	
-	app.ajaxPost("/report/getpnldata", param1, (res1) => {
-		let date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-		rs.chartComparisonNote(`Last refreshed on: ${date}`)
+	let fetch = () => {
+		app.ajaxPost("/report/getpnldatanew", param1, (res1) => {
+			if (res1.Status == "NOK") {
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
+			}
 
-		let param2 = {}
-		param2.pls = [rs.selectedPNLNetSales()]
-		param2.groups = [rs.breakdownBy(), 'date.year']
-		param2.aggr = 'sum'
-		param2.filters = [] // rpt.getFilterValue()
-
-		app.ajaxPost("/report/getpnldata", param2, (res2) => {
-			let date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+			let date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
-			let dataAllPNL = res1.Data.Data
-			let dataAllPNLNetSales = res2.Data.Data
+			let param2 = {}
+			param2.pls = [rs.selectedPNLNetSales()]
+			param2.groups = [rs.breakdownBy(), 'date.year']
+			param2.aggr = 'sum'
+			param2.filters = rpt.getFilterValue()
 
-			let selectedPNL = `total${rs.selectedPNL()}`
-			let years = _.map(_.groupBy(dataAllPNL, (d) => d._id.fiscal), (v, k) => k)
+			app.ajaxPost("/report/getpnldatanew", param2, (res2) => {
+				let date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+				rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
-			let maxData = _.maxBy(_.filter(dataAllPNL.concat(dataAllPNLNetSales), (d) => d[selectedPNL] != 0), (d) => d[selectedPNL])[selectedPNL]
-			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x[selectedPNL], 0)
-			let countPNL = dataAllPNL.length
-			let avgPNL = sumPNL / countPNL
+				let dataAllPNL = res1.Data.Data
+				let dataAllPNLNetSales = res2.Data.Data
 
-			let dataScatter = []
+				let selectedPNL = `${rs.selectedPNL()}`
+				let years = _.map(_.groupBy(dataAllPNL, (d) => d._id.date_year), (v, k) => k)
 
-			dataAllPNL.forEach((d) => {
-				dataScatter.push({
-					category: app.nbspAble(`${d._id.pl} ${d._id.fiscal}`, 'Uncategorized'),
-					year: d._id.fiscal,
-					scatterValue: d[selectedPNL],
-					scatterPercentage: (d[selectedPNL] / (maxData == 0 ? 1 : maxData)) * 100,
-					lineAvg: avgPNL,
-					linePercentage: (avgPNL / (maxData == 0 ? 1 : maxData)) * 100
+				let maxData = _.maxBy(_.filter(dataAllPNL.concat(dataAllPNLNetSales), (d) => d[selectedPNL] != 0), (d) => d[selectedPNL])[selectedPNL]
+				let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x[selectedPNL], 0)
+				let countPNL = dataAllPNL.length
+				let avgPNL = sumPNL / countPNL
+
+				let dataScatter = []
+
+				dataAllPNL.forEach((d) => {
+					dataScatter.push({
+						category: app.nbspAble(`${d._id[app.idAble(rs.selectedPNL())]} ${d._id.date_year}`, 'Uncategorized'),
+						year: d._id.fiscal,
+						scatterValue: d[selectedPNL],
+						scatterPercentage: (d[selectedPNL] / (maxData == 0 ? 1 : maxData)) * 100,
+						lineAvg: avgPNL,
+						linePercentage: (avgPNL / (maxData == 0 ? 1 : maxData)) * 100
+					})
+					
+					console.log("---->>>>-", avgPNL, d[selectedPNL], maxData)
 				})
-				
-				console.log("---->>>>-", avgPNL, d[selectedPNL], maxData)
+
+				console.log("-----", years, dataScatter, maxData)
+
+				rs.contentIsLoading(false)
+				rs.generateReport(dataScatter, years)
+			}, () => {
+				rs.contentIsLoading(false)
+			}, {
+				cache: (useCache == true) ? 'pivot chart' : false
 			})
 
-			console.log("-----", years, dataScatter, maxData)
-
-			rs.contentIsLoading(false)
-			rs.generateReport(dataScatter, years)
 		}, () => {
 			rs.contentIsLoading(false)
 		}, {
 			cache: (useCache == true) ? 'pivot chart' : false
 		})
+	}
 
-	}, () => {
-		rs.contentIsLoading(false)
-	}, {
-		cache: (useCache == true) ? 'pivot chart' : false
-	})
+	fetch()
 }
 
 rs.generateReport = (data, years) => {

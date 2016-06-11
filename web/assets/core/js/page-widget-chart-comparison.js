@@ -184,5 +184,5 @@ rpt.toggleFilterCallback = function () {
 };
 
 $(function () {
-	// ccr.getDecreasedQty(false)
+	ccr.getDecreasedQty(false);
 });
