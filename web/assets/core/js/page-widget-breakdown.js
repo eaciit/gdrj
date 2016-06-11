@@ -414,8 +414,8 @@ bkd.render = function () {
 		if (parenttr > 0) {
 			$trElem.addClass('dd');
 			$trElem.find('td:eq(0)>i').addClass('fa fa-chevron-right').css('margin-right', '5px');
-			// $(`tr[idparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
-			// $(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
+			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
+			$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
 		}
 	});
 
