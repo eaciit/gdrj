@@ -56,7 +56,7 @@ rs.refresh = (useCache = false) => {
 			let selectedPNL = `total${rs.selectedPNL()}`
 			let years = _.map(_.groupBy(dataAllPNL, (d) => d._id.fiscal), (v, k) => k)
 
-			let maxData = _.max(dataAllPNL.concat(dataAllPNLNetSales), (d) => d[selectedPNL])[selectedPNL]
+			let maxData = _.maxBy(_.filter(dataAllPNL.concat(dataAllPNLNetSales), (d) => d[selectedPNL] != 0), (d) => d[selectedPNL])[selectedPNL]
 			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x[selectedPNL], 0)
 			let countPNL = dataAllPNL.length
 			let avgPNL = sumPNL / countPNL
@@ -68,14 +68,15 @@ rs.refresh = (useCache = false) => {
 					category: app.nbspAble(`${d._id.pl} ${d._id.fiscal}`, 'Uncategorized'),
 					year: d._id.fiscal,
 					scatterValue: d[selectedPNL],
-					scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData),
+					scatterPercentage: (d[selectedPNL] / (maxData == 0 ? 1 : maxData)) * 100,
 					lineAvg: avgPNL,
-					linePercentage: avgPNL / (maxData == 0 ? 1 : maxData)
+					linePercentage: (avgPNL / (maxData == 0 ? 1 : maxData)) * 100
 				})
+				
+				console.log("---->>>>-", avgPNL, d[selectedPNL], maxData)
 			})
 
 			console.log("-----", years, dataScatter, maxData)
-
 
 			rs.contentIsLoading(false)
 			rs.generateReport(dataScatter, years)
@@ -126,7 +127,7 @@ rs.generateReport = (data, years) => {
 			width: 3, 
             tooltip: {
 				visible: true,
-				template: `Percentage of ${breakdownTitle} - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.linePercentage, 'n2') # %`
+				template: `Percentage of ${breakdownTitle} - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.linePercentage, 'n2') # % (#: kendo.toString(dataItem.lineAvg, 'n2') #)`
 			},
 			markers: {
 				visible: false
@@ -142,7 +143,7 @@ rs.generateReport = (data, years) => {
             },
             tooltip: {
 				visible: true,
-				template: `Percentage of ${breakdownTitle} to ${netSalesTite} at #: dataItem.year #: #: kendo.toString(dataItem.scatterPercentage, 'n2') # %`
+				template: `Percentage of ${breakdownTitle} to ${netSalesTite} at #: dataItem.year #: #: kendo.toString(dataItem.scatterPercentage, 'n2') # % (#: kendo.toString(dataItem.scatterValue, 'n2') #)`
 			},
         }],
         valueAxis: {

@@ -5,7 +5,7 @@ import (
 	"eaciit/gdrj/web/helper"
 	"eaciit/gdrj/web/model"
 	"errors"
-	// "fmt"
+	"fmt"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -297,8 +297,11 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 		return res
 	}
 
+	fmt.Println("______", tableName, ok, knot.SharedObject().Get(tableName, ""))
+
 	go func() {
 		knot.SharedObject().Set(tableName, "MANGSTABS!")
+		fmt.Println("______", tableName, ok, knot.SharedObject().Get(tableName, ""))
 		err = payload.GeneratePLData()
 		if err != nil {
 			knot.SharedObject().Unset(tableName)
@@ -307,6 +310,7 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 		knot.SharedObject().Unset(tableName)
 	}()
 
+	res.SetError(errors.New("still processing, might take a while"))
 	return res
 }
 

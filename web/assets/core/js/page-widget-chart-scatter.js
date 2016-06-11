@@ -65,7 +65,9 @@ rs.refresh = function () {
 				return k;
 			});
 
-			var maxData = _.max(dataAllPNL.concat(dataAllPNLNetSales), function (d) {
+			var maxData = _.maxBy(_.filter(dataAllPNL.concat(dataAllPNLNetSales), function (d) {
+				return d[selectedPNL] != 0;
+			}), function (d) {
 				return d[selectedPNL];
 			})[selectedPNL];
 			var sumPNL = _.reduce(dataAllPNL, function (m, x) {
@@ -81,10 +83,12 @@ rs.refresh = function () {
 					category: app.nbspAble(d._id.pl + " " + d._id.fiscal, 'Uncategorized'),
 					year: d._id.fiscal,
 					scatterValue: d[selectedPNL],
-					scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData),
+					scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData) * 100,
 					lineAvg: avgPNL,
-					linePercentage: avgPNL / (maxData == 0 ? 1 : maxData)
+					linePercentage: avgPNL / (maxData == 0 ? 1 : maxData) * 100
 				});
+
+				console.log("---->>>>-", avgPNL, d[selectedPNL], maxData);
 			});
 
 			console.log("-----", years, dataScatter, maxData);
@@ -141,7 +145,7 @@ rs.generateReport = function (data, years) {
 			width: 3,
 			tooltip: {
 				visible: true,
-				template: "Percentage of " + breakdownTitle + " - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.linePercentage, 'n2') # %"
+				template: "Percentage of " + breakdownTitle + " - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.linePercentage, 'n2') # % (#: kendo.toString(dataItem.lineAvg, 'n2') #)"
 			},
 			markers: {
 				visible: false
@@ -157,7 +161,7 @@ rs.generateReport = function (data, years) {
 			},
 			tooltip: {
 				visible: true,
-				template: "Percentage of " + breakdownTitle + " to " + netSalesTite + " at #: dataItem.year #: #: kendo.toString(dataItem.scatterPercentage, 'n2') # %"
+				template: "Percentage of " + breakdownTitle + " to " + netSalesTite + " at #: dataItem.year #: #: kendo.toString(dataItem.scatterPercentage, 'n2') # % (#: kendo.toString(dataItem.scatterValue, 'n2') #)"
 			}
 		}],
 		valueAxis: {

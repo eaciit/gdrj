@@ -151,7 +151,7 @@ func (s *PLFinderParam) GeneratePLData() error {
 		return err
 	}
 
-	col, sess, err := s.C(tableName)
+	col, sess, err := s.C(new(SalesPL).TableName())
 	if err != nil {
 		return err
 	}
@@ -188,6 +188,10 @@ func (s *PLFinderParam) GeneratePLData() error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("============ RES")
+	fmt.Printf("%#v\n", pipe)
+	fmt.Printf("%#v\n", res)
 
 	_ = res
 	return nil
