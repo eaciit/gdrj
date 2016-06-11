@@ -443,12 +443,12 @@ bkd.render = function () {
 };
 
 bkd.prepareEvents = function () {
-	$('.breakdown-view').on('mouseover', 'tr', function () {
+	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
 		var index = $(this).index();
 		var elh = $('.breakdown-view .table-header tr:eq(' + index + ')').addClass('hover');
 		var elc = $('.breakdown-view .table-content tr:eq(' + index + ')').addClass('hover');
 	});
-	$('.breakdown-view').on('mouseleave', 'tr', function () {
+	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover');
 	});
 };

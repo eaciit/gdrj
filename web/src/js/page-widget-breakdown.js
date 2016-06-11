@@ -469,12 +469,12 @@ bkd.render = () => {
 }
 
 bkd.prepareEvents = () => {
-	$('.breakdown-view').on('mouseover', 'tr', function () {
+	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
 		let index = $(this).index()
         let elh = $(`.breakdown-view .table-header tr:eq(${index})`).addClass('hover')
         let elc = $(`.breakdown-view .table-content tr:eq(${index})`).addClass('hover')
 	})
-	$('.breakdown-view').on('mouseleave', 'tr', function () {
+	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover')
 	})
 }
