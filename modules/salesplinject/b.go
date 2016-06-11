@@ -115,6 +115,10 @@ func prepMaster() {
 	promos := map[string]*gdrj.RawDataPL{}
 	sgas := map[string]map[string]*gdrj.RawDataPL{}
 
+	if compute=="none"{
+		return
+	}
+
 	toolkit.Println("--> RAW Data PL")
 	masters.Set("rpl", BuildMap(nil,
 		func()orm.IModel{
