@@ -138,6 +138,7 @@ func TrxToSalesPL(conn dbox.IConnection,
 		if compute == "all" {
 			pl.CalcSales(masters)
 			pl.CalcCOGS(masters)
+			pl.CalcRoyalties(masters)
 			pl.CalcFreight(masters)
 			pl.CalcPromo(masters)
 			pl.CalcSGA(masters)
@@ -148,11 +149,13 @@ func TrxToSalesPL(conn dbox.IConnection,
 		} else if compute == "freight" {
 			pl.CalcFreight(masters)
 		} else if compute == "promo" {
+			pl.CalcRoyalties(masters)
 			pl.CalcPromo(masters)
 		} else if compute == "sga" {
 			pl.CalcSGA(masters)
 		} else if compute == "rawdatapl" {
 			pl.CalcFreight(masters)
+			pl.CalcRoyalties(masters)
 			pl.CalcPromo(masters)
 			pl.CalcSGA(masters)
 		}
@@ -164,25 +167,25 @@ func TrxToSalesPL(conn dbox.IConnection,
 
 func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	var netsales, cogs, grossmargin, sellingexpense,
-		sga, ebit float64
+		sga, opincome float64
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	for _, v := range pl.PLDatas {
 		if v.Group1 == "Net Sales" {
 			netsales += v.Amount
-			ebit += v.Amount
+			opincome += v.Amount
 			grossmargin += v.Amount
 		} else if v.Group1 == "Direct Expense" || v.Group1 == "Indirect Expense" {
 			cogs += v.Amount
-			ebit += v.Amount
+			opincome += v.Amount
 			grossmargin += v.Amount
 		} else if v.Group1 == "Freight Expense" || v.Group1 == "Royalties & Trademark Exp" ||
 			v.Group1 == "Advt & Promo Expenses" {
 			sellingexpense += v.Amount
-			ebit += v.Amount
+			opincome += v.Amount
 		} else if v.Group1 == "G&A Expenses" {
 			sga += v.Amount
-			ebit += v.Amount
+			opincome += v.Amount
 		}
 	}
 
@@ -191,7 +194,7 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	pl.AddData("PL74C", grossmargin, plmodels)
 	pl.AddData("PL32B", sellingexpense, plmodels)
 	pl.AddData("PL94A", sga, plmodels)
-	pl.AddData("PL94C", ebit, plmodels)
+	pl.AddData("PL94C", opincome, plmodels)
 }
 
 func (pl *SalesPL) CalcSales(masters toolkit.M) {
@@ -261,6 +264,22 @@ func (pl *SalesPL) CalcFreight(masters toolkit.M) {
 	pl.AddData("PL23", -f.AmountinIDR*pl.RatioToBranchSales, plmodels)
 }
 
+func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
+	if masters.Has("royalties") == false {
+		return
+	}
+	freights := masters.Get("royalties").(map[string]*RawDataPL)
+
+	freightid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
+	f, exist := freights[freightid]
+	if !exist {
+		return
+	}
+
+	plmodels := masters.Get("plmodel").(map[string]*PLModel)
+	pl.AddData("PL26A", -f.AmountinIDR*pl.RatioToGlobalSales, plmodels)
+}
+
 func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	if masters.Has("promo") == false {
 		return
@@ -300,6 +319,7 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
 	sgaid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	raws, exist := sgas[sgaid]
 	if !exist {
+        toolkit.Printfn("SGA: Can't find key %s", sgaid)
 		return
 	}
 
@@ -319,7 +339,7 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
 		if exist {
 			ccgroup = cc.CostGroup01
 		}
-		pl.AddDataCC(plcode, -pl.RatioToBrandSales*raw.AmountinIDR, ccgroup, plmodels)
+		pl.AddDataCC(plcode, -pl.RatioToGlobalSales*raw.AmountinIDR, ccgroup, plmodels)
 	}
 }
 
