@@ -69,6 +69,16 @@ func (s *PLFinderParam) GetPLCollections() ([]*toolkit.M, error) {
 	return res, nil
 }
 
+func (s *PLFinderParam) DeletePLCollection(table string) error {
+	db, session, err := s.ConnectToDB()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	return db.C(table).DropCollection()
+}
+
 func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 	filters := []*dbox.Filter{}
 

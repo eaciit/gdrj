@@ -5,11 +5,10 @@
 		<div class="panel ez no-padding hardcore">
 			<div class="panel-heading">
 				<h3 class="no-margin">
-					<button class="btn-toggle-filter no-padding"></button>
 					PL Collections
 				</h3>
 				<div class="panel-nav-button">
-					<button class="btn btn-sm btn-primary tooltipster" title="Refresh" data-bind="click: at.refreshPLCollections">
+					<button class="btn btn-sm btn-primary tooltipster" title="Refresh" data-bind="click: at.refreshData">
 						<i class="fa fa-refresh"></i>
 					</button>
 				</div>
@@ -18,8 +17,8 @@
 				<div data-bind="visible: at.contentIsLoading">
 					{{template "_loader.html"}}
 				</div>
-				<div>
-					<div class="grid-at">No data to be shown.</div>
+				<div data-bind="visible: !at.contentIsLoading()">
+					<div class="grid-at" data-bind="kendoGrid: at.gridConfig"></div>
 				</div>
 			</div>
 		</div>

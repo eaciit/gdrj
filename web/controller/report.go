@@ -208,6 +208,27 @@ func (m *ReportController) GetPLCollections(r *knot.WebContext) interface{} {
 	return res
 }
 
+func (m *ReportController) DeletePLCollection(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	res := new(toolkit.Result)
+
+	payload := struct {
+		ID string `json:"_id"`
+	}{}
+	if err := r.GetPayload(&payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	err := new(gdrj.PLFinderParam).DeletePLCollection(payload.ID)
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	return res
+}
+
 func (m *ReportController) GetPNLDataDetail(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	res := new(toolkit.Result)

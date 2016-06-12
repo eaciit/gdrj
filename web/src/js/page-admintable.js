@@ -14,75 +14,70 @@ at.templateFilter = {
 }
 
 at.TableColumns = ko.observableArray([
-	{ field: "collection", title: "Collection" },
-	{ field: "lastupdate", title: "Last Update", template:'# if (created == "0001-01-01T00:00:00Z") {#-#} else {# #:moment(created).utc().format("DD-MMM-YYYY HH:mm:ss")# #}#' },
-	{ title: "Action", width: 80, attributes: { class: "align-center" }, template:"<button onclick='at.deletecollection(\"#:_id #\")' name='deletecollection' type='button' class='btn btn-sm btn-default btn-text-danger btn-stop tooltipster' title='Delete Collection'><span class='fa fa-times'></span></button>" }
+	{ title: "Table Name", template: (d) => {
+        let step = 6
+        let items = d.table.split("_")
+        for (let i = 1; i < items.length / step; i++) {
+            items.splice(i * step, 0, "<br />");
+        }
+        return items.join("_").replace(new RegExp("<br />_", "g"), "<br />")
+    } },
+	{ title: "Dimension", template: (d) => {
+        return d.dimensions.map((e) => `<span class="tag bg-blue" style="margin-bottom: 3px; display: inline-block;">${e.replace(/_/g, '.')}</span>`).join(' ')
+    } },
+	{ title: "Action", width: 80, attributes: { class: "align-center" }, template:"<button onclick='at.deletecollection(\"#:table #\")' class='btn btn-sm btn-danger tooltipster' title='Delete Collection'><span class='fa fa-remove'></span></button>" }
 ])
 
 at.contentIsLoading = ko.observable(false)
 at.selectedTableID = ko.observable("")
 at.filter = ko.mapping.fromJS(at.templateFilter)
 
+at.gridData = ko.observableArray([])
+at.gridConfig = {
+    data: at.gridData,
+    dataSource: {
+        pageSize: 10,
+    },
+    resizable: true,
+    pageable: {
+        pageSizes: 10
+    },
+    columns: at.TableColumns(),
+    gridBound: app.gridBoundTooltipster('.grid-at')
+}
+
 at.refreshData = () => {
     at.contentIsLoading(true)
-	$('.grid-at').data('kendoGrid').dataSource.read()
+    app.ajaxPost("/report/getplcollections", {}, (res) => {
+        at.gridData(res.Data)
+        at.contentIsLoading(false)
+    })
 }
 
 at.clearcollection = () => {
-    app.ajaxPost("/admintable/clearcollection", {}, (res) => {
+    app.ajaxPost("/report/clearcollection", {}, (res) => {
         at.refreshData()
     })
 }
 
 at.deletecollection = (idtable) => {
-    console.log(idtable)
-    // app.ajaxPost("/admintable/deletecollection", {idtable: idtable}, (res) => {
-    //     at.refreshData()
-    // })
-}
-
-at.generateGrid = () => {
-	$(".grid-at").html("");
-    $('.grid-at').kendoGrid({
-        dataSource: {
-            transport: {
-                read: {
-                    url: "/admintable/getadmintable",
-                    dataType: "json",
-                    data: ko.mapping.toJS(at.filter),
-                    type: "POST",
-                    success: function(data) {
-
-                    }
-                }
-            },
-            schema: {
-                data: function(res){
-                    at.contentIsLoading(false);
-                    return res.data.Datas;
-                },
-                total: "data.total"
-            },
-
-            pageSize: 10,
-            serverPaging: true,
-            serverSorting: true,
-        },
-        resizable: true,
-        scrollable: true,
-        pageable: {
-            refresh: false,
-            pageSizes: 10,
-            buttonCount: 5
-        },
-        columns: at.TableColumns()
+    swal({
+        title: "Are you sure?",
+        text: `Table will be deleted.`,
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Delete",
+        closeOnConfirm: true
+    }, function() {
+        setTimeout(function () {
+            app.ajaxPost("/report/deleteplcollection", { _id: idtable }, function (res) {
+                at.refreshData()
+            })
+        }, 1000)
     })
 }
 
-at.refreshPLCollections = () => {
-    
-}
-
 $(() => {
-    at.generateGrid()
+    at.refreshData()
 })
