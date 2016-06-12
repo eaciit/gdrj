@@ -199,7 +199,7 @@ func prepMaster() {
 				sga.AmountinIDR += o.AmountinIDR
 				asga[groupingid] = sga
 				sgas[sgaid] = asga
-			} else {
+			} else if strings.Contains(o.Src, "APROMO") {
 				apgrouping := "promo"
 				if strings.Contains(o.APGrouping, "CD") {
 					apgrouping = "bonus"
