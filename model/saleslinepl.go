@@ -1,10 +1,11 @@
 package gdrj
 
 import (
+	"strings"
+
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-    "strings"
 )
 
 type PLData struct {
@@ -54,7 +55,7 @@ func (s *SalesPL) RecordID() interface{} {
 func TrxToSalesPL(conn dbox.IConnection,
 	trx *SalesTrx,
 	masters toolkit.M,
-    config toolkit.M) *SalesPL {
+	config toolkit.M) *SalesPL {
 
 	pl := new(SalesPL)
 	pl.ID = trx.ID
@@ -107,53 +108,55 @@ func TrxToSalesPL(conn dbox.IConnection,
 	}
 	//-- end of classing
 
-	globalSales := masters.Get("globalsales").(float64)
-	branchSales := masters.Get("branchsales").(map[string]float64)
-	brandSales := masters.Get("brandsales").(map[string]float64)
+	compute := strings.ToLower(config.Get("compute", "all").(string))
+	if compute != "none" {
+		globalSales := masters.Get("globalsales").(float64)
+		branchSales := masters.Get("branchsales").(map[string]float64)
+		brandSales := masters.Get("brandsales").(map[string]float64)
 
-    var brandSale, branchSale float64
-    if pl.Product!=nil{
-	    brandSale, _ = brandSales[pl.Product.Brand]
-    }
+		var brandSale, branchSale float64
+		if pl.Product != nil {
+			brandSale, _ = brandSales[pl.Product.Brand]
+		}
 
-    if pl.Customer!=nil{
-	    branchSale, _ = branchSales[pl.Customer.BranchID]
-    }
+		if pl.Customer != nil {
+			branchSale, _ = branchSales[pl.Customer.BranchID]
+		}
 
-    if globalSales != 0 {
-		pl.RatioToGlobalSales = pl.NetAmount / globalSales
+		if globalSales != 0 {
+			pl.RatioToGlobalSales = pl.NetAmount / globalSales
+		}
+
+		if brandSale != 0 {
+			pl.RatioToBrandSales = pl.NetAmount / brandSale
+		}
+
+		if branchSale != 0 {
+			pl.RatioToBranchSales = pl.NetAmount / branchSale
+		}
+
+		if compute == "all" {
+			pl.CalcSales(masters)
+			pl.CalcCOGS(masters)
+			pl.CalcFreight(masters)
+			pl.CalcPromo(masters)
+			pl.CalcSGA(masters)
+		} else if compute == "sales" {
+			pl.CalcSales(masters)
+		} else if compute == "cogs" {
+			pl.CalcCOGS(masters)
+		} else if compute == "freight" {
+			pl.CalcFreight(masters)
+		} else if compute == "promo" {
+			pl.CalcPromo(masters)
+		} else if compute == "sga" {
+			pl.CalcSGA(masters)
+		} else if compute == "rawdatapl" {
+			pl.CalcFreight(masters)
+			pl.CalcPromo(masters)
+			pl.CalcSGA(masters)
+		}
 	}
-
-	if brandSale != 0 {
-		pl.RatioToBrandSales = pl.NetAmount / brandSale
-	}
-
-	if branchSale != 0 {
-		pl.RatioToBranchSales = pl.NetAmount / branchSale
-	}
-
-    compute := strings.ToLower(config.Get("compute","all").(string)) 
-    if compute=="all"{
-        pl.CalcSales(masters)
-        pl.CalcCOGS(masters)
-        pl.CalcFreight(masters)
-        pl.CalcPromo(masters)
-        pl.CalcSGA(masters)
-    } else if compute=="sales"{
-        pl.CalcSales(masters)
-    } else if compute=="cogs" {
-        pl.CalcCOGS(masters)
-    } else if compute=="freight" {
-        pl.CalcFreight(masters)
-    } else if compute=="promo"{
-        pl.CalcPromo(masters)
-    } else if compute=="sga" {
-        pl.CalcSGA(masters)
-    } else if compute=="rawdatapl" {
-        pl.CalcFreight(masters)
-        pl.CalcPromo(masters)
-        pl.CalcSGA(masters)
-    }
 	pl.CalcSum(masters)
 
 	return pl
@@ -222,12 +225,12 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 		return
 	}
 
-    cogsAmount := float64(0)
-    if cogsSchema.NPS_Amount != 0 {
-	    cogsAmount = -cogsSchema.COGS_Amount * pl.NetAmount / cogsSchema.NPS_Amount
-    }
-	
-    rmAmount := cogsSchema.RM_Amount * cogsAmount / cogsSchema.COGS_Amount
+	cogsAmount := float64(0)
+	if cogsSchema.NPS_Amount != 0 {
+		cogsAmount = -cogsSchema.COGS_Amount * pl.NetAmount / cogsSchema.NPS_Amount
+	}
+
+	rmAmount := cogsSchema.RM_Amount * cogsAmount / cogsSchema.COGS_Amount
 	lcAmount := cogsSchema.LC_Amount * cogsAmount / cogsSchema.COGS_Amount
 	energyAmount := cogsSchema.PF_Amount * cogsAmount / cogsSchema.COGS_Amount
 	depreciation := cogsSchema.Depre_Amount * cogsAmount / cogsSchema.COGS_Amount
