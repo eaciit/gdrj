@@ -193,32 +193,38 @@ func (m *ReportController) GetPLModel(r *knot.WebContext) interface{} {
 	return result
 }
 
-func (m *ReportController) GetPNLData(r *knot.WebContext) interface{} {
+func (m *ReportController) GetPLCollections(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	res := new(toolkit.Result)
 
-	payload := new(gdrj.SalesPLParam)
-	if err := r.GetPayload(payload); err != nil {
-		res.SetError(err)
-		return res
-	}
-
-	data, err := payload.GetData()
+	cols, err := new(gdrj.PLFinderParam).GetPLCollections()
 	if err != nil {
 		res.SetError(err)
 		return res
 	}
 
-	plmodels, err := gdrj.PLModelGetAll()
-	if err != nil {
+	res.SetData(cols)
+
+	return res
+}
+
+func (m *ReportController) DeletePLCollection(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	res := new(toolkit.Result)
+
+	payload := struct {
+		IDs []string `json:"_id"`
+	}{}
+	if err := r.GetPayload(&payload); err != nil {
 		res.SetError(err)
 		return res
 	}
 
-	res.SetData(toolkit.M{
-		"Data":     data,
-		"PLModels": plmodels,
-	})
+	err := new(gdrj.PLFinderParam).DeletePLCollection(payload.IDs)
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
 
 	return res
 }
