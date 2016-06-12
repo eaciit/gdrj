@@ -135,17 +135,21 @@ func main() {
 
 func saveOtherTable(tablename string, src string){
     toolkit.Printfn("START PROCESSING %s", tablename)
+    workerConn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerConn.Close()
 
     qdata, _ := conn.NewQuery().From(tablename).Cursor(nil)
     defer qdata.Close()
 
     objCount := qdata.Count()
+    /*
     jobs := make(chan toolkit.M, objCount)
     outs := make(chan string, objCount)
 
     for wi:=0;wi<10;wi++{
         go workerSave(src, jobs, outs)
     }
+    */
 
     i:=0
     for{
@@ -156,22 +160,7 @@ func saveOtherTable(tablename string, src string){
             break
         }
         i++
-        jobs <- m
-        toolkit.Printfn("Sending %s | %d of %d", tablename, i, objCount)
-    }
-    close(jobs)
 
-    for i:=1;i<=objCount;i++{
-        toolkit.Printfn("Receiving %s | %d of %d", tablename, i, objCount)
-    }
-    close(outs)
-}
-
-func workerSave(src string, jobs <-chan toolkit.M, outs chan<- string){
-    workerConn, _ := modules.GetDboxIConnection("db_godrej")
-	defer workerConn.Close()
-
-    for m := range jobs{
         r := new(gdrj.RawDataPL)
         r.Year = 2015
         r.Src=src
@@ -191,12 +180,26 @@ func workerSave(src string, jobs <-chan toolkit.M, outs chan<- string){
             }
         }
         r.ID = bson.NewObjectId().String()
-        e := workerConn.NewQuery().From(r.TableName()).Save().Exec(toolkit.M{}.Set("data",r))
+        e = workerConn.NewQuery().From(r.TableName()).Save().Exec(toolkit.M{}.Set("data",r))
         if e!=nil {
             toolkit.Printfn("Error save %s: \n%s", toolkit.JsonString(r), e.Error())
             os.Exit(100)
         }
+
+        //jobs <- m
+        toolkit.Printfn("Sending %s | %d of %d", tablename, i, objCount)
     }
+    //close(jobs)
+
+    /*
+    for i:=1;i<=objCount;i++{
+        toolkit.Printfn("Receiving %s | %d of %d", tablename, i, objCount)
+    }
+    close(outs)
+    */
+}
+
+func workerSave(src string, jobs <-chan toolkit.M, outs chan<- string){
 }
 
 func worker(wi int, jobs <-chan *gdrj.RawDataPL, r chan<- string) {
