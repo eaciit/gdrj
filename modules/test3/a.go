@@ -60,9 +60,14 @@ func main(){
 
         i++
         if i>=limit{
-            toolkit.Printfn("%d of %d [%.2f pct] in %s",
+            td := time.Since(t0)
+            tds := td.Seconds()
+            mnt := tds / 60.0
+            tpm := float64(i)/mnt
+            toolkit.Printfn("%d of %d [%.2f pct] in %s (%.2f/mnt)",
                 i,count,float64(i)*100.0/float64(count),
-                time.Since(t0).String())
+                time.Since(t0).String(),
+                tpm)
             limit+=step
         }
     }
