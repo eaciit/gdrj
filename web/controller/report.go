@@ -5,7 +5,7 @@ import (
 	"eaciit/gdrj/web/helper"
 	"eaciit/gdrj/web/model"
 	"errors"
-	// "fmt"
+	"fmt"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -244,25 +244,6 @@ func (m *ReportController) GetPNLDataDetail(r *knot.WebContext) interface{} {
 	return res
 }
 
-func (m *ReportController) CheckPNLDataNew(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-	res := new(toolkit.Result)
-
-	payload := new(gdrj.PLFinderParam)
-	if err := r.GetPayload(payload); err != nil {
-		res.SetError(err)
-		return res
-	}
-
-	tableName := payload.GetTableName()
-	if gocore.GetConfig(tableName) == "" {
-		res.SetError(errors.New("still processing, might take a while"))
-		return res
-	}
-
-	return res
-}
-
 func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	res := new(toolkit.Result)
@@ -273,39 +254,84 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 		return res
 	}
 
+	fmt.Println("counting")
+
 	ok, err := payload.CountPLData()
 	if err != nil {
 		res.SetError(err)
 		return res
 	}
 
+	fmt.Println("counted", ok)
+
 	tableName := payload.GetTableName()
+	fmt.Println("=---- tableName", tableName)
 
 	if ok {
 		data, err := payload.GetPLData()
+		fmt.Println("no error trying to get the data")
+
 		if err != nil {
 			res.SetError(err)
 			return res
 		}
 
-		res.SetData(data)
-		return res
-	}
-
-	if gocore.GetConfig(tableName) != nil {
-		res.SetError(errors.New("still processing, might take a while"))
-		return res
-	}
-
-	go func() {
-		gocore.SetConfig(tableName, "MANGSTABS!")
-		err = payload.GeneratePLData()
+		plmodels, err := gdrj.PLModelGetAll()
 		if err != nil {
-			gocore.SetConfig(tableName, nil)
+			res.SetError(err)
+			return res
 		}
 
-		gocore.SetConfig(tableName, nil)
+		res.SetData(toolkit.M{
+			"Data":     data,
+			"PLModels": plmodels,
+		})
+		return res
+	}
+
+	if knot.SharedObject().Get(tableName, "") != "" {
+		res.SetError(errors.New("still processing, might take a while"))
+		fmt.Println("on progress")
+		return res
+	}
+
+	fmt.Println("______", tableName, ok, knot.SharedObject().Get(tableName, ""))
+
+	go func() {
+		knot.SharedObject().Set(tableName, "MANGSTABS!")
+		fmt.Println("______", tableName, ok, knot.SharedObject().Get(tableName, ""))
+		err = payload.GeneratePLData()
+		if err != nil {
+			fmt.Println("done with error:", err.Error())
+		} else {
+			fmt.Println("done")
+		}
+
+		knot.SharedObject().Unset(tableName)
 	}()
+
+	res.SetError(errors.New("still processing, might take a while"))
+	fmt.Println("just start")
+	return res
+}
+
+func (m *ReportController) GetPNLDataDetailNew(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	res := new(toolkit.Result)
+
+	payload := new(gdrj.PLFinderParam)
+	if err := r.GetPayload(payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	data, err := payload.CountPLData()
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	res.SetData(data)
 
 	return res
 }

@@ -64,7 +64,7 @@ func main() {
 		if sessionid == "" {
 			http.Redirect(r.Writer, r.Request, "/web/login", 301)
 		} else {
-			http.Redirect(r.Writer, r.Request, "/web/databrowser", 301)
+			http.Redirect(r.Writer, r.Request, "/web/report/dashboard", 301)
 		}
 
 		return true
