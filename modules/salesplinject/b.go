@@ -181,7 +181,7 @@ func prepMaster() {
 				}
 				frg.AmountinIDR += o.AmountinIDR
 				freights[freightid] = frg
-			} else if strings.HasSuffix(o.Src, "ROYALTIES") {
+			} else if strings.HasSuffix(o.Src, "ROYALTI") {
 				royaltyid := toolkit.Sprintf("%d_%d", dt.Year(), int(dt.Month()))
 				royalti, exist := royalties[royaltyid]
 				if !exist {

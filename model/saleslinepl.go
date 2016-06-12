@@ -222,7 +222,8 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 	cogsTable := masters.Get("cogs").(map[string]*COGSConsolidate)
 	cogsSchema, exist := cogsTable[cogsid]
 	if !exist {
-		return
+		toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
+        return
 	}
 
     cogsAmount := float64(0)
@@ -286,6 +287,7 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	royalid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	r, exist := royals[royalid]
 	if !exist {
+        toolkit.Printfn("Royalty error: key is not exist %s", royalid)
 		return
 	}
 
