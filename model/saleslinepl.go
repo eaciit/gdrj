@@ -330,7 +330,7 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
 	sgaid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	raws, exist := sgas[sgaid]
 	if !exist {
-        toolkit.Printfn("SGA: Can't find key %s", sgaid)
+        toolkit.Printfn("SGA Error: Can't find key %s", sgaid)
 		return
 	}
 

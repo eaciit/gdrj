@@ -157,7 +157,7 @@ func prepMaster() {
 				break
 			}
 		}
-		fperiods = dbox.And(periods...)
+		fperiods = dbox.Or(periods...)
 	}
 	toolkit.Println("--> RAW Data PL")
 	toolkit.Printfn("Filter: %s", toolkit.JsonString(fperiods))
