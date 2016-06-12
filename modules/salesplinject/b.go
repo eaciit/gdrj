@@ -125,6 +125,7 @@ func prepMaster() {
 		}).(map[string]*gdrj.COGSConsolidate))
 
 	freights := map[string]*gdrj.RawDataPL{}
+	royalties := map[string]*gdrj.RawDataPL{}
 	promos := map[string]*gdrj.RawDataPL{}
 	sgas := map[string]map[string]*gdrj.RawDataPL{}
 
@@ -180,6 +181,14 @@ func prepMaster() {
 				}
 				frg.AmountinIDR += o.AmountinIDR
 				freights[freightid] = frg
+			} else if strings.HasSuffix(o.Src, "ROYALTIES") {
+				royaltyid := toolkit.Sprintf("%d_%d", dt.Year(), int(dt.Month()))
+				royalti, exist := royalties[royaltyid]
+				if !exist {
+					royalti = new(gdrj.RawDataPL)
+				}
+				royalti.AmountinIDR += o.AmountinIDR
+				royalties[royaltyid] = royalti
 			} else if strings.HasSuffix(o.Src, "SGAPL") {
 				if strings.Contains(o.Grouping, "Factory") {
 					return
@@ -229,6 +238,7 @@ func prepMaster() {
 	masters.Set("freight", freights)
 	masters.Set("promo", promos)
 	masters.Set("sga", sgas)
+	masters.Set("royalties",royalties)
 }
 
 func makeDateFromInt(i int, endofmth bool)time.Time{

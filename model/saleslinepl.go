@@ -224,19 +224,30 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 	if !exist {
 		return
 	}
+
+    cogsAmount := float64(0)
+    cogsShemaAmount := float64(0)
 	if cogsSchema.COGS_Amount == 0 {
-		return
+		cogsShemaAmount = cogsSchema.RM_Amount + 
+            cogsSchema.LC_Amount + 
+            cogsSchema.PF_Amount +
+            cogsSchema.Depre_Amount +
+            cogsSchema.Other_Amount
 	}
 
-	cogsAmount := float64(0)
+    if cogsShemaAmount==0 {
+        toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
+        return
+    }
+
 	if cogsSchema.NPS_Amount != 0 {
-		cogsAmount = -cogsSchema.COGS_Amount * pl.NetAmount / cogsSchema.NPS_Amount
+		cogsAmount = -cogsShemaAmount * pl.NetAmount / cogsSchema.NPS_Amount
 	}
 
-	rmAmount := cogsSchema.RM_Amount * cogsAmount / cogsSchema.COGS_Amount
-	lcAmount := cogsSchema.LC_Amount * cogsAmount / cogsSchema.COGS_Amount
-	energyAmount := cogsSchema.PF_Amount * cogsAmount / cogsSchema.COGS_Amount
-	depreciation := cogsSchema.Depre_Amount * cogsAmount / cogsSchema.COGS_Amount
+	rmAmount := cogsSchema.RM_Amount * cogsAmount / cogsShemaAmount
+	lcAmount := cogsSchema.LC_Amount * cogsAmount / cogsShemaAmount
+	energyAmount := cogsSchema.PF_Amount * cogsAmount / cogsShemaAmount
+	depreciation := cogsSchema.Depre_Amount * cogsAmount / cogsShemaAmount
 	otherAmount := cogsAmount - rmAmount - lcAmount - energyAmount - depreciation
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
@@ -268,16 +279,16 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	if masters.Has("royalties") == false {
 		return
 	}
-	freights := masters.Get("royalties").(map[string]*RawDataPL)
+	royals := masters.Get("royalties").(map[string]*RawDataPL)
 
-	freightid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
-	f, exist := freights[freightid]
+	royalid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
+	r, exist := royals[royalid]
 	if !exist {
 		return
 	}
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL26A", -f.AmountinIDR*pl.RatioToGlobalSales, plmodels)
+	pl.AddData("PL26A", -r.AmountinIDR*pl.RatioToGlobalSales, plmodels)
 }
 
 func (pl *SalesPL) CalcPromo(masters toolkit.M) {
