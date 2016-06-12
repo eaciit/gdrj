@@ -382,7 +382,7 @@ bkd.render = () => {
 					if (resg3 != undefined){
 						PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader2 })
 						PLyo2 = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader3 })
-						$trElem.find('td:eq(0)').css('padding-left','60px')
+						$trElem.find('td:eq(0)').css('padding-left','70px')
 						if (PLyo == undefined){
 							PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader1 })
 							if(PLyo != undefined)
@@ -407,6 +407,7 @@ bkd.render = () => {
 		}
 	})
 
+	let countChild = ''
 	$(".table-header tbody>tr").each(function( i ) {
 		$trElem = $(this)
 		parenttr = $(`tr[idparent=${$trElem.attr('idheaderpl')}]`).length
@@ -417,6 +418,10 @@ bkd.render = () => {
 				.css('margin-right', '5px')
 			$(`tr[idparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
 			$(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
+		} else {
+			countChild = $trElem.attr('idparent')
+			if (countChild == '' || countChild == undefined)
+				$trElem.find(`td:eq(0)`).css('padding-left', '20px')
 		}
 	})
 

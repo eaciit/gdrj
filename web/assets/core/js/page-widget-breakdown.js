@@ -372,7 +372,7 @@ bkd.render = function () {
 						PLyo2 = _.find(rows, function (o) {
 							return o.PNL == resg3.data[0].PLHeader3;
 						});
-						$trElem.find('td:eq(0)').css('padding-left', '60px');
+						$trElem.find('td:eq(0)').css('padding-left', '70px');
 						if (PLyo == undefined) {
 							PLyo = _.find(rows, function (o) {
 								return o.PNL == resg3.data[0].PLHeader1;
@@ -396,6 +396,7 @@ bkd.render = function () {
 		}
 	});
 
+	var countChild = '';
 	$(".table-header tbody>tr").each(function (i) {
 		$trElem = $(this);
 		parenttr = $('tr[idparent=' + $trElem.attr('idheaderpl') + ']').length;
@@ -404,6 +405,9 @@ bkd.render = function () {
 			$trElem.find('td:eq(0)>i').addClass('fa fa-chevron-right').css('margin-right', '5px');
 			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
 			$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
+		} else {
+			countChild = $trElem.attr('idparent');
+			if (countChild == '' || countChild == undefined) $trElem.find('td:eq(0)').css('padding-left', '20px');
 		}
 	});
 
