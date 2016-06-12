@@ -39,6 +39,8 @@ func getCursor(obj orm.IModel)dbox.ICursor{
 }
 
 func main(){
+    setinitialconnection()
+
     salestrx := new(gdrj.SalesTrx)
     c, e:= gdrj.Find(salestrx,nil,nil)
     defer c.Close()
