@@ -4,7 +4,7 @@ import (
 	"eaciit/gdrj/model"
 	"eaciit/gdrj/modules"
 	"os"
-	"runtime"
+	//"runtime"
 
 	"strings"
 	"sync"
@@ -19,7 +19,11 @@ import (
 
 var mutex = new(sync.Mutex)
 var conn dbox.IConnection
-var compute string
+var (
+	compute string
+	periodFrom, periodTo int
+	dateFrom, dateTo time.Time
+)
 
 func setinitialconnection() {
 	var err error
@@ -39,6 +43,7 @@ func setinitialconnection() {
 
 var masters = toolkit.M{}
 
+/*
 func getCursor(obj orm.IModel) dbox.ICursor {
 	c, e := gdrj.Find(obj, 
 		nil, nil)
@@ -48,11 +53,13 @@ func getCursor(obj orm.IModel) dbox.ICursor {
 	}
 	return c
 }
+*/
 
 func BuildMap(holder interface{},
 	fnModel func() orm.IModel,
+	filter *dbox.Filter, 
 	fnIter func(holder interface{}, obj interface{})) interface{} {
-	crx := getCursor(fnModel())
+	crx, _ := gdrj.Find(fnModel(),filter,nil)
 	defer crx.Close()
 	for {
 		s := fnModel()
@@ -71,6 +78,7 @@ func prepMaster() {
 		func() orm.IModel {
 			return new(gdrj.CostCenter)
 		},
+		nil,
 		func(holder, obj interface{}) {
 			h := holder.(map[string]*gdrj.CostCenter)
 			o := obj.(*gdrj.CostCenter)
@@ -83,6 +91,7 @@ func prepMaster() {
 		func() orm.IModel {
 			return new(gdrj.LedgerMaster)
 		},
+		nil,
 		func(holder, obj interface{}) {
 			h := holder.(map[string]*gdrj.LedgerMaster)
 			o := obj.(*gdrj.LedgerMaster)
@@ -95,6 +104,7 @@ func prepMaster() {
 		func() orm.IModel {
 			return new(gdrj.PLModel)
 		},
+		nil,
 		func(holder, obj interface{}) {
 			h := holder.(map[string]*gdrj.PLModel)
 			o := obj.(*gdrj.PLModel)
@@ -106,6 +116,7 @@ func prepMaster() {
 		func() orm.IModel {
 			return new(gdrj.COGSConsolidate)
 		},
+		nil,
 		func(holder, obj interface{}) {
 			h := holder.(map[string]*gdrj.COGSConsolidate)
 			o := obj.(*gdrj.COGSConsolidate)
@@ -121,11 +132,39 @@ func prepMaster() {
 		return
 	}
 
+	var fperiods *dbox.Filter
+	if periodFrom==0 && periodTo==0{
+		//-- do nothing
+	} else if periodTo==0{
+		dt := makeDateFromInt(periodFrom,false).AddDate(0,-3,0)
+		fperiods = dbox.And(dbox.Eq("year", dt.Year()), dbox.Eq("period", dt.Month()))
+	} else {
+		iperiod := periodFrom
+		periods := []*dbox.Filter{}
+		for {
+			if iperiod<periodFrom{
+				break
+			}
+
+			dt := makeDateFromInt(iperiod,false)
+			dtf := dt.AddDate(0,-3,1)
+			periods = append(periods, dbox.And(dbox.Eq("year", dtf.Year()), dbox.Eq("period",dtf.Month())))
+			dt = dt.AddDate(0,1,0)
+			iperiod = dt.Year() * 100 + int(dt.Month())
+
+			if iperiod>periodTo{
+				break
+			}
+		}
+		fperiods = dbox.And(periods...)
+	}
 	toolkit.Println("--> RAW Data PL")
+	toolkit.Printfn("Filter: %s", toolkit.JsonString(fperiods))
 	masters.Set("rpl", BuildMap(nil,
 		func() orm.IModel {
 			return new(gdrj.RawDataPL)
 		},
+		fperiods,
 		func(holder, obj interface{}) {
 			o := obj.(*gdrj.RawDataPL)
 			if strings.Contains(o.Src, "RD") || strings.Contains(o.Src, "EXPORT") {
@@ -192,19 +231,54 @@ func prepMaster() {
 	masters.Set("sga", sgas)
 }
 
+func makeDateFromInt(i int, endofmth bool)time.Time{
+	yr := int(toolkit.ToFloat64(float64(i)/float64(100),0,toolkit.RoundingDown))
+	m := i - 100 * yr
+	dt := time.Date(yr, time.Month(m), 1, 0, 0, 0, 0, time.UTC)
+	if endofmth {
+		dt = dt.AddDate(0,1,0).AddDate(0,0,-1)
+	}
+	return dt
+}
+
 var pldatas = map[string]*gdrj.PLDataModel{}
 
 var t0 time.Time
 
 func main() {
 	flag.StringVar(&compute, "compute", "all", "type of computation will be run")
+	flag.IntVar(&periodFrom, "from", 0, "YYYYMM representation of period from. Default is 0")
+	flag.IntVar(&periodTo, "to", 0, "YYYYMM representation of period to. Default is 0 (equal to from)")
 	flag.Parse()
-
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	if periodFrom==0 && periodTo==0 {
+		dateFrom = makeDateFromInt(201404, false)
+	} else {
+		dateFrom = makeDateFromInt(periodFrom, false)
+	} 	
+	dateTo = makeDateFromInt(periodTo,true)
+	
 	setinitialconnection()
 	defer gdrj.CloseDb()
 
 	t0 = time.Now()
+	toolkit.Printfn("Model Builder v 1.0")
+	toolkit.Printfn("Compute: %s", compute)
+	
+	var f *dbox.Filter
+	if periodFrom==0 && periodTo==0 {
+		toolkit.Printfn("Period: All")
+	} else if periodTo==0{
+		toolkit.Printfn("Period: %s", 
+			toolkit.Date2String(dateFrom,"MMM-yyyy"))
+		f = dbox.Eq("date",dateFrom)
+	} else {
+		toolkit.Printfn("Period: %s to %s", 
+			toolkit.Date2String(dateFrom,"dd-MMM-yyyy"), 
+			toolkit.Date2String(dateTo,"dd-MMM-yyyy"))
+		f = dbox.And(dbox.Gte("date",dateFrom),dbox.Lte("date",dateTo))
+	}
+	toolkit.Printfn("Run :%v", t0)
+
 	toolkit.Println("Reading Master")
 	prepMaster()
 
@@ -212,8 +286,6 @@ func main() {
 	//toolkit.Println("Delete existing")
 	//conn.NewQuery().From(spl.TableName()).Delete().Exec(nil)
 
-	var f *dbox.Filter
-	//f = dbox.And(dbox.Eq("year",2014),dbox.Eq("month",9))
 	//f = dbox.Eq("_id","CN/BBD/14000019_1")
 	c, _ := gdrj.Find(new(gdrj.SalesTrx), f, nil)
 	defer c.Close()
