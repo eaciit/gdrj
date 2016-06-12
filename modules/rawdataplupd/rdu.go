@@ -63,8 +63,13 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 
+    conn.NewQuery().From(new(gdrj.RawDataPL).TableName()).
+        Where(dbox.Eq("year",2015)).
+        Delete().Exec(nil)
+
 	toolkit.Println("START...")
-	crx, err := conn.NewQuery().
+	/*
+    crx, err := conn.NewQuery().
         From(new(gdrj.RawDataPL).TableName()).
         //Where(dbox.In("src","31052016SAP_DISC-RDJKT","30052016SAP_EXPORT")).
 		Cursor(nil)
@@ -105,7 +110,7 @@ func main() {
         }
 	}
 	close(jobs)
-
+    
 	toolkit.Println("Saving")
 	limit = step
 	for ri := 0; ri < count; ri++ {
@@ -116,7 +121,8 @@ func main() {
 			limit += step
 		}
 	}
-
+    */
+    
     saveOtherTable("tmpapintra2016","APROMO")
     saveOtherTable("tmpfreight2016","FREIGHT")
     saveOtherTable("tmpmegasari2016","APROMO")
