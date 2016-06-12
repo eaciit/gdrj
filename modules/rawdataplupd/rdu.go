@@ -124,7 +124,7 @@ func main() {
     saveOtherTable("tmpmegasari2016","APROMO")
     saveOtherTable("tmpsusemi2016","APROMO")
     saveOtherTable("tmproyalti201516","ROYALTI")
-    saveOtherTable("tmproyalti201516","SGAPL")
+    saveOtherTable("tmpsga2016","SGAPL")
 
     toolkit.Printfn("Done %s", time.Since(t0).String())
 }
