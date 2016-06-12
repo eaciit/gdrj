@@ -271,6 +271,7 @@ func (pl *SalesPL) CalcFreight(masters toolkit.M) {
 	freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.BranchID)
 	f, exist := freights[freightid]
 	if !exist {
+		toolkit.Printfn("Freight error: key is not exist %s", freightid)
 		return
 	}
 
