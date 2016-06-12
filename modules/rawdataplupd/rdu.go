@@ -63,8 +63,6 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 
-	toolkit.Println("Reading Master")
-	
 	toolkit.Println("START...")
 	crx, err := conn.NewQuery().
         From(new(gdrj.RawDataPL).TableName()).
@@ -122,7 +120,7 @@ func main() {
     saveOtherTable("tmpapintra2016","APROMO")
     saveOtherTable("tmpfreight2016","FREIGHT")
     saveOtherTable("tmpmegasari2016","APROMO")
-    saveOtherTable("tmpsusemi2016","APROMO")
+    //saveOtherTable("tmpsusemi2016","APROMO")
     saveOtherTable("tmproyalti201516","ROYALTI")
     saveOtherTable("tmpsga2016","SGAPL")
 
