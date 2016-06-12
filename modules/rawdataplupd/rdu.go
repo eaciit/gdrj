@@ -68,6 +68,7 @@ func main() {
         Delete().Exec(nil)
 
 	toolkit.Println("START...")
+	t0 := time.Now()
 	/*
     crx, err := conn.NewQuery().
         From(new(gdrj.RawDataPL).TableName()).
@@ -90,7 +91,6 @@ func main() {
 	i := 0
 	step := count / 100
 	limit := step
-	t0 := time.Now()
 	for {
 		//datas := []gdrj.RawDataPL{}
 		data := new(gdrj.RawDataPL)
