@@ -213,14 +213,14 @@ func (m *ReportController) DeletePLCollection(r *knot.WebContext) interface{} {
 	res := new(toolkit.Result)
 
 	payload := struct {
-		ID string `json:"_id"`
+		IDs []string `json:"_id"`
 	}{}
 	if err := r.GetPayload(&payload); err != nil {
 		res.SetError(err)
 		return res
 	}
 
-	err := new(gdrj.PLFinderParam).DeletePLCollection(payload.ID)
+	err := new(gdrj.PLFinderParam).DeletePLCollection(payload.IDs)
 	if err != nil {
 		res.SetError(err)
 		return res

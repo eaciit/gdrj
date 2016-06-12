@@ -51,8 +51,22 @@ at.refreshData = function () {
 };
 
 at.clearcollection = function () {
-    app.ajaxPost("/report/clearcollection", {}, function (res) {
-        at.refreshData();
+    var allTables = at.gridData();
+
+    swal({
+        title: "Are you sure?",
+        text: 'All PL* table will be deleted.',
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Delete",
+        closeOnConfirm: true
+    }, function () {
+        setTimeout(function () {
+            app.ajaxPost("/report/deleteplcollection", { _id: allTables }, function (res) {
+                at.refreshData();
+            });
+        }, 1000);
     });
 };
 
@@ -67,7 +81,7 @@ at.deletecollection = function (idtable) {
         closeOnConfirm: true
     }, function () {
         setTimeout(function () {
-            app.ajaxPost("/report/deleteplcollection", { _id: idtable }, function (res) {
+            app.ajaxPost("/report/deleteplcollection", { _id: [idtable] }, function (res) {
                 at.refreshData();
             });
         }, 1000);
