@@ -124,6 +124,7 @@ func main() {
     saveOtherTable("tmpmegasari2016","APROMO")
     saveOtherTable("tmpsusemi2016","APROMO")
     saveOtherTable("tmproyalti201516","ROYALTI")
+    saveOtherTable("tmproyalti201516","SGAPL")
 
     toolkit.Printfn("Done %s", time.Since(t0).String())
 }
@@ -186,7 +187,11 @@ func workerSave(src string, jobs <-chan toolkit.M, outs chan<- string){
             }
         }
         r.ID = bson.NewObjectId().String()
-        workerConn.NewQuery().From(r.TableName()).Save().Exec(toolkit.M{}.Set("data",r))
+        e := workerConn.NewQuery().From(r.TableName()).Save().Exec(toolkit.M{}.Set("data",r))
+        if e!=nil {
+            toolkit.Printfn("Error save %s: \n%s", toolkit.JsonString(r), e.Error())
+            os.Exit(100)
+        }
     }
 }
 
