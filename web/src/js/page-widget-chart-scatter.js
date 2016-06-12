@@ -7,7 +7,7 @@ let dataPoints = [
 rs.contentIsLoading = ko.observable(false)
 rs.title = ko.observable('P&L Analytic')
 rs.breakdownBy = ko.observable('customer.channelname')
-rs.selectedPNLNetSales = ko.observable("PL3")
+rs.selectedPNLNetSales = ko.observable("PL8A") // PL1
 rs.selectedPNL = ko.observable("PL74C")
 rs.chartComparisonNote = ko.observable('')
 rs.optionDimensionSelect = ko.observableArray([])
@@ -34,62 +34,87 @@ rs.refresh = (useCache = false) => {
 	param1.pls = [rs.selectedPNL()]
 	param1.groups = [rs.breakdownBy(), 'date.year']
 	param1.aggr = 'sum'
-	param1.filters = [] // rpt.getFilterValue()
+	param1.filters = rpt.getFilterValue()
 	
-	app.ajaxPost("/report/getpnldata", param1, (res1) => {
-		let date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-		rs.chartComparisonNote(`Last refreshed on: ${date}`)
+	let fetch = () => {
+		app.ajaxPost("/report/getpnldatanew", param1, (res1) => {
+			if (res1.Status == "NOK") {
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
+			}
 
-		let param2 = {}
-		param2.pls = [rs.selectedPNLNetSales()]
-		param2.groups = [rs.breakdownBy(), 'date.year']
-		param2.aggr = 'sum'
-		param2.filters = [] // rpt.getFilterValue()
-
-		app.ajaxPost("/report/getpnldata", param2, (res2) => {
-			let date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+			let date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
-			let dataAllPNL = res1.Data.Data
-			let dataAllPNLNetSales = res2.Data.Data
+			let param2 = {}
+			param2.pls = [rs.selectedPNLNetSales()]
+			param2.groups = [rs.breakdownBy(), 'date.year']
+			param2.aggr = 'sum'
+			param2.filters = rpt.getFilterValue()
 
-			let selectedPNL = `total${rs.selectedPNL()}`
-			let years = _.map(_.groupBy(dataAllPNL, (d) => d._id.fiscal), (v, k) => k)
+			app.ajaxPost("/report/getpnldatanew", param2, (res2) => {
+				let date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+				rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
-			let maxData = _.max(dataAllPNL.concat(dataAllPNLNetSales), (d) => d[selectedPNL])[selectedPNL]
-			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x[selectedPNL], 0)
-			let countPNL = dataAllPNL.length
-			let avgPNL = sumPNL / countPNL
+				let dataAllPNL = res1.Data.Data
+				let dataAllPNLNetSales = res2.Data.Data
 
-			let dataScatter = []
+				let selectedPNL = `${rs.selectedPNL()}`
+				let years = _.map(_.groupBy(dataAllPNL, (d) => d._id._id_date_year), (v, k) => k)
 
-			dataAllPNL.forEach((d) => {
-				dataScatter.push({
-					category: app.nbspAble(`${d._id.pl} ${d._id.fiscal}`, 'Uncategorized'),
-					year: d._id.fiscal,
-					scatterValue: d[selectedPNL],
-					scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData),
-					lineAvg: avgPNL,
-					linePercentage: avgPNL / (maxData == 0 ? 1 : maxData)
+				console.log("+++++",dataAllPNL, rs.selectedPNL())
+				let maxData1 = 0
+				try {
+					maxData1 = _.maxBy(_.filter(dataAllPNL, (d) => d[rs.selectedPNL()] != 0), (d) => d[rs.selectedPNL()])[rs.selectedPNL()]
+				} catch (err) { }
+
+				console.log("+++++",dataAllPNLNetSales, rs.selectedPNLNetSales())
+				let maxData2 = 0
+				try {
+					maxData2 = _.maxBy(_.filter(dataAllPNLNetSales, (d) => d[rs.selectedPNLNetSales()] != 0), (d) => d[rs.selectedPNLNetSales()])[rs.selectedPNLNetSales()]
+				} catch (err) { }
+				let maxData = _.max([maxData1, maxData2])
+				console.log("+++++========", maxData1, maxData2)
+
+				let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x[selectedPNL], 0)
+				let countPNL = dataAllPNL.length
+				let avgPNL = sumPNL / countPNL
+
+				let dataScatter = []
+
+				dataAllPNL.forEach((d) => {
+					dataScatter.push({
+						category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
+						year: d._id._id_date_year,
+						scatterValue: d[selectedPNL],
+						scatterPercentage: (d[selectedPNL] / (maxData == 0 ? 1 : maxData)) * 100,
+						lineAvg: avgPNL,
+						linePercentage: (avgPNL / (maxData == 0 ? 1 : maxData)) * 100
+					})
+					
+					console.log("---->>>>-", avgPNL, d[selectedPNL], maxData)
 				})
+
+				console.log("-----", years, dataScatter, maxData)
+
+				rs.contentIsLoading(false)
+				rs.generateReport(dataScatter, years)
+			}, () => {
+				rs.contentIsLoading(false)
+			}, {
+				cache: (useCache == true) ? 'pivot chart' : false
 			})
 
-			console.log("-----", years, dataScatter, maxData)
-
-
-			rs.contentIsLoading(false)
-			rs.generateReport(dataScatter, years)
 		}, () => {
 			rs.contentIsLoading(false)
 		}, {
 			cache: (useCache == true) ? 'pivot chart' : false
 		})
+	}
 
-	}, () => {
-		rs.contentIsLoading(false)
-	}, {
-		cache: (useCache == true) ? 'pivot chart' : false
-	})
+	fetch()
 }
 
 rs.generateReport = (data, years) => {
@@ -126,7 +151,7 @@ rs.generateReport = (data, years) => {
 			width: 3, 
             tooltip: {
 				visible: true,
-				template: `Percentage of ${breakdownTitle} - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.linePercentage, 'n2') # %`
+				template: `Percentage of ${breakdownTitle} - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.linePercentage, 'n2') # % (#: kendo.toString(dataItem.lineAvg, 'n2') #)`
 			},
 			markers: {
 				visible: false
@@ -142,7 +167,7 @@ rs.generateReport = (data, years) => {
             },
             tooltip: {
 				visible: true,
-				template: `Percentage of ${breakdownTitle} to ${netSalesTite} at #: dataItem.year #: #: kendo.toString(dataItem.scatterPercentage, 'n2') # %`
+				template: `Percentage of ${breakdownTitle} to ${netSalesTite} at #: dataItem.year #: #: kendo.toString(dataItem.scatterPercentage, 'n2') # % (#: kendo.toString(dataItem.scatterValue, 'n2') #)`
 			},
         }],
         valueAxis: {

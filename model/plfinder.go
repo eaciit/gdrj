@@ -6,6 +6,7 @@ import (
 	"github.com/eaciit/toolkit"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"math"
 	"sort"
 	"strings"
 	"time"
@@ -18,8 +19,71 @@ type Filter struct {
 }
 
 type PLFinderParam struct {
-	Breakdowns []string  `json:"breakdown"`
+	PLs        []string  `json:"pls"`
+	Breakdowns []string  `json:"groups"`
 	Filters    []*Filter `json:"filters"`
+	Aggr       string    `json:"aggr"`
+}
+
+func (s *PLFinderParam) GetPLCollections() ([]*toolkit.M, error) {
+	db, session, err := s.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
+	cols, err := db.CollectionNames()
+	if err != nil {
+		return nil, err
+	}
+
+	res := []*toolkit.M{}
+
+	for _, col := range cols {
+		if strings.HasPrefix(col, "pl_") {
+			csr, err := DB().Connection.NewQuery().From(col).Take(1).Cursor(nil)
+			if err != nil {
+				return nil, err
+			}
+
+			colRes := []*toolkit.M{}
+			err = csr.Fetch(&colRes, 0, false)
+			if err != nil {
+				return nil, err
+			}
+
+			if len(colRes) > 0 {
+				dimensions := []string{}
+				for key := range colRes[0].Get("_id").(toolkit.M) {
+					dimensions = append(dimensions, key)
+				}
+
+				row := toolkit.M{}
+				row.Set("table", col)
+				row.Set("dimensions", dimensions)
+				res = append(res, &row)
+			}
+		}
+	}
+
+	return res, nil
+}
+
+func (s *PLFinderParam) DeletePLCollection(table []string) error {
+	db, session, err := s.ConnectToDB()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	for _, each := range table {
+		err = db.C(each).DropCollection()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *PLFinderParam) ParseFilter() *dbox.Filter {
@@ -34,7 +98,8 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 			}
 
 			if len(values) > 0 {
-				filters = append(filters, dbox.In(each.Field, values))
+				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+				filters = append(filters, dbox.In(field, values))
 			}
 		case dbox.FilterOpGte:
 			var value interface{} = each.Value
@@ -49,7 +114,8 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 					}
 				}
 
-				filters = append(filters, dbox.Gte(each.Field, value))
+				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+				filters = append(filters, dbox.Gte(field, value))
 			}
 		case dbox.FilterOpLte:
 			var value interface{} = each.Value
@@ -64,11 +130,13 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 					}
 				}
 
-				filters = append(filters, dbox.Lte(each.Field, value))
+				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+				filters = append(filters, dbox.Lte(field, value))
 			}
 		case dbox.FilterOpEqual:
 			value := each.Value
-			filters = append(filters, dbox.Eq(each.Field, value))
+			field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+			filters = append(filters, dbox.Eq(field, value))
 		}
 	}
 
@@ -90,7 +158,7 @@ func (s *PLFinderParam) GetTableName() string {
 	return tableName
 }
 
-func (s *PLFinderParam) C(tableName string) (*mgo.Collection, *mgo.Session, error) {
+func (s *PLFinderParam) ConnectToDB() (*mgo.Database, *mgo.Session, error) {
 	ci := DB().Connection.Info()
 	mgoi := &mgo.DialInfo{
 		Addrs:   []string{ci.Host},
@@ -108,7 +176,7 @@ func (s *PLFinderParam) C(tableName string) (*mgo.Collection, *mgo.Session, erro
 	session.SetMode(mgo.Monotonic, true)
 	db := session.DB(ci.Database)
 
-	return db.C(tableName), session, nil
+	return db, session, nil
 }
 
 func (s *PLFinderParam) CountPLData() (bool, error) {
@@ -120,15 +188,61 @@ func (s *PLFinderParam) CountPLData() (bool, error) {
 	}
 	defer csr.Close()
 
-	fmt.Println("++++++", tableName, csr.Count())
-
 	return (csr.Count() > 0), nil
+}
+
+func (s *PLFinderParam) GetPLModelsFollowPLS() ([]*PLModel, error) {
+	res := []*PLModel{}
+
+	q := DB().Connection.NewQuery().From(new(PLModel).TableName())
+	defer q.Close()
+
+	if len(s.PLs) > 0 {
+		filters := []*dbox.Filter{}
+		for _, pl := range s.PLs {
+			filters = append(filters, dbox.Eq("_id", pl))
+		}
+		q = q.Where(dbox.Or(filters...))
+	}
+
+	csr, err := q.Cursor(nil)
+	if err != nil {
+		return nil, err
+	}
+	defer csr.Close()
+
+	err = csr.Fetch(&res, 0, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	tableName := s.GetTableName()
+	plmodels, err := s.GetPLModelsFollowPLS()
+	if err != nil {
+		return nil, err
+	}
 
-	csr, err := DB().Connection.NewQuery().From(tableName).Cursor(nil)
+	q := DB().Connection.NewQuery().From(tableName)
+	// if len(s.Filters) > 0 {
+	// 	q = q.Where(s.ParseFilter())
+	// }
+
+	for _, breakdown := range s.Breakdowns {
+		brkdwn := fmt.Sprintf("_id.%s", strings.Replace(breakdown, ".", "_", -1))
+		q = q.Group(brkdwn)
+	}
+
+	for _, plmod := range plmodels {
+		op := fmt.Sprintf("$%s", s.Aggr)
+		field := fmt.Sprintf("$%s", plmod.ID)
+		q = q.Aggr(op, field, plmod.ID)
+	}
+
+	csr, err := q.Cursor(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -138,6 +252,17 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	err = csr.Fetch(&res, 0, false)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, each := range res {
+		for key := range *each {
+			if strings.Contains(key, "PL") {
+				val := each.GetFloat64(key)
+				if math.IsNaN(val) {
+					each.Set(key, 0)
+				}
+			}
+		}
 	}
 
 	return res, nil
@@ -151,11 +276,13 @@ func (s *PLFinderParam) GeneratePLData() error {
 		return err
 	}
 
-	col, sess, err := s.C(tableName)
+	db, sess, err := s.ConnectToDB()
 	if err != nil {
 		return err
 	}
 	defer sess.Close()
+
+	col := db.C(new(SalesPL).TableName())
 
 	cache := map[string]bool{}
 	filterKeys := []string{}

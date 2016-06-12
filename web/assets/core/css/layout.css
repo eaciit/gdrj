@@ -527,6 +527,12 @@ body {
 .breakdown-view .cell-percentage {
   border-right: 1px solid #F0F3F4;
 }
+.breakdown-view table tr.hover {
+  background-color: #74B841;
+}
+.breakdown-view table tr.hover td {
+  color: white;
+}
 .scatter-view-container {
   overflow-x: scroll;
 }

@@ -355,7 +355,7 @@ rpt.toggleFilter = () => {
 }
 rpt.getFilterValue = () => {
 	let res = [
-		{ 'Field': 'customer.branchid', 'Op': '$in', 'Value': rpt.value.Branch() },
+		{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() },
 		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand() },
 		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region() },
 		{ 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() },
