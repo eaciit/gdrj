@@ -112,6 +112,15 @@ func (w *WebController) Log(r *knot.WebContext) interface{} {
 	return true
 }
 
+func (w *WebController) AdminTable(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.IncludeFiles = IncludeFiles
+	r.Config.ViewName = View("page-admintable.html")
+
+	return true
+}
+
 func (w *WebController) User(r *knot.WebContext) interface{} {
 	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate

@@ -1,0 +1,63 @@
+<script src="/res/core/js/page-admintable.js"></script>
+
+<div>
+	<div class="col-md-4 col-sm-4 ez panel-filter">
+		<div class="panel ez no-padding hardcore">
+			<div class="panel-heading">
+				<h3 class="no-margin">Filter</h3>
+				<div class="panel-nav-button">
+					<div class="form-group relative align-right no-margin no-padding hardcore">
+						<button class="btn btn-sm btn-primary" data-bind="click: at.refreshData">
+							<i class="fa fa-refresh"></i> Reload Data
+						</button>
+						<button class="btn btn-sm btn-primary" data-bind="click: at.clearcollection">
+							<i class="fa fa-refresh"></i> Clear Collection
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="panel-body">
+				<div id="from-filter">
+					<p>Filter shown data.</p>
+					<div class="form-group form-group-table-name">
+						<div class="input-group input-group-sm ez width-full">
+							<span class="input-group-addon width-100 align-right">Search</span>
+							<input type="text" class="form-control" required data-required-msg="cannot be empty" placeholder="Type value here ..." data-bind="value: at.filter.search" />
+						</div>
+					</div>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-8 col-sm-8 ez panel-content">
+		<div class="panel ez no-padding hardcore">
+			<div class="panel-heading">
+				<h3 class="no-margin">
+					<button class="btn-toggle-filter no-padding">
+						<i class="fa fa-angle-double-left tooltipster color-grey" title="Toggle filter pane visibility"></i>
+					</button>
+					Data Collection
+				</h3>
+				<div class="panel-nav-button">
+				</div>
+			</div>
+			<div class="panel-body">
+				<div data-bind="visible: at.contentIsLoading">
+					{{template "_loader.html"}}
+				</div>
+				<div data-bind="visible: !at.contentIsLoading()">
+					<p data-bind="visible: at.selectedTableID() != ''">
+						Data on table <span class="tag bg-orange">at</span>.
+					</p>
+					<div class="grid-at"></div>
+					<div class="no-grid" data-bind="visible: app.is(at.selectedTableID, '')">No data to be shown.</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="clearfix"></div>
