@@ -79,6 +79,10 @@ at.generateGrid = () => {
     })
 }
 
+at.refreshPLCollections = () => {
+    
+}
+
 $(() => {
     at.generateGrid()
 })

@@ -25,6 +25,50 @@ type PLFinderParam struct {
 	Aggr       string    `json:"aggr"`
 }
 
+func (s *PLFinderParam) GetPLCollections() ([]*toolkit.M, error) {
+	db, session, err := s.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
+	cols, err := db.CollectionNames()
+	if err != nil {
+		return nil, err
+	}
+
+	res := []*toolkit.M{}
+
+	for _, col := range cols {
+		if strings.HasPrefix(col, "pl_") {
+			csr, err := DB().Connection.NewQuery().From(col).Take(1).Cursor(nil)
+			if err != nil {
+				return nil, err
+			}
+
+			colRes := []*toolkit.M{}
+			err = csr.Fetch(&colRes, 0, false)
+			if err != nil {
+				return nil, err
+			}
+
+			if len(colRes) > 0 {
+				dimensions := []string{}
+				for key := range colRes[0].Get("_id").(toolkit.M) {
+					dimensions = append(dimensions, key)
+				}
+
+				row := toolkit.M{}
+				row.Set("table", col)
+				row.Set("dimensions", dimensions)
+				res = append(res, &row)
+			}
+		}
+	}
+
+	return res, nil
+}
+
 func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 	filters := []*dbox.Filter{}
 
@@ -37,7 +81,8 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 			}
 
 			if len(values) > 0 {
-				filters = append(filters, dbox.In(each.Field, values))
+				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+				filters = append(filters, dbox.In(field, values))
 			}
 		case dbox.FilterOpGte:
 			var value interface{} = each.Value
@@ -52,7 +97,8 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 					}
 				}
 
-				filters = append(filters, dbox.Gte(each.Field, value))
+				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+				filters = append(filters, dbox.Gte(field, value))
 			}
 		case dbox.FilterOpLte:
 			var value interface{} = each.Value
@@ -67,11 +113,13 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 					}
 				}
 
-				filters = append(filters, dbox.Lte(each.Field, value))
+				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+				filters = append(filters, dbox.Lte(field, value))
 			}
 		case dbox.FilterOpEqual:
 			value := each.Value
-			filters = append(filters, dbox.Eq(each.Field, value))
+			field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+			filters = append(filters, dbox.Eq(field, value))
 		}
 	}
 
@@ -93,7 +141,7 @@ func (s *PLFinderParam) GetTableName() string {
 	return tableName
 }
 
-func (s *PLFinderParam) C(tableName string) (*mgo.Collection, *mgo.Session, error) {
+func (s *PLFinderParam) ConnectToDB() (*mgo.Database, *mgo.Session, error) {
 	ci := DB().Connection.Info()
 	mgoi := &mgo.DialInfo{
 		Addrs:   []string{ci.Host},
@@ -111,7 +159,7 @@ func (s *PLFinderParam) C(tableName string) (*mgo.Collection, *mgo.Session, erro
 	session.SetMode(mgo.Monotonic, true)
 	db := session.DB(ci.Database)
 
-	return db.C(tableName), session, nil
+	return db, session, nil
 }
 
 func (s *PLFinderParam) CountPLData() (bool, error) {
@@ -123,12 +171,10 @@ func (s *PLFinderParam) CountPLData() (bool, error) {
 	}
 	defer csr.Close()
 
-	fmt.Println("++++++", tableName, csr.Count())
-
 	return (csr.Count() > 0), nil
 }
 
-func (s *PLFinderParam) GetPLModels() ([]*PLModel, error) {
+func (s *PLFinderParam) GetPLModelsFollowPLS() ([]*PLModel, error) {
 	res := []*PLModel{}
 
 	q := DB().Connection.NewQuery().From(new(PLModel).TableName())
@@ -158,7 +204,7 @@ func (s *PLFinderParam) GetPLModels() ([]*PLModel, error) {
 
 func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	tableName := s.GetTableName()
-	plmodels, err := s.GetPLModels()
+	plmodels, err := s.GetPLModelsFollowPLS()
 	if err != nil {
 		return nil, err
 	}
@@ -171,16 +217,12 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	for _, breakdown := range s.Breakdowns {
 		brkdwn := fmt.Sprintf("_id.%s", strings.Replace(breakdown, ".", "_", -1))
 		q = q.Group(brkdwn)
-		fmt.Println("---- group by", brkdwn)
 	}
-
-	fmt.Println("---- group from", tableName)
 
 	for _, plmod := range plmodels {
 		op := fmt.Sprintf("$%s", s.Aggr)
 		field := fmt.Sprintf("$%s", plmod.ID)
 		q = q.Aggr(op, field, plmod.ID)
-		fmt.Println("---- group by", op, field, plmod.ID)
 	}
 
 	csr, err := q.Cursor(nil)
@@ -204,7 +246,6 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 				}
 			}
 		}
-		fmt.Printf("------ %#v\n", each)
 	}
 
 	return res, nil
@@ -218,11 +259,13 @@ func (s *PLFinderParam) GeneratePLData() error {
 		return err
 	}
 
-	col, sess, err := s.C(new(SalesPL).TableName())
+	db, sess, err := s.ConnectToDB()
 	if err != nil {
 		return err
 	}
 	defer sess.Close()
+
+	col := db.C(new(SalesPL).TableName())
 
 	cache := map[string]bool{}
 	filterKeys := []string{}
@@ -255,10 +298,6 @@ func (s *PLFinderParam) GeneratePLData() error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("============ RES")
-	fmt.Printf("%#v\n", pipe)
-	fmt.Printf("%#v\n", res)
 
 	_ = res
 	return nil

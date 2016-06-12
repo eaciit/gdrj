@@ -71,6 +71,8 @@ at.generateGrid = function () {
     });
 };
 
+at.refreshPLCollections = function () {};
+
 $(function () {
     at.generateGrid();
 });
