@@ -233,7 +233,9 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
             cogsSchema.PF_Amount +
             cogsSchema.Depre_Amount +
             cogsSchema.Other_Amount
-	}
+	} else {
+        cogsShemaAmount = cogsSchema.COGS_Amount
+    }
 
     if cogsShemaAmount==0 {
         toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
