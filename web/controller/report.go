@@ -271,7 +271,7 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 	fmt.Println("counted", ok)
 
 	tableName := payload.GetTableName()
-	fmt.Println("=---- tableName", tableName)
+	fmt.Println("______ TABLENAME TABLENAME TABLENAME", tableName)
 
 	if ok {
 		data, err := payload.GetPLData()
@@ -301,7 +301,7 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 		return res
 	}
 
-	fmt.Println("______", tableName, ok, knot.SharedObject().Get(tableName, ""))
+	fmt.Println("______ AME", tableName, ok, knot.SharedObject().Get(tableName, ""))
 
 	go func() {
 		knot.SharedObject().Set(tableName, "MANGSTABS!")
