@@ -100,6 +100,7 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 			if len(values) > 0 {
 				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
 				filters = append(filters, dbox.In(field, values))
+				fmt.Println("---- filter: ", field, "in", values)
 			}
 		case dbox.FilterOpGte:
 			var value interface{} = each.Value
@@ -116,6 +117,7 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 
 				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
 				filters = append(filters, dbox.Gte(field, value))
+				fmt.Println("---- filter: ", field, "gte", value)
 			}
 		case dbox.FilterOpLte:
 			var value interface{} = each.Value
@@ -132,11 +134,13 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 
 				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
 				filters = append(filters, dbox.Lte(field, value))
+				fmt.Println("---- filter: ", field, "lte", value)
 			}
 		case dbox.FilterOpEqual:
 			value := each.Value
 			field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
 			filters = append(filters, dbox.Eq(field, value))
+			fmt.Println("---- filter: ", field, "eq", value)
 		}
 	}
 
@@ -152,9 +156,17 @@ func (s *PLFinderParam) GetTableName() string {
 			filterKeys = append(filterKeys, filter.Field)
 		}
 	}
+	for _, breakdown := range s.Breakdowns {
+		if _, ok := cache[breakdown]; !ok {
+			cache[breakdown] = true
+			filterKeys = append(filterKeys, breakdown)
+		}
+	}
+
 	sort.Strings(filterKeys)
 	key := strings.Replace(strings.Join(filterKeys, "_"), ".", "_", -1)
 	tableName := fmt.Sprintf("pl_%s", key)
+
 	return tableName
 }
 
@@ -227,9 +239,9 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	}
 
 	q := DB().Connection.NewQuery().From(tableName)
-	// if len(s.Filters) > 0 {
-	// 	q = q.Where(s.ParseFilter())
-	// }
+	if len(s.Filters) > 0 {
+		// q = q.Where(s.ParseFilter())
+	}
 
 	for _, breakdown := range s.Breakdowns {
 		brkdwn := fmt.Sprintf("_id.%s", strings.Replace(breakdown, ".", "_", -1))

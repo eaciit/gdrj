@@ -134,6 +134,7 @@ rpt.optionDimensions = ko.observableArray([
     // { field: 'customer.name', name: 'Outlet', title: 'customer_name' },
 	// { field: 'product.name', name: 'Product', title: 'product_name' },
     { field: 'customer.region', name: 'Region', title: 'customer_region' },
+    { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
 ])
 rpt.optionDataPoints = ko.observableArray([
     { field: 'value1', name: o['value1'] },
@@ -155,8 +156,8 @@ rpt.enableHolder = {}
 rpt.eventChange = {}
 rpt.value = {
 	HQ: ko.observable(false),
-	From: ko.observable(moment().year(2014).month(1).date(1).toDate()),
-	To: ko.observable(moment().year(2017).month(11).date(1).toDate())
+	From: ko.observable(new Date(2014, 0, 1)),
+	To: ko.observable(new Date(2016, 11, 31))
 }
 rpt.masterData.Type = ko.observableArray([
 	{ value: 'Mfg', text: 'Mfg' },
@@ -361,7 +362,13 @@ rpt.getFilterValue = () => {
 		{ 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() },
 		{ 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
 		{ 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
-	]
+	].filter((d) => {
+		if (d.Value instanceof Array) {
+			return d.Value.length > 0
+		} else {
+			return d.Value != ''
+		}
+	})
 
 	return res
 }
