@@ -45,6 +45,7 @@ func (s *PLFinderParam) GetPLCollections() ([]*toolkit.M, error) {
 			if err != nil {
 				return nil, err
 			}
+			defer csr.Close()
 
 			colRes := []*toolkit.M{}
 			err = csr.Fetch(&colRes, 0, false)

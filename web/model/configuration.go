@@ -4,6 +4,7 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
+	"strings"
 )
 
 const (
@@ -61,6 +62,34 @@ func SetConfig(key string, value interface{}) {
 	o.Value = value
 	Save(o)
 }
+
+func RemoveConfig(key string) {
+	o := new(Configuration)
+	o.ID = key
+	Delete(o)
+}
+
+func ClearPLCache() {
+	csr, err := Find(new(Configuration), nil)
+	if err != nil {
+		return
+	}
+	defer csr.Close()
+
+	confs := []*Configuration{}
+	err = csr.Fetch(&confs, 0, false)
+	if err != nil {
+		return
+	}
+
+	for _, conf := range confs {
+		if strings.HasPrefix(conf.ID, "pl_") {
+			Delete(conf)
+		}
+	}
+}
+
+// pl_
 
 func (p *Ports) TableName() string {
 	return "port"
