@@ -19,7 +19,7 @@ rpt.data = ko.observableArray([]);
 rpt.optionDimensions = ko.observableArray([{ field: "", name: 'None', title: '' }, { field: "customer.branchname", name: 'Branch/RD', title: 'customer_branchname' }, { field: "product.brand", name: 'Brand', title: 'product_brand' }, { field: 'customer.channelname', name: 'Channel', title: 'customer_channelname' },
 // { field: 'customer.name', name: 'Outlet', title: 'customer_name' },
 // { field: 'product.name', name: 'Product', title: 'product_name' },
-{ field: 'customer.region', name: 'Region', title: 'customer_region' }]);
+{ field: 'customer.region', name: 'Region', title: 'customer_region' }, { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' }]);
 rpt.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
 rpt.mode = ko.observable('render');
@@ -31,8 +31,8 @@ rpt.enableHolder = {};
 rpt.eventChange = {};
 rpt.value = {
 	HQ: ko.observable(false),
-	From: ko.observable(moment().year(2014).month(1).date(1).toDate()),
-	To: ko.observable(moment().year(2017).month(11).date(1).toDate())
+	From: ko.observable(new Date(2014, 0, 1)),
+	To: ko.observable(new Date(2016, 11, 31))
 };
 rpt.masterData.Type = ko.observableArray([{ value: 'Mfg', text: 'Mfg' }, { value: 'Branch', text: 'Branch' }]);
 rpt.masterData.HQ = ko.observableArray([{ value: true, text: 'True' }, { value: false, text: 'False' }]);
@@ -229,7 +229,13 @@ rpt.toggleFilter = function () {
 	rpt.toggleFilterCallback();
 };
 rpt.getFilterValue = function () {
-	var res = [{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand() }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region() }, { 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() }, { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() }];
+	var res = [{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand() }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region() }, { 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() }, { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() }].filter(function (d) {
+		if (d.Value instanceof Array) {
+			return d.Value.length > 0;
+		} else {
+			return d.Value != '';
+		}
+	});
 
 	return res;
 };

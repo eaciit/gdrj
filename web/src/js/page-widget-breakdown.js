@@ -14,7 +14,7 @@ bkd.plmodels = ko.observableArray([])
 bkd.refresh = (useCache = false) => {
 	let param = {}
 	param.pls = []
-	param.groups = [bkd.breakdownBy()]
+	param.groups = [bkd.breakdownBy(), bkd.breakdownByFiscalYear()]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
 	
@@ -50,6 +50,7 @@ bkd.refresh = (useCache = false) => {
 }
 
 bkd.breakdownBy = ko.observable('customer.channelname')
+bkd.breakdownByFiscalYear = ko.observable('date.fiscal')
 bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy())
 
 bkd.clickCell = (plcode, breakdown) => {
@@ -213,26 +214,27 @@ bkd.render = () => {
 		return
 	}
 	
+	let breakdowns = [bkd.breakdownBy(), bkd.breakdownByFiscalYear()]
 	let rows = []
-	// let data = _.map(bkd.data(), (d) => {
-	// 	if (String(d._id[`_id_${app.idAble(bkd.breakdownBy())}`]) != String(d._id.fiscal)) {
-	// 		d._id[`_id_${app.idAble(bkd.breakdownBy())}`] = `${d._id[`_id_${app.idAble(bkd.breakdownBy())}`]} ${d._id.fiscal}`
-	// 	}
+	
+	let data = _.sortBy(_.map(bkd.data(), (d) => {
+		let _id = breakdowns.map((e) => d._id[`_id_${app.idAble(e)}`]).join(' ')
+		d._id = _id
 
-	// 	return d 
-	// })
-	let data = _.sortBy(bkd.data(), (d) => d._id[`_id_${app.idAble(bkd.breakdownBy())}`])
+		return d 
+	}), (d) => d._id)
+	
 	let plmodels = _.sortBy(bkd.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
 	plmodels.forEach((d) => {
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
 		data.forEach((e) => {
-			let breakdown = e._id[`_id_${app.idAble(bkd.breakdownBy())}`]
+			let breakdown = e._id
 			let value = e[`${d._id}`]; value = app.validateNumber(value)
 			row[breakdown] = value
 			row.PNLTotal += value
 		})
 		data.forEach((e) => {
-			let breakdown = e._id[`_id_${app.idAble(bkd.breakdownBy())}`]
+			let breakdown = e._id
 			let value = e[`${d._id}`] / row.PNLTotal * 100; value = app.validateNumber(value)
 			row[`${breakdown} %`] = value
 		})
@@ -292,7 +294,7 @@ bkd.render = () => {
 	let grouppl3 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
 		app.newEl('th')
-			.html(app.nbspAble(d._id[`_id_${app.idAble(bkd.breakdownBy())}`], 'Uncategorized'))
+			.html(app.nbspAble(d._id, 'Uncategorized'))
 			.addClass('align-right')
 			.appendTo(trContent1)
 			.width(colWidth)
@@ -340,7 +342,7 @@ bkd.render = () => {
 			.appendTo(tableContent)
 
 		data.forEach((e, f) => {
-			let key = e._id[`_id_${app.idAble(bkd.breakdownBy())}`]
+			let key = e._id
 			let value = kendo.toString(d[key], 'n0')
 
 			let percentage = kendo.toString(d[`${key} %`], 'n2')
@@ -447,41 +449,6 @@ bkd.render = () => {
 			if (countChild == '' || countChild == undefined)
 				$trElem.find(`td:eq(0)`).css('padding-left', '20px')
 		}
-	})
-
-	return
-
-	let trHeaderTotal = app.newEl('tr')
-		.addClass('footer')
-		.appendTo(tableHeader)
-
-	app.newEl('td')
-		.html('Total')
-		.appendTo(trHeaderTotal)
-
-	let totalAll = kendo.toString(pnlTotalSum, 'n0')
-	app.newEl('td')
-		.html(totalAll)
-		.addClass('align-right')
-		.appendTo(trHeaderTotal)
-
-	let trContentTotal = app.newEl('tr')
-		.addClass('footer')
-		.appendTo(tableContent)
-
-	header.forEach((e) => {
-		let sum = kendo.toString(Lazy(rows).sum((g) => app.NaNable(g[e.key])), 'n0')
-		let percentage = kendo.toString(sum / rows[0][e.key] * 100, 'n0')
-
-		app.newEl('td')
-			.html(sum)
-			.addClass('align-right')
-			.appendTo(trContentTotal)
-
-		app.newEl('td')
-			.html(percentage)
-			.addClass('align-right')
-			.appendTo(trContentTotal)
 	})
 }
 
