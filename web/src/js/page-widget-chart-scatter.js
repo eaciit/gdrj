@@ -31,7 +31,7 @@ rs.refresh = (useCache = false) => {
 	rs.contentIsLoading(true)
 
 	let param1 = {}
-	param1.pls = [rs.selectedPNL()]
+	param1.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
 	param1.groups = [rs.breakdownBy(), 'date.year']
 	param1.aggr = 'sum'
 	param1.filters = rpt.getFilterValue()
@@ -48,65 +48,48 @@ rs.refresh = (useCache = false) => {
 			let date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
-			let param2 = {}
-			param2.pls = [rs.selectedPNLNetSales()]
-			param2.groups = [rs.breakdownBy(), 'date.year']
-			param2.aggr = 'sum'
-			param2.filters = rpt.getFilterValue()
+			let dataAllPNL = res1.Data.Data
+				.filter((d) => d.hasOwnProperty(rs.selectedPNL()))
+				.map((d) => { return { _id: d._id, value: d[rs.selectedPNL()] } })
+			let dataAllPNLNetSales = res1.Data.Data
+				.filter((d) => d.hasOwnProperty(rs.selectedPNLNetSales()))
+				.map((d) => { return { _id: d._id, value: d[rs.selectedPNLNetSales()] } })
 
-			app.ajaxPost("/report/getpnldatanew", param2, (res2) => {
-				let date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-				rs.chartComparisonNote(`Last refreshed on: ${date}`)
+			let years = _.map(_.groupBy(dataAllPNL, (d) => d._id._id_date_year), (v, k) => k)
 
-				let dataAllPNL = res1.Data.Data
-				let dataAllPNLNetSales = res2.Data.Data
+			let maxData1 = 0; try {
+				maxData1 = _.maxBy(dataAllPNL.filter((d) => d.value != 0), (d) => d.value).value
+			} catch (err) { }
 
-				let selectedPNL = `${rs.selectedPNL()}`
-				let years = _.map(_.groupBy(dataAllPNL, (d) => d._id._id_date_year), (v, k) => k)
+			let maxData2 = 0; try {
+				maxData2 = _.maxBy(dataAllPNLNetSales.filter((d) => d.value != 0), (d) => d.value).value
+			} catch (err) { }
+			let maxData = _.max([maxData1, maxData2])
 
-				console.log("+++++",dataAllPNL, rs.selectedPNL())
-				let maxData1 = 0
-				try {
-					maxData1 = _.maxBy(_.filter(dataAllPNL, (d) => d[rs.selectedPNL()] != 0), (d) => d[rs.selectedPNL()])[rs.selectedPNL()]
-				} catch (err) { }
+			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x.value, 0)
+			let countPNL = dataAllPNL.length
+			let avgPNL = sumPNL / countPNL
 
-				console.log("+++++",dataAllPNLNetSales, rs.selectedPNLNetSales())
-				let maxData2 = 0
-				try {
-					maxData2 = _.maxBy(_.filter(dataAllPNLNetSales, (d) => d[rs.selectedPNLNetSales()] != 0), (d) => d[rs.selectedPNLNetSales()])[rs.selectedPNLNetSales()]
-				} catch (err) { }
-				let maxData = _.max([maxData1, maxData2])
-				console.log("+++++========", maxData1, maxData2)
+			let dataScatter = []
+			let multiplier = (maxData == 0 ? 1 : maxData)
 
-				let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x[selectedPNL], 0)
-				let countPNL = dataAllPNL.length
-				let avgPNL = sumPNL / countPNL
-
-				let dataScatter = []
-
-				dataAllPNL.forEach((d) => {
-					dataScatter.push({
-						category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
-						year: d._id._id_date_year,
-						scatterValue: d[selectedPNL],
-						scatterPercentage: (d[selectedPNL] / (maxData == 0 ? 1 : maxData)) * 100,
-						lineAvg: avgPNL,
-						linePercentage: (avgPNL / (maxData == 0 ? 1 : maxData)) * 100
-					})
-					
-					console.log("---->>>>-", avgPNL, d[selectedPNL], maxData)
+			dataAllPNL.forEach((d) => {
+				dataScatter.push({
+					category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
+					year: d._id._id_date_year,
+					valuePNL: d.value,
+					valuePNLPercentage: (d.value / multiplier) * 100,
+					avgNetSales: avgPNL,
+					avgNetSalesPercentage: (avgPNL / multiplier) * 100
 				})
-
-				console.log("-----", years, dataScatter, maxData)
-
-				rs.contentIsLoading(false)
-				rs.generateReport(dataScatter, years)
-			}, () => {
-				rs.contentIsLoading(false)
-			}, {
-				cache: (useCache == true) ? 'pivot chart' : false
+				
+				console.log("---->>>>-", avgPNL, d.value, maxData)
 			})
 
+			console.log("-----", years, dataScatter, maxData)
+
+			rs.contentIsLoading(false)
+			rs.generateReport(dataScatter, years)
 		}, () => {
 			rs.contentIsLoading(false)
 		}, {
@@ -118,10 +101,12 @@ rs.refresh = (useCache = false) => {
 }
 
 rs.generateReport = (data, years) => {
-	let max = _.max(_.map(data, (d) => d.linePercentage)
-		.concat(_.map(data, (d) => d.scatterPercentage)))
+	data = _.sortBy(data, (d) => `${d.year} ${d.category}`)
 
-	let netSalesTite = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNLNetSales()).name
+	let max = _.max(_.map(data, (d) => d.avgNetSalesPercentage)
+		.concat(_.map(data, (d) => d.valuePNLPercentage)))
+
+	let netSalesTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNLNetSales()).name
 	let breakdownTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNL()).name
 
 	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>')
@@ -146,19 +131,19 @@ rs.generateReport = (data, years) => {
         },
 		seriesColors: ["#ff8d00", "#678900"],
         series: [{
-            name: `Percentage of ${breakdownTitle} to ${netSalesTite}`,
-            field: 'linePercentage',
+            name: `Average of ${netSalesTitle}`,
+            field: 'avgNetSalesPercentage',
 			width: 3, 
             tooltip: {
 				visible: true,
-				template: `Percentage of ${breakdownTitle} - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.linePercentage, 'n2') # % (#: kendo.toString(dataItem.lineAvg, 'n2') #)`
+				template: `Average of ${netSalesTitle}: #: kendo.toString(dataItem.avgNetSalesPercentage, 'n2') # % (#: kendo.toString(dataItem.avgNetSales, 'n2') #)`
 			},
 			markers: {
 				visible: false
 			}
         }, {
-            name: `Percentage of ${breakdownTitle}`,
-            field: "scatterPercentage",
+            name: `Percentage of ${breakdownTitle} to ${netSalesTitle}`,
+            field: "valuePNLPercentage",
 			width: 3, 
             opacity: 0,
             markers : {
@@ -167,7 +152,7 @@ rs.generateReport = (data, years) => {
             },
             tooltip: {
 				visible: true,
-				template: `Percentage of ${breakdownTitle} to ${netSalesTite} at #: dataItem.year #: #: kendo.toString(dataItem.scatterPercentage, 'n2') # % (#: kendo.toString(dataItem.scatterValue, 'n2') #)`
+				template: `Percentage of ${breakdownTitle} to ${netSalesTitle} - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
 			},
         }],
         valueAxis: {
@@ -196,7 +181,5 @@ rs.generateReport = (data, years) => {
 }
 
 $(() => {
-	rpt.value.From(moment("2015-02-02").toDate())
-	rpt.value.To(moment("2016-02-02").toDate())
 	rs.getSalesHeaderList()
 })

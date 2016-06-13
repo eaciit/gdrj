@@ -20,6 +20,7 @@ var (
 func main() {
 	runtime.GOMAXPROCS(4)
 	gocore.ConfigPath = controller.GDRJ_CONFIG_PATH
+	gocore.ClearPLCache()
 
 	server = new(knot.Server)
 
@@ -50,6 +51,7 @@ func main() {
 	server.Register(controller.CreateUserController(server), "")
 	server.Register(controller.CreateGroupController(server), "")
 	server.Register(controller.CreateOrganizationController(server), "")
+	server.Register(controller.CreateLogController(server), "")
 
 	server.Route("/", func(r *knot.WebContext) interface{} {
 		regex := regexp.MustCompile("/web/report/[a-zA-Z0-9_]+(/.*)?$")

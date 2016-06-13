@@ -14,6 +14,25 @@ bkd.data = ko.observableArray([]);
 bkd.plmodels = ko.observableArray([]);
 bkd.zeroValue = ko.observable(false);
 
+bkd.generateDataForX = function () {
+	var param = {
+		"pls": [],
+		"groups": ["customer.channelname", "customer.branchname", "product.brand", "customer.region", "date.year", "date.fiscal"],
+		"aggr": "sum",
+		"filters": [{
+			"Field": "date.year",
+			"Op": "$gte",
+			"Value": "2013-12-31T17:00:00.000Z"
+		}, {
+			"Field": "date.year",
+			"Op": "$lte",
+			"Value": "2016-12-30T17:00:00.000Z"
+		}]
+	};
+
+	toolkit.ajaxPost("/report/getpnldatanew", param);
+};
+
 bkd.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
@@ -27,7 +46,7 @@ bkd.refresh = function () {
 	bkd.contentIsLoading(true);
 
 	var fetch = function fetch() {
-		app.ajaxPost("/report/getpnldatanew", param, function (res) {
+		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
@@ -106,7 +125,7 @@ bkd.renderDetailSalesTrans = function (breakdown) {
 					param.tablename = "browsesalestrxs";
 					param[bkd.breakdownBy()] = [breakdown];
 
-					if (app.isUndefined(param.page)) {
+					if (toolkit.isUndefined(param.page)) {
 						param = $.extend(true, param, {
 							take: 5,
 							skip: 0,
@@ -194,7 +213,7 @@ bkd.renderDetail = function (plcode, breakdown) {
 	param.BreakdownValue = breakdown;
 	param.filters = []; // rpt.getFilterValue()
 
-	app.ajaxPost('/report/getpnldatadetail', param, function (res) {
+	toolkit.ajaxPost('/report/getpnldatadetail', param, function (res) {
 		bkd.detail(res.Data);
 		bkd.popupIsLoading(false);
 		setTimeout(render, 200);
@@ -213,10 +232,11 @@ bkd.render = function () {
 
 	var data = _.sortBy(_.map(bkd.data(), function (d) {
 		var _id = breakdowns.map(function (e) {
-			return d._id['_id_' + app.idAble(e)];
+			var title = d._id['_id_' + toolkit.replace(e, '.', '_')];
+			return toolkit.whenEmptyString(title, 'Uncategorized');
 		}).join(' ');
-		d._id = _id;
 
+		d._id = _id;
 		return d;
 	}), function (d) {
 		return d._id;
@@ -229,35 +249,35 @@ bkd.render = function () {
 		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
 		data.forEach(function (e) {
 			var breakdown = e._id;
-			var value = e['' + d._id];value = app.validateNumber(value);
+			var value = e['' + d._id];value = toolkit.number(value);
 			row[breakdown] = value;
 			row.PNLTotal += value;
 		});
 		data.forEach(function (e) {
 			var breakdown = e._id;
-			var value = e['' + d._id] / row.PNLTotal * 100;value = app.validateNumber(value);
+			var value = e['' + d._id] / row.PNLTotal * 100;value = toolkit.number(value);
 			row[breakdown + ' %'] = value;
 		});
 		rows.push(row);
 	});
 
-	var wrapper = app.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
+	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
 
-	var tableHeaderWrap = app.newEl('div').addClass('table-header').appendTo(wrapper);
+	var tableHeaderWrap = toolkit.newEl('div').addClass('table-header').appendTo(wrapper);
 
-	var tableHeader = app.newEl('table').addClass('table').appendTo(tableHeaderWrap);
+	var tableHeader = toolkit.newEl('table').addClass('table').appendTo(tableHeaderWrap);
 
-	var tableContentWrap = app.newEl('div').appendTo(wrapper).addClass('table-content');
+	var tableContentWrap = toolkit.newEl('div').appendTo(wrapper).addClass('table-content');
 
-	var tableContent = app.newEl('table').addClass('table').appendTo(tableContentWrap);
+	var tableContent = toolkit.newEl('table').addClass('table').appendTo(tableContentWrap);
 
-	var trHeader1 = app.newEl('tr').appendTo(tableHeader);
+	var trHeader1 = toolkit.newEl('tr').appendTo(tableHeader);
 
-	app.newEl('th').html('P&L').appendTo(trHeader1);
+	toolkit.newEl('th').html('P&L').appendTo(trHeader1);
 
-	app.newEl('th').html('Total').addClass('align-right').appendTo(trHeader1);
+	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader1);
 
-	var trContent1 = app.newEl('tr').appendTo(tableContent);
+	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
 
 	var colWidth = 160;
 	var colPercentWidth = 60;
@@ -288,9 +308,9 @@ bkd.render = function () {
 		return { data: k, key: v };
 	});
 	data.forEach(function (d, i) {
-		app.newEl('th').html(app.nbspAble(d._id, 'Uncategorized')).addClass('align-right').appendTo(trContent1).width(colWidth);
+		toolkit.newEl('th').html(d._id).addClass('align-right').appendTo(trContent1).width(colWidth);
 
-		app.newEl('th').html('%').addClass('align-right cell-percentage').appendTo(trContent1).width(colPercentWidth);
+		toolkit.newEl('th').html('%').addClass('align-right cell-percentage').appendTo(trContent1).width(colPercentWidth);
 
 		totalWidth += colWidth + colPercentWidth;
 	});
@@ -304,18 +324,18 @@ bkd.render = function () {
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = app.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).appendTo(tableHeader);
 
 		trHeader.on('click', function () {
 			bkd.clickExpand(trHeader);
 		});
 
-		app.newEl('td').html('<i></i>' + d.PNL).appendTo(trHeader);
+		toolkit.newEl('td').html('<i></i>' + d.PNL).appendTo(trHeader);
 
 		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
-		app.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
+		toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
 
-		var trContent = app.newEl('tr').addClass('column' + PL).attr('idpl', PL).appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).appendTo(tableContent);
 
 		data.forEach(function (e, f) {
 			var key = e._id;
@@ -327,13 +347,13 @@ bkd.render = function () {
 				value = 0;
 			}
 
-			var cell = app.newEl('td').html(value).addClass('align-right').appendTo(trContent);
+			var cell = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trContent);
 
 			cell.on('click', function () {
 				bkd.clickCell(d.PLCode, key);
 			});
 
-			app.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
+			toolkit.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
 		});
 
 		var boolStatus = false;

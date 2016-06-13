@@ -177,6 +177,7 @@ ccr.render = function () {
 		console.log(ccr.data()[e].data);
 		html.find('.chart').kendoChart(config);
 	}
+	chartContainer.append($('<div />').addClass('clearfix'));
 };
 
 rpt.toggleFilterCallback = function () {

@@ -279,13 +279,17 @@ rpt.filterMultiSelect = (d) => {
 			enabled: rpt.enableHolder[d._id],
 			template: (d) => {
 				if (d._id == 'KeyAccount') {
-					return app.capitalize(d.KeyAccount, true)
+					return app.capitalize(d.KeyAccount)
 				}
 
-				return `${d._id} - ${app.capitalize(d.Name, true)}`
+				return `${d._id} - ${app.capitalize(d.Name)}`
 			},
 			value: rpt.value[d._id]
 		})
+
+		if (['Branch', 'Brand', 'Channel'].indexOf(d.from) > -1) {
+			config.dataValueField = 'Name'
+		}
 
 		if (d.from == 'Product') {
 			config = $.extend(true, config, {
@@ -357,11 +361,17 @@ rpt.toggleFilter = () => {
 rpt.getFilterValue = () => {
 	let res = [
 		{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() },
-		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand() },
-		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region() },
-		{ 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() },
+		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) },
+		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) },
+		{ 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.ChannelC() },
 		{ 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
 		{ 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
+		{ 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
+		{ 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() },
+		{ 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() },
+		{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
+		{ 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
+		{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() },
 	].filter((d) => {
 		if (d.Value instanceof Array) {
 			return d.Value.length > 0

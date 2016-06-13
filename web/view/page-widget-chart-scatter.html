@@ -34,9 +34,9 @@
 			{{template "_loader.html"}}
 		</div>
 
-		<div class="scatter-view-container" data-bind="visible: !rs.contentIsLoading()">
+		<div class="scatter-view-container" data-bind="visible: !rs.contentIsLoading()" style="padding-bottom: 10px;">
 			<div id="scatter-view" style="height: 350px;"></div>
-        	<div class="small-note" data-bind="text: rs.chartComparisonNote"></div>
+        	<!-- <div class="small-note" data-bind="text: rs.chartComparisonNote"></div> -->
 		</div>
 	</div>
 </div>

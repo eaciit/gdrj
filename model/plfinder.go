@@ -45,6 +45,7 @@ func (s *PLFinderParam) GetPLCollections() ([]*toolkit.M, error) {
 			if err != nil {
 				return nil, err
 			}
+			defer csr.Close()
 
 			colRes := []*toolkit.M{}
 			err = csr.Fetch(&colRes, 0, false)
@@ -93,20 +94,26 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 		switch each.Op {
 		case dbox.FilterOpIn:
 			values := []string{}
+			field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+
 			for _, v := range each.Value.([]interface{}) {
 				values = append(values, v.(string))
 			}
 
 			if len(values) > 0 {
-				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
-				filters = append(filters, dbox.In(field, values))
-				fmt.Println("---- filter: ", field, "in", values)
+				subFilters := []*dbox.Filter{}
+				for _, value := range values {
+					subFilters = append(subFilters, dbox.Eq(field, value))
+				}
+				filters = append(filters, dbox.Or(subFilters...))
+				fmt.Printf("---- filter: %#v in %#v\n", field, values)
 			}
 		case dbox.FilterOpGte:
 			var value interface{} = each.Value
-
+			field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+			// interface is []interface {}, not string
 			if value.(string) != "" {
-				if each.Field == "year" {
+				if field == "_id.date_year" {
 					t, err := time.Parse(time.RFC3339Nano, value.(string))
 					if err != nil {
 						fmt.Println(err.Error())
@@ -115,15 +122,15 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 					}
 				}
 
-				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
 				filters = append(filters, dbox.Gte(field, value))
-				fmt.Println("---- filter: ", field, "gte", value)
+				fmt.Printf("---- filter: |%#v| |_id.date_year| gte %#v\n", field, value)
 			}
 		case dbox.FilterOpLte:
 			var value interface{} = each.Value
+			field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
 
 			if value.(string) != "" {
-				if each.Field == "year" {
+				if field == "_id.date_year" {
 					t, err := time.Parse(time.RFC3339Nano, value.(string))
 					if err != nil {
 						fmt.Println(err.Error())
@@ -132,13 +139,13 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 					}
 				}
 
-				field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
 				filters = append(filters, dbox.Lte(field, value))
-				fmt.Println("---- filter: ", field, "lte", value)
+				fmt.Printf("---- filter: %#v lte %#v\n", field, value)
 			}
 		case dbox.FilterOpEqual:
 			value := each.Value
 			field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+
 			filters = append(filters, dbox.Eq(field, value))
 			fmt.Println("---- filter: ", field, "eq", value)
 		}
@@ -160,6 +167,31 @@ func (s *PLFinderParam) GetTableName() string {
 		if _, ok := cache[breakdown]; !ok {
 			cache[breakdown] = true
 			filterKeys = append(filterKeys, breakdown)
+		}
+	}
+
+	cols, _ := s.GetPLCollections()
+	for _, col := range cols {
+		dimensions := col.Get("dimensions").([]string)
+		ok := true
+
+		fmt.Println("############### DIMENSIONS", dimensions)
+		fmt.Print("############### FILTERKEYS ")
+
+	loopFilter:
+		for _, filterKey := range filterKeys {
+			filter := strings.Replace(filterKey, ".", "_", -1)
+			fmt.Print(filter, " ")
+			if !toolkit.HasMember(dimensions, filter) {
+				ok = false
+				break loopFilter
+			}
+		}
+
+		fmt.Println()
+
+		if ok {
+			return col.GetString("table")
 		}
 	}
 
@@ -240,7 +272,7 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 
 	q := DB().Connection.NewQuery().From(tableName)
 	if len(s.Filters) > 0 {
-		// q = q.Where(s.ParseFilter())
+		q = q.Where(s.ParseFilter())
 	}
 
 	for _, breakdown := range s.Breakdowns {

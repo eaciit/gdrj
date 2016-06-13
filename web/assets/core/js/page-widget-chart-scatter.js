@@ -36,7 +36,7 @@ rs.refresh = function () {
 	rs.contentIsLoading(true);
 
 	var param1 = {};
-	param1.pls = [rs.selectedPNL()];
+	param1.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()];
 	param1.groups = [rs.breakdownBy(), 'date.year'];
 	param1.aggr = 'sum';
 	param1.filters = rpt.getFilterValue();
@@ -53,78 +53,66 @@ rs.refresh = function () {
 			var date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			rs.chartComparisonNote("Last refreshed on: " + date);
 
-			var param2 = {};
-			param2.pls = [rs.selectedPNLNetSales()];
-			param2.groups = [rs.breakdownBy(), 'date.year'];
-			param2.aggr = 'sum';
-			param2.filters = rpt.getFilterValue();
-
-			app.ajaxPost("/report/getpnldatanew", param2, function (res2) {
-				var date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss");
-				rs.chartComparisonNote("Last refreshed on: " + date);
-
-				var dataAllPNL = res1.Data.Data;
-				var dataAllPNLNetSales = res2.Data.Data;
-
-				var selectedPNL = "" + rs.selectedPNL();
-				var years = _.map(_.groupBy(dataAllPNL, function (d) {
-					return d._id._id_date_year;
-				}), function (v, k) {
-					return k;
-				});
-
-				console.log("+++++", dataAllPNL, rs.selectedPNL());
-				var maxData1 = 0;
-				try {
-					maxData1 = _.maxBy(_.filter(dataAllPNL, function (d) {
-						return d[rs.selectedPNL()] != 0;
-					}), function (d) {
-						return d[rs.selectedPNL()];
-					})[rs.selectedPNL()];
-				} catch (err) {}
-
-				console.log("+++++", dataAllPNLNetSales, rs.selectedPNLNetSales());
-				var maxData2 = 0;
-				try {
-					maxData2 = _.maxBy(_.filter(dataAllPNLNetSales, function (d) {
-						return d[rs.selectedPNLNetSales()] != 0;
-					}), function (d) {
-						return d[rs.selectedPNLNetSales()];
-					})[rs.selectedPNLNetSales()];
-				} catch (err) {}
-				var maxData = _.max([maxData1, maxData2]);
-				console.log("+++++========", maxData1, maxData2);
-
-				var sumPNL = _.reduce(dataAllPNL, function (m, x) {
-					return m + x[selectedPNL];
-				}, 0);
-				var countPNL = dataAllPNL.length;
-				var avgPNL = sumPNL / countPNL;
-
-				var dataScatter = [];
-
-				dataAllPNL.forEach(function (d) {
-					dataScatter.push({
-						category: app.nbspAble(d._id["_id_" + app.idAble(rs.breakdownBy())] + " " + d._id._id_date_year, 'Uncategorized'),
-						year: d._id._id_date_year,
-						scatterValue: d[selectedPNL],
-						scatterPercentage: d[selectedPNL] / (maxData == 0 ? 1 : maxData) * 100,
-						lineAvg: avgPNL,
-						linePercentage: avgPNL / (maxData == 0 ? 1 : maxData) * 100
-					});
-
-					console.log("---->>>>-", avgPNL, d[selectedPNL], maxData);
-				});
-
-				console.log("-----", years, dataScatter, maxData);
-
-				rs.contentIsLoading(false);
-				rs.generateReport(dataScatter, years);
-			}, function () {
-				rs.contentIsLoading(false);
-			}, {
-				cache: useCache == true ? 'pivot chart' : false
+			var dataAllPNL = res1.Data.Data.filter(function (d) {
+				return d.hasOwnProperty(rs.selectedPNL());
+			}).map(function (d) {
+				return { _id: d._id, value: d[rs.selectedPNL()] };
 			});
+			var dataAllPNLNetSales = res1.Data.Data.filter(function (d) {
+				return d.hasOwnProperty(rs.selectedPNLNetSales());
+			}).map(function (d) {
+				return { _id: d._id, value: d[rs.selectedPNLNetSales()] };
+			});
+
+			var years = _.map(_.groupBy(dataAllPNL, function (d) {
+				return d._id._id_date_year;
+			}), function (v, k) {
+				return k;
+			});
+
+			var maxData1 = 0;try {
+				maxData1 = _.maxBy(dataAllPNL.filter(function (d) {
+					return d.value != 0;
+				}), function (d) {
+					return d.value;
+				}).value;
+			} catch (err) {}
+
+			var maxData2 = 0;try {
+				maxData2 = _.maxBy(dataAllPNLNetSales.filter(function (d) {
+					return d.value != 0;
+				}), function (d) {
+					return d.value;
+				}).value;
+			} catch (err) {}
+			var maxData = _.max([maxData1, maxData2]);
+
+			var sumPNL = _.reduce(dataAllPNL, function (m, x) {
+				return m + x.value;
+			}, 0);
+			var countPNL = dataAllPNL.length;
+			var avgPNL = sumPNL / countPNL;
+
+			var dataScatter = [];
+			var multiplier = maxData == 0 ? 1 : maxData;
+
+			dataAllPNL.forEach(function (d) {
+				dataScatter.push({
+					category: app.nbspAble(d._id["_id_" + app.idAble(rs.breakdownBy())] + " " + d._id._id_date_year, 'Uncategorized'),
+					year: d._id._id_date_year,
+					valuePNL: d.value,
+					valuePNLPercentage: d.value / multiplier * 100,
+					avgNetSales: avgPNL,
+					avgNetSalesPercentage: avgPNL / multiplier * 100
+				});
+
+				console.log("---->>>>-", avgPNL, d.value, maxData);
+			});
+
+			console.log("-----", years, dataScatter, maxData);
+
+			rs.contentIsLoading(false);
+			rs.generateReport(dataScatter, years);
 		}, function () {
 			rs.contentIsLoading(false);
 		}, {
@@ -136,13 +124,17 @@ rs.refresh = function () {
 };
 
 rs.generateReport = function (data, years) {
+	data = _.sortBy(data, function (d) {
+		return d.year + " " + d.category;
+	});
+
 	var max = _.max(_.map(data, function (d) {
-		return d.linePercentage;
+		return d.avgNetSalesPercentage;
 	}).concat(_.map(data, function (d) {
-		return d.scatterPercentage;
+		return d.valuePNLPercentage;
 	})));
 
-	var netSalesTite = rs.optionDimensionSelect().find(function (d) {
+	var netSalesTitle = rs.optionDimensionSelect().find(function (d) {
 		return d.field == rs.selectedPNLNetSales();
 	}).name;
 	var breakdownTitle = rs.optionDimensionSelect().find(function (d) {
@@ -168,19 +160,19 @@ rs.generateReport = function (data, years) {
 		},
 		seriesColors: ["#ff8d00", "#678900"],
 		series: [{
-			name: "Percentage of " + breakdownTitle + " to " + netSalesTite,
-			field: 'linePercentage',
+			name: "Average of " + netSalesTitle,
+			field: 'avgNetSalesPercentage',
 			width: 3,
 			tooltip: {
 				visible: true,
-				template: "Percentage of " + breakdownTitle + " - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.linePercentage, 'n2') # % (#: kendo.toString(dataItem.lineAvg, 'n2') #)"
+				template: "Average of " + netSalesTitle + ": #: kendo.toString(dataItem.avgNetSalesPercentage, 'n2') # % (#: kendo.toString(dataItem.avgNetSales, 'n2') #)"
 			},
 			markers: {
 				visible: false
 			}
 		}, {
-			name: "Percentage of " + breakdownTitle,
-			field: "scatterPercentage",
+			name: "Percentage of " + breakdownTitle + " to " + netSalesTitle,
+			field: "valuePNLPercentage",
 			width: 3,
 			opacity: 0,
 			markers: {
@@ -189,7 +181,7 @@ rs.generateReport = function (data, years) {
 			},
 			tooltip: {
 				visible: true,
-				template: "Percentage of " + breakdownTitle + " to " + netSalesTite + " at #: dataItem.year #: #: kendo.toString(dataItem.scatterPercentage, 'n2') # % (#: kendo.toString(dataItem.scatterValue, 'n2') #)"
+				template: "Percentage of " + breakdownTitle + " to " + netSalesTitle + " - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)"
 			}
 		}],
 		valueAxis: {
@@ -218,7 +210,5 @@ rs.generateReport = function (data, years) {
 };
 
 $(function () {
-	rpt.value.From(moment("2015-02-02").toDate());
-	rpt.value.To(moment("2016-02-02").toDate());
 	rs.getSalesHeaderList();
 });
