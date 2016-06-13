@@ -100,13 +100,17 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 			}
 
 			if len(values) > 0 {
-				filters = append(filters, dbox.In(field, values))
-				fmt.Println("---- filter: ", field, "in", values)
+				subFilters := []*dbox.Filter{}
+				for _, value := range values {
+					subFilters = append(subFilters, dbox.Eq(field, value))
+				}
+				filters = append(filters, dbox.Or(subFilters...))
+				fmt.Printf("---- filter: %#v in %#v\n", field, values)
 			}
 		case dbox.FilterOpGte:
 			var value interface{} = each.Value
 			field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
-
+			// interface is []interface {}, not string
 			if value.(string) != "" {
 				if field == "_id.date_year" {
 					t, err := time.Parse(time.RFC3339Nano, value.(string))
