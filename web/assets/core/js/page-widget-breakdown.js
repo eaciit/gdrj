@@ -231,10 +231,11 @@ bkd.render = function () {
 
 	var data = _.sortBy(_.map(bkd.data(), function (d) {
 		var _id = breakdowns.map(function (e) {
-			return d._id['_id_' + toolkit.replace(e, '.', '_')];
+			var title = d._id['_id_' + toolkit.replace(e, '.', '_')];
+			return toolkit.whenEmptyString(title, 'Uncategorized');
 		}).join(' ');
-		d._id = _id;
 
+		d._id = _id;
 		return d;
 	}), function (d) {
 		return d._id;
@@ -306,7 +307,7 @@ bkd.render = function () {
 		return { data: k, key: v };
 	});
 	data.forEach(function (d, i) {
-		toolkit.newEl('th').html(toolkit.whenEmptyString(d._id, 'Uncategorized')).addClass('align-right').appendTo(trContent1).width(colWidth);
+		toolkit.newEl('th').html(d._id).addClass('align-right').appendTo(trContent1).width(colWidth);
 
 		toolkit.newEl('th').html('%').addClass('align-right cell-percentage').appendTo(trContent1).width(colPercentWidth);
 

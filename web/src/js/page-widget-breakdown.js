@@ -237,9 +237,12 @@ bkd.render = () => {
 	let rows = []
 	
 	let data = _.sortBy(_.map(bkd.data(), (d) => {
-		let _id = breakdowns.map((e) => d._id[`_id_${toolkit.replace(e, '.', '_')}`]).join(' ')
+		let _id = breakdowns.map((e) => {
+			let title = d._id[`_id_${toolkit.replace(e, '.', '_')}`]
+			return toolkit.whenEmptyString(title, 'Uncategorized')
+		}).join(' ')
+		
 		d._id = _id
-
 		return d 
 	}), (d) => d._id)
 	
@@ -313,7 +316,7 @@ bkd.render = () => {
 	let grouppl3 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
 		toolkit.newEl('th')
-			.html(toolkit.whenEmptyString(d._id, 'Uncategorized'))
+			.html(d._id)
 			.addClass('align-right')
 			.appendTo(trContent1)
 			.width(colWidth)
