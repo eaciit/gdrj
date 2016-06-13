@@ -72,6 +72,7 @@ bkd.clickExpand = function (e) {
 		$(e).find('i').addClass('fa-chevron-down');
 		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
+		$('tr[statusval=hide]').css('display', 'none');
 	}
 	if (down > 0) {
 		$(e).find('i').removeClass('fa-chevron-down');
@@ -329,6 +330,15 @@ bkd.render = function () {
 
 			app.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
 		});
+		trContent.find('td').each(function (a, e) {
+			if ($(e).text() == '0' || $(e).text() == '0.00 %') {
+				// trContent.attr('statusval', 'hide')
+				// trHeader.attr('statusval', 'hide')
+			} else {
+					// trContent.attr('statusval', 'show')
+					// trHeader.attr('statusval', 'show')
+				}
+		});
 	});
 
 	var $trElem = void 0,
@@ -417,6 +427,7 @@ bkd.render = function () {
 			$trElem.find('td:eq(0)>i').addClass('fa fa-chevron-right').css('margin-right', '5px');
 			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
 			$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
+			$('tr[statusval=hide]').css('display', 'none');
 		} else {
 			countChild = $trElem.attr('idparent');
 			if (countChild == '' || countChild == undefined) $trElem.find('td:eq(0)').css('padding-left', '20px');

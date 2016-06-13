@@ -68,6 +68,7 @@ bkd.clickExpand = (e) => {
 		$(e).find('i').addClass('fa-chevron-down')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
+		$(`tr[statusval=hide]`).css('display', 'none')
 	}
 	if (down > 0) {
 		$(e).find('i').removeClass('fa-chevron-down')
@@ -362,6 +363,16 @@ bkd.render = () => {
 				.addClass('align-right cell-percentage')
 				.appendTo(trContent)
 		})
+		trContent.find('td').each((a,e) => {
+			if ($(e).text() == '0' || $(e).text() == '0.00 %') {
+				// trContent.attr('statusval', 'hide')
+				// trHeader.attr('statusval', 'hide')
+			}
+			else {
+				// trContent.attr('statusval', 'show')
+				// trHeader.attr('statusval', 'show')
+			}
+		})
 	})
 
 	let $trElem, $columnElem
@@ -430,6 +441,7 @@ bkd.render = () => {
 				.css('margin-right', '5px')
 			$(`tr[idparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
 			$(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
+			$(`tr[statusval=hide]`).css('display', 'none')
 		} else {
 			countChild = $trElem.attr('idparent')
 			if (countChild == '' || countChild == undefined)
