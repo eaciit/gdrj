@@ -73,6 +73,7 @@ bkd.clickExpand = function (e) {
 		$(e).find('i').addClass('fa-chevron-down');
 		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
+		$('tr[statusval=hide]').css('display', 'none');
 	}
 	if (down > 0) {
 		$(e).find('i').removeClass('fa-chevron-down');
@@ -333,6 +334,21 @@ bkd.render = function () {
 
 			app.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
 		});
+
+		var boolStatus = false;
+		trContent.find('td').each(function (a, e) {
+			// console.log(trHeader.find('td:eq(0)').text(),$(e).text())
+			if ($(e).text() != '0' && $(e).text() != '0.00 %') {
+				boolStatus = true;
+			}
+		});
+		if (boolStatus) {
+			trContent.attr('statusval', 'show');
+			trHeader.attr('statusval', 'show');
+		} else {
+			trContent.attr('statusval', 'hide');
+			trHeader.attr('statusval', 'hide');
+		}
 	});
 
 	var $trElem = void 0,
@@ -421,10 +437,21 @@ bkd.render = function () {
 			$trElem.find('td:eq(0)>i').addClass('fa fa-chevron-right').css('margin-right', '5px');
 			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
 			$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
+			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').each(function (a, e) {
+				if ($(e).attr('statusval') == 'show') {
+					$('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').attr('statusval', 'show');
+					$('tr[idpl=' + $trElem.attr('idheaderpl') + ']').attr('statusval', 'show');
+					if ($('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').attr('idparent') == undefined) {
+						$('tr[idpl=' + $trElem.attr('idheaderpl') + ']').css('display', '');
+						$('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').css('display', '');
+					}
+				}
+			});
 		} else {
 			countChild = $trElem.attr('idparent');
 			if (countChild == '' || countChild == undefined) $trElem.find('td:eq(0)').css('padding-left', '20px');
 		}
+		$('tr[statusval=hide]').css('display', 'none');
 	});
 };
 
