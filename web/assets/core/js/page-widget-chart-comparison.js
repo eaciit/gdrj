@@ -17,8 +17,8 @@ ccr.getDecreasedQty = function () {
 	ccr.contentIsLoading(true);
 	app.ajaxPost('/report/GetDecreasedQty', {}, function (res) {
 		ccr.dataComparison(res);
-		ccr.refresh();
 		ccr.contentIsLoading(false);
+		ccr.refresh();
 	}, function () {
 		ccr.contentIsLoading(false);
 	}, {

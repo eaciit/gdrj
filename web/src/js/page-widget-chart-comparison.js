@@ -13,8 +13,8 @@ ccr.getDecreasedQty = (useCache = false) => {
 	ccr.contentIsLoading(true)
 	app.ajaxPost(`/report/GetDecreasedQty`, {}, (res) => {
 		ccr.dataComparison(res)
-		ccr.refresh()
 		ccr.contentIsLoading(false)
+		ccr.refresh()
 	}, () => {
 		ccr.contentIsLoading(false)
 	}, {
