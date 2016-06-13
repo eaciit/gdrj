@@ -12,6 +12,7 @@ bkd.breakdownNote = ko.observable('');
 
 bkd.data = ko.observableArray([]);
 bkd.plmodels = ko.observableArray([]);
+bkd.zeroValue = ko.observable(false);
 
 bkd.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
@@ -73,7 +74,7 @@ bkd.clickExpand = function (e) {
 		$(e).find('i').addClass('fa-chevron-down');
 		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
-		$('tr[statusval=hide]').css('display', 'none');
+		$('tr[statusvaltemp=hide]').css('display', 'none');
 	}
 	if (down > 0) {
 		$(e).find('i').removeClass('fa-chevron-down');
@@ -451,8 +452,8 @@ bkd.render = function () {
 			countChild = $trElem.attr('idparent');
 			if (countChild == '' || countChild == undefined) $trElem.find('td:eq(0)').css('padding-left', '20px');
 		}
-		$('tr[statusval=hide]').css('display', 'none');
 	});
+	bkd.showZeroValue(false);
 };
 
 bkd.prepareEvents = function () {
@@ -464,6 +465,46 @@ bkd.prepareEvents = function () {
 	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover');
 	});
+};
+
+bkd.showExpandAll = function (a) {
+	if (a == true) {
+		$('tr.dd').find('i').removeClass('fa-chevron-right');
+		$('tr.dd').find('i').addClass('fa-chevron-down');
+		$('tr[idparent]').css('display', '');
+		$('tr[idcontparent]').css('display', '');
+		$('tr[statusvaltemp=hide]').css('display', 'none');
+	} else {
+		$('tr.dd').find('i').removeClass('fa-chevron-down');
+		$('tr.dd').find('i').addClass('fa-chevron-right');
+		$('tr[idparent]').css('display', 'none');
+		$('tr[idcontparent]').css('display', 'none');
+		$('tr[statusvaltemp=hide]').css('display', 'none');
+	}
+};
+
+bkd.showZeroValue = function (a) {
+	bkd.zeroValue(a);
+	if (a == true) {
+		$(".table-header tbody>tr").each(function (i) {
+			if (i > 0) {
+				$(this).attr('statusvaltemp', 'show');
+				$('tr[idpl=' + $(this).attr('idheaderpl') + ']').attr('statusvaltemp', 'show');
+				if (!$(this).attr('idparent')) {
+					$(this).show();
+					$('tr[idpl=' + $(this).attr('idheaderpl') + ']').show();
+				}
+			}
+		});
+	} else {
+		$(".table-header tbody>tr").each(function (i) {
+			if (i > 0) {
+				$(this).attr('statusvaltemp', $(this).attr('statusval'));
+				$('tr[idpl=' + $(this).attr('idheaderpl') + ']').attr('statusvaltemp', $(this).attr('statusval'));
+			}
+		});
+	}
+	bkd.showExpandAll(false);
 };
 
 $(function () {
