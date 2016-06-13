@@ -13,6 +13,25 @@ bkd.breakdownNote = ko.observable('');
 bkd.data = ko.observableArray([]);
 bkd.plmodels = ko.observableArray([]);
 
+bkd.generateDataForX = function () {
+	var param = {
+		"pls": [],
+		"groups": ["customer.channelname", "customer.branchname", "product.brand", "customer.region", "date.year", "date.fiscal"],
+		"aggr": "sum",
+		"filters": [{
+			"Field": "date.year",
+			"Op": "$gte",
+			"Value": "2013-12-31T17:00:00.000Z"
+		}, {
+			"Field": "date.year",
+			"Op": "$lte",
+			"Value": "2016-12-30T17:00:00.000Z"
+		}]
+	};
+
+	app.ajaxPost("/report/getpnldatanew", param);
+};
+
 bkd.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
