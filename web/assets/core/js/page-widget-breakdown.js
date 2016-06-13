@@ -85,6 +85,7 @@ bkd.clickCell = function (plcode, breakdown) {
 	bkd.renderDetail(plcode, breakdown);
 };
 bkd.clickExpand = function (e) {
+
 	var right = $(e).find('i.fa-chevron-right').length;
 	var down = $(e).find('i.fa-chevron-down').length;
 	if (right > 0) {
@@ -100,6 +101,7 @@ bkd.clickExpand = function (e) {
 		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
 	}
+	bkd.showScroller();
 };
 bkd.emptyGrid = function () {
 	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
@@ -315,6 +317,7 @@ bkd.render = function () {
 	// console.log('data ', data)
 
 	tableContent.css('min-width', totalWidth);
+	$('.scroll-content').css('min-width',totalWidth);
 
 	// console.log('row ', rows)
 	rows.forEach(function (d, i) {
@@ -483,9 +486,34 @@ bkd.prepareEvents = function () {
 	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover');
 	});
+
+	$(".scroll").scroll(function(){
+         $(".table-content").scrollLeft($(".scroll").scrollLeft());
+    });
+
+    $(window).scroll(function () {
+     var y = $(this).scrollTop();
+	     if (y < $(".breakdown-view").offset().top) {
+	         bkd.showScroller();
+	     } else {
+	         $('.scroll').fadeOut();
+	     }
+
+	 });
 };
+
+bkd.showScroller = function(){
+	var windowHeight = $(window).height();
+	var height = $(".nav").height() + $(".app-title").height() + 50 ;
+	if(windowHeight - height < $(".breakdown-view").height()){
+		$('.scroll').fadeIn();
+	} else {
+		$('.scroll').fadeOut();
+	}
+}
 
 $(function () {
 	bkd.refresh(false);
 	bkd.prepareEvents();
+	bkd.showScroller();
 });

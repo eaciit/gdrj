@@ -537,19 +537,20 @@ body {
   overflow-x: scroll;
 }
 .scroll {
-  margin-left: 300px;
-  width: calc(100% - 300px);
-  border: none 0px RED;
+  display: none;
+  z-index: 1;
   overflow-x: scroll;
   overflow-y: hidden;
-  position: fixed;
-  bottom: 0px;
-  padding-right: 100px;
-}
-.scroll {
   height: 20px;
+  margin-left: 300px;
+  width: calc(95% - 300px);
+  position: fixed;
+  bottom: 0;
 }
 .scroll-content {
-  width: calc(100% - 300px);
+  float: left;
+  width: -moz-calc(100% - 300px);
+  width: -webkit-calc(100% - 300px);
+  width: calc(95% - 300px);
   height: 20px;
 }

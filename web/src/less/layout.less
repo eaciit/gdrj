@@ -720,19 +720,21 @@ html, body{
 }
 
 .scroll{
+	display: none;
+	z-index: 1;
+	overflow-x: scroll;
+	overflow-y: hidden;
+	height: 20px;
 	margin-left: 300px;
-	width: calc(~'100% - 300px');
-	border: none 0px RED;
-	overflow-x: scroll; 
-	overflow-y:hidden;
+	width: calc(~'95% - 300px');
 	position: fixed;
-	bottom: 0px;
-	padding-right: 100px;
+	bottom: 0;
 }
-.scroll{
-	height: 20px; 
-}
+
 .scroll-content {
-	width: calc(~'100% - 300px');
-	height: 20px; 
+	float: left;
+	width: -moz-calc(~'100% - 300px');
+	width: -webkit-calc(~'100% - 300px');
+	width: calc(~'95% - 300px');
+	height: 20px;
 }
