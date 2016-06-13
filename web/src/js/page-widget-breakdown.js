@@ -88,6 +88,7 @@ bkd.clickExpand = (e) => {
 		$(e).find('i').addClass('fa-chevron-down')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
+		$(`tr[statusval=hide]`).css('display', 'none')
 	}
 	if (down > 0) {
 		$(e).find('i').removeClass('fa-chevron-down')
@@ -383,6 +384,21 @@ bkd.render = () => {
 				.addClass('align-right cell-percentage')
 				.appendTo(trContent)
 		})
+
+		let boolStatus = false
+		trContent.find('td').each((a,e) => {
+			// console.log(trHeader.find('td:eq(0)').text(),$(e).text())
+			if ($(e).text() != '0' && $(e).text() != '0.00 %') {
+				boolStatus = true
+			}
+		})
+		if (boolStatus) {
+			trContent.attr('statusval', 'show')
+			trHeader.attr('statusval', 'show')
+		} else {
+			trContent.attr('statusval', 'hide')
+			trHeader.attr('statusval', 'hide')
+		}
 	})
 
 	let $trElem, $columnElem
@@ -451,11 +467,22 @@ bkd.render = () => {
 				.css('margin-right', '5px')
 			$(`tr[idparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
 			$(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
+			$(`tr[idparent=${$trElem.attr('idheaderpl')}]`).each((a,e) => {
+				if ($(e).attr('statusval') == 'show'){
+					$(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).attr('statusval', 'show')
+					$(`tr[idpl=${$trElem.attr('idheaderpl')}]`).attr('statusval', 'show')
+					if ($(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).attr('idparent') == undefined) {
+						$(`tr[idpl=${$trElem.attr('idheaderpl')}]`).css('display', '')
+						$(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).css('display', '')
+					}
+				}
+			})
 		} else {
 			countChild = $trElem.attr('idparent')
 			if (countChild == '' || countChild == undefined)
 				$trElem.find(`td:eq(0)`).css('padding-left', '20px')
 		}
+		$(`tr[statusval=hide]`).css('display', 'none')
 	})
 }
 
