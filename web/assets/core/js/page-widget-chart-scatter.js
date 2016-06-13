@@ -124,6 +124,10 @@ rs.refresh = function () {
 };
 
 rs.generateReport = function (data, years) {
+	data = _.sortBy(data, function (d) {
+		return d.year + " " + d.category;
+	});
+
 	var max = _.max(_.map(data, function (d) {
 		return d.avgNetSalesPercentage;
 	}).concat(_.map(data, function (d) {
@@ -177,7 +181,7 @@ rs.generateReport = function (data, years) {
 			},
 			tooltip: {
 				visible: true,
-				template: "Percentage of " + breakdownTitle + " - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)"
+				template: "Percentage of " + breakdownTitle + " to " + netSalesTitle + " - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)"
 			}
 		}],
 		valueAxis: {

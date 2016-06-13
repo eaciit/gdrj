@@ -101,6 +101,8 @@ rs.refresh = (useCache = false) => {
 }
 
 rs.generateReport = (data, years) => {
+	data = _.sortBy(data, (d) => `${d.year} ${d.category}`)
+
 	let max = _.max(_.map(data, (d) => d.avgNetSalesPercentage)
 		.concat(_.map(data, (d) => d.valuePNLPercentage)))
 
@@ -150,7 +152,7 @@ rs.generateReport = (data, years) => {
             },
             tooltip: {
 				visible: true,
-				template: `Percentage of ${breakdownTitle} - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
+				template: `Percentage of ${breakdownTitle} to ${netSalesTitle} - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
 			},
         }],
         valueAxis: {
