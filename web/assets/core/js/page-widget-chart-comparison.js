@@ -17,8 +17,8 @@ ccr.getDecreasedQty = function () {
 	ccr.contentIsLoading(true);
 	app.ajaxPost('/report/GetDecreasedQty', {}, function (res) {
 		ccr.dataComparison(res);
-		ccr.refresh();
 		ccr.contentIsLoading(false);
+		ccr.refresh();
 	}, function () {
 		ccr.contentIsLoading(false);
 	}, {
@@ -28,8 +28,8 @@ ccr.getDecreasedQty = function () {
 ccr.refresh = function () {
 	// ccr.dataComparison(ccr.dummyJson)
 	var tempdata = [];
-	var qty = 0;
-	var price = 0;
+	// let qty = 0
+	// let price = 0
 	var outlet = 0;
 	var maxline = 0;
 	var maxprice = 0;
@@ -37,12 +37,8 @@ ccr.refresh = function () {
 	var quarter = [];
 	for (var i in ccr.dataComparison()) {
 		if (ccr.dataComparison()[i].productName != undefined) {
-			qty = _.filter(ccr.dataComparison()[i].qty, function (resqty) {
-				return resqty == 0;
-			}).length;
-			price = _.filter(ccr.dataComparison()[i].price, function (resprice) {
-				return resprice == 0;
-			}).length;
+			// qty = _.filter(ccr.dataComparison()[i].qty, function(resqty){ return resqty == 0}).length
+			// price = _.filter(ccr.dataComparison()[i].price, function(resprice){ return resprice == 0}).length
 			maxprice = _.max(ccr.dataComparison()[i].price);
 			maxqty = _.max(ccr.dataComparison()[i].qty);
 			if (maxprice > maxqty) maxline = maxprice;else maxline = maxqty;
@@ -52,8 +48,8 @@ ccr.refresh = function () {
 				quarter.push('Quarter ' + (parseInt(a) + 1));
 			}
 			tempdata.push({
-				qty: qty,
-				price: price,
+				qty: ccr.dataComparison()[i].qtyCount,
+				price: ccr.dataComparison()[i].priceCount,
 				quarter: quarter,
 				maxoutlet: outlet + outlet / 2,
 				maxline: maxline + maxline / 4,
@@ -62,9 +58,10 @@ ccr.refresh = function () {
 			});
 		}
 	}
-	var sortPriceQty = _.take(_.sortBy(tempdata, function (item) {
-		return [item.qty, item.price];
-	}), ccr.limitchart());
+	// let sortPriceQty = _.take(_.sortBy(tempdata, function(item) {
+	//    return [item.qty, item.price]
+	// }).reverse(), ccr.limitchart())
+	var sortPriceQty = _.take(tempdata, ccr.limitchart());
 	ccr.data(sortPriceQty);
 	ccr.render();
 };
