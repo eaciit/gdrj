@@ -295,17 +295,14 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 		return res
 	}
 
-	if knot.SharedObject().Get(tableName, "") != "" {
+	if gocore.GetConfig(tableName) == "otw" {
 		res.SetError(errors.New("still processing, might take a while"))
 		fmt.Println("on progress")
 		return res
 	}
 
-	fmt.Println("______ AME", tableName, ok, knot.SharedObject().Get(tableName, ""))
-
 	go func() {
-		knot.SharedObject().Set(tableName, "MANGSTABS!")
-		fmt.Println("______", tableName, ok, knot.SharedObject().Get(tableName, ""))
+		fmt.Println("______", tableName, ok, gocore.GetConfig(tableName, ""))
 		err = payload.GeneratePLData()
 		if err != nil {
 			fmt.Println("done with error:", err.Error())
@@ -313,9 +310,10 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 			fmt.Println("done")
 		}
 
-		knot.SharedObject().Unset(tableName)
+		gocore.RemoveConfig(tableName)
 	}()
 
+	gocore.SetConfig(tableName, "otw")
 	res.SetError(errors.New("still processing, might take a while"))
 	fmt.Println("just start")
 	return res

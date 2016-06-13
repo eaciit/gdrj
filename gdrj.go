@@ -20,6 +20,7 @@ var (
 func main() {
 	runtime.GOMAXPROCS(4)
 	gocore.ConfigPath = controller.GDRJ_CONFIG_PATH
+	gocore.ClearPLCache()
 
 	server = new(knot.Server)
 
