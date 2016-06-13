@@ -23,7 +23,7 @@ func CreateReportController(s *knot.Server) *ReportController {
 func (m *ReportController) GetDataBranch(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	res, err := gdrj.BranchGetAll()
+	res, err := gdrj.MasterBranchGetAll()
 	if err != nil {
 		return helper.CreateResult(false, []*gdrj.Branch{}, err.Error())
 	}
@@ -67,7 +67,7 @@ func (m *ReportController) GetDataEntity(r *knot.WebContext) interface{} {
 func (m *ReportController) GetDataChannel(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	res, err := gdrj.ChannelGetAll()
+	res, err := gdrj.MasterChannelGetAll()
 	if err != nil {
 		return helper.CreateResult(false, []*gdrj.Channel{}, err.Error())
 	}

@@ -153,13 +153,17 @@ rpt.filterMultiSelect = function (d) {
 			enabled: rpt.enableHolder[d._id],
 			template: function template(d) {
 				if (d._id == 'KeyAccount') {
-					return app.capitalize(d.KeyAccount, true);
+					return app.capitalize(d.KeyAccount);
 				}
 
-				return d._id + ' - ' + app.capitalize(d.Name, true);
+				return d._id + ' - ' + app.capitalize(d.Name);
 			},
 			value: rpt.value[d._id]
 		});
+
+		if (['Branch', 'Brand', 'Channel'].indexOf(d.from) > -1) {
+			config.dataValueField = 'Name';
+		}
 
 		if (d.from == 'Product') {
 			config = $.extend(true, config, {
