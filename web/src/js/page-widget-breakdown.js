@@ -27,7 +27,7 @@ bkd.generateDataForX = () => {
 	    }]
 	}
 
-	app.ajaxPost("/report/getpnldatanew", param)
+	toolkit.ajaxPost("/report/getpnldatanew", param)
 }
 
 bkd.refresh = (useCache = false) => {
@@ -41,7 +41,7 @@ bkd.refresh = (useCache = false) => {
 	bkd.contentIsLoading(true)
 
 	let fetch = () => {
-		app.ajaxPost("/report/getpnldatanew", param, (res) => {
+		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {
 					fetch()
@@ -128,7 +128,7 @@ bkd.renderDetailSalesTrans = (breakdown) => {
 			    	param.tablename = "browsesalestrxs"
 			    	param[bkd.breakdownBy()] = [breakdown]
 
-			    	if (app.isUndefined(param.page)) {
+			    	if (toolkit.isUndefined(param.page)) {
 			    		param = $.extend(true, param, {
 			    			take: 5,
 			    			skip: 0,
@@ -219,7 +219,7 @@ bkd.renderDetail = (plcode, breakdown) => {
 	param.BreakdownValue = breakdown
 	param.filters = [] // rpt.getFilterValue()
 
-	app.ajaxPost('/report/getpnldatadetail', param, (res) => {
+	toolkit.ajaxPost('/report/getpnldatadetail', param, (res) => {
 		bkd.detail(res.Data)
 		bkd.popupIsLoading(false)
 		setTimeout(render, 200)
@@ -237,9 +237,12 @@ bkd.render = () => {
 	let rows = []
 	
 	let data = _.sortBy(_.map(bkd.data(), (d) => {
-		let _id = breakdowns.map((e) => d._id[`_id_${app.idAble(e)}`]).join(' ')
+		let _id = breakdowns.map((e) => {
+			let title = d._id[`_id_${toolkit.replace(e, '.', '_')}`]
+			return toolkit.whenEmptyString(title, 'Uncategorized')
+		}).join(' ')
+		
 		d._id = _id
-
 		return d 
 	}), (d) => d._id)
 	
@@ -248,51 +251,51 @@ bkd.render = () => {
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
 		data.forEach((e) => {
 			let breakdown = e._id
-			let value = e[`${d._id}`]; value = app.validateNumber(value)
+			let value = e[`${d._id}`]; value = toolkit.number(value)
 			row[breakdown] = value
 			row.PNLTotal += value
 		})
 		data.forEach((e) => {
 			let breakdown = e._id
-			let value = e[`${d._id}`] / row.PNLTotal * 100; value = app.validateNumber(value)
+			let value = e[`${d._id}`] / row.PNLTotal * 100; value = toolkit.number(value)
 			row[`${breakdown} %`] = value
 		})
 		rows.push(row)
 	})
 
-	let wrapper = app.newEl('div')
+	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl')
 		.appendTo($('.breakdown-view'))
 
-	let tableHeaderWrap = app.newEl('div')
+	let tableHeaderWrap = toolkit.newEl('div')
 		.addClass('table-header')
 		.appendTo(wrapper)
 
-	let tableHeader = app.newEl('table')
+	let tableHeader = toolkit.newEl('table')
 		.addClass('table')
 		.appendTo(tableHeaderWrap)
 
-	let tableContentWrap = app.newEl('div')
+	let tableContentWrap = toolkit.newEl('div')
 		.appendTo(wrapper)
 		.addClass('table-content')
 
-	let tableContent = app.newEl('table')
+	let tableContent = toolkit.newEl('table')
 		.addClass('table')
 		.appendTo(tableContentWrap)
 
-	let trHeader1 = app.newEl('tr')
+	let trHeader1 = toolkit.newEl('tr')
 		.appendTo(tableHeader)
 
-	app.newEl('th')
+	toolkit.newEl('th')
 		.html('P&L')
 		.appendTo(trHeader1)
 
-	app.newEl('th')
+	toolkit.newEl('th')
 		.html('Total')
 		.addClass('align-right')
 		.appendTo(trHeader1)
 
-	let trContent1 = app.newEl('tr')
+	let trContent1 = toolkit.newEl('tr')
 		.appendTo(tableContent)
 
 	let colWidth = 160
@@ -312,13 +315,13 @@ bkd.render = () => {
 	let grouppl2 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
 	let grouppl3 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
-		app.newEl('th')
-			.html(app.nbspAble(d._id, 'Uncategorized'))
+		toolkit.newEl('th')
+			.html(d._id)
 			.addClass('align-right')
 			.appendTo(trContent1)
 			.width(colWidth)
 
-		app.newEl('th')
+		toolkit.newEl('th')
 			.html('%')
 			.addClass('align-right cell-percentage')
 			.appendTo(trContent1)
@@ -336,7 +339,7 @@ bkd.render = () => {
 
 		let PL = d.PLCode
 		PL = PL.replace(/\s+/g, '')
-		let trHeader = app.newEl('tr')
+		let trHeader = toolkit.newEl('tr')
 			.addClass(`header${PL}`)
 			.attr(`idheaderpl`, PL)
 			.appendTo(tableHeader)
@@ -345,17 +348,17 @@ bkd.render = () => {
 			bkd.clickExpand(trHeader)
 		})
 
-		app.newEl('td')
+		toolkit.newEl('td')
 			.html('<i></i>' + d.PNL)
 			.appendTo(trHeader)
 
 		let pnlTotal = kendo.toString(d.PNLTotal, 'n0')
-		app.newEl('td')
+		toolkit.newEl('td')
 			.html(pnlTotal)
 			.addClass('align-right')
 			.appendTo(trHeader)
 
-		let trContent = app.newEl('tr')
+		let trContent = toolkit.newEl('tr')
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
 			.appendTo(tableContent)
@@ -370,7 +373,7 @@ bkd.render = () => {
 				value = 0
 			}
 
-			let cell = app.newEl('td')
+			let cell = toolkit.newEl('td')
 				.html(value)
 				.addClass('align-right')
 				.appendTo(trContent)
@@ -379,7 +382,7 @@ bkd.render = () => {
 				bkd.clickCell(d.PLCode, key)
 			})
 
-			app.newEl('td')
+			toolkit.newEl('td')
 				.html(`${percentage} %`)
 				.addClass('align-right cell-percentage')
 				.appendTo(trContent)
