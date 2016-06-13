@@ -291,6 +291,7 @@ bkd.render = function () {
 	// console.log('data ', data)
 
 	tableContent.css('min-width', totalWidth);
+	$('.scroll-content').css('min-width',totalWidth);
 
 	// console.log('row ', rows)
 	rows.forEach(function (d, i) {
@@ -455,6 +456,9 @@ bkd.prepareEvents = function () {
 	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover');
 	});
+	$(".scroll").scroll(function(){
+        $(".table-content").scrollLeft($(".scroll").scrollLeft());
+    });
 };
 
 $(function () {
