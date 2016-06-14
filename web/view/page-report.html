@@ -14,33 +14,6 @@ let o = {
 {{if eq .id "list"}}
 	{{template "page-report-list.html"}}
 {{else}}
-	<div class="col-md-3 col-sm-3 ez panel-filter" style="display: none;">
-		<div class="panel ez no-padding hardcore">
-			<div class="panel-heading">
-				<h3 class="no-margin">Filter</h3>
-				<div class="panel-nav-button">
-					<div class="form-group relative align-right no-margin no-padding hardcore" data-bind="visible: false">
-						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refresh" title="Refresh">
-							<i class="fa fa-refresh"></i>
-						</button>
-						<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
-							<i class="fa fa-filter"></i>
-						</button>
-					</div>
-				</div>
-			</div>
-			<div class="panel-body">
-				<div id="from-filter">
-					<p>Click each section below to show respective filter.</p>
-					<div class="wrapper">
-						<div class="panel-group ez-collapse" role="tablist" aria-multiselectable="true" data-bind="template: { name: 'template-report-filter', foreach: rpt.filter }"></div>
-					</div>
-				</div>
-
-				<div class="clearfix"></div>
-			</div>
-		</div>
-	</div>
 	<div class="col-md-12 col-sm-12 ez panel-content">
 	{{if eq .id "dashboard"}}
 		<div class="col-md-12 col-sm-12 no-padding hardcore">
@@ -86,6 +59,37 @@ let o = {
 		</div>
 
 	{{end}}
+	</div>
+
+	<div class="col-md-3 col-sm-3 ez panel-filter" style="display: none;">
+		<div class="panel ez no-padding hardcore">
+			<div class="panel-heading">
+				<h3 class="no-margin">Filter</h3>
+				<div class="panel-nav-button">
+					<div class="form-group relative align-right no-margin no-padding hardcore" data-bind="visible: true">
+						<!-- <button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refresh" title="Refresh">
+							<i class="fa fa-refresh"></i>
+						</button>
+						<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+							<i class="fa fa-search"></i>
+						</button> -->
+						<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.refreshAll" title="Refresh All">
+							<i class="fa fa-refresh"></i> Refresh All
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="panel-body">
+				<div id="from-filter">
+					<p>Click each section below to show respective filter.</p>
+					<div class="wrapper">
+						<div class="panel-group ez-collapse" role="tablist" aria-multiselectable="true" data-bind="template: { name: 'template-report-filter', foreach: rpt.filter }"></div>
+					</div>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+		</div>
 	</div>
 {{end}}
 

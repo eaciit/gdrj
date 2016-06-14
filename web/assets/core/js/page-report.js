@@ -290,6 +290,11 @@ rpt.refresh = function () {
 		}, 1000 * i);
 	});
 };
+rpt.refreshAll = function () {
+	bkd.refresh();
+	rs.refresh();
+	ccr.refresh();
+};
 
 $(function () {
 	rpt.getIdeas();

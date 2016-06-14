@@ -423,6 +423,11 @@ rpt.refresh = function () {
         }, 1000 * i)
     })
 }
+rpt.refreshAll = () => {
+	bkd.refresh()
+	rs.refresh()
+	ccr.refresh()
+}
 
 $(() => {
 	rpt.getIdeas()
