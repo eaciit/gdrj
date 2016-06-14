@@ -363,7 +363,7 @@ rpt.getFilterValue = () => {
 		{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() },
 		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) },
 		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) },
-		{ 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.ChannelC().concat(rpt.value.ChannelC()) },
+		{ 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) },
 		{ 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
 		{ 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
 		{ 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
