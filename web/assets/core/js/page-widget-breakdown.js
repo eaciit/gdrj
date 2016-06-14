@@ -168,8 +168,18 @@ bkd.renderDetailSalesTrans = function (breakdown) {
 };
 bkd.renderDetail = function (plcode, breakdowns) {
 	bkd.popupIsLoading(true);
+	$('#modal-detail-ledger-summary .modal-title').html('Detail');
 	$('#modal-detail-ledger-summary').appendTo($('body'));
 	$('#modal-detail-ledger-summary').modal('show');
+
+	var titleParts = [];
+	for (var p in breakdowns) {
+		if (breakdowns.hasOwnProperty(p)) {
+			titleParts.push(breakdowns[p]);
+		}
+	}
+
+	$('#modal-detail-ledger-summary .modal-title').html('Detail of ' + titleParts.join(' '));
 
 	var columns = [{ title: 'Date', width: 120, locked: true, footerTemplate: 'Total :', template: function template(d) {
 			return moment(d.date.date).format('DD/MM/YYYY HH:mm');
@@ -186,9 +196,9 @@ bkd.renderDetail = function (plcode, breakdowns) {
 					var param = options.data;
 					param.tablename = "salespls";
 
-					for (var p in breakdowns) {
-						if (breakdowns.hasOwnProperty(p)) {
-							param[p] = breakdowns[p];
+					for (var _p in breakdowns) {
+						if (breakdowns.hasOwnProperty(_p)) {
+							param[_p] = breakdowns[_p];
 						}
 					}
 

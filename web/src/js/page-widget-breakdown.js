@@ -168,8 +168,18 @@ bkd.renderDetailSalesTrans = (breakdown) => {
 }
 bkd.renderDetail = (plcode, breakdowns) => {
 	bkd.popupIsLoading(true)
+	$('#modal-detail-ledger-summary .modal-title').html('Detail')
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
+
+	let titleParts = []
+	for (let p in breakdowns) {
+		if (breakdowns.hasOwnProperty(p)) {
+			titleParts.push(breakdowns[p])
+		}
+	}
+
+	$('#modal-detail-ledger-summary .modal-title').html(`Detail of ${titleParts.join(' ')}`)
 
 	let columns = [
 		{ title: 'Date', width: 120, locked: true, footerTemplate: 'Total :', template: (d) => moment(d.date.date).format('DD/MM/YYYY HH:mm'), attributes: { class: 'bold' } },
