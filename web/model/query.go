@@ -3,6 +3,7 @@ package gocore
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/csv"
 	_ "github.com/eaciit/dbox/dbc/csvs"
@@ -98,7 +99,7 @@ func ConnectToDatabase(payload toolkit.M) (int, []toolkit.M, *DataBrowser, error
 	TblName.Set("from", dataDS.TableNames)
 	payload.Set("from", dataDS.TableNames) /*skip, take and sort already push into payload*/
 
-	qcount, _ := parseQuery(connection.NewQuery(), TblName)
+	// qcount, _ := parseQuery(connection.NewQuery(), TblName)
 	query, _ := parseQuery(connection.NewQuery(), payload)
 
 	var selectfield string
@@ -108,7 +109,7 @@ func ConnectToDatabase(payload toolkit.M) (int, []toolkit.M, *DataBrowser, error
 			selectfield = toolkit.ToString(tField)
 			if toolkit.IsSlice(payload[tField]) {
 				query = query.Where(dbox.In(tField, payload[tField].([]interface{})...))
-				qcount = qcount.Where(dbox.In(tField, payload[tField].([]interface{})...))
+				// qcount = qcount.Where(dbox.In(tField, payload[tField].([]interface{})...))
 			} else if !toolkit.IsNilOrEmpty(payload[tField]) {
 				var hasPattern bool
 				for _, val := range querypattern {
@@ -119,22 +120,21 @@ func ConnectToDatabase(payload toolkit.M) (int, []toolkit.M, *DataBrowser, error
 				if hasPattern {
 					query = query.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
 						toolkit.ToString(metadata.DataType), ""))
-					qcount = qcount.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]),
-						toolkit.ToString(metadata.DataType), ""))
+					// qcount = qcount.Where(dbox.ParseFilter(toolkit.ToString(tField), toolkit.ToString(payload[tField]), toolkit.ToString(metadata.DataType), ""))
 				} else {
 					switch toolkit.ToString(metadata.DataType) {
 					case "int":
 						query = query.Where(dbox.Eq(tField, toolkit.ToInt(payload[tField], toolkit.RoundingAuto)))
-						qcount = qcount.Where(dbox.Eq(tField, toolkit.ToInt(payload[tField], toolkit.RoundingAuto)))
+						// qcount = qcount.Where(dbox.Eq(tField, toolkit.ToInt(payload[tField], toolkit.RoundingAuto)))
 					case "float32":
 						query = query.Where(dbox.Eq(tField, toolkit.ToFloat32(payload[tField], 2, toolkit.RoundingAuto)))
-						qcount = qcount.Where(dbox.Eq(tField, toolkit.ToFloat32(payload[tField], 2, toolkit.RoundingAuto)))
+						// qcount = qcount.Where(dbox.Eq(tField, toolkit.ToFloat32(payload[tField], 2, toolkit.RoundingAuto)))
 					case "float64":
 						query = query.Where(dbox.Eq(tField, toolkit.ToFloat64(payload[tField], 2, toolkit.RoundingAuto)))
-						qcount = qcount.Where(dbox.Eq(tField, toolkit.ToFloat64(payload[tField], 2, toolkit.RoundingAuto)))
+						// qcount = qcount.Where(dbox.Eq(tField, toolkit.ToFloat64(payload[tField], 2, toolkit.RoundingAuto)))
 					default:
 						query = query.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
-						qcount = qcount.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
+						// qcount = qcount.Where(dbox.Contains(tField, toolkit.ToString(payload[tField])))
 					}
 				}
 			}
@@ -143,17 +143,17 @@ func ConnectToDatabase(payload toolkit.M) (int, []toolkit.M, *DataBrowser, error
 
 	if hasLookup && selectfield != "" {
 		query = query.Select(selectfield).Group(selectfield)
-		qcount = qcount.Select(selectfield).Group(selectfield)
+		// qcount = qcount.Select(selectfield).Group(selectfield)
 
 	}
 
-	ccount, err := qcount.Cursor(nil)
-	if err != nil {
-		return 0, nil, nil, err
-	}
-	defer ccount.Close()
+	// ccount, err := qcount.Cursor(nil)
+	// if err != nil {
+	// 	return 0, nil, nil, err
+	// }
+	// defer ccount.Close()
 
-	dcount := ccount.Count()
+	// dcount := ccount.Count()
 
 	cursor, err := query.Cursor(nil)
 	if err != nil {
@@ -161,6 +161,7 @@ func ConnectToDatabase(payload toolkit.M) (int, []toolkit.M, *DataBrowser, error
 	}
 	defer cursor.Close()
 
+	dcount := cursor.Count()
 	data := []toolkit.M{}
 	cursor.Fetch(&data, 0, false)
 
@@ -182,6 +183,9 @@ func ConnectToDatabase(payload toolkit.M) (int, []toolkit.M, *DataBrowser, error
 
 func parseQuery(query dbox.IQuery, queryInfo toolkit.M) (dbox.IQuery, MetaSave) {
 	metaSave := MetaSave{}
+
+	fmt.Println("--------------")
+	fmt.Printf("%#v\n", queryInfo)
 
 	if qFrom := queryInfo.Get("from", "").(string); qFrom != "" {
 		query = query.From(qFrom)

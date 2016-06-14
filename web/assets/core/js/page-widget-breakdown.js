@@ -186,19 +186,33 @@ bkd.renderDetail = function (plcode, breakdowns) {
 		}, attributes: { class: 'bold' } },
 	// { field: `pldatas.${plcode}.amount`, width: 120, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => d[`pldatas.${plcode}.amount`].sum, format: '{0:n2}', attributes: { class: 'align-right' } },
 	{ field: 'grossamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Gross</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.grossamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'discountamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Discount</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.discountamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'netamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Net Sales</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.netamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } },
-	// { field: 'cc.name', title: 'Cost Center', width: 250 },
-	{ field: 'customer.name', title: 'Outlet', width: 250 }, { field: 'customer.branchname', title: 'Branch', width: 150 }, { field: 'customer.channelname', title: 'Channel', width: 150 }, { field: 'product.brand', title: 'Brand', width: 100 }, { field: 'product.name', title: 'Product', width: 250 }];
+	// { title: 'Cost Center', template: (d) => toolkit.redefine(toolkit.redefine(d.cc, {}).name, ''), width: 250 },
+	{ title: 'Outlet', template: function template(d) {
+			return toolkit.redefine(toolkit.redefine(d.customer, {}).name, '');
+		}, width: 200 }, { title: 'Branch', template: function template(d) {
+			return toolkit.redefine(toolkit.redefine(d.customer, {}).branchname, '');
+		}, width: 150 }, { title: 'Channel', template: function template(d) {
+			return toolkit.redefine(toolkit.redefine(d.customer, {}).channelname, '');
+		}, width: 150 }, { title: 'Brand', template: function template(d) {
+			return toolkit.redefine(toolkit.redefine(d.product, {}).brand, '');
+		}, width: 100 }, { title: 'Product', template: function template(d) {
+			return toolkit.redefine(toolkit.redefine(d.product, {}).name, '');
+		}, width: 250 }];
 
 	var config = {
 		dataSource: {
 			transport: {
 				read: function read(options) {
 					var param = options.data;
-					param.tablename = "salespls";
+					param.filters = [];
 
 					for (var _p in breakdowns) {
 						if (breakdowns.hasOwnProperty(_p)) {
-							param[_p] = breakdowns[_p];
+							param.filters.push({
+								field: _p,
+								op: "$eq",
+								value: breakdowns[_p]
+							});
 						}
 					}
 
@@ -213,14 +227,15 @@ bkd.renderDetail = function (plcode, breakdowns) {
 
 					$.ajax({
 						type: "POST",
-						url: "/databrowser/getdatabrowser",
+						url: "/report/getpnldetail",
 						contentType: "application/json; charset=utf-8",
 						dataType: 'json',
 						data: JSON.stringify(param),
 						success: function success(res) {
 							bkd.popupIsLoading(false);
 							setTimeout(function () {
-								options.success(res.data);
+								console.log("++++", res);
+								options.success(res.Data);
 							}, 200);
 						},
 						error: function error() {
@@ -250,7 +265,16 @@ bkd.renderDetail = function (plcode, breakdowns) {
 		sortable: true,
 		pageable: true,
 		scrollable: true,
-		columns: columns
+		columns: columns,
+		dataBound: function dataBound(d) {
+			$('.grid-detail .k-pager-nav.k-pager-last').hide();
+
+			setTimeout(function () {
+				var pager = $('.grid-detail .k-pager-info');
+				var text = 'rows ' + pager.html().split(" ").slice(0, 3).join(" ");
+				pager.html(text);
+			}, 10);
+		}
 	};
 
 	console.log("======", config);

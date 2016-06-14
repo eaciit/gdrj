@@ -348,3 +348,34 @@ func (m *ReportController) GenerateRandomLedgerSummary(r *knot.WebContext) inter
 
 	return "ok"
 }
+
+func (d *ReportController) GetPNLDetail(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	res := new(toolkit.Result)
+	payload := new(gdrj.PLFinderDetail)
+
+	if err := r.GetPayload(payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	data, err := payload.GetData()
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	dataDS := new(gocore.DataBrowser)
+	if err := gocore.Get(dataDS, new(gdrj.SalesPL).TableName()); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	o := toolkit.M{}
+	o.Set("DataCount", 10000000)
+	o.Set("DataValue", data)
+	o.Set("dataresult", dataDS)
+	res.SetData(o)
+
+	return res
+}
