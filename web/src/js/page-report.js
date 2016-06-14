@@ -428,7 +428,21 @@ rpt.refreshAll = () => {
 	rs.refresh()
 	ccr.refresh()
 }
+rpt.panel_relocated = () => {
+	let window_top = $(window).scrollTop()
+    var div_top = $('.panel-yo').offset().top
+    if (window_top > div_top) {
+		$('.panel-fix').css('width',$('.panel-yo').width())
+        $('.panel-fix').addClass('contentfilter')
+        $('.panel-yo').height($('.panel-fix').outerHeight())
+    } else {
+        $('.panel-fix').removeClass('contentfilter')
+        $('.panel-yo').height(0)
+    }
+}
 
 $(() => {
+	$(window).scroll(rpt.panel_relocated);
+    rpt.panel_relocated()
 	rpt.getIdeas()
 })
