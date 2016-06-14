@@ -2,131 +2,39 @@
 
 <div class="panel ez no-padding hardcore">
 	<div class="panel-heading">
-		<h3 class="no-margin">
-			Pivot Grid
-		</h3>
-		<div class="panel-nav-button">
-			<div class="form-group relative align-right no-margin no-padding hardcore">
-				<button class="btn btn-sm btn-primary" data-bind="click: pvt.refresh, visible: (pvt.mode() == 'render')">
+		<h3 class="no-margin" data-bind="text: pvt.title"></h3>
+		<div class="panel-nav-button" data-bind="visible: !pvt.contentIsLoading()">
+			<div class="form-inline">
+				<div  class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+					<span class="input-group-addon width-100 align-right">Row</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: pvt.optionRows, dataValueField: 'field', dataTextField: 'name', value: pvt.row }"></select>
+						</div>
+				</div>
+				<div  class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+					<span class="input-group-addon width-100 align-right">Column</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: pvt.optionColumns, dataValueField: 'field', dataTextField: 'name', value: pvt.column }"></select>
+						</div>
+				</div>
+				<button class="btn btn-sm btn-primary tooltipster" data-bind="click: pvt.refresh" title="Refresh P&L Analysis">
 					<i class="fa fa-refresh"></i>
 				</button>
-				<button class="btn btn-sm btn-primary" data-bind="click: pvt.setMode(''), visible: (pvt.mode() == 'render')">
-					<i class="fa fa-gear"></i>
-				</button>
-				<button class="btn btn-sm btn-warning" data-bind="click: pvt.setMode('render'), visible: (pvt.mode() == '')">
-					<i class="fa fa-arrow-left"></i>
+				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+					<i class="fa fa-search"></i>
 				</button>
 			</div>
 		</div>
 	</div>
-	<div class="panel-body" data-bind="visible: pvt.mode() == ''">
-		<div class="report-module report-module-rsec">
-			<div class="col-md-5">
-				<div class="col-md-12 rsec-wrapper rsec-wrapper-column" data-bind="css: { 'read-only': !pvt.enableColumns() }">
-					<div class="wrapper-inner" data-module="column">
-						<h3 class="no-margin">
-							<div class="pull-left">
-								<i class="fa fa-columns"></i>
-								Columns
-							</div>
-							<div class="pull-right">
-								<button class="add-data-point tooltipster" title="Click to add more data point" data-bind="click: pvt.addColumn">
-									<span class="fa fa-plus"></span>
-								</button>
-							</div>
-							<div class="clearfix"></div>
-						</h3>
-						<div class="wrapper" style="min-height: 242px;">
-							<div class="list-group ez rsec-section rsec-section-columns" data-bind="foreach: pvt.columns" style="min-height: 242px;">
-								<div class="input-group input-group-sm ez width-full">
-									<div>
-										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: rpt.optionDimensions, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'name', change: rpt.setName($data, rpt.optionDimensions) }"></select>
-									</div>
-									<span class="input-group-addon tooltipster clickable" title="Click to remove" data-bind="attr: { 'data-id': $data.field }" onclick="pvt.removeFrom(this, 'columns')">
-										<i class="fa fa-close"></i>
-									</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-md-12 rsec-wrapper rsec-wrapper-row" data-bind="css: { 'read-only': !pvt.enableRows() }">
-					<div class="wrapper-inner" data-module="row">
-						<h3 class="no-margin">
-							<div class="pull-left">
-								<i class="fa fa-reorder"></i>
-								Rows
-							</div>
-							<div class="pull-right">
-								<button class="add-data-point tooltipster" title="Click to add more data point" data-bind="click: pvt.addRow">
-									<span class="fa fa-plus"></span>
-								</button>
-							</div>
-							<div class="clearfix"></div>
-						</h3>
-						<div class="wrapper" style="min-height: 242px;">
-							<div class="list-group ez rsec-section rsec-section-rows" data-bind="foreach: pvt.rows" style="min-height: 242px;">
-								<div class="input-group input-group-sm ez width-full">
-									<div>
-										<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: rpt.optionDimensions, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'name', change: rpt.setName($data, rpt.optionDimensions) }"></select>
-									</div>
-									<span class="input-group-addon tooltipster clickable" title="Click to remove" data-bind="attr: { 'data-id': $data.field }" onclick="pvt.removeFrom(this, 'rows')">
-										<i class="fa fa-close"></i>
-									</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
 
+	<div class="panel-body">
+		<div data-bind="visible: pvt.contentIsLoading">
+			{{template "_loader.html"}}
+		</div>
 
-			<div class="col-md-7 rsec-wrapper" data-bind="css: { 'read-only': !pvt.enableDataPoints() }">
-				<div class="wrapper-inner" data-module="value">
-					<h3 class="no-margin">
-						<div class="pull-left">
-							<i class="fa fa-bullseye"></i>
-							Data Points
-						</div>
-						<!-- <div class="pull-right">
-							<button class="add-data-point tooltipster" title="Click to add more data point" data-bind="click: pvt.addDataPoint">
-								<span class="fa fa-plus"></span>
-							</button>
-						</div> -->
-						<div class="clearfix"></div>
-					</h3>
-					<div class="wrapper" style="min-height: 524px;">
-						<div class="list-group ez rsec-section rsec-section-data-point" data-bind="foreach: pvt.dataPoints" style="min-height: 524px;">
-							<div class="input-group input-group-sm ez width-full">
-								<span class="input-group-addon">Data Point</span>
-								<div>
-									<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: rpt.optionDataPoints, value: $data.field, optionLabel: 'Pick ...', dataValueField: 'field', dataTextField: 'name', change: rpt.setName($data, rpt.optionDataPoints) }"></select>
-								</div>
-								<span class="input-group-addon">Aggr</span>
-								<div>
-									<select style="width: 100%;" type="text" data-bind="kendoDropDownList: { data: rpt.optionAggregates, value: $data.aggr, optionLabel: 'Pick ...', dataValueField: 'aggr', dataTextField: 'name' }"></select>
-								</div>
-								<!-- <span class="input-group-addon tooltipster clickable" title="Click to remove" data-bind="attr: { 'data-index': $index() }" onclick="pvt.removeFrom(this, 'dataPoints')">
-									<i class="fa fa-close"></i>
-								</span> -->
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
+		<div data-bind="visible: !pvt.contentIsLoading()">
+			<div class="pivot ez"></div>
 			<div class="clearfix"></div>
-		</div>
-	</div>
-
-	<div class="panel-body" data-bind="visible: pvt.mode() == 'render'">
-		<!-- {{template "_loader.html"}} -->
-  		<!-- data-bind="visible: !app.loader()" -->
-		
-		<div id="pivot-wrapper">
-			<div class="pivot-wrapper-inner">
-				<div class="pivot ez"></div>
-			</div>
 		</div>
 	</div>
 </div>

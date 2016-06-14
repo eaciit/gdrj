@@ -12,7 +12,29 @@ let o = {
 
 <div>
 {{if eq .id "list"}}
-	{{template "page-report-list.html"}}
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin">
+				Analysis Ideas
+			</h3>
+		</div>
+		<div class="panel-body">
+			<p>Click which analysis you want to show.</p>
+
+			<div data-bind="foreach: rpt.analysisIdeas()" class="list-analysis">
+				<div class="col-md-3">
+					<div class="wrapper">
+						<a class="color-base" href="#" data-bind="attr: { 'href': '/web/report/' + $data._id }">
+							<span class="fa fa-file-text-o"></span>
+							&nbsp;&nbsp;
+							<!-- <span data-bind="text: ($index() + 1)"></span> -  -->
+							<span data-bind="text: $data.name"></span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 {{else}}
 	<div class="col-md-12 col-sm-12 ez panel-content">
 	{{if eq .id "dashboard"}}
@@ -40,7 +62,7 @@ let o = {
 				ccr.refresh()
 			}
 		</script>
-	{{else if eq .id "gross_sales_discount_and_net_sales"}}
+	{{else if eq .id "example"}}
 		<div class="col-md-12 no-padding hardcore">
 			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
 				{{template "page-widget-chart.html"}}
@@ -57,7 +79,48 @@ let o = {
 				{{template "page-widget-table.html"}}
 			</div>
 		</div>
+	{{else if eq .id "gross_sales_discount_and_net_sales"}}
+		<div class="col-md-12 no-padding hardcore">
+			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+				{{template "page-widget-pivot.html"}}
+			</div>
+		</div>
 
+		<script>
+			$(() => {
+				pvt.row('customer.channelname')
+				pvt.column('customer.branchname')
+				pvt.dataPoints = ko.observableArray([
+					{ field: 'grosssales', title: 'Gross Sales' },
+					{ field: 'salesdiscount', title: 'Sales Discount' },
+					{ field: 'netsales', title: 'Net Sales' }
+				])
+				
+				pvt.data([{
+					customer_channelname: 'GT', customer_branchname: 'Surabaya',
+					grosssales: 20000,
+					salesdiscount: 2000,
+					netsales: 18000
+				}, {
+					customer_channelname: 'MT', customer_branchname: 'Surabaya',
+					grosssales: 22000,
+					salesdiscount: 1000,
+					netsales: 21000
+				}, {
+					customer_channelname: 'GT', customer_branchname: 'Malang',
+					grosssales: 23000,
+					salesdiscount: 3000,
+					netsales: 20000
+				}, {
+					customer_channelname: 'GT', customer_branchname: 'Malang',
+					grosssales: 22000,
+					salesdiscount: 2000,
+					netsales: 20000
+				}])
+
+				pvt.refresh()
+			})
+		</script>
 	{{end}}
 	</div>
 
