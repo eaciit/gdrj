@@ -96,8 +96,8 @@ us.selectGrant = ko.observableArray([])
 
 us.getGrant = () => {
     let data = []
-    app.ajaxPost("/group/getgroup", {}, function(res) {
-        if (!app.isFine(res)) {
+    toolkit.ajaxPost("/group/getgroup", {}, function(res) {
+        if (!toolkit.isFine(res)) {
             return;
         }
         if (res.data == null) {
@@ -119,10 +119,10 @@ us.selectlistGridGroups = (e) => {
 }
 
 us.findGrant = (e) => {
-    app.ajaxPost("/group/getaccessgroup", {
+    toolkit.ajaxPost("/group/getaccessgroup", {
         _id: e
     }, function(res) {
-        if (!app.isFine(res)) {
+        if (!toolkit.isFine(res)) {
             return;
         }
         if (res.data == null) {
@@ -238,8 +238,8 @@ us.removeGrant = (data) => {
 
 us.editData = (id) => {
 	us.isNew(false)
-    app.ajaxPost('/user/edituser', {_id: id}, (res) => {
-        if (!app.isFine(res)) {
+    toolkit.ajaxPost('/user/edituser', {_id: id}, (res) => {
+        if (!toolkit.isFine(res)) {
             return
         }
         // for (var i in res.data.Grants){
@@ -255,14 +255,14 @@ us.editData = (id) => {
         }
         $('#modalUpdate').modal('show')
     }, (err) => {
-        app.showError(err.responseText)
+        toolkit.showError(err.responseText)
     }, {
         timeout: 5000
     })
 }
 
 us.saveChanges = () => {
-	if (!app.isFormValid(".form-user")) {
+	if (!toolkit.isFormValid(".form-user")) {
 		return
 	}
     let parm = ko.mapping.toJS(us.config)
@@ -286,15 +286,15 @@ us.saveChanges = () => {
 			Groups: parm.Groups
         },
     }
-	app.ajaxPost('/user/saveuser', postparm, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/user/saveuser', postparm, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
 		$('#modalUpdate').modal('hide')
 		us.refreshData()
 	}, (err) => {
-		app.showError(err.responseText)
+		toolkit.showError(err.responseText)
 	}, {
 		timeout: 5000
 	})
@@ -327,8 +327,8 @@ us.deleteuser = () => {
             closeOnConfirm: true
         }, function() {
             setTimeout(function () {
-                app.ajaxPost("/user/deleteuser", { _id: us.tempCheckIdDelete() }, function (res) {
-                    if (!app.isFine(res)) {
+                toolkit.ajaxPost("/user/deleteuser", { _id: us.tempCheckIdDelete() }, function (res) {
+                    if (!toolkit.isFine(res)) {
                         return;
                     }
                     us.refreshData()

@@ -88,8 +88,8 @@ us.selectGrant = ko.observableArray([]);
 
 us.getGrant = function () {
     var data = [];
-    app.ajaxPost("/group/getgroup", {}, function (res) {
-        if (!app.isFine(res)) {
+    toolkit.ajaxPost("/group/getgroup", {}, function (res) {
+        if (!toolkit.isFine(res)) {
             return;
         }
         if (res.data == null) {
@@ -113,10 +113,10 @@ us.selectlistGridGroups = function (e) {
 };
 
 us.findGrant = function (e) {
-    app.ajaxPost("/group/getaccessgroup", {
+    toolkit.ajaxPost("/group/getaccessgroup", {
         _id: e
     }, function (res) {
-        if (!app.isFine(res)) {
+        if (!toolkit.isFine(res)) {
             return;
         }
         if (res.data == null) {
@@ -233,8 +233,8 @@ us.removeGrant = function (data) {
 
 us.editData = function (id) {
     us.isNew(false);
-    app.ajaxPost('/user/edituser', { _id: id }, function (res) {
-        if (!app.isFine(res)) {
+    toolkit.ajaxPost('/user/edituser', { _id: id }, function (res) {
+        if (!toolkit.isFine(res)) {
             return;
         }
         // for (var i in res.data.Grants){
@@ -252,14 +252,14 @@ us.editData = function (id) {
         }
         $('#modalUpdate').modal('show');
     }, function (err) {
-        app.showError(err.responseText);
+        toolkit.showError(err.responseText);
     }, {
         timeout: 5000
     });
 };
 
 us.saveChanges = function () {
-    if (!app.isFormValid(".form-user")) {
+    if (!toolkit.isFormValid(".form-user")) {
         return;
     }
     var parm = ko.mapping.toJS(us.config);
@@ -283,15 +283,15 @@ us.saveChanges = function () {
             Groups: parm.Groups
         }
     };
-    app.ajaxPost('/user/saveuser', postparm, function (res) {
-        if (!app.isFine(res)) {
+    toolkit.ajaxPost('/user/saveuser', postparm, function (res) {
+        if (!toolkit.isFine(res)) {
             return;
         }
 
         $('#modalUpdate').modal('hide');
         us.refreshData();
     }, function (err) {
-        app.showError(err.responseText);
+        toolkit.showError(err.responseText);
     }, {
         timeout: 5000
     });
@@ -324,8 +324,8 @@ us.deleteuser = function () {
             closeOnConfirm: true
         }, function () {
             setTimeout(function () {
-                app.ajaxPost("/user/deleteuser", { _id: us.tempCheckIdDelete() }, function (res) {
-                    if (!app.isFine(res)) {
+                toolkit.ajaxPost("/user/deleteuser", { _id: us.tempCheckIdDelete() }, function (res) {
+                    if (!toolkit.isFine(res)) {
                         return;
                     }
                     us.refreshData();
