@@ -187,12 +187,12 @@ bkd.renderDetail = (plcode, breakdowns) => {
 		{ field: 'grossamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Gross</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.grossamount.sum, 'n0')}</div>`,  */ format: '{0:n2}', attributes: { class: 'align-right' } },
 		{ field: 'discountamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Discount</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.discountamount.sum, 'n0')}</div>`,  */ format: '{0:n2}', attributes: { class: 'align-right' } },
 		{ field: 'netamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Net Sales</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.netamount.sum, 'n0')}</div>`,  */ format: '{0:n2}', attributes: { class: 'align-right' } },
-		// { field: 'cc.name', title: 'Cost Center', width: 250 },
-		{ field: 'customer.name', title: 'Outlet', width: 250 },
-		{ field: 'customer.branchname', title: 'Branch', width: 150 },
-		{ field: 'customer.channelname', title: 'Channel', width: 150 },
-		{ field: 'product.brand', title: 'Brand', width: 100 },
-		{ field: 'product.name', title: 'Product', width: 250 },
+		// { title: 'Cost Center', template: (d) => toolkit.redefine(toolkit.redefine(d.cc, {}).name, ''), width: 250 },
+		{ title: 'Outlet', template: (d) => toolkit.redefine(toolkit.redefine(d.customer, {}).name, ''), width: 200 },
+		{ title: 'Branch', template: (d) => toolkit.redefine(toolkit.redefine(d.customer, {}).branchname, ''), width: 150 },
+		{ title: 'Channel', template: (d) => toolkit.redefine(toolkit.redefine(d.customer, {}).channelname, ''), width: 150 },
+		{ title: 'Brand', template: (d) => toolkit.redefine(toolkit.redefine(d.product, {}).brand, ''), width: 100 },
+		{ title: 'Product', template: (d) => toolkit.redefine(toolkit.redefine(d.product, {}).name, ''), width: 250 },
 	]
 
 	let config = {
@@ -200,11 +200,15 @@ bkd.renderDetail = (plcode, breakdowns) => {
 			transport: {
 			    read: (options) => {
 			    	let param = options.data
-			    	param.tablename = "salespls"
+			    	param.filters = []
 
 					for (let p in breakdowns) {
 						if (breakdowns.hasOwnProperty(p)) {
-							param[p] = breakdowns[p]
+							param.filters.push({
+								field: p,
+								op: "$eq",
+								value: breakdowns[p]
+							})
 						}
 					}
 
@@ -219,14 +223,15 @@ bkd.renderDetail = (plcode, breakdowns) => {
 
 		            $.ajax({
 		                type: "POST",
-						url: "/databrowser/getdatabrowser",
+						url: "/report/getpnldetail",
 		                contentType: "application/json; charset=utf-8",
 		                dataType: 'json',
 		                data: JSON.stringify(param),
 		                success: (res) => {
 							bkd.popupIsLoading(false)
 							setTimeout(() => {
-								options.success(res.data)
+								console.log("++++", res)
+								options.success(res.Data)
 							}, 200)
 		                },
 		                error: () => {
@@ -253,6 +258,15 @@ bkd.renderDetail = (plcode, breakdowns) => {
         pageable: true,
         scrollable: true,
 		columns: columns,
+		dataBound: (d) => {
+			$('.grid-detail .k-pager-nav.k-pager-last').hide()
+			
+			setTimeout(() => {
+				let pager = $('.grid-detail .k-pager-info')
+				let text = `rows ${pager.html().split(" ").slice(0, 3).join(" ")}`
+				pager.html(text)
+			}, 10)
+		}
 	}
 
 	console.log("======", config)
