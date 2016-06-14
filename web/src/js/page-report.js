@@ -429,6 +429,10 @@ rpt.refreshAll = () => {
 	ccr.refresh()
 }
 rpt.panel_relocated = () => {
+	if ($('.panel-yo').size() == 0) {
+		return;
+	}
+	
 	let window_top = $(window).scrollTop()
     var div_top = $('.panel-yo').offset().top
     if (window_top > div_top) {

@@ -296,6 +296,10 @@ rpt.refreshAll = function () {
 	ccr.refresh();
 };
 rpt.panel_relocated = function () {
+	if ($('.panel-yo').size() == 0) {
+		return;
+	}
+
 	var window_top = $(window).scrollTop();
 	var div_top = $('.panel-yo').offset().top;
 	if (window_top > div_top) {
