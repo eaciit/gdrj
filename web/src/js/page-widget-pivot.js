@@ -13,28 +13,6 @@ pvt.dataPoints = ko.observableArray([])
 pvt.data = ko.observableArray([])
 
 pvt.refresh = () => {
-	pvt.data([{
-		customer_channelname: 'GT', customer_branchname: 'Surabaya',
-		grosssales: 20000,
-		salesdiscount: 2000,
-		netsales: 18000
-	}, {
-		customer_channelname: 'MT', customer_branchname: 'Surabaya',
-		grosssales: 22000,
-		salesdiscount: 1000,
-		netsales: 21000
-	}, {
-		customer_channelname: 'GT', customer_branchname: 'Malang',
-		grosssales: 23000,
-		salesdiscount: 3000,
-		netsales: 20000
-	}, {
-		customer_channelname: 'GT', customer_branchname: 'Malang',
-		grosssales: 22000,
-		salesdiscount: 2000,
-		netsales: 20000
-	}])
-
 	pvt.render()
 	// // pvt.data(DATATEMP_PIVOT)
 	// app.ajaxPost("/report/summarycalculatedatapivot", pvt.getParam(), (res) => {
@@ -101,15 +79,3 @@ pvt.render = () => {
 	$('.pivot').replaceWith('<div class="pivot ez"></div>')
 	$('.pivot').kendoPivotGrid(config)
 }
-
-$(() => {
-	pvt.dataPoints = ko.observableArray([
-		{ field: 'grosssales', title: 'Gross Sales' },
-		{ field: 'salesdiscount', title: 'Sales Discount' },
-		{ field: 'netsales', title: 'Net Sales' }
-	])
-	pvt.row = ko.observable('customer.channelname')
-	pvt.column = ko.observable('customer.branchname')
-
-	pvt.refresh()
-})

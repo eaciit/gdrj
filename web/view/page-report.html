@@ -40,7 +40,7 @@ let o = {
 				ccr.refresh()
 			}
 		</script>
-	{{else if eq .id "gross_sales_discount_and_net_sales"}}
+	{{else if eq .id "example"}}
 		<div class="col-md-12 no-padding hardcore">
 			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
 				{{template "page-widget-chart.html"}}
@@ -57,7 +57,48 @@ let o = {
 				{{template "page-widget-table.html"}}
 			</div>
 		</div>
+	{{else if eq .id "gross_sales_discount_and_net_sales"}}
+		<div class="col-md-12 no-padding hardcore">
+			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+				{{template "page-widget-pivot.html"}}
+			</div>
+		</div>
 
+		<script>
+			$(() => {
+				pvt.dataPoints = ko.observableArray([
+					{ field: 'grosssales', title: 'Gross Sales' },
+					{ field: 'salesdiscount', title: 'Sales Discount' },
+					{ field: 'netsales', title: 'Net Sales' }
+				])
+				pvt.row = ko.observable('customer.channelname')
+				pvt.column = ko.observable('customer.branchname')
+				
+				pvt.data([{
+					customer_channelname: 'GT', customer_branchname: 'Surabaya',
+					grosssales: 20000,
+					salesdiscount: 2000,
+					netsales: 18000
+				}, {
+					customer_channelname: 'MT', customer_branchname: 'Surabaya',
+					grosssales: 22000,
+					salesdiscount: 1000,
+					netsales: 21000
+				}, {
+					customer_channelname: 'GT', customer_branchname: 'Malang',
+					grosssales: 23000,
+					salesdiscount: 3000,
+					netsales: 20000
+				}, {
+					customer_channelname: 'GT', customer_branchname: 'Malang',
+					grosssales: 22000,
+					salesdiscount: 2000,
+					netsales: 20000
+				}])
+
+				pvt.refresh()
+			})
+		</script>
 	{{end}}
 	</div>
 
