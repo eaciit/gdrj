@@ -110,33 +110,33 @@ ac.newData = () => {
 
 ac.editData = (id) => {
 	ac.isNew(false)
-    app.ajaxPost('/administration/editaccess', {_id: id}, (res) => {
-        if (!app.isFine(res)) {
+    toolkit.ajaxPost('/administration/editaccess', {_id: id}, (res) => {
+        if (!toolkit.isFine(res)) {
             return
         }
         
         $('#modalUpdate').modal('show')
         ko.mapping.fromJS(res.data, ac.config)
     }, (err) => {
-        app.showError(err.responseText)
+        toolkit.showError(err.responseText)
     }, {
         timeout: 5000
     })
 }
 
 ac.saveChanges = () => {
-	if (!app.isFormValid(".form-access")) {
+	if (!toolkit.isFormValid(".form-access")) {
 		return
 	}
-	app.ajaxPost('/administration/saveaccess', ko.mapping.toJS(ac.config), (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/administration/saveaccess', ko.mapping.toJS(ac.config), (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
 		$('#modalUpdate').modal('hide')
 		ac.refreshDataBrowser()
 	}, (err) => {
-		app.showError(err.responseText)
+		toolkit.showError(err.responseText)
 	}, {
 		timeout: 5000
 	})
@@ -170,8 +170,8 @@ ac.deleteaccess = () => {
             closeOnConfirm: true
         }, function() {
             setTimeout(function () {
-                app.ajaxPost("/administration/deleteaccess", { _id: ac.tempCheckIdDelete() }, function (res) {
-                    if (!app.isFine(res)) {
+                toolkit.ajaxPost("/administration/deleteaccess", { _id: ac.tempCheckIdDelete() }, function (res) {
+                    if (!toolkit.isFine(res)) {
                         return;
                     }
                     ac.refreshDataBrowser()

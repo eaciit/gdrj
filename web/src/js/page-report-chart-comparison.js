@@ -16,8 +16,8 @@ cc.dataTemp = [
 cc.data = {}
 cc.analysisIdeas = ko.observableArray([])
 cc.getIdeas = () => {
-	app.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
@@ -46,8 +46,8 @@ cc.render = () => {
 		$container.append(o)
 
 		let series = [
-			{ field: 'actual', color: app.seriesColorsGodrej[0] },
-			{ field: 'plan', color: app.seriesColorsGodrej[1] }
+			{ field: 'actual', color: toolkit.seriesColorsGodrej[0] },
+			{ field: 'plan', color: toolkit.seriesColorsGodrej[1] }
 		]
 		let data = cc.dataTemp
 		crt.createChart(`.chart-${d._id}`, d.name, [series[i]], data, 'activity')

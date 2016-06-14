@@ -32,7 +32,7 @@ af.prepareDrag = () => {
 }
 af.addParam = () => {
 	let config = ko.mapping.toJS(af.moduleConfig)
-	config.Params.push(app.clone(af.templateParam))
+	config.Params.push(toolkit.clone(af.templateParam))
 	ko.mapping.fromJS(config, af.moduleConfig)
 }
 af.removeParam = (index) => {
@@ -57,8 +57,8 @@ af.getFormPayload = () => {
 	return param
 }
 af.getModules = () => {
-	app.ajaxPost('/allocationflow/getmodules', {}, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/allocationflow/getmodules', {}, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
@@ -67,8 +67,8 @@ af.getModules = () => {
 	})
 }
 af.getAppliedModules = () => {
-	app.ajaxPost('/allocationflow/getappliedmodules', {}, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/allocationflow/getappliedmodules', {}, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
@@ -77,13 +77,13 @@ af.getAppliedModules = () => {
 	})
 }
 af.doUpload = () => {
-	if (!app.isFormValid('.form-upload-file')) {
+	if (!toolkit.isFormValid('.form-upload-file')) {
 		return
 	}
 
 	let param = af.getFormPayload()
-	app.ajaxPost('/allocationflow/uploadnewmodule', param, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/allocationflow/uploadnewmodule', param, (res) => {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
@@ -91,7 +91,7 @@ af.doUpload = () => {
 	})
 }
 af.showModuleForm = () => {
-	app.resetForm($('.form-upload-file'))
+	toolkit.resetForm($('.form-upload-file'))
 	af.addParam()
 	$('#modal-module').appendTo($('body'))
 	$('#modal-module').modal('show')

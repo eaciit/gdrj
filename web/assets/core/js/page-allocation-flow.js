@@ -30,7 +30,7 @@ af.prepareDrag = function () {
 };
 af.addParam = function () {
 	var config = ko.mapping.toJS(af.moduleConfig);
-	config.Params.push(app.clone(af.templateParam));
+	config.Params.push(toolkit.clone(af.templateParam));
 	ko.mapping.fromJS(config, af.moduleConfig);
 };
 af.removeParam = function (index) {
@@ -57,8 +57,8 @@ af.getFormPayload = function () {
 	return param;
 };
 af.getModules = function () {
-	app.ajaxPost('/allocationflow/getmodules', {}, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/allocationflow/getmodules', {}, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
@@ -67,8 +67,8 @@ af.getModules = function () {
 	});
 };
 af.getAppliedModules = function () {
-	app.ajaxPost('/allocationflow/getappliedmodules', {}, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/allocationflow/getappliedmodules', {}, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
@@ -77,13 +77,13 @@ af.getAppliedModules = function () {
 	});
 };
 af.doUpload = function () {
-	if (!app.isFormValid('.form-upload-file')) {
+	if (!toolkit.isFormValid('.form-upload-file')) {
 		return;
 	}
 
 	var param = af.getFormPayload();
-	app.ajaxPost('/allocationflow/uploadnewmodule', param, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/allocationflow/uploadnewmodule', param, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
@@ -91,7 +91,7 @@ af.doUpload = function () {
 	});
 };
 af.showModuleForm = function () {
-	app.resetForm($('.form-upload-file'));
+	toolkit.resetForm($('.form-upload-file'));
 	af.addParam();
 	$('#modal-module').appendTo($('body'));
 	$('#modal-module').modal('show');

@@ -33,13 +33,13 @@ lg.getConfirReset = ko.mapping.fromJS(lg.templateUrlParam)
 lg.getLogin = () => {
 	event.preventDefault();
 
-	if (!app.isFormValid("#login-form")) {
+	if (!toolkit.isFormValid("#login-form")) {
 		return;
 	}
 	
 	var param = ko.mapping.toJS(lg.configLogin);
-	app.ajaxPost("/login/processlogin", param, function(res){
-		if(!app.isFine(res)){
+	toolkit.ajaxPost("/login/processlogin", param, function(res){
+		if(!toolkit.isFine(res)){
 			return;
 		}
 
@@ -60,7 +60,7 @@ lg.showAccesReset = () => {
 }
 
 lg.getForgetLogin = () => {
-	if (!app.isFormValid("#email-form")) {
+	if (!toolkit.isFormValid("#email-form")) {
 		$('#modalForgot').modal({
 	        backdrop: 'static',
 	        keyboard: false
@@ -70,8 +70,8 @@ lg.getForgetLogin = () => {
 	var url = lg.forgetLogin.baseurl(location.origin)
 	var param = ko.mapping.toJS(lg.forgetLogin)
 	
-	app.ajaxPost("/login/resetpassword", param, function(res){
-		if(!app.isFine(res)){
+	toolkit.ajaxPost("/login/resetpassword", param, function(res){
+		if(!toolkit.isFine(res)){
 			return;
 		}
 
@@ -89,7 +89,7 @@ lg.getUrlParam = () => {
 }
 
 lg.getConfirmReset = () => {
-	if (!app.isFormValid("#form-reset")) {
+	if (!toolkit.isFormValid("#form-reset")) {
 		return;
 	}
 
@@ -100,8 +100,8 @@ lg.getConfirmReset = () => {
 		lg.getConfirReset.tokenid(lg.getUrlParam('2'))
 		lg.getConfirReset.newpassword(lg.confirmReset.confirm_pass())
 		var param = ko.mapping.toJS(lg.getConfirReset)
-		app.ajaxPost("/login/savepassword", param, function(res){
-			if(!app.isFine(res)){
+		toolkit.ajaxPost("/login/savepassword", param, function(res){
+			if(!toolkit.isFine(res)){
 				return;
 			}
 
