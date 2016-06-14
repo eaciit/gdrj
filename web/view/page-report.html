@@ -12,117 +12,19 @@ let o = {
 
 <div>
 {{if eq .id "list"}}
-	<div class="panel ez no-padding hardcore">
-		<div class="panel-heading">
-			<h3 class="no-margin">
-				Analysis Ideas
-			</h3>
-		</div>
-		<div class="panel-body">
-			<p>Click which analysis you want to show.</p>
-
-			<div data-bind="foreach: rpt.analysisIdeas()" class="list-analysis">
-				<div class="col-md-3">
-					<div class="wrapper">
-						<a class="color-base" href="#" data-bind="attr: { 'href': '/web/report/' + $data._id }">
-							<span class="fa fa-file-text-o"></span>
-							&nbsp;&nbsp;
-							<!-- <span data-bind="text: ($index() + 1)"></span> -  -->
-							<span data-bind="text: $data.name"></span>
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+	{{template "page-report-list.html"}}
 {{else}}
 	<div class="col-md-12 col-sm-12 ez panel-content">
 	{{if eq .id "dashboard"}}
-		<div class="col-md-12 col-sm-12 no-padding hardcore">
-			{{template "page-widget-breakdown.html"}}
-		</div>
-		<div class="col-md-12 col-sm-12 no-padding hardcore">
-			{{template "page-widget-chart-scatter.html"}}
-		</div>
-		<div class="col-md-12 col-sm-12 no-padding hardcore">
-			{{template "page-widget-chart-comparison.html"}}
-		</div>
-
-		<script>
-			// vm.currentMenu('Dashboard')
-			// vm.currentTitle('Dashboard')
-			bkd.title('P&L Analysis')
-			rs.title('P&L Comparison to Net Sales')
-			vm.breadcrumb([
-				{ title: 'Godrej', href: '#' },
-				{ title: 'Daashboard', href: '/web/report/dashboard' }
-			])
-			rpt.refresh = () => {
-				bkd.refresh()
-				ccr.refresh()
-			}
-		</script>
+		{{template "page-report-dashboard.html"}}
+	{{else if eq .id "analysis"}}
+		{{template "page-report-analysis.html"}}
 	{{else if eq .id "example"}}
-		<div class="col-md-12 no-padding hardcore">
-			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
-				{{template "page-widget-chart.html"}}
-			</div>
-			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
-				{{template "page-widget-pivot.html"}}
-			</div>
-		</div>
-		<div class="col-md-12 no-padding hardcore">
-			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
-				{{template "page-widget-breakdown.html"}}
-			</div>
-			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
-				{{template "page-widget-table.html"}}
-			</div>
-		</div>
+		{{template "page-report-example.html"}}
 	{{else if eq .id "gross_sales_discount_and_net_sales"}}
-		<div class="col-md-12 no-padding hardcore">
-			<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
-				{{template "page-widget-pivot.html"}}
-			</div>
-		</div>
-
-		<script>
-			$(() => {
-				pvt.row('customer.channelname')
-				pvt.column('customer.branchname')
-				pvt.dataPoints = ko.observableArray([
-					{ field: 'grosssales', title: 'Gross Sales' },
-					{ field: 'salesdiscount', title: 'Sales Discount' },
-					{ field: 'netsales', title: 'Net Sales' }
-				])
-				
-				pvt.data([{
-					customer_channelname: 'GT', customer_branchname: 'Surabaya',
-					grosssales: 20000,
-					salesdiscount: 2000,
-					netsales: 18000
-				}, {
-					customer_channelname: 'MT', customer_branchname: 'Surabaya',
-					grosssales: 22000,
-					salesdiscount: 1000,
-					netsales: 21000
-				}, {
-					customer_channelname: 'GT', customer_branchname: 'Malang',
-					grosssales: 23000,
-					salesdiscount: 3000,
-					netsales: 20000
-				}, {
-					customer_channelname: 'GT', customer_branchname: 'Malang',
-					grosssales: 22000,
-					salesdiscount: 2000,
-					netsales: 20000
-				}])
-
-				pvt.refresh()
-			})
-		</script>
-	{{end}}
+		{{template "page-report-gross-sales-discount-and-net-sales.html"}}
 	</div>
+	{{end}}
 
 	<div class="col-md-3 col-sm-3 ez panel-filter" style="display: none;">
 		<div class="panel-yo"></div>
@@ -131,12 +33,6 @@ let o = {
 				<h3 class="no-margin">Filter</h3>
 				<div class="panel-nav-button">
 					<div class="form-group relative align-right no-margin no-padding hardcore" data-bind="visible: true">
-						<!-- <button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refresh" title="Refresh">
-							<i class="fa fa-refresh"></i>
-						</button>
-						<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
-							<i class="fa fa-search"></i>
-						</button> -->
 						<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.refreshAll" title="Refresh All">
 							<i class="fa fa-refresh"></i> Refresh All
 						</button>
