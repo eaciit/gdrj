@@ -6,6 +6,7 @@ import (
 	"eaciit/gdrj/web/model"
 	"errors"
 	"fmt"
+	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
@@ -340,6 +341,33 @@ func (m *ReportController) GetPNLDataDetailNew(r *knot.WebContext) interface{} {
 	return res
 }
 
+func (m *ReportController) SummaryCalculateDataPivot(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(gdrj.PivotParam)
+	if err := r.GetPayload(payload); err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	var filter *dbox.Filter = nil
+	var columns []string = payload.ParseDimensions()
+	var datapoints []string = payload.ParseDataPoints()
+	var fnTransform (func(m *toolkit.M) error) = nil
+
+	fmt.Printf("--- %#v\n", filter)
+	fmt.Printf("--- %#v\n", columns)
+	fmt.Printf("--- %#v\n", datapoints)
+
+	data, err := gdrj.SummarizeLedgerSum(filter, columns, datapoints, fnTransform)
+	if err != nil {
+		return helper.CreateResult(false, nil, err.Error())
+	}
+
+	res := new(toolkit.Result)
+	res.SetData(data)
+
+	return res
+}
 func (m *ReportController) GenerateRandomLedgerSummary(r *knot.WebContext) interface{} {
 	return "ok"
 
