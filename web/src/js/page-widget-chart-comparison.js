@@ -172,8 +172,6 @@ ccr.render = () => {
 
 		html.appendTo(chartContainer)
 		html.find('.title').html(ccr.data()[e].data.productName)
-		console.log(config)
-		console.log(ccr.data()[e].data)
 		html.find('.chart').kendoChart(config)
 	}
 	chartContainer.append($('<div />').addClass('clearfix'))
