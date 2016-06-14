@@ -16,7 +16,7 @@ dsbrd.data = ko.observableArray([{ pnl: 'Gross Sales', q1: 1000000, q2: 1150000,
 dsbrd.render = function () {
 	var columns = [{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } }];
 
-	toolkit.repeat(dsbrd.quarter(), function (i) {
+	toolkit.repeat(4, function (i) {
 		columns.push({
 			field: 'q' + (i + 1),
 			title: 'Quarter ' + (i + 1),

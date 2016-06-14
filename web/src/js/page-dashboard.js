@@ -32,7 +32,7 @@ dsbrd.render = () => {
 		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
 	]
 
-	toolkit.repeat(dsbrd.quarter(), (i) => {
+	toolkit.repeat(4, (i) => {
 		columns.push({ 
 			field: `q${i + 1}`,
 			title: `Quarter ${(i + 1)}`,
