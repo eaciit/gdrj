@@ -160,6 +160,7 @@ func TrxToSalesPL(conn dbox.IConnection,
 			pl.CalcSGA(masters)
 		}
 	}
+
 	pl.CalcSum(masters)
 
 	return pl
@@ -167,34 +168,108 @@ func TrxToSalesPL(conn dbox.IConnection,
 
 func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	var netsales, cogs, grossmargin, sellingexpense,
-		sga, opincome float64
+		sga, opincome, directexpense, indirectexpense,
+		royaltiestrademark, advtpromoexpense, operatingexpense,
+		freightexpense, nonoprincome, ebt, taxexpense,
+		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties float64
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	for _, v := range pl.PLDatas {
-		if v.Group1 == "Net Sales" {
+
+		switch v.Group1 {
+		case "Net Sales":
 			netsales += v.Amount
-			opincome += v.Amount
-			grossmargin += v.Amount
-		} else if v.Group1 == "Direct Expense" || v.Group1 == "Indirect Expense" {
-			cogs += v.Amount
-			opincome += v.Amount
-			grossmargin += v.Amount
-		} else if v.Group1 == "Freight Expense" || v.Group1 == "Royalties & Trademark Exp" ||
-			v.Group1 == "Advt & Promo Expenses" {
-			sellingexpense += v.Amount
-			opincome += v.Amount
-		} else if v.Group1 == "G&A Expenses" {
+		case "Direct Expense":
+			directexpense += v.Amount
+		case "Indirect Expense":
+			indirectexpense += v.Amount
+		case "Freight Expense":
+			freightexpense += v.Amount
+		case "Royalties & Trademark Exp":
+			royaltiestrademark += v.Amount
+		case "Advt & Promo Expenses":
+			advtpromoexpense += v.Amount
+		case "G&A Expenses":
 			sga += v.Amount
-			opincome += v.Amount
+		case "Non Operating (Income) / Exp":
+			nonoprincome += v.Amount
+		case "Tax Expense":
+			taxexpense += v.Amount
+		case "Total Depreciation Exp":
+			if v.Group2 == "Damaged Goods" {
+				damagegoods += v.Amount
+			} else {
+				totdepreexp += v.Amount
+			}
 		}
+
+		/*
+			if v.Group1 == "Net Sales" {
+				netsales += v.Amount
+				opincome += v.Amount
+				grossmargin += v.Amount
+			} else if v.Group1 == "Direct Expense" || v.Group1 == "Indirect Expense" {
+
+				if v.Group1 == "Direct Expense" {
+					directexpense += v.Amount
+				} else {
+					indirectexpense += v.Amount
+				}
+
+				cogs += v.Amount
+				opincome += v.Amount
+				grossmargin += v.Amount
+			} else if v.Group1 == "Freight Expense" || v.Group1 == "Royalties & Trademark Exp" ||
+				v.Group1 == "Advt & Promo Expenses" {
+
+				if v.Group1 == "Royalties & Trademark Exp" {
+					royaltiestrademark += v.Amount
+				} else if v.Group1 == "Advt & Promo Expenses" {
+					advtpromoexpense += v.Amount
+				}
+
+				operatingexpense += v.Amount
+				sellingexpense += v.Amount
+				opincome += v.Amount
+			} else if v.Group1 == "G&A Expenses" {
+				sga += v.Amount
+				operatingexpense += v.Amount
+			}
+		*/
 	}
 
+	cogs = directexpense + indirectexpense
+	grossmargin = netsales + cogs
+	sellingexpense = freightexpense + royaltiestrademark + advtpromoexpense
+	operatingexpense = sellingexpense + sga
+	opincome = grossmargin + operatingexpense
+	ebt = opincome + nonoprincome //asume nonopriceincome already minus
+	percentpbt = taxexpense / ebt * 100
+	eat = ebt + taxexpense
+	ebitda = totdepreexp + damagegoods + opincome
+	ebitdaroyalties = ebitda + royaltiestrademark
+
 	pl.AddData("PL8A", netsales, plmodels)
+	pl.AddData("PL14A", directexpense, plmodels)
+	pl.AddData("PL74A", indirectexpense, plmodels)
+	pl.AddData("PL26A", royaltiestrademark, plmodels)
+	pl.AddData("PL32A", advtpromoexpense, plmodels)
+	pl.AddData("PL94A", sga, plmodels)
+	pl.AddData("PL39A", nonoprincome, plmodels)
+	pl.AddData("PL41A", taxexpense, plmodels)
+	pl.AddData("PL44A", totdepreexp, plmodels)
+
 	pl.AddData("PL74B", cogs, plmodels)
 	pl.AddData("PL74C", grossmargin, plmodels)
 	pl.AddData("PL32B", sellingexpense, plmodels)
-	pl.AddData("PL94A", sga, plmodels)
+	pl.AddData("PL94B", operatingexpense, plmodels)
 	pl.AddData("PL94C", opincome, plmodels)
+	pl.AddData("PL39B", ebt, plmodels)
+	pl.AddData("PL41B", percentpbt, plmodels)
+	pl.AddData("PL41C", eat, plmodels)
+	pl.AddData("PL44B", opincome, plmodels)
+	pl.AddData("PL44C", ebitda, plmodels)
+	pl.AddData("PL44D", ebitdaroyalties, plmodels)
 }
 
 func (pl *SalesPL) CalcSales(masters toolkit.M) {
@@ -223,25 +298,25 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 	cogsSchema, exist := cogsTable[cogsid]
 	if !exist {
 		toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
-        return
+		return
 	}
 
-    cogsAmount := float64(0)
-    cogsShemaAmount := float64(0)
+	cogsAmount := float64(0)
+	cogsShemaAmount := float64(0)
 	if cogsSchema.COGS_Amount == 0 {
-		cogsShemaAmount = cogsSchema.RM_Amount + 
-            cogsSchema.LC_Amount + 
-            cogsSchema.PF_Amount +
-            cogsSchema.Depre_Amount +
-            cogsSchema.Other_Amount
+		cogsShemaAmount = cogsSchema.RM_Amount +
+			cogsSchema.LC_Amount +
+			cogsSchema.PF_Amount +
+			cogsSchema.Depre_Amount +
+			cogsSchema.Other_Amount
 	} else {
-        cogsShemaAmount = cogsSchema.COGS_Amount
-    }
+		cogsShemaAmount = cogsSchema.COGS_Amount
+	}
 
-    if cogsShemaAmount==0 {
-        toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
-        return
-    }
+	if cogsShemaAmount == 0 {
+		toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
+		return
+	}
 
 	if cogsSchema.NPS_Amount != 0 {
 		cogsAmount = -cogsShemaAmount * pl.NetAmount / cogsSchema.NPS_Amount
@@ -279,6 +354,29 @@ func (pl *SalesPL) CalcFreight(masters toolkit.M) {
 	pl.AddData("PL23", -f.AmountinIDR*pl.RatioToBranchSales, plmodels)
 }
 
+func (pl *SalesPL) CalcDepre(masters toolkit.M) {
+	if masters.Has("depretiation") == false {
+		return
+	}
+	depretiations := masters.Get("depretiation").(map[string]*RawDataPL)
+
+	depretiationid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.BranchID)
+	d, exist := depretiations[depretiationid]
+	if !exist {
+		toolkit.Printfn("Depretiation error: key is not exist %s", depretiationid)
+		return
+	}
+
+	plmodels := masters.Get("plmodel").(map[string]*PLModel)
+
+	plcode := "PL43"
+	if strings.Contains(d.Grouping, "Factory") {
+		plcode = "PL42"
+	}
+
+	pl.AddData(plcode, -d.AmountinIDR*pl.RatioToBranchSales, plmodels)
+}
+
 func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	if masters.Has("royalties") == false {
 		return
@@ -288,7 +386,7 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	royalid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	r, exist := royals[royalid]
 	if !exist {
-        toolkit.Printfn("Royalty error: key is not exist %s", royalid)
+		toolkit.Printfn("Royalty error: key is not exist %s", royalid)
 		return
 	}
 
@@ -335,7 +433,7 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
 	sgaid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	raws, exist := sgas[sgaid]
 	if !exist {
-        toolkit.Printfn("SGA Error: Can't find key %s", sgaid)
+		toolkit.Printfn("SGA Error: Can't find key %s", sgaid)
 		return
 	}
 
@@ -345,7 +443,19 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
 	}
 	ledgers := masters.Get("ledger").(map[string]*LedgerMaster)
 	for _, raw := range raws {
+
 		plcode := "PL34"
+		switch {
+		case strings.Contains(raw.Grouping, "General"):
+			plcode = "PL34"
+		case strings.Contains(raw.Grouping, "Personnel"):
+			plcode = "PL33"
+		case strings.Contains(raw.Grouping, "Depr & Amort. Exp. -  Office"):
+			plcode = "PL35"
+		default:
+			return
+		}
+
 		ledger, exist := ledgers[raw.Account]
 		if exist {
 			plcode = ledger.PLCode

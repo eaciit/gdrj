@@ -20,9 +20,9 @@ import (
 var mutex = new(sync.Mutex)
 var conn dbox.IConnection
 var (
-	compute string
+	compute              string
 	periodFrom, periodTo int
-	dateFrom, dateTo time.Time
+	dateFrom, dateTo     time.Time
 )
 
 func setinitialconnection() {
@@ -45,7 +45,7 @@ var masters = toolkit.M{}
 
 /*
 func getCursor(obj orm.IModel) dbox.ICursor {
-	c, e := gdrj.Find(obj, 
+	c, e := gdrj.Find(obj,
 		nil, nil)
 		//toolkit.M{}.Set("take", 10))
 	if e != nil {
@@ -57,9 +57,9 @@ func getCursor(obj orm.IModel) dbox.ICursor {
 
 func BuildMap(holder interface{},
 	fnModel func() orm.IModel,
-	filter *dbox.Filter, 
+	filter *dbox.Filter,
 	fnIter func(holder interface{}, obj interface{})) interface{} {
-	crx, _ := gdrj.Find(fnModel(),filter,nil)
+	crx, _ := gdrj.Find(fnModel(), filter, nil)
 	defer crx.Close()
 	for {
 		s := fnModel()
@@ -125,6 +125,7 @@ func prepMaster() {
 		}).(map[string]*gdrj.COGSConsolidate))
 
 	freights := map[string]*gdrj.RawDataPL{}
+	depretiation := map[string]*gdrj.RawDataPL{}
 	royalties := map[string]*gdrj.RawDataPL{}
 	promos := map[string]*gdrj.RawDataPL{}
 	sgas := map[string]map[string]*gdrj.RawDataPL{}
@@ -134,26 +135,26 @@ func prepMaster() {
 	}
 
 	var fperiods *dbox.Filter
-	if periodFrom==0 && periodTo==0{
+	if periodFrom == 0 && periodTo == 0 {
 		//-- do nothing
-	} else if periodTo==0{
-		dt := makeDateFromInt(periodFrom,false).AddDate(0,-3,0)
+	} else if periodTo == 0 {
+		dt := makeDateFromInt(periodFrom, false).AddDate(0, -3, 0)
 		fperiods = dbox.And(dbox.Eq("year", dt.Year()), dbox.Eq("period", dt.Month()))
 	} else {
 		iperiod := periodFrom
 		periods := []*dbox.Filter{}
 		for {
-			if iperiod<periodFrom{
+			if iperiod < periodFrom {
 				break
 			}
 
-			dt := makeDateFromInt(iperiod,false)
-			dtf := dt.AddDate(0,-3,1)
-			periods = append(periods, dbox.And(dbox.Eq("year", dtf.Year()), dbox.Eq("period",dtf.Month())))
-			dt = dt.AddDate(0,1,0)
-			iperiod = dt.Year() * 100 + int(dt.Month())
+			dt := makeDateFromInt(iperiod, false)
+			dtf := dt.AddDate(0, -3, 1)
+			periods = append(periods, dbox.And(dbox.Eq("year", dtf.Year()), dbox.Eq("period", dtf.Month())))
+			dt = dt.AddDate(0, 1, 0)
+			iperiod = dt.Year()*100 + int(dt.Month())
 
-			if iperiod>periodTo{
+			if iperiod > periodTo {
 				break
 			}
 		}
@@ -181,6 +182,14 @@ func prepMaster() {
 				}
 				frg.AmountinIDR += o.AmountinIDR
 				freights[freightid] = frg
+			} else if strings.HasSuffix(o.Src, "DEPRETIATION") {
+				depretiationid := toolkit.Sprintf("%d_%d_%s", dt.Year(), int(dt.Month()), o.BusA)
+				dpr, exist := depretiation[depretiationid]
+				if !exist {
+					dpr = new(gdrj.RawDataPL)
+				}
+				dpr.AmountinIDR += o.AmountinIDR
+				depretiation[depretiationid] = dpr
 			} else if strings.HasSuffix(o.Src, "ROYALTI") {
 				royaltyid := toolkit.Sprintf("%d_%d", dt.Year(), int(dt.Month()))
 				royalti, exist := royalties[royaltyid]
@@ -236,17 +245,18 @@ func prepMaster() {
 		}))
 
 	masters.Set("freight", freights)
+	masters.Set("depretiation", depretiation)
 	masters.Set("promo", promos)
 	masters.Set("sga", sgas)
-	masters.Set("royalties",royalties)
+	masters.Set("royalties", royalties)
 }
 
-func makeDateFromInt(i int, endofmth bool)time.Time{
-	yr := int(toolkit.ToFloat64(float64(i)/float64(100),0,toolkit.RoundingDown))
-	m := i - 100 * yr
+func makeDateFromInt(i int, endofmth bool) time.Time {
+	yr := int(toolkit.ToFloat64(float64(i)/float64(100), 0, toolkit.RoundingDown))
+	m := i - 100*yr
 	dt := time.Date(yr, time.Month(m), 1, 0, 0, 0, 0, time.UTC)
 	if endofmth {
-		dt = dt.AddDate(0,1,0).AddDate(0,0,-1)
+		dt = dt.AddDate(0, 1, 0).AddDate(0, 0, -1)
 	}
 	return dt
 }
@@ -260,32 +270,32 @@ func main() {
 	flag.IntVar(&periodFrom, "from", 0, "YYYYMM representation of period from. Default is 0")
 	flag.IntVar(&periodTo, "to", 0, "YYYYMM representation of period to. Default is 0 (equal to from)")
 	flag.Parse()
-	if periodFrom==0 && periodTo==0 {
+	if periodFrom == 0 && periodTo == 0 {
 		dateFrom = makeDateFromInt(201404, false)
 	} else {
 		dateFrom = makeDateFromInt(periodFrom, false)
-	} 	
-	dateTo = makeDateFromInt(periodTo,true)
-	
+	}
+	dateTo = makeDateFromInt(periodTo, true)
+
 	setinitialconnection()
 	defer gdrj.CloseDb()
 
 	t0 = time.Now()
 	toolkit.Printfn("Model Builder v 1.0")
 	toolkit.Printfn("Compute: %s", compute)
-	
+
 	var f *dbox.Filter
-	if periodFrom==0 && periodTo==0 {
+	if periodFrom == 0 && periodTo == 0 {
 		toolkit.Printfn("Period: All")
-	} else if periodTo==0{
-		toolkit.Printfn("Period: %s", 
-			toolkit.Date2String(dateFrom,"MMM-yyyy"))
-		f = dbox.Eq("date",dateFrom)
+	} else if periodTo == 0 {
+		toolkit.Printfn("Period: %s",
+			toolkit.Date2String(dateFrom, "MMM-yyyy"))
+		f = dbox.Eq("date", dateFrom)
 	} else {
-		toolkit.Printfn("Period: %s to %s", 
-			toolkit.Date2String(dateFrom,"dd-MMM-yyyy"), 
-			toolkit.Date2String(dateTo,"dd-MMM-yyyy"))
-		f = dbox.And(dbox.Gte("date",dateFrom),dbox.Lte("date",dateTo))
+		toolkit.Printfn("Period: %s to %s",
+			toolkit.Date2String(dateFrom, "dd-MMM-yyyy"),
+			toolkit.Date2String(dateTo, "dd-MMM-yyyy"))
+		f = dbox.And(dbox.Gte("date", dateFrom), dbox.Lte("date", dateTo))
 	}
 	toolkit.Printfn("Run :%v", t0)
 
@@ -417,8 +427,10 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 	for j = range jobs {
 		spl := gdrj.TrxToSalesPL(workerConn, j, masters,
 			toolkit.M{}.Set("compute", compute))
+
 		workerConn.NewQuery().From(spl.TableName()).
 			Save().Exec(toolkit.M{}.Set("data", spl))
+
 		result <- spl.ID
 	}
 }
