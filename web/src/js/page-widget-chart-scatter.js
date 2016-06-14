@@ -126,7 +126,7 @@ rs.generateReport = (data, years) => {
 			width: 3,
 			tooltip: {
 				visible: true,
-				template: `Sum of ${breakdownTitle}: #: kendo.toString(dataItem.sumPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.sumPNL, 'n2') #)`
+				template: `Sum of ${breakdownTitle} to ${netSalesTitle}: #: kendo.toString(dataItem.sumPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.sumPNL, 'n2') #)`
 			},
 			markers: {
 				visible: false
@@ -138,7 +138,7 @@ rs.generateReport = (data, years) => {
 			width: 3,
 			tooltip: {
 				visible: true,
-				template: `Average of ${breakdownTitle}: #: kendo.toString(dataItem.avgPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.avgPNL, 'n2') #)`
+				template: `Average of ${breakdownTitle} to ${netSalesTitle}: #: kendo.toString(dataItem.avgPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.avgPNL, 'n2') #)`
 			},
 			markers: {
 				visible: false
