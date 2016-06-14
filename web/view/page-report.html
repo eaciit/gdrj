@@ -66,13 +66,13 @@ let o = {
 
 		<script>
 			$(() => {
+				pvt.row('customer.channelname')
+				pvt.column('customer.branchname')
 				pvt.dataPoints = ko.observableArray([
 					{ field: 'grosssales', title: 'Gross Sales' },
 					{ field: 'salesdiscount', title: 'Sales Discount' },
 					{ field: 'netsales', title: 'Net Sales' }
 				])
-				pvt.row = ko.observable('customer.channelname')
-				pvt.column = ko.observable('customer.branchname')
 				
 				pvt.data([{
 					customer_channelname: 'GT', customer_branchname: 'Surabaya',
