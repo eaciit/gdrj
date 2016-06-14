@@ -28,30 +28,34 @@ dsbrd.data = ko.observableArray([
 ])
 
 dsbrd.render = () => {
-	let target = $('.grid-dashboard').empty()
-	let table = toolkit.newEl('table').addClass('table ez').appendTo(target)
-	let trFirst = toolkit.newEl('tr').appendTo(table)
+	let columns = [
+		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
+	]
 
-	toolkit.newEl('td').html('&nbsp;').appendTo(trFirst)
 	toolkit.repeat(dsbrd.quarter(), (i) => {
-		toolkit.newEl('td').addClass('align-right bold').html(`Quarter ${(i + 1)}`).appendTo(trFirst)
-	})
-
-	dsbrd.data().forEach((d) => {
-		let tr = toolkit.newEl('tr').appendTo(table)
-		toolkit.newEl('td').html(d.pnl).addClass('bold').appendTo(tr)
-
-		toolkit.repeat(dsbrd.quarter(), (i) => {
-			let value = toolkit.redefine(d[`q${(i + 1)}`], 0)
-			if (value == 0) { 
-				value = '-'
-			} else if (d.type == 'percentage') {
-				value = `${value} %`
-			}
-
-			toolkit.newEl('td').html(value).addClass('align-right').appendTo(tr)
+		columns.push({ 
+			field: `q${i + 1}`,
+			title: `Quarter ${(i + 1)}`,
+			// headerTemplate: `<div class="align-right bold">Quarter ${(i + 1)}</div>`,
+			attributes: { class: 'align-right' },
+			headerAttributes: { style: 'text-align: right !important;', class: 'bold' },
+			format: '{0:n0}'
 		})
 	})
+
+	let config = {
+		dataSource: {
+			data: dsbrd.data()
+		},
+		columns: columns,
+		resizabl: false,
+		sortable: true, 
+		pageable: false,
+		filterable: false
+	}
+
+	$('.grid-dashboard').replaceWith('<div class="grid-dashboard"></div>')
+	$('.grid-dashboard').kendoGrid(config)
 }
 
 dsbrd.refresh = () => {
@@ -65,11 +69,6 @@ dsbrd.refresh = () => {
 viewModel.dashboardRanking = {}
 let rank = viewModel.dashboardRanking
 
-rank.sort = ko.observable('asc')
-rank.optionSort = ko.observableArray([
-	{ field: 'asc', name: 'Low margin to high' },
-	{ field: 'desc', name: 'High margin to low' }
-])
 rank.dimension = ko.observable('product.brand')
 rank.columns = ko.observableArray([
 	{ field: 'gm', name: 'GM %', type: 'percentage' },
@@ -89,28 +88,38 @@ rank.data = ko.observableArray([
 ])
 
 rank.render = () => {
-	let target = $('.grid-ranking').empty()
-	let table = toolkit.newEl('table').addClass('table ez').appendTo(target)
-	let trFirst = toolkit.newEl('tr').appendTo(table)
+	let columns = [{
+		field: toolkit.replace(rank.dimension(), ".", "_"),
+		title: 'PNL',
+		attributes: { class: 'bold' }
+	}]
 
-	toolkit.newEl('td').html('&nbsp;').appendTo(trFirst)
-	rank.columns().forEach((d) => {
-		toolkit.newEl('td').addClass('align-right bold').html(d.name).appendTo(trFirst)
+	rank.columns().forEach((e) => {
+		let column = { 
+			field: e.field,
+			title: e.name,
+			// headerTemplate: `<div class="align-right bold">${e.name}</div>`,
+			attributes: { class: 'align-right' },
+			headerAttributes: { style: 'text-align: right !important;', class: 'bold' },
+			format: '{0:n2}'
+		}
+
+		columns.push(column)
 	})
-	
-	rank.data().forEach((d) => {
-		let tr = toolkit.newEl('tr').appendTo(table)
-		toolkit.newEl('td').html(d[toolkit.replace(rank.dimension(), ".", "_")]).addClass('bold').appendTo(tr)
 
-		rank.columns().forEach((e) => {
-			let value = toolkit.redefine(d[e.field], 0)
-			if (e.type == 'percentage') {
-				value = `${value} %`
-			}
+	let config = {
+		dataSource: {
+			data: rank.data()
+		},
+		columns: columns,
+		resizabl: false,
+		sortable: true, 
+		pageable: false,
+		filterable: false
+	}
 
-			toolkit.newEl('td').html(value).addClass('align-right').appendTo(tr)
-		})
-	})
+	$('.grid-ranking').replaceWith('<div class="grid-ranking"></div>')
+	$('.grid-ranking').kendoGrid(config)
 }
 
 rank.refresh = () => {
