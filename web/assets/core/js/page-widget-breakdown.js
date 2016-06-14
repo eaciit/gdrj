@@ -77,14 +77,6 @@ bkd.breakdownBy = ko.observable('customer.channelname');
 bkd.breakdownByFiscalYear = ko.observable('date.fiscal');
 bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy());
 
-bkd.clickCell = function (plcode, breakdown) {
-	// if (pnl == "Net Sales") {
-	// 	bkd.renderDetailSalesTrans(breakdown)
-	// 	return
-	// }
-
-	bkd.renderDetail(plcode, breakdown);
-};
 bkd.clickExpand = function (e) {
 	var right = $(e).find('i.fa-chevron-right').length;
 	var down = $(e).find('i.fa-chevron-down').length;
@@ -174,52 +166,97 @@ bkd.renderDetailSalesTrans = function (breakdown) {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
 	$('.grid-detail').kendoGrid(config);
 };
-bkd.renderDetail = function (plcode, breakdown) {
+bkd.renderDetail = function (plcode, breakdowns) {
 	bkd.popupIsLoading(true);
+	$('#modal-detail-ledger-summary .modal-title').html('Detail');
 	$('#modal-detail-ledger-summary').appendTo($('body'));
 	$('#modal-detail-ledger-summary').modal('show');
 
-	var render = function render() {
-		var columns = [{ title: 'Date', width: 120, locked: true, footerTemplate: 'Total :', template: function template(d) {
-				return moment(d.date.date).format('DD/MM/YYYY HH:mm');
-			}, attributes: { class: 'bold' } },
-		// { field: `pldatas.${plcode}.amount`, width: 120, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => d[`pldatas.${plcode}.amount`].sum, format: '{0:n2}', attributes: { class: 'align-right' } },
-		{ field: 'grossamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Gross</div>", footerTemplate: function footerTemplate(d) {
-				return '<div class="align-right">' + kendo.toString(d.grossamount.sum, 'n0') + '</div>';
-			}, format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'discountamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Discount</div>", footerTemplate: function footerTemplate(d) {
-				return '<div class="align-right">' + kendo.toString(d.discountamount.sum, 'n0') + '</div>';
-			}, format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'netamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Net Sales</div>", footerTemplate: function footerTemplate(d) {
-				return '<div class="align-right">' + kendo.toString(d.netamount.sum, 'n0') + '</div>';
-			}, format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'cc.name', title: 'Cost Center', width: 250 }, { field: 'customer.name', title: 'Outlet', width: 250 }, { field: 'customer.branchname', title: 'Branch', width: 150 }, { field: 'customer.channelname', title: 'Channel', width: 120 }, { field: 'product.brand', title: 'Brand', width: 100 }, { field: 'product.name', title: 'Product', width: 250 }];
-		var config = {
-			dataSource: {
-				data: bkd.detail(),
-				pageSize: 5,
-				aggregate: [{ field: "netamount", aggregate: "sum" }, { field: "grossamount", aggregate: "sum" }, { field: "discountamount", aggregate: "sum" }, { field: 'pldatas.' + plcode + '.amount', aggregate: 'sum' }]
-			},
-			columns: columns,
-			pageable: true,
-			resizable: false,
-			sortable: true
-		};
+	var titleParts = [];
+	for (var p in breakdowns) {
+		if (breakdowns.hasOwnProperty(p)) {
+			titleParts.push(breakdowns[p]);
+		}
+	}
 
-		$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
-		$('.grid-detail').kendoGrid(config);
+	$('#modal-detail-ledger-summary .modal-title').html('Detail of ' + titleParts.join(' '));
+
+	var columns = [{ title: 'Date', width: 120, locked: true, footerTemplate: 'Total :', template: function template(d) {
+			return moment(d.date.date).format('DD/MM/YYYY HH:mm');
+		}, attributes: { class: 'bold' } },
+	// { field: `pldatas.${plcode}.amount`, width: 120, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => d[`pldatas.${plcode}.amount`].sum, format: '{0:n2}', attributes: { class: 'align-right' } },
+	{ field: 'grossamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Gross</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.grossamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'discountamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Discount</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.discountamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'netamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Net Sales</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.netamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } },
+	// { field: 'cc.name', title: 'Cost Center', width: 250 },
+	{ field: 'customer.name', title: 'Outlet', width: 250 }, { field: 'customer.branchname', title: 'Branch', width: 150 }, { field: 'customer.channelname', title: 'Channel', width: 150 }, { field: 'product.brand', title: 'Brand', width: 100 }, { field: 'product.name', title: 'Product', width: 250 }];
+
+	var config = {
+		dataSource: {
+			transport: {
+				read: function read(options) {
+					var param = options.data;
+					param.tablename = "salespls";
+
+					for (var _p in breakdowns) {
+						if (breakdowns.hasOwnProperty(_p)) {
+							param[_p] = breakdowns[_p];
+						}
+					}
+
+					if (toolkit.isUndefined(param.page)) {
+						param = $.extend(true, param, {
+							take: 5,
+							skip: 0,
+							page: 1,
+							pageSize: 5
+						});
+					}
+
+					$.ajax({
+						type: "POST",
+						url: "/databrowser/getdatabrowser",
+						contentType: "application/json; charset=utf-8",
+						dataType: 'json',
+						data: JSON.stringify(param),
+						success: function success(res) {
+							bkd.popupIsLoading(false);
+							setTimeout(function () {
+								options.success(res.data);
+							}, 200);
+						},
+						error: function error() {
+							bkd.popupIsLoading(false);
+						}
+					});
+				},
+				pageSize: 5
+			},
+			schema: {
+				data: function data(d) {
+					return d.DataValue;
+				},
+				total: function total(d) {
+					return d.DataCount;
+				}
+			},
+			//       aggregates: [
+			// 	{ field: "netamount", aggregate: "sum" },
+			// 	{ field: "grossamount", aggregate: "sum" },
+			// 	{ field: "discountamount", aggregate: "sum" },
+			// 	{ field: `pldatas.${plcode}.amount`, aggregate: 'sum' }
+			// ],
+			serverPaging: true,
+			pageSize: 5
+		},
+		sortable: true,
+		pageable: true,
+		scrollable: true,
+		columns: columns
 	};
 
-	var param = {};
-	param.PLCode = plcode;
-	param.BreakdownBy = bkd.breakdownBy();
-	param.BreakdownValue = breakdown;
-	param.filters = []; // rpt.getFilterValue()
+	console.log("======", config);
 
-	toolkit.ajaxPost('/report/getpnldatadetail', param, function (res) {
-		bkd.detail(res.Data);
-		bkd.popupIsLoading(false);
-		setTimeout(render, 200);
-	}, function () {
-		bkd.popupIsLoading(false);
-	});
+	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
+	$('.grid-detail').kendoGrid(config);
 };
 bkd.render = function () {
 	if (bkd.data().length == 0) {
@@ -231,12 +268,17 @@ bkd.render = function () {
 	var rows = [];
 
 	var data = _.sortBy(_.map(bkd.data(), function (d) {
-		var _id = breakdowns.map(function (e) {
-			var title = d._id['_id_' + toolkit.replace(e, '.', '_')];
-			return toolkit.whenEmptyString(title, 'Uncategorized');
-		}).join(' ');
+		d.breakdowns = {};
+		var titleParts = [];
 
-		d._id = _id;
+		breakdowns.forEach(function (e) {
+			var title = d._id['_id_' + toolkit.replace(e, '.', '_')];
+			title = toolkit.whenEmptyString(title, 'Uncategorized');
+			d.breakdowns[e] = title;
+			titleParts.push(title);
+		});
+
+		d._id = titleParts.join(' ');
 		return d;
 	}), function (d) {
 		return d._id;
@@ -350,7 +392,7 @@ bkd.render = function () {
 			var cell = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trContent);
 
 			cell.on('click', function () {
-				bkd.clickCell(d.PLCode, key);
+				bkd.renderDetail(d.PLCode, e.breakdowns);
 			});
 
 			toolkit.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
