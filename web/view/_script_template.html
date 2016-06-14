@@ -95,7 +95,7 @@
 </script>
 
 <script id="template-menu" type="text/html">
-	<li data-bind="css: { 'dropdown': ($data.submenu.length > 0) }">
+	<li data-bind="css: { 'dropdown dd-hover': ($data.submenu.length > 0) }">
 		<a class="color-base" data-bind="css: { 'dropdown-toggle': ($data.submenu.length > 0), 'active': (vm.currentMenu() == $data.title) }, attr: { href: $data.href }">
 			<i data-bind="css: vm.menuIcon($data)"></i>&nbsp;
 			<span data-bind="text: $data.title"></span>

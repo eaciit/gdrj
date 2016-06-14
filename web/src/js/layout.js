@@ -34,7 +34,7 @@ vm.breadcrumb = ko.observableArray([
 vm.menuIcon = (data) => ko.computed(() => `fa fa-${data.icon}`)
 
 vm.prepareDropDownMenu = () => {
-	$('ul.nav li.dropdown').hover(function() {
+	$('ul.nav li.dd-hover').hover(function() {
 		$(this).find('.dropdown-menu').stop(true, true).fadeIn(200)
 	}, function() {
 		$(this).find('.dropdown-menu').stop(true, true).fadeOut(200)
