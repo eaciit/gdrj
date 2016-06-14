@@ -56,7 +56,7 @@ vm.adjustLayout = () => {
 	let height = window.innerHeight - $('.app-top').height()
 	$('.app-container').css('min-height', height)
 }
-vm.showFilterCallback = app.noop
+vm.showFilterCallback = toolkit.noop
 vm.showFilter = () => {
 	let btnToggleFilter = $('.btn-toggle-filter')
 	let panelFilterContainer = $('.panel-filter').parent()
@@ -69,7 +69,7 @@ vm.showFilter = () => {
 	$('.panel-filter').show(300)
 	$('.panel-content').animate({ 'width': 'auto' }, 300, vm.showFilterCallback)
 }
-vm.hideFilterCallback = app.noop
+vm.hideFilterCallback = toolkit.noop
 vm.hideFilter = () => {
 	let btnToggleFilter = $('.btn-toggle-filter')
 	let panelFilterContainer = $('.panel-filter').parent()
@@ -87,7 +87,7 @@ vm.prepareToggleFilter = () => {
 	let panelFilterContainer = $('.panel-filter').parent()
 
 	$('<i class="fa fa-angle-double-left tooltipster align-center color-orange" title="Toggle filter pane visibility"></i>').appendTo(btnToggleFilter)
-	app.prepareTooltipster($(btnToggleFilter).find('.fa'))
+	toolkit.prepareTooltipster($(btnToggleFilter).find('.fa'))
 
 	btnToggleFilter.on('click', () => {
 		if (panelFilterContainer.hasClass('minimized')) {
@@ -129,8 +129,8 @@ vm.prepareLoader = () => {
 	})
 }
 vm.logout = () => {
-	app.ajaxPost('/login/logout', { }, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/login/logout', { }, (res) => {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 		swal({
@@ -150,6 +150,6 @@ $(() => {
 	vm.prepareFilterToggle()
 	vm.adjustLayout()
 	vm.prepareToggleFilter()
-	app.prepareTooltipster()
+	toolkit.prepareTooltipster()
 	vm.prepareLoader()
 })

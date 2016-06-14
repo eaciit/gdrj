@@ -15,8 +15,8 @@ rpt.filter = [
 	{ _id: 'common', group: 'Base Filter', sub: [
 		{ _id: 'Branch', from: 'Branch', title: 'Branch' },
 		{ _id: 'Brand', from: 'Brand', title: 'Brand' },
-		{ _id: 'RegionC', from: 'Region', title: 'Region' },
 		{ _id: 'Channel', from: 'Channel', title: 'Channel' },
+		{ _id: 'RegionC', from: 'Region', title: 'Region' },
 		{ _id: 'From', from: 'From' },
 		{ _id: 'To', from: 'To' },
 	] },
@@ -214,7 +214,7 @@ rpt.filter.forEach((d) => {
 				}
 
 				// change value event goes here
-				app.log(e._id, value)
+				toolkit.log(e._id, value)
 			}, 100)
 		}
 	})
@@ -224,7 +224,7 @@ rpt.groupGeoBy = (raw, category) => {
 	let groupKey = (category == 'Area') ? '_id' : category
 	let data = Lazy(raw)
 		.groupBy((f) => f[groupKey])
-		.map((k, v) => { return { _id: v, Name: app.capitalize(v, true) } })
+		.map((k, v) => { return { _id: v, Name: toolkit.capitalize(v, true) } })
 		.toArray()
 
 	return data
@@ -279,10 +279,10 @@ rpt.filterMultiSelect = (d) => {
 			enabled: rpt.enableHolder[d._id],
 			template: (d) => {
 				if (d._id == 'KeyAccount') {
-					return app.capitalize(d.KeyAccount)
+					return toolkit.capitalize(d.KeyAccount)
 				}
 
-				return `${d._id} - ${app.capitalize(d.Name)}`
+				return `${d._id} - ${toolkit.capitalize(d.Name)}`
 			},
 			value: rpt.value[d._id]
 		})
@@ -298,7 +298,7 @@ rpt.filterMultiSelect = (d) => {
 			})
 		}
 
-		app.ajaxPost(`/report/getdata${d.from.toLowerCase()}`, {}, (res) => {
+		toolkit.ajaxPost(`/report/getdata${d.from.toLowerCase()}`, {}, (res) => {
 			if (!res.success) {
 				return
 			}
@@ -315,7 +315,7 @@ rpt.filterMultiSelect = (d) => {
 		})
 
 		if (d.from == 'Region') {
-			app.ajaxPost(`/report/getdatahgeographi`, {}, (res) => {
+			toolkit.ajaxPost(`/report/getdatahgeographi`, {}, (res) => {
 				if (!res.success) {
 					return
 				}
@@ -336,14 +336,14 @@ rpt.filterMultiSelect = (d) => {
 				return f
 			}
 
-			return { _id: f._id, Name: app.capitalize(f.Name, true) }
+			return { _id: f._id, Name: toolkit.capitalize(f.Name, true) }
 		})
 	}
 
 	return config
 }
 
-rpt.toggleFilterCallback = app.noop
+rpt.toggleFilterCallback = toolkit.noop
 rpt.toggleFilter = () => {
 	let panelFilter = $('.panel-filter')
 	let panelContent = $('.panel-content')
@@ -383,8 +383,8 @@ rpt.getFilterValue = () => {
 }
 
 rpt.getIdeas = () => {
-	app.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
@@ -406,18 +406,18 @@ rpt.setName = function (data, options) {
             var row = options().find(function (d) {
                 return d.field == data.field()
             })
-            if (app.isDefined(row)) {
+            if (toolkit.isDefined(row)) {
                 data.name(row.name)
             }
 
-            console.log(app.koUnmap(data), options())
+            console.log(toolkit.koUnmap(data), options())
         }, 150)
     }
 }
 rpt.refresh = function () {
     ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach(function (d, i) {
         setTimeout(function () {
-            if (app.isDefined(window[d])) {
+            if (toolkit.isDefined(window[d])) {
                 window[d].refresh()
             }
         }, 1000 * i)

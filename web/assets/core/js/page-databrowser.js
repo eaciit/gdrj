@@ -18,21 +18,21 @@ db.isLoading = ko.observable(false);
 db.getMasterDataBrowser = function () {
 	db.masterDataBrowser([]);
 
-	app.ajaxPost('/databrowser/getdatabrowsers', {}, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/databrowser/getdatabrowsers', {}, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
 		db.masterDataBrowser(res.data);
 	}, function (err) {
-		app.showError(err.responseText);
+		toolkit.showError(err.responseText);
 	}, {
 		timeout: 5000
 	});
 };
 db.createDataBrowser = function (dataItem) {
-	app.ajaxPost("/databrowser/getdatabrowsermetadata", { tablename: dataItem }, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost("/databrowser/getdatabrowsermetadata", { tablename: dataItem }, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
@@ -54,7 +54,7 @@ db.createDataBrowser = function (dataItem) {
 				pageSize: 10,
 				serverSorting: true,
 				callOK: function callOK(res) {
-					return app.noop;
+					return toolkit.noop;
 				}
 			},
 			metadata: res.data.MetaData
@@ -101,8 +101,8 @@ db.editDataBrowser = function () {
 	for (var a in db.metaData()) {
 		postdata[db.metaData()[a].Field()] = db.metaData()[a].value();
 	}
-	app.ajaxPost("upload/savedata", postdata, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost("upload/savedata", postdata, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 		$('#modalUpdate').modal('hide');
@@ -160,15 +160,15 @@ db.saveChanges = function () {
 		data: data
 	};
 
-	app.ajaxPost('/databrowser/savedata', param, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/databrowser/savedata', param, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
 		$('#modalUpdate').modal('hide');
 		db.refreshDataBrowser();
 	}, function (err) {
-		app.showError(err.responseText);
+		toolkit.showError(err.responseText);
 	}, {
 		timeout: 5000
 	});

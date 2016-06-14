@@ -36,7 +36,7 @@ vm.adjustLayout = function () {
 	var height = window.innerHeight - $('.app-top').height();
 	$('.app-container').css('min-height', height);
 };
-vm.showFilterCallback = app.noop;
+vm.showFilterCallback = toolkit.noop;
 vm.showFilter = function () {
 	var btnToggleFilter = $('.btn-toggle-filter');
 	var panelFilterContainer = $('.panel-filter').parent();
@@ -47,7 +47,7 @@ vm.showFilter = function () {
 	$('.panel-filter').show(300);
 	$('.panel-content').animate({ 'width': 'auto' }, 300, vm.showFilterCallback);
 };
-vm.hideFilterCallback = app.noop;
+vm.hideFilterCallback = toolkit.noop;
 vm.hideFilter = function () {
 	var btnToggleFilter = $('.btn-toggle-filter');
 	var panelFilterContainer = $('.panel-filter').parent();
@@ -63,7 +63,7 @@ vm.prepareToggleFilter = function () {
 	var panelFilterContainer = $('.panel-filter').parent();
 
 	$('<i class="fa fa-angle-double-left tooltipster align-center color-orange" title="Toggle filter pane visibility"></i>').appendTo(btnToggleFilter);
-	app.prepareTooltipster($(btnToggleFilter).find('.fa'));
+	toolkit.prepareTooltipster($(btnToggleFilter).find('.fa'));
 
 	btnToggleFilter.on('click', function () {
 		if (panelFilterContainer.hasClass('minimized')) {
@@ -105,8 +105,8 @@ vm.prepareLoader = function () {
 	});
 };
 vm.logout = function () {
-	app.ajaxPost('/login/logout', {}, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/login/logout', {}, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 		swal({
@@ -126,6 +126,6 @@ $(function () {
 	vm.prepareFilterToggle();
 	vm.adjustLayout();
 	vm.prepareToggleFilter();
-	app.prepareTooltipster();
+	toolkit.prepareTooltipster();
 	vm.prepareLoader();
 });

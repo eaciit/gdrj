@@ -56,17 +56,17 @@ ud.gridUploadedFiles = {
 	filterable: false,
 	sortable: false,
 	resizable: false,
-	dataBound: app.gridBoundTooltipster('.grid-uploadData')
+	dataBound: toolkit.gridBoundTooltipster('.grid-uploadData')
 };
 ud.processData = function (data) {
-	app.ajaxPost('/uploaddata/processdata', { _id: data }, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/uploaddata/processdata', { _id: data }, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
 		ud.getUploadedFiles();
 	}, function (err) {
-		app.showError(err.responseText);
+		toolkit.showError(err.responseText);
 	}, {
 		timeout: 5000
 	});
@@ -75,14 +75,14 @@ ud.processData = function (data) {
 ud.getMasterDataBrowser = function () {
 	ud.masterDataBrowser([]);
 
-	app.ajaxPost('/databrowser/getdatabrowsers', {}, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/databrowser/getdatabrowsers', {}, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
 		ud.masterDataBrowser(res.data);
 	}, function (err) {
-		app.showError(err.responseText);
+		toolkit.showError(err.responseText);
 	}, {
 		timeout: 5000
 	});
@@ -90,8 +90,8 @@ ud.getMasterDataBrowser = function () {
 ud.getUploadedFiles = function () {
 	ud.dataUploadedFiles([]);
 
-	app.ajaxPost('/uploaddata/getuploadedfiles', {}, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/uploaddata/getuploadedfiles', {}, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
@@ -101,7 +101,7 @@ ud.getUploadedFiles = function () {
 	});
 };
 ud.doUpload = function () {
-	if (!app.isFormValid('.form-upload-file')) {
+	if (!toolkit.isFormValid('.form-upload-file')) {
 		return;
 	}
 
@@ -110,14 +110,14 @@ ud.doUpload = function () {
 	payload.append('desc', ud.inputDescription());
 	payload.append('userfile', $('[name=file]')[0].files[0]);
 
-	app.ajaxPost('/uploaddata/uploadfile', payload, function (res) {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/uploaddata/uploadfile', payload, function (res) {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
 		ud.getUploadedFiles();
 	}, function (err) {
-		app.showError(err.responseText);
+		toolkit.showError(err.responseText);
 	}, {
 		timeout: 5000
 	});

@@ -25,8 +25,8 @@ ss.refreshData = function () {
 ss.setexpired = function (_id, username) {
     var param = { _id: _id,
         username: username };
-    app.ajaxPost("/session/setexpired", param, function (res) {
-        if (!app.isFine(res)) {
+    toolkit.ajaxPost("/session/setexpired", param, function (res) {
+        if (!toolkit.isFine(res)) {
             return;
         }
 
