@@ -153,7 +153,7 @@ rs.generateReport = (data, years) => {
 			},
 			tooltip: {
 				visible: true,
-				template: `${breakdownTitle} #: dataItem.category # at #: dataItem.year # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
+				template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
 			}
 		}],
         valueAxis: {
