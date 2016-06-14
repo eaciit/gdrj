@@ -8,7 +8,7 @@ viewModel.dashboard = {};
 var dsbrd = viewModel.dashboard;
 
 dsbrd.dimension = ko.observable('customer.channelname');
-dsbrd.quarter = ko.observable(4);
+dsbrd.fiscalYear = ko.observable(2014);
 dsbrd.contentIsLoading = ko.observable(false);
 
 dsbrd.data = ko.observableArray([{ pnl: 'Gross Sales', q1: 1000000, q2: 1150000, q3: 1280000, q4: 1400000, type: 'number' }, { pnl: 'Growth', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' }, { pnl: 'Discount', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' }, { pnl: 'ATL', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' }, { pnl: 'BTL', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' }, { pnl: 'COGS', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' }, { pnl: 'Gross Margin', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' }, { pnl: 'SGA', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' }, { pnl: 'Royalties', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' }, { pnl: 'EBITDA', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' }, { pnl: 'EBIT (%)', q1: 10, q2: 10, q3: 10, q4: 10, type: 'percentage' }, { pnl: 'EBIT', q1: 100000, q2: 115000, q3: 128000, q4: 140000, type: 'number' }]);
@@ -94,7 +94,68 @@ rank.refresh = function () {
 	rank.render();
 };
 
+viewModel.salesDistribution = {};
+var sd = viewModel.salesDistribution;
+
+sd.breakdown = ko.observable('customer.channelname');
+sd.data = ko.observableArray([{ customer_channelname: "modern trade", group: "hyper", percentage: 8, value: 240000 }, { customer_channelname: "modern trade", group: "super", percentage: 12, value: 360000 }, { customer_channelname: "modern trade", group: "mini", percentage: 10, value: 300000 }, { customer_channelname: "general trade", group: "type 1", percentage: 3, value: 90000 }, { customer_channelname: "general trade", group: "type 2", percentage: 4, value: 120000 }, { customer_channelname: "general trade", group: "type 3", percentage: 5, value: 150000 }, { customer_channelname: "general trade", group: "type 4", percentage: 4, value: 120000 }, { customer_channelname: "general trade", group: "type 5", percentage: 2, value: 60000 }, { customer_channelname: "general trade", group: "type 6", percentage: 6, value: 180000 }, { customer_channelname: "general trade", group: "type 7", percentage: 5, value: 150000 }, { customer_channelname: "general trade", group: "type 8", percentage: 5, value: 150000 }, { customer_channelname: "general trade", group: "type 9", percentage: 6, value: 180000 }, { customer_channelname: "retail distribution", group: "", percentage: 30, value: 900000 }]);
+sd.render = function () {
+	var dimension = toolkit.replace(sd.breakdown(), ".", "_");
+	var total = toolkit.sum(sd.data(), function (d) {
+		return d.value;
+	});
+	var op1 = _.groupBy(sd.data(), function (d) {
+		return d[dimension];
+	});
+	var op2 = _.map(op1, function (v, k) {
+		return { key: k, values: v };
+	});
+	var maxRow = _.maxBy(op2, function (d) {
+		return d.values.length;
+	});
+	var maxRowIndex = op2.indexOf(maxRow);
+	var height = 20 * maxRow.values.length;
+	var width = 200;
+
+	var container = $('.grid-sales-dist');
+	var table = toolkit.newEl('table').appendTo(container).height(height);
+	var tr1st = toolkit.newEl('tr').appendTo(table);
+	var tr2nd = toolkit.newEl('tr').appendTo(table);
+
+	op2.forEach(function (d) {
+		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width);
+		var sumPercentage = _.sumBy(d.values, function (e) {
+			return e.percentage;
+		});
+		td1st.html(d.key + '<br />' + sumPercentage + ' %');
+
+		var td2nd = toolkit.newEl('td').appendTo(tr2nd);
+
+		var innerTable = toolkit.newEl('table').appendTo(td2nd);
+
+		if (d.values.length == 1) {
+			var tr = toolkit.newEl('tr').appendTo(innerTable);
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(d.values[0].value, 'n0')).height(height).addClass('single');
+			return;
+		}
+
+		d.values.forEach(function (e) {
+			var tr = toolkit.newEl('tr').appendTo(innerTable);
+			toolkit.newEl('td').appendTo(tr).html(e[dimension]).height(height / d.values.length);
+			toolkit.newEl('td').appendTo(tr).html(e.percentage + ' %');
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.value, 'n0'));
+		});
+	});
+
+	var trTotal = toolkit.newEl('tr').appendTo(table);
+	var tdTotal = toolkit.newEl('td').addClass('align-center total').attr('colspan', op2.length).appendTo(trTotal).html(kendo.toString(total, 'n0'));
+};
+sd.refresh = function () {
+	sd.render();
+};
+
 $(function () {
 	dsbrd.refresh();
 	rank.refresh();
+	sd.refresh();
 });

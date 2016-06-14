@@ -9,7 +9,7 @@ viewModel.dashboard = {}
 let dsbrd = viewModel.dashboard
 
 dsbrd.dimension = ko.observable('customer.channelname')
-dsbrd.quarter = ko.observable(4)
+dsbrd.fiscalYear = ko.observable(2014)
 dsbrd.contentIsLoading = ko.observable(false)
 
 dsbrd.data = ko.observableArray([
@@ -126,7 +126,75 @@ rank.refresh = () => {
 	rank.render()
 }
 
+
+
+
+viewModel.salesDistribution = {}
+let sd = viewModel.salesDistribution
+
+sd.breakdown = ko.observable('customer.channelname')
+sd.data = ko.observableArray([
+	{ customer_channelname: "modern trade", group: "hyper", percentage: 8, value: 240000 },
+	{ customer_channelname: "modern trade", group: "super", percentage: 12, value: 360000 },
+	{ customer_channelname: "modern trade", group: "mini", percentage: 10, value: 300000 },
+	{ customer_channelname: "general trade", group: "type 1", percentage: 3, value: 90000 },
+	{ customer_channelname: "general trade", group: "type 2", percentage: 4, value: 120000 },
+	{ customer_channelname: "general trade", group: "type 3", percentage: 5, value: 150000 },
+	{ customer_channelname: "general trade", group: "type 4", percentage: 4, value: 120000 },
+	{ customer_channelname: "general trade", group: "type 5", percentage: 2, value: 60000 },
+	{ customer_channelname: "general trade", group: "type 6", percentage: 6, value: 180000 },
+	{ customer_channelname: "general trade", group: "type 7", percentage: 5, value: 150000 },
+	{ customer_channelname: "general trade", group: "type 8", percentage: 5, value: 150000 },
+	{ customer_channelname: "general trade", group: "type 9", percentage: 6, value: 180000 },
+	{ customer_channelname: "retail distribution", group: "", percentage: 30, value: 900000 }
+])
+sd.render = () => {
+	let dimension = toolkit.replace(sd.breakdown(), ".", "_")
+	let total = toolkit.sum(sd.data(), (d) => d.value)
+	let op1 = _.groupBy(sd.data(), (d) => d[dimension])
+	let op2 = _.map(op1, (v, k) => { return { key: k, values: v } })
+	let maxRow = _.maxBy(op2, (d) => d.values.length)
+	let maxRowIndex = op2.indexOf(maxRow)
+	let height = 20 * maxRow.values.length
+	let width = 200
+
+	let container = $('.grid-sales-dist')
+	let table = toolkit.newEl('table').appendTo(container).height(height)
+	let tr1st = toolkit.newEl('tr').appendTo(table)
+	let tr2nd = toolkit.newEl('tr').appendTo(table)
+
+	op2.forEach((d) => {
+		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width)
+		let sumPercentage = _.sumBy(d.values, (e) => e.percentage)
+		td1st.html(`${d.key}<br />${sumPercentage} %`)
+
+		let td2nd = toolkit.newEl('td').appendTo(tr2nd)
+
+		let innerTable = toolkit.newEl('table').appendTo(td2nd)
+
+		if (d.values.length == 1) {
+			let tr = toolkit.newEl('tr').appendTo(innerTable)
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(d.values[0].value, 'n0')).height(height).addClass('single')
+			return
+		}
+
+		d.values.forEach((e) => {
+			let tr = toolkit.newEl('tr').appendTo(innerTable)
+			toolkit.newEl('td').appendTo(tr).html(e[dimension]).height(height / d.values.length)
+			toolkit.newEl('td').appendTo(tr).html(`${e.percentage} %`)
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.value, 'n0'))
+		})
+	})
+
+	let trTotal = toolkit.newEl('tr').appendTo(table)
+	let tdTotal = toolkit.newEl('td').addClass('align-center total').attr('colspan', op2.length).appendTo(trTotal).html(kendo.toString(total, 'n0'))
+}
+sd.refresh = () => {
+	sd.render()
+}
+
 $(() => {
 	dsbrd.refresh()
 	rank.refresh()
+	sd.refresh()
 })
