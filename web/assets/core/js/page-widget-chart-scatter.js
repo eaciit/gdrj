@@ -157,6 +157,7 @@ rs.generateReport = function (data, years) {
 		}, {
 			name: "Average of " + breakdownTitle + " to " + netSalesTitle,
 			field: 'avgPNLPercentage',
+			dashType: "dash",
 			width: 3,
 			tooltip: {
 				visible: true,
