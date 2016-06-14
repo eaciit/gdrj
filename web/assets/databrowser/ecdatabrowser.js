@@ -187,6 +187,7 @@ var methodsDataBrowser = {
 	},
 	createGrid: function(element, options, id){
 		var colums = [], format="", aggr= {}, footerText = "", column = {};
+		console.log('options ',id)
 		for(var key in options.metadata){
 			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() == "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
 				format = "{0:"+options.metadata[key].Format+"}"
@@ -325,7 +326,33 @@ var methodsDataBrowser = {
 	                    }
 	                },
 	                schema: {
-	                    data: options.dataSource.fieldData,
+	                    data: function(res){
+	                    	if (res.dataresult.TableNames == 'salespls'){
+	                    		res.DataValue.forEach((d) => {
+	                    			colums.forEach((col) => {
+	                    				if (!col.hasOwnProperty('field')) {
+	                    					return
+	                    				}
+	                    				if (col.field.indexOf("pldatas") == -1) {
+	                    					return
+	                    				}
+
+                    					let plcode = col.field.split('.')[1]
+                    					if (!d.pldatas.hasOwnProperty(plcode)) {
+                    						d.pldatas[plcode] = {
+                    							plcode: "",
+                    							plorder: "",
+                    							group1: "",
+                    							group2: "",
+                    							group3: "",
+                    							amount: 0
+                    						}
+                    					}
+                    				})
+	                    		})
+		                    }
+	                    	return res[options.dataSource.fieldData];
+	                    },
 	                    total: options.dataSource.fieldTotal
 	                },
 	                pageSize: options.dataSource.pageSize,
