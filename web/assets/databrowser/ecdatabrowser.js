@@ -187,7 +187,6 @@ var methodsDataBrowser = {
 	},
 	createGrid: function(element, options, id){
 		var colums = [], format="", aggr= {}, footerText = "", column = {};
-		console.log('options ',id)
 		for(var key in options.metadata){
 			if ((options.metadata[key].DataType.toLowerCase() == 'integer' || options.metadata[key].DataType.toLowerCase() == "float32" || options.metadata[key].DataType.toLowerCase() == 'int' || options.metadata[key].DataType.toLowerCase() == 'float64') && options.metadata[key].Format != "" ){
 				format = "{0:"+options.metadata[key].Format+"}"
@@ -303,7 +302,7 @@ var methodsDataBrowser = {
 				colums = columnsLocked
 			}
 
-				console.log(colums)
+				// console.log(colums)
 
 			id.find('div[idfilter=gridFilterBrowser]').kendoGrid({
 				dataSource: {
