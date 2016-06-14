@@ -1,96 +1,48 @@
 viewModel.pivot = new Object()
 let pvt = viewModel.pivot
 
-pvt.templateDataPoint = {
-	aggr: 'sum',
-	field: '',
-	name: ''
-}
-pvt.templateDimension = {
-	field: '',
-	name: ''
-}
+pvt.title = ko.observable('Pivot')
+pvt.contentIsLoading = ko.observable(false)
 
-pvt.data = ko.observableArray([])
-pvt.columns = ko.observableArray([])
-pvt.rows = ko.observableArray([])
+pvt.optionRows = ko.observableArray(rpt.optionDimensions())
+pvt.optionColumns = ko.observableArray(rpt.optionDimensions())
+
+pvt.row = ko.observable([])
+pvt.column = ko.observable([])
 pvt.dataPoints = ko.observableArray([])
+pvt.data = ko.observableArray([])
 
-pvt.enableColumns = ko.observable(true)
-pvt.enableRows = ko.observable(true)
-pvt.enableDataPoints = ko.observable(true)
-pvt.mode = ko.observable('render')
-pvt.currentTargetDimension = null
-
-pvt.setMode = (what) => () => {
-	pvt.mode(what)
-
-	if (what == 'render') {
-		pvt.refresh()
-	}
-}
-pvt.addColumn = () => {
-	let row = ko.mapping.fromJS(app.clone(pvt.templateDimension))
-	pvt.columns.push(row)
-	app.prepareTooltipster($(".pivot-section-columns .input-group:last .tooltipster"))
-}
-pvt.addRow = () => {
-	let row = ko.mapping.fromJS(app.clone(pvt.templateDimension))
-	pvt.rows.push(row)
-	app.prepareTooltipster($(".pivot-section-row .input-group:last .tooltipster"))
-}
-pvt.addDataPoint = () => {
-	let row = ko.mapping.fromJS(app.clone(pvt.templateDataPoint))
-	pvt.dataPoints.push(row)
-	app.prepareTooltipster($(".pivot-section-data-point .input-group:last .tooltipster"))
-}
-pvt.removeFrom = (o, which) => {
-	swal({
-		title: "Are you sure?",
-		text: 'Item will be deleted',
-		type: "warning",
-		showCancelButton: true,
-		confirmButtonColor: "#DD6B55",
-		confirmButtonText: "Delete",
-		closeOnConfirm: true
-	}, () => {
-		let holder = pvt[which]
-
-		if (holder().length == 1) {
-			return
-		}
-
-		if (which == 'dataPoints') {
-			let index = $(o).attr('data-index')
-			app.arrRemoveByIndex(holder, index)
-		}
-
-		let id = $(o).attr('data-id')
-		let row = holder().find((d) => ko.mapping.toJS(d).field == id)
-		app.arrRemoveByItem(holder, row)
-	})
-}
-pvt.getParam = () => {
-	let dimensions = ko.mapping.toJS(pvt.rows().concat(pvt.columns()))
-		.filter((d) => (d.field != ''))
-	let dataPoints = ko.mapping.toJS(pvt.dataPoints)
-		.filter((d) => (d.field != '') && (d.aggr != ''))
-		.map((d) => { return { 
-			field: d.field, 
-			name: d.name, 
-			aggr: 'sum'
-		} })
-
-	return rpt.wrapParam(dimensions, dataPoints)
-}
 pvt.refresh = () => {
-	// pvt.data(DATATEMP_PIVOT)
-	app.ajaxPost("/report/summarycalculatedatapivot", pvt.getParam(), (res) => {
-		let orderKey = app.idAble(ko.mapping.toJS(pvt.rows()[0]).field)
-		let data = _.sortBy(res.Data, (o, v) => o[orderKey])
-		pvt.data(data)
-		pvt.render()
-	})
+	pvt.data([{
+		customer_channelname: 'GT', customer_branchname: 'Surabaya',
+		grosssales: 20000,
+		salesdiscount: 2000,
+		netsales: 18000
+	}, {
+		customer_channelname: 'MT', customer_branchname: 'Surabaya',
+		grosssales: 22000,
+		salesdiscount: 1000,
+		netsales: 21000
+	}, {
+		customer_channelname: 'GT', customer_branchname: 'Malang',
+		grosssales: 23000,
+		salesdiscount: 3000,
+		netsales: 20000
+	}, {
+		customer_channelname: 'GT', customer_branchname: 'Malang',
+		grosssales: 22000,
+		salesdiscount: 2000,
+		netsales: 20000
+	}])
+
+	pvt.render()
+	// // pvt.data(DATATEMP_PIVOT)
+	// app.ajaxPost("/report/summarycalculatedatapivot", pvt.getParam(), (res) => {
+	// 	let orderKey = app.idAble(ko.mapping.toJS(pvt.rows()[0]).field)
+	// 	let data = _.sortBy(res.Data, (o, v) => o[orderKey])
+	// 	pvt.data(data)
+	// 	pvt.render()
+	// })
 }
 pvt.render = () => {
 	let data = pvt.data()
@@ -101,44 +53,28 @@ pvt.render = () => {
 	let rows = []
 	let measures = []
 
-	let constructSchema = (from, to) => {
-		app.koUnmap(pvt[from]())
-			.filter((d) => (d.field != ''))
-			.forEach((d, i) => {
-				let option = app.koUnmap(rpt.optionDimensions).find((e) => e.field == d.field)
-				let key = app.idAble(option.name)
-				let field = app.idAble(d.field)
+	;[pvt.row()].forEach((d, i) => {
+		let row = pvt.optionRows().find((e) => e.field == d)
+		let field = toolkit.replace(row.field, '.', '_')
+		schemaModelFields[field] = { type: 'string', field: field }
+		rows.push({ name: field, expand: (i == 0) })
+	})
 
-				schemaModelFields[field] = { type: 'string' }
-				schemaCubeDimensions[field] = { caption: key }
+	;[pvt.column()].forEach((d, i) => {
+		let row = pvt.optionColumns().find((e) => e.field == d)
+		let field = toolkit.replace(row.field, '.', '_')
+		schemaModelFields[field] = { type: 'string', field: field }
+		columns.push({ name: field, expand: (i == 0) })
+	})
 
-				let row = { name: field }
-				if (i == 0) {
-					row.expand = true
-				}
+	pvt.dataPoints().forEach((d) => {
+		let field = toolkit.replace(d.field, '.', '_')
+		schemaModelFields[field] = { type: 'number' }
+		schemaCubeDimensions[field] = { caption: d.title }
 
-				to.push(row)
-			})
-	}
-
-	constructSchema('rows', rows)
-	constructSchema('columns', columns)
-	
-	app.koUnmap(pvt.dataPoints)
-		.filter((d) => (d.field != '') && (d.aggr != ''))
-		.forEach((d) => {
-			let key = app.idAble(d.name)
-			let field = app.idAble(d.field)
-
-			let prop = { field: field, aggregate: d.aggr, format: '{0:n2}' }
-			if (prop.aggregate == 'avg') {
-				prop.aggregate = 'average'
-			}
-
-			schemaModelFields[field] = { type: 'number' }
-			schemaCubeMeasures[key] = prop
-			measures.push(key)
-		})
+		schemaCubeMeasures[d.title] = { field: field, format: '{0:c}', aggregate: 'sum' }
+		measures.push(d.title)
+	})
 
 	let config = {
 	    filterable: false,
@@ -167,18 +103,13 @@ pvt.render = () => {
 }
 
 $(() => {
-	pvt.columns([
-		app.koMap({ field: 'customer.channelname', name: 'Product' }),
-		// app.koMap({ field: 'product.name', name: 'Product' })
+	pvt.dataPoints = ko.observableArray([
+		{ field: 'grosssales', title: 'Gross Sales' },
+		{ field: 'salesdiscount', title: 'Sales Discount' },
+		{ field: 'netsales', title: 'Net Sales' }
 	])
-	pvt.rows([
-		app.koMap({ field: 'customer.branchname', name: 'Branch/RD' })
-	])
-	pvt.dataPoints([
-		app.koMap({ aggr: 'sum', field: 'value1', name: o[`value1`] }),
-		app.koMap({ aggr: 'sum', field: 'value2', name: o[`value2`] }),
-		app.koMap({ aggr: 'sum', field: 'value3', name: o[`value3`] })
-	])
+	pvt.row = ko.observable('customer.channelname')
+	pvt.column = ko.observable('customer.branchname')
 
 	pvt.refresh()
 })
