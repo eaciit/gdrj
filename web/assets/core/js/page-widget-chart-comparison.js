@@ -15,7 +15,7 @@ ccr.getDecreasedQty = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
 	ccr.contentIsLoading(true);
-	app.ajaxPost('/report/GetDecreasedQty', {}, function (res) {
+	toolkit.ajaxPost('/report/GetDecreasedQty', {}, function (res) {
 		ccr.dataComparison(res);
 		ccr.contentIsLoading(false);
 		ccr.refresh();
@@ -132,7 +132,7 @@ ccr.render = function () {
 				labels: {
 					font: 'Source Sans Pro 11',
 					rotation: 40
-					// template: (d) => `${app.capitalize(d.value).slice(0, 3)}`
+					// template: (d) => `${toolkit.capitalize(d.value).slice(0, 3)}`
 				}
 			},
 			legend: {
@@ -170,8 +170,6 @@ ccr.render = function () {
 
 		html.appendTo(chartContainer);
 		html.find('.title').html(ccr.data()[e].data.productName);
-		console.log(config);
-		console.log(ccr.data()[e].data);
 		html.find('.chart').kendoChart(config);
 	}
 	chartContainer.append($('<div />').addClass('clearfix'));

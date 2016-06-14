@@ -70,23 +70,9 @@ rs.refresh = function () {
 				return k;
 			});
 
-			var maxData1 = 0;try {
-				maxData1 = _.maxBy(dataAllPNL.filter(function (d) {
-					return d.value != 0;
-				}), function (d) {
-					return d.value;
-				}).value;
-			} catch (err) {}
-
-			var maxData2 = 0;try {
-				maxData2 = _.maxBy(dataAllPNLNetSales.filter(function (d) {
-					return d.value != 0;
-				}), function (d) {
-					return d.value;
-				}).value;
-			} catch (err) {}
-			var maxData = _.max([maxData1, maxData2]);
-
+			var sumNetSales = _.reduce(dataAllPNLNetSales, function (m, x) {
+				return m + x.value;
+			}, 0);
 			var sumPNL = _.reduce(dataAllPNL, function (m, x) {
 				return m + x.value;
 			}, 0);
@@ -94,22 +80,20 @@ rs.refresh = function () {
 			var avgPNL = sumPNL / countPNL;
 
 			var dataScatter = [];
-			var multiplier = maxData == 0 ? 1 : maxData;
+			var multiplier = sumNetSales == 0 ? 1 : sumNetSales;
 
 			dataAllPNL.forEach(function (d) {
 				dataScatter.push({
 					category: app.nbspAble(d._id["_id_" + app.idAble(rs.breakdownBy())] + " " + d._id._id_date_year, 'Uncategorized'),
 					year: d._id._id_date_year,
-					valuePNL: d.value,
-					valuePNLPercentage: d.value / multiplier * 100,
-					avgNetSales: avgPNL,
-					avgNetSalesPercentage: avgPNL / multiplier * 100
+					valuePNL: Math.abs(d.value),
+					valuePNLPercentage: Math.abs(d.value / multiplier * 100),
+					avgPNL: Math.abs(avgPNL),
+					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
+					sumPNL: Math.abs(sumPNL),
+					sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
 				});
-
-				console.log("---->>>>-", avgPNL, d.value, maxData);
 			});
-
-			console.log("-----", years, dataScatter, maxData);
 
 			rs.contentIsLoading(false);
 			rs.generateReport(dataScatter, years);
@@ -158,20 +142,32 @@ rs.generateReport = function (data, years) {
 			type: "line",
 			missingValues: "gap"
 		},
-		seriesColors: ["#ff8d00", "#678900"],
+		seriesColors: ["#ff8d00", "#678900", '#3498DB'],
 		series: [{
-			name: "Average of " + netSalesTitle,
-			field: 'avgNetSalesPercentage',
+			name: "Sum of " + breakdownTitle + " to " + netSalesTitle,
+			field: 'sumPNLPercentage',
 			width: 3,
 			tooltip: {
 				visible: true,
-				template: "Average of " + netSalesTitle + ": #: kendo.toString(dataItem.avgNetSalesPercentage, 'n2') # % (#: kendo.toString(dataItem.avgNetSales, 'n2') #)"
+				template: "Sum of " + breakdownTitle + " to " + netSalesTitle + ": #: kendo.toString(dataItem.sumPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.sumPNL, 'n2') #)"
 			},
 			markers: {
 				visible: false
 			}
 		}, {
-			name: "Percentage of " + breakdownTitle + " to " + netSalesTitle,
+			name: "Average of " + breakdownTitle + " to " + netSalesTitle,
+			field: 'avgPNLPercentage',
+			dashType: "dash",
+			width: 3,
+			tooltip: {
+				visible: true,
+				template: "Average of " + breakdownTitle + " to " + netSalesTitle + ": #: kendo.toString(dataItem.avgPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.avgPNL, 'n2') #)"
+			},
+			markers: {
+				visible: false
+			}
+		}, {
+			name: breakdownTitle + " to " + netSalesTitle,
 			field: "valuePNLPercentage",
 			width: 3,
 			opacity: 0,
@@ -181,7 +177,7 @@ rs.generateReport = function (data, years) {
 			},
 			tooltip: {
 				visible: true,
-				template: "Percentage of " + breakdownTitle + " to " + netSalesTitle + " - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)"
+				template: breakdownTitle + " #: dataItem.category # to " + netSalesTitle + ": #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)"
 			}
 		}],
 		valueAxis: {

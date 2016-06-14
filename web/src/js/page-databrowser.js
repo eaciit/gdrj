@@ -20,21 +20,21 @@ db.isLoading = ko.observable(false)
 db.getMasterDataBrowser = () => {
 	db.masterDataBrowser([])
 
-	app.ajaxPost('/databrowser/getdatabrowsers', {}, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/databrowser/getdatabrowsers', {}, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
 		db.masterDataBrowser(res.data)
 	}, (err) => {
-		app.showError(err.responseText)
+		toolkit.showError(err.responseText)
 	}, {
 		timeout: 5000
 	})
 }
 db.createDataBrowser = (dataItem) => {
-	app.ajaxPost("/databrowser/getdatabrowsermetadata", { tablename: dataItem }, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost("/databrowser/getdatabrowsermetadata", { tablename: dataItem }, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
@@ -55,7 +55,7 @@ db.createDataBrowser = (dataItem) => {
 				serverPaging: true,
 				pageSize: 10,
 				serverSorting: true,
-				callOK: (res) => app.noop
+				callOK: (res) => toolkit.noop
             },
 			metadata: res.data.MetaData,
 		})
@@ -109,8 +109,8 @@ db.editDataBrowser = () => {
 	for (var a in db.metaData()){
 		postdata[db.metaData()[a].Field()] = db.metaData()[a].value()
 	}
-	app.ajaxPost("upload/savedata", postdata, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost("upload/savedata", postdata, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 		$('#modalUpdate').modal('hide')
@@ -178,15 +178,15 @@ db.saveChanges = () => {
 		data: data
 	}
 
-	app.ajaxPost('/databrowser/savedata', param, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/databrowser/savedata', param, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
 		$('#modalUpdate').modal('hide')
 		db.refreshDataBrowser()
 	}, (err) => {
-		app.showError(err.responseText)
+		toolkit.showError(err.responseText)
 	}, {
 		timeout: 5000
 	})

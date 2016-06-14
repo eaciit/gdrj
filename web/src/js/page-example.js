@@ -37,27 +37,27 @@ idx.prepareChart1 = () => {
 	let data = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].map((d) => {
 		return { 
 			day: d, 
-			arfianCommits: app.randomRange(2, 20), 
-			marthaCommits: app.randomRange(2, 20), 
-			ainurCommits: app.randomRange(2, 20)
+			arfianCommits: toolkit.randomRange(2, 20), 
+			marthaCommits: toolkit.randomRange(2, 20), 
+			ainurCommits: toolkit.randomRange(2, 20)
 		}
 	})
 
 	let series = [
-		{ name: 'Arfian\'s Commits', field: 'arfianCommits', type: 'line', width: 3, color: app.seriesColorsGodrej[0], markers: {
+		{ name: 'Arfian\'s Commits', field: 'arfianCommits', type: 'line', width: 3, color: toolkit.seriesColorsGodrej[0], markers: {
 			visible: true,
 			style: 'smooth',
-			background: app.seriesColorsGodrej[0]
+			background: toolkit.seriesColorsGodrej[0]
 		} },
-		{ name: 'Martha\'s Commits', field: 'marthaCommits', type: 'line', width: 3, color: app.seriesColorsGodrej[1], markers: {
+		{ name: 'Martha\'s Commits', field: 'marthaCommits', type: 'line', width: 3, color: toolkit.seriesColorsGodrej[1], markers: {
 			visible: true,
 			style: 'smooth',
-			background: app.seriesColorsGodrej[1]
+			background: toolkit.seriesColorsGodrej[1]
 		}  },
-		{ name: 'Ainur\'s Commits', field: 'ainurCommits', type: 'line', width: 3, color: app.seriesColorsGodrej[2], markers: {
+		{ name: 'Ainur\'s Commits', field: 'ainurCommits', type: 'line', width: 3, color: toolkit.seriesColorsGodrej[2], markers: {
 			visible: true,
 			style: 'smooth',
-			background: app.seriesColorsGodrej[2]
+			background: toolkit.seriesColorsGodrej[2]
 		}  }
 	]
 
@@ -73,7 +73,7 @@ idx.prepareChart1 = () => {
 			},
 			labels: {
 				font: 'Source Sans Pro 11',
-				template: (d) => `${app.capitalize(d.value).slice(0, 3)}`
+				template: (d) => `${toolkit.capitalize(d.value).slice(0, 3)}`
 			}
 		},
 		legend: {
@@ -95,9 +95,9 @@ idx.prepareChart2 = () => {
 	let data = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].map((d) => {
 		return { 
 			day: d, 
-			arfianCommits: app.randomRange(2, 20), 
-			marthaCommits: app.randomRange(2, 20), 
-			ainurCommits: app.randomRange(2, 20)
+			arfianCommits: toolkit.randomRange(2, 20), 
+			marthaCommits: toolkit.randomRange(2, 20), 
+			ainurCommits: toolkit.randomRange(2, 20)
 		}
 	})
 
@@ -122,7 +122,7 @@ idx.prepareChart2 = () => {
 			}
 		},
 		series: series,
-		seriesColors: app.seriesColorsGodrej,
+		seriesColors: toolkit.seriesColorsGodrej,
 		categoryAxis: {
 			field: 'day',
 			majorGridLines: {
@@ -130,7 +130,7 @@ idx.prepareChart2 = () => {
 			},
 			labels: {
 				font: 'Source Sans Pro 11',
-				template: (d) => `${app.capitalize(d.value).slice(0, 3)}`
+				template: (d) => `${toolkit.capitalize(d.value).slice(0, 3)}`
 			}
 		},
 		legend: {

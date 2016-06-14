@@ -15,8 +15,8 @@ rpt.filter = [
 	{ _id: 'common', group: 'Base Filter', sub: [
 		{ _id: 'Branch', from: 'Branch', title: 'Branch' },
 		{ _id: 'Brand', from: 'Brand', title: 'Brand' },
-		{ _id: 'RegionC', from: 'Region', title: 'Region' },
 		{ _id: 'Channel', from: 'Channel', title: 'Channel' },
+		{ _id: 'RegionC', from: 'Region', title: 'Region' },
 		{ _id: 'From', from: 'From' },
 		{ _id: 'To', from: 'To' },
 	] },
@@ -214,7 +214,7 @@ rpt.filter.forEach((d) => {
 				}
 
 				// change value event goes here
-				app.log(e._id, value)
+				toolkit.log(e._id, value)
 			}, 100)
 		}
 	})
@@ -224,7 +224,7 @@ rpt.groupGeoBy = (raw, category) => {
 	let groupKey = (category == 'Area') ? '_id' : category
 	let data = Lazy(raw)
 		.groupBy((f) => f[groupKey])
-		.map((k, v) => { return { _id: v, Name: app.capitalize(v, true) } })
+		.map((k, v) => { return { _id: v, Name: toolkit.capitalize(v, true) } })
 		.toArray()
 
 	return data
@@ -279,10 +279,10 @@ rpt.filterMultiSelect = (d) => {
 			enabled: rpt.enableHolder[d._id],
 			template: (d) => {
 				if (d._id == 'KeyAccount') {
-					return app.capitalize(d.KeyAccount)
+					return toolkit.capitalize(d.KeyAccount)
 				}
 
-				return `${d._id} - ${app.capitalize(d.Name)}`
+				return `${d._id} - ${toolkit.capitalize(d.Name)}`
 			},
 			value: rpt.value[d._id]
 		})
@@ -298,7 +298,7 @@ rpt.filterMultiSelect = (d) => {
 			})
 		}
 
-		app.ajaxPost(`/report/getdata${d.from.toLowerCase()}`, {}, (res) => {
+		toolkit.ajaxPost(`/report/getdata${d.from.toLowerCase()}`, {}, (res) => {
 			if (!res.success) {
 				return
 			}
@@ -315,7 +315,7 @@ rpt.filterMultiSelect = (d) => {
 		})
 
 		if (d.from == 'Region') {
-			app.ajaxPost(`/report/getdatahgeographi`, {}, (res) => {
+			toolkit.ajaxPost(`/report/getdatahgeographi`, {}, (res) => {
 				if (!res.success) {
 					return
 				}
@@ -336,14 +336,14 @@ rpt.filterMultiSelect = (d) => {
 				return f
 			}
 
-			return { _id: f._id, Name: app.capitalize(f.Name, true) }
+			return { _id: f._id, Name: toolkit.capitalize(f.Name, true) }
 		})
 	}
 
 	return config
 }
 
-rpt.toggleFilterCallback = app.noop
+rpt.toggleFilterCallback = toolkit.noop
 rpt.toggleFilter = () => {
 	let panelFilter = $('.panel-filter')
 	let panelContent = $('.panel-content')
@@ -363,12 +363,11 @@ rpt.getFilterValue = () => {
 		{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() },
 		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) },
 		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) },
-		{ 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.ChannelC() },
+		{ 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) },
 		{ 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
 		{ 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
 		{ 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
 		{ 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() },
-		{ 'Field': 'customer.channel', 'Op': '$in', 'Value': rpt.value.Channel() },
 		{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
 		{ 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
 		{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() },
@@ -384,8 +383,8 @@ rpt.getFilterValue = () => {
 }
 
 rpt.getIdeas = () => {
-	app.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
@@ -407,24 +406,47 @@ rpt.setName = function (data, options) {
             var row = options().find(function (d) {
                 return d.field == data.field()
             })
-            if (app.isDefined(row)) {
+            if (toolkit.isDefined(row)) {
                 data.name(row.name)
             }
 
-            console.log(app.koUnmap(data), options())
+            console.log(toolkit.koUnmap(data), options())
         }, 150)
     }
 }
 rpt.refresh = function () {
     ['pvt', 'tbl', 'crt', 'sct', 'bkd'].forEach(function (d, i) {
         setTimeout(function () {
-            if (app.isDefined(window[d])) {
+            if (toolkit.isDefined(window[d])) {
                 window[d].refresh()
             }
         }, 1000 * i)
     })
 }
+rpt.refreshAll = () => {
+	bkd.refresh()
+	rs.refresh()
+	ccr.refresh()
+}
+rpt.panel_relocated = () => {
+	if ($('.panel-yo').size() == 0) {
+		return;
+	}
+	
+	let window_top = $(window).scrollTop()
+    var div_top = $('.panel-yo').offset().top
+    if (window_top > div_top) {
+		$('.panel-fix').css('width',$('.panel-yo').width())
+        $('.panel-fix').addClass('contentfilter')
+        $('.panel-yo').height($('.panel-fix').outerHeight())
+    } else {
+        $('.panel-fix').removeClass('contentfilter')
+        $('.panel-yo').height(0)
+    }
+}
 
 $(() => {
+	$(window).scroll(rpt.panel_relocated);
+    rpt.panel_relocated()
 	rpt.getIdeas()
 })

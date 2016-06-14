@@ -26,24 +26,24 @@ idx.prepareChart1 = function () {
 	var data = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].map(function (d) {
 		return {
 			day: d,
-			arfianCommits: app.randomRange(2, 20),
-			marthaCommits: app.randomRange(2, 20),
-			ainurCommits: app.randomRange(2, 20)
+			arfianCommits: toolkit.randomRange(2, 20),
+			marthaCommits: toolkit.randomRange(2, 20),
+			ainurCommits: toolkit.randomRange(2, 20)
 		};
 	});
 
-	var series = [{ name: 'Arfian\'s Commits', field: 'arfianCommits', type: 'line', width: 3, color: app.seriesColorsGodrej[0], markers: {
+	var series = [{ name: 'Arfian\'s Commits', field: 'arfianCommits', type: 'line', width: 3, color: toolkit.seriesColorsGodrej[0], markers: {
 			visible: true,
 			style: 'smooth',
-			background: app.seriesColorsGodrej[0]
-		} }, { name: 'Martha\'s Commits', field: 'marthaCommits', type: 'line', width: 3, color: app.seriesColorsGodrej[1], markers: {
+			background: toolkit.seriesColorsGodrej[0]
+		} }, { name: 'Martha\'s Commits', field: 'marthaCommits', type: 'line', width: 3, color: toolkit.seriesColorsGodrej[1], markers: {
 			visible: true,
 			style: 'smooth',
-			background: app.seriesColorsGodrej[1]
-		} }, { name: 'Ainur\'s Commits', field: 'ainurCommits', type: 'line', width: 3, color: app.seriesColorsGodrej[2], markers: {
+			background: toolkit.seriesColorsGodrej[1]
+		} }, { name: 'Ainur\'s Commits', field: 'ainurCommits', type: 'line', width: 3, color: toolkit.seriesColorsGodrej[2], markers: {
 			visible: true,
 			style: 'smooth',
-			background: app.seriesColorsGodrej[2]
+			background: toolkit.seriesColorsGodrej[2]
 		} }];
 
 	$('.chart-1').kendoChart({
@@ -59,7 +59,7 @@ idx.prepareChart1 = function () {
 			labels: {
 				font: 'Source Sans Pro 11',
 				template: function template(d) {
-					return '' + app.capitalize(d.value).slice(0, 3);
+					return '' + toolkit.capitalize(d.value).slice(0, 3);
 				}
 			}
 		},
@@ -84,9 +84,9 @@ idx.prepareChart2 = function () {
 	var data = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].map(function (d) {
 		return {
 			day: d,
-			arfianCommits: app.randomRange(2, 20),
-			marthaCommits: app.randomRange(2, 20),
-			ainurCommits: app.randomRange(2, 20)
+			arfianCommits: toolkit.randomRange(2, 20),
+			marthaCommits: toolkit.randomRange(2, 20),
+			ainurCommits: toolkit.randomRange(2, 20)
 		};
 	});
 
@@ -107,7 +107,7 @@ idx.prepareChart2 = function () {
 			}
 		},
 		series: series,
-		seriesColors: app.seriesColorsGodrej,
+		seriesColors: toolkit.seriesColorsGodrej,
 		categoryAxis: {
 			field: 'day',
 			majorGridLines: {
@@ -116,7 +116,7 @@ idx.prepareChart2 = function () {
 			labels: {
 				font: 'Source Sans Pro 11',
 				template: function template(d) {
-					return '' + app.capitalize(d.value).slice(0, 3);
+					return '' + toolkit.capitalize(d.value).slice(0, 3);
 				}
 			}
 		},

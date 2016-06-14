@@ -31,8 +31,8 @@ adm.unselectedAccessGroup = (index) => {
 
 adm.getAccess = () => {
     let data = []
-    app.ajaxPost("/administration/getaccessdropdown", {}, function(res) {
-        if (!app.isFine(res)) {
+    toolkit.ajaxPost("/administration/getaccessdropdown", {}, function(res) {
+        if (!toolkit.isFine(res)) {
             return;
         }
         if (res.data == null) {

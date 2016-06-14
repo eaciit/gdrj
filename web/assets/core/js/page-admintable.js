@@ -39,12 +39,12 @@ at.gridConfig = {
         pageSizes: 10
     },
     columns: at.TableColumns(),
-    gridBound: app.gridBoundTooltipster('.grid-at')
+    gridBound: toolkit.gridBoundTooltipster('.grid-at')
 };
 
 at.refreshData = function () {
     at.contentIsLoading(true);
-    app.ajaxPost("/report/getplcollections", {}, function (res) {
+    toolkit.ajaxPost("/report/getplcollections", {}, function (res) {
         at.gridData(res.Data);
         at.contentIsLoading(false);
     });
@@ -63,7 +63,7 @@ at.clearcollection = function () {
         closeOnConfirm: true
     }, function () {
         setTimeout(function () {
-            app.ajaxPost("/report/deleteplcollection", { _id: allTables }, function (res) {
+            toolkit.ajaxPost("/report/deleteplcollection", { _id: allTables }, function (res) {
                 at.refreshData();
             });
         }, 1000);
@@ -81,7 +81,7 @@ at.deletecollection = function (idtable) {
         closeOnConfirm: true
     }, function () {
         setTimeout(function () {
-            app.ajaxPost("/report/deleteplcollection", { _id: [idtable] }, function (res) {
+            toolkit.ajaxPost("/report/deleteplcollection", { _id: [idtable] }, function (res) {
                 at.refreshData();
             });
         }, 1000);

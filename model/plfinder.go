@@ -363,3 +363,38 @@ func (s *PLFinderParam) GeneratePLData() error {
 	_ = res
 	return nil
 }
+
+type PLFinderDetail struct {
+	PLFinderParam
+
+	PageSize int `json:"pageSize"`
+	Take     int `json:"take"`
+	Skip     int `json:"skip"`
+	Page     int `json:"page"`
+}
+
+func (p *PLFinderDetail) GetData() ([]*toolkit.M, error) {
+	db, ses, err := p.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer ses.Close()
+
+	filters := bson.M{}
+	for _, filter := range p.Filters {
+		filters[filter.Field] = filter.Value
+	}
+
+	col := db.C(new(SalesPL).TableName())
+
+	fmt.Printf("----- %#v\n", filters)
+
+	data := []*toolkit.M{}
+	err = col.Find(filters).Limit(p.Take).Skip(p.Skip).All(&data)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("----- %#v\n", data)
+
+	return data, nil
+}

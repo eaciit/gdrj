@@ -40,7 +40,7 @@
 	<div class="panel">
 		<div class="panel-heading" role="tab" data-bind="attr: { 'id': 'h-' + $index() }">
 			<h4 class="panel-title">
-				<a class="tooltipster" role="button" data-toggle="collapse" title="Toggle filter common" data-bind="attr: { 'href': '#c-' + $index() }, css: { 'collapsed': ($index() > 0) }">
+				<a class="tooltipster" role="button" data-toggle="collapse" data-parent=".ez-collapse" title="Toggle filter common" data-bind="attr: { 'href': '#c-' + $index() }, css: { 'collapsed': ($index() > 0) }">
 					<span class="pull-left" data-bind="text: $data.group"></span>
 					<span class="pull-right">
 						<i class="fa fa-angle-left"></i>
@@ -95,7 +95,7 @@
 </script>
 
 <script id="template-menu" type="text/html">
-	<li data-bind="css: { 'dropdown': ($data.submenu.length > 0) }">
+	<li data-bind="css: { 'dropdown dd-hover': ($data.submenu.length > 0) }">
 		<a class="color-base" data-bind="css: { 'dropdown-toggle': ($data.submenu.length > 0), 'active': (vm.currentMenu() == $data.title) }, attr: { href: $data.href }">
 			<i data-bind="css: vm.menuIcon($data)"></i>&nbsp;
 			<span data-bind="text: $data.title"></span>

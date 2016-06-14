@@ -57,36 +57,26 @@ rs.refresh = (useCache = false) => {
 
 			let years = _.map(_.groupBy(dataAllPNL, (d) => d._id._id_date_year), (v, k) => k)
 
-			let maxData1 = 0; try {
-				maxData1 = _.maxBy(dataAllPNL.filter((d) => d.value != 0), (d) => d.value).value
-			} catch (err) { }
-
-			let maxData2 = 0; try {
-				maxData2 = _.maxBy(dataAllPNLNetSales.filter((d) => d.value != 0), (d) => d.value).value
-			} catch (err) { }
-			let maxData = _.max([maxData1, maxData2])
-
+			var sumNetSales = _.reduce(dataAllPNLNetSales, (m, x) => m + x.value, 0);
 			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x.value, 0)
 			let countPNL = dataAllPNL.length
 			let avgPNL = sumPNL / countPNL
 
 			let dataScatter = []
-			let multiplier = (maxData == 0 ? 1 : maxData)
+			let multiplier = (sumNetSales == 0 ? 1 : sumNetSales)
 
 			dataAllPNL.forEach((d) => {
 				dataScatter.push({
 					category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
 					year: d._id._id_date_year,
-					valuePNL: d.value,
-					valuePNLPercentage: (d.value / multiplier) * 100,
-					avgNetSales: avgPNL,
-					avgNetSalesPercentage: (avgPNL / multiplier) * 100
+					valuePNL: Math.abs(d.value),
+					valuePNLPercentage: Math.abs(d.value / multiplier * 100),
+					avgPNL: Math.abs(avgPNL),
+					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
+					sumPNL: Math.abs(sumPNL),
+					sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
 				})
-				
-				console.log("---->>>>-", avgPNL, d.value, maxData)
 			})
-
-			console.log("-----", years, dataScatter, maxData)
 
 			rs.contentIsLoading(false)
 			rs.generateReport(dataScatter, years)
@@ -129,32 +119,44 @@ rs.generateReport = (data, years) => {
             type: "line",
             missingValues: "gap",
         },
-		seriesColors: ["#ff8d00", "#678900"],
-        series: [{
-            name: `Average of ${netSalesTitle}`,
-            field: 'avgNetSalesPercentage',
-			width: 3, 
-            tooltip: {
+		seriesColors: ["#ff8d00", "#678900", '#3498DB'],
+		series: [{
+			name: `Sum of ${breakdownTitle} to ${netSalesTitle}`,
+			field: 'sumPNLPercentage',
+			width: 3,
+			tooltip: {
 				visible: true,
-				template: `Average of ${netSalesTitle}: #: kendo.toString(dataItem.avgNetSalesPercentage, 'n2') # % (#: kendo.toString(dataItem.avgNetSales, 'n2') #)`
+				template: `Sum of ${breakdownTitle} to ${netSalesTitle}: #: kendo.toString(dataItem.sumPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.sumPNL, 'n2') #)`
 			},
 			markers: {
 				visible: false
 			}
-        }, {
-            name: `Percentage of ${breakdownTitle} to ${netSalesTitle}`,
-            field: "valuePNLPercentage",
-			width: 3, 
-            opacity: 0,
-            markers : {
-            	type: 'cross',
-				size: 12
-            },
-            tooltip: {
+		}, {
+			name: `Average of ${breakdownTitle} to ${netSalesTitle}`,
+			field: 'avgPNLPercentage',
+			dashType: "dash",
+			width: 3,
+			tooltip: {
 				visible: true,
-				template: `Percentage of ${breakdownTitle} to ${netSalesTitle} - #: dataItem.category # at #: dataItem.year #: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
+				template: `Average of ${breakdownTitle} to ${netSalesTitle}: #: kendo.toString(dataItem.avgPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.avgPNL, 'n2') #)`
 			},
-        }],
+			markers: {
+				visible: false
+			}
+		}, {
+			name: `${breakdownTitle} to ${netSalesTitle}`,
+			field: "valuePNLPercentage",
+			width: 3,
+			opacity: 0,
+			markers: {
+				type: 'cross',
+				size: 12
+			},
+			tooltip: {
+				visible: true,
+				template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
+			}
+		}],
         valueAxis: {
 			majorGridLines: {
 				color: '#fafafa'

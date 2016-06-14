@@ -302,7 +302,7 @@ var methodsDataBrowser = {
 				colums = columnsLocked
 			}
 
-				console.log(colums)
+				// console.log(colums)
 
 			id.find('div[idfilter=gridFilterBrowser]').kendoGrid({
 				dataSource: {
@@ -325,7 +325,33 @@ var methodsDataBrowser = {
 	                    }
 	                },
 	                schema: {
-	                    data: options.dataSource.fieldData,
+	                    data: function(res){
+	                    	if (res.dataresult.TableNames == 'salespls'){
+	                    		res.DataValue.forEach((d) => {
+	                    			colums.forEach((col) => {
+	                    				if (!col.hasOwnProperty('field')) {
+	                    					return
+	                    				}
+	                    				if (col.field.indexOf("pldatas") == -1) {
+	                    					return
+	                    				}
+
+                    					let plcode = col.field.split('.')[1]
+                    					if (!d.pldatas.hasOwnProperty(plcode)) {
+                    						d.pldatas[plcode] = {
+                    							plcode: "",
+                    							plorder: "",
+                    							group1: "",
+                    							group2: "",
+                    							group3: "",
+                    							amount: 0
+                    						}
+                    					}
+                    				})
+	                    		})
+		                    }
+	                    	return res[options.dataSource.fieldData];
+	                    },
 	                    total: options.dataSource.fieldTotal
 	                },
 	                pageSize: options.dataSource.pageSize,

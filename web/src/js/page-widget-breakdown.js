@@ -73,14 +73,6 @@ bkd.breakdownBy = ko.observable('customer.channelname')
 bkd.breakdownByFiscalYear = ko.observable('date.fiscal')
 bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy())
 
-bkd.clickCell = (plcode, breakdown) => {
-	// if (pnl == "Net Sales") {
-	// 	bkd.renderDetailSalesTrans(breakdown)
-	// 	return
-	// }
-
-	bkd.renderDetail(plcode, breakdown)
-}
 bkd.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
 	let down = $(e).find('i.fa-chevron-down').length
@@ -174,59 +166,113 @@ bkd.renderDetailSalesTrans = (breakdown) => {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
 	$('.grid-detail').kendoGrid(config)
 }
-bkd.renderDetail = (plcode, breakdown) => {
+bkd.renderDetail = (plcode, breakdowns) => {
 	bkd.popupIsLoading(true)
+	$('#modal-detail-ledger-summary .modal-title').html('Detail')
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
 
-	let render = () => {
-		let columns = [
-			{ title: 'Date', width: 120, locked: true, footerTemplate: 'Total :', template: (d) => moment(d.date.date).format('DD/MM/YYYY HH:mm'), attributes: { class: 'bold' } },
-			// { field: `pldatas.${plcode}.amount`, width: 120, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => d[`pldatas.${plcode}.amount`].sum, format: '{0:n2}', attributes: { class: 'align-right' } },
-			{ field: 'grossamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Gross</div>", footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.grossamount.sum, 'n0')}</div>`, format: '{0:n2}', attributes: { class: 'align-right' } },
-			{ field: 'discountamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Discount</div>", footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.discountamount.sum, 'n0')}</div>`, format: '{0:n2}', attributes: { class: 'align-right' } },
-			{ field: 'netamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Net Sales</div>", footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.netamount.sum, 'n0')}</div>`, format: '{0:n2}', attributes: { class: 'align-right' } },
-			{ field: 'cc.name', title: 'Cost Center', width: 250 },
-			{ field: 'customer.name', title: 'Outlet', width: 250 },
-			{ field: 'customer.branchname', title: 'Branch', width: 150 },
-			{ field: 'customer.channelname', title: 'Channel', width: 120 },
-			{ field: 'product.brand', title: 'Brand', width: 100 },
-			{ field: 'product.name', title: 'Product', width: 250 },
-		]
-		let config = {
-			dataSource: {
-				data: bkd.detail(),
-				pageSize: 5,
-				aggregate: [
-					{ field: "netamount", aggregate: "sum" },
-					{ field: "grossamount", aggregate: "sum" },
-					{ field: "discountamount", aggregate: "sum" },
-					{ field: `pldatas.${plcode}.amount`, aggregate: 'sum' }
-				]
-			},
-			columns: columns,
-			pageable: true,
-			resizable: false,
-			sortable: true
+	let titleParts = []
+	for (let p in breakdowns) {
+		if (breakdowns.hasOwnProperty(p)) {
+			titleParts.push(breakdowns[p])
 		}
-
-		$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
-		$('.grid-detail').kendoGrid(config)
 	}
 
-	let param = {}
-	param.PLCode = plcode
-	param.BreakdownBy = bkd.breakdownBy()
-	param.BreakdownValue = breakdown
-	param.filters = [] // rpt.getFilterValue()
+	$('#modal-detail-ledger-summary .modal-title').html(`Detail of ${titleParts.join(' ')}`)
 
-	toolkit.ajaxPost('/report/getpnldatadetail', param, (res) => {
-		bkd.detail(res.Data)
-		bkd.popupIsLoading(false)
-		setTimeout(render, 200)
-	}, () => {
-		bkd.popupIsLoading(false)
-	})
+	let columns = [
+		{ title: 'Date', width: 120, locked: true, footerTemplate: 'Total :', template: (d) => moment(d.date.date).format('DD/MM/YYYY HH:mm'), attributes: { class: 'bold' } },
+		// { field: `pldatas.${plcode}.amount`, width: 120, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => d[`pldatas.${plcode}.amount`].sum, format: '{0:n2}', attributes: { class: 'align-right' } },
+		{ field: 'grossamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Gross</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.grossamount.sum, 'n0')}</div>`,  */ format: '{0:n2}', attributes: { class: 'align-right' } },
+		{ field: 'discountamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Discount</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.discountamount.sum, 'n0')}</div>`,  */ format: '{0:n2}', attributes: { class: 'align-right' } },
+		{ field: 'netamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Net Sales</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.netamount.sum, 'n0')}</div>`,  */ format: '{0:n2}', attributes: { class: 'align-right' } },
+		// { title: 'Cost Center', template: (d) => toolkit.redefine(toolkit.redefine(d.cc, {}).name, ''), width: 250 },
+		{ title: 'Outlet', template: (d) => toolkit.redefine(toolkit.redefine(d.customer, {}).name, ''), width: 200 },
+		{ title: 'Branch', template: (d) => toolkit.redefine(toolkit.redefine(d.customer, {}).branchname, ''), width: 150 },
+		{ title: 'Channel', template: (d) => toolkit.redefine(toolkit.redefine(d.customer, {}).channelname, ''), width: 150 },
+		{ title: 'Brand', template: (d) => toolkit.redefine(toolkit.redefine(d.product, {}).brand, ''), width: 100 },
+		{ title: 'Product', template: (d) => toolkit.redefine(toolkit.redefine(d.product, {}).name, ''), width: 250 },
+	]
+
+	let config = {
+		dataSource: {
+			transport: {
+			    read: (options) => {
+			    	let param = options.data
+			    	param.filters = []
+
+					for (let p in breakdowns) {
+						if (breakdowns.hasOwnProperty(p)) {
+							param.filters.push({
+								field: p,
+								op: "$eq",
+								value: breakdowns[p]
+							})
+						}
+					}
+
+			    	if (toolkit.isUndefined(param.page)) {
+			    		param = $.extend(true, param, {
+			    			take: 5,
+			    			skip: 0,
+			    			page: 1,
+			    			pageSize: 5	
+			    		})
+			    	}
+
+		            $.ajax({
+		                type: "POST",
+						url: "/report/getpnldetail",
+		                contentType: "application/json; charset=utf-8",
+		                dataType: 'json',
+		                data: JSON.stringify(param),
+		                success: (res) => {
+							bkd.popupIsLoading(false)
+							setTimeout(() => {
+								console.log("++++", res)
+								options.success(res.Data)
+							}, 200)
+		                },
+		                error: () => {
+							bkd.popupIsLoading(false)
+		                }
+		            });
+		        },
+		        pageSize: 5
+			},
+			schema: {
+			    data: (d) => d.DataValue,
+			    total: (d) => d.DataCount
+			},
+	  //       aggregates: [
+			// 	{ field: "netamount", aggregate: "sum" },
+			// 	{ field: "grossamount", aggregate: "sum" },
+			// 	{ field: "discountamount", aggregate: "sum" },
+			// 	{ field: `pldatas.${plcode}.amount`, aggregate: 'sum' }
+			// ],
+			serverPaging: true,
+			pageSize: 5,
+		},
+		sortable: true,
+        pageable: true,
+        scrollable: true,
+		columns: columns,
+		dataBound: (d) => {
+			$('.grid-detail .k-pager-nav.k-pager-last').hide()
+			
+			setTimeout(() => {
+				let pager = $('.grid-detail .k-pager-info')
+				let text = `rows ${pager.html().split(" ").slice(0, 3).join(" ")}`
+				pager.html(text)
+			}, 10)
+		}
+	}
+
+	console.log("======", config)
+
+	$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
+	$('.grid-detail').kendoGrid(config)
 }
 bkd.render = () => {
 	if (bkd.data().length == 0) {
@@ -238,12 +284,17 @@ bkd.render = () => {
 	let rows = []
 	
 	let data = _.sortBy(_.map(bkd.data(), (d) => {
-		let _id = breakdowns.map((e) => {
+		d.breakdowns = {}
+		let titleParts = []
+
+		breakdowns.forEach((e) => {
 			let title = d._id[`_id_${toolkit.replace(e, '.', '_')}`]
-			return toolkit.whenEmptyString(title, 'Uncategorized')
-		}).join(' ')
+			title = toolkit.whenEmptyString(title, 'Uncategorized')
+			d.breakdowns[e] = title
+			titleParts.push(title)
+		})
 		
-		d._id = _id
+		d._id = titleParts.join(' ')
 		return d 
 	}), (d) => d._id)
 	
@@ -380,7 +431,7 @@ bkd.render = () => {
 				.appendTo(trContent)
 
 			cell.on('click', () => {
-				bkd.clickCell(d.PLCode, key)
+				bkd.renderDetail(d.PLCode, e.breakdowns)
 			})
 
 			toolkit.newEl('td')

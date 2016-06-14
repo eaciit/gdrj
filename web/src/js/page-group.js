@@ -105,8 +105,8 @@ gr.removeGrant = (data) => {
 
 gr.editData = (id) => {
 	gr.isNew(false)
-    app.ajaxPost('/group/editgroup', {_id: id}, (res) => {
-        if (!app.isFine(res)) {
+    toolkit.ajaxPost('/group/editgroup', {_id: id}, (res) => {
+        if (!toolkit.isFine(res)) {
             return
         }
         for (var i in res.data.Grants){
@@ -115,17 +115,17 @@ gr.editData = (id) => {
         ko.mapping.fromJS(res.data, gr.config)
         gr.displayAccess(res.data._id)
     }, (err) => {
-        app.showError(err.responseText)
+        toolkit.showError(err.responseText)
     }, {
         timeout: 5000
     })
 }
 
 gr.displayAccess = (e) => {
-    app.ajaxPost("/group/getaccessgroup", {
+    toolkit.ajaxPost("/group/getaccessgroup", {
         _id: e
     }, function(res) {
-        if (!app.isFine(res)) {
+        if (!toolkit.isFine(res)) {
             return;
         }
         if (res.data == null) {
@@ -159,7 +159,7 @@ gr.getAccess = () => {
 }
 
 gr.saveChanges = () => {
-	if (!app.isFormValid(".form-group")) {
+	if (!toolkit.isFormValid(".form-group")) {
 		return
 	}
     let parm = ko.mapping.toJS(gr.config)
@@ -174,15 +174,15 @@ gr.saveChanges = () => {
             GroupType: parm.GroupType
         },
     }
-	app.ajaxPost('/group/savegroup', postparm, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/group/savegroup', postparm, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
 		$('#modalUpdate').modal('hide')
 		gr.refreshData()
 	}, (err) => {
-		app.showError(err.responseText)
+		toolkit.showError(err.responseText)
 	}, {
 		timeout: 5000
 	})
@@ -216,8 +216,8 @@ gr.deletegroup = () => {
             closeOnConfirm: true
         }, function() {
             setTimeout(function () {
-                app.ajaxPost("/group/deletegroup", { _id: gr.tempCheckIdDelete() }, function (res) {
-                    if (!app.isFine(res)) {
+                toolkit.ajaxPost("/group/deletegroup", { _id: gr.tempCheckIdDelete() }, function (res) {
+                    if (!toolkit.isFine(res)) {
                         return;
                     }
                     gr.refreshData()

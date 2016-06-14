@@ -72,17 +72,17 @@ ud.gridUploadedFiles = {
 	filterable: false,
 	sortable: false,
 	resizable: false,
-	dataBound: app.gridBoundTooltipster('.grid-uploadData')
+	dataBound: toolkit.gridBoundTooltipster('.grid-uploadData')
 }
 ud.processData = function (data) {
-	app.ajaxPost('/uploaddata/processdata', { _id: data }, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/uploaddata/processdata', { _id: data }, (res) => {
+		if (!toolkit.isFine(res)) {
 			return;
 		}
 
 		ud.getUploadedFiles()
 	}, function (err) {
-		app.showError(err.responseText)
+		toolkit.showError(err.responseText)
 	}, {
 		timeout: 5000
 	})
@@ -91,14 +91,14 @@ ud.processData = function (data) {
 ud.getMasterDataBrowser = () => {
 	ud.masterDataBrowser([])
 
-	app.ajaxPost('/databrowser/getdatabrowsers', {}, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/databrowser/getdatabrowsers', {}, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
 		ud.masterDataBrowser(res.data)
 	}, (err) => {
-		app.showError(err.responseText)
+		toolkit.showError(err.responseText)
 	}, {
 		timeout: 5000
 	})
@@ -106,8 +106,8 @@ ud.getMasterDataBrowser = () => {
 ud.getUploadedFiles = () => {
 	ud.dataUploadedFiles([])
 
-	app.ajaxPost('/uploaddata/getuploadedfiles', {}, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/uploaddata/getuploadedfiles', {}, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
@@ -117,7 +117,7 @@ ud.getUploadedFiles = () => {
 	})
 }
 ud.doUpload = () => {
-	if (!app.isFormValid('.form-upload-file')) {
+	if (!toolkit.isFormValid('.form-upload-file')) {
 		return
 	}
 
@@ -126,14 +126,14 @@ ud.doUpload = () => {
 	payload.append('desc', ud.inputDescription())
 	payload.append('userfile', $('[name=file]')[0].files[0])
 
-	app.ajaxPost('/uploaddata/uploadfile', payload, (res) => {
-		if (!app.isFine(res)) {
+	toolkit.ajaxPost('/uploaddata/uploadfile', payload, (res) => {
+		if (!toolkit.isFine(res)) {
 			return
 		}
 
 		ud.getUploadedFiles()
 	}, (err) => {
-		app.showError(err.responseText)
+		toolkit.showError(err.responseText)
 	}, {
 		timeout: 5000
 	})

@@ -11,7 +11,7 @@ ccr.limitchart = ko.observable(4)
 
 ccr.getDecreasedQty = (useCache = false) => {
 	ccr.contentIsLoading(true)
-	app.ajaxPost(`/report/GetDecreasedQty`, {}, (res) => {
+	toolkit.ajaxPost(`/report/GetDecreasedQty`, {}, (res) => {
 		ccr.dataComparison(res)
 		ccr.contentIsLoading(false)
 		ccr.refresh()
@@ -133,7 +133,7 @@ ccr.render = () => {
 				labels: {
 					font: 'Source Sans Pro 11',
 					rotation: 40
-					// template: (d) => `${app.capitalize(d.value).slice(0, 3)}`
+					// template: (d) => `${toolkit.capitalize(d.value).slice(0, 3)}`
 				}
 			},
 			legend: {
@@ -172,8 +172,6 @@ ccr.render = () => {
 
 		html.appendTo(chartContainer)
 		html.find('.title').html(ccr.data()[e].data.productName)
-		console.log(config)
-		console.log(ccr.data()[e].data)
 		html.find('.chart').kendoChart(config)
 	}
 	chartContainer.append($('<div />').addClass('clearfix'))
