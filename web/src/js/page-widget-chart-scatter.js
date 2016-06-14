@@ -69,12 +69,12 @@ rs.refresh = (useCache = false) => {
 				dataScatter.push({
 					category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
 					year: d._id._id_date_year,
-					valuePNL: d.value,
-					valuePNLPercentage: d.value / multiplier * 100,
-					avgPNL: avgPNL,
-					avgPNLPercentage: avgPNL / multiplier * 100,
-					sumPNL: sumPNL,
-					sumPNLPercentage: sumPNL / multiplier * 100
+					valuePNL: Math.abs(d.value),
+					valuePNLPercentage: Math.abs(d.value / multiplier * 100),
+					avgPNL: Math.abs(avgPNL),
+					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
+					sumPNL: Math.abs(sumPNL),
+					sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
 				})
 			})
 
