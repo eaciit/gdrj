@@ -77,7 +77,7 @@ func main() {
 		func(garrsh []*gdrj.SalesHeader) {
 			// defer mwg.Done()
 
-			for ix, gv := range garrsh {
+			for _, gv := range garrsh {
 				icount += 1
 
 				toolkit.Printfn("%d of %d data header processing", icount, countsales)
