@@ -1,10 +1,31 @@
-let plcodes = [
-	{ plcode: "PL74C", title: "GM" },
-	{ plcode: "PL74B", title: "COGS" },
-	{ plcode: "PL44B", title: "EBIT" },
-	{ plcode: "PL44C", title: "EBITDA" },
-	{ plcode: "PL8A", title: "Net Sales" }
-]
+// let plcodes = [
+// 	{ plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"], title: 'Gross Sales' },
+// 	// growth
+// 	{ plcodes: ["PL7", "PL8"], title: 'Sales Discount' },
+// 	// ATL
+// 	// BTL
+// 	{ plcode: "PL74B", title: "COGS" },
+// 	{ plcode: "PL74C", title: "Gross Margin" },
+// 	{ plcode: "PL94A", title: "SGNA" },
+// 	{ plcode: "PL26", title: "Royalties" }
+// 	{ plcode: "PL44B", title: "EBIT" },
+// 	{ plcode: "PL44C", title: "EBITDA" },
+
+
+
+
+
+// 	{ plcode: "PL74C", title: "GM" },
+// 	{ plcode: "PL74B", title: "COGS" },
+// 	{ plcode: "PL44B", title: "EBIT" },
+// 	{ plcode: "PL44C", title: "EBITDA" },
+// 	{ plcode: "PL8A", title: "Net Sales" },
+
+// ]
+
+
+
+
 
 vm.currentMenu('Dashboard')
 vm.currentTitle("Dashboard")
@@ -16,63 +37,138 @@ vm.breadcrumb([
 viewModel.dashboard = {}
 let dsbrd = viewModel.dashboard
 
+dsbrd.data = ko.observableArray([])
+dsbrd.columns = ko.observableArray([])
 dsbrd.dimension = ko.observable('customer.channelname')
 dsbrd.fiscalYear = ko.observable(2014)
 dsbrd.contentIsLoading = ko.observable(false)
 
-dsbrd.data = ko.observableArray([
-	{ pnl: 'Gross Sales', q1: 1000000, q2: 1150000, q3: 1280000, q4: 1400000, type: 'number' },
-	{ pnl: 'Growth', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' },
-	{ pnl: 'Discount', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' },
-	{ pnl: 'ATL', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' },
-	{ pnl: 'BTL', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' },
-	{ pnl: 'COGS', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' },
-	{ pnl: 'Gross Margin', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' },
-	{ pnl: 'SGA', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' },
-	{ pnl: 'Royalties', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' },
-	{ pnl: 'EBITDA', q1: 0, q2: 15, q3: 11, q4: 9, type: 'percentage' },
-	{ pnl: 'EBIT (%)', q1: 10, q2: 10, q3: 10, q4: 10, type: 'percentage' },
-	{ pnl: 'EBIT', q1: 100000, q2: 115000, q3: 128000, q4: 140000, type: 'number' },
-])
+dsbrd.refresh = () => {
+	let parse = (res) => {
+		let rows = [
+			{ pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"] },
+			{ pnl: 'Growth', plcodes: [] }, // NOT YET
+			{ pnl: 'Sales Discount', plcodes: ["PL7", "PL8"] },
+			{ pnl: 'ATL', plcodes: [] }, // NOT YET
+			{ pnl: 'BTL', plcodes: [] }, // NOT YET
+			{ pnl: "COGS", plcodes: ["PL74B"] },
+			{ pnl: "Gross Margin", plcodes: ["PL74C"] },
+			{ pnl: "SGA", plcodes: ["PL94A"] },
+			{ pnl: "Royalties", plcodes: ["PL26"] },
+			{ pnl: "EBITDA", plcodes: ["PL44C"] },
+			{ pnl: "EBIT %", plcodes: [] },
+			{ pnl: "EBIT", plcodes: ["PL44B"] },
+		]
+
+		let columns = [
+			{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
+		]
+
+		let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.dimension(), '.', '_')}`], 'Other'))
+
+		rows.forEach((d) => {
+			data.forEach((e, i) => {
+				let field = e._id[`_id_${toolkit.replace(dsbrd.dimension(), '.', '_')}`]
+				let key = `field${i}`
+				d[key] = toolkit.sum(d.plcodes, (f) => e[f])
+
+				if (d.pnl == 'EBIT %') {
+					let grossSales = rows.find((f) => f.pnl == 'Gross Sales')
+					let grossSalesValue = toolkit.sum(grossSales.plcodes, (f) =>  e[f])
+
+					let ebit = rows.find((f) => f.pnl == 'EBIT')
+					let ebitValue = toolkit.sum(ebit.plcodes, (f) =>  e[f])
+
+					console.log(field, grossSalesValue / ebitValue, `${kendo.toString(grossSalesValue / ebitValue, 'n2')} %`)
+					d[key] = `${kendo.toString(toolkit.number(grossSalesValue / ebitValue), 'n2')} %`
+				}
+
+				if (toolkit.isDefined(columns.find((f) => f.field == key))) {
+					return
+				}
+
+				columns.push({
+					field: key,
+					title: toolkit.redefine(field, 'Other'),
+					format: '{0:n0}',
+					attributes: { class: 'align-right' },
+					headerAttributes: { 
+						style: 'text-align: right !important;',
+						class: 'bold tooltipster',
+						title: 'Click to sort'
+					}
+				})
+			})
+		})
+
+		dsbrd.data(rows)
+		dsbrd.columns(columns)
+
+		if (columns.length > 5) {
+			columns.forEach((d, i) => {
+				if (i == 0) {
+					d.width = 200
+					d.locked = true
+					return
+				}
+
+				d.width = 150
+			})
+		}
+	}
+
+	let param = {}
+	param.pls = ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6", "PL7", "PL8", "PL74B", "PL74C", "PL94A", "PL26", "PL44B", "PL44C"]
+	param.groups = [dsbrd.dimension()]
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue()
+	param.filters.push({
+		Field: 'date.fiscal',
+		Op: '$eq',
+		Value: `${dsbrd.fiscalYear()}-${dsbrd.fiscalYear()+1}`
+	})
+
+	let fetch = () => {
+		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => fetch, 1000 * 5)
+				return
+			}
+
+			parse(res)		
+			dsbrd.contentIsLoading(false)
+			dsbrd.render()
+		}, () => {
+			dsbrd.contentIsLoading(false)
+		})
+	}
+
+	dsbrd.contentIsLoading(true)
+	fetch()
+}
 
 dsbrd.render = () => {
-	let columns = [
-		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
-	]
+	var fields = {}
 
-	toolkit.repeat(4, (i) => {
-		columns.push({ 
-			// field: `q${i + 1}`,
-			title: `Quarter ${(i + 1)}`,
-			template: (d) => {
-				let value = kendo.toString(d[`q${i + 1}`], 'n0')
-				if (d.type == 'percentage') {
-					value = `${value} %`
-				}
-				return value
-			},
-			// headerTemplate: `<div class="align-right bold">Quarter ${(i + 1)}</div>`,
-			attributes: { class: 'align-right' },
-			headerAttributes: { style: 'text-align: right !important;', class: 'bold' },
-			format: '{0:n0}'
-		})
-	})
+    if (dsbrd.data().length > 0) {
+    	let target = dsbrd.data()[0]
+    	for (let key in target) {
+    		if (target.hasOwnProperty(key) && ['pnl', 'plcodes'].indexOf(key) == -1) {
+    			fields[key] = { type: 'number' }
+    		}
+    	}
+    }
 
 	let config = {
 		dataSource: {
 			data: dsbrd.data(),
 			schema: {
 		        model: {
-		            fields: {
-		                q1: { type: "number" },
-		                q2: { type: "number" },
-		                q3: { type: "number" },
-		                q4: { type: "number" }
-		            }
+		            // fields: fields
 		        }
 		    }
 		},
-		columns: columns,
+		columns: dsbrd.columns(),
 		resizabl: false,
 		sortable: true, 
 		pageable: false,
@@ -83,9 +179,6 @@ dsbrd.render = () => {
 	$('.grid-dashboard').kendoGrid(config)
 }
 
-dsbrd.refresh = () => {
-	dsbrd.render()
-}
 
 
 
@@ -94,7 +187,7 @@ dsbrd.refresh = () => {
 viewModel.dashboardRanking = {}
 let rank = viewModel.dashboardRanking
 
-rank.dimension = ko.observable('product.brand')
+rank.dimension = ko.observable('customer.channelname')
 rank.columns = ko.observableArray([
 	{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
 	{ field: 'gmPercentage', title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' },
@@ -108,18 +201,7 @@ rank.contentIsLoading = ko.observable(false)
 rank.data = ko.observableArray([])
 
 rank.refresh = () => {
-	let param = {}
-	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
-	param.groups = [rank.dimension()]
-	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue()
-
-	rank.contentIsLoading(true)
-	app.ajaxPost("/report/getpnldatanew", param, (res) => {
-		if (res.Status == "NOK") {
-			return
-		}
-
+	let parse = (res) => {
 		let rows = []
 		res.Data.Data.forEach((d) => {
 			let row = {}
@@ -137,11 +219,31 @@ rank.refresh = () => {
 		})
 
 		rank.data(rows)
-		rank.contentIsLoading(false)
-		rank.render()
-	}, () => {
-		rank.contentIsLoading(false)
-	})
+	}
+
+	let param = {}
+	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
+	param.groups = [rank.dimension()]
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue()
+
+	let fetch = () => {
+		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => fetch, 1000 * 5)
+				return
+			}
+
+			parse(res)		
+			rank.contentIsLoading(false)
+			rank.render()
+		}, () => {
+			rank.contentIsLoading(false)
+		})
+	}
+
+	rank.contentIsLoading(true)
+	fetch()
 }
 
 rank.render = () => {

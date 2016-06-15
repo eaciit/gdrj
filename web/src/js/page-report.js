@@ -127,16 +127,17 @@ rpt.pivotModel = [
 rpt.analysisIdeas = ko.observableArray([])
 rpt.data = ko.observableArray([])
 rpt.optionDimensions = ko.observableArray([
-	{ field: "", name: 'None', title: '' },
+	// { field: "", name: 'None', title: '' },
 	{ field: "customer.branchname", name: 'Branch/RD', title: 'customer_branchname' },
     { field: "product.brand", name: 'Brand', title: 'product_brand' },
 	{ field: 'customer.channelname', name: 'Channel', title: 'customer_channelname' },
     // { field: 'customer.name', name: 'Outlet', title: 'customer_name' },
 	// { field: 'product.name', name: 'Product', title: 'product_name' },
-    { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
-    { field: 'customer.city', name: 'City', title: 'customer_city' },
+    // { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
+    // { field: 'customer.city', name: 'City', title: 'customer_city' },
     { field: 'customer.region', name: 'Region', title: 'customer_region' },
-    { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
+    // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
+    { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' }
 ])
 rpt.optionDataPoints = ko.observableArray([
     { field: 'value1', name: o['value1'] },
