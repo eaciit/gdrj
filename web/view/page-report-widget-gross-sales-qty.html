@@ -12,35 +12,14 @@
 		pvt.row('customer.channelname')
 		pvt.column('customer.branchname')
 		pvt.dataPoints = ko.observableArray([
-			{ field: 'grosssales', title: 'Gross Invoice', name: 'Gross Invoice' },
+			{ field: 'gross_sales', title: 'Gross Invoice', name: 'Gross Invoice' },
 			{ field: 'qty', title: 'Qty', name: 'Qty' },
-			{ field: 'grossinvoicebyqty', title: 'Gross Invoice / Qty', name: 'Gross Invoice / Qty' }
+			{ field: 'gross_sales_by_qty', title: 'Gross Invoice / Qty', name: 'Gross Invoice / Qty' }
 		])
-		
-		pvt.data([{
-			customer_channelname: 'GT', customer_branchname: 'Surabaya',
-			grosssales: 20000,
-			qty: 2000,
-			grossinvoicebyqty: 10
-		}, {
-			customer_channelname: 'MT', customer_branchname: 'Surabaya',
-			grosssales: 22000,
-			qty: 1000,
-			grossinvoicebyqty: 22
-		}, {
-			customer_channelname: 'GT', customer_branchname: 'Malang',
-			grosssales: 23000,
-			qty: 3000,
-			grossinvoicebyqty: 23
-		}, {
-			customer_channelname: 'GT', customer_branchname: 'Malang',
-			grosssales: 22000,
-			qty: 2000,
-			grossinvoicebyqty: 11
-		}])
-		crt.data(pvt.data())
-		crt.series(pvt.dataPoints())
 		pvt.refresh()
+
+		crt.categoryAxisField('customer.branchname')
+		crt.series(pvt.dataPoints())
 		crt.refresh()
 	})
 </script>
