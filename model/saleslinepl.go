@@ -139,6 +139,7 @@ func TrxToSalesPL(conn dbox.IConnection,
 			pl.CalcSales(masters)
 			pl.CalcCOGS(masters)
 			pl.CalcRoyalties(masters)
+			pl.CalcDepre(masters)
 			pl.CalcFreight(masters)
 			pl.CalcPromo(masters)
 			pl.CalcSGA(masters)
@@ -158,6 +159,7 @@ func TrxToSalesPL(conn dbox.IConnection,
 			pl.CalcRoyalties(masters)
 			pl.CalcPromo(masters)
 			pl.CalcSGA(masters)
+			pl.CalcDepre(masters)
 		}
 	}
 
@@ -297,7 +299,7 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 	cogsTable := masters.Get("cogs").(map[string]*COGSConsolidate)
 	cogsSchema, exist := cogsTable[cogsid]
 	if !exist {
-		toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
+		// toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
 		return
 	}
 
