@@ -194,5 +194,6 @@ rs.generateReport = (data, years) => {
 }
 
 $(() => {
+	rpt.refreshView('breakdown')
 	rs.getSalesHeaderList()
 })
