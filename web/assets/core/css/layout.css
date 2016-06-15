@@ -501,6 +501,9 @@ body {
   background-color: #74B841;
   color: white;
 }
+.listcolor-active {
+  color: #337ab7;
+}
 .list-analysis {
   margin-bottom: 10px;
 }

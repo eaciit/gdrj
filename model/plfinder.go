@@ -300,6 +300,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			materialLocal := s.Sum(raw, "PL9")
 			materialImport := s.Sum(raw, "PL10")
 			materialOther := s.Sum(raw, "PL13")
+			sga := s.Sum(raw, "PL94A")
 
 			each := toolkit.M{}
 			if s.Flag == "gross_sales_discount_and_net_sales" {
@@ -336,10 +337,14 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("material_other", math.Abs(materialOther))
 				each.Set("cogs", math.Abs(cogs))
 				each.Set("indirect_expense_index", math.Abs((materialLocal+materialImport+materialOther)/cogs))
+			} else if s.Flag == "sga_by_sales" {
+				each.Set("sga", math.Abs(sga))
+				each.Set("sales", netSales)
+				each.Set("sga_qty", math.Abs(s.noZero(sga/netSales)))
 			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
-				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(v.(string)))
+				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(fmt.Sprintf("%v", v)))
 			}
 
 			res = append(res, &each)
