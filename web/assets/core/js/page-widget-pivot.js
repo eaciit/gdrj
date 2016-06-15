@@ -9,20 +9,28 @@ pvt.contentIsLoading = ko.observable(false);
 pvt.optionRows = ko.observableArray(rpt.optionDimensions());
 pvt.optionColumns = ko.observableArray(rpt.optionDimensions());
 
-pvt.row = ko.observable([]);
-pvt.column = ko.observable([]);
+pvt.flag = ko.observable('');
+pvt.row = ko.observable('');
+pvt.column = ko.observable('');
 pvt.dataPoints = ko.observableArray([]);
 pvt.data = ko.observableArray([]);
 
 pvt.refresh = function () {
-	pvt.render();
-	// // pvt.data(DATATEMP_PIVOT)
-	// app.ajaxPost("/report/summarycalculatedatapivot", pvt.getParam(), (res) => {
-	// 	let orderKey = app.idAble(ko.mapping.toJS(pvt.rows()[0]).field)
-	// 	let data = _.sortBy(res.Data, (o, v) => o[orderKey])
-	// 	pvt.data(data)
-	// 	pvt.render()
-	// })
+	var param = {};
+	param.pls = [];
+	param.flag = pvt.flag();
+	param.groups = [pvt.row(), pvt.column()];
+	param.aggr = 'sum';
+	param.filters = rpt.getFilterValue();
+
+	pvt.contentIsLoading(true);
+	app.ajaxPost("/report/getpnldatanew", param, function (res) {
+		pvt.data(res.Data.Data);
+		pvt.contentIsLoading(false);
+		pvt.render();
+	}, function () {
+		pvt.contentIsLoading(false);
+	});
 };
 pvt.render = function () {
 	var data = pvt.data();

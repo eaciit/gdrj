@@ -6,7 +6,7 @@ import (
 	"github.com/eaciit/toolkit"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"math"
+	// "math"
 	"sort"
 	"strings"
 	"time"
@@ -23,6 +23,7 @@ type PLFinderParam struct {
 	Breakdowns []string  `json:"groups"`
 	Filters    []*Filter `json:"filters"`
 	Aggr       string    `json:"aggr"`
+	Flag       string    `json:"flag"`
 }
 
 func (s *PLFinderParam) GetPLCollections() ([]*toolkit.M, error) {
@@ -263,11 +264,50 @@ func (s *PLFinderParam) GetPLModelsFollowPLS() ([]*PLModel, error) {
 	return res, nil
 }
 
+func (s *PLFinderParam) SetPL() {
+	if s.Flag == "gross_sales_discount_and_net_sales" {
+		s.PLs = append(s.PLs, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6", "PL7", "PL8")
+	}
+}
+
+func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
+	res := []*toolkit.M{}
+
+	if s.Flag == "gross_sales_discount_and_net_sales" {
+		fmt.Println("00000000", data)
+		for _, raw := range *data {
+			p := func(i ...string) float64 {
+				total := 0.0
+				for _, j := range i {
+					total = total + raw.GetFloat64(fmt.Sprintf("PL%s", j))
+				}
+				return total
+			}
+
+			each := toolkit.M{}
+			each.Set("gross_sales", p("1", "2", "3", "4", "5", "6"))
+			each.Set("sales_discount", p("7", "8"))
+			each.Set("net_sales", p("8A"))
+
+			for k, v := range raw.Get("_id").(toolkit.M) {
+				each.Set(strings.Replace(k, "_id_", "", -1), v)
+			}
+
+			res = append(res, &each)
+		}
+
+		*data = res
+	}
+}
+
 func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
+	s.SetPL()
+
 	tableName := s.GetTableName()
 	plmodels, err := s.GetPLModelsFollowPLS()
 	if err != nil {
 		return nil, err
+
 	}
 
 	q := DB().Connection.NewQuery().From(tableName)
@@ -298,16 +338,18 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		return nil, err
 	}
 
-	for _, each := range res {
-		for key := range *each {
-			if strings.Contains(key, "PL") {
-				val := each.GetFloat64(key)
-				if math.IsNaN(val) {
-					each.Set(key, 0)
-				}
-			}
-		}
-	}
+	// for _, each := range res {
+	// 	for key := range *each {
+	// 		if strings.Contains(key, "PL") {
+	// 			val := each.GetFloat64(key)
+	// 			if math.IsNaN(val) {
+	// 				each.Set(key, 0)
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	s.CalculatePL(&res)
 
 	return res, nil
 }
