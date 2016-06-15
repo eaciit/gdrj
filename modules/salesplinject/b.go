@@ -336,7 +336,7 @@ func main() {
 				break
 			}
 
-			if stx.Customer != nil && stx.Customer.ChannelID == "I1" {
+			if stx.Customer != nil && stx.Customer.ChannelID == "I1" && !strings.Contains(stx.Src, "RD") {
 				continue
 			}
 
