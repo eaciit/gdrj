@@ -392,7 +392,11 @@ rpt.getIdeas = () => {
 		}
 		
 		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.order))
-		rpt.idanalysisreport(_.find(rpt.analysisIdeas(), function(a) { return a._id == o.ID }).name)
+		let idreport = _.find(rpt.analysisIdeas(), function(a) { return a._id == o.ID })
+		if (idreport != undefined)
+			rpt.idanalysisreport(idreport.name)
+		else
+			rpt.idanalysisreport()
 		vm.currentTitle("Report " + rpt.idanalysisreport())
 	})
 }
