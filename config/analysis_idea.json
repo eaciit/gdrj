@@ -8,7 +8,7 @@
     "name": "Number of Outlets"
 }, {
     "_id": "distribution_coverage_index",
-    "order": 3,
+    "order": 7,
     "name": "Distribution Coverage Index"
 }, {
     "_id": "salesin_salesout_ratio",
@@ -24,7 +24,7 @@
     "name": "Number of RDs"
 }, {
     "_id": "salesman_adequate_index",
-    "order": 7,
+    "order": 11,
     "name": "Salesman adequate index"
 }, {
     "_id": "sga_cost_ratio",
@@ -40,7 +40,7 @@
     "name": "Number of Invoices/headcount"
 }, {
     "_id": "truck_adequate_index",
-    "order": 11,
+    "order": 15,
     "name": "Truck adequate index"
 }, {
     "_id": "sga_by_sales",
@@ -56,7 +56,7 @@
     "name": "Sales/Invoice"
 }, {
     "_id": "direct_labour_index",
-    "order": 15,
+    "order": 19,
     "name": "Direct Labour Index"
 }, {
     "_id": "no_of_headcount",
@@ -72,7 +72,7 @@
     "name": "Gross Sales/Qty"
 }, {
     "_id": "material_type_index",
-    "order": 19,
+    "order": 23,
     "name": "Material Type Index"
 }, {
     "_id": "no_of_headcount_per_manager",
@@ -88,7 +88,7 @@
     "name": "Discount/Qty"
 }, {
     "_id": "indirect_expense_index",
-    "order": 23,
+    "order": 27,
     "name": "Indirect Expense Index"
 }, {
     "_id": "no_of_layers",
@@ -104,7 +104,7 @@
     "name": "Sales Upside Ratio by Demographic Data"
 }, {
     "_id": "marketing_expense_index",
-    "order": 27,
+    "order": 31,
     "name": "Marketing Expense Index"
 }, {
     "_id": "cost_by_sales",
@@ -144,7 +144,7 @@
     "name": "Marketing Efficiency - BTL"
 }, {
     "_id": "freight_cost_by_sales",
-    "order": 36,
+    "order": 3,
     "name": "Freight Cost by Sales"
 }, {
     "_id": "staff_expense_per_employee",
