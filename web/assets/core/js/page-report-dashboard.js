@@ -162,7 +162,7 @@ dsbrd.render = function (res) {
 		},
 		columns: dsbrd.columns(),
 		resizabl: false,
-		sortable: true,
+		sortable: false,
 		pageable: false,
 		filterable: false
 	};
