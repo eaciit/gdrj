@@ -55,6 +55,8 @@ let o = {
 		{{template "page-report-widget-direct-labour-index.html"}}
 	{{else if eq .id "indirect_expense_index"}}
 		{{template "page-report-widget-indirect-expense-index.html"}}
+	{{else if eq .id "number_of_outlets"}}
+		{{template "page-report-widget-number-of-outlets.html"}}
 	{{end}}
 	</div>
 

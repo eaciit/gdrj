@@ -305,6 +305,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			sga := s.Sum(raw, "PL94A")
 			netprice := math.Abs(s.noZero(netAmount / qty))
 			netpricebtl := math.Abs(netprice + btl)
+			countoutlet := s.Sum(raw, "count")
 
 			each := toolkit.M{}
 			if s.Flag == "gross_sales_discount_and_net_sales" {
@@ -361,6 +362,12 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("cost", math.Abs(cogs))
 				each.Set("sales", netSales)
 				each.Set("cost_qty", math.Abs(s.noZero(cogs/netSales)))
+			} else if s.Flag == "sales_by_outlet" {
+				each.Set("sales", netSales)
+				each.Set("outlet", countoutlet)
+				each.Set("sales_outlet", math.Abs(s.noZero(netSales/countoutlet)))
+			} else if s.Flag == "number_of_outlets" {
+				each.Set("outlet", countoutlet)
 			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
