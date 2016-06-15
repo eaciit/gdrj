@@ -1,3 +1,11 @@
+let plcodes = [
+	{ plcode: "PL74C", title: "GM" },
+	{ plcode: "PL74B", title: "COGS" },
+	{ plcode: "PL44B", title: "EBIT" },
+	{ plcode: "PL44C", title: "EBITDA" },
+	{ plcode: "PL8A", title: "Net Sales" }
+]
+
 vm.currentMenu('Dashboard')
 vm.currentTitle("Dashboard")
 vm.breadcrumb([
@@ -88,60 +96,72 @@ let rank = viewModel.dashboardRanking
 
 rank.dimension = ko.observable('product.brand')
 rank.columns = ko.observableArray([
-	{ field: 'gm', name: 'GM %', type: 'percentage' },
-	{ field: 'cogs', name: 'COGS %', type: 'percentage' },
-	{ field: 'ebit_p', name: 'EBIT %', type: 'percentage' },
-	{ field: 'ebitda', name: 'EBITDA %', type: 'percentage' },
-	{ field: 'net_sales', name: 'Net Sales', type: 'number' },
-	{ field: 'ebit', name: 'EBIT', type: 'number' },
+	{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
+	{ field: 'gmPercentage', title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' },
+	{ field: 'cogsPercentage', title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' },
+	{ field: 'ebitPercentage', title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' },
+	{ field: 'ebitdaPercentage', title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' },
+	{ field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' },
+	{ field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' },
 ])
 rank.contentIsLoading = ko.observable(false)
+rank.data = ko.observableArray([])
 
-rank.data = ko.observableArray([
-	{ product_brand: 'Mitu', gm: 30, cogs: 70, ebit_p: 9.25, ebitda: 92500, net_sales: 1000000, ebit: 92500 },
-	{ product_brand: 'Stella', gm: 29, cogs: 71, ebit_p: 9, ebitda: 99000, net_sales: 1100000, ebit: 99000 },
-	{ product_brand: 'Hit', gm: 27, cogs: 73, ebit_p: 8, ebitda: 96000, net_sales: 1200000, ebit: 96000 },
-	{ product_brand: 'Etc', gm: 26, cogs: 74, ebit_p: 7, ebitda: 91000, net_sales: 1300000, ebit: 91000 },
-])
+rank.refresh = () => {
+	let param = {}
+	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
+	param.groups = [rank.dimension()]
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue()
 
-rank.render = () => {
-	let columns = [{
-		field: toolkit.replace(rank.dimension(), ".", "_"),
-		title: 'PNL',
-		attributes: { class: 'bold' }
-	}]
-
-	rank.columns().forEach((e) => {
-		let column = { 
-			field: e.field,
-			title: e.name,
-			// headerTemplate: `<div class="align-right bold">${e.name}</div>`,
-			attributes: { class: 'align-right' },
-			headerAttributes: { style: 'text-align: right !important;', class: 'bold' },
-			format: '{0:n2}'
+	rank.contentIsLoading(true)
+	app.ajaxPost("/report/getpnldatanew", param, (res) => {
+		if (res.Status == "NOK") {
+			return
 		}
 
-		columns.push(column)
-	})
+		let rows = []
+		res.Data.Data.forEach((d) => {
+			let row = {}
+			row.pnl = d._id[`_id_${toolkit.replace(rank.dimension(), '.', '_')}`]
+			if ($.trim(row.pnl) == '') {
+				row.pnl = 'Other'
+			}
+			row.gmPercentage = d.PL74C / d.PL8A
+			row.cogsPercentage = d.PL74B / d.PL8A
+			row.ebitPercentage = d.PL44B / d.PL8A
+			row.ebitdaPercentage = d.PL44C / d.PL8A
+			row.netSales = d.PL8A
+			row.ebit = d.PL44B
+			rows.push(row)
+		})
 
+		rank.data(rows)
+		rank.contentIsLoading(false)
+		rank.render()
+	}, () => {
+		rank.contentIsLoading(false)
+	})
+}
+
+rank.render = () => {
 	let config = {
 		dataSource: {
-			data: rank.data()
+			data: rank.data(),
+			pageSize: 10,
 		},
-		columns: columns,
+		columns: rank.columns(),
 		resizabl: false,
 		sortable: true, 
-		pageable: false,
-		filterable: false
+		pageable: true,
+		filterable: false,
+		dataBound: app.gridBoundTooltipster('.grid-ranking')
 	}
 
-	$('.grid-ranking').replaceWith('<div class="grid-ranking"></div>')
+	$('.grid-ranking').replaceWith('<div class="grid-ranking sortable"></div>')
 	$('.grid-ranking').kendoGrid(config)
 }
 
-rank.refresh = () => {
-	rank.render()
-}
 
 
 

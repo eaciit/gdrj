@@ -388,10 +388,25 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		q = q.Aggr(op, field, plmod.ID)
 	}
 
-	for _, other := range []string{"grossamount", "ratiotoglobalsales", "ratiotobrandsales", "discountamount", "salesqty", "count", "ratiotobranchsales", "ratiotoskusales", "taxamount", "netamount"} {
-		if !strings.HasPrefix(other, "PL") {
-			field := fmt.Sprintf("$%s", other)
-			q = q.Aggr("$sum", field, other)
+	if s.Flag != "" {
+		fields := []string{
+			"grossamount",
+			"ratiotoglobalsales",
+			"ratiotobrandsales",
+			"discountamount",
+			"salesqty",
+			"count",
+			"ratiotobranchsales",
+			"ratiotoskusales",
+			"taxamount",
+			"netamount",
+		}
+
+		for _, other := range fields {
+			if !strings.HasPrefix(other, "PL") {
+				field := fmt.Sprintf("$%s", other)
+				q = q.Aggr("$sum", field, other)
+			}
 		}
 	}
 
