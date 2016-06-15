@@ -362,7 +362,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("sales", netSales)
 				each.Set("cost_qty", math.Abs(s.noZero(cogs/netSales)))
 			}
-			
+
 			for k, v := range raw.Get("_id").(toolkit.M) {
 				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(fmt.Sprintf("%v", v)))
 			}
@@ -432,6 +432,7 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 			"ratiotoskusales",
 			"taxamount",
 			"netamount",
+			"outlets",
 		}
 
 		for _, other := range fields {
@@ -507,7 +508,9 @@ func (s *PLFinderParam) GeneratePLData() error {
 		group[key] = bson.M{"$sum": field}
 	}
 
-	pipes := []bson.M{{"$group": group}, {"$out": tableName}}
+	group["outlets"] = bson.M{"$addToSet": "$customer._id"}
+
+	pipes := []bson.M{{"$group": group}, {"$out": tableName}} //, {"project": project}}
 	pipe := col.Pipe(pipes)
 
 	res := []*toolkit.M{}
