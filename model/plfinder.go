@@ -291,8 +291,10 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 		for _, raw := range *data {
 			grossSales := s.Sum(raw, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6")
 			salesDiscount := s.Sum(raw, "PL7", "PL8")
+			btl := s.Sum(raw, "PL29", "PL30", "PL31", "PL32")
 			qty := s.Sum(raw, "salesqty")
 			netSales := s.Sum(raw, "PL8A")
+			netAmount := s.Sum(raw, "netamount")
 			salesReturn := s.Sum(raw, "PL3")
 			freightExpense := s.Sum(raw, "PL23")
 			directLabour := s.Sum(raw, "PL14")
@@ -301,6 +303,8 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			materialImport := s.Sum(raw, "PL10")
 			materialOther := s.Sum(raw, "PL13")
 			sga := s.Sum(raw, "PL94A")
+			netprice := math.Abs(s.noZero(netAmount / qty))
+			netpricebtl := math.Abs(netprice + btl)
 
 			each := toolkit.M{}
 			if s.Flag == "gross_sales_discount_and_net_sales" {
@@ -341,6 +345,18 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("sga", math.Abs(sga))
 				each.Set("sales", netSales)
 				each.Set("sga_qty", math.Abs(s.noZero(sga/netSales)))
+			} else if s.Flag == "net_price_qty" {
+				each.Set("qty", math.Abs(qty))
+				each.Set("netprice", netprice)
+				each.Set("netprice_qty", math.Abs(s.noZero(netprice/qty)))
+			} else if s.Flag == "btl_qty" {
+				each.Set("btl", math.Abs(btl))
+				each.Set("qty", math.Abs(qty))
+				each.Set("btl_qty", math.Abs(s.noZero(btl/qty)))
+			} else if s.Flag == "net_price_after_btl_qty" {
+				each.Set("netpricebtl", netpricebtl)
+				each.Set("qty", math.Abs(qty))
+				each.Set("netpricebtl_qty", math.Abs(s.noZero(netpricebtl/qty)))
 			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
