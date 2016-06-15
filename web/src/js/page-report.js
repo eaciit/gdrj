@@ -133,6 +133,8 @@ rpt.optionDimensions = ko.observableArray([
 	{ field: 'customer.channelname', name: 'Channel', title: 'customer_channelname' },
     // { field: 'customer.name', name: 'Outlet', title: 'customer_name' },
 	// { field: 'product.name', name: 'Product', title: 'product_name' },
+    { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
+    { field: 'customer.city', name: 'City', title: 'customer_city' },
     { field: 'customer.region', name: 'Region', title: 'customer_region' },
     { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
 ])
