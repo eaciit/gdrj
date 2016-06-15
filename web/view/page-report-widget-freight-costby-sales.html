@@ -7,40 +7,21 @@
 	</div>
 </div>
 
+
+
 <script>
 	$(() => {
 		pvt.row('customer.channelname')
 		pvt.column('customer.branchname')
 		pvt.dataPoints = ko.observableArray([
-			{ field: 'freightcost', title: 'Freight Cost', name: 'Freight Cost' },
-			{ field: 'sales', title: 'Sales', name: 'Sales' },
-			{ field: 'freightcostbyqty', title: 'Freight Cost by Sales', name: 'Freight Cost by Sales' }
+			{ field: 'freight_cost', title: 'Freight Cost', name: 'Freight Cost' },
+			{ field: 'net_sales', title: 'Net Sales', name: 'Net Sales' },
+			{ field: 'freight_cost_by_sales', title: 'Freight Cost by Sales', name: 'Freight Cost by Sales' }
 		])
-		
-		pvt.data([{
-			customer_channelname: 'GT', customer_branchname: 'Surabaya',
-			freightcost: 20000,
-			sales: 2000,
-			freightcostbyqty: 10
-		}, {
-			customer_channelname: 'MT', customer_branchname: 'Surabaya',
-			freightcost: 22000,
-			sales: 1000,
-			freightcostbyqty: 22
-		}, {
-			customer_channelname: 'GT', customer_branchname: 'Malang',
-			freightcost: 23000,
-			sales: 3000,
-			freightcostbyqty: 23
-		}, {
-			customer_channelname: 'GT', customer_branchname: 'Malang',
-			freightcost: 22000,
-			sales: 2000,
-			freightcostbyqty: 11
-		}])
-		crt.data(pvt.data())
-		crt.series(pvt.dataPoints())
 		pvt.refresh()
+
+		crt.categoryAxisField('customer.branchname')
+		crt.series(pvt.dataPoints())
 		crt.refresh()
 	})
 </script>

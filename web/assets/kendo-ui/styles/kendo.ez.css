@@ -7597,6 +7597,9 @@ input[type="text"].ez {
 .table.ez tr td {
   padding: 4px 2px;
 }
+.k-grid.sortable tr th[role='columnheader']:hover {
+  background-color: #e8eced;
+}
 .bg-base {
   background-color: #e7505a;
 }
