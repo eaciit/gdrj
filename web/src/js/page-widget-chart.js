@@ -8,7 +8,6 @@ crt.setMode = (what) => () => {
 		crt.refresh()
 	}
 }
-crt.flag = ko.observable('')
 crt.categoryAxisField = ko.observable('category')
 crt.title = ko.observable('')
 crt.data = ko.observableArray([])
@@ -93,17 +92,26 @@ crt.render = () => {
 crt.refresh = () => {
 	let param = {}
 	param.pls = []
-	param.flag = crt.flag()
+	param.flag = o.ID
 	param.groups = [crt.categoryAxisField()]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
 
 	crt.contentIsLoading(true)
-	app.ajaxPost("/report/getpnldatanew", param, (res) => {
-		crt.data(res.Data.Data)
-		crt.contentIsLoading(false)
-		crt.render()
-	}, () => {
-		crt.contentIsLoading(false)
-	})
+	
+	let fetch = () => {
+		app.ajaxPost("/report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => { fetch() }, 1000 * 5)
+				return
+			}
+			
+			crt.data(res.Data.Data)
+			crt.contentIsLoading(false)
+			crt.render()
+		}, () => {
+			crt.contentIsLoading(false)
+		})
+	}
+	fetch()
 }

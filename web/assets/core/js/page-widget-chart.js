@@ -12,7 +12,6 @@ crt.setMode = function (what) {
 		}
 	};
 };
-crt.flag = ko.observable('');
 crt.categoryAxisField = ko.observable('category');
 crt.title = ko.observable('');
 crt.data = ko.observableArray([]);
@@ -99,17 +98,28 @@ crt.render = function () {
 crt.refresh = function () {
 	var param = {};
 	param.pls = [];
-	param.flag = crt.flag();
+	param.flag = o.ID;
 	param.groups = [crt.categoryAxisField()];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
 
 	crt.contentIsLoading(true);
-	app.ajaxPost("/report/getpnldatanew", param, function (res) {
-		crt.data(res.Data.Data);
-		crt.contentIsLoading(false);
-		crt.render();
-	}, function () {
-		crt.contentIsLoading(false);
-	});
+
+	var fetch = function fetch() {
+		app.ajaxPost("/report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			crt.data(res.Data.Data);
+			crt.contentIsLoading(false);
+			crt.render();
+		}, function () {
+			crt.contentIsLoading(false);
+		});
+	};
+	fetch();
 };
