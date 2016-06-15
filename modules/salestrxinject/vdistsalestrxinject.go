@@ -232,6 +232,8 @@ func main() {
 			st.PCValid = false
 		}
 
+		st.Src = "VDIST"
+
 		gdrj.Save(st)
 		if i > step {
 			toolkit.Printfn("Processing %d of %d %s in %s",

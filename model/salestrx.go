@@ -23,6 +23,7 @@ type SalesTrx struct {
 	DiscountAmount float64
 	TaxAmount      float64
 	NetAmount      float64
+	Src            string
 
 	HeaderValid   bool
 	ProductValid  bool
