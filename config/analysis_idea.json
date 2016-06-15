@@ -72,7 +72,7 @@
     "_id": "direct_labour_index",
     "order": 19,
     "name": "Direct Labour Index",
-    "status": false
+    "status": true
 }, {
     "_id": "no_of_headcount",
     "order": 16,
@@ -82,7 +82,7 @@
     "_id": "sales_return_rate",
     "order": 17,
     "name": "Sales Return Rate",
-    "status": false
+    "status": true
 }, {
     "_id": "gross_sales_qty",
     "order": 18,
@@ -102,17 +102,17 @@
     "_id": "sales_discount_by_gross_sales",
     "order": 21,
     "name": "Sales Discount by Gross Sales",
-    "status": false
+    "status": true
 }, {
     "_id": "discount_qty",
     "order": 22,
     "name": "Discount/Qty",
-    "status": false
+    "status": true
 }, {
     "_id": "indirect_expense_index",
     "order": 27,
     "name": "Indirect Expense Index",
-    "status": false
+    "status": true
 }, {
     "_id": "no_of_layers",
     "order": 24,
@@ -182,7 +182,7 @@
     "_id": "freight_cost_by_sales",
     "order": 3,
     "name": "Freight Cost by Sales",
-    "status": false
+    "status": true
 }, {
     "_id": "staff_expense_per_employee",
     "order": 36,
