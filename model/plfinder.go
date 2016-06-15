@@ -291,9 +291,20 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 		for _, raw := range *data {
 			grossSales := s.Sum(raw, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6")
 			salesDiscount := s.Sum(raw, "PL7", "PL8")
+			btl := s.Sum(raw, "PL29", "PL30", "PL31", "PL32")
 			qty := s.Sum(raw, "salesqty")
-			netSales := grossSales + salesDiscount // s.Sum(raw, "PL8A")
+			netSales := s.Sum(raw, "PL8A")
+			netAmount := s.Sum(raw, "netamount")
 			salesReturn := s.Sum(raw, "PL3")
+			freightExpense := s.Sum(raw, "PL23")
+			directLabour := s.Sum(raw, "PL14")
+			cogs := s.Sum(raw, "PL74B")
+			materialLocal := s.Sum(raw, "PL9")
+			materialImport := s.Sum(raw, "PL10")
+			materialOther := s.Sum(raw, "PL13")
+			sga := s.Sum(raw, "PL94A")
+			netprice := math.Abs(s.noZero(netAmount / qty))
+			netpricebtl := math.Abs(netprice + btl)
 
 			each := toolkit.M{}
 			if s.Flag == "gross_sales_discount_and_net_sales" {
@@ -312,10 +323,44 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("sales_return", math.Abs(salesReturn))
 				each.Set("sales_revenue", netSales)
 				each.Set("sales_return_rate", math.Abs(s.noZero(salesReturn/netSales)))
+			} else if s.Flag == "sales_discount_by_gross_sales" {
+				each.Set("sales_discount", math.Abs(salesDiscount))
+				each.Set("gross_sales", grossSales)
+				each.Set("sales_discount_by_gross_sales", math.Abs(s.noZero(salesDiscount/grossSales)))
+			} else if s.Flag == "freight_cost_by_sales" {
+				each.Set("freight_cost", math.Abs(freightExpense))
+				each.Set("net_sales", netSales)
+				each.Set("freight_cost_by_sales", math.Abs(s.noZero(freightExpense/netSales)))
+			} else if s.Flag == "direct_labour_index" {
+				each.Set("direct_abour", math.Abs(directLabour))
+				each.Set("cogs", math.Abs(cogs))
+				each.Set("direct_labour_index", math.Abs(s.noZero(directLabour/cogs)))
+			} else if s.Flag == "indirect_expense_index" {
+				each.Set("material_local", math.Abs(materialLocal))
+				each.Set("material_import", math.Abs(materialImport))
+				each.Set("material_other", math.Abs(materialOther))
+				each.Set("cogs", math.Abs(cogs))
+				each.Set("indirect_expense_index", math.Abs((materialLocal+materialImport+materialOther)/cogs))
+			} else if s.Flag == "sga_by_sales" {
+				each.Set("sga", math.Abs(sga))
+				each.Set("sales", netSales)
+				each.Set("sga_qty", math.Abs(s.noZero(sga/netSales)))
+			} else if s.Flag == "net_price_qty" {
+				each.Set("qty", math.Abs(qty))
+				each.Set("netprice", netprice)
+				each.Set("netprice_qty", math.Abs(s.noZero(netprice/qty)))
+			} else if s.Flag == "btl_qty" {
+				each.Set("btl", math.Abs(btl))
+				each.Set("qty", math.Abs(qty))
+				each.Set("btl_qty", math.Abs(s.noZero(btl/qty)))
+			} else if s.Flag == "net_price_after_btl_qty" {
+				each.Set("netpricebtl", netpricebtl)
+				each.Set("qty", math.Abs(qty))
+				each.Set("netpricebtl_qty", math.Abs(s.noZero(netpricebtl/qty)))
 			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
-				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(v.(string)))
+				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(fmt.Sprintf("%v", v)))
 			}
 
 			res = append(res, &each)
@@ -364,10 +409,25 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		q = q.Aggr(op, field, plmod.ID)
 	}
 
-	for _, other := range []string{"grossamount", "ratiotoglobalsales", "ratiotobrandsales", "discountamount", "salesqty", "count", "ratiotobranchsales", "ratiotoskusales", "taxamount", "netamount"} {
-		if !strings.HasPrefix(other, "PL") {
-			field := fmt.Sprintf("$%s", other)
-			q = q.Aggr("$sum", field, other)
+	if s.Flag != "" {
+		fields := []string{
+			"grossamount",
+			"ratiotoglobalsales",
+			"ratiotobrandsales",
+			"discountamount",
+			"salesqty",
+			"count",
+			"ratiotobranchsales",
+			"ratiotoskusales",
+			"taxamount",
+			"netamount",
+		}
+
+		for _, other := range fields {
+			if !strings.HasPrefix(other, "PL") {
+				field := fmt.Sprintf("$%s", other)
+				q = q.Aggr("$sum", field, other)
+			}
 		}
 	}
 

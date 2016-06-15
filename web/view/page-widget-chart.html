@@ -24,9 +24,11 @@
 			{{template "_loader.html"}}
 		</div>
 
-		<div data-bind="visible: !crt.contentIsLoading()" style="height: 320px;">
-			<div id="chart" style="height: 300px;"></div>
-			<div class="clearfix"></div>
+		<div data-bind="visible: !crt.contentIsLoading()">
+			<div data-bind="foreach: crt.series" style="padding: 2px;">
+				<div data-bind="attr:{id:'chart'+$index()}" style="height: 180px;"></div>
+				<div class="clearfix"></div>
+			</div>
 		</div>
 	</div>
 </div>

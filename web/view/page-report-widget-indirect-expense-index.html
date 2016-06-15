@@ -12,14 +12,15 @@
 		pvt.row('customer.channelname')
 		pvt.column('customer.branchname')
 		pvt.dataPoints = ko.observableArray([
-			{ field: 'btl', title: 'BTL', name: 'BTL' },
-			{ field: 'qty', title: 'Qty', name: 'Qty' },
-			{ field: 'btl_qty', title: 'BTL / Qty', name: 'BTL / Qty' }
+			{ field: 'material_local', title: 'Material Local', name: 'Material Local' },
+			{ field: 'material_import', title: 'Material Import', name: 'Material Import' },
+			{ field: 'material_other', title: 'Material Other', name: 'Material Other' },
+			{ field: 'cogs', title: 'COGS', name: 'COGS' },
+			{ field: 'indirect_expense_index', title: 'Indirect Expense Index', name: 'Indirect Expense Index' }
 		])
 		pvt.refresh()
 
 		crt.categoryAxisField('customer.branchname')
-		crt.sortField('btl_qty')
 		crt.series(pvt.dataPoints())
 		crt.refresh()
 	})

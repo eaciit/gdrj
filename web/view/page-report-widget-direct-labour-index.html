@@ -12,14 +12,13 @@
 		pvt.row('customer.channelname')
 		pvt.column('customer.branchname')
 		pvt.dataPoints = ko.observableArray([
-			{ field: 'btl', title: 'BTL', name: 'BTL' },
-			{ field: 'qty', title: 'Qty', name: 'Qty' },
-			{ field: 'btl_qty', title: 'BTL / Qty', name: 'BTL / Qty' }
+			{ field: 'direct_labour', title: 'Direct Labour', name: 'Direct Labour' },
+			{ field: 'cogs', title: 'COGS', name: 'COGS' },
+			{ field: 'direct_labour_index', title: 'Direct Labour Index', name: 'Direct Labour Index' }
 		])
 		pvt.refresh()
 
 		crt.categoryAxisField('customer.branchname')
-		crt.sortField('btl_qty')
 		crt.series(pvt.dataPoints())
 		crt.refresh()
 	})

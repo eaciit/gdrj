@@ -16,10 +16,16 @@ rpt.pivotModel = [{ field: '_id', type: 'string', name: 'ID' }, { field: 'PC._id
 
 rpt.analysisIdeas = ko.observableArray([]);
 rpt.data = ko.observableArray([]);
-rpt.optionDimensions = ko.observableArray([{ field: "", name: 'None', title: '' }, { field: "customer.branchname", name: 'Branch/RD', title: 'customer_branchname' }, { field: "product.brand", name: 'Brand', title: 'product_brand' }, { field: 'customer.channelname', name: 'Channel', title: 'customer_channelname' },
+rpt.optionDimensions = ko.observableArray([
+// { field: "", name: 'None', title: '' },
+{ field: "customer.branchname", name: 'Branch/RD', title: 'customer_branchname' }, { field: "product.brand", name: 'Brand', title: 'product_brand' }, { field: 'customer.channelname', name: 'Channel', title: 'customer_channelname' },
 // { field: 'customer.name', name: 'Outlet', title: 'customer_name' },
 // { field: 'product.name', name: 'Product', title: 'product_name' },
-{ field: 'customer.zone', name: 'Zone', title: 'customer_zone' }, { field: 'customer.city', name: 'City', title: 'customer_city' }, { field: 'customer.region', name: 'Region', title: 'customer_region' }, { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' }]);
+// { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
+// { field: 'customer.city', name: 'City', title: 'customer_city' },
+{ field: 'customer.region', name: 'Region', title: 'customer_region' },
+// { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
+{ field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' }]);
 rpt.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
 rpt.mode = ko.observable('render');
@@ -254,9 +260,10 @@ rpt.getIdeas = function () {
 		rpt.analysisIdeas(_.sortBy(res.data, function (d) {
 			return d.order;
 		}));
-		rpt.idanalysisreport(_.find(rpt.analysisIdeas(), function (a) {
+		var idreport = _.find(rpt.analysisIdeas(), function (a) {
 			return a._id == o.ID;
-		}).name);
+		});
+		if (idreport != undefined) rpt.idanalysisreport(idreport.name);else rpt.idanalysisreport();
 		vm.currentTitle("Report " + rpt.idanalysisreport());
 	});
 };
