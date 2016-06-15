@@ -603,5 +603,6 @@ bkd.showZeroValue = (a) => {
 
 $(() => {
 	bkd.refresh(false)
+	rpt.refreshView('breakdown')
 	bkd.prepareEvents()
 })

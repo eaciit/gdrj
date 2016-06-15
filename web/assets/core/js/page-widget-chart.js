@@ -124,6 +124,7 @@ crt.render = function () {
 	}
 };
 crt.refresh = function () {
+	rpt.refreshView('reportwidget');
 	var param = {};
 	param.pls = [];
 	param.flag = o.ID;
