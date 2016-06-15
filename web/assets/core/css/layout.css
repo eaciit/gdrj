@@ -617,3 +617,8 @@ body {
 .k-pivot.ez .k-pivot-rowheaders {
   width: auto !important;
 }
+.grid-sales-dist {
+  position: relative;
+  overflow: scroll;
+  padding-bottom: 10px;
+}
