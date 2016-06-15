@@ -189,8 +189,11 @@ func main() {
 			}
 		}
 
+		st.Product.BrandCategoryID = sev.PCID[4:len(sev.PCID)]
 		if pcs.Has(sev.PCID) {
 			st.PC = pcs.Get(sev.PCID).(*gdrj.ProfitCenter)
+			st.Product.Brand = st.PC.BrandID
+			st.Product.BrandCategoryID = st.PC.BrandCategoryID
 		} else {
 			st.PC = &gdrj.ProfitCenter{
 				ID: sev.PCID,
