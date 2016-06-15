@@ -10,7 +10,7 @@
 		<div data-bind="foreach: rpt.analysisIdeas()" class="list-analysis">
 			<div class="col-md-3">
 				<div class="wrapper">
-					<a class="color-base" href="#" data-bind="attr: { 'href': '/web/report/' + $data._id }">
+					<a class="color-base" href="#" data-bind="attr: { 'href': '/web/report/' + $data._id }, css: {'listcolor-active': $data.status == true}">
 						<span class="fa fa-file-text-o"></span>
 						&nbsp;&nbsp;
 						<!-- <span data-bind="text: ($index() + 1)"></span> -  -->

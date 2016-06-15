@@ -4,13 +4,13 @@ vm.currentMenu = ko.observable('Dashboard')
 vm.currentTitle = ko.observable('Dashboard')
 vm.menu = ko.observableArray([
 	{ title: 'Dashboard', icon: 'home', href: '/web/report/dashboard', submenu: [] },
-	{ title: 'Report', icon: 'file-text-o', href: '#', submenu: [
+	{ title: 'Analysis', icon: 'bar-chart-o', href: '/web/report/analysis', submenu: [] },
+	{ title: 'Report', icon: 'file-text-o', href: '/web/report/list', submenu: [
 		{ title: 'Distribution', icon: 'user', href: '/web/report/list', submenu: [] },
 		{ title: 'General Trade', icon: 'list', href: '/web/report/list', submenu: [] },
 		{ title: 'Market Efficiency', icon: 'shopping-basket', href: '/web/report/list', submenu: [] },
 		{ title: 'SG & A', icon: 'list', href: '/web/report/list', submenu: [] },
-		{ title: 'Chart Comparison', icon: 'bar-chart-o', href: '/web/reportchartcomparison', submenu: [] },
-		{ title: 'Analysis', icon: 'bar-chart-o', href: '/web/report/analysis', submenu: [] }
+		{ title: 'Chart Comparison', icon: 'bar-chart-o', href: '/web/reportchartcomparison', submenu: [] }
 	] },
 	{ title: 'Data Manager', icon: 'database', href: '#', submenu: [
 		{ title: 'Data Browser', icon: 'list', href: '/web/databrowser', submenu: [] },

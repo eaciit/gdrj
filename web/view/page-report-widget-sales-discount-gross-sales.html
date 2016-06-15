@@ -12,9 +12,9 @@
 		pvt.row('customer.channelname')
 		pvt.column('customer.branchname')
 		pvt.dataPoints = ko.observableArray([
-			{ field: 'sga', title: 'SGA', name: 'SGA' },
-			{ field: 'sales', title: 'Sales', name: 'Sales' },
-			{ field: 'sga_qty', title: 'SGA by Sales', name: 'SGA by Sales' }
+			{ field: 'sales_discount', title: 'Sales Discount', name: 'Sales Discount' },
+			{ field: 'gross_sales', title: 'Gross Sales', name: 'Gross Sales' },
+			{ field: 'sales_discount_gross_sales', title: 'Sales Discount by Gross Sales', name: 'Sales Discount by Gross Sales' }
 		])
 		pvt.refresh()
 
