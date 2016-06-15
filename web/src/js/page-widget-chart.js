@@ -14,6 +14,25 @@ crt.data = ko.observableArray([])
 crt.series = ko.observableArray([])
 crt.contentIsLoading = ko.observable(false)
 
+crt.convertCurrency = (labelValue) => {
+	let res =  Math.abs(Number(labelValue)) >= 1.0e+9 ? Math.abs(Number(labelValue)) / 1.0e+9 + " Bil"
+		: Math.abs(Number(labelValue)) >= 1.0e+6 ? Math.abs(Number(labelValue)) / 1.0e+6 + " Mil"
+		: Math.abs(Number(labelValue)) >= 1.0e+3 ? Math.abs(Number(labelValue)) / 1.0e+3 + " K"
+		: labelValue.toString()
+	let indexres = res.indexOf('.'), indexcurrency = res.indexOf(' ')
+	if (indexres == -1)
+		indexres = 0
+	if (indexcurrency == -1)
+		indexcurrency = 0
+	return kendo.toString(parseInt(res.substring(0, indexres)), "n0") + res.substring(indexcurrency, res.length);
+}
+crt.convertCurrency2 = (labelValue) => {
+	let res =  Math.abs(Number(labelValue)) >= 1.0e+9 ? kendo.toString(Math.abs(Number(labelValue)) / 1.0e+9, 'n0') + " Bil"
+		: Math.abs(Number(labelValue)) >= 1.0e+6 ? kendo.toString(Math.abs(Number(labelValue)) / 1.0e+6, 'n0') + " Mil"
+		: Math.abs(Number(labelValue)) >= 1.0e+3 ? kendo.toString(Math.abs(Number(labelValue)) / 1.0e+3, 'n0') + " K"
+		: labelValue.toString()
+	return res
+}
 crt.configure = (series) => {
 	return {
 		title: crt.title(),
@@ -25,7 +44,8 @@ crt.configure = (series) => {
 			labels: {
 				visible: true,
 				position: 'outsideEnd',
-				format: '{0:n2}'
+				// format: '{0:n2}',
+				template: "#: crt.convertCurrency(value) #"
 			},
 		},
 		series: series,
@@ -57,7 +77,11 @@ crt.configure = (series) => {
 		},
 		valueAxis: {
 			majorGridLines: { color: '#fafafa' },
-			labels: { format: '{0:n2}' }
+			labels: { 
+				// format: '{0:n2}',
+				visible: true,
+				template: "#= crt.convertCurrency2(value) #"
+			}
 		},
 		tooltip: {
 			visible: true,

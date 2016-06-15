@@ -1,153 +1,191 @@
 [{
     "_id": "gross_sales_discount_and_net_sales",
     "order": 1,
-    "name": "Gross Sales, Discount and Net Sales"
+    "name": "Gross Sales, Discount and Net Sales",
+    "status": true
 }, {
     "_id": "number_of_outlets",
     "order": 2,
-    "name": "Number of Outlets"
+    "name": "Number of Outlets",
+    "status": false
 }, {
     "_id": "distribution_coverage_index",
     "order": 7,
-    "name": "Distribution Coverage Index"
+    "name": "Distribution Coverage Index",
+    "status": false
 }, {
     "_id": "salesin_salesout_ratio",
     "order": 4,
-    "name": "SalesIn SalesOut Ratio"
+    "name": "SalesIn SalesOut Ratio",
+    "status": false
 }, {
     "_id": "non_sales_pnl_items",
     "order": 5,
-    "name": "Non-Sales P&L Items"
+    "name": "Non-Sales P&L Items",
+    "status": false
 }, {
     "_id": "number_of_rds",
     "order": 6,
-    "name": "Number of RDs"
+    "name": "Number of RDs",
+    "status": false
 }, {
     "_id": "salesman_adequate_index",
     "order": 11,
-    "name": "Salesman adequate index"
+    "name": "Salesman adequate index",
+    "status": false
 }, {
     "_id": "sga_cost_ratio",
     "order": 8,
-    "name": "SGA cost ratio"
+    "name": "SGA cost ratio",
+    "status": false
 }, {
     "_id": "sales_by_outlet",
     "order": 9,
-    "name": "Sales by outlet"
+    "name": "Sales by outlet",
+    "status": false
 }, {
     "_id": "number_of_invoice_headcount",
     "order": 10,
-    "name": "Number of Invoices/headcount"
+    "name": "Number of Invoices/headcount",
+    "status": false
 }, {
     "_id": "truck_adequate_index",
     "order": 15,
-    "name": "Truck adequate index"
+    "name": "Truck adequate index",
+    "status": false
 }, {
     "_id": "sga_by_sales",
     "order": 12,
-    "name": "SGA by Sales"
+    "name": "SGA by Sales",
+    "status": false
 }, {
     "_id": "sales_velocity_index",
     "order": 13,
-    "name": "Sales velocity index"
+    "name": "Sales velocity index",
+    "status": false
 }, {
     "_id": "sales_invoice",
     "order": 14,
-    "name": "Sales/Invoice"
+    "name": "Sales/Invoice",
+    "status": false
 }, {
     "_id": "direct_labour_index",
     "order": 19,
-    "name": "Direct Labour Index"
+    "name": "Direct Labour Index",
+    "status": false
 }, {
     "_id": "no_of_headcount",
     "order": 16,
-    "name": "No of headcount"
+    "name": "No of headcount",
+    "status": false
 }, {
     "_id": "sales_return_rate",
     "order": 17,
-    "name": "Sales Return Rate"
+    "name": "Sales Return Rate",
+    "status": false
 }, {
     "_id": "gross_sales_qty",
     "order": 18,
-    "name": "Gross Sales/Qty"
+    "name": "Gross Sales/Qty",
+    "status": true
 }, {
     "_id": "material_type_index",
     "order": 23,
-    "name": "Material Type Index"
+    "name": "Material Type Index",
+    "status": false
 }, {
     "_id": "no_of_headcount_per_manager",
     "order": 20,
-    "name": "No of headcount per manager"
+    "name": "No of headcount per manager",
+    "status": false
 }, {
     "_id": "sales_discount_by_gross_sales",
     "order": 21,
-    "name": "Sales Discount by Gross Sales"
+    "name": "Sales Discount by Gross Sales",
+    "status": false
 }, {
     "_id": "discount_qty",
     "order": 22,
-    "name": "Discount/Qty"
+    "name": "Discount/Qty",
+    "status": false
 }, {
     "_id": "indirect_expense_index",
     "order": 27,
-    "name": "Indirect Expense Index"
+    "name": "Indirect Expense Index",
+    "status": false
 }, {
     "_id": "no_of_layers",
     "order": 24,
-    "name": "No of layers"
+    "name": "No of layers",
+    "status": false
 }, {
     "_id": "net_price_qty",
     "order": 24,
-    "name": "Net Price/Qty"
+    "name": "Net Price/Qty",
+    "status": false
 }, {
     "_id": "sales_upside_ratio_by_demographic_data",
     "order": 25,
-    "name": "Sales Upside Ratio by Demographic Data"
+    "name": "Sales Upside Ratio by Demographic Data",
+    "status": false
 }, {
     "_id": "marketing_expense_index",
     "order": 31,
-    "name": "Marketing Expense Index"
+    "name": "Marketing Expense Index",
+    "status": false
 }, {
     "_id": "cost_by_sales",
     "order": 28,
-    "name": "Cost by Sales"
+    "name": "Cost by Sales",
+    "status": false
 }, {
     "_id": "return_of_employment",
     "order": 28,
-    "name": "Return of employment"
+    "name": "Return of employment",
+    "status": false
 }, {
     "_id": "btl_qty",
     "order": 28,
-    "name": "BTL/Qty"
+    "name": "BTL/Qty",
+    "status": false
 }, {
     "_id": "sales_by_gdp",
     "order": 29,
-    "name": "Sales by GDP"
+    "name": "Sales by GDP",
+    "status": false
 }, {
     "_id": "marketing_efficiency_atl",
     "order": 31,
-    "name": "Marketing Efficiency - ATL"
+    "name": "Marketing Efficiency - ATL",
+    "status": false
 }, {
     "_id": "cost_per_employee",
     "order": 32,
-    "name": "Cost per Employee"
+    "name": "Cost per Employee",
+    "status": false
 }, {
     "_id": "net_price_after_btl_qty",
     "order": 32,
-    "name": "Net price after BTL/Qty"
+    "name": "Net price after BTL/Qty",
+    "status": false
 }, {
     "_id": "sales_growth",
     "order": 33,
-    "name": "Sales growth (compared to FY14-15)"
+    "name": "Sales growth (compared to FY14-15)",
+    "status": false
 }, {
     "_id": "marketing_efficiency_btl",
     "order": 34,
-    "name": "Marketing Efficiency - BTL"
+    "name": "Marketing Efficiency - BTL",
+    "status": false
 }, {
     "_id": "freight_cost_by_sales",
     "order": 3,
-    "name": "Freight Cost by Sales"
+    "name": "Freight Cost by Sales",
+    "status": false
 }, {
     "_id": "staff_expense_per_employee",
     "order": 36,
-    "name": "Staff Expense per Employee"
+    "name": "Staff Expense per Employee",
+    "status": false
 }]

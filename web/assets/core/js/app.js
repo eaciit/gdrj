@@ -146,7 +146,7 @@ app.ajaxPost = function (url) {
 app.o = function (raw) {
     return raw;
 };
-app.seriesColorsGodrej = ['#3498DB', '#28B463', '#F39C12'];
+app.seriesColorsGodrej = ['#3498DB', '#28B463', '#F39C12', '#DB3434', '#34D3DB'];
 app.randomRange = function (min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };

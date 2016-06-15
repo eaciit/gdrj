@@ -9,6 +9,7 @@ type AnalysisIdea struct {
 	ID            string `json:"_id" bson:"_id"`
 	Order         int    `json:"order" bson:"order"`
 	Name          string `json:"name" bson:"name"`
+	Status        bool   `json:"status" bson:"status"`
 }
 
 func (a *AnalysisIdea) TableName() string {

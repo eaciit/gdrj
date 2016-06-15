@@ -115,7 +115,7 @@ app.ajaxPost = (url, data = {}, callbackSuccess = app.noop, callbackError = app.
     return $.ajax(config)
 }
 app.o = (raw) => raw
-app.seriesColorsGodrej = ['#3498DB', '#28B463', '#F39C12']
+app.seriesColorsGodrej = ['#3498DB', '#28B463', '#F39C12', '#DB3434', '#34D3DB']
 app.randomRange = (min, max) => (Math.floor(Math.random() * (max - min + 1)) + min)
 app.capitalize = (d) => `${d[0].toUpperCase()}${d.slice(1)}`
 app.typeIs = (target, comparator) => (typeof target === comparator)
