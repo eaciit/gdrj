@@ -14,33 +14,13 @@
 		pvt.dataPoints = ko.observableArray([
 			{ field: 'sales', title: 'Sales', name: 'Sales' },
 			{ field: 'outlet', title: 'Outlet', name: 'Outlet' },
-			{ field: 'salesbyoutlet', title: 'Sales by Outlet', name: 'Sales by Outlet' }
+			{ field: 'sales_outlet', title: 'Sales by Outlet', name: 'Sales by Outlet' }
 		])
-		
-		pvt.data([{
-			customer_channelname: 'GT', customer_branchname: 'Surabaya',
-			sales: 20000,
-			outlet: 2000,
-			salesbyoutlet: 10
-		}, {
-			customer_channelname: 'MT', customer_branchname: 'Surabaya',
-			sales: 22000,
-			outlet: 1000,
-			salesbyoutlet: 22
-		}, {
-			customer_channelname: 'GT', customer_branchname: 'Malang',
-			sales: 23000,
-			outlet: 3000,
-			salesbyoutlet: 23
-		}, {
-			customer_channelname: 'GT', customer_branchname: 'Malang',
-			sales: 22000,
-			outlet: 2000,
-			salesbyoutlet: 11
-		}])
-		crt.data(pvt.data())
-		crt.series(pvt.dataPoints())
 		pvt.refresh()
+
+		crt.categoryAxisField('customer.branchname')
+		crt.sortField('sales_outlet')
+		crt.series(pvt.dataPoints())
 		crt.refresh()
 	})
 </script>
