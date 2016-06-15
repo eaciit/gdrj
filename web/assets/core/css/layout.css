@@ -611,3 +611,6 @@ body {
   font-size: 14px;
   text-transform: capitalize;
 }
+.k-pivot.ez .k-pivot-rowheaders {
+  width: auto !important;
+}

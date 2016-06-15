@@ -7,16 +7,14 @@
 	</div>
 </div>
 
-
-
 <script>
 	$(() => {
 		pvt.row('customer.channelname')
 		pvt.column('customer.branchname')
 		pvt.dataPoints = ko.observableArray([
-			{ field: 'freight_cost', title: 'Freight Cost', name: 'Freight Cost' },
-			{ field: 'net_sales', title: 'Net Sales', name: 'Net Sales' },
-			{ field: 'freight_cost_by_sales', title: 'Freight Cost by Sales', name: 'Freight Cost by Sales' }
+			{ field: 'direct_labour', title: 'Direct Labour', name: 'Direct Labour' },
+			{ field: 'cogs', title: 'COGS', name: 'COGS' },
+			{ field: 'direct_labour_index', title: 'Direct Labour Index', name: 'Direct Labour Index' }
 		])
 		pvt.refresh()
 
