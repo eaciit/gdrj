@@ -10,6 +10,8 @@ ccr.contentIsLoading = ko.observable(false);
 ccr.categoryAxisField = ko.observable('category');
 ccr.breakdownBy = ko.observable('');
 ccr.limitchart = ko.observable(4);
+ccr.optionComparison = ko.observableArray([{ field: 'qty', name: 'Quantity' }, { field: 'outlet', name: 'Outlet' }, { field: 'price', name: 'Price' }]);
+ccr.comparison = ko.observableArray(['qty', 'outlet']);
 
 ccr.getDecreasedQty = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
@@ -67,51 +69,61 @@ ccr.refresh = function () {
 };
 ccr.render = function () {
 	var configure = function configure(data, full) {
-		var series = [{
-			name: 'Price',
-			// field: 'value1',
-			data: data.price,
-			width: 3,
-			markers: {
-				visible: true,
-				size: 10,
+		var seriesLibs = {
+			price: {
+				name: 'Price',
+				// field: 'value1',
+				data: data.price,
+				width: 3,
+				markers: {
+					visible: true,
+					size: 10,
+					border: {
+						width: 3
+					}
+				},
+				axis: "priceqty"
+			},
+			qty: {
+				name: 'Qty',
+				// field: 'value2',
+				data: data.qty,
+				width: 3,
+				markers: {
+					visible: true,
+					size: 10,
+					border: {
+						width: 3
+					}
+				},
+				axis: "priceqty"
+			},
+			outlet: {
+				name: 'Outlet',
+				// field: 'value3',
+				data: data.outletList,
+				type: 'bar',
+				width: 3,
+				overlay: {
+					gradient: 'none'
+				},
 				border: {
-					width: 3
-				}
-			},
-			axis: "priceqty"
-		}, {
-			name: 'Qty',
-			// field: 'value2',
-			data: data.qty,
-			width: 3,
-			markers: {
-				visible: true,
-				size: 10,
-				border: {
-					width: 3
-				}
-			},
-			axis: "priceqty"
-		}, {
-			name: 'Outlet',
-			// field: 'value3',
-			data: data.outletList,
-			type: 'bar',
-			width: 3,
-			overlay: {
-				gradient: 'none'
-			},
-			border: {
-				width: 0
-			},
-			markers: {
-				visible: true,
-				style: 'smooth',
-				type: 'bar'
-			},
-			axis: "outlet"
-		}];
+					width: 0
+				},
+				markers: {
+					visible: true,
+					style: 'smooth',
+					type: 'bar'
+				},
+				axis: "outlet"
+			}
+		};
+
+		var series = [];
+		ccr.comparison().forEach(function (d) {
+			series.push(seriesLibs[d]);
+		});
+
 		return {
 			// dataSource: {
 			// 	data: data

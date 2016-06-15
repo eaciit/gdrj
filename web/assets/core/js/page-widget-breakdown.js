@@ -10,9 +10,14 @@ bkd.detail = ko.observableArray([]);
 bkd.limit = ko.observable(10);
 bkd.breakdownNote = ko.observable('');
 
+bkd.breakdownBy = ko.observable('customer.channelname');
+bkd.breakdownByFiscalYear = ko.observable('date.fiscal');
+bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy());
+
 bkd.data = ko.observableArray([]);
 bkd.plmodels = ko.observableArray([]);
 bkd.zeroValue = ko.observable(false);
+bkd.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */]);
 
 bkd.generateDataForX = function () {
 	var param = {
@@ -38,7 +43,7 @@ bkd.refresh = function () {
 
 	var param = {};
 	param.pls = [];
-	param.groups = [bkd.breakdownBy(), bkd.breakdownByFiscalYear()];
+	param.groups = bkd.groups();
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
 
@@ -72,10 +77,6 @@ bkd.refresh = function () {
 
 	fetch();
 };
-
-bkd.breakdownBy = ko.observable('customer.channelname');
-bkd.breakdownByFiscalYear = ko.observable('date.fiscal');
-bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy());
 
 bkd.clickExpand = function (e) {
 	var right = $(e).find('i.fa-chevron-right').length;
@@ -288,7 +289,7 @@ bkd.render = function () {
 		return;
 	}
 
-	var breakdowns = [bkd.breakdownBy(), bkd.breakdownByFiscalYear()];
+	var breakdowns = bkd.groups();
 	var rows = [];
 
 	var data = _.sortBy(_.map(bkd.data(), function (d) {

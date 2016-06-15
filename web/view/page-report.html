@@ -23,6 +23,30 @@ let o = {
 		{{template "page-report-example.html"}}
 	{{else if eq .id "gross_sales_discount_and_net_sales"}}
 		{{template "page-report-gross-sales-discount-and-net-sales.html"}}
+	{{else if eq .id "sales_by_outlet"}}
+		{{template "page-report-widget-sales-by-outlet.html"}}
+	{{else if eq .id "sales_by_gdp"}}
+		{{template "page-report-widget-sales-by-gdp.html"}}
+	{{else if eq .id "number_of_invoice_headcount"}}
+		{{template "page-report-widget-numberinvoice-headcount.html"}}
+	{{else if eq .id "sales_invoice"}}
+		{{template "page-report-widget-sales-invoice.html"}}
+	{{else if eq .id "gross_sales_qty"}}
+		{{template "page-report-widget-gross-sales-qty.html"}}
+	{{else if eq .id "discount_qty"}}
+		{{template "page-report-widget-discount-qty.html"}}
+	{{else if eq .id "net_price_qty"}}
+		{{template "page-report-widget-netprice-qty.html"}}
+	{{else if eq .id "btl_qty"}}
+		{{template "page-report-widget-btl-qty.html"}}
+	{{else if eq .id "net_price_after_btl_qty"}}
+		{{template "page-report-widget-net-price-btl-qty.html"}}
+	{{else if eq .id "freight_cost_by_sales"}}
+		{{template "page-report-widget-freight-costby-sales.html"}}
+	{{else if eq .id "sga_by_sales"}}
+		{{template "page-report-widget-sga-by-sales.html"}}
+	{{else if eq .id "cost_by_sales"}}
+		{{template "page-report-widget-cost-by-sales.html"}}
 	{{end}}
 	</div>
 

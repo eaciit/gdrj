@@ -113,11 +113,15 @@ crt.getParam = function () {
 };
 crt.refresh = function () {
 	// crt.data(DATATEMP_CHART)
-	crt.series([app.koMap({ field: 'value1', name: o['value1'] }), app.koMap({ field: 'value2', name: o['value2'] }), app.koMap({ field: 'value3', name: o['value3'] })]);
-	app.ajaxPost("/report/summarycalculatedatapivot", crt.getParam(), function (res) {
-		crt.data(res.Data);
-		crt.render();
-	});
+	// crt.series([
+	// 	app.koMap({ field: 'value1', name: o[`value1`] }),
+	// 	app.koMap({ field: 'value2', name: o[`value2`] }),
+	// 	app.koMap({ field: 'value3', name: o[`value3`] })
+	// ])
+	// app.ajaxPost("/report/summarycalculatedatapivot", crt.getParam(), (res) => {
+	// 	crt.data(res.Data)
+	crt.render();
+	// })
 };
 crt.refreshOnChange = function () {
 	// setTimeout(crt.refresh, 100)
