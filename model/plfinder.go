@@ -269,6 +269,8 @@ func (s *PLFinderParam) SetPL() {
 		s.PLs = append(s.PLs, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6", "PL7", "PL8")
 	} else if s.Flag == "gross_sales_qty" {
 		s.PLs = append(s.PLs, "salesqty", "PL1", "PL2", "PL3", "PL4", "PL5", "PL6")
+	} else if s.Flag == "discount_qty" {
+		s.PLs = append(s.PLs, "salesqty", "PL7", "PL8")
 	}
 }
 func (s *PLFinderParam) noZero(num float64) float64 {
@@ -294,34 +296,26 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 		fmt.Printf("-------- %#v\n", *each)
 	}
 
-	if s.Flag == "gross_sales_discount_and_net_sales" {
+	if s.Flag != "" {
 		for _, raw := range *data {
 			grossSales := s.Sum(raw, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6")
 			salesDiscount := s.Sum(raw, "PL7", "PL8")
-			netSales := grossSales - salesDiscount // s.Sum(raw, "PL8A")
-
-			each := toolkit.M{}
-			each.Set("gross_sales", grossSales)
-			each.Set("sales_discount", salesDiscount)
-			each.Set("net_sales", netSales)
-
-			for k, v := range raw.Get("_id").(toolkit.M) {
-				each.Set(strings.Replace(k, "_id_", "", -1), v)
-			}
-
-			res = append(res, &each)
-		}
-
-		*data = res
-	} else if s.Flag == "gross_sales_qty" {
-		for _, raw := range *data {
-			grossSales := s.Sum(raw, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6")
 			qty := s.Sum(raw, "salesqty")
 
 			each := toolkit.M{}
-			each.Set("gross_sales", grossSales)
-			each.Set("qty", qty)
-			each.Set("gross_sales_by_qty", s.noZero(grossSales/qty))
+			if s.Flag == "gross_sales_discount_and_net_sales" {
+				each.Set("gross_sales", grossSales)
+				each.Set("sales_discount", math.Abs(salesDiscount))
+				each.Set("net_sales", grossSales+salesDiscount) // s.Sum(raw, "PL8A")
+			} else if s.Flag == "gross_sales_qty" {
+				each.Set("gross_sales", grossSales)
+				each.Set("qty", qty)
+				each.Set("gross_sales_qty", s.noZero(grossSales/qty))
+			} else if s.Flag == "discount_qty" {
+				each.Set("sales_discount", math.Abs(salesDiscount))
+				each.Set("qty", qty)
+				each.Set("discount_qty", math.Abs(s.noZero(salesDiscount/qty)))
+			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
 				each.Set(strings.Replace(k, "_id_", "", -1), v)
