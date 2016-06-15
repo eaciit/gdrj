@@ -387,7 +387,7 @@ rpt.getIdeas = () => {
 		if (!toolkit.isFine(res)) {
 			return
 		}
-
+		
 		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.order))
 	})
 }

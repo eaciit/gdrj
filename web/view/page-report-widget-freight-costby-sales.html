@@ -1,0 +1,46 @@
+<div class="col-md-12 no-padding hardcore">
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-chart.html"}}
+	</div>
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-pivot.html"}}
+	</div>
+</div>
+
+<script>
+	$(() => {
+		pvt.row('customer.channelname')
+		pvt.column('customer.branchname')
+		pvt.dataPoints = ko.observableArray([
+			{ field: 'freightcost', title: 'Freight Cost', name: 'Freight Cost' },
+			{ field: 'sales', title: 'Sales', name: 'Sales' },
+			{ field: 'freightcostbyqty', title: 'Freight Cost by Sales', name: 'Freight Cost by Sales' }
+		])
+		
+		pvt.data([{
+			customer_channelname: 'GT', customer_branchname: 'Surabaya',
+			freightcost: 20000,
+			sales: 2000,
+			freightcostbyqty: 10
+		}, {
+			customer_channelname: 'MT', customer_branchname: 'Surabaya',
+			freightcost: 22000,
+			sales: 1000,
+			freightcostbyqty: 22
+		}, {
+			customer_channelname: 'GT', customer_branchname: 'Malang',
+			freightcost: 23000,
+			sales: 3000,
+			freightcostbyqty: 23
+		}, {
+			customer_channelname: 'GT', customer_branchname: 'Malang',
+			freightcost: 22000,
+			sales: 2000,
+			freightcostbyqty: 11
+		}])
+		crt.data(pvt.data())
+		crt.series(pvt.dataPoints())
+		pvt.refresh()
+		crt.refresh()
+	})
+</script>

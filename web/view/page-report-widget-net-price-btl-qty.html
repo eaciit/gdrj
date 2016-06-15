@@ -1,0 +1,46 @@
+<div class="col-md-12 no-padding hardcore">
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-chart.html"}}
+	</div>
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-pivot.html"}}
+	</div>
+</div>
+
+<script>
+	$(() => {
+		pvt.row('customer.channelname')
+		pvt.column('customer.branchname')
+		pvt.dataPoints = ko.observableArray([
+			{ field: 'netpricebtl', title: 'Net Price After BTL', name: 'Net Price After BTL' },
+			{ field: 'qty', title: 'Qty', name: 'Qty' },
+			{ field: 'netpricebtlbyqty', title: 'Net Price After BTL / Qty', name: 'Net Price After BTL / Qty' }
+		])
+		
+		pvt.data([{
+			customer_channelname: 'GT', customer_branchname: 'Surabaya',
+			netpricebtl: 20000,
+			qty: 2000,
+			netpricebtlbyqty: 10
+		}, {
+			customer_channelname: 'MT', customer_branchname: 'Surabaya',
+			netpricebtl: 22000,
+			qty: 1000,
+			netpricebtlbyqty: 22
+		}, {
+			customer_channelname: 'GT', customer_branchname: 'Malang',
+			netpricebtl: 23000,
+			qty: 3000,
+			netpricebtlbyqty: 23
+		}, {
+			customer_channelname: 'GT', customer_branchname: 'Malang',
+			netpricebtl: 22000,
+			qty: 2000,
+			netpricebtlbyqty: 11
+		}])
+		crt.data(pvt.data())
+		crt.series(pvt.dataPoints())
+		pvt.refresh()
+		crt.refresh()
+	})
+</script>
