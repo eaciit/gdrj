@@ -393,13 +393,13 @@ rpt.getIdeas = () => {
 			return
 		}
 		
+		rpt.idanalysisreport('')
 		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.order))
 		let idreport = _.find(rpt.analysisIdeas(), function(a) { return a._id == o.ID })
-		if (idreport != undefined)
+		if (idreport != undefined) {
 			rpt.idanalysisreport(idreport.name)
-		else
-			rpt.idanalysisreport()
-		vm.currentTitle("Report " + rpt.idanalysisreport())
+			vm.currentTitle("Report " + rpt.idanalysisreport())
+		}
 	})
 }
 rpt.wrapParam = (dimensions = [], dataPoints = []) => {
