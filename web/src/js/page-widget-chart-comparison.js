@@ -8,6 +8,12 @@ ccr.contentIsLoading = ko.observable(false)
 ccr.categoryAxisField = ko.observable('category')
 ccr.breakdownBy = ko.observable('')
 ccr.limitchart = ko.observable(4)
+ccr.optionComparison = ko.observableArray([
+	{ field: 'qty', name: 'Quantity' },
+	{ field: 'outlet', name: 'Outlet' },
+	{ field: 'price', name: 'Price' },
+])
+ccr.comparison = ko.observableArray(['qty', 'outlet'])
 
 ccr.getDecreasedQty = (useCache = false) => {
 	ccr.contentIsLoading(true)
@@ -66,8 +72,8 @@ ccr.refresh = () => {
 }
 ccr.render = () => {
 	let configure = (data, full) => {
-		let series = [
-			{ 
+		let seriesLibs = {
+			price: { 
 				name: 'Price', 
 				// field: 'value1', 
 				data: data.price, 
@@ -80,7 +86,8 @@ ccr.render = () => {
 					}
 				},
 				axis: "priceqty"
-			}, { 
+			},
+			qty: { 
 				name: 'Qty', 
 				// field: 'value2', 
 				data: data.qty, 
@@ -93,7 +100,8 @@ ccr.render = () => {
 					}
 				},
 				axis: "priceqty"
-			}, { 
+			},
+			outlet: { 
 				name: 'Outlet', 
 				// field: 'value3', 
 				data: data.outletList,
@@ -112,7 +120,13 @@ ccr.render = () => {
 				},
 				axis: "outlet"
 			}
-		]
+		}
+
+		let series = []
+		ccr.comparison().forEach((d) => {
+			series.push(seriesLibs[d])
+		})
+
 		return {
 			// dataSource: {
 			// 	data: data

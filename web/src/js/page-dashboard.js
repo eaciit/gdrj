@@ -34,8 +34,15 @@ dsbrd.render = () => {
 
 	toolkit.repeat(4, (i) => {
 		columns.push({ 
-			field: `q${i + 1}`,
+			// field: `q${i + 1}`,
 			title: `Quarter ${(i + 1)}`,
+			template: (d) => {
+				let value = kendo.toString(d[`q${i + 1}`], 'n0')
+				if (d.type == 'percentage') {
+					value = `${value} %`
+				}
+				return value
+			},
 			// headerTemplate: `<div class="align-right bold">Quarter ${(i + 1)}</div>`,
 			attributes: { class: 'align-right' },
 			headerAttributes: { style: 'text-align: right !important;', class: 'bold' },
@@ -45,7 +52,17 @@ dsbrd.render = () => {
 
 	let config = {
 		dataSource: {
-			data: dsbrd.data()
+			data: dsbrd.data(),
+			schema: {
+		        model: {
+		            fields: {
+		                q1: { type: "number" },
+		                q2: { type: "number" },
+		                q3: { type: "number" },
+		                q4: { type: "number" }
+		            }
+		        }
+		    }
 		},
 		columns: columns,
 		resizabl: false,
