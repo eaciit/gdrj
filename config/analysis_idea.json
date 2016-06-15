@@ -122,7 +122,7 @@
     "_id": "net_price_qty",
     "order": 24,
     "name": "Net Price/Qty",
-    "status": false
+    "status": true
 }, {
     "_id": "sales_upside_ratio_by_demographic_data",
     "order": 25,
@@ -147,7 +147,7 @@
     "_id": "btl_qty",
     "order": 28,
     "name": "BTL/Qty",
-    "status": false
+    "status": true
 }, {
     "_id": "sales_by_gdp",
     "order": 29,
@@ -167,7 +167,7 @@
     "_id": "net_price_after_btl_qty",
     "order": 32,
     "name": "Net price after BTL/Qty",
-    "status": false
+    "status": true
 }, {
     "_id": "sales_growth",
     "order": 33,
