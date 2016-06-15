@@ -305,7 +305,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			sga := s.Sum(raw, "PL94A")
 			netprice := math.Abs(s.noZero(netAmount / qty))
 			netpricebtl := math.Abs(netprice + btl)
-			countoutlet := s.Sum(raw, "count")
+			countOutlet := s.Sum(raw, "totaloutlet")
 
 			each := toolkit.M{}
 			if s.Flag == "gross_sales_discount_and_net_sales" {
@@ -364,10 +364,10 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("cost_qty", math.Abs(s.noZero(cogs/netSales)))
 			} else if s.Flag == "sales_by_outlet" {
 				each.Set("sales", netSales)
-				each.Set("outlet", countoutlet)
-				each.Set("sales_outlet", math.Abs(s.noZero(netSales/countoutlet)))
+				each.Set("outlet", countOutlet)
+				each.Set("sales_outlet", math.Abs(s.noZero(netSales/countOutlet)))
 			} else if s.Flag == "number_of_outlets" {
-				each.Set("outlet", countoutlet)
+				each.Set("outlet", countOutlet)
 			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
@@ -410,9 +410,15 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	}
 	defer session.Close()
 
-	pipe := []bson.M{}
 	groups := bson.M{}
 	groupIds := bson.M{}
+
+	fb := DB().Connection.Fb()
+	fb.AddFilter(s.ParseFilter())
+	matches, err := fb.Build()
+	if err != nil {
+		return nil, err
+	}
 
 	for _, breakdown := range s.Breakdowns {
 		field := fmt.Sprintf("$_id.%s", strings.Replace(breakdown, ".", "_", -1))
@@ -439,7 +445,7 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 			"ratiotoskusales",
 			"taxamount",
 			"netamount",
-			"outlets",
+			"totaloutlet",
 		}
 
 		for _, other := range fields {
@@ -448,9 +454,10 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		}
 	}
 
-	pipe = append(pipe, bson.M{"$group": groups})
+	// groups["totalOutlet"] = bson.M{"$size": "$outlets"}
+	pipe := []bson.M{{"$match": matches}, {"$group": groups}} //, {"$project": projects}} //
 
-	fmt.Printf("AGGRTTTTT %#v\n", pipe)
+	fmt.Printf("AGGRTTTTT %v | %#v\n", tableName, pipe)
 
 	res := []*toolkit.M{}
 	err = db.C(tableName).Pipe(pipe).All(&res)
@@ -516,8 +523,16 @@ func (s *PLFinderParam) GeneratePLData() error {
 	}
 
 	group["outlets"] = bson.M{"$addToSet": "$customer._id"}
+	project := bson.M{"totaloutlet": bson.M{"$size": "$outlets"}}
+	for key := range group {
+		if key == "_id" {
+			continue
+		}
 
-	pipes := []bson.M{{"$group": group}, {"$out": tableName}} //, {"project": project}}
+		project[key] = 1
+	}
+
+	pipes := []bson.M{{"$group": group}, {"$project": project}, {"$out": tableName}}
 	pipe := col.Pipe(pipes)
 
 	res := []*toolkit.M{}

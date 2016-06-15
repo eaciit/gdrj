@@ -258,14 +258,17 @@ rpt.getIdeas = function () {
 			return;
 		}
 
+		rpt.idanalysisreport('');
 		rpt.analysisIdeas(_.sortBy(res.data, function (d) {
 			return d.order;
 		}));
 		var idreport = _.find(rpt.analysisIdeas(), function (a) {
 			return a._id == o.ID;
 		});
-		if (idreport != undefined) rpt.idanalysisreport(idreport.name);else rpt.idanalysisreport();
-		vm.currentTitle("Report " + rpt.idanalysisreport());
+		if (idreport != undefined) {
+			rpt.idanalysisreport(idreport.name);
+			vm.currentTitle("Report " + rpt.idanalysisreport());
+		}
 	});
 };
 rpt.wrapParam = function () {
