@@ -130,7 +130,7 @@ func main() {
 		}
 
 		st := new(gdrj.SalesTrx)
-		st.SalesHeaderID = sev.ID
+		st.SalesHeaderID = toolkit.Sprintf("%v%v", sev.ID, toolkit.RandomString(32))
 		st.OutletID = sev.OutletID
 		st.SKUID = sev.SKUID
 		st.Fiscal = toolkit.Sprintf("%v%v", sev.Period, sev.Year)
