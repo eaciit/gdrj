@@ -271,33 +271,39 @@ func (s *PLFinderParam) SetPL() {
 		s.PLs = append(s.PLs, "salesqty", "PL1", "PL2", "PL3", "PL4", "PL5", "PL6")
 	}
 }
-
-func (s *PLFinderParam) Sum(raw *toolkit.M, i ...string) float64 {
-	noZero := func(num float64) float64 {
-		if math.IsNaN(num) || math.IsInf(num, 0) {
-			return 0
-		}
-
-		return num
+func (s *PLFinderParam) noZero(num float64) float64 {
+	if math.IsNaN(num) || math.IsInf(num, 1) || math.IsInf(num, -1) {
+		return 0
 	}
 
+	return num
+}
+
+func (s *PLFinderParam) Sum(raw *toolkit.M, i ...string) float64 {
 	total := 0.0
 	for _, j := range i {
-		total = total + noZero(raw.GetFloat64(j))
+		total = total + s.noZero(raw.GetFloat64(j))
 	}
 	return total
 }
 
 func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 	res := []*toolkit.M{}
+	fmt.Println("----------", s.Flag)
+	for _, each := range *data {
+		fmt.Printf("-------- %#v\n", *each)
+	}
 
-	fmt.Println("---------------------------------------", s.Flag)
 	if s.Flag == "gross_sales_discount_and_net_sales" {
 		for _, raw := range *data {
+			grossSales := s.Sum(raw, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6")
+			salesDiscount := s.Sum(raw, "PL7", "PL8")
+			netSales := grossSales - salesDiscount // s.Sum(raw, "PL8A")
+
 			each := toolkit.M{}
-			each.Set("gross_sales", s.Sum(raw, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6"))
-			each.Set("sales_discount", s.Sum(raw, "PL7", "PL8"))
-			each.Set("net_sales", s.Sum(raw, "PL8A"))
+			each.Set("gross_sales", grossSales)
+			each.Set("sales_discount", salesDiscount)
+			each.Set("net_sales", netSales)
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
 				each.Set(strings.Replace(k, "_id_", "", -1), v)
@@ -315,7 +321,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			each := toolkit.M{}
 			each.Set("gross_sales", grossSales)
 			each.Set("qty", qty)
-			each.Set("gross_sales/qty", grossSales/qty)
+			each.Set("gross_sales_by_qty", s.noZero(grossSales/qty))
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
 				each.Set(strings.Replace(k, "_id_", "", -1), v)
@@ -363,6 +369,13 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		op := fmt.Sprintf("$%s", s.Aggr)
 		field := fmt.Sprintf("$%s", plmod.ID)
 		q = q.Aggr(op, field, plmod.ID)
+	}
+
+	for _, other := range s.PLs {
+		if !strings.HasPrefix(other, "PL") {
+			field := fmt.Sprintf("$%s", other)
+			q = q.Aggr("$sum", field, other)
+		}
 	}
 
 	csr, err := q.Cursor(nil)
