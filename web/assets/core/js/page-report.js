@@ -29,6 +29,7 @@ rpt.optionDimensions = ko.observableArray([
 rpt.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
 rpt.mode = ko.observable('render');
+rpt.refreshView = ko.observable('');
 rpt.idanalysisreport = ko.observable();
 rpt.valueMasterData = {};
 rpt.masterData = {
@@ -303,9 +304,14 @@ rpt.refresh = function () {
 	});
 };
 rpt.refreshAll = function () {
-	bkd.refresh();
-	rs.refresh();
-	ccr.refresh();
+	if (rpt.refreshView() == 'breakdown') {
+		bkd.refresh();
+		rs.refresh();
+		ccr.refresh();
+	} else if (rpt.refreshView() == 'reportwidget') {
+		pvt.refresh();
+		crt.refresh();
+	}
 };
 rpt.panel_relocated = function () {
 	if ($('.panel-yo').size() == 0) {

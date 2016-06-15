@@ -151,6 +151,7 @@ rpt.optionAggregates = ko.observableArray([
 	{ aggr: 'min', name: 'Min' }
 ])
 rpt.mode = ko.observable('render')
+rpt.refreshView = ko.observable('')
 rpt.idanalysisreport = ko.observable()
 rpt.valueMasterData = {}
 rpt.masterData = {
@@ -434,9 +435,14 @@ rpt.refresh = function () {
     })
 }
 rpt.refreshAll = () => {
-	bkd.refresh()
-	rs.refresh()
-	ccr.refresh()
+	if (rpt.refreshView() == 'breakdown'){
+		bkd.refresh()
+		rs.refresh()
+		ccr.refresh()
+	} else if (rpt.refreshView() == 'reportwidget'){
+		pvt.refresh()
+		crt.refresh()
+	}
 }
 rpt.panel_relocated = () => {
 	if ($('.panel-yo').size() == 0) {
