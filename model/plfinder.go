@@ -357,8 +357,12 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("netpricebtl", netpricebtl)
 				each.Set("qty", math.Abs(qty))
 				each.Set("netpricebtl_qty", math.Abs(s.noZero(netpricebtl/qty)))
+			} else if s.Flag == "cost_by_sales" {
+				each.Set("cost", math.Abs(cogs))
+				each.Set("sales", netSales)
+				each.Set("cost_qty", math.Abs(s.noZero(cogs/netSales)))
 			}
-
+			
 			for k, v := range raw.Get("_id").(toolkit.M) {
 				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(fmt.Sprintf("%v", v)))
 			}

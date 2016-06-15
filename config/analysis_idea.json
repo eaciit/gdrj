@@ -137,7 +137,7 @@
     "_id": "cost_by_sales",
     "order": 28,
     "name": "Cost by Sales",
-    "status": false
+    "status": true
 }, {
     "_id": "return_of_employment",
     "order": 28,
