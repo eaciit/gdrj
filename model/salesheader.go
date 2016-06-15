@@ -12,13 +12,15 @@ type SalesHeader struct {
 	orm.ModelBase       `json:"-" bson:"-"`
 	ID                  string `json:"_id" bson:"_id"`
 	Date                time.Time
+	Month               time.Month // ADD By System, Check PRE-SAVE
+	Year                int        // ADD By System, Check PRE-SAVE
 	BranchID            string
 	OutletID            string
 	SalesTaxAmount      float64
 	SalesDiscountAmount float64
 	SalesGrossAmount    float64
 	SalesNetAmount      float64
-	SalesLine int
+	SalesLine           int
 }
 
 func (sh *SalesHeader) RecordID() interface{} {
@@ -33,6 +35,12 @@ func SalesHeaderGetByID(id string) *SalesHeader {
 	sh := new(SalesHeader)
 	DB().GetById(sh, id)
 	return sh
+}
+
+func (s *SalesHeader) PreSave() error {
+	s.Month = s.Date.Month()
+	s.Year = s.Date.Year()
+	return nil
 }
 
 func (sh *SalesHeader) Save() error {

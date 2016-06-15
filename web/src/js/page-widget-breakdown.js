@@ -8,9 +8,14 @@ bkd.detail = ko.observableArray([])
 bkd.limit = ko.observable(10)
 bkd.breakdownNote = ko.observable('')
 
+bkd.breakdownBy = ko.observable('customer.channelname')
+bkd.breakdownByFiscalYear = ko.observable('date.fiscal')
+bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy())
+
 bkd.data = ko.observableArray([])
 bkd.plmodels = ko.observableArray([])
 bkd.zeroValue = ko.observable(false)
+bkd.fiscalYear = ko.observable(2014)
 
 bkd.generateDataForX = () => {
 	let param = {
@@ -34,9 +39,17 @@ bkd.generateDataForX = () => {
 bkd.refresh = (useCache = false) => {
 	let param = {}
 	param.pls = []
-	param.groups = [bkd.breakdownBy(), bkd.breakdownByFiscalYear()]
+	param.groups = [bkd.breakdownBy() /** , 'date.year' */]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
+
+	param.filters.push({
+		Field: 'date.fiscal',
+		Op: '$eq',
+		Value: `${bkd.fiscalYear()}-${bkd.fiscalYear()+1}`
+	})
+
+	console.log("bdk", param.filters)
 	
 	bkd.oldBreakdownBy(bkd.breakdownBy())
 	bkd.contentIsLoading(true)
@@ -68,10 +81,6 @@ bkd.refresh = (useCache = false) => {
 
 	fetch()
 }
-
-bkd.breakdownBy = ko.observable('customer.channelname')
-bkd.breakdownByFiscalYear = ko.observable('date.fiscal')
-bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy())
 
 bkd.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
@@ -280,7 +289,7 @@ bkd.render = () => {
 		return
 	}
 	
-	let breakdowns = [bkd.breakdownBy(), bkd.breakdownByFiscalYear()]
+	let breakdowns = [bkd.breakdownBy() /** , 'date.year' */]
 	let rows = []
 	
 	let data = _.sortBy(_.map(bkd.data(), (d) => {

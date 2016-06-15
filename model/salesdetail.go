@@ -11,6 +11,8 @@ type SalesDetail struct {
 	orm.ModelBase    `json:"-" bson:"-"`
 	ID               string `json:"_id" bson:"_id"`
 	Date             time.Time
+	Month            time.Month // ADD By System, Check PRE-SAVE
+	Year             int        // ADD By System, Check PRE-SAVE
 	BranchID         string
 	SalesHeaderID    string
 	SKUID_SAPBI      string
@@ -19,8 +21,8 @@ type SalesDetail struct {
 	Price            float64
 	SalesGrossAmount float64
 	SalesNetAmount   float64
-	AllocTaxAmount float64
-	AllocDiscAmount float64
+	AllocTaxAmount   float64
+	AllocDiscAmount  float64
 }
 
 func (sd *SalesDetail) RecordID() interface{} {
@@ -35,6 +37,12 @@ func SalesDetailGetByID(id string) *SalesDetail {
 	sd := new(SalesDetail)
 	DB().GetById(sd, id)
 	return sd
+}
+
+func (s *SalesDetail) PreSave() error {
+	s.Month = s.Date.Month()
+	s.Year = s.Date.Year()
+	return nil
 }
 
 func (sd *SalesDetail) Save() error {

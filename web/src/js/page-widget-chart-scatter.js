@@ -11,6 +11,8 @@ rs.selectedPNLNetSales = ko.observable("PL8A") // PL1
 rs.selectedPNL = ko.observable("PL74C")
 rs.chartComparisonNote = ko.observable('')
 rs.optionDimensionSelect = ko.observableArray([])
+rs.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */])
+rs.fiscalYear = ko.observable(2014)
 
 rs.getSalesHeaderList = () => {
 	app.ajaxPost("/report/getplmodel", {}, (res) => {
@@ -30,14 +32,20 @@ rs.getSalesHeaderList = () => {
 rs.refresh = (useCache = false) => {
 	rs.contentIsLoading(true)
 
-	let param1 = {}
-	param1.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
-	param1.groups = [rs.breakdownBy(), 'date.year']
-	param1.aggr = 'sum'
-	param1.filters = rpt.getFilterValue()
+	let param = {}
+	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
+	param.groups = rs.groups()
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue()
+
+	param.filters.push({
+		Field: 'date.fiscal',
+		Op: '$eq',
+		Value: `${rs.fiscalYear()}-${rs.fiscalYear()+1}`
+	})
 	
 	let fetch = () => {
-		app.ajaxPost("/report/getpnldatanew", param1, (res1) => {
+		app.ajaxPost("/report/getpnldatanew", param, (res1) => {
 			if (res1.Status == "NOK") {
 				setTimeout(() => {
 					fetch()
@@ -67,7 +75,8 @@ rs.refresh = (useCache = false) => {
 
 			dataAllPNL.forEach((d) => {
 				dataScatter.push({
-					category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
+					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
+					category: d._id[`_id_${app.idAble(rs.breakdownBy())}`],
 					year: d._id._id_date_year,
 					valuePNL: Math.abs(d.value),
 					valuePNLPercentage: Math.abs(d.value / multiplier * 100),
@@ -77,6 +86,8 @@ rs.refresh = (useCache = false) => {
 					sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
 				})
 			})
+
+			console.log("-----", dataScatter)
 
 			rs.contentIsLoading(false)
 			rs.generateReport(dataScatter, years)
@@ -173,12 +184,12 @@ rs.generateReport = (data, years) => {
 			majorGridLines: {
 				color: '#fafafa'
 			}
-		}, {
+		}/**, {
         	categories: years,
 			line: {
 				visible: false
 			}
-        }],
+        }*/],
     })
 }
 
