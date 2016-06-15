@@ -289,8 +289,8 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 
 	if s.Flag != "" {
 		for _, raw := range *data {
-			grossSales := s.Sum(raw, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6")
-			salesDiscount := s.Sum(raw, "PL7", "PL8")
+			grossSales := s.Sum(raw, "grossamount")
+			salesDiscount := s.Sum(raw, "discountamount")
 			btl := s.Sum(raw, "PL29", "PL30", "PL31", "PL32")
 			qty := s.Sum(raw, "salesqty")
 			netSales := s.Sum(raw, "PL8A")
@@ -393,20 +393,27 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 
 	}
 
-	q := DB().Connection.NewQuery().From(tableName)
-	if len(s.Filters) > 0 {
-		q = q.Where(s.ParseFilter())
+	db, session, err := s.ConnectToDB()
+	if err != nil {
+		return nil, err
 	}
+	defer session.Close()
+
+	pipe := []bson.M{}
+	groups := bson.M{}
+	groupIds := bson.M{}
 
 	for _, breakdown := range s.Breakdowns {
-		brkdwn := fmt.Sprintf("_id.%s", strings.Replace(breakdown, ".", "_", -1))
-		q = q.Group(brkdwn)
+		field := fmt.Sprintf("$_id.%s", strings.Replace(breakdown, ".", "_", -1))
+		alias := strings.Replace(fmt.Sprintf("_id.%s", breakdown), ".", "_", -1)
+		groupIds[alias] = field
 	}
+	groups["_id"] = groupIds
 
 	for _, plmod := range plmodels {
 		op := fmt.Sprintf("$%s", s.Aggr)
 		field := fmt.Sprintf("$%s", plmod.ID)
-		q = q.Aggr(op, field, plmod.ID)
+		groups[plmod.ID] = bson.M{op: field}
 	}
 
 	if s.Flag != "" {
@@ -424,21 +431,17 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		}
 
 		for _, other := range fields {
-			if !strings.HasPrefix(other, "PL") {
-				field := fmt.Sprintf("$%s", other)
-				q = q.Aggr("$sum", field, other)
-			}
+			field := fmt.Sprintf("$%s", other)
+			groups[other] = bson.M{"$sum": field}
 		}
 	}
 
-	csr, err := q.Cursor(nil)
-	if err != nil {
-		return nil, err
-	}
-	defer csr.Close()
+	pipe = append(pipe, bson.M{"$group": groups})
+
+	fmt.Printf("AGGRTTTTT %#v\n", pipe)
 
 	res := []*toolkit.M{}
-	err = csr.Fetch(&res, 0, false)
+	err = db.C(tableName).Pipe(pipe).All(&res)
 	if err != nil {
 		return nil, err
 	}
