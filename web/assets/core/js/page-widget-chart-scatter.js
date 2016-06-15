@@ -11,6 +11,7 @@ rs.selectedPNLNetSales = ko.observable("PL8A"); // PL1
 rs.selectedPNL = ko.observable("PL74C");
 rs.chartComparisonNote = ko.observable('');
 rs.optionDimensionSelect = ko.observableArray([]);
+rs.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */]);
 
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/getplmodel", {}, function (res) {
@@ -37,7 +38,7 @@ rs.refresh = function () {
 
 	var param1 = {};
 	param1.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()];
-	param1.groups = [rs.breakdownBy(), 'date.year'];
+	param1.groups = rs.groups();
 	param1.aggr = 'sum';
 	param1.filters = rpt.getFilterValue();
 
@@ -84,7 +85,8 @@ rs.refresh = function () {
 
 			dataAllPNL.forEach(function (d) {
 				dataScatter.push({
-					category: app.nbspAble(d._id["_id_" + app.idAble(rs.breakdownBy())] + " " + d._id._id_date_year, 'Uncategorized'),
+					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
+					category: d._id["_id_" + app.idAble(rs.breakdownBy())],
 					year: d._id._id_date_year,
 					valuePNL: Math.abs(d.value),
 					valuePNLPercentage: Math.abs(d.value / multiplier * 100),
@@ -94,6 +96,8 @@ rs.refresh = function () {
 					sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
 				});
 			});
+
+			console.log("-----", dataScatter);
 
 			rs.contentIsLoading(false);
 			rs.generateReport(dataScatter, years);
@@ -196,12 +200,12 @@ rs.generateReport = function (data, years) {
 			majorGridLines: {
 				color: '#fafafa'
 			}
-		}, {
-			categories: years,
-			line: {
-				visible: false
-			}
-		}]
+		} /**, {
+         	categories: years,
+    line: {
+    	visible: false
+    }
+         }*/]
 	});
 };
 
