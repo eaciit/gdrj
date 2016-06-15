@@ -130,7 +130,7 @@ func main() {
 		}
 
 		st := new(gdrj.SalesTrx)
-		st.SalesHeaderID = sev.ID
+		st.SalesHeaderID = toolkit.Sprintf("%v%v", sev.ID, toolkit.RandomString(32))
 		st.OutletID = sev.OutletID
 		st.SKUID = sev.SKUID
 		st.Fiscal = toolkit.Sprintf("%v%v", sev.Period, sev.Year)
@@ -189,7 +189,10 @@ func main() {
 			}
 		}
 
-		st.Product.BrandCategoryID = sev.PCID[4:len(sev.PCID)]
+		if len(sev.PCID) > 4 {
+			st.Product.BrandCategoryID = sev.PCID[4:len(sev.PCID)]
+		}
+
 		if pcs.Has(sev.PCID) {
 			st.PC = pcs.Get(sev.PCID).(*gdrj.ProfitCenter)
 			st.Product.Brand = st.PC.BrandID

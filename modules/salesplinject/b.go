@@ -125,7 +125,7 @@ func prepMaster() {
 		}).(map[string]*gdrj.COGSConsolidate))
 
 	freights := map[string]*gdrj.RawDataPL{}
-	depretiation := map[string]*gdrj.RawDataPL{}
+	depreciation := map[string]*gdrj.RawDataPL{}
 	royalties := map[string]*gdrj.RawDataPL{}
 	promos := map[string]*gdrj.RawDataPL{}
 	sgas := map[string]map[string]*gdrj.RawDataPL{}
@@ -182,14 +182,14 @@ func prepMaster() {
 				}
 				frg.AmountinIDR += o.AmountinIDR
 				freights[freightid] = frg
-			} else if strings.HasSuffix(o.Src, "DEPRETIATION") {
-				depretiationid := toolkit.Sprintf("%d_%d_%s", dt.Year(), int(dt.Month()), o.BusA)
-				dpr, exist := depretiation[depretiationid]
+			} else if strings.HasSuffix(o.Src, "DEPRECIATION") {
+				depreciationid := toolkit.Sprintf("%d_%d_%s", dt.Year(), int(dt.Month()), o.BusA)
+				dpr, exist := depreciation[depreciationid]
 				if !exist {
 					dpr = new(gdrj.RawDataPL)
 				}
 				dpr.AmountinIDR += o.AmountinIDR
-				depretiation[depretiationid] = dpr
+				depreciation[depreciationid] = dpr
 			} else if strings.HasSuffix(o.Src, "ROYALTI") {
 				royaltyid := toolkit.Sprintf("%d_%d", dt.Year(), int(dt.Month()))
 				royalti, exist := royalties[royaltyid]
@@ -245,7 +245,7 @@ func prepMaster() {
 		}))
 
 	masters.Set("freight", freights)
-	masters.Set("depretiation", depretiation)
+	masters.Set("depreciation", depreciation)
 	masters.Set("promo", promos)
 	masters.Set("sga", sgas)
 	masters.Set("royalties", royalties)
@@ -335,6 +335,11 @@ func main() {
 			if e != nil {
 				break
 			}
+
+			if stx.Customer != nil && stx.Customer.ChannelID == "I1" && !strings.Contains(stx.Src, "RD") {
+				continue
+			}
+
 			globalSales += stx.NetAmount
 
 			if stx.Customer != nil {
