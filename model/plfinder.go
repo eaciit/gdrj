@@ -23,6 +23,7 @@ type PLFinderParam struct {
 	Breakdowns []string  `json:"groups"`
 	Filters    []*Filter `json:"filters"`
 	Aggr       string    `json:"aggr"`
+	Flag       string    `json:"flag"`
 }
 
 func (s *PLFinderParam) GetPLCollections() ([]*toolkit.M, error) {
@@ -263,11 +264,88 @@ func (s *PLFinderParam) GetPLModelsFollowPLS() ([]*PLModel, error) {
 	return res, nil
 }
 
+func (s *PLFinderParam) noZero(num float64) float64 {
+	if math.IsNaN(num) || math.IsInf(num, 1) || math.IsInf(num, -1) {
+		return 0
+	}
+
+	return num
+}
+
+func (s *PLFinderParam) Sum(raw *toolkit.M, i ...string) float64 {
+	total := 0.0
+	for _, j := range i {
+		total = total + s.noZero(raw.GetFloat64(j))
+	}
+	return total
+}
+
+func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
+	res := []*toolkit.M{}
+	fmt.Println("----------", s.Flag)
+	for _, each := range *data {
+		fmt.Printf("-------- %#v\n", *each)
+	}
+
+	if s.Flag != "" {
+		for _, raw := range *data {
+			grossSales := s.Sum(raw, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6")
+			salesDiscount := s.Sum(raw, "PL7", "PL8")
+			qty := s.Sum(raw, "salesqty")
+			netSales := grossSales + salesDiscount // s.Sum(raw, "PL8A")
+			salesReturn := s.Sum(raw, "PL3")
+
+			each := toolkit.M{}
+			if s.Flag == "gross_sales_discount_and_net_sales" {
+				each.Set("gross_sales", grossSales)
+				each.Set("sales_discount", math.Abs(salesDiscount))
+				each.Set("net_sales", netSales)
+			} else if s.Flag == "gross_sales_qty" {
+				each.Set("gross_sales", grossSales)
+				each.Set("qty", qty)
+				each.Set("gross_sales_qty", s.noZero(grossSales/qty))
+			} else if s.Flag == "discount_qty" {
+				each.Set("sales_discount", math.Abs(salesDiscount))
+				each.Set("qty", qty)
+				each.Set("discount_qty", math.Abs(s.noZero(salesDiscount/qty)))
+			} else if s.Flag == "sales_return_rate" {
+				each.Set("sales_return", math.Abs(salesReturn))
+				each.Set("sales_revenue", netSales)
+				each.Set("sales_return_rate", math.Abs(s.noZero(salesReturn/netSales)))
+			}
+
+			for k, v := range raw.Get("_id").(toolkit.M) {
+				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(v.(string)))
+			}
+
+			res = append(res, &each)
+		}
+
+		*data = res
+	} else {
+		for _, each := range *data {
+			for key := range *each {
+				if strings.Contains(key, "PL") {
+					val := each.GetFloat64(key)
+					if math.IsNaN(val) {
+						each.Set(key, 0)
+					}
+				}
+			}
+		}
+	}
+}
+
 func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
+	if s.Flag != "" {
+		s.PLs = []string{}
+	}
+
 	tableName := s.GetTableName()
 	plmodels, err := s.GetPLModelsFollowPLS()
 	if err != nil {
 		return nil, err
+
 	}
 
 	q := DB().Connection.NewQuery().From(tableName)
@@ -286,6 +364,13 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		q = q.Aggr(op, field, plmod.ID)
 	}
 
+	for _, other := range []string{"grossamount", "ratiotoglobalsales", "ratiotobrandsales", "discountamount", "salesqty", "count", "ratiotobranchsales", "ratiotoskusales", "taxamount", "netamount"} {
+		if !strings.HasPrefix(other, "PL") {
+			field := fmt.Sprintf("$%s", other)
+			q = q.Aggr("$sum", field, other)
+		}
+	}
+
 	csr, err := q.Cursor(nil)
 	if err != nil {
 		return nil, err
@@ -298,16 +383,7 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		return nil, err
 	}
 
-	for _, each := range res {
-		for key := range *each {
-			if strings.Contains(key, "PL") {
-				val := each.GetFloat64(key)
-				if math.IsNaN(val) {
-					each.Set(key, 0)
-				}
-			}
-		}
-	}
+	s.CalculatePL(&res)
 
 	return res, nil
 }
@@ -344,7 +420,20 @@ func (s *PLFinderParam) GeneratePLData() error {
 		_id[key] = val
 	}
 
-	group := bson.M{"_id": _id}
+	group := bson.M{
+		"_id":                _id,
+		"salesqty":           bson.M{"$sum": "$salesqty"},
+		"grossamount":        bson.M{"$sum": "$grossamount"},
+		"discountamount":     bson.M{"$sum": "$discountamount"},
+		"taxamount":          bson.M{"$sum": "$taxamount"},
+		"netamount":          bson.M{"$sum": "$netamount"},
+		"count":              bson.M{"$sum": 1},
+		"ratiotoglobalsales": bson.M{"$sum": "$ratiotoglobalsales"},
+		"ratiotobranchsales": bson.M{"$sum": "$ratiotobranchsales"},
+		"ratiotobrandsales":  bson.M{"$sum": "$ratiotobrandsales"},
+		"ratiotoskusales":    bson.M{"$sum": "$ratiotoskusales"},
+	}
+
 	for _, plmod := range plmodels {
 		key := strings.Replace(plmod.ID, ".", "_", -1)
 		field := fmt.Sprintf("$pldatas.%s.amount", plmod.ID)

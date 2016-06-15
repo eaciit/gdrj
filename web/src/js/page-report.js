@@ -150,6 +150,7 @@ rpt.optionAggregates = ko.observableArray([
 	{ aggr: 'min', name: 'Min' }
 ])
 rpt.mode = ko.observable('render')
+rpt.idanalysisreport = ko.observable()
 rpt.valueMasterData = {}
 rpt.masterData = {
 	geographi: ko.observableArray([])
@@ -391,6 +392,8 @@ rpt.getIdeas = () => {
 		}
 		
 		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.order))
+		rpt.idanalysisreport(_.find(rpt.analysisIdeas(), function(a) { return a._id == o.ID }).name)
+		vm.currentTitle("Report " + rpt.idanalysisreport())
 	})
 }
 rpt.wrapParam = (dimensions = [], dataPoints = []) => {

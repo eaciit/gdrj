@@ -23,6 +23,7 @@ rpt.optionDimensions = ko.observableArray([{ field: "", name: 'None', title: '' 
 rpt.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
 rpt.mode = ko.observable('render');
+rpt.idanalysisreport = ko.observable();
 rpt.valueMasterData = {};
 rpt.masterData = {
 	geographi: ko.observableArray([])
@@ -253,6 +254,10 @@ rpt.getIdeas = function () {
 		rpt.analysisIdeas(_.sortBy(res.data, function (d) {
 			return d.order;
 		}));
+		rpt.idanalysisreport(_.find(rpt.analysisIdeas(), function (a) {
+			return a._id == o.ID;
+		}).name);
+		vm.currentTitle("Report " + rpt.idanalysisreport());
 	});
 };
 rpt.wrapParam = function () {

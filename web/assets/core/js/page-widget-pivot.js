@@ -9,20 +9,38 @@ pvt.contentIsLoading = ko.observable(false);
 pvt.optionRows = ko.observableArray(rpt.optionDimensions());
 pvt.optionColumns = ko.observableArray(rpt.optionDimensions());
 
-pvt.row = ko.observable([]);
-pvt.column = ko.observable([]);
+pvt.row = ko.observable('');
+pvt.column = ko.observable('');
 pvt.dataPoints = ko.observableArray([]);
 pvt.data = ko.observableArray([]);
 
 pvt.refresh = function () {
-	pvt.render();
-	// // pvt.data(DATATEMP_PIVOT)
-	// app.ajaxPost("/report/summarycalculatedatapivot", pvt.getParam(), (res) => {
-	// 	let orderKey = app.idAble(ko.mapping.toJS(pvt.rows()[0]).field)
-	// 	let data = _.sortBy(res.Data, (o, v) => o[orderKey])
-	// 	pvt.data(data)
-	// 	pvt.render()
-	// })
+	var param = {};
+	param.pls = [];
+	param.flag = o.ID;
+	param.groups = [pvt.row(), pvt.column()];
+	param.aggr = 'sum';
+	param.filters = rpt.getFilterValue();
+
+	pvt.contentIsLoading(true);
+
+	var fetch = function fetch() {
+		app.ajaxPost("/report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			pvt.data(res.Data.Data);
+			pvt.contentIsLoading(false);
+			pvt.render();
+		}, function () {
+			pvt.contentIsLoading(false);
+		});
+	};
+	fetch();
 };
 pvt.render = function () {
 	var data = pvt.data();

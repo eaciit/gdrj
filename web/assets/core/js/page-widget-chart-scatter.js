@@ -12,6 +12,7 @@ rs.selectedPNL = ko.observable("PL74C");
 rs.chartComparisonNote = ko.observable('');
 rs.optionDimensionSelect = ko.observableArray([]);
 rs.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */]);
+rs.fiscalYear = ko.observable(2014);
 
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/getplmodel", {}, function (res) {
@@ -36,14 +37,20 @@ rs.refresh = function () {
 
 	rs.contentIsLoading(true);
 
-	var param1 = {};
-	param1.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()];
-	param1.groups = rs.groups();
-	param1.aggr = 'sum';
-	param1.filters = rpt.getFilterValue();
+	var param = {};
+	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()];
+	param.groups = rs.groups();
+	param.aggr = 'sum';
+	param.filters = rpt.getFilterValue();
+
+	param.filters.push({
+		Field: 'date.fiscal',
+		Op: '$eq',
+		Value: rs.fiscalYear() + "-" + (rs.fiscalYear() + 1)
+	});
 
 	var fetch = function fetch() {
-		app.ajaxPost("/report/getpnldatanew", param1, function (res1) {
+		app.ajaxPost("/report/getpnldatanew", param, function (res1) {
 			if (res1.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
