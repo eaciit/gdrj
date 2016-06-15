@@ -604,5 +604,6 @@ bkd.showZeroValue = function (a) {
 
 $(function () {
 	bkd.refresh(false);
+	rpt.refreshView('breakdown');
 	bkd.prepareEvents();
 });

@@ -42,7 +42,7 @@ crt.configure = (series, index) => {
 	let dataSort = crt.data()
 	if (crt.sortField() != "")
 		dataSort = _.orderBy(crt.data(), [crt.sortField()], ['desc']);
-	
+
 	return {
 		title: crt.title(),
 		dataSource: { data: dataSort },
@@ -124,6 +124,7 @@ crt.render = () => {
 	}
 }
 crt.refresh = () => {
+	rpt.refreshView('reportwidget')
 	let param = {}
 	param.pls = []
 	param.flag = o.ID

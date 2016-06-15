@@ -217,5 +217,6 @@ rs.generateReport = function (data, years) {
 };
 
 $(function () {
+	rpt.refreshView('breakdown');
 	rs.getSalesHeaderList();
 });
