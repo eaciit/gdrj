@@ -9,7 +9,6 @@ pvt.contentIsLoading = ko.observable(false);
 pvt.optionRows = ko.observableArray(rpt.optionDimensions());
 pvt.optionColumns = ko.observableArray(rpt.optionDimensions());
 
-pvt.flag = ko.observable('');
 pvt.row = ko.observable('');
 pvt.column = ko.observable('');
 pvt.dataPoints = ko.observableArray([]);
@@ -18,19 +17,30 @@ pvt.data = ko.observableArray([]);
 pvt.refresh = function () {
 	var param = {};
 	param.pls = [];
-	param.flag = pvt.flag();
+	param.flag = o.ID;
 	param.groups = [pvt.row(), pvt.column()];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
 
 	pvt.contentIsLoading(true);
-	app.ajaxPost("/report/getpnldatanew", param, function (res) {
-		pvt.data(res.Data.Data);
-		pvt.contentIsLoading(false);
-		pvt.render();
-	}, function () {
-		pvt.contentIsLoading(false);
-	});
+
+	var fetch = function fetch() {
+		app.ajaxPost("/report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			pvt.data(res.Data.Data);
+			pvt.contentIsLoading(false);
+			pvt.render();
+		}, function () {
+			pvt.contentIsLoading(false);
+		});
+	};
+	fetch();
 };
 pvt.render = function () {
 	var data = pvt.data();

@@ -7,7 +7,6 @@ pvt.contentIsLoading = ko.observable(false)
 pvt.optionRows = ko.observableArray(rpt.optionDimensions())
 pvt.optionColumns = ko.observableArray(rpt.optionDimensions())
 
-pvt.flag = ko.observable('')
 pvt.row = ko.observable('')
 pvt.column = ko.observable('')
 pvt.dataPoints = ko.observableArray([])
@@ -16,19 +15,28 @@ pvt.data = ko.observableArray([])
 pvt.refresh = () => {
 	let param = {}
 	param.pls = []
-	param.flag = pvt.flag()
+	param.flag = o.ID
 	param.groups = [pvt.row(), pvt.column()]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
 
 	pvt.contentIsLoading(true)
-	app.ajaxPost("/report/getpnldatanew", param, (res) => {
-		pvt.data(res.Data.Data)
-		pvt.contentIsLoading(false)
-		pvt.render()
-	}, () => {
-		pvt.contentIsLoading(false)
-	})
+
+	let fetch = () => {
+		app.ajaxPost("/report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => { fetch() }, 1000 * 5)
+				return
+			}
+			
+			pvt.data(res.Data.Data)
+			pvt.contentIsLoading(false)
+			pvt.render()
+		}, () => {
+			pvt.contentIsLoading(false)
+		})
+	}
+	fetch()
 }
 pvt.render = () => {
 	let data = pvt.data()

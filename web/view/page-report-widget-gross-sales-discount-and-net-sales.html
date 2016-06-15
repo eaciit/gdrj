@@ -16,12 +16,10 @@
 			{ field: 'sales_discount', title: 'Sales Discount', name: 'Sales Discount' },
 			{ field: 'net_sales', title: 'Net Sales', name: 'Net Sales' }
 		])
-		pvt.flag("gross_sales_discount_and_net_sales")
 		pvt.refresh()
 
 		crt.categoryAxisField('customer.branchname')
 		crt.series(pvt.dataPoints())
-		crt.flag("gross_sales_discount_and_net_sales")
 		crt.refresh()
 	})
 </script>

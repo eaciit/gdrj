@@ -289,6 +289,8 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 			return res
 		}
 
+		fmt.Printf("DATA %#v\n", string(toolkit.Jsonify(data)))
+
 		res.SetData(toolkit.M{
 			"Data":     data,
 			"PLModels": plmodels,
