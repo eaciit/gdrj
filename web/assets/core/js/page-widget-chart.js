@@ -113,8 +113,3 @@ crt.refresh = function () {
 		crt.contentIsLoading(false);
 	});
 };
-
-$(function () {
-	crt.categoryAxisField('customer.branchname');
-	crt.refresh();
-});

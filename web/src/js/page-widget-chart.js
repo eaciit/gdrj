@@ -81,7 +81,6 @@ crt.render = () => {
 	let config = crt.configure(series)
 	app.log('chart', app.clone(config))
 
-
 	$('#chart').replaceWith(`<div id="chart" style="height: 300px;"></div>`)
 
 	if (crt.data().length > 8) {
@@ -108,8 +107,3 @@ crt.refresh = () => {
 		crt.contentIsLoading(false)
 	})
 }
-
-$(() => {
-	crt.categoryAxisField('customer.branchname')
-	crt.refresh()
-})
