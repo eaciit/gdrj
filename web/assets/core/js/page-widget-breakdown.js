@@ -17,7 +17,7 @@ bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy());
 bkd.data = ko.observableArray([]);
 bkd.plmodels = ko.observableArray([]);
 bkd.zeroValue = ko.observable(false);
-bkd.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */]);
+bkd.fiscalYear = ko.observable(2014);
 
 bkd.generateDataForX = function () {
 	var param = {
@@ -43,9 +43,17 @@ bkd.refresh = function () {
 
 	var param = {};
 	param.pls = [];
-	param.groups = bkd.groups();
+	param.groups = [bkd.breakdownBy() /** , 'date.year' */];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
+
+	param.filters.push({
+		Field: 'date.fiscal',
+		Op: '$eq',
+		Value: bkd.fiscalYear() + '-' + (bkd.fiscalYear() + 1)
+	});
+
+	console.log("bdk", param.filters);
 
 	bkd.oldBreakdownBy(bkd.breakdownBy());
 	bkd.contentIsLoading(true);
@@ -289,7 +297,7 @@ bkd.render = function () {
 		return;
 	}
 
-	var breakdowns = bkd.groups();
+	var breakdowns = [bkd.breakdownBy() /** , 'date.year' */];
 	var rows = [];
 
 	var data = _.sortBy(_.map(bkd.data(), function (d) {
