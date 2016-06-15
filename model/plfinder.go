@@ -264,15 +264,6 @@ func (s *PLFinderParam) GetPLModelsFollowPLS() ([]*PLModel, error) {
 	return res, nil
 }
 
-func (s *PLFinderParam) SetPL() {
-	if s.Flag == "gross_sales_discount_and_net_sales" {
-		s.PLs = append(s.PLs, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6", "PL7", "PL8")
-	} else if s.Flag == "gross_sales_qty" {
-		s.PLs = append(s.PLs, "salesqty", "PL1", "PL2", "PL3", "PL4", "PL5", "PL6")
-	} else if s.Flag == "discount_qty" {
-		s.PLs = append(s.PLs, "salesqty", "PL7", "PL8")
-	}
-}
 func (s *PLFinderParam) noZero(num float64) float64 {
 	if math.IsNaN(num) || math.IsInf(num, 1) || math.IsInf(num, -1) {
 		return 0
@@ -301,12 +292,14 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			grossSales := s.Sum(raw, "PL1", "PL2", "PL3", "PL4", "PL5", "PL6")
 			salesDiscount := s.Sum(raw, "PL7", "PL8")
 			qty := s.Sum(raw, "salesqty")
+			netSales := grossSales + salesDiscount // s.Sum(raw, "PL8A")
+			salesReturn := s.Sum(raw, "PL3")
 
 			each := toolkit.M{}
 			if s.Flag == "gross_sales_discount_and_net_sales" {
 				each.Set("gross_sales", grossSales)
 				each.Set("sales_discount", math.Abs(salesDiscount))
-				each.Set("net_sales", grossSales+salesDiscount) // s.Sum(raw, "PL8A")
+				each.Set("net_sales", netSales)
 			} else if s.Flag == "gross_sales_qty" {
 				each.Set("gross_sales", grossSales)
 				each.Set("qty", qty)
@@ -315,10 +308,14 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("sales_discount", math.Abs(salesDiscount))
 				each.Set("qty", qty)
 				each.Set("discount_qty", math.Abs(s.noZero(salesDiscount/qty)))
+			} else if s.Flag == "sales_return_rate" {
+				each.Set("sales_return", math.Abs(salesReturn))
+				each.Set("sales_revenue", netSales)
+				each.Set("sales_return_rate", math.Abs(s.noZero(salesReturn/netSales)))
 			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
-				each.Set(strings.Replace(k, "_id_", "", -1), v)
+				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(v.(string)))
 			}
 
 			res = append(res, &each)
@@ -340,7 +337,9 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 }
 
 func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
-	s.SetPL()
+	if s.Flag != "" {
+		s.PLs = []string{}
+	}
 
 	tableName := s.GetTableName()
 	plmodels, err := s.GetPLModelsFollowPLS()
@@ -365,7 +364,7 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		q = q.Aggr(op, field, plmod.ID)
 	}
 
-	for _, other := range s.PLs {
+	for _, other := range []string{"grossamount", "ratiotoglobalsales", "ratiotobrandsales", "discountamount", "salesqty", "count", "ratiotobranchsales", "ratiotoskusales", "taxamount", "netamount"} {
 		if !strings.HasPrefix(other, "PL") {
 			field := fmt.Sprintf("$%s", other)
 			q = q.Aggr("$sum", field, other)
