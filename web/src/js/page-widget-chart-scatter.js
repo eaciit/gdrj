@@ -12,6 +12,7 @@ rs.selectedPNL = ko.observable("PL74C")
 rs.chartComparisonNote = ko.observable('')
 rs.optionDimensionSelect = ko.observableArray([])
 rs.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */])
+rs.fiscalYear = ko.observable(2014)
 
 rs.getSalesHeaderList = () => {
 	app.ajaxPost("/report/getplmodel", {}, (res) => {
@@ -31,14 +32,20 @@ rs.getSalesHeaderList = () => {
 rs.refresh = (useCache = false) => {
 	rs.contentIsLoading(true)
 
-	let param1 = {}
-	param1.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
-	param1.groups = rs.groups()
-	param1.aggr = 'sum'
-	param1.filters = rpt.getFilterValue()
+	let param = {}
+	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
+	param.groups = rs.groups()
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue()
+
+	param.filters.push({
+		Field: 'date.fiscal',
+		Op: '$eq',
+		Value: `${rs.fiscalYear()}-${rs.fiscalYear()+1}`
+	})
 	
 	let fetch = () => {
-		app.ajaxPost("/report/getpnldatanew", param1, (res1) => {
+		app.ajaxPost("/report/getpnldatanew", param, (res1) => {
 			if (res1.Status == "NOK") {
 				setTimeout(() => {
 					fetch()

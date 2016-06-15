@@ -749,6 +749,10 @@ html, body{
 	> table {
 		> tbody {
 			> tr {
+				&:first-child {
+					background-color: @color-base-grey;
+				}
+
 				> td {
 					padding: 2px 6px;
 					border: 1px solid @color-base-grey;
@@ -758,6 +762,10 @@ html, body{
 					    width: 100%;
 
 					    tr {
+							&:not(:first-child):nth-child(even) {
+								background-color: #FBFBFB;
+							}
+							
 					    	td {
 							    border-bottom: 1px solid #f0f3f4;
 							    padding-top: 4px;

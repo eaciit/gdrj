@@ -105,7 +105,7 @@ ccr.render = () => {
 				name: 'Outlet', 
 				// field: 'value3', 
 				data: data.outletList,
-				type: 'bar', 
+				type: 'column', 
 				width: 3, 
 				overlay: {
 					gradient: 'none'
@@ -116,7 +116,7 @@ ccr.render = () => {
 				markers: {
 					visible: true,
 					style: 'smooth',
-					type: 'bar',
+					type: 'column',
 				},
 				axis: "outlet"
 			}
@@ -126,6 +126,30 @@ ccr.render = () => {
 		ccr.comparison().forEach((d) => {
 			series.push(seriesLibs[d])
 		})
+
+		let valueAxes = []
+		if (ccr.comparison().indexOf('qty') > -1 || ccr.comparison().indexOf('price') > -1) {
+			valueAxes.push({
+				name: "priceqty",
+                title: { text: "Qty & Price" },
+				majorGridLines: {
+					color: '#fafafa'
+				},
+				max: full.maxline,
+			})
+		}
+		if (ccr.comparison().indexOf('outlet') > -1) {
+			valueAxes.push({
+				name: "outlet",
+                title: { text: "Outlet" },
+                majorGridLines: {
+					color: '#fafafa'
+				},
+				max: full.maxoutlet,
+			})
+		}
+
+		console.log(valueAxes)
 
 		return {
 			// dataSource: {
@@ -153,24 +177,7 @@ ccr.render = () => {
 			legend: {
 				position: 'bottom'
 			},
-			valueAxes: [
-				{
-					name: "priceqty",
-                    title: { text: "Qty & Price" },
-					majorGridLines: {
-						color: '#fafafa'
-					},
-					max: full.maxline,
-				},
-				{
-					name: "outlet",
-                    title: { text: "Outlet" },
-                    majorGridLines: {
-						color: '#fafafa'
-					},
-					max: full.maxoutlet,
-				}
-			],
+			valueAxes: valueAxes,
 			tooltip: {
 				visible: true,
 				template: (d) => `${d.series.name} on : ${kendo.toString(d.value, 'n2')}`

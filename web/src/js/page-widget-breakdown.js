@@ -15,7 +15,7 @@ bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy())
 bkd.data = ko.observableArray([])
 bkd.plmodels = ko.observableArray([])
 bkd.zeroValue = ko.observable(false)
-bkd.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */])
+bkd.fiscalYear = ko.observable(2014)
 
 bkd.generateDataForX = () => {
 	let param = {
@@ -39,9 +39,17 @@ bkd.generateDataForX = () => {
 bkd.refresh = (useCache = false) => {
 	let param = {}
 	param.pls = []
-	param.groups = bkd.groups()
+	param.groups = [bkd.breakdownBy() /** , 'date.year' */]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
+
+	param.filters.push({
+		Field: 'date.fiscal',
+		Op: '$eq',
+		Value: `${bkd.fiscalYear()}-${bkd.fiscalYear()+1}`
+	})
+
+	console.log("bdk", param.filters)
 	
 	bkd.oldBreakdownBy(bkd.breakdownBy())
 	bkd.contentIsLoading(true)
@@ -281,7 +289,7 @@ bkd.render = () => {
 		return
 	}
 	
-	let breakdowns = bkd.groups()
+	let breakdowns = [bkd.breakdownBy() /** , 'date.year' */]
 	let rows = []
 	
 	let data = _.sortBy(_.map(bkd.data(), (d) => {
