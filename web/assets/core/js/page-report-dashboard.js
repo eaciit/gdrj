@@ -28,6 +28,9 @@ vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Dashboard', href: '/rep
 viewModel.dashboard = {};
 var dsbrd = viewModel.dashboard;
 
+dsbrd.rows = ko.observableArray([{ pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"] }, { pnl: 'Growth', plcodes: [] }, // NOT YET
+{ pnl: 'Sales Discount', plcodes: ["PL7", "PL8"] }, { pnl: 'ATL', plcodes: ["PL28"] }, { pnl: 'BTL', plcodes: ["PL29", "PL30", "PL31", "PL32"] }, { pnl: "COGS", plcodes: ["PL74B"] }, { pnl: "Gross Margin", plcodes: ["PL74C"] }, { pnl: "SGA", plcodes: ["PL94A"] }, { pnl: "Royalties", plcodes: ["PL26"] }, { pnl: "EBITDA", plcodes: ["PL44C"] }, { pnl: "EBIT %", plcodes: [] }, { pnl: "EBIT", plcodes: ["PL44B"] }]);
+
 dsbrd.data = ko.observableArray([]);
 dsbrd.columns = ko.observableArray([]);
 dsbrd.breakdown = ko.observable('customer.channelname');
@@ -36,7 +39,9 @@ dsbrd.contentIsLoading = ko.observable(false);
 
 dsbrd.refresh = function () {
 	var param = {};
-	param.pls = ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6", "PL7", "PL8", "PL74B", "PL74C", "PL94A", "PL26", "PL44B", "PL44C"];
+	param.pls = _.flatten(dsbrd.rows().map(function (d) {
+		return d.plcodes;
+	}));
 	param.groups = [dsbrd.breakdown()];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
@@ -67,11 +72,7 @@ dsbrd.refresh = function () {
 };
 
 dsbrd.render = function (res) {
-	var rows = [{ pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"] }, { pnl: 'Growth', plcodes: [] }, // NOT YET
-	{ pnl: 'Sales Discount', plcodes: ["PL7", "PL8"] }, { pnl: 'ATL', plcodes: [] }, // NOT YET
-	{ pnl: 'BTL', plcodes: [] }, // NOT YET
-	{ pnl: "COGS", plcodes: ["PL74B"] }, { pnl: "Gross Margin", plcodes: ["PL74C"] }, { pnl: "SGA", plcodes: ["PL94A"] }, { pnl: "Royalties", plcodes: ["PL26"] }, { pnl: "EBITDA", plcodes: ["PL44C"] }, { pnl: "EBIT %", plcodes: [] }, { pnl: "EBIT", plcodes: ["PL44B"] }];
-
+	var rows = toolkit.clone(dsbrd.rows());
 	var columns = [{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } }];
 
 	var data = _.sortBy(res.Data.Data, function (d) {
