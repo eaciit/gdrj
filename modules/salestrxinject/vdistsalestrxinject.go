@@ -59,7 +59,7 @@ func prepMaster() {
 	// mapskuid := new(gdrj.MappingInventory)
 	// cmskuid := getCursor(mapskuid)
 	// defer cmskuid.Close()
-	// var e error
+	var e error
 	// for e = cmskuid.Fetch(mapskuid, 1, false); e == nil; {
 	// 	mapskuids.Set(mapskuid.SKUID_VDIST, mapskuid.ID)
 	// 	mapskuid = new(gdrj.MappingInventory)
@@ -150,6 +150,7 @@ func main() {
 
 	lastSalesLine := toolkit.M{}
 	count = crx.Count()
+	step := count / 100
 	i := 0
 	t0 := time.Now()
 	for {
@@ -232,8 +233,14 @@ func main() {
 		}
 
 		gdrj.Save(st)
-		toolkit.Printfn("Processing %d of %d %s in %s",
-			i, count, sd.SalesHeaderID,
-			time.Since(t0).String())
+		if i > step {
+			toolkit.Printfn("Processing %d of %d %s in %s",
+				i, count, sd.SalesHeaderID,
+				time.Since(t0).String())
+			step += count / 100
+		}
 	}
+
+	toolkit.Printfn("Processing done in %s",
+		time.Since(t0).String())
 }

@@ -5,6 +5,7 @@ import (
 	"eaciit/gdrj/modules"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/mongo"
+	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 	"os"
 	"runtime"
@@ -16,7 +17,7 @@ var (
 	countsales, icount, vskip int       = 0, 0, 0
 	startdate                 time.Time = time.Date(2014, 4, 1, 0, 0, 0, 0, time.UTC)
 	enddate                   time.Time = startdate.AddDate(1, 0, 0)
-	sheaders                  toolkit.M
+	hgrossamount, hnetamount  toolkit.M
 )
 
 func setinitialconnection() {
@@ -35,12 +36,13 @@ func setinitialconnection() {
 }
 
 func main() {
+	t0 := time.Now()
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	var mwg sync.WaitGroup
 	setinitialconnection()
 	defer gdrj.CloseDb()
 
-	dconn, err := modules.GetDboxIConnection("db_godrej")
+	// dconn, err := modules.GetDboxIConnection("db_godrej")
 
 	if err != nil {
 		toolkit.Println("Initial connection found : ", err)
@@ -48,6 +50,30 @@ func main() {
 	}
 
 	toolkit.Println("START...")
+
+	sd := new(gdrj.SalesDetail)
+	csds := getCursor(sd)
+	defer csds.Close()
+	var e error
+	for e = csds.Fetch(sd, 1, false); e == nil; {
+		gramount, netamount := 0.0, 0.0
+		if hgrossamount.Has(sd.SalesHeaderID) {
+			gramount = toolkit.ToFloat64(hgrossamount[sd.SalesHeaderID], 6, toolkit.RoundingAuto)
+			netamount = toolkit.ToFloat64(hnetamount[sd.SalesHeaderID], 6, toolkit.RoundingAuto)
+		}
+
+		gramount += sd.SalesGrossAmount
+		netamount += sd.SalesNetAmount
+
+		hgrossamount.Set(sd.SalesHeaderID, gramount)
+		hnetamount.Set(sd.SalesHeaderID, netamount)
+
+		sd = new(gdrj.SalesDetail)
+		e = csds.Fetch(sd, 1, false)
+	}
+
+	toolkit.Printfn("Preparation done in %s",
+		time.Since(t0).String())
 
 	crx, err := gdrj.Find(new(gdrj.SalesHeader), dbox.Eq("salesgrossamount", 0), nil)
 	if err != nil {
@@ -60,7 +86,6 @@ func main() {
 	icount = 0
 	iseof := false
 	for !iseof && countsales > 0 {
-		// vskip += 1000
 
 		arrsh := []*gdrj.SalesHeader{}
 		err = crx.Fetch(&arrsh, 1000, false)
@@ -80,35 +105,36 @@ func main() {
 			for _, gv := range garrsh {
 				icount += 1
 
-				toolkit.Printfn("%d of %d data header processing", icount, countsales)
+				toolkit.Printfn("%d of %d data header processing in %s", icount, countsales, time.Since(t0).String())
 
-				dbfdetail := dbox.Eq("salesheaderid", gv.ID)
-				dc, err := dconn.NewQuery().Select().
-					From("rawsalesdetail").
-					Where(dbfdetail).
-					Cursor(nil)
+				// dbfdetail := dbox.Eq("salesheaderid", gv.ID)
+				// dc, err := dconn.NewQuery().Select().
+				// 	From("rawsalesdetail").
+				// 	Where(dbfdetail).
+				// 	Cursor(nil)
 
-				if err != nil {
-					toolkit.Println("Error Found : ", err.Error())
-					os.Exit(1)
-				}
+				// if err != nil {
+				// 	toolkit.Println("Error Found : ", err.Error())
+				// 	os.Exit(1)
+				// }
 
-				arrsalesdetail := []*gdrj.SalesDetail{}
-				err = dc.Fetch(&arrsalesdetail, 0, true)
-				if err != nil {
-					toolkit.Println("Error Found : ", err.Error())
-					os.Exit(1)
-				}
+				// arrsalesdetail := []*gdrj.SalesDetail{}
+				// err = dc.Fetch(&arrsalesdetail, 0, true)
+				// if err != nil {
+				// 	toolkit.Println("Error Found : ", err.Error())
+				// 	os.Exit(1)
+				// }
 
-				var salesgrossamount float64
-				var salesnetamount float64
-				for _, gxv := range arrsalesdetail {
-					salesgrossamount += gxv.SalesGrossAmount
-					salesnetamount += gxv.SalesNetAmount
-				}
-
-				gv.SalesGrossAmount = salesgrossamount
-				gv.SalesNetAmount = salesnetamount
+				// var salesgrossamount float64
+				// var salesnetamount float64
+				// for _, gxv := range arrsalesdetail {
+				// 	salesgrossamount += gxv.SalesGrossAmount
+				// 	salesnetamount += gxv.SalesNetAmount
+				// }
+				gv.SalesGrossAmount = toolkit.ToFloat64(hgrossamount[sd.SalesHeaderID], 6, toolkit.RoundingAuto)
+				gv.SalesNetAmount = toolkit.ToFloat64(hnetamount[sd.SalesHeaderID], 6, toolkit.RoundingAuto)
+				// gv.SalesGrossAmount = salesgrossamount
+				// gv.SalesNetAmount = salesnetamount
 
 				mwg.Add(1)
 				func(ggv *gdrj.SalesHeader) {
@@ -123,4 +149,12 @@ func main() {
 	mwg.Wait()
 	crx.Close()
 	toolkit.Println("END...")
+}
+
+func getCursor(obj orm.IModel) dbox.ICursor {
+	c, e := gdrj.Find(obj, nil, nil)
+	if e != nil {
+		return nil
+	}
+	return c
 }
