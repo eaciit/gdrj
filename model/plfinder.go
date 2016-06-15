@@ -366,6 +366,8 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("sales", netSales)
 				each.Set("outlet", countoutlet)
 				each.Set("sales_outlet", math.Abs(s.noZero(netSales/countoutlet)))
+			} else if s.Flag == "number_of_outlets" {
+				each.Set("outlet", countoutlet)
 			}
 			
 			for k, v := range raw.Get("_id").(toolkit.M) {

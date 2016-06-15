@@ -7,7 +7,7 @@
     "_id": "number_of_outlets",
     "order": 2,
     "name": "Number of Outlets",
-    "status": false
+    "status": true
 }, {
     "_id": "distribution_coverage_index",
     "order": 7,
