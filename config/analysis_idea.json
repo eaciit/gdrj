@@ -57,7 +57,7 @@
     "_id": "sga_by_sales",
     "order": 12,
     "name": "SGA by Sales",
-    "status": false
+    "status": true
 }, {
     "_id": "sales_velocity_index",
     "order": 13,

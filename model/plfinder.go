@@ -294,6 +294,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			qty := s.Sum(raw, "salesqty")
 			netSales := grossSales + salesDiscount // s.Sum(raw, "PL8A")
 			salesReturn := s.Sum(raw, "PL3")
+			sga := s.Sum(raw, "PL94A")
 
 			each := toolkit.M{}
 			if s.Flag == "gross_sales_discount_and_net_sales" {
@@ -312,10 +313,18 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("sales_return", math.Abs(salesReturn))
 				each.Set("sales_revenue", netSales)
 				each.Set("sales_return_rate", math.Abs(s.noZero(salesReturn/netSales)))
+			} else if s.Flag == "sga_by_sales" {
+				each.Set("sga", math.Abs(sga))
+				each.Set("sales", netSales)
+				each.Set("sga_qty", math.Abs(s.noZero(sga/netSales)))
+			} else if s.Flag == "sales_discount_by_gross_sales" {
+				each.Set("sales_discount", math.Abs(sga))
+				each.Set("gross_sales", netSales)
+				each.Set("sales_discount_gross_sales", math.Abs(s.noZero(salesDiscount/grossSales)))
 			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
-				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(v.(string)))
+				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(fmt.Sprintf("%v", v)))
 			}
 
 			res = append(res, &each)
