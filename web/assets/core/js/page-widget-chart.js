@@ -12,13 +12,19 @@ crt.setMode = function (what) {
 		}
 	};
 };
-crt.mode = ko.observable('render');
+crt.flag = ko.observable('');
+crt.categoryAxisField = ko.observable('category');
+crt.title = ko.observable('');
+crt.data = ko.observableArray([]);
+crt.series = ko.observableArray([]);
+crt.contentIsLoading = ko.observable(false);
+
 crt.configure = function (series) {
 	return {
 		title: crt.title(),
 		dataSource: { data: crt.data() },
 		seriesDefaults: {
-			type: crt.chartType(),
+			type: 'column',
 			overlay: { gradient: 'none' },
 			border: { width: 0 },
 			labels: {
@@ -66,11 +72,6 @@ crt.configure = function (series) {
 		}
 	};
 };
-crt.categoryAxisField = ko.observable('category');
-crt.chartType = ko.observable('column');
-crt.title = ko.observable('');
-crt.data = ko.observableArray([]);
-crt.series = ko.observableArray([]);
 
 crt.render = function () {
 	var series = ko.mapping.toJS(crt.series).filter(function (d) {
@@ -95,39 +96,20 @@ crt.render = function () {
 
 	$('#chart').kendoChart(config);
 };
-crt.getParam = function () {
-	var row = rpt.optionDimensions().find(function (d) {
-		return d.field == crt.categoryAxisField();
-	});
-	var dataPoints = ko.mapping.toJS(crt.series).filter(function (d) {
-		return d.field != '';
-	}).map(function (d) {
-		return {
-			field: d.field,
-			name: d.name,
-			aggr: 'sum'
-		};
-	});
-
-	return rpt.wrapParam([row], dataPoints);
-};
 crt.refresh = function () {
-	// crt.data(DATATEMP_CHART)
-	// crt.series([
-	// 	app.koMap({ field: 'value1', name: o[`value1`] }),
-	// 	app.koMap({ field: 'value2', name: o[`value2`] }),
-	// 	app.koMap({ field: 'value3', name: o[`value3`] })
-	// ])
-	// app.ajaxPost("/report/summarycalculatedatapivot", crt.getParam(), (res) => {
-	// 	crt.data(res.Data)
-	crt.render();
-	// })
-};
-crt.refreshOnChange = function () {
-	// setTimeout(crt.refresh, 100)
-};
+	var param = {};
+	param.pls = [];
+	param.flag = crt.flag();
+	param.groups = [crt.categoryAxisField()];
+	param.aggr = 'sum';
+	param.filters = rpt.getFilterValue();
 
-$(function () {
-	crt.categoryAxisField('customer.branchname');
-	crt.refresh();
-});
+	crt.contentIsLoading(true);
+	app.ajaxPost("/report/getpnldatanew", param, function (res) {
+		crt.data(res.Data.Data);
+		crt.contentIsLoading(false);
+		crt.render();
+	}, function () {
+		crt.contentIsLoading(false);
+	});
+};
