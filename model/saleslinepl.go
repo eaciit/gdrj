@@ -314,7 +314,7 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 	}
 
 	if cogsShemaAmount == 0 {
-		toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
+		// toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
 		return
 	}
 
@@ -346,7 +346,7 @@ func (pl *SalesPL) CalcFreight(masters toolkit.M) {
 	freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.BranchID)
 	f, exist := freights[freightid]
 	if !exist {
-		toolkit.Printfn("Freight error: key is not exist %s", freightid)
+		// toolkit.Printfn("Freight error: key is not exist %s", freightid)
 		return
 	}
 
@@ -363,7 +363,7 @@ func (pl *SalesPL) CalcDepre(masters toolkit.M) {
 	depretiationid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.BranchID)
 	d, exist := depretiations[depretiationid]
 	if !exist {
-		toolkit.Printfn("Depretiation error: key is not exist %s", depretiationid)
+		// toolkit.Printfn("Depretiation error: key is not exist %s", depretiationid)
 		return
 	}
 
@@ -386,7 +386,7 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	royalid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	r, exist := royals[royalid]
 	if !exist {
-		toolkit.Printfn("Royalty error: key is not exist %s", royalid)
+		// toolkit.Printfn("Royalty error: key is not exist %s", royalid)
 		return
 	}
 
@@ -433,7 +433,7 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
 	sgaid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	raws, exist := sgas[sgaid]
 	if !exist {
-		toolkit.Printfn("SGA Error: Can't find key %s", sgaid)
+		// toolkit.Printfn("SGA Error: Can't find key %s", sgaid)
 		return
 	}
 
