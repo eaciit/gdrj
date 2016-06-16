@@ -154,6 +154,7 @@ rpt.optionAggregates = ko.observableArray([
 ])
 rpt.mode = ko.observable('render')
 rpt.refreshView = ko.observable('')
+rpt.modecustom = ko.observable(false)
 rpt.idanalysisreport = ko.observable()
 rpt.valueMasterData = {}
 rpt.masterData = {
