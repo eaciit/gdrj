@@ -45,11 +45,6 @@ dsbrd.refresh = function () {
 	param.groups = [dsbrd.breakdown()];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
-	param.filters.push({
-		Field: 'date.fiscal',
-		Op: '$eq',
-		Value: dsbrd.fiscalYear() + '-' + (dsbrd.fiscalYear() + 1)
-	});
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
@@ -208,8 +203,12 @@ rank.refresh = function () {
 };
 
 rank.render = function (res) {
+	var data = _.sortBy(res.Data.Data, function (d) {
+		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], 'Other');
+	});
+
 	var rows = [];
-	res.Data.Data.forEach(function (d) {
+	data.forEach(function (d) {
 		var row = {};
 		row.pnl = d._id['_id_' + toolkit.replace(rank.breakdown(), '.', '_')];
 		if ($.trim(row.pnl) == '') {
@@ -250,12 +249,16 @@ sd.contentIsLoading = ko.observable(false);
 sd.breakdown = ko.observable('customer.channelname');
 sd.data = ko.observableArray([]);
 sd.render = function (res) {
+	var data = _.sortBy(res.Data.Data, function (d) {
+		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], 'Other');
+	});
+
 	var breakdown = toolkit.replace(sd.breakdown(), ".", "_");
-	var total = toolkit.sum(res.Data.Data, function (d) {
+	var total = toolkit.sum(data, function (d) {
 		return d.PL8A;
 	});
 
-	var rows = res.Data.Data.map(function (d) {
+	var rows = data.map(function (d) {
 		var row = {};
 		row[breakdown] = d._id['_id_' + breakdown];
 		row.group = '';

@@ -132,7 +132,7 @@
     "_id": "marketing_expense_index",
     "order": 31,
     "name": "Marketing Expense Index",
-    "status": false
+    "status": true
 }, {
     "_id": "cost_by_sales",
     "order": 28,

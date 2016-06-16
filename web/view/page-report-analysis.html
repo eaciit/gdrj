@@ -1,25 +1,166 @@
-<div class="col-md-12 col-sm-12 no-padding hardcore">
-	{{template "page-widget-breakdown.html"}}
-</div>
-<div class="col-md-12 col-sm-12 no-padding hardcore">
-	{{template "page-widget-chart-scatter.html"}}
-</div>
-<div class="col-md-12 col-sm-12 no-padding hardcore">
-	{{template "page-widget-chart-comparison.html"}}
-</div>
+<script src="/res/core/js/page-report-analysis.js"></script>
 
-<script>
-	vm.currentMenu('PNL Analysis')
-	vm.currentTitle('PNL Analysis')
-	bkd.title('P&L Analysis')
-	rs.title('P&L Comparison to Net Sales')
-	ccr.title('Quantity, Price & Outlet')
-	vm.breadcrumb([
-		{ title: 'Godrej', href: '#' },
-		{ title: 'Daashboard', href: '/web/report/dashboard' }
-	])
-	rpt.refresh = () => {
-		bkd.refresh()
-		ccr.refresh()
-	}
-</script>
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin" data-bind="text: bkd.title"></h3>
+			<div class="panel-nav-button" data-bind="visible: !bkd.contentIsLoading()">
+				<div class="form-inline">
+					<div  class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Fiscal Year</span>
+							<div class="width-full">
+								<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: rpt.value.FiscalYear }"></select>
+							</div>
+					</div>
+
+					<div  class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Breakdown by</span>
+							<div class="width-full">
+								<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: bkd.breakdownBy }"></select>
+							</div>
+					</div>
+
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: bkd.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i>
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-search"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div data-bind="visible: bkd.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !bkd.contentIsLoading()">
+				<div class="breakdown-view ez"></div>
+				<!-- <div class="scroll">
+					<div class="scroll-content"></div>
+				</div> -->
+	        	<!-- <div class="small-note" data-bind="text: bkd.breakdownNote"></div> -->
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="modal-detail-ledger-summary" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	    <div class="modal-dialog" role="document" style="width: 700px;">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	                	<span aria-hidden="true">&times;</span>
+	            	</button>
+	                <h4 class="modal-title">
+	        			Detail
+	        		</h4>
+	            </div>
+	            <div class="modal-body">
+					<div data-bind="visible: bkd.popupIsLoading">
+						{{template "_loader.html"}}
+					</div>
+					<div data-bind="visible: !bkd.popupIsLoading()">
+	                	<div class="grid-detail"></div>
+					</div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
+			        	Close
+			        </button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+</div>
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin" data-bind="text: rs.title"></h3>
+			<div class="panel-nav-button" data-bind="visible: !rs.contentIsLoading()">
+				<div class="form-inline">
+					<div  class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Fiscal Year</span>
+							<div class="width-full">
+								<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: rpt.value.FiscalYear }"></select>
+							</div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Select</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rs.optionDimensionSelect, dataValueField: 'field', dataTextField: 'name', value: rs.selectedPNL, optionLabel: 'Select one' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Breakdown by</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: rs.breakdownBy }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rs.refresh" title="Refresh P&L Comparison">
+						<i class="fa fa-refresh"></i>
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-search"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div data-bind="visible: rs.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div class="scatter-view-container" data-bind="visible: !rs.contentIsLoading()" style="padding-bottom: 10px;">
+				<div id="scatter-view" style="height: 350px;"></div>
+	        	<!-- <div class="small-note" data-bind="text: rs.chartComparisonNote"></div> -->
+			</div>
+		</div>
+	</div>
+</div>
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin" data-bind="text: ccr.title"></h3>
+			<div class="panel-nav-button" data-bind="visible: !ccr.contentIsLoading()">
+				<div class="form-inline">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Limit Chart</span>
+						<div class="width-full">
+							<input type="text" data-bind="kendoNumericTextBox: {value: ccr.limitchart,format: '#',decimals: 0}"/>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-150 align-right">Series</span>
+						<div class="width-full">
+							<select data-bind="kendoMultiSelect: {data: ccr.optionComparison, value: ccr.comparison, dataTextField: 'name', dataValueField: 'field'}" style="width: 220px;"></select>
+						</div>
+					</div>
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: ccr.refresh" title="Refresh Chart Comparison">
+						<i class="fa fa-refresh"></i>
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-search"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div data-bind="visible: ccr.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !ccr.contentIsLoading()">
+				<div class="chart-comparison"></div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -124,6 +124,7 @@ rpt.pivotModel = [
     { field: 'Year', type: 'string', name: 'Year' },
 ]
 
+rpt.optionFiscalYears = ko.observableArray(['2014-2015', '2015-2016'])
 rpt.analysisIdeas = ko.observableArray([])
 rpt.data = ko.observableArray([])
 rpt.optionDimensions = ko.observableArray([
@@ -162,7 +163,8 @@ rpt.eventChange = {}
 rpt.value = {
 	HQ: ko.observable(false),
 	From: ko.observable(new Date(2014, 0, 1)),
-	To: ko.observable(new Date(2016, 11, 31))
+	To: ko.observable(new Date(2016, 11, 31)),
+	FiscalYear: ko.observable(rpt.optionFiscalYears()[0])
 }
 rpt.masterData.Type = ko.observableArray([
 	{ value: 'Mfg', text: 'Mfg' },
@@ -376,6 +378,7 @@ rpt.getFilterValue = () => {
 		{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
 		{ 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
 		{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() },
+		{ 'Field': 'date.fiscal', 'Op': '$eq', 'Value': rpt.value.FiscalYear() },
 	].filter((d) => {
 		if (d.Value instanceof Array) {
 			return d.Value.length > 0
