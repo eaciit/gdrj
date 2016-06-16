@@ -219,8 +219,10 @@ rank.refresh = () => {
 }
 
 rank.render = (res) => {
+	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], 'Other'))
+
 	let rows = []
-	res.Data.Data.forEach((d) => {
+	data.forEach((d) => {
 		let row = {}
 		row.pnl = d._id[`_id_${toolkit.replace(rank.breakdown(), '.', '_')}`]
 		if ($.trim(row.pnl) == '') {
@@ -265,10 +267,12 @@ sd.contentIsLoading = ko.observable(false)
 sd.breakdown = ko.observable('customer.channelname')
 sd.data = ko.observableArray([])
 sd.render = (res) => {
-	let breakdown = toolkit.replace(sd.breakdown(), ".", "_")
-	let total = toolkit.sum(res.Data.Data, (d) => d.PL8A)
+	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], 'Other'))
 
-	let rows = res.Data.Data.map((d) => {
+	let breakdown = toolkit.replace(sd.breakdown(), ".", "_")
+	let total = toolkit.sum(data, (d) => d.PL8A)
+
+	let rows = data.map((d) => {
 		let row = {}
 		row[breakdown] = d._id[`_id_${breakdown}`]
 		row.group = ''
