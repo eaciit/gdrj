@@ -473,12 +473,12 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 300px;
+  width: 320px;
   border-right: 1px solid #F0F3F4;
 }
 .pivot-pnl .table-content {
   overflow-x: scroll;
-  margin-left: 300px;
+  margin-left: 320px;
 }
 .pivot-pnl table {
   margin-bottom: 0;

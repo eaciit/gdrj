@@ -188,7 +188,9 @@ rpt.filterMultiSelect = function (d) {
 				return;
 			}
 
-			rpt.masterData[d._id](res.data);
+			rpt.masterData[d._id](_.sortBy(res.data, function (d) {
+				return d.Name;
+			}));
 		});
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -205,11 +207,15 @@ rpt.filterMultiSelect = function (d) {
 					return;
 				}
 
-				rpt.masterData.geographi(res.data);
+				rpt.masterData.geographi(_.sortBy(res.data, function (d) {
+					return d.Name;
+				}));
 
 				['Region', 'Area', 'Zone'].forEach(function (e) {
 					var res = rpt.groupGeoBy(rpt.masterData.geographi(), e);
-					rpt.masterData[e](res);
+					rpt.masterData[e](_.sortBy(res, function (d) {
+						return d.Name;
+					}));
 				});
 
 				rpt.masterData.RegionC(rpt.masterData.Region());
@@ -251,14 +257,14 @@ rpt.getFilterValue = function () {
 	if (multiFiscalYear) {
 		res.push({
 			'Field': 'date.fiscal',
-			'Op': '$eq',
-			'Value': rpt.value.FiscalYear()
+			'Op': '$in',
+			'Value': rpt.value.FiscalYears()
 		});
 	} else {
 		res.push({
 			'Field': 'date.fiscal',
-			'Op': '$in',
-			'Value': rpt.value.FiscalYears()
+			'Op': '$eq',
+			'Value': rpt.value.FiscalYear()
 		});
 	}
 
