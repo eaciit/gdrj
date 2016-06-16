@@ -122,31 +122,36 @@ func main() {
 		}
 		key := toolkit.Sprintf("%d_%d", spl.Date.Month, spl.Date.Year)
 		k := ""
-		switch custgroup {
-		case "branch":
-			key = toolkit.Sprintf("%v_%v", key, spl.Customer.BranchID)
-		case "channel":
-			k = toolkit.Sprintf("%v|%v", spl.Customer.BranchID, spl.Customer.ChannelID)
-			key = toolkit.Sprintf("%v_%v", key, k)
-		case "group":
-			k = toolkit.Sprintf("%v|%v", spl.Customer.BranchID, spl.Customer.CustomerGroup)
-			key = toolkit.Sprintf("%v_%v", key, k)
-		default:
-			key = toolkit.Sprintf("%v_", key)
+
+		if spl.Customer != nil {
+			switch custgroup {
+			case "branch":
+				key = toolkit.Sprintf("%v_%v", key, spl.Customer.BranchID)
+			case "channel":
+				k = toolkit.Sprintf("%v|%v", spl.Customer.BranchID, spl.Customer.ChannelID)
+				key = toolkit.Sprintf("%v_%v", key, k)
+			case "group":
+				k = toolkit.Sprintf("%v|%v", spl.Customer.BranchID, spl.Customer.CustomerGroup)
+				key = toolkit.Sprintf("%v_%v", key, k)
+			default:
+				key = toolkit.Sprintf("%v_", key)
+			}
 		}
 
-		switch prodgroup {
-		case "brand":
-			key = toolkit.Sprintf("%v_%v", key, spl.Product.Brand)
-		case "group":
-			k = toolkit.Sprintf("%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID)
-			key = toolkit.Sprintf("%v_%v", key, k)
-		case "skuid":
-			// toolkit.Printfn("%v|%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID, spl.Product.ID)
-			k = toolkit.Sprintf("%v|%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID, spl.Product.ID)
-			key = toolkit.Sprintf("%v_%v", key, k)
-		default:
-			key = toolkit.Sprintf("%v_", key)
+		if spl.Product != nil {
+			switch prodgroup {
+			case "brand":
+				key = toolkit.Sprintf("%v_%v", key, spl.Product.Brand)
+			case "group":
+				k = toolkit.Sprintf("%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID)
+				key = toolkit.Sprintf("%v_%v", key, k)
+			case "skuid":
+				k = toolkit.Sprintf("%v|%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID, spl.Product.ID)
+				key = toolkit.Sprintf("%v_%v", key, k)
+			default:
+				key = toolkit.Sprintf("%v_", key)
+			}
+
 		}
 
 		mapkeysvalue[key] += spl.GrossAmount
