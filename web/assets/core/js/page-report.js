@@ -167,7 +167,7 @@ rpt.filterMultiSelect = function (d) {
 					return toolkit.capitalize(d.KeyAccount);
 				}
 
-				return d._id + ' - ' + toolkit.capitalize(d.Name);
+				return toolkit.capitalize($.trim(d.Name));
 			},
 			value: rpt.value[d._id]
 		});
@@ -247,7 +247,17 @@ rpt.toggleFilter = function () {
 		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content');
 	}
 
-	rpt.toggleFilterCallback();
+	$('.k-grid').each(function (i, d) {
+		$(d).data('kendoGrid').refresh();
+	});
+
+	$('.k-pivot').each(function (i, d) {
+		$(d).data('kendoPivotGrid').refresh();
+	});
+
+	$('.k-chart').each(function (i, d) {
+		$(d).data('kendoChart').redraw();
+	});
 };
 rpt.getFilterValue = function () {
 	var multiFiscalYear = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
