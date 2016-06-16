@@ -173,17 +173,6 @@ func (m *ReportController) GetDataAnalysisIdea(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, res, "")
 }
 
-func (m *ReportController) GetDecreasedQty(r *knot.WebContext) interface{} {
-	r.Config.OutputType = knot.OutputJson
-
-	result, err := gdrj.GetDecreasedQty()
-	if err != nil {
-		return helper.CreateResult(false, nil, err.Error())
-	}
-
-	return result
-}
-
 func (m *ReportController) GetPLModel(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -193,6 +182,26 @@ func (m *ReportController) GetPLModel(r *knot.WebContext) interface{} {
 	}
 
 	return result
+}
+
+func (m *ReportController) GetDecreasedQty(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	res := new(toolkit.Result)
+
+	payload := new(gdrj.PLFinderParam)
+	if err := r.GetPayload(payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	result, err := gdrj.GetDecreasedQty(payload)
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	res.SetData(result)
+	return res
 }
 
 func (m *ReportController) GetPLCollections(r *knot.WebContext) interface{} {
