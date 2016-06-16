@@ -248,7 +248,9 @@ rpt.toggleFilter = function () {
 	}
 
 	$('.k-grid').each(function (i, d) {
-		$(d).data('kendoGrid').refresh();
+		try {
+			$(d).data('kendoGrid').refresh();
+		} catch (err) {}
 	});
 
 	$('.k-pivot').each(function (i, d) {

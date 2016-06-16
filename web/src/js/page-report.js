@@ -366,7 +366,7 @@ rpt.toggleFilter = () => {
 	}
 
 	$('.k-grid').each((i, d) => {
-		$(d).data('kendoGrid').refresh()
+		try { $(d).data('kendoGrid').refresh() } catch (err) {}
 	})
 
 	$('.k-pivot').each((i, d) => {
