@@ -314,6 +314,10 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			indirectOther := s.Sum(raw, "PL20")
 			indirectAmort := s.Sum(raw, "PL21")
 			indirectEnergy := s.Sum(raw, "PL74")
+			advertising := s.Sum(raw, "PL28")
+			bonus := s.Sum(raw, "PL29")
+			gondola := s.Sum(raw, "PL30")
+			otheradvertising := s.Sum(raw, "PL31")
 
 			each := toolkit.M{}
 			if s.Flag == "gross_sales_discount_and_net_sales" {
@@ -387,6 +391,13 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("other", math.Abs(indirectOther))
 				each.Set("cogs", math.Abs(cogs))
 				each.Set("indirect_cogs", s.noZero(math.Abs((s.noZero(indirectPersonnel)+s.noZero(indirectServices)+s.noZero(indirectRent)+s.noZero(indirectTransportation)+s.noZero(indirectAmort)+s.noZero(indirectEnergy)+s.noZero(indirectOther))/cogs)))
+			} else if s.Flag == "marketing_expense_index" {
+				each.Set("advertising", math.Abs(advertising))
+				each.Set("bonus", math.Abs(bonus))
+				each.Set("gondola", math.Abs(gondola))
+				each.Set("otheradvertising", math.Abs(otheradvertising))
+				each.Set("sales", netSales)
+				each.Set("sales_outlet", s.noZero(math.Abs(s.noZero((advertising+bonus+gondola+otheradvertising)/netSales))))
 			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
