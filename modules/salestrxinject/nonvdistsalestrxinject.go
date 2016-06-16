@@ -118,27 +118,32 @@ func main() {
 	defer crx.Close()
 
 	count = crx.Count()
+	toolkit.Println("Total Data : ", count)
 	step := count / 100
 	i := 0
 	t0 := time.Now()
 	for {
 		i++
-		sev := new(gdrj.RawSalesExpVdist)
-		e := crx.Fetch(sev, 1, false)
+		// sev := new(gdrj.RawSalesExpVdist)
+		sev := toolkit.M{}
+		e := crx.Fetch(&sev, 1, false)
 		if e != nil {
+			toolkit.Println("Error Found : ", e.Error())
 			break
 		}
 
 		st := new(gdrj.SalesTrx)
-		st.SalesHeaderID = toolkit.Sprintf("%v%v", sev.ID, toolkit.RandomString(32))
-		st.OutletID = sev.OutletID
-		st.SKUID = sev.SKUID
-		st.Fiscal = toolkit.Sprintf("%v%v", sev.Period, sev.Year)
-		st.Date = time.Date(sev.Year, time.Month(sev.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
+		st.SalesHeaderID = toolkit.RandomString(32)
+		st.OutletID = toolkit.ToString(sev.Get("outletid", ""))
+		st.SKUID = toolkit.ToString(sev.Get("skuid", ""))
+		st.Fiscal = toolkit.Sprintf("%v%v", sev.Get("period", 0), sev.Get("year", 0))
+		tyear := toolkit.ToInt(sev.Get("year", 0), toolkit.RoundingAuto)
+		tperiod := time.Month(toolkit.ToInt(sev.Get("period", 0), toolkit.RoundingAuto))
+		st.Date = time.Date(tyear, tperiod, 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		st.Year = st.Date.Year()
 		st.Month = int(st.Date.Month())
-		st.GrossAmount = sev.Amount
-		st.Src = sev.Src
+		st.GrossAmount = toolkit.ToFloat64(sev.Get("amount", 0), 6, toolkit.RoundingAuto)
+		st.Src = toolkit.ToString(sev.Get("src", ""))
 
 		st.HeaderValid = true
 		st.ProductValid = true
@@ -151,7 +156,7 @@ func main() {
 		} else {
 			st.Product = &gdrj.Product{
 				ID:              st.SKUID,
-				Name:            sev.SKU_DESC,
+				Name:            toolkit.ToString(sev.Get("sku_desc", "")),
 				Brand:           "VIRTUAL",
 				BrandCategoryID: "VIRTUAL",
 			}
@@ -160,46 +165,48 @@ func main() {
 		if custs.Has(st.OutletID) {
 			st.CustomerValid = true
 			st.Customer = custs.Get(st.OutletID).(*gdrj.Customer)
-		} else if sev.Src == "RD" || sev.Src == "RD-DISC" {
+		} else if st.Src == "RD" || st.Src == "RD-DISC" {
 			st.Customer = &gdrj.Customer{
-				ID:          sev.OutletID,
-				Name:        sev.OutletName,
-				BranchID:    sev.BusA,
+				ID:          st.OutletID,
+				Name:        toolkit.ToString(sev.Get("outletname", "")),
+				BranchID:    toolkit.ToString(sev.Get("busa", "")),
 				ChannelID:   "I1",
 				ChannelName: "Regional Distributor",
 				CustType:    "RD",
 			}
-		} else if sev.Src == "EXPORT" {
+		} else if st.Src == "EXPORT" {
 			st.Customer = &gdrj.Customer{
-				ID:          sev.OutletID,
-				Name:        sev.OutletName,
-				BranchID:    sev.BusA,
+				ID:          st.OutletID,
+				Name:        toolkit.ToString(sev.Get("outletname", "")),
+				BranchID:    toolkit.ToString(sev.Get("busa", "")),
 				ChannelID:   "EXP",
 				ChannelName: "Export",
 				CustType:    "EXP",
 			}
-		} else if sev.Src == "DISCOUNT" {
+		} else if st.Src == "DISCOUNT" {
+			st.GrossAmount = -st.GrossAmount
 			st.Customer = &gdrj.Customer{
-				ID:          sev.OutletID,
-				Name:        sev.OutletName,
-				BranchID:    sev.BusA,
+				ID:          st.OutletID,
+				Name:        toolkit.ToString(sev.Get("outletname", "")),
+				BranchID:    toolkit.ToString(sev.Get("busa", "")),
 				ChannelID:   "DISCOUNT",
 				ChannelName: "DISCOUNT",
 				CustType:    "DISCOUNT",
 			}
 		}
 
-		if len(sev.PCID) > 4 {
-			st.Product.BrandCategoryID = sev.PCID[4:len(sev.PCID)]
+		tpcid := toolkit.ToString(sev.Get("pcid", ""))
+		if len(tpcid) > 4 {
+			st.Product.BrandCategoryID = tpcid[4:len(tpcid)]
 		}
 
-		if pcs.Has(sev.PCID) {
-			st.PC = pcs.Get(sev.PCID).(*gdrj.ProfitCenter)
+		if pcs.Has(tpcid) {
+			st.PC = pcs.Get(tpcid).(*gdrj.ProfitCenter)
 			st.Product.Brand = st.PC.BrandID
 			st.Product.BrandCategoryID = st.PC.BrandCategoryID
 		} else {
 			st.PC = &gdrj.ProfitCenter{
-				ID: sev.PCID,
+				ID: tpcid,
 			}
 		}
 
