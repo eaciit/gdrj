@@ -14,14 +14,52 @@ pvt.column = ko.observable('');
 pvt.dataPoints = ko.observableArray([]);
 pvt.data = ko.observableArray([]);
 pvt.fiscalYear = ko.observable(rpt.value.FiscalYear());
+pvt.valueplmodel = ko.observableArray(["PL8A", "PL94C"]);
 
+pvt.renderCustomChart = function (data) {
+	var series = [],
+	    dataresult = [];
+	var breakdown = toolkit.replace(pvt.column(), ".", "_"),
+	    breakdownrow = toolkit.replace(pvt.row(), ".", "_"),
+	    keydata = void 0,
+	    dataseries = void 0;
+	var rows = data.map(function (d) {
+		var row = {};
+		row[breakdown] = d._id['_id_' + breakdown];
+		row[breakdownrow] = d._id['_id_' + breakdownrow];
+		$.each(d, function (key, value) {
+			keydata = _.find(crt.dataplmodel(), function (s) {
+				return s._id == key;
+			});
+			if (keydata != undefined) {
+				row[key] = value;
+				dataseries = _.find(series, function (s) {
+					return s.field == key;
+				});
+				if (dataseries == undefined) {
+					series.push({
+						field: key, title: keydata.PLHeader1, name: keydata.PLHeader1
+					});
+				}
+			}
+		});
+		return row;
+	});
+	pvt.dataPoints(series);
+	pvt.data(rows);
+};
 pvt.refresh = function () {
 	var param = {};
 	param.pls = [];
 	param.flag = o.ID;
-	param.groups = [pvt.row(), pvt.column()];
+	param.groups = [pvt.row(), pvt.column(), "date.fiscal"];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, pvt.fiscalYear);
+
+	if (rpt.modecustom() == true) {
+		param.pls = pvt.valueplmodel();
+		param.flag = "";
+	}
 
 	pvt.contentIsLoading(true);
 
@@ -36,6 +74,10 @@ pvt.refresh = function () {
 
 			pvt.data(res.Data.Data);
 			pvt.contentIsLoading(false);
+
+			if (rpt.modecustom() == true) {
+				pvt.renderCustomChart(res.Data.Data);
+			}
 			pvt.render();
 		}, function () {
 			pvt.contentIsLoading(false);
@@ -101,7 +143,7 @@ pvt.render = function () {
 		}
 	};
 
-	app.log('pivot', app.clone(config));
+	// app.log('pivot', app.clone(config))
 	$('.pivot').replaceWith('<div class="pivot ez"></div>');
 	$('.pivot').kendoPivotGrid(config);
 };
