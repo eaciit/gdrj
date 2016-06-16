@@ -291,7 +291,7 @@ rpt.filterMultiSelect = (d) => {
 					return toolkit.capitalize(d.KeyAccount)
 				}
 
-				return `${d._id} - ${toolkit.capitalize(d.Name)}`
+				return toolkit.capitalize($.trim(d.Name))
 			},
 			value: rpt.value[d._id]
 		})
@@ -365,7 +365,17 @@ rpt.toggleFilter = () => {
 		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content')
 	}
 
-	rpt.toggleFilterCallback()
+	$('.k-grid').each((i, d) => {
+		$(d).data('kendoGrid').refresh()
+	})
+
+	$('.k-pivot').each((i, d) => {
+		$(d).data('kendoPivotGrid').refresh()
+	})
+
+	$('.k-chart').each((i, d) => {
+		$(d).data('kendoChart').redraw()
+	})
 }
 rpt.getFilterValue = (multiFiscalYear = false) => {
 	let res = [
