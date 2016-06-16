@@ -120,7 +120,7 @@ func main() {
 		if e != nil {
 			break
 		}
-		key := toolkit.Sprintf("%v_%v", spl.Date.Month, spl.Date.Year)
+		key := toolkit.Sprintf("%d_%d", spl.Date.Month, spl.Date.Year)
 
 		switch custgroup {
 		case "branch":
@@ -185,8 +185,8 @@ func main() {
 
 		spl := new(gdrj.SalesPL)
 		spl.ID = toolkit.Sprintf("%v%v%v%v", akey[0], akey[1], "", "")
-		spl.Date = gdrj.SetDate(time.Date(toolkit.ToInt(akey[0], toolkit.RoundingAuto),
-			time.Month(toolkit.ToInt(akey[1], toolkit.RoundingAuto)),
+		spl.Date = gdrj.SetDate(time.Date(toolkit.ToInt(akey[1], toolkit.RoundingAuto),
+			time.Month(toolkit.ToInt(akey[0], toolkit.RoundingAuto)),
 			1, 0, 0, 0, 0, time.UTC))
 		spl.Customer = tcustomer
 		spl.Product = tproduct
@@ -202,7 +202,6 @@ func main() {
 		spl.AddData(plcode, amount, plmodels)
 		spl.CalcSum(masters)
 
-		toolkit.Println(spl.ID)
 		gdrj.Save(spl)
 
 		toolkit.Printfn("Saving %d of %d in %s", i, mcount,
