@@ -806,6 +806,7 @@ ccr.optionComparison = ko.observableArray([
 ])
 ccr.comparison = ko.observableArray(['qty', 'outlet'])
 ccr.fiscalYear = ko.observable(rpt.value.FiscalYear())
+ccr.order = ko.observable(ccr.optionComparison()[2].field)
 
 ccr.getDecreasedQty = (useCache = false) => {
 	let param = {}
