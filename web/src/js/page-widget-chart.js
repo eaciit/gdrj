@@ -44,6 +44,8 @@ crt.configure = (series, colorseries) => {
 	let dataSort = crt.data()
 	if (crt.categoryAxisField() == "date.quartertxt") {
 		dataSort = _.orderBy(crt.data(), [crt.categoryAxisField()], ['desc'])
+	} else if (crt.categoryAxisField() == "date.month") {
+		dataSort = _.orderBy(crt.data(), (d) => parseInt(d[toolkit.replace(crt.categoryAxisField(), '.', '_')], 10), ['desc'])
 	} else if (crt.sortField() != '') {
 		dataSort = _.orderBy(crt.data(), [crt.sortField()], ['desc'])
 	}

@@ -138,7 +138,8 @@ rpt.optionDimensions = ko.observableArray([
     // { field: 'customer.city', name: 'City', title: 'customer_city' },
     { field: 'customer.region', name: 'Region', title: 'customer_region' },
     // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
-    { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' }
+    { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
+    { field: 'date.month', name: 'Month', title: 'date_month' },
 ])
 rpt.optionDataPoints = ko.observableArray([
     { field: 'value1', name: o['value1'] },

@@ -43,6 +43,10 @@ crt.configure = function (series, colorseries) {
 	var dataSort = crt.data();
 	if (crt.categoryAxisField() == "date.quartertxt") {
 		dataSort = _.orderBy(crt.data(), [crt.categoryAxisField()], ['desc']);
+	} else if (crt.categoryAxisField() == "date.month") {
+		dataSort = _.orderBy(crt.data(), function (d) {
+			return parseInt(d[toolkit.replace(crt.categoryAxisField(), '.', '_')], 10);
+		}, ['desc']);
 	} else if (crt.sortField() != '') {
 		dataSort = _.orderBy(crt.data(), [crt.sortField()], ['desc']);
 	}
