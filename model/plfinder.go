@@ -407,10 +407,6 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("general", s.noZero(math.Abs(generalga/sga)))
 				each.Set("depr", s.noZero(math.Abs(deprga/sga)))
 				each.Set("foreign", s.noZero(math.Abs(foreignga/sga)))
-			} else if s.Flag == "custom_analysis" {
-				each.Set("sales", netSales)
-				each.Set("outlet", countOutlet)
-				each.Set("sales_outlet", math.Abs(s.noZero(netSales/countOutlet)))
 			}
 			// else if s.Flag == "marketing_efficiency_btl" {
 			// 	each.Set("advertising", math.Abs(advertising))

@@ -20,7 +20,8 @@ crt.contentIsLoading = ko.observable(false);
 crt.sortField = ko.observable('');
 crt.typeChart = ko.observable('');
 crt.chartdata = ko.observableArray([]);
-crt.modecustom = ko.observable(false);
+crt.dataplmodel = ko.observableArray([]);
+crt.valueplmodel = ko.observableArray(["PL8A", "PL94C"]);
 
 crt.convertCurrency = function (labelValue) {
 	var res = Math.abs(Number(labelValue)) >= 1.0e+9 ? Math.abs(Number(labelValue)) / 1.0e+9 + " B" : Math.abs(Number(labelValue)) >= 1.0e+6 ? Math.abs(Number(labelValue)) / 1.0e+6 + " M" : Math.abs(Number(labelValue)) >= 1.0e+3 ? Math.abs(Number(labelValue)) / 1.0e+3 + " K" : kendo.toString(labelValue, "n2");
@@ -178,14 +179,82 @@ crt.render = function () {
 		})();
 	}
 };
+crt.getPlModel = function (datapl) {
+	var data = _.filter(datapl, function (d) {
+		return d.PLHeader2 == d.PLHeader1 && d.PLHeader3 == d.PLHeader1;
+	});
+	crt.dataplmodel(data);
+	if (crt.data().length == 0) {
+		crt.valueplmodel(["PL8A", "PL94C"]);
+		pvt.valueplmodel(["PL8A", "PL94C"]);
+	}
+};
+crt.renderCustomChart = function (data) {
+	var series = [],
+	    dataresult = [];
+	var breakdown = toolkit.replace(crt.categoryAxisField(), ".", "_"),
+	    keydata = void 0,
+	    dataseries = void 0;
+	var rows = data.map(function (d) {
+		var row = {};
+		row[breakdown] = d._id['_id_' + breakdown];
+		$.each(d, function (key, value) {
+			keydata = _.find(crt.dataplmodel(), function (s) {
+				return s._id == key;
+			});
+			if (keydata != undefined) {
+				row[key] = value;
+				dataseries = _.find(series, function (s) {
+					return s.field == key;
+				});
+				if (dataseries == undefined) {
+					series.push({
+						field: key, title: keydata.PLHeader1, name: keydata.PLHeader1
+					});
+				}
+			}
+		});
+		return row;
+	});
+	var op1 = _.groupBy(rows, function (d) {
+		return d[breakdown];
+	});
+	var op2 = _.map(op1, function (v, k) {
+		var row = {};
+		row[breakdown] = k;
+		var sample = v[0];
+
+		var _loop = function _loop(key) {
+			if (sample.hasOwnProperty(key) && key != breakdown) {
+				row[key] = toolkit.sum(v, function (d) {
+					return d[key];
+				});
+				row[key] = Math.abs(row[key]);
+			}
+		};
+
+		for (var key in sample) {
+			_loop(key);
+		}
+
+		return row;
+	});
+	crt.series(series);
+	crt.data(op2);
+};
 crt.refresh = function () {
 	rpt.refreshView('reportwidget');
 	var param = {};
 	param.pls = [];
 	param.flag = o.ID;
-	param.groups = [crt.categoryAxisField()];
+	param.groups = [crt.categoryAxisField(), "date.fiscal"];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
+
+	if (rpt.modecustom() == true) {
+		param.pls = crt.valueplmodel();
+		param.flag = "";
+	}
 
 	crt.contentIsLoading(true);
 
@@ -198,8 +267,13 @@ crt.refresh = function () {
 				return;
 			}
 
+			crt.getPlModel(res.Data.PLModels);
 			crt.data(res.Data.Data);
 			crt.contentIsLoading(false);
+			if (rpt.modecustom() == true) {
+				crt.renderCustomChart(res.Data.Data);
+			}
+
 			crt.render();
 		}, function () {
 			crt.contentIsLoading(false);
