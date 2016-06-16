@@ -57,7 +57,8 @@ dsbrd.optionBreakdowns = ko.observableArray([
 	{ field: "customer.region", name: "Region" },
 	{ field: "customer.zone", name: "Zone" },
 	{ field: "product.brand", name: "Brand" },
-	{ field: "customer.branchname", name: "Branch" }
+	{ field: "customer.branchname", name: "Branch" },
+	{ field: "customer.channelname", name: "Channel" },
 ])
 dsbrd.breakdown = ko.observable(dsbrd.optionBreakdowns()[4].field)
 dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears())
@@ -223,7 +224,7 @@ dsbrd.render = (res) => {
 		})
 
 		return { 
-			title: k, 
+			title: ($.trim(k) == '' ? 'Other' : k), 
 			columns: v,
 			headerAttributes: { 
 				style: 'text-align: center !important; font-weight: bold; border: 1px solid white; border-top: none; border-left: none; box-sizing: border-box; background-color: #e9eced;',
@@ -258,10 +259,10 @@ dsbrd.render = (res) => {
 	let counter = 0
 	let prevIndex = 0
 	columnGrouped.forEach((d) => {
-		d.columns.forEach((e) => {
+		d.columns.forEach((e, i) => {
 			let index = toolkit.getNumberFromString(e.field)
 
-			if (counter == 0) {
+			if (i == 0) {
 				prevIndex = index
 				counter++
 				return
@@ -270,8 +271,14 @@ dsbrd.render = (res) => {
 			let gs = grossSales.columnData[index]
 			let gsPrev = grossSales.columnData[prevIndex]
 			let g = growth.columnData[index]
-			let value = toolkit.number(gsPrev.value / gs.value) * 100
+			let value = toolkit.number((gs.value - gsPrev.value) / gsPrev.value) * 100
 			g.value = `${kendo.toString(value, 'n2')} %`
+
+			console.log(counter, gs.value, gs.value - gsPrev.value, gsPrev.value, value)
+
+			if ((i + 1) == d.columns.length) {
+				e.attributes.style = `${e.attributes.style}; border-right: 1px solid rgb(240, 243, 244);`
+			}
 
 			counter++
 			prevIndex = index
@@ -400,7 +407,7 @@ sd.breakdownSub = ko.observable('customer.custtype')
 sd.data = ko.observableArray([])
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 sd.render = (res) => {
-	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], 'Other'))
+	let data = res.Data.Data
 
 	let breakdown = toolkit.replace(sd.breakdown(), ".", "_")
 	let total = toolkit.sum(data, (d) => d.PL8A)
@@ -418,8 +425,15 @@ sd.render = (res) => {
 
 	sd.data(_.sortBy(rows, (d) => {
 		let subGroup = `00${toolkit.number(toolkit.getNumberFromString(d.group))}`.split('').reverse().splice(0, 2).reverse().join('')
-		let s = [d[breakdown], subGroup].join(' ')
-		return s
+		let group = d[breakdown]
+
+		switch (d[breakdown]) {
+			case "MT": group = "A"; break
+			case "GT": group = "B"; break
+			case "IT": group = "C"; break
+		}
+
+		return [group, subGroup].join(' ')
 	}))
 
 	let op1 = _.groupBy(sd.data(), (d) => d[breakdown])
