@@ -256,6 +256,10 @@ dsbrd.render = function (res) {
 		d.columns.forEach(function (e, i) {
 			var index = toolkit.getNumberFromString(e.field);
 
+			if (i + 1 == d.columns.length) {
+				e.attributes.style = e.attributes.style + '; border-right: 1px solid rgb(240, 243, 244);';
+			}
+
 			if (i == 0) {
 				prevIndex = index;
 				counter++;
@@ -267,12 +271,6 @@ dsbrd.render = function (res) {
 			var g = growth.columnData[index];
 			var value = toolkit.number((gs.value - gsPrev.value) / gsPrev.value) * 100;
 			g.value = kendo.toString(value, 'n2') + ' %';
-
-			console.log(counter, gs.value, gs.value - gsPrev.value, gsPrev.value, value);
-
-			if (i + 1 == d.columns.length) {
-				e.attributes.style = e.attributes.style + '; border-right: 1px solid rgb(240, 243, 244);';
-			}
 
 			counter++;
 			prevIndex = index;
