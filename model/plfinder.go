@@ -306,6 +306,14 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			netprice := math.Abs(s.noZero(netAmount / qty))
 			netpricebtl := math.Abs(netprice + btl)
 			countOutlet := s.Sum(raw, "totaloutlet")
+			indirectPersonnel := s.Sum(raw, "PL15")
+			indirectServices := s.Sum(raw, "PL16")
+			indirectRent := s.Sum(raw, "PL17")
+			indirectTransportation := s.Sum(raw, "PL18")
+			indirectMaintenance := s.Sum(raw, "PL19")
+			indirectOther := s.Sum(raw, "PL20")
+			indirectAmort := s.Sum(raw, "PL21")
+			indirectEnergy := s.Sum(raw, "PL74")
 
 			each := toolkit.M{}
 			if s.Flag == "gross_sales_discount_and_net_sales" {
@@ -336,7 +344,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("direct_abour", math.Abs(directLabour))
 				each.Set("cogs", math.Abs(cogs))
 				each.Set("direct_labour_index", math.Abs(s.noZero(directLabour/cogs)))
-			} else if s.Flag == "indirect_expense_index" {
+			} else if s.Flag == "material_type_index" {
 				each.Set("material_local", math.Abs(materialLocal))
 				each.Set("material_import", math.Abs(materialImport))
 				each.Set("material_other", math.Abs(materialOther))
@@ -368,6 +376,17 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("sales_outlet", math.Abs(s.noZero(netSales/countOutlet)))
 			} else if s.Flag == "number_of_outlets" {
 				each.Set("outlet", countOutlet)
+			} else if s.Flag == "indirect_expense_index" {
+				each.Set("personnel", math.Abs(indirectPersonnel))
+				each.Set("services", math.Abs(indirectServices))
+				each.Set("rent", math.Abs(indirectRent))
+				each.Set("transportation", math.Abs(indirectTransportation))
+				each.Set("maintenance", math.Abs(indirectMaintenance))
+				each.Set("amort", math.Abs(indirectAmort))
+				each.Set("energy", math.Abs(indirectEnergy))
+				each.Set("other", math.Abs(indirectOther))
+				each.Set("cogs", math.Abs(cogs))
+				each.Set("indirect_cogs", math.Abs(indirectPersonnel+indirectServices+indirectRent+indirectTransportation+indirectAmort+indirectEnergy+indirectOther)/cogs)
 			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {

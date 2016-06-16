@@ -14,6 +14,8 @@ crt.data = ko.observableArray([])
 crt.series = ko.observableArray([])
 crt.contentIsLoading = ko.observable(false)
 crt.sortField = ko.observable('')
+crt.typeChart = ko.observable('')
+crt.chartdata = ko.observableArray([])
 
 crt.convertCurrency = (labelValue) => {
 	let res =  Math.abs(Number(labelValue)) >= 1.0e+9 ? Math.abs(Number(labelValue)) / 1.0e+9 + " B"
@@ -38,7 +40,7 @@ crt.convertCurrency2 = (labelValue) => {
 		: labelValue.toString()
 	return res
 }
-crt.configure = (series, index) => {
+crt.configure = (series, colorseries) => {
 	let dataSort = crt.data()
 	if (crt.sortField() != "")
 		dataSort = _.orderBy(crt.data(), [crt.sortField()], ['desc']);
@@ -57,8 +59,8 @@ crt.configure = (series, index) => {
 				template: "#: crt.convertCurrency(value) #"
 			},
 		},
-		series: [series],
-		seriesColors: [app.seriesColorsGodrej[index]],
+		series: series,
+		seriesColors: colorseries,
 		categoryAxis: {
 			field: app.idAble(crt.categoryAxisField()),
 			majorGridLines: { color: '#fafafa' },
@@ -110,17 +112,41 @@ crt.render = () => {
 			return d
 		})
 
-	let config
-	for (var i in series) {
-		config = crt.configure(series[i], i)
-		$('#chart'+i).replaceWith(`<div id="chart${i}" style="height: 180px;"></div>`)
+	let config, seriesarr = [], tempcol = 0 
+	if (crt.typeChart() == '') {
+		crt.chartdata(series)
+		for (var i in series) {
+			config = crt.configure([series[i]], [app.seriesColorsGodrej[i]])
+			$('#chart'+i).replaceWith(`<div id="chart${i}" style="height: 180px;"></div>`)
 
-		if (crt.data().length > 8) {
-			$('#chart'+i).width(crt.data().length * 130)
-			$('#chart'+i).parent().css('overflow-x', 'scroll')
+			if (crt.data().length > 8) {
+				$('#chart'+i).width(crt.data().length * 130)
+				$('#chart'+i).parent().css('overflow-x', 'scroll')
+			}
+
+			$('#chart'+i).kendoChart(config)
 		}
+	} else if (crt.typeChart() == 'stack') {
+		seriesarr = _.groupBy(series, (e) => { return e.stack })
+		let i = 0
+		$.each( seriesarr, ( key, value ) => {
+			crt.chartdata.push(value)
+		})
+		$.each( seriesarr, ( key, value ) => {
+			if (value.length == 1)
+				delete value[0]['stack']
+			config = crt.configure(value, app.seriesColorsGodrej)
+			$('#chart'+i).replaceWith(`<div id="chart${i}" style="height: 180px;"></div>`)
 
-		$('#chart'+i).kendoChart(config)
+			if (crt.data().length > 8) {
+				$('#chart'+i).width(crt.data().length * 130)
+				$('#chart'+i).parent().css('overflow-x', 'scroll')
+			}
+
+			$('#chart'+i).kendoChart(config)
+			tempcol = value.length
+			i++
+		})
 	}
 }
 crt.refresh = () => {

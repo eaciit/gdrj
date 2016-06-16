@@ -53,6 +53,8 @@ let o = {
 		{{template "page-report-widget-sales-discount-by-gross-sales.html"}}
 	{{else if eq .id "direct_labour_index"}}
 		{{template "page-report-widget-direct-labour-index.html"}}
+	{{else if eq .id "material_type_index"}}
+		{{template "page-report-widget-material-expense-index.html"}}
 	{{else if eq .id "indirect_expense_index"}}
 		{{template "page-report-widget-indirect-expense-index.html"}}
 	{{else if eq .id "number_of_outlets"}}

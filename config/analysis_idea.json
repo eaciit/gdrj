@@ -92,7 +92,7 @@
     "_id": "material_type_index",
     "order": 23,
     "name": "Material Type Index",
-    "status": false
+    "status": true
 }, {
     "_id": "no_of_headcount_per_manager",
     "order": 20,
