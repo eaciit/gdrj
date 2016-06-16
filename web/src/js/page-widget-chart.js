@@ -8,7 +8,7 @@ crt.setMode = (what) => () => {
 		crt.refresh()
 	}
 }
-crt.categoryAxisField = ko.observable('category')
+crt.categoryAxisField = ko.observable('customer.channelname')
 crt.title = ko.observable('')
 crt.data = ko.observableArray([])
 crt.series = ko.observableArray([])
@@ -42,8 +42,11 @@ crt.convertCurrency2 = (labelValue) => {
 }
 crt.configure = (series, colorseries) => {
 	let dataSort = crt.data()
-	if (crt.sortField() != "")
-		dataSort = _.orderBy(crt.data(), [crt.sortField()], ['desc']);
+	if (crt.categoryAxisField() == "date.quartertxt") {
+		dataSort = _.orderBy(crt.data(), [crt.categoryAxisField()], ['desc'])
+	} else if (crt.sortField() != '') {
+		dataSort = _.orderBy(crt.data(), [crt.sortField()], ['desc'])
+	}
 
 	return {
 		title: crt.title(),
@@ -102,6 +105,9 @@ crt.configure = (series, colorseries) => {
 }
 
 crt.render = () => {
+	let data = _.sortBy(crt.data(), (d) => toolkit.redefine(d[toolkit.replace(crt.categoryAxisField(), '.', '_')], 'Other'))
+	crt.data(data)
+			
 	let series = ko.mapping.toJS(crt.series)
 		.filter((d) => (d.field != ''))
 		.map((d) => {
@@ -166,7 +172,7 @@ crt.refresh = () => {
 				setTimeout(() => { fetch() }, 1000 * 5)
 				return
 			}
-			
+
 			crt.data(res.Data.Data)
 			crt.contentIsLoading(false)
 			crt.render()

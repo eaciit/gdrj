@@ -86,7 +86,7 @@ dsbrd.refresh = () => {
 dsbrd.render = (res) => {
 	let rows = toolkit.clone(dsbrd.rows())
 	let columns = [
-		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
+		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' }, headerAttributes: {style: 'font-weight: bold;' } },
 	]
 
 	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], 'Other'))
@@ -118,9 +118,7 @@ dsbrd.render = (res) => {
 				format: '{0:n0}',
 				attributes: { class: 'align-right' },
 				headerAttributes: { 
-					style: 'text-align: right !important;',
-					class: 'bold tooltipster',
-					title: 'Click to sort'
+					style: 'text-align: right !important; font-weight: bold;',
 				}
 			})
 		})

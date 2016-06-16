@@ -68,7 +68,7 @@ dsbrd.refresh = function () {
 
 dsbrd.render = function (res) {
 	var rows = toolkit.clone(dsbrd.rows());
-	var columns = [{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } }];
+	var columns = [{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' }, headerAttributes: { style: 'font-weight: bold;' } }];
 
 	var data = _.sortBy(res.Data.Data, function (d) {
 		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], 'Other');
@@ -113,9 +113,7 @@ dsbrd.render = function (res) {
 				format: '{0:n0}',
 				attributes: { class: 'align-right' },
 				headerAttributes: {
-					style: 'text-align: right !important;',
-					class: 'bold tooltipster',
-					title: 'Click to sort'
+					style: 'text-align: right !important; font-weight: bold;'
 				}
 			});
 		});
