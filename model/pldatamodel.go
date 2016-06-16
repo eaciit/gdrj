@@ -154,9 +154,9 @@ func GetPLModel(plcode, companyid string,
 	return pldatamodel
 }
 
-func getData() (toolkit.Ms, error) {
+func getData(payload *PLFinderParam) (toolkit.Ms, error) {
 	conn := DB().Connection
-	q := conn.NewQuery().From("quarterreport")
+	q := conn.NewQuery().From("quarterreport").Where(payload.ParseFilter())
 
 	c, e := q.Cursor(nil)
 	if e != nil {
@@ -237,8 +237,8 @@ func dataRemap(value toolkit.M, keys []string) (toolkit.M, toolkit.M) {
 	return valueList, valueCount
 }
 
-func GetDecreasedQty() (toolkit.Ms, error) {
-	data, err := getData()
+func GetDecreasedQty(payload *PLFinderParam) (toolkit.Ms, error) {
+	data, err := getData(payload)
 	if err != nil {
 		return nil, errors.New("GetDecreasedQty: Fetch cursor error " + err.Error())
 	}

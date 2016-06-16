@@ -813,7 +813,11 @@ ccr.getDecreasedQty = (useCache = false) => {
 
 	ccr.contentIsLoading(true)
 	toolkit.ajaxPost(`/report/GetDecreasedQty`, param, (res) => {
-		ccr.dataComparison(res)
+		if (res.Status == "NOK") {
+			return
+		}
+
+		ccr.dataComparison(res.Data)
 		ccr.contentIsLoading(false)
 		ccr.plot()
 	}, () => {

@@ -831,7 +831,11 @@ ccr.getDecreasedQty = function () {
 
 	ccr.contentIsLoading(true);
 	toolkit.ajaxPost('/report/GetDecreasedQty', param, function (res) {
-		ccr.dataComparison(res);
+		if (res.Status == "NOK") {
+			return;
+		}
+
+		ccr.dataComparison(res.Data);
 		ccr.contentIsLoading(false);
 		ccr.plot();
 	}, function () {
