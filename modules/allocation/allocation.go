@@ -81,7 +81,7 @@ func main() {
 	flag.IntVar(&value, "value", 0, "representation of value need to be allocation. Default is 0")
 	//branch,channel,group
 	flag.StringVar(&custgroup, "custgroup", "global", "group of customer. Default is global")
-	//brand,group
+	//brand,group,skuid
 	flag.StringVar(&prodgroup, "prodgroup", "global", "group of product. Default is global")
 	flag.IntVar(&fiscalyear, "year", 2015, "YYYY representation of godrej fiscal year. Default is 2015")
 	flag.StringVar(&plcode, "plcode", "", "PL Code to take the value. Default is blank")
@@ -121,14 +121,16 @@ func main() {
 			break
 		}
 		key := toolkit.Sprintf("%d_%d", spl.Date.Month, spl.Date.Year)
-
+		k := ""
 		switch custgroup {
 		case "branch":
 			key = toolkit.Sprintf("%v_%v", key, spl.Customer.BranchID)
 		case "channel":
-			key = toolkit.Sprintf("%v_%v", key, spl.Customer.ChannelID)
+			k = toolkit.Sprintf("%v|%v", spl.Customer.BranchID, spl.Customer.ChannelID)
+			key = toolkit.Sprintf("%v_%v", key, k)
 		case "group":
-			key = toolkit.Sprintf("%v_%v", key, spl.Customer.CustomerGroup)
+			k = toolkit.Sprintf("%v|%v", spl.Customer.BranchID, spl.Customer.CustomerGroup)
+			key = toolkit.Sprintf("%v_%v", key, k)
 		default:
 			key = toolkit.Sprintf("%v_", key)
 		}
@@ -137,7 +139,12 @@ func main() {
 		case "brand":
 			key = toolkit.Sprintf("%v_%v", key, spl.Product.Brand)
 		case "group":
-			key = toolkit.Sprintf("%v_%v", key, spl.Product.BrandCategoryID)
+			k = toolkit.Sprintf("%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID)
+			key = toolkit.Sprintf("%v_%v", key, k)
+		case "skuid":
+			// toolkit.Printfn("%v|%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID, spl.Product.ID)
+			k = toolkit.Sprintf("%v|%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID, spl.Product.ID)
+			key = toolkit.Sprintf("%v_%v", key, k)
 		default:
 			key = toolkit.Sprintf("%v_", key)
 		}
@@ -168,9 +175,17 @@ func main() {
 			case "branch":
 				tcustomer.BranchID = akey[2]
 			case "channel":
-				tcustomer.ChannelID = akey[2]
+				skey := strings.Split(akey[2], "|")
+				tcustomer.BranchID = skey[0]
+				if len(skey) > 1 {
+					tcustomer.ChannelID = skey[1]
+				}
 			case "group":
-				tcustomer.CustomerGroup = akey[2]
+				skey := strings.Split(akey[2], "|")
+				tcustomer.BranchID = skey[0]
+				if len(skey) > 1 {
+					tcustomer.CustomerGroup = skey[1]
+				}
 			}
 		}
 
@@ -179,7 +194,20 @@ func main() {
 			case "brand":
 				tproduct.Brand = akey[3]
 			case "group":
-				tproduct.BrandCategoryID = akey[3]
+				skey := strings.Split(akey[3], "|")
+				tproduct.Brand = skey[0]
+				if len(skey) > 1 {
+					tproduct.BrandCategoryID = skey[1]
+				}
+			case "skuid":
+				skey := strings.Split(akey[3], "|")
+				tproduct.Brand = skey[0]
+				if len(skey) > 1 {
+					tproduct.BrandCategoryID = skey[1]
+				}
+				if len(skey) > 2 {
+					tproduct.ID = skey[2]
+				}
 			}
 		}
 
@@ -197,7 +225,6 @@ func main() {
 		spl.CC = new(gdrj.CostCenter)
 
 		amount := toolkit.ToFloat64(value, 6, toolkit.RoundingAuto) * (v / globalval)
-		_ = amount
 		plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
 		spl.AddData(plcode, amount, plmodels)
 		spl.CalcSum(masters)
