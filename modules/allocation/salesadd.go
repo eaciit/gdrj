@@ -109,13 +109,9 @@ func main() {
 		tcustomer.Name = "CUSTOMER VIRTUAL"
 		tcustomer.BranchID = "CD02"
 		tcustomer.ChannelID = "I3"
-		tcustomer.ChannelName = "Modern Trade (MT)"
-		tcustomer.CustomerGroup = "HYPER"
-
-		// tproduct.Name = ""
-		// tproduct.ProdCategory = ""
-		// tproduct.Brand = "OTHER"
-		// tproduct.BrandCategoryID = ""
+		tcustomer.ChannelName = "MT"
+		tcustomer.CustomerGroup = "MD"
+		tcustomer.CustomerGroupName = "Modern Market"
 
 		spl := new(gdrj.SalesPL)
 		spl.Date = gdrj.SetDate(Date)
