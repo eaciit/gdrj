@@ -175,22 +175,22 @@ func prepMaster() {
 
 			dt := time.Date(o.Year, time.Month(o.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 			if strings.HasSuffix(o.Src, "FREIGHT") {
-				freightid := toolkit.Sprintf("%d_%d", dt.Year(), int(dt.Month()))
+				freightid := toolkit.Sprintf("%d_%d_%s", dt.Year(), int(dt.Month()), o.BusA)
 				frg, exist := freights[freightid]
 				if !exist {
 					frg = new(gdrj.RawDataPL)
 				}
 				frg.AmountinIDR += o.AmountinIDR
 				freights[freightid] = frg
-			} else if strings.HasSuffix(o.Src, "DEPRECIATION") { //DEPRECIATION
-				depreciationid := toolkit.Sprintf("%d_%d", dt.Year(), int(dt.Month()))
+			} else if strings.HasSuffix(o.Src, "DEPRECIATION") {
+				depreciationid := toolkit.Sprintf("%d_%d_%s", dt.Year(), int(dt.Month()), o.BusA)
 				dpr, exist := depreciation[depreciationid]
 				if !exist {
 					dpr = new(gdrj.RawDataPL)
 				}
 				dpr.AmountinIDR += o.AmountinIDR
 				depreciation[depreciationid] = dpr
-			} else if strings.HasSuffix(o.Src, "ROYALTY") {
+			} else if strings.HasSuffix(o.Src, "ROYALTI") {
 				royaltyid := toolkit.Sprintf("%d_%d", dt.Year(), int(dt.Month()))
 				royalti, exist := royalties[royaltyid]
 				if !exist {
@@ -378,20 +378,23 @@ func main() {
 		}
 	}
 
-	jobs := make(chan *gdrj.SalesTrx, count)
+	jobs := make(chan *gdrj.SalesPL, count)
 	result := make(chan string, count)
 	for wi := 0; wi < 10; wi++ {
 		go workerProc(wi, jobs, result)
 	}
 
-	c.ResetFetch()
+	cp, _ := gdrj.Find(new(gdrj.SalesPL), f, nil)
+	defer cp.Close()
+
+	count := cp.Count()
 	toolkit.Printfn("START ... %d records - computation type: %s", count, compute)
 	step = count / 100
 	limit = step
 	i = 0
 	for {
-		stx := new(gdrj.SalesTrx)
-		e := c.Fetch(stx, 1, false)
+		sp := new(gdrj.SalesPL)
+		e := c.Fetch(sp, 1, false)
 		if e != nil {
 			break
 		}
@@ -401,7 +404,7 @@ func main() {
 		}
 
 		i++
-		jobs <- stx
+		jobs <- sp
 		if i >= limit {
 			toolkit.Printfn("Processing %d of %d (%d pct) in %s",
 				i, count, i*100/count, time.Since(t0).String())
@@ -424,18 +427,18 @@ func main() {
 	}
 }
 
-func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
+func workerProc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 	workerConn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerConn.Close()
 
-	var j *gdrj.SalesTrx
-	for j = range jobs {
-		spl := gdrj.TrxToSalesPL(workerConn, j, masters,
+	//var j *gdrj.SalesPL
+	for j := range jobs {
+		j.Calc(workerConn, masters,
 			toolkit.M{}.Set("compute", compute))
 
-		workerConn.NewQuery().From(spl.TableName()).
+		workerConn.NewQuery().From(j.TableName()).
 			Save().Exec(toolkit.M{}.Set("data", spl))
 
-		result <- spl.ID
+		result <- j.ID
 	}
 }

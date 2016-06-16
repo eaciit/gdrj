@@ -21,6 +21,7 @@ crt.sortField = ko.observable('');
 crt.typeChart = ko.observable('');
 crt.chartdata = ko.observableArray([]);
 crt.fiscalYear = ko.observable(rpt.value.FiscalYear());
+crt.modecustom = ko.observable(false);
 
 crt.convertCurrency = function (labelValue) {
 	var res = Math.abs(Number(labelValue)) >= 1.0e+9 ? Math.abs(Number(labelValue)) / 1.0e+9 + " B" : Math.abs(Number(labelValue)) >= 1.0e+6 ? Math.abs(Number(labelValue)) / 1.0e+6 + " M" : Math.abs(Number(labelValue)) >= 1.0e+3 ? Math.abs(Number(labelValue)) / 1.0e+3 + " K" : kendo.toString(labelValue, "n2");
