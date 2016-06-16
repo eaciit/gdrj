@@ -16,6 +16,7 @@ crt.contentIsLoading = ko.observable(false)
 crt.sortField = ko.observable('')
 crt.typeChart = ko.observable('')
 crt.chartdata = ko.observableArray([])
+crt.modecustom = ko.observable(false)
 
 crt.convertCurrency = (labelValue) => {
 	let res =  Math.abs(Number(labelValue)) >= 1.0e+9 ? Math.abs(Number(labelValue)) / 1.0e+9 + " B"
