@@ -172,10 +172,10 @@ dsbrd.render = (res) => {
 		rowsAfter.forEach((row, rowIndex) => {
 			row.columnData.forEach((column, columnIndex) => {
 				if (row.pnl == 'EBIT %') {
-					let percentage = kendo.toString(toolkit.number(grossSales.columnData[columnIndex].original / ebit.columnData[columnIndex].original), 'n2')
+					let percentage = kendo.toString(toolkit.number(grossSales.columnData[columnIndex].original / ebit.columnData[columnIndex].original) * 100, 'n2')
 					column.value = percentage;
 				} else if (row.pnl != 'Gross Sales' && row.pnl != 'EBIT') {
-					let percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original), 'n2')
+					let percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original) * 100, 'n2')
 					column.value = percentage;
 				}
 			})
@@ -329,10 +329,10 @@ rank.render = (res) => {
 		}
 
 
-		row.gmPercentage = toolkit.number(d.PL74C / d.PL8A)
-		row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A)
-		row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A)
-		row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A)
+		row.gmPercentage = toolkit.number(d.PL74C / d.PL8A) * 100
+		row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A) * 100
+		row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A) * 100
+		row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A) * 100
 		row.netSales = d.PL8A
 		row.ebit = d.PL44B
 		rows.push(row)
@@ -472,7 +472,7 @@ sd.refresh = () => {
 
 $(() => {
 	rpt.refreshView('dashboard')
-	
+
 	dsbrd.changeBreakdown()
 	dsbrd.refresh()
 	rank.refresh()

@@ -158,10 +158,10 @@ dsbrd.render = function (res) {
 			rowsAfter.forEach(function (row, rowIndex) {
 				row.columnData.forEach(function (column, columnIndex) {
 					if (row.pnl == 'EBIT %') {
-						var percentage = kendo.toString(toolkit.number(grossSales.columnData[columnIndex].original / ebit.columnData[columnIndex].original), 'n2');
+						var percentage = kendo.toString(toolkit.number(grossSales.columnData[columnIndex].original / ebit.columnData[columnIndex].original) * 100, 'n2');
 						column.value = percentage;
 					} else if (row.pnl != 'Gross Sales' && row.pnl != 'EBIT') {
-						var _percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original), 'n2');
+						var _percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original) * 100, 'n2');
 						column.value = _percentage;
 					}
 				});
@@ -310,10 +310,10 @@ rank.render = function (res) {
 			row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM');
 		}
 
-		row.gmPercentage = toolkit.number(d.PL74C / d.PL8A);
-		row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A);
-		row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A);
-		row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A);
+		row.gmPercentage = toolkit.number(d.PL74C / d.PL8A) * 100;
+		row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A) * 100;
+		row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A) * 100;
+		row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A) * 100;
 		row.netSales = d.PL8A;
 		row.ebit = d.PL44B;
 		rows.push(row);
