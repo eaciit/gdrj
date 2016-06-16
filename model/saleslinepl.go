@@ -71,11 +71,20 @@ func TrxToSalesPL(conn dbox.IConnection,
 	pl.GrossAmount = trx.GrossAmount
 	pl.DiscountAmount = trx.DiscountAmount
 	pl.TaxAmount = trx.TaxAmount
-	pl.NetAmount = pl.GrossAmount - pl.DiscountAmount
-
+	
 	pl.Customer = trx.Customer
 	pl.Product = trx.Product
 
+	pl.Calc(conn, masters, config)
+
+	return pl
+}
+
+func (pl *SalesPL) Calc(conn dbox.IConnection,
+	masters toolkit.M,
+	config toolkit.M) *SalesPL{
+	
+	pl.NetAmount = pl.GrossAmount - pl.DiscountAmount
 	//-- classing
 	if pl.Customer == nil {
 		c := new(Customer)
@@ -169,7 +178,6 @@ func TrxToSalesPL(conn dbox.IConnection,
 	}
 
 	pl.CalcSum(masters)
-
 	return pl
 }
 
