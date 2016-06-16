@@ -175,7 +175,7 @@ func prepMaster() {
 
 			dt := time.Date(o.Year, time.Month(o.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 			if strings.HasSuffix(o.Src, "FREIGHT") {
-				freightid := toolkit.Sprintf("%d_%d_%s", dt.Year(), int(dt.Month()), o.BusA)
+				freightid := toolkit.Sprintf("%d_%d", dt.Year(), int(dt.Month()))
 				frg, exist := freights[freightid]
 				if !exist {
 					frg = new(gdrj.RawDataPL)
@@ -183,7 +183,7 @@ func prepMaster() {
 				frg.AmountinIDR += o.AmountinIDR
 				freights[freightid] = frg
 			} else if strings.HasSuffix(o.Src, "DEPRECIATION") {
-				depreciationid := toolkit.Sprintf("%d_%d_%s", dt.Year(), int(dt.Month()), o.BusA)
+				depreciationid := toolkit.Sprintf("%d_%d", dt.Year(), int(dt.Month()))
 				dpr, exist := depreciation[depreciationid]
 				if !exist {
 					dpr = new(gdrj.RawDataPL)

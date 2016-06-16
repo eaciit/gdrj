@@ -41,6 +41,8 @@ type SalesPL struct {
 	RatioToSKUSales    float64
 
 	PLDatas map[string]*PLData
+
+	Source, Ref string
 }
 
 func (s *SalesPL) TableName() string {
@@ -348,7 +350,7 @@ func (pl *SalesPL) CalcFreight(masters toolkit.M) {
 	}
 	freights := masters.Get("freight").(map[string]*RawDataPL)
 
-	freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.BranchID)
+	freightid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	f, exist := freights[freightid]
 	if !exist {
 		// toolkit.Printfn("Freight error: key is not exist %s", freightid)
@@ -365,7 +367,7 @@ func (pl *SalesPL) CalcDepre(masters toolkit.M) {
 	}
 	depretiations := masters.Get("depretiation").(map[string]*RawDataPL)
 
-	depretiationid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.BranchID)
+	depretiationid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	d, exist := depretiations[depretiationid]
 	if !exist {
 		// toolkit.Printfn("Depretiation error: key is not exist %s", depretiationid)
