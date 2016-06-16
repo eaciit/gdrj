@@ -1,0 +1,29 @@
+<div class="col-md-12 no-padding hardcore">
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-chart.html"}}
+	</div>
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-pivot.html"}}
+	</div>
+</div>
+
+<script>
+	$(() => {
+		pvt.row('customer.channelname')
+		pvt.column('customer.branchname')
+		pvt.dataPoints = ko.observableArray([
+			{ field: 'material_local', stack: "material", title: 'Material Local', name: 'Material Local' },
+			{ field: 'material_import', stack: "material", title: 'Material Import', name: 'Material Import' },
+			{ field: 'material_other', stack: "material", title: 'Material Other', name: 'Material Other' },
+			{ field: 'cogs', stack: "cogs", title: 'COGS', name: 'COGS' },
+			{ field: 'indirect_expense_index', stack: "indirect_expense_index", title: 'Material Expense Index', name: 'Material Expense Index' }
+		])
+		pvt.refresh()
+
+		crt.typeChart('stack')
+		crt.categoryAxisField('customer.branchname')
+		crt.sortField('indirect_expense_index')
+		crt.series(pvt.dataPoints())
+		crt.refresh()
+	})
+</script>

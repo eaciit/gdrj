@@ -18,6 +18,8 @@ crt.data = ko.observableArray([]);
 crt.series = ko.observableArray([]);
 crt.contentIsLoading = ko.observable(false);
 crt.sortField = ko.observable('');
+crt.typeChart = ko.observable('');
+crt.chartdata = ko.observableArray([]);
 
 crt.convertCurrency = function (labelValue) {
 	var res = Math.abs(Number(labelValue)) >= 1.0e+9 ? Math.abs(Number(labelValue)) / 1.0e+9 + " B" : Math.abs(Number(labelValue)) >= 1.0e+6 ? Math.abs(Number(labelValue)) / 1.0e+6 + " M" : Math.abs(Number(labelValue)) >= 1.0e+3 ? Math.abs(Number(labelValue)) / 1.0e+3 + " K" : kendo.toString(labelValue, "n2");
@@ -37,7 +39,7 @@ crt.convertCurrency2 = function (labelValue) {
 	var res = Math.abs(Number(labelValue)) >= 1.0e+9 ? kendo.toString(Math.abs(Number(labelValue)) / 1.0e+9, 'n0') + " B" : Math.abs(Number(labelValue)) >= 1.0e+6 ? kendo.toString(Math.abs(Number(labelValue)) / 1.0e+6, 'n0') + " M" : Math.abs(Number(labelValue)) >= 1.0e+3 ? kendo.toString(Math.abs(Number(labelValue)) / 1.0e+3, 'n0') + " K" : labelValue.toString();
 	return res;
 };
-crt.configure = function (series, index) {
+crt.configure = function (series, colorseries) {
 	var dataSort = crt.data();
 	if (crt.sortField() != "") dataSort = _.orderBy(crt.data(), [crt.sortField()], ['desc']);
 
@@ -55,8 +57,8 @@ crt.configure = function (series, index) {
 				template: "#: crt.convertCurrency(value) #"
 			}
 		},
-		series: [series],
-		seriesColors: [app.seriesColorsGodrej[index]],
+		series: series,
+		seriesColors: colorseries,
 		categoryAxis: {
 			field: app.idAble(crt.categoryAxisField()),
 			majorGridLines: { color: '#fafafa' },
@@ -110,17 +112,46 @@ crt.render = function () {
 		return d;
 	});
 
-	var config = void 0;
-	for (var i in series) {
-		config = crt.configure(series[i], i);
-		$('#chart' + i).replaceWith('<div id="chart' + i + '" style="height: 180px;"></div>');
+	var config = void 0,
+	    seriesarr = [],
+	    tempcol = 0;
+	if (crt.typeChart() == '') {
+		crt.chartdata(series);
+		for (var i in series) {
+			config = crt.configure([series[i]], [app.seriesColorsGodrej[i]]);
+			$('#chart' + i).replaceWith('<div id="chart' + i + '" style="height: 180px;"></div>');
 
-		if (crt.data().length > 8) {
-			$('#chart' + i).width(crt.data().length * 130);
-			$('#chart' + i).parent().css('overflow-x', 'scroll');
+			if (crt.data().length > 8) {
+				$('#chart' + i).width(crt.data().length * 130);
+				$('#chart' + i).parent().css('overflow-x', 'scroll');
+			}
+
+			$('#chart' + i).kendoChart(config);
 		}
+	} else if (crt.typeChart() == 'stack') {
+		(function () {
+			seriesarr = _.groupBy(series, function (e) {
+				return e.stack;
+			});
+			var i = 0;
+			$.each(seriesarr, function (key, value) {
+				crt.chartdata.push(value);
+			});
+			$.each(seriesarr, function (key, value) {
+				if (value.length == 1) delete value[0]['stack'];
+				config = crt.configure(value, app.seriesColorsGodrej);
+				$('#chart' + i).replaceWith('<div id="chart' + i + '" style="height: 180px;"></div>');
 
-		$('#chart' + i).kendoChart(config);
+				if (crt.data().length > 8) {
+					$('#chart' + i).width(crt.data().length * 130);
+					$('#chart' + i).parent().css('overflow-x', 'scroll');
+				}
+
+				$('#chart' + i).kendoChart(config);
+				tempcol = value.length;
+				i++;
+			});
+		})();
 	}
 };
 crt.refresh = function () {
