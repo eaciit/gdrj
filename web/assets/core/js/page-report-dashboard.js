@@ -36,6 +36,14 @@ dsbrd.columns = ko.observableArray([]);
 dsbrd.breakdown = ko.observable('customer.channelname');
 dsbrd.fiscalYear = ko.observable(2014);
 dsbrd.contentIsLoading = ko.observable(false);
+dsbrd.optionDimensions = ko.observableArray([{ field: "" }]);
+// city
+// region
+// zone
+// branch
+// brand
+dsbrd.optionStructures = ko.observableArray([{ field: "date.fiscal", title: "Fiscal Year" }, { field: "date.quarter", title: "Quarter" }, { field: "date.month", title: "Month" }]);
+dsbrd.strucutre = ko.observable(dsbrd.optionStructures()[0].field);
 
 dsbrd.refresh = function () {
 	var param = {};
@@ -334,7 +342,7 @@ sd.render = function (res) {
 sd.refresh = function () {
 	var param = {};
 	param.pls = ["PL8A"];
-	param.groups = [sd.breakdown()];
+	param.groups = [sd.breakdown(), 'customer.customergroupname'];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
 

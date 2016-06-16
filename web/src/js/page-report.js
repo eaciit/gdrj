@@ -165,7 +165,8 @@ rpt.value = {
 	HQ: ko.observable(false),
 	From: ko.observable(new Date(2014, 0, 1)),
 	To: ko.observable(new Date(2016, 11, 31)),
-	FiscalYear: ko.observable(rpt.optionFiscalYears()[0])
+	FiscalYear: ko.observable(rpt.optionFiscalYears()[0]),
+	FiscalYears: ko.observableArray([rpt.optionFiscalYears()[0]])
 }
 rpt.masterData.Type = ko.observableArray([
 	{ value: 'Mfg', text: 'Mfg' },
@@ -366,7 +367,7 @@ rpt.toggleFilter = () => {
 
 	rpt.toggleFilterCallback()
 }
-rpt.getFilterValue = () => {
+rpt.getFilterValue = (multiFiscalYear = false) => {
 	let res = [
 		{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() },
 		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) },
@@ -379,8 +380,23 @@ rpt.getFilterValue = () => {
 		{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
 		{ 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
 		{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() },
-		{ 'Field': 'date.fiscal', 'Op': '$eq', 'Value': rpt.value.FiscalYear() },
-	].filter((d) => {
+	]
+
+	if (multiFiscalYear) {
+		res.push({ 
+			'Field': 'date.fiscal', 
+			'Op': '$eq', 
+			'Value': rpt.value.FiscalYear()
+		})
+	} else {
+		res.push({ 
+			'Field': 'date.fiscal', 
+			'Op': '$in', 
+			'Value': rpt.value.FiscalYears()
+		})
+	}
+
+	res = res.filter((d) => {
 		if (d.Value instanceof Array) {
 			return d.Value.length > 0
 		} else {
