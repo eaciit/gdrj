@@ -188,4 +188,9 @@
     "order": 36,
     "name": "Staff Expense per Employee",
     "status": false
+}, {
+    "_id": "custom_analysis",
+    "order": 37,
+    "name": "Custom Analysis",
+    "status": true
 }]
