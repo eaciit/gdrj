@@ -20,6 +20,7 @@ crt.contentIsLoading = ko.observable(false);
 crt.sortField = ko.observable('');
 crt.typeChart = ko.observable('');
 crt.chartdata = ko.observableArray([]);
+crt.fiscalYear = ko.observable(rpt.value.FiscalYear());
 
 crt.convertCurrency = function (labelValue) {
 	var res = Math.abs(Number(labelValue)) >= 1.0e+9 ? Math.abs(Number(labelValue)) / 1.0e+9 + " B" : Math.abs(Number(labelValue)) >= 1.0e+6 ? Math.abs(Number(labelValue)) / 1.0e+6 + " M" : Math.abs(Number(labelValue)) >= 1.0e+3 ? Math.abs(Number(labelValue)) / 1.0e+3 + " K" : kendo.toString(labelValue, "n2");
@@ -184,7 +185,7 @@ crt.refresh = function () {
 	param.flag = o.ID;
 	param.groups = [crt.categoryAxisField()];
 	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue();
+	param.filters = rpt.getFilterValue(false, crt.fiscalYear);
 
 	crt.contentIsLoading(true);
 
