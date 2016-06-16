@@ -273,6 +273,10 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 		return res
 	}
 
+	if toolkit.HasMember(payload.Breakdowns, "customer.channelname") {
+		payload.Breakdowns = append(payload.Breakdowns, "customer.channelid")
+	}
+
 	fmt.Println("counting")
 
 	ok, err := payload.CountPLData()

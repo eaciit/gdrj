@@ -212,7 +212,7 @@ dsbrd.render = function (res) {
 		});
 
 		return {
-			title: k,
+			title: $.trim(k) == '' ? 'Other' : k,
 			columns: v,
 			headerAttributes: {
 				style: 'text-align: center !important; font-weight: bold; border: 1px solid white; border-top: none; border-left: none; box-sizing: border-box; background-color: #e9eced;'
@@ -253,10 +253,10 @@ dsbrd.render = function (res) {
 	var counter = 0;
 	var prevIndex = 0;
 	columnGrouped.forEach(function (d) {
-		d.columns.forEach(function (e) {
+		d.columns.forEach(function (e, i) {
 			var index = toolkit.getNumberFromString(e.field);
 
-			if (counter == 0) {
+			if (i == 0) {
 				prevIndex = index;
 				counter++;
 				return;
@@ -269,6 +269,10 @@ dsbrd.render = function (res) {
 			g.value = kendo.toString(value, 'n2') + ' %';
 
 			console.log(counter, gs.value, gs.value - gsPrev.value, gsPrev.value, value);
+
+			if (i + 1 == d.columns.length) {
+				e.attributes.style = e.attributes.style + '; border-right: 1px solid rgb(240, 243, 244);';
+			}
 
 			counter++;
 			prevIndex = index;
@@ -393,9 +397,7 @@ sd.breakdownSub = ko.observable('customer.custtype');
 sd.data = ko.observableArray([]);
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear());
 sd.render = function (res) {
-	var data = _.sortBy(res.Data.Data, function (d) {
-		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], 'Other');
-	});
+	var data = res.Data.Data;
 
 	var breakdown = toolkit.replace(sd.breakdown(), ".", "_");
 	var total = toolkit.sum(data, function (d) {
@@ -415,8 +417,18 @@ sd.render = function (res) {
 
 	sd.data(_.sortBy(rows, function (d) {
 		var subGroup = ('00' + toolkit.number(toolkit.getNumberFromString(d.group))).split('').reverse().splice(0, 2).reverse().join('');
-		var s = [d[breakdown], subGroup].join(' ');
-		return s;
+		var group = d[breakdown];
+
+		switch (d[breakdown]) {
+			case "MT":
+				group = "A";break;
+			case "GT":
+				group = "B";break;
+			case "IT":
+				group = "C";break;
+		}
+
+		return [group, subGroup].join(' ');
 	}));
 
 	var op1 = _.groupBy(sd.data(), function (d) {
