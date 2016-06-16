@@ -307,7 +307,9 @@ rank.render = function (res) {
 		rows.push(row);
 	});
 
-	rank.data(rows);
+	rank.data(_.sortBy(rows, function (d) {
+		return d.pnl;
+	}));
 
 	var config = {
 		dataSource: {

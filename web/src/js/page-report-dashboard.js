@@ -323,7 +323,7 @@ rank.render = (res) => {
 		rows.push(row)
 	})
 
-	rank.data(rows)
+	rank.data(_.sortBy(rows, (d) => d.pnl))
 
 	let config = {
 		dataSource: {
