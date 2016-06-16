@@ -54,7 +54,7 @@ dsbrd.optionBreakdowns = ko.observableArray([
 	{ field: "customer.areaname", name: "City" },
 	{ field: "customer.region", name: "Region" },
 	{ field: "customer.zone", name: "Zone" },
-	{ field: "customer.brand", name: "Brand" },
+	{ field: "product.brand", name: "Brand" },
 	{ field: "customer.branchname", name: "Branch" }
 ])
 dsbrd.breakdown = ko.observable(dsbrd.optionBreakdowns()[4].field)
@@ -67,6 +67,34 @@ dsbrd.optionStructures = ko.observableArray([
 ])
 dsbrd.structure = ko.observable(dsbrd.optionStructures()[1].field)
 dsbrd.structureYear = ko.observable('date.year')
+dsbrd.optionBreakdownValues = ko.observableArray([])
+dsbrd.breakdownValue = ko.observableArray([])
+dsbrd.changeBreakdown = () => {
+	setTimeout(() => {
+		switch (dsbrd.breakdown()) {
+			case "customer.areaname":
+				dsbrd.breakdownValue([])
+				dsbrd.optionBreakdownValues(rpt.masterData.Area())
+			break;
+			case "customer.region":
+				dsbrd.breakdownValue([])
+				dsbrd.optionBreakdownValues(rpt.masterData.Region())
+			break;
+			case "customer.zone":
+				dsbrd.breakdownValue([])
+				dsbrd.optionBreakdownValues(rpt.masterData.Zone())
+			break;
+			case "product.brand":
+				dsbrd.breakdownValue([])
+				dsbrd.optionBreakdownValues(rpt.masterData.Brand())
+			break;
+			case "customer.branchname":
+				dsbrd.breakdownValue([])
+				dsbrd.optionBreakdownValues(rpt.masterData.Branch())
+			break;
+		}
+	})
+}
 
 dsbrd.refresh = () => {
 	let param = {}
@@ -74,6 +102,14 @@ dsbrd.refresh = () => {
 	param.groups = [dsbrd.breakdown(), dsbrd.structure()]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
+
+	if (dsbrd.breakdownValue().length > 0) {
+		param.filters.push({
+			Field: dsbrd.breakdown(),
+			Op: '$in',
+			Value: dsbrd.breakdownValue()
+		})
+	}
 
 	if (dsbrd.structure() == 'date.month') {
 		param.groups.push(dsbrd.structureYear())
@@ -145,7 +181,7 @@ dsbrd.render = (res) => {
 
 		let column = {}
 		column.field = `columnData[${i}].value`
-		column.breakdown = $.trim(columnInfo.breakdownTitle)
+		column.breakdown = $.trim(toolkit.redefine(columnInfo.breakdownTitle, 'Other'))
 		column.title = $.trim(columnInfo.structureTitle)
 		column.width = 150
 		column.format = '{0:n0}'
@@ -196,7 +232,7 @@ dsbrd.render = (res) => {
 					let yearMonthString = `${e.year}${monthString}`
 					return yearMonthString
 				}
-				
+
 				return monthString
 			}
 
@@ -400,6 +436,7 @@ sd.refresh = () => {
 }
 
 $(() => {
+	dsbrd.changeBreakdown()
 	dsbrd.refresh()
 	rank.refresh()
 	sd.refresh()
