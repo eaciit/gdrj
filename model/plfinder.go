@@ -398,6 +398,13 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("otheradvertising", math.Abs(otheradvertising))
 				each.Set("sales", netSales)
 				each.Set("sales_outlet", s.noZero(math.Abs(s.noZero((advertising+bonus+gondola+otheradvertising)/netSales))))
+			} else if s.Flag == "marketing_efficiency_btl" {
+				each.Set("advertising", math.Abs(advertising))
+				each.Set("bonus", math.Abs(bonus))
+				each.Set("gondola", math.Abs(gondola))
+				each.Set("otheradvertising", math.Abs(otheradvertising))
+				each.Set("btl", math.Abs(btl))
+				each.Set("marketing_btl", s.noZero(math.Abs(s.noZero((advertising+bonus+gondola+otheradvertising)/btl))))
 			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {

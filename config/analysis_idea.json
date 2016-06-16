@@ -177,7 +177,7 @@
     "_id": "marketing_efficiency_btl",
     "order": 34,
     "name": "Marketing Efficiency - BTL",
-    "status": false
+    "status": true
 }, {
     "_id": "freight_cost_by_sales",
     "order": 3,
