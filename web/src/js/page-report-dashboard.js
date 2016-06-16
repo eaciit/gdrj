@@ -348,7 +348,7 @@ sd.render = (res) => {
 sd.refresh = () => {
 	let param = {}
 	param.pls = ["PL8A"]
-	param.groups = [sd.breakdown(), 'customer.customergroupname']
+	param.groups = [sd.breakdown()]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
 

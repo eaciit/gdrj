@@ -342,7 +342,7 @@ sd.render = function (res) {
 sd.refresh = function () {
 	var param = {};
 	param.pls = ["PL8A"];
-	param.groups = [sd.breakdown(), 'customer.customergroupname'];
+	param.groups = [sd.breakdown()];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
 
