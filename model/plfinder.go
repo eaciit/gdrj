@@ -349,7 +349,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("material_import", math.Abs(materialImport))
 				each.Set("material_other", math.Abs(materialOther))
 				each.Set("cogs", math.Abs(cogs))
-				each.Set("indirect_expense_index", math.Abs((materialLocal+materialImport+materialOther)/cogs))
+				each.Set("indirect_expense_index", s.noZero(math.Abs(s.noZero((materialLocal+materialImport+materialOther))/cogs)))
 			} else if s.Flag == "sga_by_sales" {
 				each.Set("sga", math.Abs(sga))
 				each.Set("sales", netSales)
@@ -386,7 +386,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("energy", math.Abs(indirectEnergy))
 				each.Set("other", math.Abs(indirectOther))
 				each.Set("cogs", math.Abs(cogs))
-				each.Set("indirect_cogs", math.Abs(indirectPersonnel+indirectServices+indirectRent+indirectTransportation+indirectAmort+indirectEnergy+indirectOther)/cogs)
+				each.Set("indirect_cogs", s.noZero(math.Abs((s.noZero(indirectPersonnel)+s.noZero(indirectServices)+s.noZero(indirectRent)+s.noZero(indirectTransportation)+s.noZero(indirectAmort)+s.noZero(indirectEnergy)+s.noZero(indirectOther))/cogs)))
 			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
