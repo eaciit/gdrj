@@ -35,7 +35,7 @@ dsbrd.data = ko.observableArray([]);
 dsbrd.columns = ko.observableArray([]);
 dsbrd.optionBreakdowns = ko.observableArray([{ field: "customer.areaname", name: "City" }, { field: "customer.region", name: "Region" }, { field: "customer.zone", name: "Zone" }, { field: "product.brand", name: "Brand" }, { field: "customer.branchname", name: "Branch" }]);
 dsbrd.breakdown = ko.observable(dsbrd.optionBreakdowns()[4].field);
-dsbrd.fiscalYear = ko.observable(2014);
+dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears());
 dsbrd.contentIsLoading = ko.observable(false);
 dsbrd.optionStructures = ko.observableArray([{ field: "date.fiscal", name: "Fiscal Year" }, { field: "date.quartertxt", name: "Quarter" }, { field: "date.month", name: "Month" }]);
 dsbrd.structure = ko.observable(dsbrd.optionStructures()[1].field);
@@ -76,7 +76,7 @@ dsbrd.refresh = function () {
 	}));
 	param.groups = [dsbrd.breakdown(), dsbrd.structure()];
 	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue(true);
+	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears);
 
 	if (dsbrd.breakdownValue().length > 0) {
 		param.filters.push({
@@ -263,13 +263,14 @@ rank.breakdown = ko.observable('customer.channelname');
 rank.columns = ko.observableArray([{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } }, { field: 'gmPercentage', title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' }, { field: 'cogsPercentage', title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' }, { field: 'ebitPercentage', title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' }, { field: 'ebitdaPercentage', title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' }, { field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' }, { field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' }]);
 rank.contentIsLoading = ko.observable(false);
 rank.data = ko.observableArray([]);
+rank.fiscalYear = ko.observable(rpt.value.FiscalYear());
 
 rank.refresh = function () {
 	var param = {};
 	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"];
 	param.groups = [rank.breakdown()];
 	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue();
+	param.filters = rpt.getFilterValue(false, rank.fiscalYear);
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
@@ -347,6 +348,7 @@ sd.contentIsLoading = ko.observable(false);
 
 sd.breakdown = ko.observable('customer.channelname');
 sd.data = ko.observableArray([]);
+sd.fiscalYear = ko.observable(rpt.value.FiscalYear());
 sd.render = function (res) {
 	var data = _.sortBy(res.Data.Data, function (d) {
 		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], 'Other');
@@ -445,7 +447,7 @@ sd.refresh = function () {
 	param.pls = ["PL8A"];
 	param.groups = [sd.breakdown(), 'customer.customergroupname'];
 	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue();
+	param.filters = rpt.getFilterValue(false, sd.fiscalYear);
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {

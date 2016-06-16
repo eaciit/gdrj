@@ -377,7 +377,7 @@ rpt.toggleFilter = () => {
 		$(d).data('kendoChart').redraw()
 	})
 }
-rpt.getFilterValue = (multiFiscalYear = false) => {
+rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYear) => {
 	let res = [
 		{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() },
 		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) },
@@ -396,13 +396,13 @@ rpt.getFilterValue = (multiFiscalYear = false) => {
 		res.push({ 
 			'Field': 'date.fiscal', 
 			'Op': '$in', 
-			'Value': rpt.value.FiscalYears()
+			'Value': fiscalField()
 		})
 	} else {
 		res.push({ 
 			'Field': 'date.fiscal', 
 			'Op': '$eq', 
-			'Value': rpt.value.FiscalYear()
+			'Value': fiscalField()
 		})
 	}
 

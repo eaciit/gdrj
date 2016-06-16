@@ -17,7 +17,7 @@ bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy());
 bkd.data = ko.observableArray([]);
 bkd.plmodels = ko.observableArray([]);
 bkd.zeroValue = ko.observable(false);
-bkd.fiscalYear = ko.observable(2014);
+bkd.fiscalYear = ko.observable(rpt.value.FiscalYear());
 
 bkd.generateDataForX = function () {
 	var param = {
@@ -45,7 +45,7 @@ bkd.refresh = function () {
 	param.pls = [];
 	param.groups = [bkd.breakdownBy() /** , 'date.year' */];
 	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue();
+	param.filters = rpt.getFilterValue(false, bkd.fiscalYear);
 
 	console.log("bdk", param.filters);
 
@@ -611,7 +611,7 @@ rs.selectedPNL = ko.observable("PL74C");
 rs.chartComparisonNote = ko.observable('');
 rs.optionDimensionSelect = ko.observableArray([]);
 rs.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */]);
-rs.fiscalYear = ko.observable(2014);
+rs.fiscalYear = ko.observable(rpt.value.FiscalYear());
 
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/getplmodel", {}, function (res) {
@@ -640,7 +640,7 @@ rs.refresh = function () {
 	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()];
 	param.groups = rs.groups();
 	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue();
+	param.filters = rpt.getFilterValue(false, rs.fiscalYear);
 
 	var fetch = function fetch() {
 		app.ajaxPost("/report/getpnldatanew", param, function (res1) {
@@ -821,15 +821,19 @@ ccr.breakdownBy = ko.observable('');
 ccr.limitchart = ko.observable(4);
 ccr.optionComparison = ko.observableArray([{ field: 'qty', name: 'Quantity' }, { field: 'outlet', name: 'Outlet' }, { field: 'price', name: 'Price' }]);
 ccr.comparison = ko.observableArray(['qty', 'outlet']);
+ccr.fiscalYear = ko.observable(rpt.value.FiscalYear());
 
 ccr.getDecreasedQty = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
+	var param = {};
+	param.filters = rpt.getFilterValue(false, ccr.fiscalYear);
+
 	ccr.contentIsLoading(true);
-	toolkit.ajaxPost('/report/GetDecreasedQty', {}, function (res) {
+	toolkit.ajaxPost('/report/GetDecreasedQty', param, function (res) {
 		ccr.dataComparison(res);
 		ccr.contentIsLoading(false);
-		ccr.refresh();
+		ccr.plot();
 	}, function () {
 		ccr.contentIsLoading(false);
 	}, {
@@ -837,6 +841,13 @@ ccr.getDecreasedQty = function () {
 	});
 };
 ccr.refresh = function () {
+	if (ccr.dataComparison().length > 0) {
+		ccr.plot();
+	} else {
+		ccr.getDecreasedQty();
+	}
+};
+ccr.plot = function () {
 	// ccr.dataComparison(ccr.dummyJson)
 	var tempdata = [];
 	// let qty = 0
