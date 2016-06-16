@@ -21,7 +21,7 @@
 				{{template "_loader.html"}}
 			</div>
 
-			<div class="filter" data-bind="visible: dsbrd.contentIsLoading">
+			<div class="filter" data-bind="visible: !dsbrd.contentIsLoading()">
 				<div class="form-inline pull-right">
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right" style="width: 100px;">Structure</span>
