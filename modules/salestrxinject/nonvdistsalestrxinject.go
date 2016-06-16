@@ -184,6 +184,7 @@ func main() {
 				CustType:    "EXP",
 			}
 		} else if st.Src == "DISCOUNT" {
+			st.GrossAmount = -st.GrossAmount
 			st.Customer = &gdrj.Customer{
 				ID:          st.OutletID,
 				Name:        toolkit.ToString(sev.Get("outletname", "")),
