@@ -368,6 +368,7 @@ let sd = viewModel.salesDistribution
 sd.contentIsLoading = ko.observable(false)
 
 sd.breakdown = ko.observable('customer.channelname')
+sd.breakdownSub = ko.observable('customer.custtype')
 sd.data = ko.observableArray([])
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 sd.render = (res) => {
@@ -381,12 +382,17 @@ sd.render = (res) => {
 	let rows = data.map((d) => {
 		let row = {}
 		row[breakdown] = d._id[`_id_${breakdown}`]
-		row.group = d._id._id_customer_customergroupname
+		row.group = d._id[`_id_${toolkit.replace(sd.breakdownSub(), '.', '_')}`]
 		row.percentage = toolkit.number(d.PL8A / total) * 100
 		row.value = d.PL8A
 		return row
 	})
-	sd.data(rows)
+
+	sd.data(_.sortBy(rows, (d) => {
+		let subGroup = `00${toolkit.number(toolkit.getNumberFromString(d.group))}`.split('').reverse().splice(0, 2).reverse().join('')
+		let s = [d[breakdown], subGroup].join(' ')
+		return s
+	}))
 
 	let op1 = _.groupBy(sd.data(), (d) => d[breakdown])
 	let op2 = _.map(op1, (v, k) => { return { key: k, values: v } })
@@ -450,7 +456,7 @@ sd.render = (res) => {
 sd.refresh = () => {
 	let param = {}
 	param.pls = ["PL8A"]
-	param.groups = [sd.breakdown(), 'customer.customergroupname']
+	param.groups = [sd.breakdown(), sd.breakdownSub()]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear)
 
