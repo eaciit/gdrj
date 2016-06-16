@@ -150,16 +150,21 @@ dsbrd.render = function (res) {
 			var grossSales = rowsAfter.find(function (d) {
 				return d.pnl == 'Gross Sales';
 			});
-			var ebitPercentage = rowsAfter.find(function (d) {
-				return d.pnl == 'EBIT %';
-			});
 			var ebit = rowsAfter.find(function (d) {
 				return d.pnl == 'EBIT';
 			});
+			var columns = rowsAfter[0].columnData;
 
-			rowsAfter[0].columnData.forEach(function (column, i) {
-				var percentage = kendo.toString(toolkit.number(grossSales.columnData[i].original / ebit.columnData[i].original), 'n2');
-				ebitPercentage.columnData[i].value = percentage;
+			rowsAfter.forEach(function (row, rowIndex) {
+				row.columnData.forEach(function (column, columnIndex) {
+					if (row.pnl == 'EBIT %') {
+						var percentage = kendo.toString(toolkit.number(grossSales.columnData[columnIndex].original / ebit.columnData[columnIndex].original), 'n2');
+						column.value = percentage;
+					} else if (row.pnl != 'Gross Sales' && row.pnl != 'EBIT') {
+						var _percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original), 'n2');
+						column.value = _percentage;
+					}
+				});
 			});
 		})();
 	}
@@ -294,21 +299,29 @@ rank.render = function (res) {
 	var rows = [];
 	data.forEach(function (d) {
 		var row = {};
+		row.original = d._id['_id_' + toolkit.replace(rank.breakdown(), '.', '_')];
 		row.pnl = d._id['_id_' + toolkit.replace(rank.breakdown(), '.', '_')];
 		if ($.trim(row.pnl) == '') {
+			row.original = 'Other';
 			row.pnl = 'Other';
 		}
-		row.gmPercentage = d.PL74C / d.PL8A;
-		row.cogsPercentage = d.PL74B / d.PL8A;
-		row.ebitPercentage = d.PL44B / d.PL8A;
-		row.ebitdaPercentage = d.PL44C / d.PL8A;
+		if (rank.breakdown() == 'date.month') {
+			row.original = parseInt(row.pnl, 10) - 1;
+			row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM');
+		}
+
+		row.gmPercentage = toolkit.number(d.PL74C / d.PL8A);
+		row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A);
+		row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A);
+		row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A);
 		row.netSales = d.PL8A;
 		row.ebit = d.PL44B;
 		rows.push(row);
 	});
 
+	console.log("---", rows);
 	rank.data(_.sortBy(rows, function (d) {
-		return d.pnl;
+		return d.original;
 	}));
 
 	var config = {
@@ -350,7 +363,7 @@ sd.render = function (res) {
 		var row = {};
 		row[breakdown] = d._id['_id_' + breakdown];
 		row.group = d._id._id_customer_customergroupname;
-		row.percentage = d.PL8A / total * 100;
+		row.percentage = toolkit.number(d.PL8A / total) * 100;
 		row.value = d.PL8A;
 		return row;
 	});
@@ -377,7 +390,6 @@ sd.render = function (res) {
 	if (op2.length > 5) {
 		table.width(op2.length * width);
 	}
-	console.log('asdsd ', op2);
 
 	op2.forEach(function (d) {
 		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width);
@@ -410,7 +422,7 @@ sd.render = function (res) {
 			totalyo = toolkit.sum(e.values, function (b) {
 				return b.value;
 			});
-			percentageyo = totalyo / total * 100;
+			percentageyo = toolkit.number(totalyo / total * 100);
 			toolkit.newEl('td').appendTo(tr).html(kendo.toString(percentageyo, 'n2') + ' %');
 			toolkit.newEl('td').appendTo(tr).html(kendo.toString(totalyo, 'n0'));
 		});
