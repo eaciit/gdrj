@@ -9,11 +9,13 @@ import (
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 	// "strings"
+	"sync"
 	"time"
 )
 
 var conn dbox.IConnection
 var count int
+var mwg sync.WaitGroup
 
 func setinitialconnection() {
 	var err error
@@ -118,6 +120,13 @@ func main() {
 	defer crx.Close()
 
 	count = crx.Count()
+	jobs := make(chan *gdrj.SalesTrx, count)
+	toolkit.Println("Prepare Worker")
+	for wi := 0; wi < 10; wi++ {
+		mwg.Add(1)
+		go worker(wi, jobs)
+	}
+
 	toolkit.Println("Total Data : ", count)
 	step := count / 100
 	i := 0
@@ -133,7 +142,7 @@ func main() {
 		}
 
 		st := new(gdrj.SalesTrx)
-		st.SalesHeaderID = toolkit.RandomString(32)
+		st.ID = toolkit.RandomString(32)
 		st.OutletID = toolkit.ToString(sev.Get("outletid", ""))
 		st.SKUID = toolkit.ToString(sev.Get("skuid", ""))
 		st.Fiscal = toolkit.Sprintf("%v%v", sev.Get("period", 0), sev.Get("year", 0))
@@ -144,6 +153,7 @@ func main() {
 		st.Month = int(st.Date.Month())
 		st.GrossAmount = toolkit.ToFloat64(sev.Get("amount", 0), 6, toolkit.RoundingAuto)
 		st.Src = toolkit.ToString(sev.Get("src", ""))
+		st.SalesHeaderID = toolkit.Sprintf("%v_%v_%v_%v_%v", st.Src, st.Year, st.Month, st.SKUID, toolkit.RandomString(10))
 
 		st.HeaderValid = true
 		st.ProductValid = true
@@ -210,7 +220,8 @@ func main() {
 			}
 		}
 
-		gdrj.Save(st)
+		jobs <- st
+		// gdrj.Save(st)
 		if i > step {
 			toolkit.Printfn("Processing %d of %d in %s",
 				i, count,
@@ -219,6 +230,22 @@ func main() {
 		}
 	}
 
+	close(jobs)
+	mwg.Wait()
+
 	toolkit.Printfn("Processing done in %s",
 		time.Since(t0).String())
+}
+
+func worker(wi int, jobs <-chan *gdrj.SalesTrx) {
+	workerConn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerConn.Close()
+
+	var j *gdrj.SalesTrx
+	for j = range jobs {
+		workerConn.NewQuery().From(j.TableName()).
+			Save().Exec(toolkit.M{}.Set("data", j))
+	}
+
+	mwg.Done()
 }
