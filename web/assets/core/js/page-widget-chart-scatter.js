@@ -43,12 +43,6 @@ rs.refresh = function () {
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
 
-	param.filters.push({
-		Field: 'date.fiscal',
-		Op: '$eq',
-		Value: rs.fiscalYear() + "-" + (rs.fiscalYear() + 1)
-	});
-
 	var fetch = function fetch() {
 		app.ajaxPost("/report/getpnldatanew", param, function (res1) {
 			if (res1.Status == "NOK") {

@@ -64,11 +64,6 @@ dsbrd.refresh = () => {
 	param.groups = [dsbrd.breakdown()]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
-	param.filters.push({
-		Field: 'date.fiscal',
-		Op: '$eq',
-		Value: `${dsbrd.fiscalYear()}-${dsbrd.fiscalYear()+1}`
-	})
 
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {

@@ -4,11 +4,11 @@
 		<h3 class="no-margin" data-bind="text: bkd.title"></h3>
 		<div class="panel-nav-button" data-bind="visible: !bkd.contentIsLoading()">
 			<div class="form-inline">
-				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+				<div  class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 					<span class="input-group-addon width-100 align-right">Fiscal Year</span>
-					<div class="width-full">
-						<input data-bind="kendoNumericTextBox:{format: '#',decimals: 0,value:bkd.fiscalYear}" style="width: 150px;"/>
-					</div>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: rpt.value.FiscalYear }"></select>
+						</div>
 				</div>
 
 				<div  class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
@@ -17,11 +17,7 @@
 							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: bkd.breakdownBy }"></select>
 						</div>
 				</div>
-				<!-- <div  class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: bkd.breakdownByFiscalYear(), enabled: false }"></select>
-						</div>
-				</div> -->
+
 				<button class="btn btn-sm btn-primary tooltipster" data-bind="click: bkd.refresh" title="Refresh P&L Analysis">
 					<i class="fa fa-refresh"></i>
 				</button>

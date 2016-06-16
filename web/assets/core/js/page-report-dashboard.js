@@ -45,11 +45,6 @@ dsbrd.refresh = function () {
 	param.groups = [dsbrd.breakdown()];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
-	param.filters.push({
-		Field: 'date.fiscal',
-		Op: '$eq',
-		Value: dsbrd.fiscalYear() + '-' + (dsbrd.fiscalYear() + 1)
-	});
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {

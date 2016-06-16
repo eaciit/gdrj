@@ -43,12 +43,6 @@ bkd.refresh = (useCache = false) => {
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
 
-	param.filters.push({
-		Field: 'date.fiscal',
-		Op: '$eq',
-		Value: `${bkd.fiscalYear()}-${bkd.fiscalYear()+1}`
-	})
-
 	console.log("bdk", param.filters)
 	
 	bkd.oldBreakdownBy(bkd.breakdownBy())
