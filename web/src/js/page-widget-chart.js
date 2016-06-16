@@ -16,6 +16,7 @@ crt.contentIsLoading = ko.observable(false)
 crt.sortField = ko.observable('')
 crt.typeChart = ko.observable('')
 crt.chartdata = ko.observableArray([])
+crt.fiscalYear = ko.observable(rpt.value.FiscalYear())
 crt.modecustom = ko.observable(false)
 
 crt.convertCurrency = (labelValue) => {
@@ -176,7 +177,7 @@ crt.refresh = () => {
 	param.flag = o.ID
 	param.groups = [crt.categoryAxisField()]
 	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue()
+	param.filters = rpt.getFilterValue(false, crt.fiscalYear)
 
 	crt.contentIsLoading(true)
 	

@@ -11,6 +11,7 @@ pvt.row = ko.observable('')
 pvt.column = ko.observable('')
 pvt.dataPoints = ko.observableArray([])
 pvt.data = ko.observableArray([])
+pvt.fiscalYear = ko.observable(rpt.value.FiscalYear())
 
 pvt.refresh = () => {
 	let param = {}
@@ -18,7 +19,7 @@ pvt.refresh = () => {
 	param.flag = o.ID
 	param.groups = [pvt.row(), pvt.column()]
 	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue()
+	param.filters = rpt.getFilterValue(false, pvt.fiscalYear)
 
 	pvt.contentIsLoading(true)
 

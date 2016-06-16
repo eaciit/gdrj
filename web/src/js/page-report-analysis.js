@@ -15,7 +15,7 @@ bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy())
 bkd.data = ko.observableArray([])
 bkd.plmodels = ko.observableArray([])
 bkd.zeroValue = ko.observable(false)
-bkd.fiscalYear = ko.observable(2014)
+bkd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 
 bkd.generateDataForX = () => {
 	let param = {
@@ -41,7 +41,7 @@ bkd.refresh = (useCache = false) => {
 	param.pls = []
 	param.groups = [bkd.breakdownBy() /** , 'date.year' */]
 	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue()
+	param.filters = rpt.getFilterValue(false, bkd.fiscalYear)
 
 	console.log("bdk", param.filters)
 	
@@ -613,7 +613,7 @@ rs.selectedPNL = ko.observable("PL74C")
 rs.chartComparisonNote = ko.observable('')
 rs.optionDimensionSelect = ko.observableArray([])
 rs.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */])
-rs.fiscalYear = ko.observable(2014)
+rs.fiscalYear = ko.observable(rpt.value.FiscalYear())
 
 rs.getSalesHeaderList = () => {
 	app.ajaxPost("/report/getplmodel", {}, (res) => {
@@ -637,7 +637,7 @@ rs.refresh = (useCache = false) => {
 	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
 	param.groups = rs.groups()
 	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue()
+	param.filters = rpt.getFilterValue(false, rs.fiscalYear)
 
 	let fetch = () => {
 		app.ajaxPost("/report/getpnldatanew", param, (res1) => {
@@ -805,13 +805,17 @@ ccr.optionComparison = ko.observableArray([
 	{ field: 'price', name: 'Price' },
 ])
 ccr.comparison = ko.observableArray(['qty', 'outlet'])
+ccr.fiscalYear = ko.observable(rpt.value.FiscalYear())
 
 ccr.getDecreasedQty = (useCache = false) => {
+	let param = {}
+	param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
+
 	ccr.contentIsLoading(true)
-	toolkit.ajaxPost(`/report/GetDecreasedQty`, {}, (res) => {
+	toolkit.ajaxPost(`/report/GetDecreasedQty`, param, (res) => {
 		ccr.dataComparison(res)
 		ccr.contentIsLoading(false)
-		ccr.refresh()
+		ccr.plot()
 	}, () => {
 		ccr.contentIsLoading(false)
 	}, {
@@ -819,6 +823,13 @@ ccr.getDecreasedQty = (useCache = false) => {
 	})
 }
 ccr.refresh = () => {
+	if (ccr.dataComparison().length > 0) {
+		ccr.plot()
+	} else {
+		ccr.getDecreasedQty()
+	}
+}
+ccr.plot = () => {
 	// ccr.dataComparison(ccr.dummyJson)
 	let tempdata = []
 	// let qty = 0

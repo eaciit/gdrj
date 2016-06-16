@@ -58,7 +58,7 @@ dsbrd.optionBreakdowns = ko.observableArray([
 	{ field: "customer.branchname", name: "Branch" }
 ])
 dsbrd.breakdown = ko.observable(dsbrd.optionBreakdowns()[4].field)
-dsbrd.fiscalYear = ko.observable(2014)
+dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears())
 dsbrd.contentIsLoading = ko.observable(false)
 dsbrd.optionStructures = ko.observableArray([
 	{ field: "date.fiscal", name: "Fiscal Year" },
@@ -101,7 +101,7 @@ dsbrd.refresh = () => {
 	param.pls = _.flatten(dsbrd.rows().map((d) => d.plcodes))
 	param.groups = [dsbrd.breakdown(), dsbrd.structure()]
 	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue(true)
+	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears)
 
 	if (dsbrd.breakdownValue().length > 0) {
 		param.filters.push({
@@ -172,10 +172,10 @@ dsbrd.render = (res) => {
 		rowsAfter.forEach((row, rowIndex) => {
 			row.columnData.forEach((column, columnIndex) => {
 				if (row.pnl == 'EBIT %') {
-					let percentage = kendo.toString(toolkit.number(grossSales.columnData[columnIndex].original / ebit.columnData[columnIndex].original), 'n2')
+					let percentage = kendo.toString(toolkit.number(grossSales.columnData[columnIndex].original / ebit.columnData[columnIndex].original) * 100, 'n2')
 					column.value = percentage;
 				} else if (row.pnl != 'Gross Sales' && row.pnl != 'EBIT') {
-					let percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original), 'n2')
+					let percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original) * 100, 'n2')
 					column.value = percentage;
 				}
 			})
@@ -285,13 +285,14 @@ rank.columns = ko.observableArray([
 ])
 rank.contentIsLoading = ko.observable(false)
 rank.data = ko.observableArray([])
+rank.fiscalYear = ko.observable(rpt.value.FiscalYear())
 
 rank.refresh = () => {
 	let param = {}
 	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
 	param.groups = [rank.breakdown()]
 	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue()
+	param.filters = rpt.getFilterValue(false, rank.fiscalYear)
 
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
@@ -329,10 +330,10 @@ rank.render = (res) => {
 		}
 
 
-		row.gmPercentage = toolkit.number(d.PL74C / d.PL8A)
-		row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A)
-		row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A)
-		row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A)
+		row.gmPercentage = toolkit.number(d.PL74C / d.PL8A) * 100
+		row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A) * 100
+		row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A) * 100
+		row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A) * 100
 		row.netSales = d.PL8A
 		row.ebit = d.PL44B
 		rows.push(row)
@@ -368,6 +369,7 @@ sd.contentIsLoading = ko.observable(false)
 
 sd.breakdown = ko.observable('customer.channelname')
 sd.data = ko.observableArray([])
+sd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 sd.render = (res) => {
 	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], 'Other'))
 
@@ -450,7 +452,7 @@ sd.refresh = () => {
 	param.pls = ["PL8A"]
 	param.groups = [sd.breakdown(), 'customer.customergroupname']
 	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue()
+	param.filters = rpt.getFilterValue(false, sd.fiscalYear)
 
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
@@ -472,7 +474,7 @@ sd.refresh = () => {
 
 $(() => {
 	rpt.refreshView('dashboard')
-	
+
 	dsbrd.changeBreakdown()
 	dsbrd.refresh()
 	rank.refresh()
