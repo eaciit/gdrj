@@ -76,7 +76,7 @@ dsbrd.refresh = function () {
 	}));
 	param.groups = [dsbrd.breakdown(), dsbrd.structure()];
 	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue();
+	param.filters = rpt.getFilterValue(true);
 
 	if (dsbrd.breakdownValue().length > 0) {
 		param.filters.push({

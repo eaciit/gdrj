@@ -257,14 +257,14 @@ rpt.getFilterValue = function () {
 	if (multiFiscalYear) {
 		res.push({
 			'Field': 'date.fiscal',
-			'Op': '$eq',
-			'Value': rpt.value.FiscalYear()
+			'Op': '$in',
+			'Value': rpt.value.FiscalYears()
 		});
 	} else {
 		res.push({
 			'Field': 'date.fiscal',
-			'Op': '$in',
-			'Value': rpt.value.FiscalYears()
+			'Op': '$eq',
+			'Value': rpt.value.FiscalYear()
 		});
 	}
 
