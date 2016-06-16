@@ -71,7 +71,7 @@ func TrxToSalesPL(conn dbox.IConnection,
 	pl.GrossAmount = trx.GrossAmount
 	pl.DiscountAmount = trx.DiscountAmount
 	pl.TaxAmount = trx.TaxAmount
-	
+
 	pl.Customer = trx.Customer
 	pl.Product = trx.Product
 
@@ -82,8 +82,8 @@ func TrxToSalesPL(conn dbox.IConnection,
 
 func (pl *SalesPL) Calc(conn dbox.IConnection,
 	masters toolkit.M,
-	config toolkit.M) *SalesPL{
-	
+	config toolkit.M) *SalesPL {
+
 	pl.NetAmount = pl.GrossAmount - pl.DiscountAmount
 	//-- classing
 	if pl.Customer == nil {
@@ -259,7 +259,10 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	operatingexpense = sellingexpense + sga
 	opincome = grossmargin + operatingexpense
 	ebt = opincome + nonoprincome //asume nonopriceincome already minus
-	percentpbt = taxexpense / ebt * 100
+	percentpbt = 0
+	if ebt > 0 {
+		percentpbt = taxexpense / ebt * 100
+	}
 	eat = ebt + taxexpense
 	ebitda = totdepreexp + damagegoods + opincome
 	ebitdaroyalties = ebitda + royaltiestrademark
@@ -370,10 +373,10 @@ func (pl *SalesPL) CalcFreight(masters toolkit.M) {
 }
 
 func (pl *SalesPL) CalcDepre(masters toolkit.M) {
-	if masters.Has("depretiation") == false {
+	if masters.Has("depreciation") == false {
 		return
 	}
-	depretiations := masters.Get("depretiation").(map[string]*RawDataPL)
+	depretiations := masters.Get("depreciation").(map[string]*RawDataPL)
 
 	depretiationid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	d, exist := depretiations[depretiationid]

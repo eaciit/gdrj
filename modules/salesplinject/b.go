@@ -182,7 +182,7 @@ func prepMaster() {
 				}
 				frg.AmountinIDR += o.AmountinIDR
 				freights[freightid] = frg
-			} else if strings.HasSuffix(o.Src, "DEPRECIATION") {
+			} else if strings.HasSuffix(o.Src, "DEPRECIATION") { //DEPRECIATION
 				depreciationid := toolkit.Sprintf("%d_%d", dt.Year(), int(dt.Month()))
 				dpr, exist := depreciation[depreciationid]
 				if !exist {
@@ -190,7 +190,7 @@ func prepMaster() {
 				}
 				dpr.AmountinIDR += o.AmountinIDR
 				depreciation[depreciationid] = dpr
-			} else if strings.HasSuffix(o.Src, "ROYALTI") {
+			} else if strings.HasSuffix(o.Src, "ROYALTY") {
 				royaltyid := toolkit.Sprintf("%d_%d", dt.Year(), int(dt.Month()))
 				royalti, exist := royalties[royaltyid]
 				if !exist {
