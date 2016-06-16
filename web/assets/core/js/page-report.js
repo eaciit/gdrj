@@ -344,13 +344,21 @@ rpt.refresh = function () {
 	});
 };
 rpt.refreshAll = function () {
-	if (rpt.refreshView() == 'breakdown') {
-		bkd.refresh();
-		rs.refresh();
-		ccr.refresh();
-	} else if (rpt.refreshView() == 'reportwidget') {
-		pvt.refresh();
-		crt.refresh();
+	switch (rpt.refreshView()) {
+		case 'analysis':
+			bkd.refresh();
+			rs.refresh();
+			ccr.refresh();
+			break;
+		case 'dashboard':
+			dsbrd.changeBreakdown();
+			dsbrd.refresh();
+			rank.refresh();
+			break;
+		case 'reportwidget':
+			pvt.refresh();
+			crt.refresh();
+			break;
 	}
 };
 rpt.panel_relocated = function () {

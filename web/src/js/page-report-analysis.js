@@ -1007,7 +1007,7 @@ rs.title('P&L Comparison to Net Sales')
 ccr.title('Quantity, Price & Outlet')
 
 rpt.refresh = () => {
-	rpt.refreshView('breakdown')
+	rpt.refreshView('analysis')
 
 	rs.getSalesHeaderList()
 

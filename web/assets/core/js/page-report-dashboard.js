@@ -468,6 +468,8 @@ sd.refresh = function () {
 };
 
 $(function () {
+	rpt.refreshView('dashboard');
+
 	dsbrd.changeBreakdown();
 	dsbrd.refresh();
 	rank.refresh();

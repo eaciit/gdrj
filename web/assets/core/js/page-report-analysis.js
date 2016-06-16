@@ -1021,7 +1021,7 @@ rs.title('P&L Comparison to Net Sales');
 ccr.title('Quantity, Price & Outlet');
 
 rpt.refresh = function () {
-	rpt.refreshView('breakdown');
+	rpt.refreshView('analysis');
 
 	rs.getSalesHeaderList();
 
