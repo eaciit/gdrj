@@ -1,0 +1,30 @@
+<div class="col-md-12 no-padding hardcore">
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-chart.html"}}
+	</div>
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-pivot.html"}}
+	</div>
+</div>
+
+<script>
+	$(() => {
+		pvt.row('customer.channelname')
+		pvt.column('customer.branchname')
+		pvt.dataPoints = ko.observableArray([
+			{ field: 'advertising', stack: "advertising", title: 'Advertising Expenses', name: 'Advertising Expenses' },
+			{ field: 'bonus', stack: "advertising", title: 'Bonus', name: 'Bonus' },
+			{ field: 'gondola', stack: "advertising", title: 'Gondola / Mailer / Motoris', name: 'Gondola / Mailer / Motoris' },
+			{ field: 'otheradvertising', stack: "advertising", title: 'Other', name: 'Other' },
+			{ field: 'btl', stack: "btl", title: 'BTL', name: 'BTL' },
+			{ field: 'marketing_btl', stack: "marketing_btl", title: 'Material Efficiency - BTL', name: 'Material Efficiency - BTL' }
+		])
+		pvt.refresh()
+
+		crt.typeChart('stack')
+		crt.categoryAxisField('customer.branchname')
+		crt.sortField('marketing_btl')
+		crt.series(pvt.dataPoints())
+		crt.refresh()
+	})
+</script>

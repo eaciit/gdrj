@@ -43,12 +43,6 @@ bkd.refresh = (useCache = false) => {
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
 
-	param.filters.push({
-		Field: 'date.fiscal',
-		Op: '$eq',
-		Value: `${bkd.fiscalYear()}-${bkd.fiscalYear()+1}`
-	})
-
 	console.log("bdk", param.filters)
 	
 	bkd.oldBreakdownBy(bkd.breakdownBy())
@@ -601,8 +595,425 @@ bkd.showZeroValue = (a) => {
 	bkd.showExpandAll(false)
 }
 
-$(() => {
-	bkd.refresh(false)
+
+viewModel.scatter = new Object()
+let rs = viewModel.scatter
+let dataPoints = [
+	{field: "value1", name: "value1", aggr: "sum"}
+]
+
+rs.contentIsLoading = ko.observable(false)
+rs.title = ko.observable('P&L Analytic')
+rs.breakdownBy = ko.observable('customer.channelname')
+rs.selectedPNLNetSales = ko.observable("PL8A") // PL1
+rs.selectedPNL = ko.observable("PL74C")
+rs.chartComparisonNote = ko.observable('')
+rs.optionDimensionSelect = ko.observableArray([])
+rs.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */])
+rs.fiscalYear = ko.observable(2014)
+
+rs.getSalesHeaderList = () => {
+	app.ajaxPost("/report/getplmodel", {}, (res) => {
+		let data = res.map((d) => app.o({ field: d._id, name: d.PLHeader3 }))
+			.filter((d) => d.PLHeader3 !== rs.selectedPNLNetSales())
+		rs.optionDimensionSelect(data)
+
+		let prev = rs.selectedPNL()
+		rs.selectedPNL('')
+		setTimeout(() => {
+			rs.selectedPNL(prev)
+			rs.refresh(false)
+		}, 300)
+	})
+}
+
+rs.refresh = (useCache = false) => {
+	rs.contentIsLoading(true)
+
+	let param = {}
+	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
+	param.groups = rs.groups()
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue()
+
+	let fetch = () => {
+		app.ajaxPost("/report/getpnldatanew", param, (res1) => {
+			if (res1.Status == "NOK") {
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
+			}
+
+			let date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+			rs.chartComparisonNote(`Last refreshed on: ${date}`)
+
+			let dataAllPNL = res1.Data.Data
+				.filter((d) => d.hasOwnProperty(rs.selectedPNL()))
+				.map((d) => { return { _id: d._id, value: d[rs.selectedPNL()] } })
+			let dataAllPNLNetSales = res1.Data.Data
+				.filter((d) => d.hasOwnProperty(rs.selectedPNLNetSales()))
+				.map((d) => { return { _id: d._id, value: d[rs.selectedPNLNetSales()] } })
+
+			let years = _.map(_.groupBy(dataAllPNL, (d) => d._id._id_date_year), (v, k) => k)
+
+			var sumNetSales = _.reduce(dataAllPNLNetSales, (m, x) => m + x.value, 0);
+			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x.value, 0)
+			let countPNL = dataAllPNL.length
+			let avgPNL = sumPNL / countPNL
+
+			let dataScatter = []
+			let multiplier = (sumNetSales == 0 ? 1 : sumNetSales)
+
+			dataAllPNL.forEach((d) => {
+				dataScatter.push({
+					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
+					category: d._id[`_id_${app.idAble(rs.breakdownBy())}`],
+					year: d._id._id_date_year,
+					valuePNL: Math.abs(d.value),
+					valuePNLPercentage: Math.abs(d.value / multiplier * 100),
+					avgPNL: Math.abs(avgPNL),
+					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
+					sumPNL: Math.abs(sumPNL),
+					sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
+				})
+			})
+
+			console.log("-----", dataScatter)
+
+			rs.contentIsLoading(false)
+			rs.generateReport(dataScatter, years)
+		}, () => {
+			rs.contentIsLoading(false)
+		}, {
+			cache: (useCache == true) ? 'pivot chart' : false
+		})
+	}
+
+	fetch()
+}
+
+rs.generateReport = (data, years) => {
+	data = _.sortBy(data, (d) => `${d.year} ${d.category}`)
+
+	let max = _.max(_.map(data, (d) => d.avgNetSalesPercentage)
+		.concat(_.map(data, (d) => d.valuePNLPercentage)))
+
+	let netSalesTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNLNetSales()).name
+	let breakdownTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNL()).name
+
+	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>')
+	if ((data.length * 100) > $('#scatter-view').parent().width())
+    	$('#scatter-view').width(data.length * 100)
+    else
+	    $('#scatter-view').css('width', '100%')
+	$("#scatter-view").kendoChart({
+		dataSource: {
+            data: data
+        },
+        title: {
+            text: ""
+        },
+        legend: {
+            visible: true,
+            position: "bottom"
+        },
+        seriesDefaults: {
+            type: "line",
+            missingValues: "gap",
+        },
+		seriesColors: ["#ff8d00", "#678900", '#3498DB'],
+		series: [{
+			name: `Sum of ${breakdownTitle} to ${netSalesTitle}`,
+			field: 'sumPNLPercentage',
+			width: 3,
+			tooltip: {
+				visible: true,
+				template: `Sum of ${breakdownTitle} to ${netSalesTitle}: #: kendo.toString(dataItem.sumPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.sumPNL, 'n2') #)`
+			},
+			markers: {
+				visible: false
+			}
+		}, {
+			name: `Average of ${breakdownTitle} to ${netSalesTitle}`,
+			field: 'avgPNLPercentage',
+			dashType: "dash",
+			width: 3,
+			tooltip: {
+				visible: true,
+				template: `Average of ${breakdownTitle} to ${netSalesTitle}: #: kendo.toString(dataItem.avgPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.avgPNL, 'n2') #)`
+			},
+			markers: {
+				visible: false
+			}
+		}, {
+			name: `${breakdownTitle} to ${netSalesTitle}`,
+			field: "valuePNLPercentage",
+			width: 3,
+			opacity: 0,
+			markers: {
+				type: 'cross',
+				size: 12
+			},
+			tooltip: {
+				visible: true,
+				template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
+			}
+		}],
+        valueAxis: {
+			majorGridLines: {
+				color: '#fafafa'
+			},
+            label: {
+            	format: "{0}%"
+            },
+        },
+        categoryAxis: [{
+            field: 'category',
+            labels: {
+            	rotation: 20
+            },
+			majorGridLines: {
+				color: '#fafafa'
+			}
+		}/**, {
+        	categories: years,
+			line: {
+				visible: false
+			}
+        }*/],
+    })
+}
+
+
+viewModel.chartCompare = {}
+let ccr = viewModel.chartCompare
+
+ccr.data = ko.observableArray([])
+ccr.dataComparison = ko.observableArray([])
+ccr.title = ko.observable('Chart Comparison')
+ccr.contentIsLoading = ko.observable(false)
+ccr.categoryAxisField = ko.observable('category')
+ccr.breakdownBy = ko.observable('')
+ccr.limitchart = ko.observable(4)
+ccr.optionComparison = ko.observableArray([
+	{ field: 'qty', name: 'Quantity' },
+	{ field: 'outlet', name: 'Outlet' },
+	{ field: 'price', name: 'Price' },
+])
+ccr.comparison = ko.observableArray(['qty', 'outlet'])
+
+ccr.getDecreasedQty = (useCache = false) => {
+	ccr.contentIsLoading(true)
+	toolkit.ajaxPost(`/report/GetDecreasedQty`, {}, (res) => {
+		ccr.dataComparison(res)
+		ccr.contentIsLoading(false)
+		ccr.refresh()
+	}, () => {
+		ccr.contentIsLoading(false)
+	}, {
+		cache: (useCache == true) ? 'chart comparison' : false
+	})
+}
+ccr.refresh = () => {
+	// ccr.dataComparison(ccr.dummyJson)
+	let tempdata = []
+	// let qty = 0
+	// let price = 0
+	let outlet = 0
+	let maxline = 0
+	let maxprice = 0
+	let maxqty = 0
+	let quarter = []
+	for (var i in ccr.dataComparison()){
+		if (ccr.dataComparison()[i].productName != undefined){
+			// qty = _.filter(ccr.dataComparison()[i].qty, function(resqty){ return resqty == 0}).length
+			// price = _.filter(ccr.dataComparison()[i].price, function(resprice){ return resprice == 0}).length
+			maxprice = _.max(ccr.dataComparison()[i].price)
+			maxqty = _.max(ccr.dataComparison()[i].qty)
+			if (maxprice > maxqty)
+				maxline = maxprice
+			else
+				maxline = maxqty
+			outlet = _.max(ccr.dataComparison()[i].outletList)
+			quarter = []
+			for (var a in ccr.dataComparison()[i].qty){
+				quarter.push(`Quarter ${parseInt(a)+1}`)
+			}
+			tempdata.push({
+				qty: ccr.dataComparison()[i].qtyCount,
+				price: ccr.dataComparison()[i].priceCount,
+				quarter: quarter,
+				maxoutlet: outlet + (outlet/2),
+				maxline: maxline + (maxline/4),
+				productName: ccr.dataComparison()[i].productName,
+				data: ccr.dataComparison()[i]
+			})
+		}
+	}
+	// let sortPriceQty = _.take(_.sortBy(tempdata, function(item) {
+	//    return [item.qty, item.price]
+	// }).reverse(), ccr.limitchart())
+	let sortPriceQty = _.take(tempdata, ccr.limitchart())
+	ccr.data(sortPriceQty)
+	ccr.render()
+}
+ccr.render = () => {
+	let configure = (data, full) => {
+		let seriesLibs = {
+			price: { 
+				name: 'Price', 
+				// field: 'value1', 
+				data: data.price, 
+				width: 3, 
+				markers: {
+					visible: true,
+					size: 10,
+					border: {
+						width: 3
+					}
+				},
+				axis: "priceqty"
+			},
+			qty: { 
+				name: 'Qty', 
+				// field: 'value2', 
+				data: data.qty, 
+				width: 3, 
+				markers: {
+					visible: true,
+					size: 10,
+					border: {
+						width: 3
+					}
+				},
+				axis: "priceqty"
+			},
+			outlet: { 
+				name: 'Outlet', 
+				// field: 'value3', 
+				data: data.outletList,
+				type: 'column', 
+				width: 3, 
+				overlay: {
+					gradient: 'none'
+				},
+				border: {
+					width: 0
+				},
+				markers: {
+					visible: true,
+					style: 'smooth',
+					type: 'column',
+				},
+				axis: "outlet"
+			}
+		}
+
+		let series = []
+		ccr.comparison().forEach((d) => {
+			series.push(seriesLibs[d])
+		})
+
+		let valueAxes = []
+		if (ccr.comparison().indexOf('qty') > -1 || ccr.comparison().indexOf('price') > -1) {
+			valueAxes.push({
+				name: "priceqty",
+                title: { text: "Qty & Price" },
+				majorGridLines: {
+					color: '#fafafa'
+				},
+				max: full.maxline,
+			})
+		}
+		if (ccr.comparison().indexOf('outlet') > -1) {
+			valueAxes.push({
+				name: "outlet",
+                title: { text: "Outlet" },
+                majorGridLines: {
+					color: '#fafafa'
+				},
+				max: full.maxoutlet,
+			})
+		}
+
+		console.log(valueAxes)
+
+		return {
+			// dataSource: {
+			// 	data: data
+			// },
+			series: series,
+			seriesColors: ["#5499C7", "#ff8d00", "#678900"],
+			seriesDefaults: {
+	            type: "line",
+	            style: "smooth"
+			},
+			categoryAxis: {
+				baseUnit: "month",
+				// field: ccr.categoryAxisField(),
+				categories: full.quarter,
+				majorGridLines: {
+					color: '#fafafa'
+				},
+				labels: {
+					font: 'Source Sans Pro 11',
+					rotation: 40
+					// template: (d) => `${toolkit.capitalize(d.value).slice(0, 3)}`
+				}
+			},
+			legend: {
+				position: 'bottom'
+			},
+			valueAxes: valueAxes,
+			tooltip: {
+				visible: true,
+				template: (d) => `${d.series.name} on : ${kendo.toString(d.value, 'n2')}`
+			}
+		}
+	}
+
+	let chartContainer = $('.chart-comparison')
+	chartContainer.empty()
+	for (var e in ccr.data()){
+		let html = $($('#template-chart-comparison').html())
+		let config = configure(ccr.data()[e].data, ccr.data()[e])
+
+		html.appendTo(chartContainer)
+		html.find('.title').html(ccr.data()[e].data.productName)
+		html.find('.chart').kendoChart(config)
+	}
+	chartContainer.append($('<div />').addClass('clearfix'))
+}
+
+rpt.toggleFilterCallback = () => {
+	$('.chart-comparison .k-chart').each((i, e) => {
+		$(e).data('kendoChart').redraw()
+	})
+}
+
+vm.currentMenu('PNL Analysis')
+vm.currentTitle('PNL Analysis')
+vm.breadcrumb([
+	{ title: 'Godrej', href: '#' },
+	{ title: 'Daashboard', href: '/web/report/dashboard' }
+])
+
+bkd.title('P&L Analysis')
+rs.title('P&L Comparison to Net Sales')
+ccr.title('Quantity, Price & Outlet')
+
+rpt.refresh = () => {
 	rpt.refreshView('breakdown')
+
+	rs.getSalesHeaderList()
+
+	bkd.refresh(false)
 	bkd.prepareEvents()
+
+	ccr.getDecreasedQty(false)
+}
+
+$(() => {
+	rpt.refresh()
 })
