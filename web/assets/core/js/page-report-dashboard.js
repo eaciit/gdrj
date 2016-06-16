@@ -344,10 +344,12 @@ sd.render = function (res) {
 		return d.PL8A;
 	});
 
+	sd.data(data);
+
 	var rows = data.map(function (d) {
 		var row = {};
 		row[breakdown] = d._id['_id_' + breakdown];
-		row.group = '';
+		row.group = d._id._id_customer_customergroupname;
 		row.percentage = d.PL8A / total * 100;
 		row.value = d.PL8A;
 		return row;
@@ -375,6 +377,7 @@ sd.render = function (res) {
 	if (op2.length > 5) {
 		table.width(op2.length * width);
 	}
+	console.log('asdsd ', op2);
 
 	op2.forEach(function (d) {
 		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width);
@@ -393,16 +396,37 @@ sd.render = function (res) {
 			return;
 		}
 
-		d.values.forEach(function (e) {
-			var tr = toolkit.newEl('tr').appendTo(innerTable);
-			toolkit.newEl('td').appendTo(tr).html(e[breakdown]).height(height / d.values.length);
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.percentage, 'n2') + ' %');
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.value, 'n0'));
+		var channelgroup = _.map(_.groupBy(d.values, function (o) {
+			return o.group;
+		}), function (v, k) {
+			if (k == "") k = "Other";
+			return { key: k, values: v };
 		});
+		var totalyo = 0,
+		    percentageyo = 0;
+		channelgroup.forEach(function (e) {
+			var tr = toolkit.newEl('tr').appendTo(innerTable);
+			toolkit.newEl('td').appendTo(tr).html(e.key).height(height / channelgroup.length);
+			totalyo = toolkit.sum(e.values, function (b) {
+				return b.value;
+			});
+			percentageyo = totalyo / total * 100;
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(percentageyo, 'n2') + ' %');
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(totalyo, 'n0'));
+		});
+		// d.values.forEach((e) => {
+		// 	let tr = toolkit.newEl('tr').appendTo(innerTable)
+		// 	toolkit.newEl('td').appendTo(tr).html(e[breakdown]).height(height / d.values.length)
+		// 	toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(e.percentage, 'n2')} %`)
+		// 	toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.value, 'n0'))
+		// })
 	});
 
 	var trTotal = toolkit.newEl('tr').appendTo(table);
 	var tdTotal = toolkit.newEl('td').addClass('align-center total').attr('colspan', op2.length).appendTo(trTotal).html(kendo.toString(total, 'n0'));
+	$(".grid-sales-dist>table tbody>tr:eq(1) td").each(function (index) {
+		$(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height());
+	});
 };
 sd.refresh = function () {
 	var param = {};
