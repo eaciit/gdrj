@@ -43,13 +43,16 @@ pvt.refresh = function () {
 	fetch();
 };
 pvt.render = function () {
-	var data = pvt.data();
 	var schemaModelFields = {};
 	var schemaCubeDimensions = {};
 	var schemaCubeMeasures = {};
 	var columns = [];
 	var rows = [];
-	var measures = [];[pvt.row()].forEach(function (d, i) {
+	var measures = [];
+
+	var data = _.sortBy(pvt.data(), function (d) {
+		return toolkit.redefine(d[toolkit.replace(pvt.column(), '.', '_')], 'Other');
+	});[pvt.row()].forEach(function (d, i) {
 		var row = pvt.optionRows().find(function (e) {
 			return e.field == d;
 		});

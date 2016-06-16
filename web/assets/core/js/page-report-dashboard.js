@@ -36,6 +36,14 @@ dsbrd.columns = ko.observableArray([]);
 dsbrd.breakdown = ko.observable('customer.channelname');
 dsbrd.fiscalYear = ko.observable(2014);
 dsbrd.contentIsLoading = ko.observable(false);
+dsbrd.optionDimensions = ko.observableArray([{ field: "" }]);
+// city
+// region
+// zone
+// branch
+// brand
+dsbrd.optionStructures = ko.observableArray([{ field: "date.fiscal", title: "Fiscal Year" }, { field: "date.quarter", title: "Quarter" }, { field: "date.month", title: "Month" }]);
+dsbrd.strucutre = ko.observable(dsbrd.optionStructures()[0].field);
 
 dsbrd.refresh = function () {
 	var param = {};
@@ -68,7 +76,7 @@ dsbrd.refresh = function () {
 
 dsbrd.render = function (res) {
 	var rows = toolkit.clone(dsbrd.rows());
-	var columns = [{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } }];
+	var columns = [{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' }, headerAttributes: { style: 'font-weight: bold;' } }];
 
 	var data = _.sortBy(res.Data.Data, function (d) {
 		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], 'Other');
@@ -81,6 +89,7 @@ dsbrd.render = function (res) {
 			d[key] = toolkit.sum(d.plcodes, function (f) {
 				return e[f];
 			});
+			d[key + '_orig'] = d[key];
 
 			if (d.pnl == 'EBIT %') {
 				var grossSales = rows.find(function (f) {
@@ -113,9 +122,7 @@ dsbrd.render = function (res) {
 				format: '{0:n0}',
 				attributes: { class: 'align-right' },
 				headerAttributes: {
-					style: 'text-align: right !important;',
-					class: 'bold tooltipster',
-					title: 'Click to sort'
+					style: 'text-align: right !important; font-weight: bold;'
 				}
 			});
 		});
@@ -123,6 +130,20 @@ dsbrd.render = function (res) {
 
 	dsbrd.data(rows);
 	dsbrd.columns(columns);
+
+	dsbrd.data().forEach(function (d) {
+		if (d.pnl == "Gross Sales" || d.pnl == "EBIT" || d.pnl == "EBIT %") {
+			return;
+		}
+
+		var grossSales = dsbrd.data().find(function (e) {
+			return e.pnl == "Gross Sales";
+		});
+		for (var i = 0; i < dsbrd.columns().length - 1; i++) {
+			var percent = toolkit.number(d['field' + i + '_orig'] / grossSales['field' + i + '_orig'] * 100);
+			d['field' + i] = kendo.toString(percent, 'n2') + ' %';
+		}
+	});
 
 	if (columns.length > 5) {
 		columns.forEach(function (d, i) {
@@ -321,7 +342,7 @@ sd.render = function (res) {
 sd.refresh = function () {
 	var param = {};
 	param.pls = ["PL8A"];
-	param.groups = [sd.breakdown()];
+	param.groups = [sd.breakdown(), 'customer.customergroupname'];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
 

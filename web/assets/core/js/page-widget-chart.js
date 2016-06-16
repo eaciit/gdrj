@@ -12,7 +12,7 @@ crt.setMode = function (what) {
 		}
 	};
 };
-crt.categoryAxisField = ko.observable('category');
+crt.categoryAxisField = ko.observable('customer.channelname');
 crt.title = ko.observable('');
 crt.data = ko.observableArray([]);
 crt.series = ko.observableArray([]);
@@ -41,8 +41,26 @@ crt.convertCurrency2 = function (labelValue) {
 };
 crt.configure = function (series, colorseries) {
 	var dataSort = crt.data();
-	if (crt.sortField() != "") dataSort = _.orderBy(crt.data(), [crt.sortField()], ['desc']);
+	if (crt.categoryAxisField() == "date.quartertxt") {
+		dataSort = _.orderBy(crt.data(), [crt.categoryAxisField()], ['desc']);
+	} else if (crt.categoryAxisField() == "date.month") {
+		dataSort = _.orderBy(crt.data(), function (d) {
+			return parseInt(d[toolkit.replace(crt.categoryAxisField(), '.', '_')], 10);
+		}, ['desc']);
+	} else if (crt.sortField() != '') {
+		dataSort = _.orderBy(crt.data(), [crt.sortField()], ['desc']);
+	}
 
+	if (crt.typeChart() == 'stack') {
+		var datayo = _.map(dataSort, function (k, e) {
+			var data = {};
+			$.each(k, function (key, value) {
+				if (value != 0) data[key] = value;
+			});
+			return data;
+		});
+		dataSort = datayo;
+	}
 	return {
 		title: crt.title(),
 		dataSource: { data: dataSort },
@@ -102,6 +120,11 @@ crt.configure = function (series, colorseries) {
 };
 
 crt.render = function () {
+	var data = _.sortBy(crt.data(), function (d) {
+		return toolkit.redefine(d[toolkit.replace(crt.categoryAxisField(), '.', '_')], 'Other');
+	});
+	crt.data(data);
+
 	var series = ko.mapping.toJS(crt.series).filter(function (d) {
 		return d.field != '';
 	}).map(function (d) {
