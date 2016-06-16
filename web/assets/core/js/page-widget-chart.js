@@ -51,6 +51,16 @@ crt.configure = function (series, colorseries) {
 		dataSort = _.orderBy(crt.data(), [crt.sortField()], ['desc']);
 	}
 
+	if (crt.typeChart() == 'stack') {
+		var datayo = _.map(dataSort, function (k, e) {
+			var data = {};
+			$.each(k, function (key, value) {
+				if (value != 0) data[key] = value;
+			});
+			return data;
+		});
+		dataSort = datayo;
+	}
 	return {
 		title: crt.title(),
 		dataSource: { data: dataSort },

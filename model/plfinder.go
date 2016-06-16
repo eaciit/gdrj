@@ -318,6 +318,10 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			bonus := s.Sum(raw, "PL29")
 			gondola := s.Sum(raw, "PL30")
 			otheradvertising := s.Sum(raw, "PL31")
+			personnelga := s.Sum(raw, "PL33")
+			generalga := s.Sum(raw, "PL34")
+			deprga := s.Sum(raw, "PL35")
+			foreignga := s.Sum(raw, "PL94")
 
 			each := toolkit.M{}
 			if s.Flag == "gross_sales_discount_and_net_sales" {
@@ -398,7 +402,12 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("otheradvertising", math.Abs(otheradvertising))
 				each.Set("sales", netSales)
 				each.Set("sales_outlet", s.noZero(math.Abs(s.noZero((advertising+bonus+gondola+otheradvertising)/netSales))))
-			} 
+			} else if s.Flag == "sga_cost_ratio" {
+				each.Set("personnel", s.noZero(math.Abs(personnelga/sga)))
+				each.Set("general", s.noZero(math.Abs(generalga/sga)))
+				each.Set("depr", s.noZero(math.Abs(deprga/sga)))
+				each.Set("foreign", s.noZero(math.Abs(foreignga/sga)))
+			}
 			// else if s.Flag == "marketing_efficiency_btl" {
 			// 	each.Set("advertising", math.Abs(advertising))
 			// 	each.Set("bonus", math.Abs(bonus))

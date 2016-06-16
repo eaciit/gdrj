@@ -37,7 +37,7 @@
     "_id": "sga_cost_ratio",
     "order": 8,
     "name": "SGA cost ratio",
-    "status": false
+    "status": true
 }, {
     "_id": "sales_by_outlet",
     "order": 9,
