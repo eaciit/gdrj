@@ -270,8 +270,10 @@ dsbrd.render = (res) => {
 			let gs = grossSales.columnData[index]
 			let gsPrev = grossSales.columnData[prevIndex]
 			let g = growth.columnData[index]
-			let value = toolkit.number(gsPrev.value / gs.value) * 100
+			let value = toolkit.number((gs.value - gsPrev.value) / gsPrev.value) * 100
 			g.value = `${kendo.toString(value, 'n2')} %`
+
+			console.log(counter, gs.value, gs.value - gsPrev.value, gsPrev.value, value)
 
 			counter++
 			prevIndex = index

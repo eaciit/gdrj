@@ -265,8 +265,10 @@ dsbrd.render = function (res) {
 			var gs = grossSales.columnData[index];
 			var gsPrev = grossSales.columnData[prevIndex];
 			var g = growth.columnData[index];
-			var value = toolkit.number(gsPrev.value / gs.value) * 100;
+			var value = toolkit.number((gs.value - gsPrev.value) / gsPrev.value) * 100;
 			g.value = kendo.toString(value, 'n2') + ' %';
+
+			console.log(counter, gs.value, gs.value - gsPrev.value, gsPrev.value, value);
 
 			counter++;
 			prevIndex = index;
