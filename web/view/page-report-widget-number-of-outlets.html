@@ -12,14 +12,12 @@
 		pvt.row('customer.channelname')
 		pvt.column('customer.branchname')
 		pvt.dataPoints = ko.observableArray([
-			{ field: 'sales', title: 'Sales', name: 'Sales' },
-			{ field: 'outlet', title: 'Outlet', name: 'Outlet' },
-			{ field: 'sales_outlet', title: 'Sales by Outlet', name: 'Sales by Outlet' }
+			{ field: 'outlet', title: 'Outlet', name: 'Outlet' }
 		])
 		pvt.refresh()
 
 		crt.categoryAxisField('customer.branchname')
-		crt.sortField('sales_outlet')
+		crt.sortField('outlet')
 		crt.series(pvt.dataPoints())
 		crt.refresh()
 	})

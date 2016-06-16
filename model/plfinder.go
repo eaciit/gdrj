@@ -305,6 +305,15 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			sga := s.Sum(raw, "PL94A")
 			netprice := math.Abs(s.noZero(netAmount / qty))
 			netpricebtl := math.Abs(netprice + btl)
+			countOutlet := s.Sum(raw, "totaloutlet")
+			indirectPersonnel := s.Sum(raw, "PL15")
+			indirectServices := s.Sum(raw, "PL16")
+			indirectRent := s.Sum(raw, "PL17")
+			indirectTransportation := s.Sum(raw, "PL18")
+			indirectMaintenance := s.Sum(raw, "PL19")
+			indirectOther := s.Sum(raw, "PL20")
+			indirectAmort := s.Sum(raw, "PL21")
+			indirectEnergy := s.Sum(raw, "PL74")
 
 			each := toolkit.M{}
 			if s.Flag == "gross_sales_discount_and_net_sales" {
@@ -335,7 +344,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("direct_abour", math.Abs(directLabour))
 				each.Set("cogs", math.Abs(cogs))
 				each.Set("direct_labour_index", math.Abs(s.noZero(directLabour/cogs)))
-			} else if s.Flag == "indirect_expense_index" {
+			} else if s.Flag == "material_type_index" {
 				each.Set("material_local", math.Abs(materialLocal))
 				each.Set("material_import", math.Abs(materialImport))
 				each.Set("material_other", math.Abs(materialOther))
@@ -361,8 +370,25 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("cost", math.Abs(cogs))
 				each.Set("sales", netSales)
 				each.Set("cost_qty", math.Abs(s.noZero(cogs/netSales)))
+			} else if s.Flag == "sales_by_outlet" {
+				each.Set("sales", netSales)
+				each.Set("outlet", countOutlet)
+				each.Set("sales_outlet", math.Abs(s.noZero(netSales/countOutlet)))
+			} else if s.Flag == "number_of_outlets" {
+				each.Set("outlet", countOutlet)
+			} else if s.Flag == "indirect_expense_index" {
+				each.Set("personnel", math.Abs(indirectPersonnel))
+				each.Set("services", math.Abs(indirectServices))
+				each.Set("rent", math.Abs(indirectRent))
+				each.Set("transportation", math.Abs(indirectTransportation))
+				each.Set("maintenance", math.Abs(indirectMaintenance))
+				each.Set("amort", math.Abs(indirectAmort))
+				each.Set("energy", math.Abs(indirectEnergy))
+				each.Set("other", math.Abs(indirectOther))
+				each.Set("cogs", math.Abs(cogs))
+				each.Set("indirect_cogs", math.Abs(indirectPersonnel+indirectServices+indirectRent+indirectTransportation+indirectAmort+indirectEnergy+indirectOther)/cogs)
 			}
-			
+
 			for k, v := range raw.Get("_id").(toolkit.M) {
 				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(fmt.Sprintf("%v", v)))
 			}
@@ -403,9 +429,15 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	}
 	defer session.Close()
 
-	pipe := []bson.M{}
 	groups := bson.M{}
 	groupIds := bson.M{}
+
+	fb := DB().Connection.Fb()
+	fb.AddFilter(s.ParseFilter())
+	matches, err := fb.Build()
+	if err != nil {
+		return nil, err
+	}
 
 	for _, breakdown := range s.Breakdowns {
 		field := fmt.Sprintf("$_id.%s", strings.Replace(breakdown, ".", "_", -1))
@@ -432,6 +464,7 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 			"ratiotoskusales",
 			"taxamount",
 			"netamount",
+			"totaloutlet",
 		}
 
 		for _, other := range fields {
@@ -440,9 +473,10 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		}
 	}
 
-	pipe = append(pipe, bson.M{"$group": groups})
+	// groups["totalOutlet"] = bson.M{"$size": "$outlets"}
+	pipe := []bson.M{{"$match": matches}, {"$group": groups}} //, {"$project": projects}} //
 
-	fmt.Printf("AGGRTTTTT %#v\n", pipe)
+	fmt.Printf("AGGRTTTTT %v | %#v\n", tableName, pipe)
 
 	res := []*toolkit.M{}
 	err = db.C(tableName).Pipe(pipe).All(&res)
@@ -507,7 +541,17 @@ func (s *PLFinderParam) GeneratePLData() error {
 		group[key] = bson.M{"$sum": field}
 	}
 
-	pipes := []bson.M{{"$group": group}, {"$out": tableName}}
+	group["outlets"] = bson.M{"$addToSet": "$customer._id"}
+	project := bson.M{"totaloutlet": bson.M{"$size": "$outlets"}}
+	for key := range group {
+		if key == "_id" {
+			continue
+		}
+
+		project[key] = 1
+	}
+
+	pipes := []bson.M{{"$group": group}, {"$project": project}, {"$out": tableName}}
 	pipe := col.Pipe(pipes)
 
 	res := []*toolkit.M{}

@@ -7,7 +7,7 @@
     "_id": "number_of_outlets",
     "order": 2,
     "name": "Number of Outlets",
-    "status": false
+    "status": true
 }, {
     "_id": "distribution_coverage_index",
     "order": 7,
@@ -42,7 +42,7 @@
     "_id": "sales_by_outlet",
     "order": 9,
     "name": "Sales by outlet",
-    "status": false
+    "status": true
 }, {
     "_id": "number_of_invoice_headcount",
     "order": 10,
@@ -92,7 +92,7 @@
     "_id": "material_type_index",
     "order": 23,
     "name": "Material Type Index",
-    "status": false
+    "status": true
 }, {
     "_id": "no_of_headcount_per_manager",
     "order": 20,
