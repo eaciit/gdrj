@@ -50,35 +50,34 @@ dsbrd.rows = ko.observableArray([
 
 dsbrd.data = ko.observableArray([])
 dsbrd.columns = ko.observableArray([])
-dsbrd.breakdown = ko.observable('customer.channelname')
+dsbrd.optionBreakdowns = ko.observableArray([
+	{ field: "customer.areaname", name: "City" },
+	{ field: "customer.region", name: "Region" },
+	{ field: "customer.zone", name: "Zone" },
+	{ field: "customer.brand", name: "Brand" },
+	{ field: "customer.branchname", name: "Branch" }
+])
+dsbrd.breakdown = ko.observable(dsbrd.optionBreakdowns()[4].field)
 dsbrd.fiscalYear = ko.observable(2014)
 dsbrd.contentIsLoading = ko.observable(false)
-dsbrd.optionDimensions = ko.observableArray([
-	{ field: "" }
-])
-// city
-// region
-// zone
-// branch
-// brand
 dsbrd.optionStructures = ko.observableArray([
-	{ field: "date.fiscal", title: "Fiscal Year" },
-	{ field: "date.quarter", title: "Quarter" },
-	{ field: "date.month", title: "Month" }
+	{ field: "date.fiscal", name: "Fiscal Year" },
+	{ field: "date.quartertxt", name: "Quarter" },
+	{ field: "date.month", name: "Month" }
 ])
-dsbrd.strucutre = ko.observable(dsbrd.optionStructures()[0].field)
+dsbrd.structure = ko.observable(dsbrd.optionStructures()[1].field)
 
 dsbrd.refresh = () => {
 	let param = {}
 	param.pls = _.flatten(dsbrd.rows().map((d) => d.plcodes))
-	param.groups = [dsbrd.breakdown()]
+	param.groups = [dsbrd.breakdown(), dsbrd.structure()]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
 
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
-				setTimeout(() => fetch, 1000 * 5)
+				setTimeout(() => { fetch() }, 1000 * 5)
 				return
 			}
 
@@ -94,96 +93,94 @@ dsbrd.refresh = () => {
 }
 
 dsbrd.render = (res) => {
-	let rows = toolkit.clone(dsbrd.rows())
-	let columns = [
-		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' }, headerAttributes: {style: 'font-weight: bold;' } },
-	]
+	let rows = []
+	let rowsAfter = []
+	let columns = [{ 
+		field: 'pnl', 
+		title: 'PNL', 
+		attributes: { class: 'bold' }, 
+		headerAttributes: { style: 'font-weight: bold; vertical-align: middle;' }, 
+		locked: true,
+		width: 200
+	}]
 
-	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], 'Other'))
+	let data = _.sortBy(res.Data.Data, (d) => [
+		toolkit.redefine(d._id[`_id_${dsbrd.breakdown()}`], 'Other'), 
+		toolkit.redefine(d._id[`_id_${dsbrd.structure()}`], 'Other')
+	])
 
-	rows.forEach((d) => {
-		data.forEach((e, i) => {
-			let field = e._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`]
-			let key = `field${i}`
-			d[key] = toolkit.sum(d.plcodes, (f) => e[f])
-			d[`${key}_orig`] = d[key]
-
-			if (d.pnl == 'EBIT %') {
-				let grossSales = rows.find((f) => f.pnl == 'Gross Sales')
-				let grossSalesValue = toolkit.sum(grossSales.plcodes, (f) =>  e[f])
-
-				let ebit = rows.find((f) => f.pnl == 'EBIT')
-				let ebitValue = toolkit.sum(ebit.plcodes, (f) =>  e[f])
-
-				console.log(field, grossSalesValue / ebitValue, `${kendo.toString(grossSalesValue / ebitValue, 'n2')} %`)
-				d[key] = `${kendo.toString(toolkit.number(grossSalesValue / ebitValue), 'n2')} %`
+	dsbrd.rows().forEach((row, rowIndex) => {
+		row.columnData = []
+		data.forEach((column, columnIndex) => {
+			let columnAfter = {
+				breakdownTitle: toolkit.redefine(column._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`]), 
+				structureTitle: toolkit.redefine(column._id[`_id_${toolkit.replace(dsbrd.structure(), '.', '_')}`]), 
+				original: toolkit.sum(row.plcodes, (plcode) => toolkit.number(column[plcode])),
+				value: toolkit.sum(row.plcodes, (plcode) => toolkit.number(column[plcode])),
 			}
 
-			if (toolkit.isDefined(columns.find((f) => f.field == key))) {
-				return
-			}
-
-			columns.push({
-				field: key,
-				title: toolkit.redefine(field, 'Other'),
-				format: '{0:n0}',
-				attributes: { class: 'align-right' },
-				headerAttributes: { 
-					style: 'text-align: right !important; font-weight: bold;',
-				}
-			})
+			row.columnData.push(columnAfter)
 		})
+
+		rowsAfter.push(row)
 	})
 
-	dsbrd.data(rows)
-	dsbrd.columns(columns)
+	if (rowsAfter.length > 0) {
+		let grossSales = rowsAfter.find((d) => d.pnl == 'Gross Sales')
+		let ebitPercentage = rowsAfter.find((d) => d.pnl == 'EBIT %')
+		let ebit = rowsAfter.find((d) => d.pnl == 'EBIT')
 
-	dsbrd.data().forEach((d) => {
-		if (d.pnl == "Gross Sales" || d.pnl == "EBIT" || d.pnl == "EBIT %") {
-			return
-		}
-
-		let grossSales = dsbrd.data().find((e) => e.pnl == "Gross Sales")
-		for (let i = 0; i < (dsbrd.columns().length - 1); i++) {
-			let percent = toolkit.number(d[`field${i}_orig`] / grossSales[`field${i}_orig`] * 100)
-			d[`field${i}`] = `${kendo.toString(percent, 'n2')} %`
-	    }
-	})
-
-	if (columns.length > 5) {
-		columns.forEach((d, i) => {
-			if (i == 0) {
-				d.width = 200
-				d.locked = true
-				return
-			}
-
-			d.width = 150
+		rowsAfter[0].columnData.forEach((column, i) => {
+			let percentage = kendo.toString(toolkit.number(grossSales.columnData[i].original / ebit.columnData[i].original), 'n2')
+			ebitPercentage.columnData[i].value = percentage;
 		})
 	}
 
-	var fields = {}
+	let columnData = []
+	data.forEach((d, i) => {
+		let columnInfo = rowsAfter[0].columnData[i]
 
-    if (dsbrd.data().length > 0) {
-    	let target = dsbrd.data()[0]
-    	for (let key in target) {
-    		if (target.hasOwnProperty(key) && ['pnl', 'plcodes'].indexOf(key) == -1) {
-    			fields[key] = { type: 'number' }
-    		}
-    	}
-    }
+		let column = {}
+		column.field = `columnData[${i}].value`
+		column.breakdown = $.trim(columnInfo.breakdownTitle)
+		column.title = $.trim(columnInfo.structureTitle)
+		column.width = 150
+		column.format = '{0:n0}'
+		column.attributes = { class: 'align-right' }
+		column.headerAttributes = { 
+			style: 'text-align: center !important; font-weight: bold; border-right: 1px solid white; ',
+		}
+
+		columnData.push(column)
+	})
+
+	let op1 = _.groupBy(columnData, (d) => d.breakdown)
+	let op2 = _.map(op1, (v, k) => { 
+		return { 
+			title: k, 
+			columns: v,
+			headerAttributes: { 
+				style: 'text-align: center !important; font-weight: bold; border: 1px solid white; border-top: none; border-left: none; box-sizing: border-box; background-color: #e9eced;',
+			}
+		}
+	})
+	let columnGrouped = _.sortBy(op2, (d) => d.title)
+
+	op2.forEach((d) => {
+		d.columns = _.sortBy(d.columns, (e) => e.title)
+	})
+
+	console.log("------", columnGrouped)
+
+	dsbrd.data(rowsAfter)
+	dsbrd.columns(columns.concat(columnGrouped))
 
 	let config = {
 		dataSource: {
-			data: dsbrd.data(),
-			schema: {
-		        model: {
-		            // fields: fields
-		        }
-		    }
+			data: dsbrd.data()
 		},
 		columns: dsbrd.columns(),
-		resizabl: false,
+		resizable: false,
 		sortable: false, 
 		pageable: false,
 		filterable: false
@@ -224,7 +221,7 @@ rank.refresh = () => {
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
-				setTimeout(() => fetch, 1000 * 5)
+				setTimeout(() => { fetch() }, 1000 * 5)
 				return
 			}
 
@@ -348,14 +345,14 @@ sd.render = (res) => {
 sd.refresh = () => {
 	let param = {}
 	param.pls = ["PL8A"]
-	param.groups = [sd.breakdown()]
+	param.groups = [sd.breakdown(), 'customer.customergroupname']
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
 
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
-				setTimeout(() => fetch, 1000 * 5)
+				setTimeout(() => { fetch() }, 1000 * 5)
 				return
 			}
 	
