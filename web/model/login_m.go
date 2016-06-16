@@ -2,6 +2,7 @@ package gocore
 
 import (
 	"errors"
+	"fmt"
 	"github.com/eaciit/acl"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
@@ -222,8 +223,8 @@ func Authenticate(payload toolkit.M) (toolkit.M, error) {
 }
 
 func PrepareDefaultUser() (err error) {
-	username := GetConfig("default_username", "").(string)
-	password := GetConfig("default_password", "").(string)
+	username := fmt.Sprintf("%v", GetConfig("default_username", ""))
+	password := fmt.Sprintf("%v", GetConfig("default_password", ""))
 
 	user := new(acl.User)
 	filter := dbox.Contains("loginid", username)

@@ -542,7 +542,9 @@ bkd.render = function () {
 			if (countChild == '' || countChild == undefined) $trElem.find('td:eq(0)').css('padding-left', '20px');
 		}
 	});
-	bkd.showZeroValue(false);
+
+	bkd.showZeroValue(true);
+	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
 };
 
 bkd.prepareEvents = function () {
@@ -593,6 +595,7 @@ bkd.showZeroValue = function (a) {
 			}
 		});
 	}
+
 	bkd.showExpandAll(false);
 };
 
