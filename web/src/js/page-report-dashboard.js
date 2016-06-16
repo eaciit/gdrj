@@ -57,7 +57,8 @@ dsbrd.optionBreakdowns = ko.observableArray([
 	{ field: "customer.region", name: "Region" },
 	{ field: "customer.zone", name: "Zone" },
 	{ field: "product.brand", name: "Brand" },
-	{ field: "customer.branchname", name: "Branch" }
+	{ field: "customer.branchname", name: "Branch" },
+	{ field: "customer.channelname", name: "Channel" },
 ])
 dsbrd.breakdown = ko.observable(dsbrd.optionBreakdowns()[4].field)
 dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears())

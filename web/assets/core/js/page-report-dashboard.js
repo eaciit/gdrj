@@ -35,7 +35,7 @@ dsbrd.rows = ko.observableArray([{ pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "
 
 dsbrd.data = ko.observableArray([]);
 dsbrd.columns = ko.observableArray([]);
-dsbrd.optionBreakdowns = ko.observableArray([{ field: "customer.areaname", name: "City" }, { field: "customer.region", name: "Region" }, { field: "customer.zone", name: "Zone" }, { field: "product.brand", name: "Brand" }, { field: "customer.branchname", name: "Branch" }]);
+dsbrd.optionBreakdowns = ko.observableArray([{ field: "customer.areaname", name: "City" }, { field: "customer.region", name: "Region" }, { field: "customer.zone", name: "Zone" }, { field: "product.brand", name: "Brand" }, { field: "customer.branchname", name: "Branch" }, { field: "customer.channelname", name: "Channel" }]);
 dsbrd.breakdown = ko.observable(dsbrd.optionBreakdowns()[4].field);
 dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears());
 dsbrd.contentIsLoading = ko.observable(false);

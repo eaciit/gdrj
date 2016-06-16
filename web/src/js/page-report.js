@@ -297,7 +297,7 @@ rpt.filterMultiSelect = (d) => {
 			value: rpt.value[d._id]
 		})
 
-		if (['Branch', 'Brand', 'Channel'].indexOf(d.from) > -1) {
+		if (['Branch', 'Brand'].indexOf(d.from) > -1) {
 			config.dataValueField = 'Name'
 		}
 

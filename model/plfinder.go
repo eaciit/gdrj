@@ -91,6 +91,21 @@ func (s *PLFinderParam) DeletePLCollection(table []string) error {
 func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 	filters := []*dbox.Filter{}
 
+	oldFilters := s.Filters
+	for i, each := range oldFilters {
+		if each.Field == "customer.channelname" {
+			f := new(Filter)
+			f.Field = "customer.channelid"
+			f.Op = each.Op
+			f.Value = each.Value
+
+			s.Filters = append(oldFilters[:i], oldFilters[i+1:]...)
+			s.Filters = append(s.Filters, f)
+
+			break
+		}
+	}
+
 	for _, each := range s.Filters {
 		switch each.Op {
 		case dbox.FilterOpIn:
