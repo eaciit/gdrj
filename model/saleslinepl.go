@@ -160,6 +160,9 @@ func TrxToSalesPL(conn dbox.IConnection,
 			pl.CalcPromo(masters)
 			pl.CalcSGA(masters)
 			pl.CalcDepre(masters)
+		} else if compute == "salescogs" {
+			pl.CalcSales(masters)
+			pl.CalcCOGS(masters)
 		}
 	}
 
