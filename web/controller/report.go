@@ -9,6 +9,7 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	"sync"
 )
 
 type ReportController struct {
@@ -251,6 +252,8 @@ func (m *ReportController) GetPNLDataDetail(r *knot.WebContext) interface{} {
 	return res
 }
 
+var pnlMutex sync.Mutex
+
 func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	res := new(toolkit.Result)
@@ -311,10 +314,15 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 			fmt.Println("done")
 		}
 
+		pnlMutex.Lock()
 		gocore.RemoveConfig(tableName)
+		pnlMutex.Unlock()
 	}()
 
+	pnlMutex.Lock()
 	gocore.SetConfig(tableName, "otw")
+	pnlMutex.Unlock()
+
 	res.SetError(errors.New("still processing, might take a while"))
 	fmt.Println("just start")
 	return res

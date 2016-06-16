@@ -541,7 +541,9 @@ bkd.render = () => {
 				$trElem.find(`td:eq(0)`).css('padding-left', '20px')
 		}
 	})
-	bkd.showZeroValue(false)
+
+	bkd.showZeroValue(true)
+	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
 }
 
 bkd.prepareEvents = () => {
@@ -592,6 +594,7 @@ bkd.showZeroValue = (a) => {
 			}
 		})
 	}
+
 	bkd.showExpandAll(false)
 }
 

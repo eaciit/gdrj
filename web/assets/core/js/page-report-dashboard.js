@@ -33,32 +33,68 @@ dsbrd.rows = ko.observableArray([{ pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "
 
 dsbrd.data = ko.observableArray([]);
 dsbrd.columns = ko.observableArray([]);
-dsbrd.breakdown = ko.observable('customer.channelname');
+dsbrd.optionBreakdowns = ko.observableArray([{ field: "customer.areaname", name: "City" }, { field: "customer.region", name: "Region" }, { field: "customer.zone", name: "Zone" }, { field: "product.brand", name: "Brand" }, { field: "customer.branchname", name: "Branch" }]);
+dsbrd.breakdown = ko.observable(dsbrd.optionBreakdowns()[4].field);
 dsbrd.fiscalYear = ko.observable(2014);
 dsbrd.contentIsLoading = ko.observable(false);
-dsbrd.optionDimensions = ko.observableArray([{ field: "" }]);
-// city
-// region
-// zone
-// branch
-// brand
-dsbrd.optionStructures = ko.observableArray([{ field: "date.fiscal", title: "Fiscal Year" }, { field: "date.quarter", title: "Quarter" }, { field: "date.month", title: "Month" }]);
-dsbrd.strucutre = ko.observable(dsbrd.optionStructures()[0].field);
+dsbrd.optionStructures = ko.observableArray([{ field: "date.fiscal", name: "Fiscal Year" }, { field: "date.quartertxt", name: "Quarter" }, { field: "date.month", name: "Month" }]);
+dsbrd.structure = ko.observable(dsbrd.optionStructures()[1].field);
+dsbrd.structureYear = ko.observable('date.year');
+dsbrd.optionBreakdownValues = ko.observableArray([]);
+dsbrd.breakdownValue = ko.observableArray([]);
+dsbrd.changeBreakdown = function () {
+	setTimeout(function () {
+		switch (dsbrd.breakdown()) {
+			case "customer.areaname":
+				dsbrd.breakdownValue([]);
+				dsbrd.optionBreakdownValues(rpt.masterData.Area());
+				break;
+			case "customer.region":
+				dsbrd.breakdownValue([]);
+				dsbrd.optionBreakdownValues(rpt.masterData.Region());
+				break;
+			case "customer.zone":
+				dsbrd.breakdownValue([]);
+				dsbrd.optionBreakdownValues(rpt.masterData.Zone());
+				break;
+			case "product.brand":
+				dsbrd.breakdownValue([]);
+				dsbrd.optionBreakdownValues(rpt.masterData.Brand());
+				break;
+			case "customer.branchname":
+				dsbrd.breakdownValue([]);
+				dsbrd.optionBreakdownValues(rpt.masterData.Branch());
+				break;
+		}
+	});
+};
 
 dsbrd.refresh = function () {
 	var param = {};
 	param.pls = _.flatten(dsbrd.rows().map(function (d) {
 		return d.plcodes;
 	}));
-	param.groups = [dsbrd.breakdown()];
+	param.groups = [dsbrd.breakdown(), dsbrd.structure()];
 	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue();
+	param.filters = rpt.getFilterValue(true);
+
+	if (dsbrd.breakdownValue().length > 0) {
+		param.filters.push({
+			Field: dsbrd.breakdown(),
+			Op: '$in',
+			Value: dsbrd.breakdownValue()
+		});
+	}
+
+	if (dsbrd.structure() == 'date.month') {
+		param.groups.push(dsbrd.structureYear());
+	}
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
-					return fetch;
+					fetch();
 				}, 1000 * 5);
 				return;
 			}
@@ -75,110 +111,142 @@ dsbrd.refresh = function () {
 };
 
 dsbrd.render = function (res) {
-	var rows = toolkit.clone(dsbrd.rows());
-	var columns = [{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' }, headerAttributes: { style: 'font-weight: bold;' } }];
+	var rows = [];
+	var rowsAfter = [];
+	var columns = [{
+		field: 'pnl',
+		title: 'PNL',
+		attributes: { class: 'bold' },
+		headerAttributes: { style: 'font-weight: bold; vertical-align: middle;' },
+		locked: true,
+		width: 200
+	}];
 
-	var data = _.sortBy(res.Data.Data, function (d) {
-		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], 'Other');
+	var data = res.Data.Data;
+
+	dsbrd.rows().forEach(function (row, rowIndex) {
+		row.columnData = [];
+		data.forEach(function (column, columnIndex) {
+			var columnAfter = {
+				breakdownTitle: toolkit.redefine(column._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')]),
+				structureTitle: toolkit.redefine(column._id['_id_' + toolkit.replace(dsbrd.structure(), '.', '_')]),
+				structureYearTitle: toolkit.redefine(column._id['_id_' + toolkit.replace(dsbrd.structureYear(), '.', '_')]),
+				original: toolkit.sum(row.plcodes, function (plcode) {
+					return toolkit.number(column[plcode]);
+				}),
+				value: toolkit.sum(row.plcodes, function (plcode) {
+					return toolkit.number(column[plcode]);
+				})
+			};
+
+			row.columnData.push(columnAfter);
+		});
+
+		rowsAfter.push(row);
 	});
 
-	rows.forEach(function (d) {
-		data.forEach(function (e, i) {
-			var field = e._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')];
-			var key = 'field' + i;
-			d[key] = toolkit.sum(d.plcodes, function (f) {
-				return e[f];
+	if (rowsAfter.length > 0) {
+		(function () {
+			var grossSales = rowsAfter.find(function (d) {
+				return d.pnl == 'Gross Sales';
 			});
-			d[key + '_orig'] = d[key];
+			var ebit = rowsAfter.find(function (d) {
+				return d.pnl == 'EBIT';
+			});
+			var columns = rowsAfter[0].columnData;
 
-			if (d.pnl == 'EBIT %') {
-				var grossSales = rows.find(function (f) {
-					return f.pnl == 'Gross Sales';
+			rowsAfter.forEach(function (row, rowIndex) {
+				row.columnData.forEach(function (column, columnIndex) {
+					if (row.pnl == 'EBIT %') {
+						var percentage = kendo.toString(toolkit.number(grossSales.columnData[columnIndex].original / ebit.columnData[columnIndex].original), 'n2');
+						column.value = percentage;
+					} else if (row.pnl != 'Gross Sales' && row.pnl != 'EBIT') {
+						var _percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original), 'n2');
+						column.value = _percentage;
+					}
 				});
-				var grossSalesValue = toolkit.sum(grossSales.plcodes, function (f) {
-					return e[f];
-				});
+			});
+		})();
+	}
 
-				var ebit = rows.find(function (f) {
-					return f.pnl == 'EBIT';
-				});
-				var ebitValue = toolkit.sum(ebit.plcodes, function (f) {
-					return e[f];
-				});
+	var columnData = [];
+	data.forEach(function (d, i) {
+		var columnInfo = rowsAfter[0].columnData[i];
 
-				console.log(field, grossSalesValue / ebitValue, kendo.toString(grossSalesValue / ebitValue, 'n2') + ' %');
-				d[key] = kendo.toString(toolkit.number(grossSalesValue / ebitValue), 'n2') + ' %';
-			}
+		var column = {};
+		column.field = 'columnData[' + i + '].value';
+		column.breakdown = $.trim(toolkit.redefine(columnInfo.breakdownTitle, 'Other'));
+		column.title = $.trim(columnInfo.structureTitle);
+		column.width = 150;
+		column.format = '{0:n0}';
+		column.attributes = { class: 'align-right' };
+		column.headerAttributes = {
+			style: 'text-align: center !important; font-weight: bold; border-right: 1px solid white; '
+		};
 
-			if (toolkit.isDefined(columns.find(function (f) {
-				return f.field == key;
-			}))) {
-				return;
-			}
+		if (dsbrd.structure() == 'date.month') {
+			column.titleYear = $.trim(columnInfo.structureYearTitle);
+		}
 
-			columns.push({
-				field: key,
-				title: toolkit.redefine(field, 'Other'),
-				format: '{0:n0}',
-				attributes: { class: 'align-right' },
-				headerAttributes: {
-					style: 'text-align: right !important; font-weight: bold;'
+		columnData.push(column);
+	});
+
+	var op1 = _.groupBy(columnData, function (d) {
+		return d.breakdown;
+	});
+	var op2 = _.map(op1, function (v, k) {
+		v.forEach(function (h) {
+			h.month = h.title;
+			h.year = h.titleYear;
+
+			if (dsbrd.structure() == 'date.month') {
+				var month = moment(new Date(2015, parseInt(h.title, 10) - 1, 1)).format('MMMM');
+				h.title = month;
+
+				if (rpt.value.FiscalYears().length > 1) {
+					h.title = month + ' ' + h.titleYear;
 				}
-			});
+			}
+		});
+
+		return {
+			title: k,
+			columns: v,
+			headerAttributes: {
+				style: 'text-align: center !important; font-weight: bold; border: 1px solid white; border-top: none; border-left: none; box-sizing: border-box; background-color: #e9eced;'
+			}
+		};
+	});
+	var columnGrouped = _.sortBy(op2, function (d) {
+		return d.title;
+	});
+
+	op2.forEach(function (d) {
+		d.columns = _.sortBy(d.columns, function (e) {
+			if (dsbrd.structure() == 'date.month') {
+				var monthString = ('0' + e.month).split('').reverse().slice(0, 2).reverse().join('');
+
+				if (rpt.value.FiscalYears().length > 1) {
+					var yearMonthString = '' + e.year + monthString;
+					return yearMonthString;
+				}
+
+				return monthString;
+			}
+
+			return e.title;
 		});
 	});
 
-	dsbrd.data(rows);
-	dsbrd.columns(columns);
-
-	dsbrd.data().forEach(function (d) {
-		if (d.pnl == "Gross Sales" || d.pnl == "EBIT" || d.pnl == "EBIT %") {
-			return;
-		}
-
-		var grossSales = dsbrd.data().find(function (e) {
-			return e.pnl == "Gross Sales";
-		});
-		for (var i = 0; i < dsbrd.columns().length - 1; i++) {
-			var percent = toolkit.number(d['field' + i + '_orig'] / grossSales['field' + i + '_orig'] * 100);
-			d['field' + i] = kendo.toString(percent, 'n2') + ' %';
-		}
-	});
-
-	if (columns.length > 5) {
-		columns.forEach(function (d, i) {
-			if (i == 0) {
-				d.width = 200;
-				d.locked = true;
-				return;
-			}
-
-			d.width = 150;
-		});
-	}
-
-	var fields = {};
-
-	if (dsbrd.data().length > 0) {
-		var target = dsbrd.data()[0];
-		for (var key in target) {
-			if (target.hasOwnProperty(key) && ['pnl', 'plcodes'].indexOf(key) == -1) {
-				fields[key] = { type: 'number' };
-			}
-		}
-	}
+	dsbrd.data(rowsAfter);
+	dsbrd.columns(columns.concat(columnGrouped));
 
 	var config = {
 		dataSource: {
-			data: dsbrd.data(),
-			schema: {
-				model: {
-					// fields: fields
-				}
-			}
+			data: dsbrd.data()
 		},
 		columns: dsbrd.columns(),
-		resizabl: false,
+		resizable: false,
 		sortable: false,
 		pageable: false,
 		filterable: false
@@ -207,7 +275,7 @@ rank.refresh = function () {
 		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
-					return fetch;
+					fetch();
 				}, 1000 * 5);
 				return;
 			}
@@ -231,20 +299,30 @@ rank.render = function (res) {
 	var rows = [];
 	data.forEach(function (d) {
 		var row = {};
+		row.original = d._id['_id_' + toolkit.replace(rank.breakdown(), '.', '_')];
 		row.pnl = d._id['_id_' + toolkit.replace(rank.breakdown(), '.', '_')];
 		if ($.trim(row.pnl) == '') {
+			row.original = 'Other';
 			row.pnl = 'Other';
 		}
-		row.gmPercentage = d.PL74C / d.PL8A;
-		row.cogsPercentage = d.PL74B / d.PL8A;
-		row.ebitPercentage = d.PL44B / d.PL8A;
-		row.ebitdaPercentage = d.PL44C / d.PL8A;
+		if (rank.breakdown() == 'date.month') {
+			row.original = parseInt(row.pnl, 10) - 1;
+			row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM');
+		}
+
+		row.gmPercentage = toolkit.number(d.PL74C / d.PL8A);
+		row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A);
+		row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A);
+		row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A);
 		row.netSales = d.PL8A;
 		row.ebit = d.PL44B;
 		rows.push(row);
 	});
 
-	rank.data(rows);
+	console.log("---", rows);
+	rank.data(_.sortBy(rows, function (d) {
+		return d.original;
+	}));
 
 	var config = {
 		dataSource: {
@@ -285,7 +363,7 @@ sd.render = function (res) {
 		var row = {};
 		row[breakdown] = d._id['_id_' + breakdown];
 		row.group = d._id._id_customer_customergroupname;
-		row.percentage = d.PL8A / total * 100;
+		row.percentage = toolkit.number(d.PL8A / total) * 100;
 		row.value = d.PL8A;
 		return row;
 	});
@@ -312,7 +390,6 @@ sd.render = function (res) {
 	if (op2.length > 5) {
 		table.width(op2.length * width);
 	}
-	console.log('asdsd ', op2);
 
 	op2.forEach(function (d) {
 		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width);
@@ -345,7 +422,7 @@ sd.render = function (res) {
 			totalyo = toolkit.sum(e.values, function (b) {
 				return b.value;
 			});
-			percentageyo = totalyo / total * 100;
+			percentageyo = toolkit.number(totalyo / total * 100);
 			toolkit.newEl('td').appendTo(tr).html(kendo.toString(percentageyo, 'n2') + ' %');
 			toolkit.newEl('td').appendTo(tr).html(kendo.toString(totalyo, 'n0'));
 		});
@@ -374,7 +451,7 @@ sd.refresh = function () {
 		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
-					return fetch;
+					fetch();
 				}, 1000 * 5);
 				return;
 			}
@@ -391,6 +468,7 @@ sd.refresh = function () {
 };
 
 $(function () {
+	dsbrd.changeBreakdown();
 	dsbrd.refresh();
 	rank.refresh();
 	sd.refresh();
