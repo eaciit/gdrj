@@ -248,7 +248,9 @@ rpt.toggleFilter = function () {
 	}
 
 	$('.k-grid').each(function (i, d) {
-		$(d).data('kendoGrid').refresh();
+		try {
+			$(d).data('kendoGrid').refresh();
+		} catch (err) {}
 	});
 
 	$('.k-pivot').each(function (i, d) {
@@ -344,13 +346,22 @@ rpt.refresh = function () {
 	});
 };
 rpt.refreshAll = function () {
-	if (rpt.refreshView() == 'breakdown') {
-		bkd.refresh();
-		rs.refresh();
-		ccr.refresh();
-	} else if (rpt.refreshView() == 'reportwidget') {
-		pvt.refresh();
-		crt.refresh();
+	switch (rpt.refreshView()) {
+		case 'analysis':
+			bkd.refresh();
+			rs.refresh();
+			ccr.refresh();
+			break;
+		case 'dashboard':
+			dsbrd.changeBreakdown();
+			dsbrd.refresh();
+			rank.refresh();
+			sd.refresh();
+			break;
+		case 'reportwidget':
+			pvt.refresh();
+			crt.refresh();
+			break;
 	}
 };
 rpt.panel_relocated = function () {

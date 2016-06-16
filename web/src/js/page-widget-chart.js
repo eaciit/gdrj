@@ -101,11 +101,11 @@ crt.configure = (series, colorseries) => {
 			position: 'bottom'
 		},
 		valueAxis: {
-			// majorGridLines: { color: '#fafafa' },
+			majorGridLines: {
+				color: '#fafafa'
+			},
 			labels: { 
-				// format: '{0:n2}',
 				visible: false,
-				// template: "#= crt.convertCurrency2(value) #"
 			},
 			minorGridLines: {
 				skip: 3

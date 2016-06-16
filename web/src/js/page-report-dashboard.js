@@ -471,6 +471,8 @@ sd.refresh = () => {
 }
 
 $(() => {
+	rpt.refreshView('dashboard')
+	
 	dsbrd.changeBreakdown()
 	dsbrd.refresh()
 	rank.refresh()
