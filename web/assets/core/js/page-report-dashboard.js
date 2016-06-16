@@ -243,44 +243,35 @@ dsbrd.render = function (res) {
 	dsbrd.data(rowsAfter);
 	dsbrd.columns(columns.concat(columnGrouped));
 
-	// let grossSales = dsbrd.data().find((d) => d.pnl == "Gross Sales")
-	// let growth = dsbrd.data().find((d) => d.pnl == "Growth")
+	var grossSales = dsbrd.data().find(function (d) {
+		return d.pnl == "Gross Sales";
+	});
+	var growth = dsbrd.data().find(function (d) {
+		return d.pnl == "Growth";
+	});
 
-	// let counter = 0
-	// let prevIndex = 0
-	// columnGrouped.forEach((d) => {
-	// 	d.columns.forEach((e) => {
-	// 		let index = toolkit.getNumberFromString(e.field)
+	var counter = 0;
+	var prevIndex = 0;
+	columnGrouped.forEach(function (d) {
+		d.columns.forEach(function (e) {
+			var index = toolkit.getNumberFromString(e.field);
 
-	// 		if (counter == 0) {
-	// 			prevIndex = index
-	// 			counter++
-	// 			return
-	// 		}
+			if (counter == 0) {
+				prevIndex = index;
+				counter++;
+				return;
+			}
 
-	// 		let gs = grossSales.columnData[index]
-	// 		let gsPrev = grossSales.columnData[prevIndex]
-	// 		let g = growth.columnData[index]
-	// 		let value = toolkit.number(gsPrev.value / gs.value) * 100
-	// 		g.value = kendo.toString(value, 'n2')
+			var gs = grossSales.columnData[index];
+			var gsPrev = grossSales.columnData[prevIndex];
+			var g = growth.columnData[index];
+			var value = toolkit.number(gsPrev.value / gs.value) * 100;
+			g.value = kendo.toString(value, 'n2') + ' %';
 
-	// 		console.log("col", counter, gsPrev.value, gs.value, value, gs)
-	// 		console.log(g)
-
-	// 		counter++
-	// 		prevIndex = index
-	// 	})
-	// })
-
-	// growth.columnData.forEach((d, i) => {
-	// 	if (i == 0) {
-	// 		d.value = kendo.toString(0, 'n2')
-	// 		return
-	// 	}
-
-	// 	let value = grossSales.columnData[i].original / grossSales.columnData[i - 1].original * 100
-	// 	d.value = kendo.toString(value, 'n2')
-	// })
+			counter++;
+			prevIndex = index;
+		});
+	});
 
 	var config = {
 		dataSource: {
