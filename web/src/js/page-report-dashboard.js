@@ -293,10 +293,12 @@ sd.render = (res) => {
 	let breakdown = toolkit.replace(sd.breakdown(), ".", "_")
 	let total = toolkit.sum(data, (d) => d.PL8A)
 
+	sd.data(data)
+
 	let rows = data.map((d) => {
 		let row = {}
 		row[breakdown] = d._id[`_id_${breakdown}`]
-		row.group = ''
+		row.group = d._id._id_customer_customergroupname
 		row.percentage = d.PL8A / total * 100
 		row.value = d.PL8A
 		return row
@@ -318,6 +320,7 @@ sd.render = (res) => {
 	if (op2.length > 5) {
 		table.width(op2.length * width)
 	}
+	console.log('asdsd ', op2)
 
 	op2.forEach((d) => {
 		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width)
@@ -334,16 +337,33 @@ sd.render = (res) => {
 			return
 		}
 
-		d.values.forEach((e) => {
-			let tr = toolkit.newEl('tr').appendTo(innerTable)
-			toolkit.newEl('td').appendTo(tr).html(e[breakdown]).height(height / d.values.length)
-			toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(e.percentage, 'n2')} %`)
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.value, 'n0'))
+		let channelgroup = _.map(_.groupBy(d.values, (o) => { return o.group }), (v, k) => {
+			if (k == "")
+				k = "Other" 
+			return { key: k, values: v } 
 		})
+		let totalyo = 0, percentageyo = 0
+		channelgroup.forEach((e) => {
+			let tr = toolkit.newEl('tr').appendTo(innerTable)
+			toolkit.newEl('td').appendTo(tr).html(e.key).height(height / channelgroup.length)
+			totalyo = toolkit.sum(e.values, (b) => b.value)
+			percentageyo = totalyo/total*100
+			toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(percentageyo, 'n2')} %`)
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(totalyo, 'n0'))
+		})
+		// d.values.forEach((e) => {
+		// 	let tr = toolkit.newEl('tr').appendTo(innerTable)
+		// 	toolkit.newEl('td').appendTo(tr).html(e[breakdown]).height(height / d.values.length)
+		// 	toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(e.percentage, 'n2')} %`)
+		// 	toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.value, 'n0'))
+		// })
 	})
 
 	let trTotal = toolkit.newEl('tr').appendTo(table)
 	let tdTotal = toolkit.newEl('td').addClass('align-center total').attr('colspan', op2.length).appendTo(trTotal).html(kendo.toString(total, 'n0'))
+	$(".grid-sales-dist>table tbody>tr:eq(1) td").each(function(index) {
+		$(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height())
+	})
 }
 sd.refresh = () => {
 	let param = {}
