@@ -438,11 +438,12 @@ sd.render = (res) => {
 		table.width(op2.length * width)
 	}
 
+	let index = 0
 	op2.forEach((d) => {
-		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width)
+		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index])
 		let sumPercentage = _.sumBy(d.values, (e) => e.percentage)
 		let sumColumn = _.sumBy(d.values, (e) => e.value)
-		td1st.html(`${d.key}<br />${kendo.toString(sumPercentage, 'n2')} %`)
+		td1st.html(`<i class="fa"></i>${d.key}<br />${kendo.toString(sumPercentage, 'n2')} %`)
 
 		let td2nd = toolkit.newEl('td').appendTo(tr2nd)
 
@@ -459,15 +460,34 @@ sd.render = (res) => {
 				k = "Other" 
 			return { key: k, values: v } 
 		})
-		let totalyo = 0, percentageyo = 0
+		let totalyo = 0, percentageyo = 0, indexyo = 0
+		channelgroup.forEach((e) => {
+			totalyo = toolkit.sum(e.values, (b) => b.value)
+			percentageyo = toolkit.number(totalyo/sumColumn*100)
+			channelgroup[indexyo]['totalyo'] = totalyo
+			channelgroup[indexyo]['percentageyo'] = percentageyo
+			indexyo++
+		})
+		if (sd.sortVal[index] == ''){
+			channelgroup = _.orderBy(channelgroup, ['key'], ['asc'])
+			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-up')
+			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-down')
+		} else if (sd.sortVal[index] == 'asc'){
+			channelgroup = _.orderBy(channelgroup, ['totalyo'], ['asc'])
+			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-up')
+			$(`.sortsales:eq(${index})>i`).addClass('fa-chevron-down')
+		} else if (sd.sortVal[index] == 'desc'){
+			channelgroup = _.orderBy(channelgroup, ['totalyo'], ['desc'])
+			$(`.sortsales:eq(${index})>i`).addClass('fa-chevron-up')
+			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-down')
+		}
 		channelgroup.forEach((e) => {
 			let tr = toolkit.newEl('tr').appendTo(innerTable)
 			toolkit.newEl('td').appendTo(tr).html(e.key).height(height / channelgroup.length)
-			totalyo = toolkit.sum(e.values, (b) => b.value)
-			percentageyo = toolkit.number(totalyo/sumColumn*100)
-			toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(percentageyo, 'n2')} %`)
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(totalyo, 'n0'))
+			toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(e.percentageyo, 'n2')} %`)
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'))
 		})
+		index++
 		// d.values.forEach((e) => {
 		// 	let tr = toolkit.newEl('tr').appendTo(innerTable)
 		// 	toolkit.newEl('td').appendTo(tr).html(e[breakdown]).height(height / d.values.length)
@@ -481,6 +501,10 @@ sd.render = (res) => {
 	$(".grid-sales-dist>table tbody>tr:eq(1) td").each(function(index) {
 		$(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height())
 	})
+}
+sd.sortVal = ['','','']
+sd.sortData = () => {
+	sd.refresh()
 }
 sd.refresh = () => {
 	let param = {}
@@ -514,4 +538,17 @@ $(() => {
 	dsbrd.refresh()
 	rank.refresh()
 	sd.refresh()
+
+	$(".grid-sales-dist").on('click', '.sortsales', function(){
+		let sort = $(this).attr('sort'), index = $(this).index(), res = ''
+		if (sort == undefined || sort == '')
+			res = 'asc'
+		else if (sort == 'asc')
+			res = 'desc'
+		else
+			res = ''
+
+		sd.sortVal[index] = res
+		sd.sortData()
+	})
 })
