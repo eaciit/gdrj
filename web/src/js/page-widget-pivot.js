@@ -28,7 +28,7 @@ pvt.refresh = () => {
 				setTimeout(() => { fetch() }, 1000 * 5)
 				return
 			}
-			
+
 			pvt.data(res.Data.Data)
 			pvt.contentIsLoading(false)
 			pvt.render()
@@ -39,13 +39,14 @@ pvt.refresh = () => {
 	fetch()
 }
 pvt.render = () => {
-	let data = pvt.data()
 	let schemaModelFields = {}
 	let schemaCubeDimensions = {}
 	let schemaCubeMeasures = {}
 	let columns = []
 	let rows = []
 	let measures = []
+
+	let data = _.sortBy(pvt.data(), (d) => toolkit.redefine(d[toolkit.replace(pvt.column(), '.', '_')], 'Other'))
 
 	;[pvt.row()].forEach((d, i) => {
 		let row = pvt.optionRows().find((e) => e.field == d)

@@ -23,10 +23,6 @@
 
 // ]
 
-
-
-
-
 vm.currentMenu('Dashboard')
 vm.currentTitle("Dashboard")
 vm.breadcrumb([
@@ -57,6 +53,20 @@ dsbrd.columns = ko.observableArray([])
 dsbrd.breakdown = ko.observable('customer.channelname')
 dsbrd.fiscalYear = ko.observable(2014)
 dsbrd.contentIsLoading = ko.observable(false)
+dsbrd.optionDimensions = ko.observableArray([
+	{ field: "" }
+])
+// city
+// region
+// zone
+// branch
+// brand
+dsbrd.optionStructures = ko.observableArray([
+	{ field: "date.fiscal", title: "Fiscal Year" },
+	{ field: "date.quarter", title: "Quarter" },
+	{ field: "date.month", title: "Month" }
+])
+dsbrd.strucutre = ko.observable(dsbrd.optionStructures()[0].field)
 
 dsbrd.refresh = () => {
 	let param = {}
@@ -86,7 +96,7 @@ dsbrd.refresh = () => {
 dsbrd.render = (res) => {
 	let rows = toolkit.clone(dsbrd.rows())
 	let columns = [
-		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
+		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' }, headerAttributes: {style: 'font-weight: bold;' } },
 	]
 
 	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], 'Other'))
@@ -96,6 +106,7 @@ dsbrd.render = (res) => {
 			let field = e._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`]
 			let key = `field${i}`
 			d[key] = toolkit.sum(d.plcodes, (f) => e[f])
+			d[`${key}_orig`] = d[key]
 
 			if (d.pnl == 'EBIT %') {
 				let grossSales = rows.find((f) => f.pnl == 'Gross Sales')
@@ -118,9 +129,7 @@ dsbrd.render = (res) => {
 				format: '{0:n0}',
 				attributes: { class: 'align-right' },
 				headerAttributes: { 
-					style: 'text-align: right !important;',
-					class: 'bold tooltipster',
-					title: 'Click to sort'
+					style: 'text-align: right !important; font-weight: bold;',
 				}
 			})
 		})
@@ -128,6 +137,18 @@ dsbrd.render = (res) => {
 
 	dsbrd.data(rows)
 	dsbrd.columns(columns)
+
+	dsbrd.data().forEach((d) => {
+		if (d.pnl == "Gross Sales" || d.pnl == "EBIT" || d.pnl == "EBIT %") {
+			return
+		}
+
+		let grossSales = dsbrd.data().find((e) => e.pnl == "Gross Sales")
+		for (let i = 0; i < (dsbrd.columns().length - 1); i++) {
+			let percent = toolkit.number(d[`field${i}_orig`] / grossSales[`field${i}_orig`] * 100)
+			d[`field${i}`] = `${kendo.toString(percent, 'n2')} %`
+	    }
+	})
 
 	if (columns.length > 5) {
 		columns.forEach((d, i) => {
@@ -327,7 +348,7 @@ sd.render = (res) => {
 sd.refresh = () => {
 	let param = {}
 	param.pls = ["PL8A"]
-	param.groups = [sd.breakdown()]
+	param.groups = [sd.breakdown(), 'customer.customergroupname']
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
 
