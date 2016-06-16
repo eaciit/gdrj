@@ -262,6 +262,10 @@ dsbrd.render = (res) => {
 		d.columns.forEach((e, i) => {
 			let index = toolkit.getNumberFromString(e.field)
 
+			if ((i + 1) == d.columns.length) {
+				e.attributes.style = `${e.attributes.style}; border-right: 1px solid rgb(240, 243, 244);`
+			}
+
 			if (i == 0) {
 				prevIndex = index
 				counter++
@@ -273,12 +277,6 @@ dsbrd.render = (res) => {
 			let g = growth.columnData[index]
 			let value = toolkit.number((gs.value - gsPrev.value) / gsPrev.value) * 100
 			g.value = `${kendo.toString(value, 'n2')} %`
-
-			console.log(counter, gs.value, gs.value - gsPrev.value, gsPrev.value, value)
-
-			if ((i + 1) == d.columns.length) {
-				e.attributes.style = `${e.attributes.style}; border-right: 1px solid rgb(240, 243, 244);`
-			}
 
 			counter++
 			prevIndex = index

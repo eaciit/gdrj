@@ -156,7 +156,7 @@ func GetPLModel(plcode, companyid string,
 
 func getData(payload *PLFinderParam) (toolkit.Ms, error) {
 	conn := DB().Connection
-	q := conn.NewQuery().From("quarterreport").Where(payload.ParseFilter())
+	q := conn.NewQuery().From("quarterreport") //.Where(payload.ParseFilter())
 
 	c, e := q.Cursor(nil)
 	if e != nil {

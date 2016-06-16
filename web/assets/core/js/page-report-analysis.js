@@ -828,7 +828,9 @@ ccr.getDecreasedQty = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
 	var param = {};
-	param.filters = rpt.getFilterValue(false, ccr.fiscalYear);
+	param.filters = [];
+	// param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
+	// param.filters = _.remove(param.filters, (d) => d.Field != "date.fiscal")
 
 	ccr.contentIsLoading(true);
 	toolkit.ajaxPost('/report/GetDecreasedQty', param, function (res) {
@@ -853,6 +855,15 @@ ccr.refresh = function () {
 	}
 };
 ccr.plot = function () {
+	var orderedData = _.orderBy(ccr.dataComparison(), function (d) {
+		if (ccr.order() == 'outlet') {
+			return d.outletList;
+		}
+
+		return d[ccr.order()];
+	}, 'desc');
+	ccr.dataComparison(orderedData);
+
 	// ccr.dataComparison(ccr.dummyJson)
 	var tempdata = [];
 	// let qty = 0
