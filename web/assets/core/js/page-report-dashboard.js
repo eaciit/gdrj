@@ -81,6 +81,7 @@ dsbrd.render = function (res) {
 			d[key] = toolkit.sum(d.plcodes, function (f) {
 				return e[f];
 			});
+			d[key + '_orig'] = d[key];
 
 			if (d.pnl == 'EBIT %') {
 				var grossSales = rows.find(function (f) {
@@ -121,6 +122,20 @@ dsbrd.render = function (res) {
 
 	dsbrd.data(rows);
 	dsbrd.columns(columns);
+
+	dsbrd.data().forEach(function (d) {
+		if (d.pnl == "Gross Sales" || d.pnl == "EBIT" || d.pnl == "EBIT %") {
+			return;
+		}
+
+		var grossSales = dsbrd.data().find(function (e) {
+			return e.pnl == "Gross Sales";
+		});
+		for (var i = 0; i < dsbrd.columns().length - 1; i++) {
+			var percent = toolkit.number(d['field' + i + '_orig'] / grossSales['field' + i + '_orig'] * 100);
+			d['field' + i] = kendo.toString(percent, 'n2') + ' %';
+		}
+	});
 
 	if (columns.length > 5) {
 		columns.forEach(function (d, i) {

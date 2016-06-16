@@ -23,10 +23,6 @@
 
 // ]
 
-
-
-
-
 vm.currentMenu('Dashboard')
 vm.currentTitle("Dashboard")
 vm.breadcrumb([
@@ -96,6 +92,7 @@ dsbrd.render = (res) => {
 			let field = e._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`]
 			let key = `field${i}`
 			d[key] = toolkit.sum(d.plcodes, (f) => e[f])
+			d[`${key}_orig`] = d[key]
 
 			if (d.pnl == 'EBIT %') {
 				let grossSales = rows.find((f) => f.pnl == 'Gross Sales')
@@ -126,6 +123,18 @@ dsbrd.render = (res) => {
 
 	dsbrd.data(rows)
 	dsbrd.columns(columns)
+
+	dsbrd.data().forEach((d) => {
+		if (d.pnl == "Gross Sales" || d.pnl == "EBIT" || d.pnl == "EBIT %") {
+			return
+		}
+
+		let grossSales = dsbrd.data().find((e) => e.pnl == "Gross Sales")
+		for (let i = 0; i < (dsbrd.columns().length - 1); i++) {
+			let percent = toolkit.number(d[`field${i}_orig`] / grossSales[`field${i}_orig`] * 100)
+			d[`field${i}`] = `${kendo.toString(percent, 'n2')} %`
+	    }
+	})
 
 	if (columns.length > 5) {
 		columns.forEach((d, i) => {
