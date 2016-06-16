@@ -66,6 +66,7 @@ dsbrd.optionStructures = ko.observableArray([
 	{ field: "date.month", name: "Month" }
 ])
 dsbrd.structure = ko.observable(dsbrd.optionStructures()[1].field)
+dsbrd.structureYear = ko.observable('date.year')
 
 dsbrd.refresh = () => {
 	let param = {}
@@ -73,6 +74,10 @@ dsbrd.refresh = () => {
 	param.groups = [dsbrd.breakdown(), dsbrd.structure()]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue()
+
+	if (dsbrd.structure() == 'date.month') {
+		param.groups.push(dsbrd.structureYear())
+	}
 
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
@@ -104,10 +109,7 @@ dsbrd.render = (res) => {
 		width: 200
 	}]
 
-	let data = _.sortBy(res.Data.Data, (d) => [
-		toolkit.redefine(d._id[`_id_${dsbrd.breakdown()}`], 'Other'), 
-		toolkit.redefine(d._id[`_id_${dsbrd.structure()}`], 'Other')
-	])
+	let data = res.Data.Data
 
 	dsbrd.rows().forEach((row, rowIndex) => {
 		row.columnData = []
@@ -115,6 +117,7 @@ dsbrd.render = (res) => {
 			let columnAfter = {
 				breakdownTitle: toolkit.redefine(column._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`]), 
 				structureTitle: toolkit.redefine(column._id[`_id_${toolkit.replace(dsbrd.structure(), '.', '_')}`]), 
+				structureYearTitle: toolkit.redefine(column._id[`_id_${toolkit.replace(dsbrd.structureYear(), '.', '_')}`]), 
 				original: toolkit.sum(row.plcodes, (plcode) => toolkit.number(column[plcode])),
 				value: toolkit.sum(row.plcodes, (plcode) => toolkit.number(column[plcode])),
 			}
@@ -151,11 +154,29 @@ dsbrd.render = (res) => {
 			style: 'text-align: center !important; font-weight: bold; border-right: 1px solid white; ',
 		}
 
+		if (dsbrd.structure() == 'date.month') {
+			column.titleYear = $.trim(columnInfo.structureYearTitle)
+		}
+
 		columnData.push(column)
 	})
 
 	let op1 = _.groupBy(columnData, (d) => d.breakdown)
 	let op2 = _.map(op1, (v, k) => { 
+		v.forEach((h) => {
+			h.month = h.title
+			h.year = h.titleYear
+
+			if (dsbrd.structure() == 'date.month') {
+				let month = moment(new Date(2015, parseInt(h.title, 10) - 1, 1)).format('MMMM')
+				h.title = month
+
+				if (rpt.value.FiscalYears().length > 1) {
+					h.title = `${month} ${h.titleYear}`
+				}
+			}
+		})
+
 		return { 
 			title: k, 
 			columns: v,
@@ -167,10 +188,21 @@ dsbrd.render = (res) => {
 	let columnGrouped = _.sortBy(op2, (d) => d.title)
 
 	op2.forEach((d) => {
-		d.columns = _.sortBy(d.columns, (e) => e.title)
-	})
+		d.columns = _.sortBy(d.columns, (e) => {
+			if (dsbrd.structure() == 'date.month') {
+				let monthString = `0${e.month}`.split('').reverse().slice(0, 2).reverse().join('')
+				
+				if (rpt.value.FiscalYears().length > 1) {
+					let yearMonthString = `${e.year}${monthString}`
+					return yearMonthString
+				}
+				
+				return monthString
+			}
 
-	console.log("------", columnGrouped)
+			return e.title
+		})
+	})
 
 	dsbrd.data(rowsAfter)
 	dsbrd.columns(columns.concat(columnGrouped))

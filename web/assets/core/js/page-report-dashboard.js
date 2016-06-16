@@ -39,6 +39,7 @@ dsbrd.fiscalYear = ko.observable(2014);
 dsbrd.contentIsLoading = ko.observable(false);
 dsbrd.optionStructures = ko.observableArray([{ field: "date.fiscal", name: "Fiscal Year" }, { field: "date.quartertxt", name: "Quarter" }, { field: "date.month", name: "Month" }]);
 dsbrd.structure = ko.observable(dsbrd.optionStructures()[1].field);
+dsbrd.structureYear = ko.observable('date.year');
 
 dsbrd.refresh = function () {
 	var param = {};
@@ -48,6 +49,10 @@ dsbrd.refresh = function () {
 	param.groups = [dsbrd.breakdown(), dsbrd.structure()];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue();
+
+	if (dsbrd.structure() == 'date.month') {
+		param.groups.push(dsbrd.structureYear());
+	}
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
@@ -81,9 +86,7 @@ dsbrd.render = function (res) {
 		width: 200
 	}];
 
-	var data = _.sortBy(res.Data.Data, function (d) {
-		return [toolkit.redefine(d._id['_id_' + dsbrd.breakdown()], 'Other'), toolkit.redefine(d._id['_id_' + dsbrd.structure()], 'Other')];
-	});
+	var data = res.Data.Data;
 
 	dsbrd.rows().forEach(function (row, rowIndex) {
 		row.columnData = [];
@@ -91,6 +94,7 @@ dsbrd.render = function (res) {
 			var columnAfter = {
 				breakdownTitle: toolkit.redefine(column._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')]),
 				structureTitle: toolkit.redefine(column._id['_id_' + toolkit.replace(dsbrd.structure(), '.', '_')]),
+				structureYearTitle: toolkit.redefine(column._id['_id_' + toolkit.replace(dsbrd.structureYear(), '.', '_')]),
 				original: toolkit.sum(row.plcodes, function (plcode) {
 					return toolkit.number(column[plcode]);
 				}),
@@ -139,6 +143,10 @@ dsbrd.render = function (res) {
 			style: 'text-align: center !important; font-weight: bold; border-right: 1px solid white; '
 		};
 
+		if (dsbrd.structure() == 'date.month') {
+			column.titleYear = $.trim(columnInfo.structureYearTitle);
+		}
+
 		columnData.push(column);
 	});
 
@@ -146,6 +154,20 @@ dsbrd.render = function (res) {
 		return d.breakdown;
 	});
 	var op2 = _.map(op1, function (v, k) {
+		v.forEach(function (h) {
+			h.month = h.title;
+			h.year = h.titleYear;
+
+			if (dsbrd.structure() == 'date.month') {
+				var month = moment(new Date(2015, parseInt(h.title, 10) - 1, 1)).format('MMMM');
+				h.title = month;
+
+				if (rpt.value.FiscalYears().length > 1) {
+					h.title = month + ' ' + h.titleYear;
+				}
+			}
+		});
+
 		return {
 			title: k,
 			columns: v,
@@ -160,11 +182,20 @@ dsbrd.render = function (res) {
 
 	op2.forEach(function (d) {
 		d.columns = _.sortBy(d.columns, function (e) {
+			if (dsbrd.structure() == 'date.month') {
+				var monthString = ('0' + e.month).split('').reverse().slice(0, 2).reverse().join('');
+
+				if (rpt.value.FiscalYears().length > 1) {
+					var yearMonthString = '' + e.year + monthString;
+					return yearMonthString;
+				}
+
+				return monthString;
+			}
+
 			return e.title;
 		});
 	});
-
-	console.log("------", columnGrouped);
 
 	dsbrd.data(rowsAfter);
 	dsbrd.columns(columns.concat(columnGrouped));
