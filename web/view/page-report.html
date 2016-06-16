@@ -63,6 +63,8 @@ let o = {
 		{{template "page-report-widget-marketing-expense-index.html"}}
 	{{else if eq .id "sga_cost_ratio"}}
 		{{template "page-report-widget-sga-cost-ratio.html"}}
+	{{else if eq .id "custom_analysis"}}
+		{{template "page-report-widget-custom-analysis.html"}}
 	{{end}}
 	</div>
 
@@ -73,7 +75,7 @@ let o = {
 				<h3 class="no-margin">Filter</h3>
 				<div class="panel-nav-button">
 					<div class="form-group relative align-right no-margin no-padding hardcore" data-bind="visible: true">
-						<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.refreshAll" title="Refresh All">
+						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refreshAll" title="Refresh All">
 							<i class="fa fa-refresh"></i> Refresh All
 						</button>
 					</div>
