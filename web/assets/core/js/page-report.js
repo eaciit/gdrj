@@ -354,6 +354,7 @@ rpt.refreshAll = function () {
 			dsbrd.changeBreakdown();
 			dsbrd.refresh();
 			rank.refresh();
+			sd.refresh();
 			break;
 		case 'reportwidget':
 			pvt.refresh();
