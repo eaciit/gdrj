@@ -189,7 +189,15 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties float64
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	for _, v := range pl.PLDatas {
+
+	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL94A", "PL39A", "PL41A", "PL44A",
+		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D"}
+
+	for k, v := range pl.PLDatas {
+
+		if toolkit.HasMember(exclude, k) {
+			continue
+		}
 
 		switch v.Group1 {
 		case "Net Sales":
@@ -505,7 +513,7 @@ func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, mode
 		pl_m.PLOrder = m.OrderIndex
 		pl_m.Group1 = m.PLHeader1
 		pl_m.Group2 = m.PLHeader2
-		pl_m.Group3 = m.PLHeader3
+		pl_m.Group3 = ccgroup
 	}
 	if ccgroup != "" {
 		pl_m.Group3 = ccgroup
