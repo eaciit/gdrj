@@ -192,10 +192,20 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 
 	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL94A", "PL39A", "PL41A", "PL44A",
 		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D"}
+	inexclude := func(f string)bool{
+		for _, v := range exclude{
+			if v==f {
+				return true
+			}
+		}
+
+		return false
+	}
 
 	for k, v := range pl.PLDatas {
-
-		if toolkit.HasMember(exclude, k) {
+		if inexclude(k) {
+			//pl.AddData(k,0,plmodels)
+			delete(pl.PLDatas, k)
 			continue
 		}
 
@@ -268,7 +278,7 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	opincome = grossmargin + operatingexpense
 	ebt = opincome + nonoprincome //asume nonopriceincome already minus
 	percentpbt = 0
-	if ebt > 0 {
+	if ebt!=0 {
 		percentpbt = taxexpense / ebt * 100
 	}
 	eat = ebt + taxexpense
@@ -500,20 +510,20 @@ func (pl *SalesPL) AddData(plcode string, amount float64, models map[string]*PLM
 }
 
 func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, models map[string]*PLModel) {
-	if amount == 0 {
-		return
-	}
 	m, exist := models[plcode]
 	if !exist {
 		return
 	}
+	if ccgroup != "" {
+		plcode = plcode + "_" + ccgroup
+	}
 	pl_m, exist := pl.PLDatas[plcode]
-	if !exist {
+	if !exist || pl_m==nil {
 		pl_m = new(PLData)
 		pl_m.PLOrder = m.OrderIndex
 		pl_m.Group1 = m.PLHeader1
 		pl_m.Group2 = m.PLHeader2
-		pl_m.Group3 = ccgroup
+		pl_m.Group3 = m.PLHeader3
 	}
 	if ccgroup != "" {
 		pl_m.Group3 = ccgroup
@@ -521,9 +531,6 @@ func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, mode
 	pl_m.Amount += amount
 	if pl.PLDatas == nil {
 		pl.PLDatas = map[string]*PLData{}
-	}
-	if ccgroup != "" {
-		plcode = plcode + "_" + ccgroup
 	}
 	pl.PLDatas[plcode] = pl_m
 }
