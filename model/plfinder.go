@@ -432,7 +432,8 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			_id := raw.Get("_id").(toolkit.M)
 
 			if _id.Has(channelname) {
-				switch strings.ToUpper(_id.GetString("_id_customer_channelid")) {
+				channelid := strings.ToUpper(_id.GetString("_id_customer_channelid"))
+				switch channelid {
 				case "I6":
 					_id.Set(channelname, "MOTORIST")
 				case "I4":
@@ -444,7 +445,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				case "I2":
 					_id.Set(channelname, "GT")
 				default:
-					_id.Set(channelname, channelname)
+					_id.Set(channelname, channelid)
 				}
 			}
 
@@ -461,7 +462,8 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			_id := each.Get("_id").(toolkit.M)
 
 			if _id.Has(channelname) {
-				switch strings.ToUpper(_id.GetString("_id_customer_channelid")) {
+				channelid := strings.ToUpper(_id.GetString("_id_customer_channelid"))
+				switch channelid {
 				case "I6":
 					_id.Set(channelname, "MOTORIST")
 				case "I4":
@@ -473,7 +475,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				case "I2":
 					_id.Set(channelname, "GT")
 				default:
-					_id.Set(channelname, channelname)
+					_id.Set(channelname, channelid)
 				}
 			}
 
