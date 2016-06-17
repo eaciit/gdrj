@@ -443,6 +443,8 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 					_id.Set(channelname, "MT")
 				case "I2":
 					_id.Set(channelname, "GT")
+				default:
+					_id.Set(channelname, "")
 				}
 			}
 
@@ -470,6 +472,8 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 					_id.Set(channelname, "MT")
 				case "I2":
 					_id.Set(channelname, "GT")
+				default:
+					_id.Set(channelname, "")
 				}
 			}
 
