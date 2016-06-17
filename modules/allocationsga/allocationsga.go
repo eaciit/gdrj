@@ -10,7 +10,7 @@ import (
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 	"strings"
-	"sync"
+	//"sync"
 	"time"
 )
 
@@ -27,7 +27,7 @@ var (
 	mapsperiod                         map[string]float64
 	mapkeysvalue                       map[string]float64
 	masters                            toolkit.M
-	mwg                                sync.WaitGroup
+	//mwg                                sync.WaitGroup
 )
 
 func setinitialconnection() {
@@ -89,6 +89,8 @@ func prepmaster() {
 		}).(map[string]*gdrj.CostCenter)
 	masters.Set("costcenter", ccs)
 }
+
+var plmodels map[string]*gdrj.PLModel
 
 func main() {
 	t0 = time.Now()
@@ -158,7 +160,7 @@ func main() {
 
 	toolkit.Println("Start Data Process...")
 	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("skuid_vdist", ""))
-	//filter = dbox.Eq("_id","CN/IDM/15000008_4")
+	filter = dbox.Eq("_id","CN/IDM/15000008_4")
 	c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
 	defer c.Close()
 
@@ -168,13 +170,15 @@ func main() {
 	i = 0
 
 	jobs := make(chan *gdrj.SalesPL, count)
+	result := make(chan string, count)
+
 	toolkit.Println("Prepare Worker")
 	for wi := 0; wi < 10; wi++ {
-		mwg.Add(1)
-		go worker(wi, jobs)
+		//mwg.Add(1)
+		go worker(wi, jobs, result)
 	}
 
-	plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
+	plmodels = masters.Get("plmodel").(map[string]*gdrj.PLModel)
 	for {
 		i++
 
@@ -184,7 +188,46 @@ func main() {
 			toolkit.Println("EOF")
 			break
 		}
-		//clear data pl sga
+		
+		jobs <- spl
+		if i > step {
+			step += scount / 100
+			toolkit.Printfn("Processing %d of %d in %s", i, scount,
+				time.Since(t0).String())
+		}
+
+	}
+
+	close(jobs)
+	//mwg.Wait()
+
+	for i:=0;i<count;i++{
+		<-result
+		toolkit.Printfn("Saving %d of %d in %s", i, scount,
+				time.Since(t0).String())
+	}
+
+	toolkit.Printfn("Processing done in %s",
+		time.Since(t0).String())
+}
+
+// func getcursorsga() (dbox.ICursor, error) {
+// 	conn, _ := modules.GetDboxIConnection("db_godrej")
+// 	defer conn.Close()
+
+// 	c, e := conn.NewQuery().Select().From("tmpsgaallocs").Cursor(nil)
+// 	return c, e
+// }
+
+func worker(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
+	workerConn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerConn.Close()
+	//defer mwg.Done()
+
+	var spl *gdrj.SalesPL
+	table := spl.TableName()
+
+	for spl = range jobs {
 		aplmodel := spl.PLDatas
 		for k, _ := range aplmodel {
 			if strings.Contains(k, "PL33") || strings.Contains(k, "PL34") || strings.Contains(k, "PL35") {
@@ -213,54 +256,19 @@ func main() {
 
 		spl.CalcSum(masters)
 
-		// gdrj.Save(spl) //change to worker
-		jobs <- spl
-		if i > step {
-			step += scount / 100
-			toolkit.Printfn("Processing %d of %d in %s", i, scount,
-				time.Since(t0).String())
-		}
-
-	}
-
-	close(jobs)
-	mwg.Wait()
-
-	toolkit.Printfn("Processing done in %s",
-		time.Since(t0).String())
-}
-
-// func getcursorsga() (dbox.ICursor, error) {
-// 	conn, _ := modules.GetDboxIConnection("db_godrej")
-// 	defer conn.Close()
-
-// 	c, e := conn.NewQuery().Select().From("tmpsgaallocs").Cursor(nil)
-// 	return c, e
-// }
-
-func worker(wi int, jobs <-chan *gdrj.SalesPL) {
-	workerConn, _ := modules.GetDboxIConnection("db_godrej")
-	defer workerConn.Close()
-	defer mwg.Done()
-
-	var j *gdrj.SalesPL
-	table := j.TableName()
-
-	for j = range jobs {
 		e := workerConn.NewQuery().From(table).
-			Save().Exec(toolkit.M{}.Set("data", j))
+			Save().Exec(toolkit.M{}.Set("data", spl))
 		if e!=nil {
 			toolkit.Printfn("Unable to save %s = %s",
-				j.ID, e.Error())
-		} else {
-			//toolkit.Printfn("Saving %s",
-			//	j.ID)
-		}
+				spl.ID, e.Error())
+			os.Exit(200)
+		} 
 		iscount++
 		if iscount%100000 == 0 {
 			toolkit.Printfn("Saved %d of %d in %s",
 				iscount, scount,
 				time.Since(t0).String())
 		}
+		result <- ""
 	}
 }
