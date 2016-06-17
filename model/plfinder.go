@@ -3,6 +3,7 @@ package gdrj
 import (
 	"fmt"
 	"github.com/eaciit/dbox"
+	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -88,19 +89,50 @@ func (s *PLFinderParam) DeletePLCollection(table []string) error {
 	return nil
 }
 
+func (s *PLFinderParam) GetPayload(r *knot.WebContext) error {
+	err := r.GetPayload(s)
+	if err != nil {
+		return err
+	}
+
+	for i, breakdown := range s.Breakdowns {
+		if breakdown == "customer.channelname" {
+			s.Breakdowns[i] = "customer.channelid"
+		}
+	}
+
+	for _, filter := range s.Filters {
+		if filter.Field == "customer.channelname" {
+			filter.Field = "customer.channelid"
+		}
+	}
+
+	return nil
+}
+
 func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 	filters := []*dbox.Filter{}
 
 	oldFilters := s.Filters
-	for i, each := range oldFilters {
-		if each.Field == "customer.channelname" {
-			f := new(Filter)
-			f.Field = "customer.channelid"
-			f.Op = each.Op
-			f.Value = each.Value
+	for _, each := range oldFilters {
+		if each.Field == "customer.channelid" {
 
-			s.Filters = append(oldFilters[:i], oldFilters[i+1:]...)
-			s.Filters = append(s.Filters, f)
+			for _, sub := range each.Value.([]interface{}) {
+
+				// if the user select I3-MT, then the value should be MT + DISCOUNT
+				if sub.(string) == "I3" {
+					each.Value = append(each.Value.([]interface{}), "DISCOUNT")
+					fmt.Println("HAS I3-MT", each.Value)
+					break
+				}
+
+				// if the user select I2-GT, then the value should be GT + ""
+				if sub.(string) == "I2" {
+					each.Value = append(each.Value.([]interface{}), "")
+					fmt.Println("HAS I2-GT", each.Value)
+					break
+				}
+			}
 
 			break
 		}
@@ -290,6 +322,7 @@ func (s *PLFinderParam) Sum(raw *toolkit.M, i ...string) float64 {
 }
 
 func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
+	channelid := "_id_customer_channelid"
 	channelname := "_id_customer_channelname"
 	res := []*toolkit.M{}
 
@@ -457,9 +490,9 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 	for _, each := range *data {
 		_id := each.Get("_id").(toolkit.M)
 
-		if _id.Has(channelname) {
+		if _id.Has(channelid) {
 			hasChannel = true
-			channelid := strings.ToUpper(_id.GetString("_id_customer_channelid"))
+			channelid := strings.ToUpper(_id.GetString(channelid))
 			switch channelid {
 			case "I6":
 				_id.Set(channelname, "MOTORIST")
@@ -469,16 +502,19 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 				_id.Set(channelname, "RD")
 			case "I3":
 				_id.Set(channelname, "MT")
-			case "DISCOUNT":
-				_id.Set(channelname, "MT")
 			case "I2":
 				_id.Set(channelname, "GT")
 			case "EXP":
 				_id.Set(channelname, "EXPORT")
+				// case "DISCOUNT":
+				// 	_id.Set(channelname, "DISCOUNT")
+				// case "":
+				// 	_id.Set(channelname, "")
 			}
 		}
 	}
 
+	// if breakdown channel
 	if hasChannel {
 		channelDiscountIndex := -1
 		channelDiscount := new(toolkit.M)
@@ -486,19 +522,35 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 		channelMTIndex := -1
 		channelMT := new(toolkit.M)
 
+		channelEmptyIndex := -1
+		channelEmpty := new(toolkit.M)
+
+		channelGTIndex := -1
+		channelGT := new(toolkit.M)
+
 		for i, each := range *data {
 			_id := each.Get("_id").(toolkit.M)
-			channelid := strings.ToUpper(_id.GetString("_id_customer_channelid"))
-			if channelid == "DISCOUNT" {
+			channelid := strings.ToUpper(_id.GetString(channelid))
+
+			switch channelid {
+			case "DISCOUNT":
 				channelDiscountIndex = i
 				channelDiscount = each
-			} else if channelid == "I3" {
+			case "I3":
 				channelMTIndex = i
 				channelMT = each
+			case "I2":
+				channelGTIndex = i
+				channelGT = each
+			case "":
+				channelEmptyIndex = i
+				channelEmpty = each
 			}
 		}
 
-		if (channelDiscountIndex > -1) && (channelMTIndex > -1) {
+		// if there is I3-MT and Discount, then summarize it
+		if (channelMTIndex > -1) && (channelDiscountIndex > -1) {
+			fmt.Println("calculate the MT + DISCOUNT")
 			for key := range *channelDiscount {
 				if key == "_id" {
 					continue
@@ -518,6 +570,31 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 
 			realData := *data
 			realData = append(realData[:channelDiscountIndex], realData[channelDiscountIndex+1:]...)
+			data = &realData
+		}
+
+		// if there is I2-GT and "", then summarize it
+		if (channelGTIndex > -1) && (channelEmptyIndex > -1) {
+			fmt.Println("calculate the GT + ")
+			for key := range *channelEmpty {
+				if key == "_id" {
+					continue
+				}
+
+				total := channelGT.GetFloat64(key) + channelEmpty.GetFloat64(key)
+				channelGT.Set(key, total)
+			}
+
+			newData := []*toolkit.M{}
+			for i, each := range *data {
+				if i == channelEmptyIndex {
+					continue
+				}
+				newData = append(newData, each)
+			}
+
+			realData := *data
+			realData = append(realData[:channelEmptyIndex], realData[channelEmptyIndex+1:]...)
 			data = &realData
 		}
 	}
@@ -597,8 +674,6 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	}
 
 	resFinal := *(s.CalculatePL(&res))
-	fmt.Println("+++++++++++++++++++++++++", len(resFinal))
-
 	return resFinal, nil
 }
 
