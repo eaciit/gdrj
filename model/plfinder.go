@@ -295,7 +295,7 @@ func (s *PLFinderParam) Sum(raw *toolkit.M, i ...string) float64 {
 	return total
 }
 
-func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
+func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 	channelname := "_id_customer_channelname"
 	res := []*toolkit.M{}
 
@@ -437,26 +437,6 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			// 	each.Set("marketing_btl", s.noZero(math.Abs(s.noZero((advertising+bonus+gondola+otheradvertising)/btl))))
 			// }
 
-			_id := raw.Get("_id").(toolkit.M)
-
-			if _id.Has(channelname) {
-				channelid := strings.ToUpper(_id.GetString("_id_customer_channelid"))
-				switch channelid {
-				case "I6":
-					_id.Set(channelname, "MOTORIST")
-				case "I4":
-					_id.Set(channelname, "INDUSTRIAL")
-				case "I1":
-					_id.Set(channelname, "RD")
-				case "I3":
-					_id.Set(channelname, "MT")
-				case "I2":
-					_id.Set(channelname, "GT")
-				default:
-					_id.Set(channelname, channelid)
-				}
-			}
-
 			for k, v := range raw.Get("_id").(toolkit.M) {
 				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(fmt.Sprintf("%v", v)))
 			}
@@ -467,26 +447,6 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 		*data = res
 	} else {
 		for _, each := range *data {
-			_id := each.Get("_id").(toolkit.M)
-
-			if _id.Has(channelname) {
-				channelid := strings.ToUpper(_id.GetString("_id_customer_channelid"))
-				switch channelid {
-				case "I6":
-					_id.Set(channelname, "MOTORIST")
-				case "I4":
-					_id.Set(channelname, "INDUSTRIAL")
-				case "I1":
-					_id.Set(channelname, "RD")
-				case "I3":
-					_id.Set(channelname, "MT")
-				case "I2":
-					_id.Set(channelname, "GT")
-				default:
-					_id.Set(channelname, channelid)
-				}
-			}
-
 			for key := range *each {
 				if strings.Contains(key, "PL") {
 					val := each.GetFloat64(key)
@@ -497,6 +457,78 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			}
 		}
 	}
+
+	hasChannel := false
+
+	for _, each := range *data {
+		_id := each.Get("_id").(toolkit.M)
+
+		if _id.Has(channelname) {
+			hasChannel = true
+			channelid := strings.ToUpper(_id.GetString("_id_customer_channelid"))
+			switch channelid {
+			case "I6":
+				_id.Set(channelname, "MOTORIST")
+			case "I4":
+				_id.Set(channelname, "INDUSTRIAL")
+			case "I1":
+				_id.Set(channelname, "RD")
+			case "I3":
+				_id.Set(channelname, "MT")
+			case "DISCOUNT":
+				_id.Set(channelname, "MT")
+			case "I2":
+				_id.Set(channelname, "GT")
+			case "EXP":
+				_id.Set(channelname, "EXPORT")
+			}
+		}
+	}
+
+	if hasChannel {
+		channelDiscountIndex := -1
+		channelDiscount := new(toolkit.M)
+
+		channelMTIndex := -1
+		channelMT := new(toolkit.M)
+
+		for i, each := range *data {
+			_id := each.Get("_id").(toolkit.M)
+			channelid := strings.ToUpper(_id.GetString("_id_customer_channelid"))
+			if channelid == "DISCOUNT" {
+				channelDiscountIndex = i
+				channelDiscount = each
+			} else if channelid == "I3" {
+				channelMTIndex = i
+				channelMT = each
+			}
+		}
+
+		if (channelDiscountIndex > -1) && (channelMTIndex > -1) {
+			for key := range *channelDiscount {
+				if key == "_id" {
+					continue
+				}
+
+				total := channelMT.GetFloat64(key) + channelDiscount.GetFloat64(key)
+				channelMT.Set(key, total)
+			}
+
+			newData := []*toolkit.M{}
+			for i, each := range *data {
+				if i == channelDiscountIndex {
+					continue
+				}
+				newData = append(newData, each)
+			}
+
+			realData := *data
+			realData = append(realData[:channelDiscountIndex], realData[channelDiscountIndex+1:]...)
+			data = &realData
+		}
+	}
+
+	return data
 }
 
 func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
@@ -564,17 +596,16 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	// groups["totalOutlet"] = bson.M{"$size": "$outlets"}
 	pipe := []bson.M{{"$match": matches}, {"$group": groups}} //, {"$project": projects}} //
 
-	fmt.Printf("AGGRTTTTT %v | %#v\n", tableName, pipe)
-
 	res := []*toolkit.M{}
 	err = db.C(tableName).Pipe(pipe).All(&res)
 	if err != nil {
 		return nil, err
 	}
 
-	s.CalculatePL(&res)
+	resFinal := *(s.CalculatePL(&res))
+	fmt.Println("+++++++++++++++++++++++++", len(resFinal))
 
-	return res, nil
+	return resFinal, nil
 }
 
 func (s *PLFinderParam) GeneratePLData() error {
