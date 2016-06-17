@@ -135,9 +135,11 @@ rpt.optionDimensions = ko.observableArray([
     // { field: 'customer.name', name: 'Outlet', title: 'customer_name' },
 	// { field: 'product.name', name: 'Product', title: 'product_name' },
     // { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
-    // { field: 'customer.city', name: 'City', title: 'customer_city' },
+	{ field: "customer.areaname", name: "City", title: "customer_areaname" },
     { field: 'customer.region', name: 'Region', title: 'customer_region' },
+	{ field: "customer.zone", name: "Zone", title: "customer_zone" },
     // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
+    { field: 'customer.keyaccount', name: 'Key Account', title: 'customer_keyaccount' },
     { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
     { field: 'date.month', name: 'Month', title: 'date_month' },
 ])
@@ -156,6 +158,7 @@ rpt.mode = ko.observable('render')
 rpt.refreshView = ko.observable('')
 rpt.modecustom = ko.observable(false)
 rpt.idanalysisreport = ko.observable()
+rpt.optionBreakdownValues = ko.observableArray([])
 rpt.valueMasterData = {}
 rpt.masterData = {
 	geographi: ko.observableArray([])
@@ -177,6 +180,37 @@ rpt.masterData.HQ = ko.observableArray([
 	{ value: true, text: 'True' },
 	{ value: false, text: 'False' }
 ])
+rpt.changeBreakdown = () => {
+	setTimeout(() => {
+		let all = { _id: 'All', Name: 'All' }
+		switch (bkd.breakdownBy()) {
+			case "customer.areaname":
+				bkd.breakdownValue([])
+				rpt.optionBreakdownValues([all].concat(rpt.masterData.Area()))
+			break;
+			case "customer.region":
+				bkd.breakdownValue([])
+				rpt.optionBreakdownValues([all].concat(rpt.masterData.Region()))
+			break;
+			case "customer.zone":
+				bkd.breakdownValue([])
+				rpt.optionBreakdownValues([all].concat(rpt.masterData.Zone()))
+			break;
+			case "product.brand":
+				bkd.breakdownValue([])
+				rpt.optionBreakdownValues([all].concat(rpt.masterData.Brand()))
+			break;
+			case "customer.branchname":
+				bkd.breakdownValue([])
+				rpt.optionBreakdownValues([all].concat(rpt.masterData.Branch()))
+			break;
+			case "customer.channelname":
+				bkd.breakdownValue([])
+				rpt.optionBreakdownValues([all].concat(rpt.masterData.Channel()))
+			break;
+		}
+	})
+}
 rpt.filter.forEach((d) => {
 	d.sub.forEach((e) => {
 		if (rpt.masterData.hasOwnProperty(e._id)) {

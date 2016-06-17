@@ -326,6 +326,121 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 	channelname := "_id_customer_channelname"
 	res := []*toolkit.M{}
 
+	hasChannel := false
+
+	for _, each := range *data {
+		fmt.Printf("------------ %#v\n", each)
+		_id := each.Get("_id").(toolkit.M)
+
+		if _id.Has(channelid) {
+			hasChannel = true
+			channelid := strings.ToUpper(_id.GetString(channelid))
+			switch channelid {
+			case "I6":
+				_id.Set(channelname, "MOTORIST")
+			case "I4":
+				_id.Set(channelname, "INDUSTRIAL")
+			case "I1":
+				_id.Set(channelname, "RD")
+			case "I3":
+				_id.Set(channelname, "MT")
+			case "I2":
+				_id.Set(channelname, "GT")
+			case "EXP":
+				_id.Set(channelname, "EXPORT")
+				// case "DISCOUNT":
+				// 	_id.Set(channelname, "DISCOUNT")
+				// case "":
+				// 	_id.Set(channelname, "")
+			}
+		}
+	}
+
+	// if breakdown channel
+	if hasChannel {
+		channelDiscountIndex := -1
+		channelDiscount := new(toolkit.M)
+
+		channelMTIndex := -1
+		channelMT := new(toolkit.M)
+
+		channelEmptyIndex := -1
+		channelEmpty := new(toolkit.M)
+
+		channelGTIndex := -1
+		channelGT := new(toolkit.M)
+
+		for i, each := range *data {
+			_id := each.Get("_id").(toolkit.M)
+			channelid := strings.ToUpper(_id.GetString(channelid))
+
+			switch channelid {
+			case "DISCOUNT":
+				channelDiscountIndex = i
+				channelDiscount = each
+			case "I3":
+				channelMTIndex = i
+				channelMT = each
+			case "I2":
+				channelGTIndex = i
+				channelGT = each
+			case "":
+				channelEmptyIndex = i
+				channelEmpty = each
+			}
+		}
+
+		// if there is I3-MT and Discount, then summarize it
+		if (channelMTIndex > -1) && (channelDiscountIndex > -1) {
+			fmt.Println("calculate the MT + DISCOUNT")
+			for key := range *channelDiscount {
+				if key == "_id" {
+					continue
+				}
+
+				total := channelMT.GetFloat64(key) + channelDiscount.GetFloat64(key)
+				channelMT.Set(key, total)
+			}
+
+			newData := []*toolkit.M{}
+			for i, each := range *data {
+				if i == channelDiscountIndex {
+					continue
+				}
+				newData = append(newData, each)
+			}
+
+			realData := *data
+			realData = append(realData[:channelDiscountIndex], realData[channelDiscountIndex+1:]...)
+			data = &realData
+		}
+
+		// if there is I2-GT and "", then summarize it
+		if (channelGTIndex > -1) && (channelEmptyIndex > -1) {
+			fmt.Println("calculate the GT + ")
+			for key := range *channelEmpty {
+				if key == "_id" {
+					continue
+				}
+
+				total := channelGT.GetFloat64(key) + channelEmpty.GetFloat64(key)
+				channelGT.Set(key, total)
+			}
+
+			newData := []*toolkit.M{}
+			for i, each := range *data {
+				if i == channelEmptyIndex {
+					continue
+				}
+				newData = append(newData, each)
+			}
+
+			realData := *data
+			realData = append(realData[:channelEmptyIndex], realData[channelEmptyIndex+1:]...)
+			data = &realData
+		}
+	}
+
 	if s.Flag != "" {
 		for _, raw := range *data {
 			grossSales := s.Sum(raw, "grossamount")
@@ -482,120 +597,6 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 					}
 				}
 			}
-		}
-	}
-
-	hasChannel := false
-
-	for _, each := range *data {
-		_id := each.Get("_id").(toolkit.M)
-
-		if _id.Has(channelid) {
-			hasChannel = true
-			channelid := strings.ToUpper(_id.GetString(channelid))
-			switch channelid {
-			case "I6":
-				_id.Set(channelname, "MOTORIST")
-			case "I4":
-				_id.Set(channelname, "INDUSTRIAL")
-			case "I1":
-				_id.Set(channelname, "RD")
-			case "I3":
-				_id.Set(channelname, "MT")
-			case "I2":
-				_id.Set(channelname, "GT")
-			case "EXP":
-				_id.Set(channelname, "EXPORT")
-				// case "DISCOUNT":
-				// 	_id.Set(channelname, "DISCOUNT")
-				// case "":
-				// 	_id.Set(channelname, "")
-			}
-		}
-	}
-
-	// if breakdown channel
-	if hasChannel {
-		channelDiscountIndex := -1
-		channelDiscount := new(toolkit.M)
-
-		channelMTIndex := -1
-		channelMT := new(toolkit.M)
-
-		channelEmptyIndex := -1
-		channelEmpty := new(toolkit.M)
-
-		channelGTIndex := -1
-		channelGT := new(toolkit.M)
-
-		for i, each := range *data {
-			_id := each.Get("_id").(toolkit.M)
-			channelid := strings.ToUpper(_id.GetString(channelid))
-
-			switch channelid {
-			case "DISCOUNT":
-				channelDiscountIndex = i
-				channelDiscount = each
-			case "I3":
-				channelMTIndex = i
-				channelMT = each
-			case "I2":
-				channelGTIndex = i
-				channelGT = each
-			case "":
-				channelEmptyIndex = i
-				channelEmpty = each
-			}
-		}
-
-		// if there is I3-MT and Discount, then summarize it
-		if (channelMTIndex > -1) && (channelDiscountIndex > -1) {
-			fmt.Println("calculate the MT + DISCOUNT")
-			for key := range *channelDiscount {
-				if key == "_id" {
-					continue
-				}
-
-				total := channelMT.GetFloat64(key) + channelDiscount.GetFloat64(key)
-				channelMT.Set(key, total)
-			}
-
-			newData := []*toolkit.M{}
-			for i, each := range *data {
-				if i == channelDiscountIndex {
-					continue
-				}
-				newData = append(newData, each)
-			}
-
-			realData := *data
-			realData = append(realData[:channelDiscountIndex], realData[channelDiscountIndex+1:]...)
-			data = &realData
-		}
-
-		// if there is I2-GT and "", then summarize it
-		if (channelGTIndex > -1) && (channelEmptyIndex > -1) {
-			fmt.Println("calculate the GT + ")
-			for key := range *channelEmpty {
-				if key == "_id" {
-					continue
-				}
-
-				total := channelGT.GetFloat64(key) + channelEmpty.GetFloat64(key)
-				channelGT.Set(key, total)
-			}
-
-			newData := []*toolkit.M{}
-			for i, each := range *data {
-				if i == channelEmptyIndex {
-					continue
-				}
-				newData = append(newData, each)
-			}
-
-			realData := *data
-			realData = append(realData[:channelEmptyIndex], realData[channelEmptyIndex+1:]...)
-			data = &realData
 		}
 	}
 

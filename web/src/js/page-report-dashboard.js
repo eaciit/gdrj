@@ -52,15 +52,7 @@ dsbrd.rows = ko.observableArray([
 
 dsbrd.data = ko.observableArray([])
 dsbrd.columns = ko.observableArray([])
-dsbrd.optionBreakdowns = ko.observableArray([
-	{ field: "customer.areaname", name: "City" },
-	{ field: "customer.region", name: "Region" },
-	{ field: "customer.zone", name: "Zone" },
-	{ field: "product.brand", name: "Brand" },
-	{ field: "customer.branchname", name: "Branch" },
-	{ field: "customer.channelname", name: "Channel" },
-])
-dsbrd.breakdown = ko.observable(dsbrd.optionBreakdowns()[4].field)
+dsbrd.breakdown = ko.observable('customer.branchname')
 dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears())
 dsbrd.contentIsLoading = ko.observable(false)
 dsbrd.optionStructures = ko.observableArray([
@@ -98,17 +90,23 @@ dsbrd.changeBreakdown = () => {
 				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Branch()))
 			break;
 		}
-	})
+	}, 100)
 }
 
 dsbrd.refresh = () => {
+	if (dsbrd.breakdownValue().length == 0) {
+		toolkit.showError('Please choose at least breakdown value')
+		return
+	}
+
 	let param = {}
 	param.pls = _.flatten(dsbrd.rows().map((d) => d.plcodes))
 	param.groups = [dsbrd.breakdown(), dsbrd.structure()]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears)
 
-	if (dsbrd.breakdownValue().length > 0) {
+	let breakdownValue = dsbrd.breakdownValue().filter((d) => d != 'All')
+	if (breakdownValue.length > 0) {
 		param.filters.push({
 			Field: dsbrd.breakdown(),
 			Op: '$in',
@@ -544,15 +542,7 @@ sd.refresh = () => {
 	sd.contentIsLoading(true)
 	fetch()
 }
-
-$(() => {
-	rpt.refreshView('dashboard')
-
-	dsbrd.changeBreakdown()
-	dsbrd.refresh()
-	rank.refresh()
-	sd.refresh()
-
+sd.initSort = () => {
 	$(".grid-sales-dist").on('click', '.sortsales', function(){
 		let sort = $(this).attr('sort'), index = $(this).index(), res = ''
 		if (sort == undefined || sort == '')
@@ -565,4 +555,18 @@ $(() => {
 		sd.sortVal[index] = res
 		sd.sortData()
 	})
+}
+
+$(() => {
+	rpt.refreshView('dashboard')
+
+	dsbrd.changeBreakdown()
+	setTimeout(() => {
+		dsbrd.breakdownValue(['All'])
+		dsbrd.refresh()
+	}, 200)
+
+	rank.refresh()
+	sd.refresh()
+	sd.initSort()
 })

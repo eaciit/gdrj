@@ -16,6 +16,7 @@ bkd.data = ko.observableArray([])
 bkd.plmodels = ko.observableArray([])
 bkd.zeroValue = ko.observable(false)
 bkd.fiscalYear = ko.observable(rpt.value.FiscalYear())
+bkd.breakdownValue = ko.observableArray([])
 
 bkd.generateDataForX = () => {
 	let param = {
@@ -37,12 +38,25 @@ bkd.generateDataForX = () => {
 }
 
 bkd.refresh = (useCache = false) => {
+	if (bkd.breakdownValue().length == 0) {
+		toolkit.showError('Please choose at least breakdown value')
+		return
+	}
+
 	let param = {}
 	param.pls = []
 	param.groups = [bkd.breakdownBy() /** , 'date.year' */]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, bkd.fiscalYear)
 
+	let breakdownValue = bkd.breakdownValue().filter((d) => d != 'All')
+	if (breakdownValue.length > 0) {
+		param.filters.push({
+			Field: bkd.breakdownBy(),
+			Op: '$in',
+			Value: bkd.breakdownValue()
+		})
+	}
 	console.log("bdk", param.filters)
 	
 	bkd.oldBreakdownBy(bkd.breakdownBy())
@@ -542,7 +556,7 @@ bkd.render = () => {
 		}
 	})
 
-	bkd.showZeroValue(true)
+	bkd.showZeroValue(false)
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
 }
 
@@ -850,22 +864,18 @@ ccr.plot = () => {
 	let tempdata = []
 	// let qty = 0
 	// let price = 0
-	let outlet = 0
-	let maxline = 0
-	let maxprice = 0
-	let maxqty = 0
-	let quarter = []
+	let outlet = 0, maxline = 0, maxprice = 0, maxqty = 0, quarter = []
 	for (var i in ccr.dataComparison()){
 		if (ccr.dataComparison()[i].productName != undefined){
 			// qty = _.filter(ccr.dataComparison()[i].qty, function(resqty){ return resqty == 0}).length
 			// price = _.filter(ccr.dataComparison()[i].price, function(resprice){ return resprice == 0}).length
 			maxprice = _.max(ccr.dataComparison()[i].price)
 			maxqty = _.max(ccr.dataComparison()[i].qty)
-			if (maxprice > maxqty)
-				maxline = maxprice
-			else
-				maxline = maxqty
 			outlet = _.max(ccr.dataComparison()[i].outletList)
+			// if (maxprice > maxqty)
+			// 	maxline = maxprice
+			// else
+			// 	maxline = maxqty
 			quarter = []
 			for (var a in ccr.dataComparison()[i].qty){
 				quarter.push(`Quarter ${parseInt(a)+1}`)
@@ -875,7 +885,8 @@ ccr.plot = () => {
 				price: ccr.dataComparison()[i].priceCount,
 				quarter: quarter,
 				maxoutlet: outlet + (outlet/2),
-				maxline: maxline + (maxline/4),
+				maxprice: maxprice + (maxprice/4),
+				maxqty: maxqty + (maxqty/4),
 				productName: ccr.dataComparison()[i].productName,
 				data: ccr.dataComparison()[i]
 			})
@@ -903,7 +914,7 @@ ccr.render = () => {
 						width: 3
 					}
 				},
-				axis: "priceqty"
+				axis: "price"
 			},
 			qty: { 
 				name: 'Qty', 
@@ -917,7 +928,7 @@ ccr.render = () => {
 						width: 3
 					}
 				},
-				axis: "priceqty"
+				axis: "qty"
 			},
 			outlet: { 
 				name: 'Outlet', 
@@ -946,28 +957,50 @@ ccr.render = () => {
 		})
 
 		let valueAxes = []
-		if (ccr.comparison().indexOf('qty') > -1 || ccr.comparison().indexOf('price') > -1) {
+		// , maxyo = 0, fieldmax = '', maxselect = 0
+		// if (ccr.comparison().indexOf('qty') > -1 || ccr.comparison().indexOf('price') > -1) {
+		// 	valueAxes.push({
+		// 		name: "priceqty",
+  //               title: { text: "Qty & Price" },
+		// 		majorGridLines: {
+		// 			color: '#fafafa'
+		// 		},
+		// 		max: full.maxline,
+		// 	})
+		// }
+		// if (ccr.comparison().indexOf('outlet') > -1) {
+		// 	valueAxes.push({
+		// 		name: "outlet",
+  //               title: { text: "Outlet" },
+  //               majorGridLines: {
+		// 			color: '#fafafa'
+		// 		},
+		// 		max: full.maxoutlet,
+		// 	})
+		// }
+		// if (ccr.comparison().length > 1) {
+		// 	if (ccr.comparison()[0] > ccr.comparison()[1]){
+		// 		maxyo = full["max"+ccr.comparison()[0]]
+		// 		fieldmax = ccr.comparison()[0]
+		// 	} else {
+		// 		maxyo = full["max"+ccr.comparison()[1]]
+		// 		fieldmax = ccr.comparison()[1]
+		// 	}
+		// } else if (ccr.comparison() > 0) {
+		// 	maxyo = full["max"+ccr.comparison()[0]]
+		// 	fieldmax = ccr.comparison()[0]
+		// }
+		// maxyo += maxyo / 4
+		for (let e in ccr.comparison()){
 			valueAxes.push({
-				name: "priceqty",
-                title: { text: "Qty & Price" },
-				majorGridLines: {
-					color: '#fafafa'
-				},
-				max: full.maxline,
-			})
-		}
-		if (ccr.comparison().indexOf('outlet') > -1) {
-			valueAxes.push({
-				name: "outlet",
-                title: { text: "Outlet" },
+				name: ccr.comparison()[e],
+                title: { text: ccr.comparison()[e].charAt(0).toUpperCase() + ccr.comparison()[e].slice(1) },
                 majorGridLines: {
 					color: '#fafafa'
 				},
-				max: full.maxoutlet,
+				max: full["max"+ccr.comparison()[e]],
 			})
 		}
-
-		console.log(valueAxes)
 
 		return {
 			// dataSource: {
@@ -1039,7 +1072,12 @@ rpt.refresh = () => {
 
 	rs.getSalesHeaderList()
 
-	bkd.refresh(false)
+	rpt.changeBreakdown()
+	setTimeout(() => {
+		bkd.breakdownValue(['All'])
+		bkd.refresh(false)
+	}, 200)
+
 	bkd.prepareEvents()
 
 	ccr.getDecreasedQty(false)
