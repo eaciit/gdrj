@@ -1001,6 +1001,7 @@ ccr.render = function () {
 				majorGridLines: {
 					color: '#fafafa'
 				},
+				axisCrossingValue: [0, 8],
 				labels: {
 					font: 'Source Sans Pro 11',
 					rotation: 40
