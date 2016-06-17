@@ -135,9 +135,11 @@ rpt.optionDimensions = ko.observableArray([
     // { field: 'customer.name', name: 'Outlet', title: 'customer_name' },
 	// { field: 'product.name', name: 'Product', title: 'product_name' },
     // { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
-    // { field: 'customer.city', name: 'City', title: 'customer_city' },
+	{ field: "customer.areaname", name: "City", title: "customer_areaname" },
     { field: 'customer.region', name: 'Region', title: 'customer_region' },
+	{ field: "customer.zone", name: "Zone", title: "customer_zone" },
     // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
+    { field: 'customer.keyaccount', name: 'Key Account', title: 'customer_keyaccount' },
     { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
     { field: 'date.month', name: 'Month', title: 'date_month' },
 ])
