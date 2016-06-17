@@ -204,7 +204,8 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 
 	for k, v := range pl.PLDatas {
 		if inexclude(k) {
-			pl.AddData(k,0,plmodels)
+			//pl.AddData(k,0,plmodels)
+			delete(pl.PLDatas, k)
 			continue
 		}
 

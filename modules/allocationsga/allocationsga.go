@@ -158,7 +158,7 @@ func main() {
 
 	toolkit.Println("Start Data Process...")
 	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("skuid_vdist", ""))
-	filter = dbox.Eq("_id","CN/IDM/15000008_4")
+	//filter = dbox.Eq("_id","CN/IDM/15000008_4")
 	c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
 	defer c.Close()
 
