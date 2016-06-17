@@ -74,44 +74,48 @@ dsbrd.changeBreakdown = function () {
 };
 
 dsbrd.refresh = function () {
-	var param = {};
-	param.pls = _.flatten(dsbrd.rows().map(function (d) {
-		return d.plcodes;
-	}));
-	param.groups = [dsbrd.breakdown(), dsbrd.structure()];
-	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears);
-
 	if (dsbrd.breakdownValue().length > 0) {
-		param.filters.push({
-			Field: dsbrd.breakdown(),
-			Op: '$in',
-			Value: dsbrd.breakdownValue()
-		});
-	}
+		(function () {
+			var param = {};
+			param.pls = _.flatten(dsbrd.rows().map(function (d) {
+				return d.plcodes;
+			}));
+			param.groups = [dsbrd.breakdown(), dsbrd.structure()];
+			param.aggr = 'sum';
+			param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears);
 
-	if (dsbrd.structure() == 'date.month') {
-		param.groups.push(dsbrd.structureYear());
-	}
-
-	var fetch = function fetch() {
-		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
-			if (res.Status == "NOK") {
-				setTimeout(function () {
-					fetch();
-				}, 1000 * 5);
-				return;
+			if (dsbrd.breakdownValue().length > 0) {
+				param.filters.push({
+					Field: dsbrd.breakdown(),
+					Op: '$in',
+					Value: dsbrd.breakdownValue()
+				});
 			}
 
-			dsbrd.contentIsLoading(false);
-			dsbrd.render(res);
-		}, function () {
-			dsbrd.contentIsLoading(false);
-		});
-	};
+			if (dsbrd.structure() == 'date.month') {
+				param.groups.push(dsbrd.structureYear());
+			}
 
-	dsbrd.contentIsLoading(true);
-	fetch();
+			var fetch = function fetch() {
+				toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
+					if (res.Status == "NOK") {
+						setTimeout(function () {
+							fetch();
+						}, 1000 * 5);
+						return;
+					}
+
+					dsbrd.contentIsLoading(false);
+					dsbrd.render(res);
+				}, function () {
+					dsbrd.contentIsLoading(false);
+				});
+			};
+
+			dsbrd.contentIsLoading(true);
+			fetch();
+		})();
+	}
 };
 
 dsbrd.render = function (res) {

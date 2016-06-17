@@ -102,40 +102,42 @@ dsbrd.changeBreakdown = () => {
 }
 
 dsbrd.refresh = () => {
-	let param = {}
-	param.pls = _.flatten(dsbrd.rows().map((d) => d.plcodes))
-	param.groups = [dsbrd.breakdown(), dsbrd.structure()]
-	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears)
+	if (dsbrd.breakdownValue().length > 0){
+		let param = {}
+		param.pls = _.flatten(dsbrd.rows().map((d) => d.plcodes))
+		param.groups = [dsbrd.breakdown(), dsbrd.structure()]
+		param.aggr = 'sum'
+		param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears)
 
-	if (dsbrd.breakdownValue().length > 0) {
-		param.filters.push({
-			Field: dsbrd.breakdown(),
-			Op: '$in',
-			Value: dsbrd.breakdownValue()
-		})
+		if (dsbrd.breakdownValue().length > 0) {
+			param.filters.push({
+				Field: dsbrd.breakdown(),
+				Op: '$in',
+				Value: dsbrd.breakdownValue()
+			})
+		}
+
+		if (dsbrd.structure() == 'date.month') {
+			param.groups.push(dsbrd.structureYear())
+		}
+
+		let fetch = () => {
+			toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
+				if (res.Status == "NOK") {
+					setTimeout(() => { fetch() }, 1000 * 5)
+					return
+				}
+
+				dsbrd.contentIsLoading(false)
+				dsbrd.render(res)
+			}, () => {
+				dsbrd.contentIsLoading(false)
+			})
+		}
+
+		dsbrd.contentIsLoading(true)
+		fetch()
 	}
-
-	if (dsbrd.structure() == 'date.month') {
-		param.groups.push(dsbrd.structureYear())
-	}
-
-	let fetch = () => {
-		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
-			if (res.Status == "NOK") {
-				setTimeout(() => { fetch() }, 1000 * 5)
-				return
-			}
-
-			dsbrd.contentIsLoading(false)
-			dsbrd.render(res)
-		}, () => {
-			dsbrd.contentIsLoading(false)
-		})
-	}
-
-	dsbrd.contentIsLoading(true)
-	fetch()
 }
 
 dsbrd.render = (res) => {
