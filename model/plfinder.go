@@ -99,6 +99,18 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 			f.Op = each.Op
 			f.Value = each.Value
 
+			// if the user select I3-MT, then the value should be MT + DISCOUNT
+			hasI3 := false
+			for _, each := range f.Value.([]interface{}) {
+				if each.(string) == "I3" { // MT
+					hasI3 = true
+				}
+			}
+			if hasI3 {
+				f.Value = append(f.Value.([]interface{}), "DISCOUNT")
+				fmt.Println("HAS I3", f.Value)
+			}
+
 			s.Filters = append(oldFilters[:i], oldFilters[i+1:]...)
 			s.Filters = append(s.Filters, f)
 
@@ -462,7 +474,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			case "I3":
 				_id.Set(channelname, "MT")
 			case "DISCOUNT":
-				_id.Set(channelname, "MT")
+				_id.Set(channelname, "DISCOUNT")
 			case "I2":
 				_id.Set(channelname, "GT")
 			case "EXP":
@@ -471,6 +483,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 		}
 	}
 
+	// if breakdown channel
 	if hasChannel {
 		channelDiscountIndex := -1
 		channelDiscount := new(toolkit.M)
@@ -490,7 +503,9 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			}
 		}
 
+		// if there is I3-MT and Discount, then summarize it
 		if (channelDiscountIndex > -1) && (channelMTIndex > -1) {
+			fmt.Println("calculate the MT + DISCOUNT")
 			for key := range *channelDiscount {
 				if key == "_id" {
 					continue
