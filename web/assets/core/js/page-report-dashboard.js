@@ -46,26 +46,28 @@ dsbrd.optionBreakdownValues = ko.observableArray([]);
 dsbrd.breakdownValue = ko.observableArray([]);
 dsbrd.changeBreakdown = function () {
 	setTimeout(function () {
+		var all = { _id: 'All', Name: 'All' };
+
 		switch (dsbrd.breakdown()) {
 			case "customer.areaname":
 				dsbrd.breakdownValue([]);
-				dsbrd.optionBreakdownValues(rpt.masterData.Area());
+				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Area()));
 				break;
 			case "customer.region":
 				dsbrd.breakdownValue([]);
-				dsbrd.optionBreakdownValues(rpt.masterData.Region());
+				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Region()));
 				break;
 			case "customer.zone":
 				dsbrd.breakdownValue([]);
-				dsbrd.optionBreakdownValues(rpt.masterData.Zone());
+				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Zone()));
 				break;
 			case "product.brand":
 				dsbrd.breakdownValue([]);
-				dsbrd.optionBreakdownValues(rpt.masterData.Brand());
+				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Brand()));
 				break;
 			case "customer.branchname":
 				dsbrd.breakdownValue([]);
-				dsbrd.optionBreakdownValues(rpt.masterData.Branch());
+				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Branch()));
 				break;
 		}
 	});
