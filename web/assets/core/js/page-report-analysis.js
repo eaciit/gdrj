@@ -42,12 +42,27 @@ bkd.generateDataForX = function () {
 bkd.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
+	if (bkd.breakdownValue().length == 0) {
+		toolkit.showError('Please choose at least breakdown value');
+		return;
+	}
+
 	var param = {};
 	param.pls = [];
 	param.groups = [bkd.breakdownBy() /** , 'date.year' */];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, bkd.fiscalYear);
 
+	var breakdownValue = bkd.breakdownValue().filter(function (d) {
+		return d != 'All';
+	});
+	if (breakdownValue.length > 0) {
+		param.filters.push({
+			Field: bkd.breakdownBy(),
+			Op: '$in',
+			Value: bkd.breakdownValue()
+		});
+	}
 	console.log("bdk", param.filters);
 
 	bkd.oldBreakdownBy(bkd.breakdownBy());
@@ -1080,7 +1095,12 @@ rpt.refresh = function () {
 
 	rs.getSalesHeaderList();
 
-	bkd.refresh(false);
+	rpt.changeBreakdown();
+	setTimeout(function () {
+		bkd.breakdownValue(['All']);
+		bkd.refresh(false);
+	}, 200);
+
 	bkd.prepareEvents();
 
 	ccr.getDecreasedQty(false);
@@ -1088,5 +1108,4 @@ rpt.refresh = function () {
 
 $(function () {
 	rpt.refresh();
-	rpt.changeBreakdown();
 });

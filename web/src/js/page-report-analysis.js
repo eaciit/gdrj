@@ -38,12 +38,25 @@ bkd.generateDataForX = () => {
 }
 
 bkd.refresh = (useCache = false) => {
+	if (bkd.breakdownValue().length == 0) {
+		toolkit.showError('Please choose at least breakdown value')
+		return
+	}
+
 	let param = {}
 	param.pls = []
 	param.groups = [bkd.breakdownBy() /** , 'date.year' */]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, bkd.fiscalYear)
 
+	let breakdownValue = bkd.breakdownValue().filter((d) => d != 'All')
+	if (breakdownValue.length > 0) {
+		param.filters.push({
+			Field: bkd.breakdownBy(),
+			Op: '$in',
+			Value: bkd.breakdownValue()
+		})
+	}
 	console.log("bdk", param.filters)
 	
 	bkd.oldBreakdownBy(bkd.breakdownBy())
@@ -1059,7 +1072,12 @@ rpt.refresh = () => {
 
 	rs.getSalesHeaderList()
 
-	bkd.refresh(false)
+	rpt.changeBreakdown()
+	setTimeout(() => {
+		bkd.breakdownValue(['All'])
+		bkd.refresh(false)
+	}, 200)
+
 	bkd.prepareEvents()
 
 	ccr.getDecreasedQty(false)
@@ -1067,5 +1085,4 @@ rpt.refresh = () => {
 
 $(() => {
 	rpt.refresh()
-	rpt.changeBreakdown()
 })
