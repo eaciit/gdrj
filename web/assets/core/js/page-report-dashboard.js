@@ -70,52 +70,56 @@ dsbrd.changeBreakdown = function () {
 				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Branch()));
 				break;
 		}
-	});
+	}, 100);
 };
 
 dsbrd.refresh = function () {
-	if (dsbrd.breakdownValue().length > 0) {
-		(function () {
-			var param = {};
-			param.pls = _.flatten(dsbrd.rows().map(function (d) {
-				return d.plcodes;
-			}));
-			param.groups = [dsbrd.breakdown(), dsbrd.structure()];
-			param.aggr = 'sum';
-			param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears);
-
-			if (dsbrd.breakdownValue().length > 0) {
-				param.filters.push({
-					Field: dsbrd.breakdown(),
-					Op: '$in',
-					Value: dsbrd.breakdownValue()
-				});
-			}
-
-			if (dsbrd.structure() == 'date.month') {
-				param.groups.push(dsbrd.structureYear());
-			}
-
-			var fetch = function fetch() {
-				toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
-					if (res.Status == "NOK") {
-						setTimeout(function () {
-							fetch();
-						}, 1000 * 5);
-						return;
-					}
-
-					dsbrd.contentIsLoading(false);
-					dsbrd.render(res);
-				}, function () {
-					dsbrd.contentIsLoading(false);
-				});
-			};
-
-			dsbrd.contentIsLoading(true);
-			fetch();
-		})();
+	if (dsbrd.breakdownValue().length == 0) {
+		toolkit.showError('Please choose at least breakdown value');
+		return;
 	}
+
+	var param = {};
+	param.pls = _.flatten(dsbrd.rows().map(function (d) {
+		return d.plcodes;
+	}));
+	param.groups = [dsbrd.breakdown(), dsbrd.structure()];
+	param.aggr = 'sum';
+	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears);
+
+	var breakdownValue = dsbrd.breakdownValue().filter(function (d) {
+		return d != 'All';
+	});
+	if (breakdownValue.length > 0) {
+		param.filters.push({
+			Field: dsbrd.breakdown(),
+			Op: '$in',
+			Value: dsbrd.breakdownValue()
+		});
+	}
+
+	if (dsbrd.structure() == 'date.month') {
+		param.groups.push(dsbrd.structureYear());
+	}
+
+	var fetch = function fetch() {
+		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			dsbrd.contentIsLoading(false);
+			dsbrd.render(res);
+		}, function () {
+			dsbrd.contentIsLoading(false);
+		});
+	};
+
+	dsbrd.contentIsLoading(true);
+	fetch();
 };
 
 dsbrd.render = function (res) {
@@ -560,15 +564,7 @@ sd.refresh = function () {
 	sd.contentIsLoading(true);
 	fetch();
 };
-
-$(function () {
-	rpt.refreshView('dashboard');
-
-	dsbrd.changeBreakdown();
-	dsbrd.refresh();
-	rank.refresh();
-	sd.refresh();
-
+sd.initSort = function () {
 	$(".grid-sales-dist").on('click', '.sortsales', function () {
 		var sort = $(this).attr('sort'),
 		    index = $(this).index(),
@@ -578,4 +574,18 @@ $(function () {
 		sd.sortVal[index] = res;
 		sd.sortData();
 	});
+};
+
+$(function () {
+	rpt.refreshView('dashboard');
+
+	dsbrd.changeBreakdown();
+	setTimeout(function () {
+		dsbrd.breakdownValue(['All']);
+		dsbrd.refresh();
+	}, 200);
+
+	rank.refresh();
+	sd.refresh();
+	sd.initSort();
 });
