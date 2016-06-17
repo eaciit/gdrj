@@ -58,18 +58,15 @@ crt.configure = function (series, colorseries) {
 	}
 
 	if (crt.typeChart() == 'stack') {
-		(function () {
-			var maxyo = 0;
-			var datayo = _.map(dataSort, function (k, e) {
-				var data = {};
-				$.each(k, function (key, value) {
-					if (value != 0) data[key] = value;
-					if (value > maxyo) maxyo = value;
-				});
-				return data;
+		var datayo = _.map(dataSort, function (k, e) {
+			var data = {};
+			$.each(k, function (key, value) {
+				if (value != 0) data[key] = value;
+				if (value > maxyo) maxyo = value;
 			});
-			dataSort = datayo;
-		})();
+			return data;
+		});
+		dataSort = datayo;
 	}
 	var config = {
 		title: crt.title(),
