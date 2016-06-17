@@ -496,7 +496,7 @@ sd.render = (res) => {
 		channelgroup.forEach((e) => {
 			let tr = toolkit.newEl('tr').appendTo(innerTable)
 			toolkit.newEl('td').appendTo(tr).html(e.key).height(height / channelgroup.length)
-			toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(e.percentageyo, 'n2')} %`)
+			toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(e.percentageyo, 'n2')}&nbsp;%`)
 			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'))
 		})
 		index++
