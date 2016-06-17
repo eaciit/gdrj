@@ -299,13 +299,13 @@ rpt.filterMultiSelect = (d) => {
 
 		if (['Branch', 'Brand'].indexOf(d.from) > -1) {
 			config.dataValueField = 'Name'
-		}
-
-		if (d.from == 'Product') {
+		} else if (d.from == 'Product') {
 			config = $.extend(true, config, {
 				minLength: 1,
 				placeholder: 'Type min 1 chars'
 			})
+		} else if (d.from == 'Channel') {
+			config.dataValueField = '_id'
 		}
 
 		toolkit.ajaxPost(`/report/getdata${d.from.toLowerCase()}`, {}, (res) => {
