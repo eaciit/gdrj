@@ -181,7 +181,6 @@ rpt.masterData.HQ = ko.observableArray([
 rpt.changeBreakdown = () => {
 	setTimeout(() => {
 		let all = { _id: 'All', Name: 'All' }
-		
 		switch (bkd.breakdownBy()) {
 			case "customer.areaname":
 				bkd.breakdownValue([])
@@ -202,6 +201,10 @@ rpt.changeBreakdown = () => {
 			case "customer.branchname":
 				bkd.breakdownValue([])
 				rpt.optionBreakdownValues([all].concat(rpt.masterData.Branch()))
+			break;
+			case "customer.channelname":
+				bkd.breakdownValue([])
+				rpt.optionBreakdownValues([all].concat(rpt.masterData.Channel()))
 			break;
 		}
 	})
