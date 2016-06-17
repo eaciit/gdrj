@@ -191,20 +191,14 @@ func (s *PLFinderParam) GetTableName() string {
 		dimensions := col.Get("dimensions").([]string)
 		ok := true
 
-		fmt.Println("############### DIMENSIONS", dimensions)
-		fmt.Print("############### FILTERKEYS ")
-
 	loopFilter:
 		for _, filterKey := range filterKeys {
 			filter := strings.Replace(filterKey, ".", "_", -1)
-			fmt.Print(filter, " ")
 			if !toolkit.HasMember(dimensions, filter) {
 				ok = false
 				break loopFilter
 			}
 		}
-
-		fmt.Println()
 
 		if ok {
 			return col.GetString("table")
