@@ -16,6 +16,7 @@ bkd.data = ko.observableArray([])
 bkd.plmodels = ko.observableArray([])
 bkd.zeroValue = ko.observable(false)
 bkd.fiscalYear = ko.observable(rpt.value.FiscalYear())
+bkd.breakdownValue = ko.observableArray([])
 
 bkd.generateDataForX = () => {
 	let param = {
@@ -1066,4 +1067,5 @@ rpt.refresh = () => {
 
 $(() => {
 	rpt.refresh()
+	rpt.changeBreakdown()
 })
