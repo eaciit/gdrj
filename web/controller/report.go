@@ -268,13 +268,9 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 	res := new(toolkit.Result)
 
 	payload := new(gdrj.PLFinderParam)
-	if err := r.GetPayload(payload); err != nil {
+	if err := payload.GetPayload(r); err != nil {
 		res.SetError(err)
 		return res
-	}
-
-	if toolkit.HasMember(payload.Breakdowns, "customer.channelname") {
-		payload.Breakdowns = append(payload.Breakdowns, "customer.channelid")
 	}
 
 	fmt.Println("counting")

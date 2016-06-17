@@ -43,8 +43,8 @@ rpt.value = {
 	HQ: ko.observable(false),
 	From: ko.observable(new Date(2014, 0, 1)),
 	To: ko.observable(new Date(2016, 11, 31)),
-	FiscalYear: ko.observable(rpt.optionFiscalYears()[0]),
-	FiscalYears: ko.observableArray([rpt.optionFiscalYears()[0]])
+	FiscalYear: ko.observable(rpt.optionFiscalYears()[1]),
+	FiscalYears: ko.observableArray([rpt.optionFiscalYears()[1]])
 };
 rpt.masterData.Type = ko.observableArray([{ value: 'Mfg', text: 'Mfg' }, { value: 'Branch', text: 'Branch' }]);
 rpt.masterData.HQ = ko.observableArray([{ value: true, text: 'True' }, { value: false, text: 'False' }]);
@@ -175,13 +175,13 @@ rpt.filterMultiSelect = function (d) {
 
 		if (['Branch', 'Brand'].indexOf(d.from) > -1) {
 			config.dataValueField = 'Name';
-		}
-
-		if (d.from == 'Product') {
+		} else if (d.from == 'Product') {
 			config = $.extend(true, config, {
 				minLength: 1,
 				placeholder: 'Type min 1 chars'
 			});
+		} else if (d.from == 'Channel') {
+			config.dataValueField = '_id';
 		}
 
 		toolkit.ajaxPost('/report/getdata' + d.from.toLowerCase(), {}, function (res) {
