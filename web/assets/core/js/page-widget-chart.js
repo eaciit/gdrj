@@ -44,6 +44,8 @@ crt.convertCurrency2 = function (labelValue) {
 	return res;
 };
 crt.configure = function (series, colorseries) {
+	var maxchart = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+
 	var dataSort = crt.data();
 	if (crt.categoryAxisField() == "date.quartertxt") {
 		dataSort = _.orderBy(crt.data(), [crt.categoryAxisField()], ['desc']);
@@ -60,12 +62,13 @@ crt.configure = function (series, colorseries) {
 			var data = {};
 			$.each(k, function (key, value) {
 				if (value != 0) data[key] = value;
+				if (value > maxyo) maxyo = value;
 			});
 			return data;
 		});
 		dataSort = datayo;
 	}
-	return {
+	var config = {
 		title: crt.title(),
 		dataSource: { data: dataSort },
 		seriesDefaults: {
@@ -108,6 +111,7 @@ crt.configure = function (series, colorseries) {
 			position: 'bottom'
 		},
 		valueAxis: {
+			visible: false,
 			majorGridLines: {
 				color: '#fafafa'
 			},
@@ -116,7 +120,8 @@ crt.configure = function (series, colorseries) {
 			},
 			minorGridLines: {
 				skip: 3
-			}
+			},
+			max: maxchart
 		},
 		tooltip: {
 			visible: true,
@@ -125,6 +130,10 @@ crt.configure = function (series, colorseries) {
 			}
 		}
 	};
+	if (crt.typeChart() == 'stack') {
+		delete config.valueAxis.max;
+	}
+	return config;
 };
 
 crt.render = function () {
@@ -149,7 +158,10 @@ crt.render = function () {
 	if (crt.typeChart() == '') {
 		crt.chartdata(series);
 		for (var i in series) {
-			config = crt.configure([series[i]], [app.seriesColorsGodrej[i]]);
+			var max = _.maxBy(crt.data(), function (f) {
+				return f[series[i].field];
+			});
+			config = crt.configure([series[i]], [app.seriesColorsGodrej[i]], max[series[i].field] + max[series[i].field] / 2);
 			$('#chart' + i).replaceWith('<div id="chart' + i + '" style="height: 180px;"></div>');
 
 			if (crt.data().length > 8) {

@@ -506,7 +506,7 @@ sd.render = function (res) {
 		channelgroup.forEach(function (e) {
 			var tr = toolkit.newEl('tr').appendTo(innerTable);
 			toolkit.newEl('td').appendTo(tr).html(e.key).height(height / channelgroup.length);
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.percentageyo, 'n2') + ' %');
+			toolkit.newEl('td').css('width', '55px').appendTo(tr).html(kendo.toString(e.percentageyo, 'n2') + '&nbsp;%');
 			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'));
 		});
 		index++;

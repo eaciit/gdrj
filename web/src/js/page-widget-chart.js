@@ -44,7 +44,7 @@ crt.convertCurrency2 = (labelValue) => {
 		: labelValue.toString()
 	return res
 }
-crt.configure = (series, colorseries) => {
+crt.configure = (series, colorseries, maxchart = 0) => {
 	let dataSort = crt.data()
 	if (crt.categoryAxisField() == "date.quartertxt") {
 		dataSort = _.orderBy(crt.data(), [crt.categoryAxisField()], ['desc'])
@@ -60,12 +60,14 @@ crt.configure = (series, colorseries) => {
 			$.each( k, ( key, value ) => {
 				if (value != 0)
 					data[key] = value
+				if (value > maxyo)
+					maxyo = value
 			})
 			return data
 		})
 		dataSort = datayo
 	}
-	return {
+	let config = {
 		title: crt.title(),
 		dataSource: { data: dataSort },
 		seriesDefaults: {
@@ -108,6 +110,7 @@ crt.configure = (series, colorseries) => {
 			position: 'bottom'
 		},
 		valueAxis: {
+			visible: false,
 			majorGridLines: {
 				color: '#fafafa'
 			},
@@ -116,13 +119,18 @@ crt.configure = (series, colorseries) => {
 			},
 			minorGridLines: {
 				skip: 3
-			}
+			},
+			max: maxchart
 		},
 		tooltip: {
 			visible: true,
 			template: (d) => $.trim(`${app.capitalize(d.series.name)} on ${app.capitalize(d.category)}: ${kendo.toString(d.value, 'n2')}`)
 		}
 	}
+	if (crt.typeChart() == 'stack') {
+		delete config.valueAxis.max
+	}
+	return config
 }
 
 crt.render = () => {
@@ -143,7 +151,8 @@ crt.render = () => {
 	if (crt.typeChart() == '') {
 		crt.chartdata(series)
 		for (var i in series) {
-			config = crt.configure([series[i]], [app.seriesColorsGodrej[i]])
+			let max = _.maxBy(crt.data(), (f) => { return f[series[i].field] })
+			config = crt.configure([series[i]], [app.seriesColorsGodrej[i]], (max[series[i].field] + (max[series[i].field]/2)))
 			$('#chart'+i).replaceWith(`<div id="chart${i}" style="height: 180px;"></div>`)
 
 			if (crt.data().length > 8) {

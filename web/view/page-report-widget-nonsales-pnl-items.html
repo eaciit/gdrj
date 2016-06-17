@@ -1,0 +1,29 @@
+<div class="col-md-12 no-padding hardcore">
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-chart.html"}}
+	</div>
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-pivot.html"}}
+	</div>
+</div>
+
+<script>
+	$(() => {
+		pvt.row('customer.channelname')
+		pvt.column('customer.branchname')
+		pvt.dataPoints = ko.observableArray([
+			{ field: 'directexpenses', stack: "indirectExpense", title: 'Direct Expense', name: 'Direct Expense' },
+			{ field: 'indirectExpense', stack: "indirectExpense", title: 'Indirect Expense', name: 'Indirect Expense' },
+			{ field: 'cogs', stack: "indirectExpense", title: 'Cost of Goods Sold', name: 'Cost of Goods Sold' },
+			{ field: 'sales', stack: "sales", title: 'Net Sales', name: 'Net Sales' },
+			{ field: 'nonsales', stack: "nonsales", title: 'Non-Sales P&L Items', name: 'Non-Sales P&L Items' }
+		])
+		pvt.refresh()
+
+		crt.typeChart('stack')
+		crt.categoryAxisField('customer.branchname')
+		crt.sortField('nonsales')
+		crt.series(pvt.dataPoints())
+		crt.refresh()
+	})
+</script>

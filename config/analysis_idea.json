@@ -22,7 +22,7 @@
     "_id": "non_sales_pnl_items",
     "order": 5,
     "name": "Non-Sales P&L Items",
-    "status": false
+    "status": true
 }, {
     "_id": "number_of_rds",
     "order": 6,
