@@ -1,5 +1,7 @@
 'use strict';
 
+// cd $GOPATH/src/eaciit/gdrj && cat config/configurations.json
+
 // let plcodes = [
 // 	{ plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"], title: 'Gross Sales' },
 // 	// growth
@@ -33,7 +35,7 @@ dsbrd.rows = ko.observableArray([{ pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "
 
 dsbrd.data = ko.observableArray([]);
 dsbrd.columns = ko.observableArray([]);
-dsbrd.optionBreakdowns = ko.observableArray([{ field: "customer.areaname", name: "City" }, { field: "customer.region", name: "Region" }, { field: "customer.zone", name: "Zone" }, { field: "product.brand", name: "Brand" }, { field: "customer.branchname", name: "Branch" }]);
+dsbrd.optionBreakdowns = ko.observableArray([{ field: "customer.areaname", name: "City" }, { field: "customer.region", name: "Region" }, { field: "customer.zone", name: "Zone" }, { field: "product.brand", name: "Brand" }, { field: "customer.branchname", name: "Branch" }, { field: "customer.channelname", name: "Channel" }]);
 dsbrd.breakdown = ko.observable(dsbrd.optionBreakdowns()[4].field);
 dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears());
 dsbrd.contentIsLoading = ko.observable(false);
@@ -158,11 +160,11 @@ dsbrd.render = function (res) {
 			rowsAfter.forEach(function (row, rowIndex) {
 				row.columnData.forEach(function (column, columnIndex) {
 					if (row.pnl == 'EBIT %') {
-						var percentage = kendo.toString(toolkit.number(grossSales.columnData[columnIndex].original / ebit.columnData[columnIndex].original) * 100, 'n2');
-						column.value = percentage;
+						var percentage = kendo.toString(toolkit.number(ebit.columnData[columnIndex].original / grossSales.columnData[columnIndex].original) * 100, 'n2');
+						column.value = percentage + ' %';
 					} else if (row.pnl != 'Gross Sales' && row.pnl != 'EBIT') {
 						var _percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original) * 100, 'n2');
-						column.value = _percentage;
+						column.value = _percentage + ' %';
 					}
 				});
 			});
@@ -210,7 +212,7 @@ dsbrd.render = function (res) {
 		});
 
 		return {
-			title: k,
+			title: $.trim(k) == '' ? 'Other' : k,
 			columns: v,
 			headerAttributes: {
 				style: 'text-align: center !important; font-weight: bold; border: 1px solid white; border-top: none; border-left: none; box-sizing: border-box; background-color: #e9eced;'
@@ -241,6 +243,40 @@ dsbrd.render = function (res) {
 	dsbrd.data(rowsAfter);
 	dsbrd.columns(columns.concat(columnGrouped));
 
+	var grossSales = dsbrd.data().find(function (d) {
+		return d.pnl == "Gross Sales";
+	});
+	var growth = dsbrd.data().find(function (d) {
+		return d.pnl == "Growth";
+	});
+
+	var counter = 0;
+	var prevIndex = 0;
+	columnGrouped.forEach(function (d) {
+		d.columns.forEach(function (e, i) {
+			var index = toolkit.getNumberFromString(e.field);
+
+			if (i + 1 == d.columns.length) {
+				e.attributes.style = e.attributes.style + '; border-right: 1px solid rgb(240, 243, 244);';
+			}
+
+			if (i == 0) {
+				prevIndex = index;
+				counter++;
+				return;
+			}
+
+			var gs = grossSales.columnData[index];
+			var gsPrev = grossSales.columnData[prevIndex];
+			var g = growth.columnData[index];
+			var value = toolkit.number((gs.value - gsPrev.value) / gsPrev.value) * 100;
+			g.value = kendo.toString(value, 'n2') + ' %';
+
+			counter++;
+			prevIndex = index;
+		});
+	});
+
 	var config = {
 		dataSource: {
 			data: dsbrd.data()
@@ -260,7 +296,15 @@ viewModel.dashboardRanking = {};
 var rank = viewModel.dashboardRanking;
 
 rank.breakdown = ko.observable('customer.channelname');
-rank.columns = ko.observableArray([{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } }, { field: 'gmPercentage', title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' }, { field: 'cogsPercentage', title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' }, { field: 'ebitPercentage', title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' }, { field: 'ebitdaPercentage', title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' }, { field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' }, { field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' }]);
+rank.columns = ko.observableArray([{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } }, { field: 'gmPercentage', template: function template(d) {
+		return kendo.toString(d.gmPercentage, 'n2') + ' %';
+	}, title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } }, { field: 'cogsPercentage', template: function template(d) {
+		return kendo.toString(d.cogsPercentage, 'n2') + ' %';
+	}, title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } }, { field: 'ebitPercentage', template: function template(d) {
+		return kendo.toString(d.ebitPercentage, 'n2') + ' %';
+	}, title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } }, { field: 'ebitdaPercentage', template: function template(d) {
+		return kendo.toString(d.ebitdaPercentage, 'n2') + ' %';
+	}, title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } }, { field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' }, { field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' }]);
 rank.contentIsLoading = ko.observable(false);
 rank.data = ko.observableArray([]);
 rank.fiscalYear = ko.observable(rpt.value.FiscalYear());
@@ -351,9 +395,7 @@ sd.breakdownSub = ko.observable('customer.custtype');
 sd.data = ko.observableArray([]);
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear());
 sd.render = function (res) {
-	var data = _.sortBy(res.Data.Data, function (d) {
-		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], 'Other');
-	});
+	var data = res.Data.Data;
 
 	var breakdown = toolkit.replace(sd.breakdown(), ".", "_");
 	var total = toolkit.sum(data, function (d) {
@@ -373,8 +415,18 @@ sd.render = function (res) {
 
 	sd.data(_.sortBy(rows, function (d) {
 		var subGroup = ('00' + toolkit.number(toolkit.getNumberFromString(d.group))).split('').reverse().splice(0, 2).reverse().join('');
-		var s = [d[breakdown], subGroup].join(' ');
-		return s;
+		var group = d[breakdown];
+
+		switch (d[breakdown]) {
+			case "MT":
+				group = "A";break;
+			case "GT":
+				group = "B";break;
+			case "IT":
+				group = "C";break;
+		}
+
+		return [group, subGroup].join(' ');
 	}));
 
 	var op1 = _.groupBy(sd.data(), function (d) {
@@ -399,12 +451,16 @@ sd.render = function (res) {
 		table.width(op2.length * width);
 	}
 
+	var index = 0;
 	op2.forEach(function (d) {
-		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width);
+		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index]);
 		var sumPercentage = _.sumBy(d.values, function (e) {
 			return e.percentage;
 		});
-		td1st.html(d.key + '<br />' + kendo.toString(sumPercentage, 'n2') + ' %');
+		var sumColumn = _.sumBy(d.values, function (e) {
+			return e.value;
+		});
+		td1st.html('<i class="fa"></i>' + d.key + '<br />' + kendo.toString(sumPercentage, 'n2') + ' %');
 
 		var td2nd = toolkit.newEl('td').appendTo(tr2nd);
 
@@ -423,17 +479,37 @@ sd.render = function (res) {
 			return { key: k, values: v };
 		});
 		var totalyo = 0,
-		    percentageyo = 0;
+		    percentageyo = 0,
+		    indexyo = 0;
 		channelgroup.forEach(function (e) {
-			var tr = toolkit.newEl('tr').appendTo(innerTable);
-			toolkit.newEl('td').appendTo(tr).html(e.key).height(height / channelgroup.length);
 			totalyo = toolkit.sum(e.values, function (b) {
 				return b.value;
 			});
-			percentageyo = toolkit.number(totalyo / total * 100);
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(percentageyo, 'n2') + ' %');
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(totalyo, 'n0'));
+			percentageyo = toolkit.number(totalyo / sumColumn * 100);
+			channelgroup[indexyo]['totalyo'] = totalyo;
+			channelgroup[indexyo]['percentageyo'] = percentageyo;
+			indexyo++;
 		});
+		if (sd.sortVal[index] == '') {
+			channelgroup = _.orderBy(channelgroup, ['key'], ['asc']);
+			$('.sortsales:eq(' + index + ')>i').removeClass('fa-chevron-up');
+			$('.sortsales:eq(' + index + ')>i').removeClass('fa-chevron-down');
+		} else if (sd.sortVal[index] == 'asc') {
+			channelgroup = _.orderBy(channelgroup, ['totalyo'], ['asc']);
+			$('.sortsales:eq(' + index + ')>i').removeClass('fa-chevron-up');
+			$('.sortsales:eq(' + index + ')>i').addClass('fa-chevron-down');
+		} else if (sd.sortVal[index] == 'desc') {
+			channelgroup = _.orderBy(channelgroup, ['totalyo'], ['desc']);
+			$('.sortsales:eq(' + index + ')>i').addClass('fa-chevron-up');
+			$('.sortsales:eq(' + index + ')>i').removeClass('fa-chevron-down');
+		}
+		channelgroup.forEach(function (e) {
+			var tr = toolkit.newEl('tr').appendTo(innerTable);
+			toolkit.newEl('td').appendTo(tr).html(e.key).height(height / channelgroup.length);
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.percentageyo, 'n2') + ' %');
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'));
+		});
+		index++;
 		// d.values.forEach((e) => {
 		// 	let tr = toolkit.newEl('tr').appendTo(innerTable)
 		// 	toolkit.newEl('td').appendTo(tr).html(e[breakdown]).height(height / d.values.length)
@@ -447,6 +523,10 @@ sd.render = function (res) {
 	$(".grid-sales-dist>table tbody>tr:eq(1) td").each(function (index) {
 		$(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height());
 	});
+};
+sd.sortVal = ['', '', ''];
+sd.sortData = function () {
+	sd.refresh();
 };
 sd.refresh = function () {
 	var param = {};
@@ -482,4 +562,14 @@ $(function () {
 	dsbrd.refresh();
 	rank.refresh();
 	sd.refresh();
+
+	$(".grid-sales-dist").on('click', '.sortsales', function () {
+		var sort = $(this).attr('sort'),
+		    index = $(this).index(),
+		    res = '';
+		if (sort == undefined || sort == '') res = 'asc';else if (sort == 'asc') res = 'desc';else res = '';
+
+		sd.sortVal[index] = res;
+		sd.sortData();
+	});
 });

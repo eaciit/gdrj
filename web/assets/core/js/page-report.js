@@ -31,6 +31,7 @@ rpt.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] 
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
 rpt.mode = ko.observable('render');
 rpt.refreshView = ko.observable('');
+rpt.modecustom = ko.observable(false);
 rpt.idanalysisreport = ko.observable();
 rpt.valueMasterData = {};
 rpt.masterData = {
@@ -172,7 +173,7 @@ rpt.filterMultiSelect = function (d) {
 			value: rpt.value[d._id]
 		});
 
-		if (['Branch', 'Brand', 'Channel'].indexOf(d.from) > -1) {
+		if (['Branch', 'Brand'].indexOf(d.from) > -1) {
 			config.dataValueField = 'Name';
 		}
 

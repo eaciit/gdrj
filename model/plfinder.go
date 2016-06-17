@@ -91,6 +91,21 @@ func (s *PLFinderParam) DeletePLCollection(table []string) error {
 func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 	filters := []*dbox.Filter{}
 
+	oldFilters := s.Filters
+	for i, each := range oldFilters {
+		if each.Field == "customer.channelname" {
+			f := new(Filter)
+			f.Field = "customer.channelid"
+			f.Op = each.Op
+			f.Value = each.Value
+
+			s.Filters = append(oldFilters[:i], oldFilters[i+1:]...)
+			s.Filters = append(s.Filters, f)
+
+			break
+		}
+	}
+
 	for _, each := range s.Filters {
 		switch each.Op {
 		case dbox.FilterOpIn:
@@ -281,11 +296,8 @@ func (s *PLFinderParam) Sum(raw *toolkit.M, i ...string) float64 {
 }
 
 func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
+	channelname := "_id_customer_channelname"
 	res := []*toolkit.M{}
-	fmt.Println("----------", s.Flag)
-	for _, each := range *data {
-		fmt.Printf("-------- %#v\n", *each)
-	}
 
 	if s.Flag != "" {
 		for _, raw := range *data {
@@ -407,10 +419,6 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("general", s.noZero(math.Abs(generalga/sga)))
 				each.Set("depr", s.noZero(math.Abs(deprga/sga)))
 				each.Set("foreign", s.noZero(math.Abs(foreignga/sga)))
-			} else if s.Flag == "custom_analysis" {
-				each.Set("sales", netSales)
-				each.Set("outlet", countOutlet)
-				each.Set("sales_outlet", math.Abs(s.noZero(netSales/countOutlet)))
 			}
 			// else if s.Flag == "marketing_efficiency_btl" {
 			// 	each.Set("advertising", math.Abs(advertising))
@@ -420,6 +428,26 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			// 	each.Set("btl", math.Abs(btl))
 			// 	each.Set("marketing_btl", s.noZero(math.Abs(s.noZero((advertising+bonus+gondola+otheradvertising)/btl))))
 			// }
+
+			_id := raw.Get("_id").(toolkit.M)
+
+			if _id.Has(channelname) {
+				channelid := strings.ToUpper(_id.GetString("_id_customer_channelid"))
+				switch channelid {
+				case "I6":
+					_id.Set(channelname, "MOTORIST")
+				case "I4":
+					_id.Set(channelname, "INDUSTRIAL")
+				case "I1":
+					_id.Set(channelname, "RD")
+				case "I3":
+					_id.Set(channelname, "MT")
+				case "I2":
+					_id.Set(channelname, "GT")
+				default:
+					_id.Set(channelname, channelid)
+				}
+			}
 
 			for k, v := range raw.Get("_id").(toolkit.M) {
 				each.Set(strings.Replace(k, "_id_", "", -1), strings.TrimSpace(fmt.Sprintf("%v", v)))
@@ -431,6 +459,26 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 		*data = res
 	} else {
 		for _, each := range *data {
+			_id := each.Get("_id").(toolkit.M)
+
+			if _id.Has(channelname) {
+				channelid := strings.ToUpper(_id.GetString("_id_customer_channelid"))
+				switch channelid {
+				case "I6":
+					_id.Set(channelname, "MOTORIST")
+				case "I4":
+					_id.Set(channelname, "INDUSTRIAL")
+				case "I1":
+					_id.Set(channelname, "RD")
+				case "I3":
+					_id.Set(channelname, "MT")
+				case "I2":
+					_id.Set(channelname, "GT")
+				default:
+					_id.Set(channelname, channelid)
+				}
+			}
+
 			for key := range *each {
 				if strings.Contains(key, "PL") {
 					val := each.GetFloat64(key)

@@ -18,6 +18,8 @@ crt.typeChart = ko.observable('')
 crt.chartdata = ko.observableArray([])
 crt.fiscalYear = ko.observable(rpt.value.FiscalYear())
 crt.modecustom = ko.observable(false)
+crt.dataplmodel = ko.observableArray([])
+crt.valueplmodel = ko.observableArray(["PL8A", "PL94C"])
 
 crt.convertCurrency = (labelValue) => {
 	let res =  Math.abs(Number(labelValue)) >= 1.0e+9 ? Math.abs(Number(labelValue)) / 1.0e+9 + " B"
@@ -86,6 +88,10 @@ crt.configure = (series, colorseries) => {
 				// rotation: 20,
 				font: 'Source Sans Pro 11',
 				template: (d) => {
+					if ($.trim(d.value) == '') {
+						return 'Other'
+					}
+
 					let max = 20
 					let text = $.trim(app.capitalize(d.value)).replace(' 0', '');
 
@@ -170,14 +176,65 @@ crt.render = () => {
 		})
 	}
 }
+crt.getPlModel = (datapl) => {
+	let data = _.filter(datapl, (d) => { return d.PLHeader2 == d.PLHeader1 && d.PLHeader3 == d.PLHeader1 })
+	crt.dataplmodel(data)
+	if (crt.data().length == 0){
+		crt.valueplmodel(["PL8A", "PL94C"])
+		pvt.valueplmodel(["PL8A", "PL94C"])
+	}
+}
+crt.renderCustomChart = (data) => {
+	let series = [], dataresult = []
+	let breakdown = toolkit.replace(crt.categoryAxisField(), ".", "_"), keydata, dataseries
+	let rows = data.map((d) => {
+		let row = {}
+		row[breakdown] = d._id[`_id_${breakdown}`]
+		$.each(d, function( key, value ) {
+			keydata = _.find(crt.dataplmodel(), (s) => { return s._id == key })
+			if (keydata != undefined) {
+				row[key] = value
+				dataseries = _.find(series, (s) => { return s.field == key })
+				if (dataseries == undefined){
+					series.push({
+						field: key, title: keydata.PLHeader1, name: keydata.PLHeader1
+					})
+				}
+			}
+		})
+		return row
+	})
+	let op1 = _.groupBy(rows, (d) => d[breakdown])
+	let op2 = _.map(op1, (v, k) => {
+		let row = { }
+		row[breakdown] = k
+		let sample = v[0]
+
+		for (let key in sample) {
+			if (sample.hasOwnProperty(key) && key != breakdown) {
+				row[key] = toolkit.sum(v, (d) => d[key])
+				row[key] = Math.abs(row[key])
+			}
+		}
+
+		return row
+	})
+	crt.series(series)
+	crt.data(op2)
+}
 crt.refresh = () => {
 	rpt.refreshView('reportwidget')
 	let param = {}
 	param.pls = []
 	param.flag = o.ID
-	param.groups = [crt.categoryAxisField()]
+	param.groups = [crt.categoryAxisField(), "date.fiscal"]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, crt.fiscalYear)
+
+	if (rpt.modecustom() == true){
+		param.pls = crt.valueplmodel()
+		param.flag = ""
+	}
 
 	crt.contentIsLoading(true)
 	
@@ -188,8 +245,13 @@ crt.refresh = () => {
 				return
 			}
 
+			crt.getPlModel(res.Data.PLModels)
 			crt.data(res.Data.Data)
 			crt.contentIsLoading(false)
+			if (rpt.modecustom() == true){
+				crt.renderCustomChart(res.Data.Data)
+			}
+
 			crt.render()
 		}, () => {
 			crt.contentIsLoading(false)

@@ -1,3 +1,5 @@
+// cd $GOPATH/src/eaciit/gdrj && cat config/configurations.json
+
 // let plcodes = [
 // 	{ plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"], title: 'Gross Sales' },
 // 	// growth
@@ -55,7 +57,8 @@ dsbrd.optionBreakdowns = ko.observableArray([
 	{ field: "customer.region", name: "Region" },
 	{ field: "customer.zone", name: "Zone" },
 	{ field: "product.brand", name: "Brand" },
-	{ field: "customer.branchname", name: "Branch" }
+	{ field: "customer.branchname", name: "Branch" },
+	{ field: "customer.channelname", name: "Channel" },
 ])
 dsbrd.breakdown = ko.observable(dsbrd.optionBreakdowns()[4].field)
 dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears())
@@ -172,11 +175,11 @@ dsbrd.render = (res) => {
 		rowsAfter.forEach((row, rowIndex) => {
 			row.columnData.forEach((column, columnIndex) => {
 				if (row.pnl == 'EBIT %') {
-					let percentage = kendo.toString(toolkit.number(grossSales.columnData[columnIndex].original / ebit.columnData[columnIndex].original) * 100, 'n2')
-					column.value = percentage;
+					let percentage = kendo.toString(toolkit.number(ebit.columnData[columnIndex].original / grossSales.columnData[columnIndex].original) * 100, 'n2')
+					column.value = `${percentage} %`;
 				} else if (row.pnl != 'Gross Sales' && row.pnl != 'EBIT') {
 					let percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original) * 100, 'n2')
-					column.value = percentage;
+					column.value = `${percentage} %`;
 				}
 			})
 		})
@@ -221,7 +224,7 @@ dsbrd.render = (res) => {
 		})
 
 		return { 
-			title: k, 
+			title: ($.trim(k) == '' ? 'Other' : k), 
 			columns: v,
 			headerAttributes: { 
 				style: 'text-align: center !important; font-weight: bold; border: 1px solid white; border-top: none; border-left: none; box-sizing: border-box; background-color: #e9eced;',
@@ -250,6 +253,36 @@ dsbrd.render = (res) => {
 	dsbrd.data(rowsAfter)
 	dsbrd.columns(columns.concat(columnGrouped))
 
+	let grossSales = dsbrd.data().find((d) => d.pnl == "Gross Sales")
+	let growth = dsbrd.data().find((d) => d.pnl == "Growth")
+
+	let counter = 0
+	let prevIndex = 0
+	columnGrouped.forEach((d) => {
+		d.columns.forEach((e, i) => {
+			let index = toolkit.getNumberFromString(e.field)
+
+			if ((i + 1) == d.columns.length) {
+				e.attributes.style = `${e.attributes.style}; border-right: 1px solid rgb(240, 243, 244);`
+			}
+
+			if (i == 0) {
+				prevIndex = index
+				counter++
+				return
+			}
+
+			let gs = grossSales.columnData[index]
+			let gsPrev = grossSales.columnData[prevIndex]
+			let g = growth.columnData[index]
+			let value = toolkit.number((gs.value - gsPrev.value) / gsPrev.value) * 100
+			g.value = `${kendo.toString(value, 'n2')} %`
+
+			counter++
+			prevIndex = index
+		})
+	})
+
 	let config = {
 		dataSource: {
 			data: dsbrd.data()
@@ -276,10 +309,10 @@ let rank = viewModel.dashboardRanking
 rank.breakdown = ko.observable('customer.channelname')
 rank.columns = ko.observableArray([
 	{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
-	{ field: 'gmPercentage', title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' },
-	{ field: 'cogsPercentage', title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' },
-	{ field: 'ebitPercentage', title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' },
-	{ field: 'ebitdaPercentage', title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n2}' },
+	{ field: 'gmPercentage', template: (d) => `${kendo.toString(d.gmPercentage, 'n2')} %`, title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+	{ field: 'cogsPercentage', template: (d) => `${kendo.toString(d.cogsPercentage, 'n2')} %`, title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+	{ field: 'ebitPercentage', template: (d) => `${kendo.toString(d.ebitPercentage, 'n2')} %`, title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+	{ field: 'ebitdaPercentage', template: (d) => `${kendo.toString(d.ebitdaPercentage, 'n2')} %`, title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 	{ field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' },
 	{ field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' },
 ])
@@ -372,7 +405,7 @@ sd.breakdownSub = ko.observable('customer.custtype')
 sd.data = ko.observableArray([])
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 sd.render = (res) => {
-	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], 'Other'))
+	let data = res.Data.Data
 
 	let breakdown = toolkit.replace(sd.breakdown(), ".", "_")
 	let total = toolkit.sum(data, (d) => d.PL8A)
@@ -390,8 +423,15 @@ sd.render = (res) => {
 
 	sd.data(_.sortBy(rows, (d) => {
 		let subGroup = `00${toolkit.number(toolkit.getNumberFromString(d.group))}`.split('').reverse().splice(0, 2).reverse().join('')
-		let s = [d[breakdown], subGroup].join(' ')
-		return s
+		let group = d[breakdown]
+
+		switch (d[breakdown]) {
+			case "MT": group = "A"; break
+			case "GT": group = "B"; break
+			case "IT": group = "C"; break
+		}
+
+		return [group, subGroup].join(' ')
 	}))
 
 	let op1 = _.groupBy(sd.data(), (d) => d[breakdown])
@@ -410,10 +450,12 @@ sd.render = (res) => {
 		table.width(op2.length * width)
 	}
 
+	let index = 0
 	op2.forEach((d) => {
-		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width)
+		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index])
 		let sumPercentage = _.sumBy(d.values, (e) => e.percentage)
-		td1st.html(`${d.key}<br />${kendo.toString(sumPercentage, 'n2')} %`)
+		let sumColumn = _.sumBy(d.values, (e) => e.value)
+		td1st.html(`<i class="fa"></i>${d.key}<br />${kendo.toString(sumPercentage, 'n2')} %`)
 
 		let td2nd = toolkit.newEl('td').appendTo(tr2nd)
 
@@ -430,15 +472,34 @@ sd.render = (res) => {
 				k = "Other" 
 			return { key: k, values: v } 
 		})
-		let totalyo = 0, percentageyo = 0
+		let totalyo = 0, percentageyo = 0, indexyo = 0
+		channelgroup.forEach((e) => {
+			totalyo = toolkit.sum(e.values, (b) => b.value)
+			percentageyo = toolkit.number(totalyo/sumColumn*100)
+			channelgroup[indexyo]['totalyo'] = totalyo
+			channelgroup[indexyo]['percentageyo'] = percentageyo
+			indexyo++
+		})
+		if (sd.sortVal[index] == ''){
+			channelgroup = _.orderBy(channelgroup, ['key'], ['asc'])
+			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-up')
+			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-down')
+		} else if (sd.sortVal[index] == 'asc'){
+			channelgroup = _.orderBy(channelgroup, ['totalyo'], ['asc'])
+			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-up')
+			$(`.sortsales:eq(${index})>i`).addClass('fa-chevron-down')
+		} else if (sd.sortVal[index] == 'desc'){
+			channelgroup = _.orderBy(channelgroup, ['totalyo'], ['desc'])
+			$(`.sortsales:eq(${index})>i`).addClass('fa-chevron-up')
+			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-down')
+		}
 		channelgroup.forEach((e) => {
 			let tr = toolkit.newEl('tr').appendTo(innerTable)
 			toolkit.newEl('td').appendTo(tr).html(e.key).height(height / channelgroup.length)
-			totalyo = toolkit.sum(e.values, (b) => b.value)
-			percentageyo = toolkit.number(totalyo/total*100)
-			toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(percentageyo, 'n2')} %`)
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(totalyo, 'n0'))
+			toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(e.percentageyo, 'n2')} %`)
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'))
 		})
+		index++
 		// d.values.forEach((e) => {
 		// 	let tr = toolkit.newEl('tr').appendTo(innerTable)
 		// 	toolkit.newEl('td').appendTo(tr).html(e[breakdown]).height(height / d.values.length)
@@ -452,6 +513,10 @@ sd.render = (res) => {
 	$(".grid-sales-dist>table tbody>tr:eq(1) td").each(function(index) {
 		$(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height())
 	})
+}
+sd.sortVal = ['','','']
+sd.sortData = () => {
+	sd.refresh()
 }
 sd.refresh = () => {
 	let param = {}
@@ -485,4 +550,17 @@ $(() => {
 	dsbrd.refresh()
 	rank.refresh()
 	sd.refresh()
+
+	$(".grid-sales-dist").on('click', '.sortsales', function(){
+		let sort = $(this).attr('sort'), index = $(this).index(), res = ''
+		if (sort == undefined || sort == '')
+			res = 'asc'
+		else if (sort == 'asc')
+			res = 'desc'
+		else
+			res = ''
+
+		sd.sortVal[index] = res
+		sd.sortData()
+	})
 })
