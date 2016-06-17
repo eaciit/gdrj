@@ -298,6 +298,8 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 			salesReturn := s.Sum(raw, "PL3")
 			freightExpense := s.Sum(raw, "PL23")
 			directLabour := s.Sum(raw, "PL14")
+			directExpenses := s.Sum(raw, "PL14A")
+			indirectExpense := s.Sum(raw, "PL74A")
 			cogs := s.Sum(raw, "PL74B")
 			materialLocal := s.Sum(raw, "PL9")
 			materialImport := s.Sum(raw, "PL10")
@@ -407,6 +409,12 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) {
 				each.Set("general", s.noZero(math.Abs(generalga/sga)))
 				each.Set("depr", s.noZero(math.Abs(deprga/sga)))
 				each.Set("foreign", s.noZero(math.Abs(foreignga/sga)))
+			} else if s.Flag == "non_sales_pnl_items" {
+				each.Set("directexpenses", math.Abs(directExpenses))
+				each.Set("indirectExpense", math.Abs(indirectExpense))
+				each.Set("depr", math.Abs(cogs))
+				each.Set("sales", math.Abs(netSales))
+				each.Set("nonsales", s.noZero(math.Abs((directExpenses+indirectExpense+cogs)/netSales)))
 			}
 			// else if s.Flag == "marketing_efficiency_btl" {
 			// 	each.Set("advertising", math.Abs(advertising))

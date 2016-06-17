@@ -65,6 +65,8 @@ let o = {
 		{{template "page-report-widget-sga-cost-ratio.html"}}
 	{{else if eq .id "custom_analysis"}}
 		{{template "page-report-widget-custom-analysis.html"}}
+	{{else if eq .id "non_sales_pnl_items"}}
+		{{template "page-report-widget-nonsales-pnl-items.html"}}
 	{{end}}
 	</div>
 
