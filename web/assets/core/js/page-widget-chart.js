@@ -88,6 +88,10 @@ crt.configure = function (series, colorseries) {
 				// rotation: 20,
 				font: 'Source Sans Pro 11',
 				template: function template(d) {
+					if ($.trim(d.value) == '') {
+						return 'Other';
+					}
+
 					var max = 20;
 					var text = $.trim(app.capitalize(d.value)).replace(' 0', '');
 

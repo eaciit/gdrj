@@ -810,7 +810,9 @@ ccr.order = ko.observable(ccr.optionComparison()[2].field)
 
 ccr.getDecreasedQty = (useCache = false) => {
 	let param = {}
-	param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
+	param.filters = []
+	// param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
+	// param.filters = _.remove(param.filters, (d) => d.Field != "date.fiscal")
 
 	ccr.contentIsLoading(true)
 	toolkit.ajaxPost(`/report/GetDecreasedQty`, param, (res) => {
@@ -835,6 +837,15 @@ ccr.refresh = () => {
 	}
 }
 ccr.plot = () => {
+	let orderedData = _.orderBy(ccr.dataComparison(), (d) => {
+		if (ccr.order() == 'outlet') {
+			return d.outletList
+		}
+
+		return d[ccr.order()]
+	}, 'desc')
+	ccr.dataComparison(orderedData)
+
 	// ccr.dataComparison(ccr.dummyJson)
 	let tempdata = []
 	// let qty = 0
