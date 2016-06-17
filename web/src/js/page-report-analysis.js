@@ -542,7 +542,7 @@ bkd.render = () => {
 		}
 	})
 
-	bkd.showZeroValue(true)
+	bkd.showZeroValue(false)
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
 }
 
