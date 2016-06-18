@@ -25,14 +25,16 @@ rpt.optionDimensions = ko.observableArray([
 // { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
 { field: "customer.areaname", name: "City", title: "customer_areaname" }, { field: 'customer.region', name: 'Region', title: 'customer_region' }, { field: "customer.zone", name: "Zone", title: "customer_zone" },
 // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
-{ field: 'customer.keyaccount', name: 'Key Account', title: 'customer_keyaccount' }, { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' }, { field: 'date.month', name: 'Month', title: 'date_month' }]);
+{ field: 'customer.keyaccount', name: 'Key Account', title: 'customer_keyaccount' }]);
+
+// { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
+// { field: 'date.month', name: 'Month', title: 'date_month' },
 rpt.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
 rpt.mode = ko.observable('render');
 rpt.refreshView = ko.observable('');
 rpt.modecustom = ko.observable(false);
 rpt.idanalysisreport = ko.observable();
-rpt.optionBreakdownValues = ko.observableArray([]);
 rpt.valueMasterData = {};
 rpt.masterData = {
 	geographi: ko.observableArray([])
@@ -48,37 +50,6 @@ rpt.value = {
 };
 rpt.masterData.Type = ko.observableArray([{ value: 'Mfg', text: 'Mfg' }, { value: 'Branch', text: 'Branch' }]);
 rpt.masterData.HQ = ko.observableArray([{ value: true, text: 'True' }, { value: false, text: 'False' }]);
-rpt.changeBreakdown = function () {
-	setTimeout(function () {
-		var all = { _id: 'All', Name: 'All' };
-		switch (bkd.breakdownBy()) {
-			case "customer.areaname":
-				bkd.breakdownValue([]);
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Area()));
-				break;
-			case "customer.region":
-				bkd.breakdownValue([]);
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Region()));
-				break;
-			case "customer.zone":
-				bkd.breakdownValue([]);
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Zone()));
-				break;
-			case "product.brand":
-				bkd.breakdownValue([]);
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Brand()));
-				break;
-			case "customer.branchname":
-				bkd.breakdownValue([]);
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Branch()));
-				break;
-			case "customer.channelname":
-				bkd.breakdownValue([]);
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Channel()));
-				break;
-		}
-	});
-};
 rpt.filter.forEach(function (d) {
 	d.sub.forEach(function (e) {
 		if (rpt.masterData.hasOwnProperty(e._id)) {
@@ -139,7 +110,7 @@ rpt.groupGeoBy = function (raw, category) {
 	var data = Lazy(raw).groupBy(function (f) {
 		return f[groupKey];
 	}).map(function (k, v) {
-		return { _id: v, Name: toolkit.capitalize(v, true) };
+		return { _id: v, Name: v };
 	}).toArray();
 
 	return data;
@@ -194,13 +165,6 @@ rpt.filterMultiSelect = function (d) {
 			dataValueField: '_id',
 			dataTextField: 'Name',
 			enabled: rpt.enableHolder[d._id],
-			template: function template(d) {
-				if (d._id == 'KeyAccount') {
-					return toolkit.capitalize(d.KeyAccount);
-				}
-
-				return toolkit.capitalize($.trim(d.Name));
-			},
 			value: rpt.value[d._id]
 		});
 
@@ -220,7 +184,14 @@ rpt.filterMultiSelect = function (d) {
 				return;
 			}
 
-			rpt.masterData[d._id](_.sortBy(res.data, function (d) {
+			var data = _.map(res.data, function (e) {
+				if (d.from == 'KeyAccount') {
+					return { _id: e._id, Name: e._id };
+				}
+				return e;
+			});
+
+			rpt.masterData[d._id](_.sortBy(data, function (d) {
 				return d.Name;
 			}));
 		});
@@ -254,13 +225,7 @@ rpt.filterMultiSelect = function (d) {
 			});
 		}
 	} else {
-		config.data = rpt.masterData[d._id]().map(function (f) {
-			if (!f.hasOwnProperty('Name')) {
-				return f;
-			}
-
-			return { _id: f._id, Name: toolkit.capitalize(f.Name, true) };
-		});
+		config.data = rpt.masterData[d._id]();
 	}
 
 	return config;
@@ -381,6 +346,7 @@ rpt.refresh = function () {
 rpt.refreshAll = function () {
 	switch (rpt.refreshView()) {
 		case 'analysis':
+			bkd.changeBreakdown();
 			bkd.refresh();
 			rs.refresh();
 			ccr.refresh();

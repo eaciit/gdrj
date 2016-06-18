@@ -614,6 +614,66 @@ bkd.showZeroValue = function (a) {
 
 	bkd.showExpandAll(false);
 };
+bkd.optionBreakdownValues = ko.observableArray([]);
+bkd.breakdownValueAll = { _id: 'All', Name: 'All' };
+bkd.changeBreakdown = function () {
+	var all = bkd.breakdownValueAll;
+	setTimeout(function () {
+		switch (bkd.breakdownBy()) {
+			case "customer.areaname":
+				bkd.optionBreakdownValues([all].concat(rpt.masterData.Area()));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "customer.region":
+				bkd.optionBreakdownValues([all].concat(rpt.masterData.Region()));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "customer.zone":
+				bkd.optionBreakdownValues([all].concat(rpt.masterData.Zone()));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "product.brand":
+				bkd.optionBreakdownValues([all].concat(rpt.masterData.Brand()));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "customer.branchname":
+				bkd.optionBreakdownValues([all].concat(rpt.masterData.Branch()));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "customer.channelname":
+				bkd.optionBreakdownValues([all].concat(rpt.masterData.Channel()));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "customer.keyaccount":
+				bkd.optionBreakdownValues([all].concat(rpt.masterData.KeyAccount()));
+				bkd.breakdownValue([all._id]);
+				break;
+		}
+	}, 100);
+};
+bkd.changeBreakdownValue = function () {
+	var all = bkd.breakdownValueAll;
+	setTimeout(function () {
+		var condA1 = bkd.breakdownValue().length == 2;
+		var condA2 = bkd.breakdownValue().indexOf(all._id) == 0;
+		if (condA1 && condA2) {
+			bkd.breakdownValue.remove(all._id);
+			return;
+		}
+
+		var condB1 = bkd.breakdownValue().length > 1;
+		var condB2 = bkd.breakdownValue().reverse()[0] == all._id;
+		if (condB1 && condB2) {
+			bkd.breakdownValue([all._id]);
+			return;
+		}
+
+		var condC1 = bkd.breakdownValue().length == 0;
+		if (condC1) {
+			bkd.breakdownValue([all._id]);
+		}
+	}, 100);
+};
 
 viewModel.scatter = new Object();
 var rs = viewModel.scatter;
@@ -1095,7 +1155,7 @@ rpt.refresh = function () {
 
 	rs.getSalesHeaderList();
 
-	rpt.changeBreakdown();
+	bkd.changeBreakdown();
 	setTimeout(function () {
 		bkd.breakdownValue(['All']);
 		bkd.refresh(false);
