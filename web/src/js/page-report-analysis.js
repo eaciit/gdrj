@@ -615,34 +615,41 @@ bkd.optionBreakdownValues = ko.observableArray([])
 bkd.breakdownValueAll = { _id: 'All', Name: 'All' }
 bkd.changeBreakdown = () => {
 	let all = bkd.breakdownValueAll
+	let map = (arr) => arr.map((d) => {
+		if (bkd.breakdownBy() == "customer.channelname") {
+			return d
+		}
+
+		return { _id: d.Name, Name: d.Name }
+	})
 	setTimeout(() => {
 		switch (bkd.breakdownBy()) {
 			case "customer.areaname":
-				bkd.optionBreakdownValues([all].concat(rpt.masterData.Area()))
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Area())))
 				bkd.breakdownValue([all._id])
 			break;
 			case "customer.region":
-				bkd.optionBreakdownValues([all].concat(rpt.masterData.Region()))
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Region())))
 				bkd.breakdownValue([all._id])
 			break;
 			case "customer.zone":
-				bkd.optionBreakdownValues([all].concat(rpt.masterData.Zone()))
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())))
 				bkd.breakdownValue([all._id])
 			break;
 			case "product.brand":
-				bkd.optionBreakdownValues([all].concat(rpt.masterData.Brand()))
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())))
 				bkd.breakdownValue([all._id])
 			break;
 			case "customer.branchname":
-				bkd.optionBreakdownValues([all].concat(rpt.masterData.Branch()))
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
 				bkd.breakdownValue([all._id])
 			break;
 			case "customer.channelname":
-				bkd.optionBreakdownValues([all].concat(rpt.masterData.Channel()))
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
 				bkd.breakdownValue([all._id])
 			break;
 			case "customer.keyaccount":
-				bkd.optionBreakdownValues([all].concat(rpt.masterData.KeyAccount()))
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))
 				bkd.breakdownValue([all._id])
 			break;
 		}

@@ -46,34 +46,43 @@ dsbrd.breakdownValue = ko.observableArray([]);
 dsbrd.breakdownValueAll = { _id: 'All', Name: 'All' };
 dsbrd.changeBreakdown = function () {
 	var all = dsbrd.breakdownValueAll;
+	var map = function map(arr) {
+		return arr.map(function (d) {
+			if (dsbrd.breakdown() == "customer.channelname") {
+				return d;
+			}
+
+			return { _id: d.Name, Name: d.Name };
+		});
+	};
 	setTimeout(function () {
 		switch (dsbrd.breakdown()) {
 			case "customer.branchname":
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Branch()));
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())));
 				dsbrd.breakdownValue([all._id]);
 				break;
 			case "product.brand":
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Brand()));
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())));
 				dsbrd.breakdownValue([all._id]);
 				break;
 			case "customer.channelname":
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Channel()));
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())));
 				dsbrd.breakdownValue([all._id]);
 				break;
 			case "customer.zone":
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Zone()));
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())));
 				dsbrd.breakdownValue([all._id]);
 				break;
 			case "customer.areaname":
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Area()));
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Area())));
 				dsbrd.breakdownValue([all._id]);
 				break;
 			case "customer.region":
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Region()));
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Region())));
 				dsbrd.breakdownValue([all._id]);
 				break;
 			case "customer.keyaccount":
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.KeyAccount()));
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())));
 				dsbrd.breakdownValue([all._id]);
 				break;
 		}
