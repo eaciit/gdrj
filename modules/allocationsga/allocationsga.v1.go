@@ -24,8 +24,7 @@ var (
 	custgroup, prodgroup, plcode, ref                 string
 	value, fiscalyear, iscount, gscount, scount, step int
 	globalgross, globalsga                            float64
-	mapsperiod                                        map[string]float64
-	mapkeysvalue                                      map[string]float64
+	mapsperiod, mapkeysvalue, mapsgross               map[string]float64
 	masters                                           toolkit.M
 	mwg                                               sync.WaitGroup
 )
@@ -185,7 +184,7 @@ func main() {
 
 	jobs := make(chan *gdrj.SalesPL, count)
 	toolkit.Println("Prepare Worker")
-	for wi := 0; wi < 10; wi++ {
+	for wi := 0; wi < 20; wi++ {
 		mwg.Add(1)
 		go worker(wi, jobs)
 	}
@@ -201,6 +200,8 @@ func main() {
 		}
 
 		globalgross += spl.GrossAmount
+		pval := toolkit.Sprintf("%d_%d", spl.Date.Year, spl.Date.Month)
+		mapsgross[pval] += spl.GrossAmount
 
 		if iscount%step == 0 {
 			toolkit.Printfn("Preparing %d of %d (%d) in %s", iscount, scount, iscount/step,
@@ -264,9 +265,9 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 
 		key := toolkit.Sprintf("%d_%d", j.Date.Year, int(j.Date.Month))
 
-		ratio := j.GrossAmount / globalgross
+		ratio := j.GrossAmount / mapsgross[key]
 		totsgaperiod, _ := mapsperiod[key]
-		totsgaline := ratio * globalsga
+		totsgaline := ratio * totsgaperiod
 
 		if totsgaperiod == 0 {
 			continue
