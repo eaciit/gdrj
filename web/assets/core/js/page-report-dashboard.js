@@ -35,7 +35,7 @@ dsbrd.rows = ko.observableArray([{ pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "
 
 dsbrd.data = ko.observableArray([]);
 dsbrd.columns = ko.observableArray([]);
-dsbrd.breakdown = ko.observable('customer.branchname');
+dsbrd.breakdown = ko.observable('customer.channelname');
 dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears());
 dsbrd.contentIsLoading = ko.observable(false);
 dsbrd.optionStructures = ko.observableArray([{ field: "date.fiscal", name: "Fiscal Year" }, { field: "date.quartertxt", name: "Quarter" }, { field: "date.month", name: "Month" }]);
@@ -43,31 +43,74 @@ dsbrd.structure = ko.observable(dsbrd.optionStructures()[1].field);
 dsbrd.structureYear = ko.observable('date.year');
 dsbrd.optionBreakdownValues = ko.observableArray([]);
 dsbrd.breakdownValue = ko.observableArray([]);
+dsbrd.breakdownValueAll = { _id: 'All', Name: 'All' };
 dsbrd.changeBreakdown = function () {
-	setTimeout(function () {
-		var all = { _id: 'All', Name: 'All' };
+	var all = dsbrd.breakdownValueAll;
+	var map = function map(arr) {
+		return arr.map(function (d) {
+			if (dsbrd.breakdown() == "customer.channelname") {
+				return d;
+			}
 
+			return { _id: d.Name, Name: d.Name };
+		});
+	};
+	setTimeout(function () {
 		switch (dsbrd.breakdown()) {
-			case "customer.areaname":
-				dsbrd.breakdownValue([]);
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Area()));
-				break;
-			case "customer.region":
-				dsbrd.breakdownValue([]);
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Region()));
-				break;
-			case "customer.zone":
-				dsbrd.breakdownValue([]);
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Zone()));
+			case "customer.branchname":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())));
+				dsbrd.breakdownValue([all._id]);
 				break;
 			case "product.brand":
-				dsbrd.breakdownValue([]);
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Brand()));
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())));
+				dsbrd.breakdownValue([all._id]);
 				break;
-			case "customer.branchname":
-				dsbrd.breakdownValue([]);
-				dsbrd.optionBreakdownValues([all].concat(rpt.masterData.Branch()));
+			case "customer.channelname":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())));
+				dsbrd.breakdownValue([all._id]);
 				break;
+			case "customer.zone":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())));
+				dsbrd.breakdownValue([all._id]);
+				break;
+			case "customer.areaname":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Area())));
+				dsbrd.breakdownValue([all._id]);
+				break;
+			case "customer.region":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Region())));
+				dsbrd.breakdownValue([all._id]);
+				break;
+			case "customer.keyaccount":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())));
+				dsbrd.breakdownValue([all._id]);
+				break;
+		}
+	}, 100);
+};
+
+dsbrd.changeBreakdownValue = function () {
+	var all = dsbrd.breakdownValueAll;
+	setTimeout(function () {
+		console.log("-----", dsbrd.breakdownValue());
+
+		var condA1 = dsbrd.breakdownValue().length == 2;
+		var condA2 = dsbrd.breakdownValue().indexOf(all._id) == 0;
+		if (condA1 && condA2) {
+			dsbrd.breakdownValue.remove(all._id);
+			return;
+		}
+
+		var condB1 = dsbrd.breakdownValue().length > 1;
+		var condB2 = dsbrd.breakdownValue().reverse()[0] == all._id;
+		if (condB1 && condB2) {
+			dsbrd.breakdownValue([all._id]);
+			return;
+		}
+
+		var condC1 = dsbrd.breakdownValue().length == 0;
+		if (condC1) {
+			dsbrd.breakdownValue([all._id]);
 		}
 	}, 100);
 };
@@ -124,12 +167,11 @@ dsbrd.refresh = function () {
 dsbrd.render = function (res) {
 	var rows = [];
 	var rowsAfter = [];
-	var columns = [{
+	var columnsPlaceholder = [{
 		field: 'pnl',
 		title: 'PNL',
 		attributes: { class: 'bold' },
 		headerAttributes: { style: 'font-weight: bold; vertical-align: middle;' },
-		locked: true,
 		width: 200
 	}];
 
@@ -249,8 +291,12 @@ dsbrd.render = function (res) {
 		});
 	});
 
+	if (columnGrouped.length > 1) {
+		columnsPlaceholder[0].locked = true;
+	}
+
 	dsbrd.data(rowsAfter);
-	dsbrd.columns(columns.concat(columnGrouped));
+	dsbrd.columns(columnsPlaceholder.concat(columnGrouped));
 
 	var grossSales = dsbrd.data().find(function (d) {
 		return d.pnl == "Gross Sales";

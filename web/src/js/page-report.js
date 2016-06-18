@@ -140,8 +140,8 @@ rpt.optionDimensions = ko.observableArray([
 	{ field: "customer.zone", name: "Zone", title: "customer_zone" },
     // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
     { field: 'customer.keyaccount', name: 'Key Account', title: 'customer_keyaccount' },
-    { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
-    { field: 'date.month', name: 'Month', title: 'date_month' },
+    // { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
+    // { field: 'date.month', name: 'Month', title: 'date_month' },
 ])
 rpt.optionDataPoints = ko.observableArray([
     { field: 'value1', name: o['value1'] },
@@ -158,7 +158,6 @@ rpt.mode = ko.observable('render')
 rpt.refreshView = ko.observable('')
 rpt.modecustom = ko.observable(false)
 rpt.idanalysisreport = ko.observable()
-rpt.optionBreakdownValues = ko.observableArray([])
 rpt.valueMasterData = {}
 rpt.masterData = {
 	geographi: ko.observableArray([])
@@ -180,37 +179,6 @@ rpt.masterData.HQ = ko.observableArray([
 	{ value: true, text: 'True' },
 	{ value: false, text: 'False' }
 ])
-rpt.changeBreakdown = () => {
-	setTimeout(() => {
-		let all = { _id: 'All', Name: 'All' }
-		switch (bkd.breakdownBy()) {
-			case "customer.areaname":
-				bkd.breakdownValue([])
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Area()))
-			break;
-			case "customer.region":
-				bkd.breakdownValue([])
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Region()))
-			break;
-			case "customer.zone":
-				bkd.breakdownValue([])
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Zone()))
-			break;
-			case "product.brand":
-				bkd.breakdownValue([])
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Brand()))
-			break;
-			case "customer.branchname":
-				bkd.breakdownValue([])
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Branch()))
-			break;
-			case "customer.channelname":
-				bkd.breakdownValue([])
-				rpt.optionBreakdownValues([all].concat(rpt.masterData.Channel()))
-			break;
-		}
-	})
-}
 rpt.filter.forEach((d) => {
 	d.sub.forEach((e) => {
 		if (rpt.masterData.hasOwnProperty(e._id)) {
@@ -268,7 +236,7 @@ rpt.groupGeoBy = (raw, category) => {
 	let groupKey = (category == 'Area') ? '_id' : category
 	let data = Lazy(raw)
 		.groupBy((f) => f[groupKey])
-		.map((k, v) => { return { _id: v, Name: toolkit.capitalize(v, true) } })
+		.map((k, v) => { return { _id: v, Name: v } })
 		.toArray()
 
 	return data
@@ -321,13 +289,6 @@ rpt.filterMultiSelect = (d) => {
 			dataValueField: '_id',
 			dataTextField: 'Name',
 			enabled: rpt.enableHolder[d._id],
-			template: (d) => {
-				if (d._id == 'KeyAccount') {
-					return toolkit.capitalize(d.KeyAccount)
-				}
-
-				return toolkit.capitalize($.trim(d.Name))
-			},
 			value: rpt.value[d._id]
 		})
 
@@ -347,7 +308,14 @@ rpt.filterMultiSelect = (d) => {
 				return
 			}
 
-			rpt.masterData[d._id](_.sortBy(res.data, (d) => d.Name))
+			let data = _.map(res.data, (e) => {
+				if (d.from == 'KeyAccount') {
+					return { _id: e._id, Name: e._id }
+				}
+				return e
+			})
+
+			rpt.masterData[d._id](_.sortBy(data, (d) => d.Name))
 		})
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -375,13 +343,7 @@ rpt.filterMultiSelect = (d) => {
 			})
 		}
 	} else {
-		config.data = rpt.masterData[d._id]().map((f) => {
-			if (!f.hasOwnProperty('Name')) {
-				return f
-			}
-
-			return { _id: f._id, Name: toolkit.capitalize(f.Name, true) }
-		})
+		config.data = rpt.masterData[d._id]()
 	}
 
 	return config
@@ -502,6 +464,7 @@ rpt.refresh = function () {
 rpt.refreshAll = () => {
 	switch (rpt.refreshView()) {
 		case 'analysis':
+			bkd.changeBreakdown()
 			bkd.refresh()
 			rs.refresh()
 			ccr.refresh()

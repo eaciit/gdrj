@@ -51,7 +51,7 @@
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right" style="width: 120px;">Breakdown Value</span>
 						<div class="width-full">
-							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: dsbrd.optionBreakdownValues, dataValueField: 'Name', dataTextField: 'Name', value: dsbrd.breakdownValue, placeholder: 'Choose value' }"></select>
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: dsbrd.optionBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: dsbrd.breakdownValue, placeholder: 'Choose value', change: dsbrd.changeBreakdownValue }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
