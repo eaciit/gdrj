@@ -131,7 +131,7 @@ func main() {
 			break
 		}
 
-		date := time.Date(tsga.Get("y", 0).(int), time.Month(tsga.Get("p", 0).(int)), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 4, 0)
+		date := time.Date(tsga.Get("y", 0).(int), time.Month(tsga.Get("p", 0).(int)), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		pval := toolkit.Sprintf("%d_%d", date.Year(), int(date.Month()))
 
 		group := ""
@@ -158,7 +158,13 @@ func main() {
 	}
 
 	subtot := 0.0
-	for _, v := range mapsperiod {
+	for _, v := range mapkeysvalue {
+		subtot += v
+	}
+	toolkit.Printfn("subtotal 1 : %v", subtot)
+
+	subtot = 0.0
+	for k, v := range mapsperiod {
 		subtot += v
 	}
 	toolkit.Printfn("subtotal 2 : %v", subtot)
@@ -290,7 +296,8 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 
 		for k, v := range mapkeysvalue {
 			skey := strings.Split(k, "_")
-			if toolkit.ToInt(skey[0], toolkit.RoundingAuto) != j.Date.Year || toolkit.ToInt(skey[1], toolkit.RoundingAuto) != int(j.Date.Month) {
+			if toolkit.ToInt(skey[0], toolkit.RoundingAuto) != j.Date.Year ||
+				toolkit.ToInt(skey[1], toolkit.RoundingAuto) != int(j.Date.Month) {
 				continue
 			}
 
