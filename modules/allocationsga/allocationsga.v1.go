@@ -164,7 +164,7 @@ func main() {
 	toolkit.Printfn("subtotal 1 : %v", subtot)
 
 	subtot = 0.0
-	for k, v := range mapsperiod {
+	for _, v := range mapsperiod {
 		subtot += v
 	}
 	toolkit.Printfn("subtotal 2 : %v", subtot)
