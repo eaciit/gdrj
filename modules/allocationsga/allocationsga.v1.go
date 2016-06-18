@@ -165,12 +165,11 @@ func main() {
 	// }
 	// toolkit.Printfn("subtotal 1 : %v", subtot)
 
-	// subtot = 0.0
-	// for _, v := range mapsperiod {
-	// 	// toolkit.Printfn("%v - %v", k, v)
-	// 	subtot += v
-	// }
-	// toolkit.Printfn("subtotal 2 : %v", subtot)
+	subtot := 0.0
+	for _, v := range mapsperiod {
+		subtot += v
+	}
+	toolkit.Printfn("subtotal 2 : %v", subtot)
 
 	toolkit.Println("Start Data Process...")
 	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("skuid_vdist", ""))
