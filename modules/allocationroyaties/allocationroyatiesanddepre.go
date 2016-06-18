@@ -85,11 +85,7 @@ func getroyalties() {
 
 	sroy := croy.Count()
 	toolkit.Printfn("data royalties %d", sroy)
-	iroy := 0
-	steproy := sroy / 10
 	for {
-
-		iroy++
 		troy := new(gdrj.RawDataPL)
 		e := croy.Fetch(&troy, 1, false)
 		if e != nil {
@@ -100,12 +96,6 @@ func getroyalties() {
 		pval := toolkit.Sprintf("%d_%d", date.Year(), int(date.Month()))
 
 		mapsperiodroyalties[pval] += troy.AmountinIDR
-
-		if iroy%steproy == 0 {
-			toolkit.Printfn("Prepare royaties master %d of %d in %s",
-				iroy, sroy,
-				time.Since(t0).String())
-		}
 
 	}
 
@@ -123,11 +113,7 @@ func getdepreciation() {
 
 	sroy := croy.Count()
 	toolkit.Printfn("data depreciation %d", sroy)
-	iroy := 0
-	steproy := sroy / 10
 	for {
-
-		iroy++
 		troy := new(gdrj.RawDataPL)
 		e := croy.Fetch(&troy, 1, false)
 		if e != nil {
@@ -142,13 +128,6 @@ func getdepreciation() {
 		} else {
 			mapsperiodindirect[pval] += troy.AmountinIDR
 		}
-
-		if iroy%steproy == 0 {
-			toolkit.Printfn("Prepare depreciation master %d of %d in %s",
-				iroy, sroy,
-				time.Since(t0).String())
-		}
-
 	}
 
 	subtot := 0.0
@@ -171,11 +150,8 @@ func getdamage() {
 
 	sroy := croy.Count()
 	toolkit.Printfn("data damage goods %d", sroy)
-	iroy := 0
-	steproy := sroy / 10
 	for {
 
-		iroy++
 		troy := new(gdrj.RawDataPL)
 		e := croy.Fetch(&troy, 1, false)
 		if e != nil {
@@ -186,12 +162,6 @@ func getdamage() {
 		pval := toolkit.Sprintf("%d_%d", date.Year(), int(date.Month()))
 
 		mapsperioddamage[pval] += troy.AmountinIDR
-
-		if iroy%steproy == 0 {
-			toolkit.Printfn("Prepare royaties master %d of %d in %s",
-				iroy, sroy,
-				time.Since(t0).String())
-		}
 
 	}
 
