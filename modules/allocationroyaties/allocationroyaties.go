@@ -100,8 +100,9 @@ func main() {
 	defer croy.Close()
 
 	sroy := croy.Count()
+	toolkit.Printfn("data royalties %d", sroy)
 	iroy := 0
-	steproy := sroy / 100
+	steproy := sroy / 10
 	for {
 
 		iroy++
@@ -116,9 +117,9 @@ func main() {
 
 		mapsperiodroyalties[pval] += troy.AmountinIDR
 
-		if iroy%step == 0 {
-			toolkit.Printfn("Prepare royaties master %d of %d (%d) in %s",
-				iroy, sroy, iroy/steproy,
+		if iroy%steproy == 0 {
+			toolkit.Printfn("Prepare royaties master %d of %d in %s",
+				iroy, sroy,
 				time.Since(t0).String())
 		}
 
@@ -126,14 +127,14 @@ func main() {
 
 	// toolkit.Println(globalsga)
 	// subtot := 0.0
-	// for k, v := range mapsperiodroyalties {
-	// 	toolkit.Printfn("%v : %v", k, v)
+	// for _, v := range mapsperiodroyalties {
+	// 	// toolkit.Printfn("%v : %v", k, v)
 	// 	subtot += v
 	// }
 	// toolkit.Printfn("subtotal 1 : %v", subtot)
 
 	toolkit.Println("Start Data Process...")
-	filter = dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("skuid_vdist", ""))
+	filter = dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("grossamount", 0))
 	// filter = dbox.Eq("_id", "RK/IMN/15000001_1")
 	c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
 	defer c.Close()
@@ -227,7 +228,7 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 		key := toolkit.Sprintf("%d_%d", j.Date.Year, int(j.Date.Month))
 
 		ratio := j.GrossAmount / mapsperiodgross[key]
-		totroyaltyline := ratio * mapsperiodroyalties[key]
+		totroyaltyline := -ratio * mapsperiodroyalties[key]
 
 		if mapsperiodgross[key] == 0 {
 			continue
