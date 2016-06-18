@@ -93,6 +93,7 @@ func main() {
 	t0 = time.Now()
 	mapkeysvalue = make(map[string]float64)
 	mapsperiod = make(map[string]float64)
+	mapsgross = make(map[string]float64)
 	flag.IntVar(&fiscalyear, "year", 2015, "YYYY representation of godrej fiscal year. Default is 2015")
 	flag.StringVar(&ref, "ref", "", "Reference from document or other. Default is blank")
 	flag.Parse()
@@ -173,6 +174,7 @@ func main() {
 	toolkit.Println("Start Data Process...")
 	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("skuid_vdist", ""))
 	// filter = dbox.Eq("_id", "RK/IMN/15000001_1")
+
 	c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
 	defer c.Close()
 
@@ -180,7 +182,7 @@ func main() {
 	iscount = 0
 	gscount = 0
 	step = scount / 100
-	// step = 1000
+	//
 
 	jobs := make(chan *gdrj.SalesPL, count)
 	toolkit.Println("Prepare Worker")
@@ -202,6 +204,10 @@ func main() {
 		globalgross += spl.GrossAmount
 		pval := toolkit.Sprintf("%d_%d", spl.Date.Year, spl.Date.Month)
 		mapsgross[pval] += spl.GrossAmount
+
+		if step == 0 {
+			step = 100
+		}
 
 		if iscount%step == 0 {
 			toolkit.Printfn("Preparing %d of %d (%d) in %s", iscount, scount, iscount/step,
@@ -293,6 +299,10 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 		if e != nil {
 			toolkit.Printfn("Unable to save %s = %s",
 				j.ID, e.Error())
+		}
+
+		if step == 0 {
+			step = 100
 		}
 
 		if gscount%step == 0 {
