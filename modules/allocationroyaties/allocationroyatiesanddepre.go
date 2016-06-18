@@ -92,7 +92,7 @@ func getroyalties() {
 			break
 		}
 
-		date := time.Date(troy.Year, time.Month(troy.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 4, 0)
+		date := time.Date(troy.Year, time.Month(troy.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		pval := toolkit.Sprintf("%d_%d", date.Year(), int(date.Month()))
 
 		mapsperiodroyalties[pval] += troy.AmountinIDR
@@ -120,7 +120,7 @@ func getdepreciation() {
 			break
 		}
 
-		date := time.Date(troy.Year, time.Month(troy.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 4, 0)
+		date := time.Date(troy.Year, time.Month(troy.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		pval := toolkit.Sprintf("%d_%d", date.Year(), int(date.Month()))
 
 		if strings.Contains(troy.Grouping, "Factory") {
@@ -158,7 +158,7 @@ func getdamage() {
 			break
 		}
 
-		date := time.Date(troy.Year, time.Month(troy.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 4, 0)
+		date := time.Date(troy.Year, time.Month(troy.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		pval := toolkit.Sprintf("%d_%d", date.Year(), int(date.Month()))
 
 		mapsperioddamage[pval] += troy.AmountinIDR
