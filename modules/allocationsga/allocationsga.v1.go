@@ -115,7 +115,7 @@ func main() {
 	toolkit.Println("Count SGA Data Process...")
 	// conn, _ = modules.GetDboxIConnection("db_godrej")
 	conn, _ := modules.GetDboxIConnection("db_godrej")
-	csga, _ := conn.NewQuery().Select().From("tmpsgaallocs").Cursor(nil)
+	csga, _ := conn.NewQuery().Select().From("tmpsgaallocs").Where(dbox.Eq("y", fiscalyear-1)).Cursor(nil)
 	defer csga.Close()
 	defer conn.Close()
 
@@ -157,6 +157,21 @@ func main() {
 
 	}
 
+	// toolkit.Println(globalsga)
+	// subtot := 0.0
+	// for _, v := range mapkeysvalue {
+	// 	// toolkit.Printfn("%v - %v", k, v)
+	// 	subtot += v
+	// }
+	// toolkit.Printfn("subtotal 1 : %v", subtot)
+
+	// subtot = 0.0
+	// for _, v := range mapsperiod {
+	// 	// toolkit.Printfn("%v - %v", k, v)
+	// 	subtot += v
+	// }
+	// toolkit.Printfn("subtotal 2 : %v", subtot)
+
 	toolkit.Println("Start Data Process...")
 	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("skuid_vdist", ""))
 	// filter = dbox.Eq("_id", "RK/IMN/15000001_1")
@@ -167,10 +182,11 @@ func main() {
 	iscount = 0
 	gscount = 0
 	step = scount / 100
+	// step = 1000
 
 	jobs := make(chan *gdrj.SalesPL, count)
 	toolkit.Println("Prepare Worker")
-	for wi := 0; wi < 50; wi++ {
+	for wi := 0; wi < 10; wi++ {
 		mwg.Add(1)
 		go worker(wi, jobs)
 	}
