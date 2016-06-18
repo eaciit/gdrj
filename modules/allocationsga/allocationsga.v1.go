@@ -20,14 +20,14 @@ var count int
 // var mwg sync.WaitGroup
 
 var (
-	t0                                 time.Time
-	custgroup, prodgroup, plcode, ref  string
-	value, fiscalyear, iscount, scount int
-	globalgross                        float64
-	mapsperiod                         map[string]float64
-	mapkeysvalue                       map[string]float64
-	masters                            toolkit.M
-	mwg                                sync.WaitGroup
+	t0                                                time.Time
+	custgroup, prodgroup, plcode, ref                 string
+	value, fiscalyear, iscount, gscount, scount, step int
+	globalgross, globalsga                            float64
+	mapsperiod                                        map[string]float64
+	mapkeysvalue                                      map[string]float64
+	masters                                           toolkit.M
+	mwg                                               sync.WaitGroup
 )
 
 func setinitialconnection() {
@@ -147,6 +147,7 @@ func main() {
 		kval := toolkit.Sprintf("%v_%v", pval, group)
 		mapkeysvalue[kval] += toolkit.ToFloat64(tsga.Get("amount", 0), 6, toolkit.RoundingAuto)
 		mapsperiod[pval] += toolkit.ToFloat64(tsga.Get("amount", 0), 6, toolkit.RoundingAuto)
+		globalsga += toolkit.ToFloat64(tsga.Get("amount", 0), 6, toolkit.RoundingAuto)
 
 		if ssga%500 == 0 {
 			toolkit.Printfn("Prepare sga master %d of %d in %s",
@@ -164,18 +165,18 @@ func main() {
 
 	scount = c.Count()
 	iscount = 0
-	step := scount / 100
-	i = 0
+	gscount = 0
+	step = scount / 100
 
 	jobs := make(chan *gdrj.SalesPL, count)
 	toolkit.Println("Prepare Worker")
-	for wi := 0; wi < 20; wi++ {
+	for wi := 0; wi < 50; wi++ {
 		mwg.Add(1)
 		go worker(wi, jobs)
 	}
 	// ====================================
 	for {
-		i++
+		iscount++
 
 		spl := new(gdrj.SalesPL)
 		e := c.Fetch(spl, 1, false)
@@ -186,19 +187,17 @@ func main() {
 
 		globalgross += spl.GrossAmount
 
-		if i > step {
-			step += scount / 100
-			toolkit.Printfn("Preparing %d of %d in %s", i, scount,
+		if iscount%step == 0 {
+			toolkit.Printfn("Preparing %d of %d (%d) in %s", iscount, scount, iscount/step,
 				time.Since(t0).String())
 		}
 	}
 
-	i = 0
 	c.ResetFetch()
-	step = scount / 100
+	iscount = 0
 	// ===========================
 	for {
-		i++
+		iscount++
 
 		spl := new(gdrj.SalesPL)
 		e := c.Fetch(spl, 1, false)
@@ -207,20 +206,9 @@ func main() {
 			break
 		}
 
-		aplmodel := spl.PLDatas
-		for k, _ := range aplmodel {
-			if strings.Contains(k, "PL33") || strings.Contains(k, "PL34") || strings.Contains(k, "PL35") {
-				// aplmodel[k] = nil
-				delete(aplmodel, k)
-			}
-		}
-
-		spl.PLDatas = aplmodel
-
 		jobs <- spl
-		if i > step {
-			step += scount / 100
-			toolkit.Printfn("Processing %d of %d in %s", i, scount,
+		if iscount%step == 0 {
+			toolkit.Printfn("Processing %d of %d (%d) in %s", iscount, scount, iscount/step,
 				time.Since(t0).String())
 		}
 
@@ -228,6 +216,10 @@ func main() {
 
 	close(jobs)
 	mwg.Wait()
+
+	toolkit.Printfn("Saved %d of %d (%d) in %s",
+		gscount, scount, gscount/step,
+		time.Since(t0).String())
 
 	toolkit.Printfn("Processing done in %s",
 		time.Since(t0).String())
@@ -244,12 +236,26 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 
 	for j = range jobs {
 
+		gscount++
+
+		aplmodel := j.PLDatas
+		for k, _ := range aplmodel {
+			if strings.Contains(k, "PL33") || strings.Contains(k, "PL34") || strings.Contains(k, "PL35") {
+				delete(aplmodel, k)
+			}
+		}
+
+		j.PLDatas = aplmodel
+
 		key := toolkit.Sprintf("%d_%d", j.Date.Year, int(j.Date.Month))
 
 		ratio := j.GrossAmount / globalgross
 		totsgaperiod, _ := mapsperiod[key]
-		totsgaline := ratio * totsgaperiod
-		// toolkit.Println(key, " : ", totsgaperiod)
+		totsgaline := ratio * globalsga
+
+		if totsgaperiod == 0 {
+			continue
+		}
 
 		for k, v := range mapkeysvalue {
 			skey := strings.Split(k, "_")
@@ -273,10 +279,9 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 				j.ID, e.Error())
 		}
 
-		iscount++
-		if iscount%1000 == 0 {
-			toolkit.Printfn("Saved %d of %d in %s",
-				iscount, scount,
+		if gscount%step == 0 {
+			toolkit.Printfn("Saved %d of %d (%d) in %s",
+				gscount, scount, gscount/step,
 				time.Since(t0).String())
 		}
 	}
