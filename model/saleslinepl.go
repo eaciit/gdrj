@@ -278,12 +278,12 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	opincome = grossmargin + operatingexpense
 	ebt = opincome + nonoprincome //asume nonopriceincome already minus
 	percentpbt = 0
-	if ebt!=0 {
+	if ebt != 0 {
 		percentpbt = taxexpense / ebt * 100
 	}
 	eat = ebt + taxexpense
 	ebitda = totdepreexp + damagegoods + opincome
-	ebitdaroyalties = ebitda + royaltiestrademark
+	ebitdaroyalties = ebitda - royaltiestrademark
 
 	pl.AddData("PL8A", netsales, plmodels)
 	pl.AddData("PL14A", directexpense, plmodels)
@@ -518,7 +518,7 @@ func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, mode
 		plcode = plcode + "_" + ccgroup
 	}
 	pl_m, exist := pl.PLDatas[plcode]
-	if !exist || pl_m==nil {
+	if !exist || pl_m == nil {
 		pl_m = new(PLData)
 		pl_m.PLOrder = m.OrderIndex
 		pl_m.Group1 = m.PLHeader1

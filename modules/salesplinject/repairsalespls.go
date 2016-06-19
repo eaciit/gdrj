@@ -8,15 +8,48 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	// "strings"
+
 	"sync"
 	"time"
 )
 
 var conn dbox.IConnection
-var count, ird, irddisc, iexp, idiscount int
+var count, scount, iscount, step int
+var t0 time.Time
+var mwg sync.WaitGroup
+var masters toolkit.M
 
-// var mwg sync.WaitGroup
+func buildmap(holder interface{},
+	fnModel func() orm.IModel,
+	filter *dbox.Filter,
+	fnIter func(holder interface{}, obj interface{})) interface{} {
+	crx, _ := gdrj.Find(fnModel(), filter, nil)
+	defer crx.Close()
+	for {
+		s := fnModel()
+		e := crx.Fetch(s, 1, false)
+		if e != nil {
+			break
+		}
+		fnIter(holder, s)
+	}
+	return holder
+}
+
+func prepmaster() {
+	masters = toolkit.M{}
+
+	masters.Set("plmodel", buildmap(map[string]*gdrj.PLModel{},
+		func() orm.IModel {
+			return new(gdrj.PLModel)
+		},
+		nil,
+		func(holder, obj interface{}) {
+			h := holder.(map[string]*gdrj.PLModel)
+			o := obj.(*gdrj.PLModel)
+			h[o.ID] = o
+		}).(map[string]*gdrj.PLModel))
+}
 
 func setinitialconnection() {
 	var err error
@@ -47,6 +80,7 @@ func main() {
 	defer gdrj.CloseDb()
 
 	toolkit.Println("START...")
+	prepmaster()
 
 	crx, err := gdrj.Find(new(gdrj.SalesPL),
 		nil,
@@ -60,58 +94,32 @@ func main() {
 
 	count = crx.Count()
 
-	jobs := make(chan *gdrj.SalesTrx, count)
-	result := make(chan int, count)
+	jobs := make(chan *gdrj.SalesPL, count)
 	toolkit.Println("Prepare Worker")
 	for wi := 0; wi < 10; wi++ {
-		go worker(wi, jobs, result)
+		mwg.Add(1)
+		go worker(wi, jobs)
 	}
 
 	toolkit.Println("Total Data : ", count)
-	step := count / 100
+	step = count / 100
 	i := 0
-	t0 := time.Now()
+	t0 = time.Now()
 	for {
 		i++
-		st := new(gdrj.SalesTrx)
+		st := new(gdrj.SalesPL)
 		e := crx.Fetch(&st, 1, false)
 		if e != nil {
-			toolkit.Println("Error Found : ", e.Error())
+			toolkit.Println("EOF")
 			break
 		}
 
-		num := 0
-
-		switch st.Src {
-		case "RD":
-			ird++
-			num = ird
-		case "RD-DISC":
-			irddisc++
-			num = irddisc
-		case "DISCOUNT":
-			idiscount++
-			num = idiscount
-		case "EXPORT":
-			iexp++
-			num = iexp
-		default:
-			st.Src = "VDIST"
-		}
-
-		if st.Src != "VDIST" {
-			st.SalesHeaderID = toolkit.Sprintf("%v_%v_%v_%v_%v", st.Src, st.Year, st.Month, st.SKUID, num)
-			st.ID = st.SalesHeaderID
-		} else if st.Customer != nil && st.Customer.ChannelID == "I1" {
-			continue
-		}
-
 		jobs <- st
-		if i > step {
-			toolkit.Printfn("Processing %d of %d in %s",
-				i, count,
+
+		if i%step == 0 {
+			toolkit.Printfn("Processing %d of %d (%d) in %s",
+				i, count, i/step,
 				time.Since(t0).String())
-			step += count / 100
 		}
 	}
 
@@ -122,16 +130,33 @@ func main() {
 		time.Since(t0).String())
 }
 
-func worker(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
+func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 	workerConn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerConn.Close()
 
-	var j *gdrj.SalesTrx
-	table := toolkit.Sprintf("%v_1", j.TableName())
+	var j *gdrj.SalesPL
+	table := toolkit.Sprintf("%v-1", j.TableName())
 
 	for j = range jobs {
+
+		// DO Repair
+
+		j.CalcSum(masters)
+
 		workerConn.NewQuery().From(table).
 			Save().Exec(toolkit.M{}.Set("data", j))
+
+		iscount++
+
+		if step == 0 {
+			step = 1000
+		}
+
+		if iscount%step == 0 {
+			toolkit.Printfn("Saved %d of %d (%d) in %s",
+				iscount, scount, iscount/step,
+				time.Since(t0).String())
+		}
 	}
 
 	mwg.Done()

@@ -154,10 +154,12 @@ func GetPLModel(plcode, companyid string,
 	return pldatamodel
 }
 
-func getData(payload *PLFinderParam) (toolkit.Ms, error) {
+func getDataComp(payload *CompFinderParam) (toolkit.Ms, error) {
 	conn := DB().Connection
-	q := conn.NewQuery().From("quarterreport") //.Where(payload.ParseFilter())
-
+	q := conn.NewQuery().From(payload.Tablename).Where(payload.parseFilter())
+	/*q := conn.NewQuery().From(new(SalesPL).TableName()).Group("skuid", "date.quartertxt")
+	q = q.Aggr(dbox.AggrSum, "$salesqty", "qty").Aggr(dbox.AggrSum, "$pldatas.PL8A.amount", "amount").
+		Aggr(dbox.AggrSum, 1, "outlet")*/
 	c, e := q.Cursor(nil)
 	if e != nil {
 		return nil, errors.New("Preparing cursor error " + e.Error())
@@ -171,7 +173,7 @@ func getData(payload *PLFinderParam) (toolkit.Ms, error) {
 	if e != nil {
 		return nil, errors.New("Fetch cursor error " + e.Error())
 	}
-	toolkit.Printfn("Fetching %d data in %s", toolkit.SliceLen(data), time.Since(t0).String())
+	toolkit.Printfn("Fetching %d data in %s", len(data), time.Since(t0).String())
 
 	return data, nil
 
@@ -182,14 +184,31 @@ func sortKey(data toolkit.Ms, tipe string) (toolkit.M, []string) {
 	var keys []string
 	for _, k := range data {
 		_data, _ := toolkit.ToM(k["_id"])
-		id := _data.GetString("skuid") + "_" + _data.GetString("quarter")
+		id := _data.GetString("skuid") + "_" + _data.GetString("date_quartertxt")
 		if tipe == "price" {
-			price := k.GetFloat64("price") / k.GetFloat64("qty")
-			value.Set(id, price)
+			var price float64
+			if k.GetFloat64("qty") == 0 {
+				price = 0
+			} else {
+				price = k.GetFloat64("amount") / k.GetFloat64("qty")
+			}
+			if value.Has(id) {
+				value.Set(id, value.GetFloat64(id)+price)
+			} else {
+				value.Set(id, price)
+			}
 		} else if tipe == "qty" {
-			value.Set(id, k["qty"])
+			if value.Has(id) {
+				value.Set(id, value.GetFloat64(id)+toolkit.ToFloat64(k["qty"], 6, toolkit.RoundingAuto))
+			} else {
+				value.Set(id, k["qty"])
+			}
 		} else if tipe == "outlet" {
-			value.Set(id, k["outlet"])
+			if value.Has(id) {
+				value.Set(id, value.GetFloat64(id)+toolkit.ToFloat64(k["outlet"], 6, toolkit.RoundingAuto))
+			} else {
+				value.Set(id, k["outlet"])
+			}
 		}
 		keys = append(keys, id)
 	}
@@ -237,8 +256,8 @@ func dataRemap(value toolkit.M, keys []string) (toolkit.M, toolkit.M) {
 	return valueList, valueCount
 }
 
-func GetDecreasedQty(payload *PLFinderParam) (toolkit.Ms, error) {
-	data, err := getData(payload)
+func GetDecreasedQty(payload *CompFinderParam) (toolkit.Ms, error) {
+	data, err := getDataComp(payload)
 	if err != nil {
 		return nil, errors.New("GetDecreasedQty: Fetch cursor error " + err.Error())
 	}
