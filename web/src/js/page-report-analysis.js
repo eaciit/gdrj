@@ -291,6 +291,8 @@ bkd.renderDetail = (plcode, breakdowns) => {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
 	$('.grid-detail').kendoGrid(config)
 }
+
+bkd.idarrayhide = ko.observableArray(['PL44A'])
 bkd.render = () => {
 	if (bkd.data().length == 0) {
 		$('.breakdown-view').html('No data found.')
@@ -300,7 +302,7 @@ bkd.render = () => {
 	let breakdowns = [bkd.breakdownBy() /** , 'date.year' */]
 	let rows = []
 	
-	let data = _.sortBy(_.map(bkd.data(), (d) => {
+	let data = _.map(bkd.data(), (d) => {
 		d.breakdowns = {}
 		let titleParts = []
 
@@ -313,22 +315,50 @@ bkd.render = () => {
 		
 		d._id = titleParts.join(' ')
 		return d 
-	}), (d) => d._id)
+	})
 	
 	let plmodels = _.sortBy(bkd.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
+	let exceptions = [
+		"PL94C" /* "Operating Income" */, 
+		"PL39B" /* "Earning Before Tax" */, 
+		"PL41C" /* "Earning After Tax" */
+	]
+	let netSalesPLCode = 'PL8A'
+	let netSalesPlModel = bkd.plmodels().find((d) => d._id == netSalesPLCode)
+	let netSalesRow = {}
+	data.forEach((e) => {
+		let breakdown = e._id
+		let value = e[`${netSalesPlModel._id}`]; 
+		value = toolkit.number(value)
+		netSalesRow[breakdown] = value
+	})
+	data = _.orderBy(data, (d) => netSalesRow[d._id], 'desc')
+
 	plmodels.forEach((d) => {
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
 		data.forEach((e) => {
 			let breakdown = e._id
-			let value = e[`${d._id}`]; value = toolkit.number(value)
+			let value = e[`${d._id}`]; 
+			value = toolkit.number(value)
 			row[breakdown] = value
 			row.PNLTotal += value
 		})
 		data.forEach((e) => {
 			let breakdown = e._id
-			let value = e[`${d._id}`] / row.PNLTotal * 100; value = toolkit.number(value)
-			row[`${breakdown} %`] = value
+			let percentage = e[`${d._id}`] / row.PNLTotal * 100; 
+			percentage = toolkit.number(percentage)
+
+			if (d._id != netSalesPLCode) {
+				percentage = row[breakdown] / netSalesRow[breakdown] * 100
+			}
+
+			row[`${breakdown} %`] = percentage
 		})
+
+		if (exceptions.indexOf(row.PLCode) > -1) {
+			return
+		}
+
 		rows.push(row)
 	})
 
@@ -481,7 +511,11 @@ bkd.render = () => {
 			resg1 = _.find(grouppl1, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
 			resg2 = _.find(grouppl2, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
 			resg3 = _.find(grouppl3, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
-			if (resg1 == undefined){
+
+			let idplyo = _.find(bkd.idarrayhide(), (a) => { return a == $trElem.attr("idheaderpl") })
+			if (idplyo != undefined)
+				$trElem.remove()
+			if (resg1 == undefined && idplyo2 == undefined){
 				if (resg2 != undefined){ 
 					textPL = _.find(resg2.data, function(o) { return o._id == $trElem.attr("idheaderpl") })
 					PLyo = _.find(rows, function(o) { return o.PNL == textPL.PLHeader1 })
@@ -499,7 +533,7 @@ bkd.render = () => {
 						$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
 						$columnElem.insertAfter($(`tr.column${PLyo.PLCode}`))
 					}
-				} else if (resg2 == undefined){
+				} else if (resg2 == undefined && idplyo2 == undefined){
 					if (resg3 != undefined){
 						PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader2 })
 						PLyo2 = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader3 })
@@ -525,6 +559,12 @@ bkd.render = () => {
 				}
 			}
 
+			let idplyo2 = _.find(bkd.idarrayhide(), (a) => { return a == $trElem.attr("idparent") })
+			if (idplyo2 != undefined){
+				$trElem.removeAttr('idparent')
+				$trElem.addClass('bold')
+				$trElem.css('display','inline-grid')
+			}
 		}
 	})
 
@@ -611,6 +651,7 @@ bkd.showZeroValue = (a) => {
 
 	bkd.showExpandAll(false)
 }
+
 bkd.optionBreakdownValues = ko.observableArray([])
 bkd.breakdownValueAll = { _id: 'All', Name: 'All' }
 bkd.changeBreakdown = () => {
@@ -750,21 +791,20 @@ rs.refresh = (useCache = false) => {
 			let dataScatter = []
 			let multiplier = (sumNetSales == 0 ? 1 : sumNetSales)
 
-			dataAllPNL.forEach((d) => {
+			dataAllPNL.forEach((d, i) => {
 				dataScatter.push({
+					valueNetSales: dataAllPNLNetSales[i].value,
 					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
 					category: d._id[`_id_${app.idAble(rs.breakdownBy())}`],
 					year: d._id._id_date_year,
 					valuePNL: Math.abs(d.value),
-					valuePNLPercentage: Math.abs(d.value / multiplier * 100),
+					valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
 					avgPNL: Math.abs(avgPNL),
 					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
 					sumPNL: Math.abs(sumPNL),
 					sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
 				})
 			})
-
-			console.log("-----", dataScatter)
 
 			rs.contentIsLoading(false)
 			rs.generateReport(dataScatter, years)
@@ -779,7 +819,7 @@ rs.refresh = (useCache = false) => {
 }
 
 rs.generateReport = (data, years) => {
-	data = _.sortBy(data, (d) => `${d.year} ${d.category}`)
+	data = _.orderBy(data, (d) => d.valueNetSales, 'desc')
 
 	let max = _.max(_.map(data, (d) => d.avgNetSalesPercentage)
 		.concat(_.map(data, (d) => d.valuePNLPercentage)))
