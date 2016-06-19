@@ -321,7 +321,7 @@ bkd.render = () => {
 	let exceptions = [
 		"PL94C" /* "Operating Income" */, 
 		"PL39B" /* "Earning Before Tax" */, 
-		"PL41C" /* "Earning After Tax" */
+		"PL41C" /* "Earning After Tax" */,
 	]
 	let netSalesPLCode = 'PL8A'
 	let netSalesPlModel = bkd.plmodels().find((d) => d._id == netSalesPLCode)
@@ -513,8 +513,10 @@ bkd.render = () => {
 			resg3 = _.find(grouppl3, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
 
 			let idplyo = _.find(bkd.idarrayhide(), (a) => { return a == $trElem.attr("idheaderpl") })
-			if (idplyo != undefined)
+			if (idplyo != undefined){
 				$trElem.remove()
+				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).remove()
+			}
 			if (resg1 == undefined && idplyo2 == undefined){
 				if (resg2 != undefined){ 
 					textPL = _.find(resg2.data, function(o) { return o._id == $trElem.attr("idheaderpl") })
@@ -533,7 +535,7 @@ bkd.render = () => {
 						$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
 						$columnElem.insertAfter($(`tr.column${PLyo.PLCode}`))
 					}
-				} else if (resg2 == undefined && idplyo2 == undefined){
+				} else if (resg2 == undefined){
 					if (resg3 != undefined){
 						PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader2 })
 						PLyo2 = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader3 })
@@ -564,6 +566,10 @@ bkd.render = () => {
 				$trElem.removeAttr('idparent')
 				$trElem.addClass('bold')
 				$trElem.css('display','inline-grid')
+				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).removeAttr("idcontparent")
+				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).attr('statusval', 'show')
+				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).attr('statusvaltemp', 'show')
+				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).css('display','inline-grid')
 			}
 		}
 	})

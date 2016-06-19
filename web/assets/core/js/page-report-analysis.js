@@ -514,7 +514,10 @@ bkd.render = function () {
 			var idplyo = _.find(bkd.idarrayhide(), function (a) {
 				return a == $trElem.attr("idheaderpl");
 			});
-			if (idplyo != undefined) $trElem.remove();
+			if (idplyo != undefined) {
+				$trElem.remove();
+				$('.table-content tr.column' + $trElem.attr("idheaderpl")).remove();
+			}
 			if (resg1 == undefined && idplyo2 == undefined) {
 				if (resg2 != undefined) {
 					textPL = _.find(resg2.data, function (o) {
@@ -538,7 +541,7 @@ bkd.render = function () {
 						$trElem.insertAfter($('tr.header' + PLyo.PLCode));
 						$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
 					}
-				} else if (resg2 == undefined && idplyo2 == undefined) {
+				} else if (resg2 == undefined) {
 					if (resg3 != undefined) {
 						PLyo = _.find(rows, function (o) {
 							return o.PNL == resg3.data[0].PLHeader2;
@@ -575,6 +578,10 @@ bkd.render = function () {
 				$trElem.removeAttr('idparent');
 				$trElem.addClass('bold');
 				$trElem.css('display', 'inline-grid');
+				$('.table-content tr.column' + $trElem.attr("idheaderpl")).removeAttr("idcontparent");
+				$('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusval', 'show');
+				$('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusvaltemp', 'show');
+				$('.table-content tr.column' + $trElem.attr("idheaderpl")).css('display', 'inline-grid');
 			}
 		}
 	});
