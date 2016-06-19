@@ -211,6 +211,8 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 			}
 		}
 
+		spl.CalcSum(masters)
+
 		workerConn.NewQuery().From(spl.TableName()).
 			Save().Exec(toolkit.M{}.Set("data", spl))
 
