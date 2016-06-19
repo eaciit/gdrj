@@ -23,10 +23,12 @@ rpt.optionDimensions = ko.observableArray([
 // { field: 'customer.name', name: 'Outlet', title: 'customer_name' },
 // { field: 'product.name', name: 'Product', title: 'product_name' },
 // { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
-// { field: 'customer.city', name: 'City', title: 'customer_city' },
-{ field: 'customer.region', name: 'Region', title: 'customer_region' },
+{ field: "customer.areaname", name: "City", title: "customer_areaname" }, { field: 'customer.region', name: 'Region', title: 'customer_region' }, { field: "customer.zone", name: "Zone", title: "customer_zone" },
 // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
-{ field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' }, { field: 'date.month', name: 'Month', title: 'date_month' }]);
+{ field: 'customer.keyaccount', name: 'Key Account', title: 'customer_keyaccount' }]);
+
+// { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
+// { field: 'date.month', name: 'Month', title: 'date_month' },
 rpt.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
 rpt.mode = ko.observable('render');
@@ -108,7 +110,7 @@ rpt.groupGeoBy = function (raw, category) {
 	var data = Lazy(raw).groupBy(function (f) {
 		return f[groupKey];
 	}).map(function (k, v) {
-		return { _id: v, Name: toolkit.capitalize(v, true) };
+		return { _id: v, Name: v };
 	}).toArray();
 
 	return data;
@@ -163,13 +165,6 @@ rpt.filterMultiSelect = function (d) {
 			dataValueField: '_id',
 			dataTextField: 'Name',
 			enabled: rpt.enableHolder[d._id],
-			template: function template(d) {
-				if (d._id == 'KeyAccount') {
-					return toolkit.capitalize(d.KeyAccount);
-				}
-
-				return toolkit.capitalize($.trim(d.Name));
-			},
 			value: rpt.value[d._id]
 		});
 
@@ -189,7 +184,14 @@ rpt.filterMultiSelect = function (d) {
 				return;
 			}
 
-			rpt.masterData[d._id](_.sortBy(res.data, function (d) {
+			var data = _.map(res.data, function (e) {
+				if (d.from == 'KeyAccount') {
+					return { _id: e._id, Name: e._id };
+				}
+				return e;
+			});
+
+			rpt.masterData[d._id](_.sortBy(data, function (d) {
 				return d.Name;
 			}));
 		});
@@ -223,13 +225,7 @@ rpt.filterMultiSelect = function (d) {
 			});
 		}
 	} else {
-		config.data = rpt.masterData[d._id]().map(function (f) {
-			if (!f.hasOwnProperty('Name')) {
-				return f;
-			}
-
-			return { _id: f._id, Name: toolkit.capitalize(f.Name, true) };
-		});
+		config.data = rpt.masterData[d._id]();
 	}
 
 	return config;
@@ -350,6 +346,7 @@ rpt.refresh = function () {
 rpt.refreshAll = function () {
 	switch (rpt.refreshView()) {
 		case 'analysis':
+			bkd.changeBreakdown();
 			bkd.refresh();
 			rs.refresh();
 			ccr.refresh();

@@ -18,6 +18,7 @@ bkd.data = ko.observableArray([]);
 bkd.plmodels = ko.observableArray([]);
 bkd.zeroValue = ko.observable(false);
 bkd.fiscalYear = ko.observable(rpt.value.FiscalYear());
+bkd.breakdownValue = ko.observableArray([]);
 
 bkd.generateDataForX = function () {
 	var param = {
@@ -41,12 +42,27 @@ bkd.generateDataForX = function () {
 bkd.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
+	if (bkd.breakdownValue().length == 0) {
+		toolkit.showError('Please choose at least breakdown value');
+		return;
+	}
+
 	var param = {};
 	param.pls = [];
 	param.groups = [bkd.breakdownBy() /** , 'date.year' */];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, bkd.fiscalYear);
 
+	var breakdownValue = bkd.breakdownValue().filter(function (d) {
+		return d != 'All';
+	});
+	if (breakdownValue.length > 0) {
+		param.filters.push({
+			Field: bkd.breakdownBy(),
+			Op: '$in',
+			Value: bkd.breakdownValue()
+		});
+	}
 	console.log("bdk", param.filters);
 
 	bkd.oldBreakdownBy(bkd.breakdownBy());
@@ -543,7 +559,7 @@ bkd.render = function () {
 		}
 	});
 
-	bkd.showZeroValue(true);
+	bkd.showZeroValue(false);
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
 };
 
@@ -597,6 +613,75 @@ bkd.showZeroValue = function (a) {
 	}
 
 	bkd.showExpandAll(false);
+};
+bkd.optionBreakdownValues = ko.observableArray([]);
+bkd.breakdownValueAll = { _id: 'All', Name: 'All' };
+bkd.changeBreakdown = function () {
+	var all = bkd.breakdownValueAll;
+	var map = function map(arr) {
+		return arr.map(function (d) {
+			if (bkd.breakdownBy() == "customer.channelname") {
+				return d;
+			}
+
+			return { _id: d.Name, Name: d.Name };
+		});
+	};
+	setTimeout(function () {
+		switch (bkd.breakdownBy()) {
+			case "customer.areaname":
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Area())));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "customer.region":
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Region())));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "customer.zone":
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "product.brand":
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "customer.branchname":
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "customer.channelname":
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())));
+				bkd.breakdownValue([all._id]);
+				break;
+			case "customer.keyaccount":
+				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())));
+				bkd.breakdownValue([all._id]);
+				break;
+		}
+	}, 100);
+};
+bkd.changeBreakdownValue = function () {
+	var all = bkd.breakdownValueAll;
+	setTimeout(function () {
+		var condA1 = bkd.breakdownValue().length == 2;
+		var condA2 = bkd.breakdownValue().indexOf(all._id) == 0;
+		if (condA1 && condA2) {
+			bkd.breakdownValue.remove(all._id);
+			return;
+		}
+
+		var condB1 = bkd.breakdownValue().length > 1;
+		var condB2 = bkd.breakdownValue().reverse()[0] == all._id;
+		if (condB1 && condB2) {
+			bkd.breakdownValue([all._id]);
+			return;
+		}
+
+		var condC1 = bkd.breakdownValue().length == 0;
+		if (condC1) {
+			bkd.breakdownValue([all._id]);
+		}
+	}, 100);
 };
 
 viewModel.scatter = new Object();
@@ -868,19 +953,22 @@ ccr.plot = function () {
 	var tempdata = [];
 	// let qty = 0
 	// let price = 0
-	var outlet = 0;
-	var maxline = 0;
-	var maxprice = 0;
-	var maxqty = 0;
-	var quarter = [];
+	var outlet = 0,
+	    maxline = 0,
+	    maxprice = 0,
+	    maxqty = 0,
+	    quarter = [];
 	for (var i in ccr.dataComparison()) {
 		if (ccr.dataComparison()[i].productName != undefined) {
 			// qty = _.filter(ccr.dataComparison()[i].qty, function(resqty){ return resqty == 0}).length
 			// price = _.filter(ccr.dataComparison()[i].price, function(resprice){ return resprice == 0}).length
 			maxprice = _.max(ccr.dataComparison()[i].price);
 			maxqty = _.max(ccr.dataComparison()[i].qty);
-			if (maxprice > maxqty) maxline = maxprice;else maxline = maxqty;
 			outlet = _.max(ccr.dataComparison()[i].outletList);
+			// if (maxprice > maxqty)
+			// 	maxline = maxprice
+			// else
+			// 	maxline = maxqty
 			quarter = [];
 			for (var a in ccr.dataComparison()[i].qty) {
 				quarter.push('Quarter ' + (parseInt(a) + 1));
@@ -890,7 +978,8 @@ ccr.plot = function () {
 				price: ccr.dataComparison()[i].priceCount,
 				quarter: quarter,
 				maxoutlet: outlet + outlet / 2,
-				maxline: maxline + maxline / 4,
+				maxprice: maxprice + maxprice / 4,
+				maxqty: maxqty + maxqty / 4,
 				productName: ccr.dataComparison()[i].productName,
 				data: ccr.dataComparison()[i]
 			});
@@ -918,7 +1007,7 @@ ccr.render = function () {
 						width: 3
 					}
 				},
-				axis: "priceqty"
+				axis: "price"
 			},
 			qty: {
 				name: 'Qty',
@@ -932,7 +1021,7 @@ ccr.render = function () {
 						width: 3
 					}
 				},
-				axis: "priceqty"
+				axis: "qty"
 			},
 			outlet: {
 				name: 'Outlet',
@@ -961,28 +1050,50 @@ ccr.render = function () {
 		});
 
 		var valueAxes = [];
-		if (ccr.comparison().indexOf('qty') > -1 || ccr.comparison().indexOf('price') > -1) {
+		// , maxyo = 0, fieldmax = '', maxselect = 0
+		// if (ccr.comparison().indexOf('qty') > -1 || ccr.comparison().indexOf('price') > -1) {
+		// 	valueAxes.push({
+		// 		name: "priceqty",
+		//               title: { text: "Qty & Price" },
+		// 		majorGridLines: {
+		// 			color: '#fafafa'
+		// 		},
+		// 		max: full.maxline,
+		// 	})
+		// }
+		// if (ccr.comparison().indexOf('outlet') > -1) {
+		// 	valueAxes.push({
+		// 		name: "outlet",
+		//               title: { text: "Outlet" },
+		//               majorGridLines: {
+		// 			color: '#fafafa'
+		// 		},
+		// 		max: full.maxoutlet,
+		// 	})
+		// }
+		// if (ccr.comparison().length > 1) {
+		// 	if (ccr.comparison()[0] > ccr.comparison()[1]){
+		// 		maxyo = full["max"+ccr.comparison()[0]]
+		// 		fieldmax = ccr.comparison()[0]
+		// 	} else {
+		// 		maxyo = full["max"+ccr.comparison()[1]]
+		// 		fieldmax = ccr.comparison()[1]
+		// 	}
+		// } else if (ccr.comparison() > 0) {
+		// 	maxyo = full["max"+ccr.comparison()[0]]
+		// 	fieldmax = ccr.comparison()[0]
+		// }
+		// maxyo += maxyo / 4
+		for (var _e in ccr.comparison()) {
 			valueAxes.push({
-				name: "priceqty",
-				title: { text: "Qty & Price" },
+				name: ccr.comparison()[_e],
+				title: { text: ccr.comparison()[_e].charAt(0).toUpperCase() + ccr.comparison()[_e].slice(1) },
 				majorGridLines: {
 					color: '#fafafa'
 				},
-				max: full.maxline
+				max: full["max" + ccr.comparison()[_e]]
 			});
 		}
-		if (ccr.comparison().indexOf('outlet') > -1) {
-			valueAxes.push({
-				name: "outlet",
-				title: { text: "Outlet" },
-				majorGridLines: {
-					color: '#fafafa'
-				},
-				max: full.maxoutlet
-			});
-		}
-
-		console.log(valueAxes);
 
 		return {
 			// dataSource: {
@@ -1053,7 +1164,12 @@ rpt.refresh = function () {
 
 	rs.getSalesHeaderList();
 
-	bkd.refresh(false);
+	bkd.changeBreakdown();
+	setTimeout(function () {
+		bkd.breakdownValue(['All']);
+		bkd.refresh(false);
+	}, 200);
+
 	bkd.prepareEvents();
 
 	ccr.getDecreasedQty(false);
