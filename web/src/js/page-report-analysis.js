@@ -877,7 +877,7 @@ rs.generateReport = (data, years) => {
 				visible: true,
 				position: 'top',
 				template: (d) => {
-					return `${breakdownTitle} ${d.category}<br />${kendo.toString(d.value, 'n2')} %`
+					return `${breakdownTitle} ${d.category}\n${kendo.toString(d.value, 'n2')} %`
 				}
 			},
 		}],
