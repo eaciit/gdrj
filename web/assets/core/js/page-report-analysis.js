@@ -797,21 +797,20 @@ rs.refresh = function () {
 			var dataScatter = [];
 			var multiplier = sumNetSales == 0 ? 1 : sumNetSales;
 
-			dataAllPNL.forEach(function (d) {
+			dataAllPNL.forEach(function (d, i) {
 				dataScatter.push({
+					valueNetSales: dataAllPNLNetSales[i].value,
 					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
 					category: d._id['_id_' + app.idAble(rs.breakdownBy())],
 					year: d._id._id_date_year,
 					valuePNL: Math.abs(d.value),
-					valuePNLPercentage: Math.abs(d.value / multiplier * 100),
+					valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
 					avgPNL: Math.abs(avgPNL),
 					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
 					sumPNL: Math.abs(sumPNL),
 					sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
 				});
 			});
-
-			console.log("-----", dataScatter);
 
 			rs.contentIsLoading(false);
 			rs.generateReport(dataScatter, years);
@@ -826,9 +825,9 @@ rs.refresh = function () {
 };
 
 rs.generateReport = function (data, years) {
-	data = _.sortBy(data, function (d) {
-		return d.year + ' ' + d.category;
-	});
+	data = _.orderBy(data, function (d) {
+		return d.valueNetSales;
+	}, 'desc');
 
 	var max = _.max(_.map(data, function (d) {
 		return d.avgNetSalesPercentage;
