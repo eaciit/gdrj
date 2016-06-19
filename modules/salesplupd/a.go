@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/eaciit/dbox"
-	//"github.com/eaciit/orm/v1"
+	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 
 	"flag"
@@ -56,6 +56,23 @@ func getCursor(obj orm.IModel) dbox.ICursor {
 
 var subchannels = toolkit.M{}
 
+func buildmap(holder interface{},
+	fnModel func() orm.IModel,
+	filter *dbox.Filter,
+	fnIter func(holder interface{}, obj interface{})) interface{} {
+	crx, _ := gdrj.Find(fnModel(), filter, nil)
+	defer crx.Close()
+	for {
+		s := fnModel()
+		e := crx.Fetch(s, 1, false)
+		if e != nil {
+			break
+		}
+		fnIter(holder, s)
+	}
+	return holder
+}
+
 func prepMaster() {
 	toolkit.Println("--> SUBCHANNEL")
 	c, _ := conn.NewQuery().From("subchannels").Cursor(nil)
@@ -69,6 +86,19 @@ func prepMaster() {
 		}
 		subchannels.Set(m.GetString("_id"), m.GetString("title"))
 	}
+
+	masters = toolkit.M{}
+
+	masters.Set("plmodel", buildmap(map[string]*gdrj.PLModel{},
+		func() orm.IModel {
+			return new(gdrj.PLModel)
+		},
+		nil,
+		func(holder, obj interface{}) {
+			h := holder.(map[string]*gdrj.PLModel)
+			o := obj.(*gdrj.PLModel)
+			h[o.ID] = o
+		}).(map[string]*gdrj.PLModel))
 }
 
 func makeDateFromInt(i int, endofmth bool) time.Time {
