@@ -34,6 +34,7 @@ type Customer struct {
 	ChannelID         string
 	ChannelName       string
 	ReportChannel	  string
+	ReportSubChannel  string
 	ChannelOrRD		  string
 	CustomerGroup     string
 	CustomerGroupName string
