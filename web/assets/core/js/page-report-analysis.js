@@ -748,7 +748,6 @@ rs.selectedPNLNetSales = ko.observable("PL8A"); // PL1
 rs.selectedPNL = ko.observable("PL44B");
 rs.chartComparisonNote = ko.observable('');
 rs.optionDimensionSelect = ko.observableArray([]);
-rs.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */]);
 rs.fiscalYear = ko.observable(rpt.value.FiscalYear());
 
 rs.getSalesHeaderList = function () {
@@ -776,7 +775,7 @@ rs.refresh = function () {
 
 	var param = {};
 	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()];
-	param.groups = rs.groups();
+	param.groups = [rs.breakdownBy() /** , 'date.year' */];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear);
 
@@ -836,6 +835,9 @@ rs.refresh = function () {
 				});
 			});
 
+			console.log("dataScatter", dataScatter);
+			console.log("dataAllPNL", dataAllPNL);
+
 			rs.contentIsLoading(false);
 			rs.generateReport(dataScatter, years);
 		}, function () {
@@ -867,7 +869,7 @@ rs.generateReport = function (data, years) {
 	}).name;
 
 	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>');
-	if (data.length * 100 > $('#scatter-view').parent().width()) $('#scatter-view').width(data.length * 100);else $('#scatter-view').css('width', '100%');
+	if (data.length * 100 > $('#scatter-view').parent().width()) $('#scatter-view').width(data.length * 120);else $('#scatter-view').css('width', '100%');
 	$("#scatter-view").kendoChart({
 		dataSource: {
 			data: data
@@ -924,7 +926,7 @@ rs.generateReport = function (data, years) {
 				visible: true,
 				position: 'top',
 				template: function template(d) {
-					return breakdownTitle + ' ' + d.category + ' : ' + kendo.toString(d.value, 'n2') + ' %';
+					return breakdownTitle + ' ' + d.category + '\n' + kendo.toString(d.value, 'n2') + ' %';
 				}
 			}
 		}],
