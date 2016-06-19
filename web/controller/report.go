@@ -184,23 +184,74 @@ func (m *ReportController) GetPLModel(r *knot.WebContext) interface{} {
 	return result
 }
 
+var compMutex sync.Mutex
+
 func (m *ReportController) GetDecreasedQty(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 	res := new(toolkit.Result)
 
-	payload := new(gdrj.PLFinderParam)
+	payload := new(gdrj.CompFinderParam)
 	if err := r.GetPayload(payload); err != nil {
 		res.SetError(err)
 		return res
 	}
 
-	result, err := gdrj.GetDecreasedQty(payload)
+	payload.GetCompTableName()
+	tableName := payload.Tablename
+	fmt.Println(" ############### TABLENAME \n", tableName)
+
+	fmt.Println("counting")
+
+	ok, err := payload.CountCompData()
 	if err != nil {
 		res.SetError(err)
 		return res
 	}
 
-	res.SetData(result)
+	fmt.Println("counted", ok)
+
+	if ok {
+		data, err := gdrj.GetDecreasedQty(payload)
+
+		fmt.Println("no error trying to get the data")
+
+		if err != nil {
+			res.SetError(err)
+			return res
+		}
+
+		res.SetData(toolkit.M{
+			"Data": data,
+		})
+		return res
+	}
+
+	if gocore.GetConfig(tableName) == "otw" {
+		res.SetError(errors.New("still processing, might take a while"))
+		fmt.Println("on progress")
+		return res
+	}
+
+	go func() {
+		fmt.Println("______", tableName, ok, gocore.GetConfig(tableName, ""))
+		err = payload.GenerateCompData()
+		if err != nil {
+			fmt.Println("done with error:", err.Error())
+		} else {
+			fmt.Println("done")
+		}
+
+		compMutex.Lock()
+		gocore.RemoveConfig(tableName)
+		compMutex.Unlock()
+	}()
+
+	compMutex.Lock()
+	gocore.SetConfig(tableName, "otw")
+	compMutex.Unlock()
+
+	res.SetError(errors.New("still processing, might take a while"))
+	fmt.Println("just start")
 	return res
 }
 
