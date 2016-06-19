@@ -301,6 +301,8 @@ bkd.renderDetail = function (plcode, breakdowns) {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
 	$('.grid-detail').kendoGrid(config);
 };
+
+bkd.idarrayhide = ko.observableArray(['PL44A']);
 bkd.render = function () {
 	if (bkd.data().length == 0) {
 		$('.breakdown-view').html('No data found.');
@@ -479,7 +481,12 @@ bkd.render = function () {
 			resg3 = _.find(grouppl3, function (o) {
 				return o.key == $trElem.find('td:eq(0)').text();
 			});
-			if (resg1 == undefined) {
+
+			var idplyo = _.find(bkd.idarrayhide(), function (a) {
+				return a == $trElem.attr("idheaderpl");
+			});
+			if (idplyo != undefined) $trElem.remove();
+			if (resg1 == undefined && idplyo2 == undefined) {
 				if (resg2 != undefined) {
 					textPL = _.find(resg2.data, function (o) {
 						return o._id == $trElem.attr("idheaderpl");
@@ -502,7 +509,7 @@ bkd.render = function () {
 						$trElem.insertAfter($('tr.header' + PLyo.PLCode));
 						$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
 					}
-				} else if (resg2 == undefined) {
+				} else if (resg2 == undefined && idplyo2 == undefined) {
 					if (resg3 != undefined) {
 						PLyo = _.find(rows, function (o) {
 							return o.PNL == resg3.data[0].PLHeader2;
@@ -530,6 +537,15 @@ bkd.render = function () {
 						}
 					}
 				}
+			}
+
+			var idplyo2 = _.find(bkd.idarrayhide(), function (a) {
+				return a == $trElem.attr("idparent");
+			});
+			if (idplyo2 != undefined) {
+				$trElem.removeAttr('idparent');
+				$trElem.addClass('bold');
+				$trElem.css('display', 'inline-grid');
 			}
 		}
 	});
@@ -614,6 +630,7 @@ bkd.showZeroValue = function (a) {
 
 	bkd.showExpandAll(false);
 };
+
 bkd.optionBreakdownValues = ko.observableArray([]);
 bkd.breakdownValueAll = { _id: 'All', Name: 'All' };
 bkd.changeBreakdown = function () {
