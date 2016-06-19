@@ -24,6 +24,9 @@
 		</div>
 
 		{{template "_script_template.html"}}
-		<script>ko.applyBindings(viewModel)</script>
+		<script>
+			ko.applyBindings(viewModel)
+			toolkit.fixKendoMultiSelect()
+		</script>
 	</body>
 </html>
