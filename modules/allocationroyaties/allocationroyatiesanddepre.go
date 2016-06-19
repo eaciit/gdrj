@@ -225,7 +225,7 @@ func main() {
 
 		key := toolkit.Sprintf("%v_%v", tgr.Get("year", ""), tgr.Get("month", ""))
 		mapsperiodgross[key] = toolkit.ToFloat64(tgr.Get("amount", 0), 6, toolkit.RoundingAuto)
-
+		toolkit.Printfn("%v,%v", key, mapsperiodgross[key])
 	}
 
 	toolkit.Println("Start Data Process...")
