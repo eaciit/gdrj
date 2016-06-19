@@ -91,8 +91,8 @@ func main() {
 	prepmaster()
 
 	toolkit.Println("Start Data Process...")
-	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("grossamount", 0))
-	filter = dbox.Eq("date.fiscal", "2015-2016")
+	// filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("grossamount", 0))
+	filter := dbox.Eq("date.fiscal", "2015-2016")
 	// filter = dbox.Eq("_id", "RK/IMN/15000001_1")
 	c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
 	defer c.Close()
@@ -148,7 +148,7 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 
 		aplmodel := j.PLDatas
 		for k, _ := range aplmodel {
-			if strings.Contains(k, "PL25") || strings.Contains(k, "PL26A") || strings.Contains(k, "PL33") || strings.Contains(k, "PL34") || strings.Contains(k, "PL35") {
+			if strings.Contains(k, "PL42") || strings.Contains(k, "PL43") || strings.Contains(k, "PL44") || strings.Contains(k, "PL44A") {
 				delete(aplmodel, k)
 			}
 		}
