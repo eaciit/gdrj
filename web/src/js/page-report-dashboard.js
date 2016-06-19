@@ -44,7 +44,7 @@ dsbrd.rows = ko.observableArray([
 	{ pnl: "COGS", plcodes: ["PL74B"] },
 	{ pnl: "Gross Margin", plcodes: ["PL74C"] },
 	{ pnl: "SGA", plcodes: ["PL94A"] },
-	{ pnl: "Royalties", plcodes: ["PL26"] },
+	{ pnl: "Royalties", plcodes: ["PL26A"] },
 	{ pnl: "EBITDA", plcodes: ["PL44C"] },
 	{ pnl: "EBIT %", plcodes: [] },
 	{ pnl: "EBIT", plcodes: ["PL44B"] },
@@ -478,7 +478,8 @@ sd.render = (res) => {
 		return [group, subGroup].join(' ')
 	}))
 
-	let op1 = _.groupBy(sd.data(), (d) => d[breakdown])
+	let op0 = _.filter(sd.data(), (d) => d.percentage > 0 || d.value > 0)
+	let op1 = _.groupBy(op0, (d) => d[breakdown])
 	let op2 = _.map(op1, (v, k) => { return { key: k, values: v } })
 	let maxRow = _.maxBy(op2, (d) => d.values.length)
 	let maxRowIndex = op2.indexOf(maxRow)
