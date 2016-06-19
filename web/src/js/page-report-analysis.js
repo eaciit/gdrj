@@ -300,7 +300,7 @@ bkd.render = () => {
 	let breakdowns = [bkd.breakdownBy() /** , 'date.year' */]
 	let rows = []
 	
-	let data = _.sortBy(_.map(bkd.data(), (d) => {
+	let data = _.map(bkd.data(), (d) => {
 		d.breakdowns = {}
 		let titleParts = []
 
@@ -313,22 +313,50 @@ bkd.render = () => {
 		
 		d._id = titleParts.join(' ')
 		return d 
-	}), (d) => d._id)
+	})
 	
 	let plmodels = _.sortBy(bkd.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
+	let exceptions = [
+		"PL94C" /* "Operating Income" */, 
+		"PL39B" /* "Earning Before Tax" */, 
+		"PL41C" /* "Earning After Tax" */
+	]
+	let netSalesPLCode = 'PL8A'
+	let netSalesPlModel = bkd.plmodels().find((d) => d._id == netSalesPLCode)
+	let netSalesRow = {}
+	data.forEach((e) => {
+		let breakdown = e._id
+		let value = e[`${netSalesPlModel._id}`]; 
+		value = toolkit.number(value)
+		netSalesRow[breakdown] = value
+	})
+	data = _.orderBy(data, (d) => netSalesRow[d._id], 'desc')
+
 	plmodels.forEach((d) => {
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
 		data.forEach((e) => {
 			let breakdown = e._id
-			let value = e[`${d._id}`]; value = toolkit.number(value)
+			let value = e[`${d._id}`]; 
+			value = toolkit.number(value)
 			row[breakdown] = value
 			row.PNLTotal += value
 		})
 		data.forEach((e) => {
 			let breakdown = e._id
-			let value = e[`${d._id}`] / row.PNLTotal * 100; value = toolkit.number(value)
-			row[`${breakdown} %`] = value
+			let percentage = e[`${d._id}`] / row.PNLTotal * 100; 
+			percentage = toolkit.number(percentage)
+
+			if (d._id != netSalesPLCode) {
+				percentage = row[breakdown] / netSalesRow[breakdown] * 100
+			}
+
+			row[`${breakdown} %`] = percentage
 		})
+
+		if (exceptions.indexOf(row.PLCode) > -1) {
+			return
+		}
+
 		rows.push(row)
 	})
 

@@ -310,7 +310,7 @@ bkd.render = function () {
 	var breakdowns = [bkd.breakdownBy() /** , 'date.year' */];
 	var rows = [];
 
-	var data = _.sortBy(_.map(bkd.data(), function (d) {
+	var data = _.map(bkd.data(), function (d) {
 		d.breakdowns = {};
 		var titleParts = [];
 
@@ -323,26 +323,55 @@ bkd.render = function () {
 
 		d._id = titleParts.join(' ');
 		return d;
-	}), function (d) {
-		return d._id;
 	});
 
 	var plmodels = _.sortBy(bkd.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
 	});
+	var exceptions = ["PL94C" /* "Operating Income" */
+	, "PL39B" /* "Earning Before Tax" */
+	, "PL41C" /* "Earning After Tax" */
+	];
+	var netSalesPLCode = 'PL8A';
+	var netSalesPlModel = bkd.plmodels().find(function (d) {
+		return d._id == netSalesPLCode;
+	});
+	var netSalesRow = {};
+	data.forEach(function (e) {
+		var breakdown = e._id;
+		var value = e['' + netSalesPlModel._id];
+		value = toolkit.number(value);
+		netSalesRow[breakdown] = value;
+	});
+	data = _.orderBy(data, function (d) {
+		return netSalesRow[d._id];
+	}, 'desc');
+
 	plmodels.forEach(function (d) {
 		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
 		data.forEach(function (e) {
 			var breakdown = e._id;
-			var value = e['' + d._id];value = toolkit.number(value);
+			var value = e['' + d._id];
+			value = toolkit.number(value);
 			row[breakdown] = value;
 			row.PNLTotal += value;
 		});
 		data.forEach(function (e) {
 			var breakdown = e._id;
-			var value = e['' + d._id] / row.PNLTotal * 100;value = toolkit.number(value);
-			row[breakdown + ' %'] = value;
+			var percentage = e['' + d._id] / row.PNLTotal * 100;
+			percentage = toolkit.number(percentage);
+
+			if (d._id != netSalesPLCode) {
+				percentage = row[breakdown] / netSalesRow[breakdown] * 100;
+			}
+
+			row[breakdown + ' %'] = percentage;
 		});
+
+		if (exceptions.indexOf(row.PLCode) > -1) {
+			return;
+		}
+
 		rows.push(row);
 	});
 
