@@ -328,7 +328,7 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 
 		ratio := j.GrossAmount / mapsperiodgross[key]
 		totroyaltyline := -ratio * mapsperiodroyalties[key]
-		totindirectline := ratio * mapsperiodindirect[key]
+		totindirectline := toolkit.ToFloat64(ratio*mapsperiodindirect[key], 2, toolkit.RoundingUp)
 		totdirectline := ratio * mapsperioddirect[key]
 		totdamagegoodsline := -ratio * mapsperioddamage[key]
 
