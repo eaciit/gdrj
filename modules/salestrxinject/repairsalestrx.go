@@ -15,7 +15,8 @@ import (
 
 var conn dbox.IConnection
 var count, ird, irddisc, iexp, idiscount int
-var mwg sync.WaitGroup
+
+// var mwg sync.WaitGroup
 
 func setinitialconnection() {
 	var err error
@@ -47,7 +48,7 @@ func main() {
 
 	toolkit.Println("START...")
 
-	crx, err := gdrj.Find(new(gdrj.SalesTrx),
+	crx, err := gdrj.Find(new(gdrj.SalesPL),
 		nil,
 		toolkit.M{})
 
@@ -60,10 +61,10 @@ func main() {
 	count = crx.Count()
 
 	jobs := make(chan *gdrj.SalesTrx, count)
+	result := make(chan int, count)
 	toolkit.Println("Prepare Worker")
 	for wi := 0; wi < 10; wi++ {
-		mwg.Add(1)
-		go worker(wi, jobs)
+		go worker(wi, jobs, result)
 	}
 
 	toolkit.Println("Total Data : ", count)
@@ -121,7 +122,7 @@ func main() {
 		time.Since(t0).String())
 }
 
-func worker(wi int, jobs <-chan *gdrj.SalesTrx) {
+func worker(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 	workerConn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerConn.Close()
 
