@@ -131,7 +131,7 @@ func main() {
 			break
 		}
 
-		date := time.Date(tsga.Get("y", 0).(int), time.Month(tsga.Get("p", 0).(int)), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 4, 0)
+		date := time.Date(tsga.Get("y", 0).(int), time.Month(tsga.Get("p", 0).(int)), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		pval := toolkit.Sprintf("%d_%d", date.Year(), int(date.Month()))
 
 		group := ""
@@ -157,19 +157,35 @@ func main() {
 
 	}
 
-	// toolkit.Println(globalsga)
-	// subtot := 0.0
-	// for _, v := range mapkeysvalue {
-	// 	// toolkit.Printfn("%v - %v", k, v)
-	// 	subtot += v
-	// }
-	// toolkit.Printfn("subtotal 1 : %v", subtot)
-
 	subtot := 0.0
+	for _, v := range mapkeysvalue {
+		subtot += v
+	}
+	toolkit.Printfn("subtotal 1 : %v", subtot)
+
+	subtot = 0.0
 	for _, v := range mapsperiod {
 		subtot += v
 	}
 	toolkit.Printfn("subtotal 2 : %v", subtot)
+
+	toolkit.Println("Start Get Gross Ratio...")
+	cgrossratio, _ := conn.NewQuery().Select().From("tmpsgasalesgrossratio").Cursor(nil)
+	defer cgrossratio.Close()
+
+	for {
+
+		tgr := toolkit.M{}
+		e := cgrossratio.Fetch(&tgr, 1, false)
+		if e != nil {
+			break
+		}
+
+		key := toolkit.Sprintf("%v_%v", tgr.Get("year", ""), tgr.Get("month", ""))
+		mapsgross[key] = toolkit.ToFloat64(tgr.Get("amount", 0), 6, toolkit.RoundingAuto)
+		globalgross += toolkit.ToFloat64(tgr.Get("amount", 0), 6, toolkit.RoundingAuto)
+
+	}
 
 	toolkit.Println("Start Data Process...")
 	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("skuid_vdist", ""))
@@ -182,7 +198,6 @@ func main() {
 	iscount = 0
 	gscount = 0
 	step = scount / 100
-	//
 
 	jobs := make(chan *gdrj.SalesPL, count)
 	toolkit.Println("Prepare Worker")
@@ -191,32 +206,32 @@ func main() {
 		go worker(wi, jobs)
 	}
 	// ====================================
-	for {
-		iscount++
+	// for {
+	// 	iscount++
 
-		spl := new(gdrj.SalesPL)
-		e := c.Fetch(spl, 1, false)
-		if e != nil {
-			toolkit.Println("EOF")
-			break
-		}
+	// 	spl := new(gdrj.SalesPL)
+	// 	e := c.Fetch(spl, 1, false)
+	// 	if e != nil {
+	// 		toolkit.Println("EOF")
+	// 		break
+	// 	}
 
-		globalgross += spl.GrossAmount
-		pval := toolkit.Sprintf("%d_%d", spl.Date.Year, spl.Date.Month)
-		mapsgross[pval] += spl.GrossAmount
+	// 	globalgross += spl.GrossAmount
+	// 	pval := toolkit.Sprintf("%d_%d", spl.Date.Year, spl.Date.Month)
+	// 	mapsgross[pval] += spl.GrossAmount
 
-		if step == 0 {
-			step = 100
-		}
+	// 	if step == 0 {
+	// 		step = 100
+	// 	}
 
-		if iscount%step == 0 {
-			toolkit.Printfn("Preparing %d of %d (%d) in %s", iscount, scount, iscount/step,
-				time.Since(t0).String())
-		}
-	}
+	// 	if iscount%step == 0 {
+	// 		toolkit.Printfn("Preparing %d of %d (%d) in %s", iscount, scount, iscount/step,
+	// 			time.Since(t0).String())
+	// 	}
+	// }
 
-	c.ResetFetch()
-	iscount = 0
+	// c.ResetFetch()
+	// iscount = 0
 	// ===========================
 	for {
 		iscount++
@@ -281,13 +296,14 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 
 		for k, v := range mapkeysvalue {
 			skey := strings.Split(k, "_")
-			if toolkit.ToInt(skey[0], toolkit.RoundingAuto) != j.Date.Year || toolkit.ToInt(skey[1], toolkit.RoundingAuto) != int(j.Date.Month) {
+			if toolkit.ToInt(skey[0], toolkit.RoundingAuto) != j.Date.Year ||
+				toolkit.ToInt(skey[1], toolkit.RoundingAuto) != int(j.Date.Month) {
 				continue
 			}
-
-			j.AddDataCC("PL33", (-totsgaline*v/totsgaperiod)*0.7, skey[2], plmodels)
-			j.AddDataCC("PL34", (-totsgaline*v/totsgaperiod)*0.26, skey[2], plmodels)
-			j.AddDataCC("PL35", (-totsgaline*v/totsgaperiod)*0.04, skey[2], plmodels)
+			// 0.698721471, 0.265383214, 0.035895315
+			j.AddDataCC("PL33", (-totsgaline*v/totsgaperiod)*0.698721471, skey[2], plmodels)
+			j.AddDataCC("PL34", (-totsgaline*v/totsgaperiod)*0.265383214, skey[2], plmodels)
+			j.AddDataCC("PL35", (-totsgaline*v/totsgaperiod)*0.035895315, skey[2], plmodels)
 
 		}
 
