@@ -28,6 +28,7 @@ var (
 	mapsperioddamage                                  map[string]float64
 	masters                                           toolkit.M
 	mwg                                               sync.WaitGroup
+	gdirect, gindirect, gdamage                       float64
 )
 
 func setinitialconnection() {
@@ -131,13 +132,15 @@ func getdepreciation() {
 	}
 
 	subtot := 0.0
-	for _, v := range mapsperioddirect {
+	for k, v := range mapsperioddirect {
+		toolkit.Printfn("%v,%v", k, v)
 		subtot += v
 	}
 	toolkit.Printfn("subtotal direct depre : %v", subtot)
 
 	subtot = 0.0
-	for _, v := range mapsperiodindirect {
+	for k, v := range mapsperiodindirect {
+		toolkit.Printfn("%v,%v", k, v)
 		subtot += v
 	}
 	toolkit.Printfn("subtotal indirect depre : %v", subtot)
@@ -166,7 +169,8 @@ func getdamage() {
 	}
 
 	subtot := 0.0
-	for _, v := range mapsperioddamage {
+	for k, v := range mapsperioddamage {
+		toolkit.Printfn("%v,%v", k, v)
 		subtot += v
 	}
 	toolkit.Printfn("subtotal damage goods : %v", subtot)
@@ -287,6 +291,9 @@ func main() {
 
 	toolkit.Printfn("Processing done in %s",
 		time.Since(t0).String())
+
+	toolkit.Printfn("Checlist %v : %v : %v",
+		gdirect, gindirect, gdamage)
 }
 
 func worker(wi int, jobs <-chan *gdrj.SalesPL) {
@@ -304,8 +311,8 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 
 		aplmodel := j.PLDatas
 		for k, _ := range aplmodel {
-			if strings.Contains(k, "PL25") || strings.Contains(k, "PL26A") ||
-				strings.Contains(k, "PL42") || strings.Contains(k, "PL43") || strings.Contains(k, "PL44") || strings.Contains(k, "PL44A") {
+			if k == "PL25" || k == "PL26A" ||
+				k == "PL42" || k == "PL43" || k == "PL44" || k == "PL44A" {
 				delete(aplmodel, k)
 			}
 		}
@@ -320,14 +327,23 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 		totdirectline := ratio * mapsperioddirect[key]
 		totdamagegoodsline := -ratio * mapsperioddamage[key]
 
+		gdamage += totdamagegoodsline
+		gindirect += totindirectline
+		gdirect += totdirectline
+
 		if mapsperiodgross[key] == 0 {
 			continue
 		}
+
+		// PL42	PL0058	Total Depreciation Exp	Depreciation - Direct
+		// PL43	PL0059	Total Depreciation Exp	Depreciation - Indirect
+		// PL44	PL0060	Total Depreciation Exp	Damaged Goods
 
 		j.AddDataCC("PL25", totroyaltyline, "", plmodels)
 		j.AddDataCC("PL42", totdirectline, "", plmodels)
 		j.AddDataCC("PL43", totindirectline, "", plmodels)
 		j.AddDataCC("PL44", totdamagegoodsline, "", plmodels)
+
 		j.CalcSum(masters)
 
 		e := workerConn.NewQuery().From(table).
