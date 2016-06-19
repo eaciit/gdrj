@@ -691,7 +691,7 @@ rs.contentIsLoading = ko.observable(false)
 rs.title = ko.observable('P&L Analytic')
 rs.breakdownBy = ko.observable('customer.channelname')
 rs.selectedPNLNetSales = ko.observable("PL8A") // PL1
-rs.selectedPNL = ko.observable("PL74C")
+rs.selectedPNL = ko.observable("PL44B")
 rs.chartComparisonNote = ko.observable('')
 rs.optionDimensionSelect = ko.observableArray([])
 rs.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */])
@@ -843,7 +843,14 @@ rs.generateReport = (data, years) => {
 			tooltip: {
 				visible: true,
 				template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
-			}
+			},
+			labels: {
+				visible: true,
+				position: 'top',
+				template: (d) => {
+					return `${breakdownTitle} ${d.category} : ${kendo.toString(d.value, 'n2')} %`
+				}
+			},
 		}],
         valueAxis: {
 			majorGridLines: {

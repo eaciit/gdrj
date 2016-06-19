@@ -484,7 +484,10 @@ sd.render = function (res) {
 		return [group, subGroup].join(' ');
 	}));
 
-	var op1 = _.groupBy(sd.data(), function (d) {
+	var op0 = _.filter(sd.data(), function (d) {
+		return d.percentage > 0 || d.value > 0;
+	});
+	var op1 = _.groupBy(op0, function (d) {
 		return d[breakdown];
 	});
 	var op2 = _.map(op1, function (v, k) {
