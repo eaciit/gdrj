@@ -152,6 +152,7 @@ func getdamage() {
 	defer croy.Close()
 
 	sroy := croy.Count()
+	gamount := 0.0
 	toolkit.Printfn("data damage goods %d", sroy)
 	for {
 
@@ -161,11 +162,15 @@ func getdamage() {
 			break
 		}
 
-		date := time.Date(troy.Year, time.Month(troy.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
+		gamount += troy.AmountinIDR
+
+	}
+
+	for i := 1; i <= 12; i++ {
+		date := time.Date(fiscalyear-1, time.Month(i), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		pval := toolkit.Sprintf("%d_%d", date.Year(), int(date.Month()))
 
-		mapsperioddamage[pval] += troy.AmountinIDR
-
+		mapsperioddamage[pval] += gamount / 12
 	}
 
 	subtot := 0.0
