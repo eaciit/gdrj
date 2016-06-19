@@ -80,6 +80,7 @@ func main() {
 	defer gdrj.CloseDb()
 
 	toolkit.Println("START...")
+	prepmaster()
 
 	crx, err := gdrj.Find(new(gdrj.SalesPL),
 		nil,
