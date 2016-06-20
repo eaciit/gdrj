@@ -890,6 +890,12 @@ rs.generateReport = function (data, years) {
 			name: 'Sum of ' + breakdownTitle + ' to ' + netSalesTitle,
 			field: 'sumPNLPercentage',
 			width: 3,
+			line: {
+				border: {
+					width: 1,
+					color: 'white'
+				}
+			},
 			tooltip: {
 				visible: true,
 				template: 'Sum of ' + breakdownTitle + ' to ' + netSalesTitle + ': #: kendo.toString(dataItem.sumPNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.sumPNL, \'n2\') #)'
@@ -902,6 +908,12 @@ rs.generateReport = function (data, years) {
 			field: 'avgPNLPercentage',
 			dashType: "dash",
 			width: 3,
+			line: {
+				border: {
+					width: 1,
+					color: 'white'
+				}
+			},
 			tooltip: {
 				visible: true,
 				template: 'Average of ' + breakdownTitle + ' to ' + netSalesTitle + ': #: kendo.toString(dataItem.avgPNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.avgPNL, \'n2\') #)'
@@ -935,11 +947,18 @@ rs.generateReport = function (data, years) {
 			type: 'column',
 			name: breakdownTitle + ' to ' + netSalesTitle,
 			field: "valuePNLPercentage",
+			overlay: {
+				gradient: 'none'
+			},
+			border: {
+				width: 0
+			},
 			tooltip: {
 				visible: true,
 				template: breakdownTitle + ' #: dataItem.category # to ' + netSalesTitle + ': #: kendo.toString(dataItem.valuePNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.valuePNL, \'n2\') #)'
 			},
 			labels: {
+				font: '"Source Sans Pro" 11px',
 				visible: true,
 				position: 'outsideEnd',
 				template: function template(d) {
@@ -958,17 +977,13 @@ rs.generateReport = function (data, years) {
 		categoryAxis: [{
 			field: 'category',
 			labels: {
-				rotation: 20
+				rotation: 20,
+				font: '"Source Sans Pro" 11px'
 			},
 			majorGridLines: {
 				color: '#fafafa'
 			}
-		} /**, {
-         	categories: years,
-    line: {
-    	visible: false
-    }
-         }*/]
+		}]
 	});
 };
 
@@ -1199,7 +1214,7 @@ ccr.render = function () {
 				},
 				axisCrossingValue: [0, 8],
 				labels: {
-					font: 'Source Sans Pro 11',
+					font: '"Source Sans Pro" 11px',
 					rotation: 40
 					// template: (d) => `${toolkit.capitalize(d.value).slice(0, 3)}`
 				}
