@@ -182,6 +182,12 @@ func main() {
 		}
 
 		invid := toolkit.ToString(tkmsd.Get("iv_no", ""))
+
+		if invid == "" {
+			invid = "OTHER/04/2016"
+			tkmsd.Set("iv_no", invid)
+		}
+
 		if lastSalesLine.Has(invid) {
 			lastLineNo := lastSalesLine.GetInt(invid) + 1
 			tkmsd.Set("lineno", lastLineNo)
