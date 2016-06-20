@@ -231,6 +231,12 @@ dsbrd.render = (res) => {
 
 			let total = toolkit.sum(row.columnData, (d) => d.original)
 			row.total = kendo.toString(total, 'n0')
+			if (row.pnl == 'EBIT %') {
+				let totalGrossSales = toolkit.sum(grossSales.columnData, (d) => d.original)
+				let totalEbit = toolkit.sum(ebit.columnData, (d) => d.original)
+				let percentage = toolkit.number(totalEbit / totalGrossSales) * 100
+				row.total = `${kendo.toString(percentage, 'n2')} %`
+			}
 		})
 	}
 

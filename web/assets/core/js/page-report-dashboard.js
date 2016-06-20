@@ -229,6 +229,16 @@ dsbrd.render = function (res) {
 					return d.original;
 				});
 				row.total = kendo.toString(total, 'n0');
+				if (row.pnl == 'EBIT %') {
+					var totalGrossSales = toolkit.sum(grossSales.columnData, function (d) {
+						return d.original;
+					});
+					var totalEbit = toolkit.sum(ebit.columnData, function (d) {
+						return d.original;
+					});
+					var percentage = toolkit.number(totalEbit / totalGrossSales) * 100;
+					row.total = kendo.toString(percentage, 'n2') + ' %';
+				}
 			});
 		})();
 	}
