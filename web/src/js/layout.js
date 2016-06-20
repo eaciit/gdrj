@@ -5,7 +5,6 @@ vm.currentTitle = ko.observable('Dashboard')
 vm.menu = ko.observableArray([
 	{ title: 'Dashboard', icon: 'home', href: '/web/report/dashboard', submenu: [] },
 	{ title: 'PNL Analysis', icon: 'bar-chart-o', href: '/web/report/analysis', submenu: [] },
-	{ title: 'Report', icon: 'file-text-o', href: '/web/report/list', submenu: [] },
 	{ title: 'Data Manager', icon: 'database', href: '#', submenu: [
 		{ title: 'Data Browser', icon: 'list', href: '/web/databrowser', submenu: [] },
 		{ title: 'Upload Data', icon: 'upload', href: '/web/uploaddata', submenu: [] }

@@ -1,3 +1,4 @@
-rm -rf gdrj
+rm -rf gdrjprod
 go build
-sudo ./gdrj &
+echo '' > log.txt
+sudo ./gdrjprod > log.txt &
