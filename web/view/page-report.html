@@ -19,6 +19,8 @@ var o = {
 		{{template "page-report-dashboard.html"}}
 	{{else if eq .id "analysis"}}
 		{{template "page-report-analysis.html"}}
+	{{else if eq .id "keyaccount"}}
+		{{template "page-report-keyaccount.html"}}
 	{{else if eq .id "example"}}
 		{{template "page-report-example.html"}}
 	{{else if eq .id "branchanalysis"}}

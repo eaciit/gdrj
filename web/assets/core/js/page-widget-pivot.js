@@ -52,7 +52,7 @@ pvt.refresh = function () {
 	var param = {};
 	param.pls = [];
 	param.flag = o.ID;
-	param.groups = [pvt.row(), pvt.column(), "date.fiscal"];
+	param.groups = rpt.parseGroups([pvt.row(), pvt.column(), "date.fiscal"]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, pvt.fiscalYear);
 
@@ -126,6 +126,7 @@ pvt.render = function () {
 		dataCellTemplate: function dataCellTemplate(d) {
 			return '<div class="align-right">' + kendo.toString(d.dataItem.value, "n2") + '</div>';
 		},
+		columnWidth: 130,
 		dataSource: {
 			data: data,
 			schema: {

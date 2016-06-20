@@ -39,8 +39,8 @@ dsbrd.rows = ko.observableArray([
 	{ pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"] },
 	{ pnl: 'Growth', plcodes: [] }, // NOT YET
 	{ pnl: 'Sales Discount', plcodes: ["PL7", "PL8"] },
-	{ pnl: 'ATL', plcodes: ["PL28"] },
-	{ pnl: 'BTL', plcodes: ["PL29", "PL30", "PL31", "PL32"] },
+	// { pnl: 'ATL', plcodes: ["PL28"] },
+	// { pnl: 'BTL', plcodes: ["PL29", "PL30", "PL31", "PL32"] },
 	{ pnl: "COGS", plcodes: ["PL74B"] },
 	{ pnl: "Gross Margin", plcodes: ["PL74C"] },
 	{ pnl: "SGA", plcodes: ["PL94A"] },
@@ -60,7 +60,7 @@ dsbrd.optionStructures = ko.observableArray([
 	{ field: "date.quartertxt", name: "Quarter" },
 	{ field: "date.month", name: "Month" }
 ])
-dsbrd.structure = ko.observable(dsbrd.optionStructures()[1].field)
+dsbrd.structure = ko.observable(dsbrd.optionStructures()[0].field)
 dsbrd.structureYear = ko.observable('date.year')
 dsbrd.optionBreakdownValues = ko.observableArray([])
 dsbrd.breakdownValue = ko.observableArray([])
@@ -142,7 +142,7 @@ dsbrd.refresh = () => {
 
 	let param = {}
 	param.pls = _.flatten(dsbrd.rows().map((d) => d.plcodes))
-	param.groups = [dsbrd.breakdown(), dsbrd.structure()]
+	param.groups = rpt.parseGroups([dsbrd.breakdown(), dsbrd.structure()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears)
 
@@ -185,7 +185,13 @@ dsbrd.render = (res) => {
 		title: 'PNL', 
 		attributes: { class: 'bold' }, 
 		headerAttributes: { style: 'font-weight: bold; vertical-align: middle;' }, 
-		width: 200
+		width: 120
+	}, { 
+		field: 'total', 
+		title: 'Total', 
+		attributes: { class: 'bold align-right bold' }, 
+		headerAttributes: { style: 'font-weight: bold; vertical-align: middle; text-align: right;' }, 
+		width: 150
 	}]
 
 	let data = res.Data.Data
@@ -222,6 +228,15 @@ dsbrd.render = (res) => {
 					column.value = `${percentage} %`;
 				}
 			})
+
+			let total = toolkit.sum(row.columnData, (d) => d.original)
+			row.total = kendo.toString(total, 'n0')
+			if (row.pnl == 'EBIT %') {
+				let totalGrossSales = toolkit.sum(grossSales.columnData, (d) => d.original)
+				let totalEbit = toolkit.sum(ebit.columnData, (d) => d.original)
+				let percentage = toolkit.number(totalEbit / totalGrossSales) * 100
+				row.total = `${kendo.toString(percentage, 'n2')} %`
+			}
 		})
 	}
 
@@ -292,6 +307,7 @@ dsbrd.render = (res) => {
 
 	if (columnGrouped.length > 1) {
 		columnsPlaceholder[0].locked = true
+		columnsPlaceholder[1].locked = true
 	}
 
 	dsbrd.data(rowsAfter)
@@ -335,7 +351,20 @@ dsbrd.render = (res) => {
 		resizable: false,
 		sortable: false, 
 		pageable: false,
-		filterable: false
+		filterable: false,
+		dataBound: () => {
+			let sel = '.grid-dashboard .k-grid-content-locked tr, .grid-dashboard .k-grid-content tr'
+
+			$(sel).on('mouseenter', function () {
+				let index = $(this).index()
+				console.log(this, index)
+		        let elh = $(`.grid-dashboard .k-grid-content-locked tr:eq(${index})`).addClass('hover')
+		        let elc = $(`.grid-dashboard .k-grid-content tr:eq(${index})`).addClass('hover')
+			})
+			$(sel).on('mouseleave', function () {
+				$('.grid-dashboard tr.hover').removeClass('hover')
+			})
+		}
 	}
 
 	$('.grid-dashboard').replaceWith('<div class="grid-dashboard"></div>')
@@ -367,7 +396,7 @@ rank.fiscalYear = ko.observable(rpt.value.FiscalYear())
 rank.refresh = () => {
 	let param = {}
 	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
-	param.groups = [rank.breakdown()]
+	param.groups = rpt.parseGroups([rank.breakdown()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, rank.fiscalYear)
 
@@ -443,12 +472,15 @@ rank.render = (res) => {
 viewModel.salesDistribution = {}
 let sd = viewModel.salesDistribution
 sd.contentIsLoading = ko.observable(false)
-
-sd.breakdown = ko.observable('customer.channelname')
-sd.breakdownSub = ko.observable('customer.custtype')
+sd.isFirstTime = ko.observable(true)
+sd.breakdown = ko.observable('customer.reportchannel')
+sd.breakdownSub = ko.observable('customer.reportsubchannel')
 sd.data = ko.observableArray([])
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 sd.render = (res) => {
+	let isFirstTime = sd.isFirstTime()
+	sd.isFirstTime(false)
+
 	let data = res.Data.Data
 
 	let breakdown = toolkit.replace(sd.breakdown(), ".", "_")
@@ -484,20 +516,18 @@ sd.render = (res) => {
 	let maxRow = _.maxBy(op2, (d) => d.values.length)
 	let maxRowIndex = op2.indexOf(maxRow)
 	let height = 20 * maxRow.values.length
-	let width = 200
+	let width = 320
 
 	let container = $('.grid-sales-dist').empty()
 	let table = toolkit.newEl('table').addClass('width-full').appendTo(container).height(height)
 	let tr1st = toolkit.newEl('tr').appendTo(table)
 	let tr2nd = toolkit.newEl('tr').appendTo(table)
 
-	if (op2.length > 5) {
-		table.width(op2.length * width)
-	}
+	table.css('max-width', `${op2.length * width}px`)
 
 	let index = 0
 	op2.forEach((d) => {
-		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index])
+		let td1st = toolkit.newEl('td').appendTo(tr1st).addClass('sortsales').attr('sort', sd.sortVal[index]).css('cursor', 'pointer')
 		let sumPercentage = _.sumBy(d.values, (e) => e.percentage)
 		let sumColumn = _.sumBy(d.values, (e) => e.value)
 		td1st.html(`<i class="fa"></i>${d.key}<br />${kendo.toString(sumPercentage, 'n2')} %`)
@@ -538,11 +568,28 @@ sd.render = (res) => {
 			$(`.sortsales:eq(${index})>i`).addClass('fa-chevron-up')
 			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-down')
 		}
+
+		if (isFirstTime) {
+			if (d.key == "MT") {
+				channelgroup = _.orderBy(channelgroup, (d) => {
+					switch (d.key) {
+						case 'Hyper': return 'A'; break
+						case 'Super': return 'B'; break
+						case 'Mini': return 'C'; break
+					}
+
+					return d.key
+				}, 'asc')
+			} else if (d.key == 'GT') {
+				channelgroup = _.orderBy(channelgroup, (d) => toolkit.getNumberFromString(d.key), 'asc')
+			}
+		}
+
 		channelgroup.forEach((e) => {
 			let tr = toolkit.newEl('tr').appendTo(innerTable)
-			toolkit.newEl('td').appendTo(tr).html(e.key).height(height / channelgroup.length)
-			toolkit.newEl('td').css('width', '55px').appendTo(tr).html(`${kendo.toString(e.percentageyo, 'n2')}&nbsp;%`)
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'))
+			toolkit.newEl('td').css('width', '150px').appendTo(tr).html(e.key).height(height / channelgroup.length)
+			toolkit.newEl('td').css('width', '40px').appendTo(tr).html(`${kendo.toString(e.percentageyo, 'n2')}&nbsp;%`)
+			toolkit.newEl('td').css('width', '120px').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'))
 		})
 		index++
 		// d.values.forEach((e) => {
@@ -561,12 +608,13 @@ sd.render = (res) => {
 }
 sd.sortVal = ['','','']
 sd.sortData = () => {
-	sd.refresh()
+	sd.render(sd.oldData())
 }
+sd.oldData = ko.observable({})
 sd.refresh = () => {
 	let param = {}
 	param.pls = ["PL8A"]
-	param.groups = [sd.breakdown(), sd.breakdownSub()]
+	param.groups = rpt.parseGroups([sd.breakdown(), sd.breakdownSub()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear)
 
@@ -577,6 +625,7 @@ sd.refresh = () => {
 				return
 			}
 	
+			sd.oldData(res)
 			sd.contentIsLoading(false)
 			sd.render(res)
 		}, () => {

@@ -236,7 +236,7 @@ crt.refresh = () => {
 	let param = {}
 	param.pls = []
 	param.flag = o.ID
-	param.groups = [crt.categoryAxisField(), "date.fiscal"]
+	param.groups = rpt.parseGroups([crt.categoryAxisField(), "date.fiscal"])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, crt.fiscalYear)
 

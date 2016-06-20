@@ -1,47 +1,52 @@
 viewModel.breakdown = new Object()
-let bkd = viewModel.breakdown
+let kac = viewModel.breakdown
 
-bkd.contentIsLoading = ko.observable(false)
-bkd.popupIsLoading = ko.observable(false)
-bkd.title = ko.observable('P&L Analytic')
-bkd.detail = ko.observableArray([])
-bkd.limit = ko.observable(10)
-bkd.breakdownNote = ko.observable('')
+kac.contentIsLoading = ko.observable(false)
+kac.popupIsLoading = ko.observable(false)
+kac.title = ko.observable('Key Account Analysis')
+kac.detail = ko.observableArray([])
+kac.limit = ko.observable(10)
+kac.breakdownNote = ko.observable('')
 
-bkd.breakdownBy = ko.observable('customer.channelname')
-bkd.breakdownByFiscalYear = ko.observable('date.fiscal')
-bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy())
+kac.breakdownBy = ko.observable('customer.customergroupname')
+kac.breakdownByFiscalYear = ko.observable('date.fiscal')
+kac.oldBreakdownBy = ko.observable(kac.breakdownBy())
 
-bkd.data = ko.observableArray([])
-bkd.plmodels = ko.observableArray([])
-bkd.zeroValue = ko.observable(false)
-bkd.fiscalYear = ko.observable(rpt.value.FiscalYear())
-bkd.breakdownValue = ko.observableArray([])
+kac.data = ko.observableArray([])
+kac.plmodels = ko.observableArray([])
+kac.zeroValue = ko.observable(false)
+kac.fiscalYear = ko.observable(rpt.value.FiscalYear())
+kac.breakdownValue = ko.observableArray([])
 
-bkd.refresh = (useCache = false) => {
-	if (bkd.breakdownValue().length == 0) {
+kac.refresh = (useCache = false) => {
+	if (kac.breakdownValue().length == 0) {
 		toolkit.showError('Please choose at least breakdown value')
 		return
 	}
 
 	let param = {}
 	param.pls = []
-	param.groups = rpt.parseGroups([bkd.breakdownBy()])
+	param.groups = rpt.parseGroups([kac.breakdownBy()])
 	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue(false, bkd.fiscalYear)
+	param.filters = rpt.getFilterValue(false, kac.fiscalYear)
+	param.filters.push({
+		Field: 'customer.keyaccount',
+		Op: '$eq',
+		Value: 'KEY'
+	})
 
-	let breakdownValue = bkd.breakdownValue().filter((d) => d != 'All')
+	let breakdownValue = kac.breakdownValue().filter((d) => d != 'All')
 	if (breakdownValue.length > 0) {
 		param.filters.push({
-			Field: bkd.breakdownBy(),
+			Field: kac.breakdownBy(),
 			Op: '$in',
-			Value: bkd.breakdownValue()
+			Value: kac.breakdownValue()
 		})
 	}
 	console.log("bdk", param.filters)
 	
-	bkd.oldBreakdownBy(bkd.breakdownBy())
-	bkd.contentIsLoading(true)
+	kac.oldBreakdownBy(kac.breakdownBy())
+	kac.contentIsLoading(true)
 
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
@@ -53,16 +58,16 @@ bkd.refresh = (useCache = false) => {
 			}
 
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-			bkd.breakdownNote(`Last refreshed on: ${date}`)
+			kac.breakdownNote(`Last refreshed on: ${date}`)
 
-			bkd.data(res.Data.Data)
-			bkd.plmodels(res.Data.PLModels)
-			bkd.emptyGrid()
-			bkd.contentIsLoading(false)
-			bkd.render()
+			kac.data(res.Data.Data)
+			kac.plmodels(res.Data.PLModels)
+			kac.emptyGrid()
+			kac.contentIsLoading(false)
+			kac.render()
 		}, () => {
-			bkd.emptyGrid()
-			bkd.contentIsLoading(false)
+			kac.emptyGrid()
+			kac.contentIsLoading(false)
 		}, {
 			cache: (useCache == true) ? 'breakdown chart' : false
 		})
@@ -71,7 +76,7 @@ bkd.refresh = (useCache = false) => {
 	fetch()
 }
 
-bkd.clickExpand = (e) => {
+kac.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
 	let down = $(e).find('i.fa-chevron-down').length
 	if (right > 0){
@@ -88,12 +93,12 @@ bkd.clickExpand = (e) => {
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 	}
 }
-bkd.emptyGrid = () => {
+kac.emptyGrid = () => {
 	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
 }
 
-bkd.renderDetailSalesTrans = (breakdown) => {
-	bkd.popupIsLoading(true)
+kac.renderDetailSalesTrans = (breakdown) => {
+	kac.popupIsLoading(true)
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
 
@@ -117,7 +122,7 @@ bkd.renderDetailSalesTrans = (breakdown) => {
 			    read: (options) => {
 			    	let param = options.data
 			    	param.tablename = "browsesalestrxs"
-			    	param[bkd.breakdownBy()] = [breakdown]
+			    	param[kac.breakdownBy()] = [breakdown]
 
 			    	if (toolkit.isUndefined(param.page)) {
 			    		param = $.extend(true, param, {
@@ -135,13 +140,13 @@ bkd.renderDetailSalesTrans = (breakdown) => {
 		                dataType: 'json',
 		                data: JSON.stringify(param),
 		                success: (res) => {
-							bkd.popupIsLoading(false)
+							kac.popupIsLoading(false)
 							setTimeout(() => {
 								options.success(res.data)
 							}, 200)
 		                },
 		                error: () => {
-							bkd.popupIsLoading(false)
+							kac.popupIsLoading(false)
 		                }
 		            });
 		        },
@@ -164,8 +169,8 @@ bkd.renderDetailSalesTrans = (breakdown) => {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
 	$('.grid-detail').kendoGrid(config)
 }
-bkd.renderDetail = (plcode, breakdowns) => {
-	bkd.popupIsLoading(true)
+kac.renderDetail = (plcode, breakdowns) => {
+	kac.popupIsLoading(true)
 	$('#modal-detail-ledger-summary .modal-title').html('Detail')
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
@@ -226,14 +231,14 @@ bkd.renderDetail = (plcode, breakdowns) => {
 		                dataType: 'json',
 		                data: JSON.stringify(param),
 		                success: (res) => {
-							bkd.popupIsLoading(false)
+							kac.popupIsLoading(false)
 							setTimeout(() => {
 								console.log("++++", res)
 								options.success(res.Data)
 							}, 200)
 		                },
 		                error: () => {
-							bkd.popupIsLoading(false)
+							kac.popupIsLoading(false)
 		                }
 		            });
 		        },
@@ -273,17 +278,17 @@ bkd.renderDetail = (plcode, breakdowns) => {
 	$('.grid-detail').kendoGrid(config)
 }
 
-bkd.idarrayhide = ko.observableArray(['PL44A'])
-bkd.render = () => {
-	if (bkd.data().length == 0) {
+kac.idarrayhide = ko.observableArray(['PL44A'])
+kac.render = () => {
+	if (kac.data().length == 0) {
 		$('.breakdown-view').html('No data found.')
 		return
 	}
 	
-	let breakdowns = [bkd.breakdownBy() /** , 'date.year' */]
+	let breakdowns = [kac.breakdownBy() /** , 'date.year' */]
 	let rows = []
 	
-	let data = _.map(bkd.data(), (d) => {
+	let data = _.map(kac.data(), (d) => {
 		d.breakdowns = {}
 		let titleParts = []
 
@@ -298,14 +303,14 @@ bkd.render = () => {
 		return d 
 	})
 	
-	let plmodels = _.sortBy(bkd.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
+	let plmodels = _.sortBy(kac.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
 	let exceptions = [
 		"PL94C" /* "Operating Income" */, 
 		"PL39B" /* "Earning Before Tax" */, 
 		"PL41C" /* "Earning After Tax" */,
 	]
 	let netSalesPLCode = 'PL8A'
-	let netSalesPlModel = bkd.plmodels().find((d) => d._id == netSalesPLCode)
+	let netSalesPlModel = kac.plmodels().find((d) => d._id == netSalesPLCode)
 	let netSalesRow = {}
 	data.forEach((e) => {
 		let breakdown = e._id
@@ -383,17 +388,17 @@ bkd.render = () => {
 	let totalWidth = 0
 	let pnlTotalSum = 0
 
-	if (bkd.breakdownBy() == "customer.branchname") {
+	if (kac.breakdownBy() == "customer.branchname") {
 		colWidth = 200
 	}
 
-	if (bkd.breakdownBy() == "customer.region") {
+	if (kac.breakdownBy() == "customer.region") {
 		colWidth = 230
 	}
 
-	let grouppl1 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
-	let grouppl2 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
-	let grouppl3 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
+	let grouppl1 = _.map(_.groupBy(kac.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
+	let grouppl2 = _.map(_.groupBy(kac.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
+	let grouppl3 = _.map(_.groupBy(kac.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
 		if (d._id.length > 22)
 			colWidth += 30
@@ -427,7 +432,7 @@ bkd.render = () => {
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
-			bkd.clickExpand(trHeader)
+			kac.clickExpand(trHeader)
 		})
 
 		toolkit.newEl('td')
@@ -461,7 +466,7 @@ bkd.render = () => {
 				.appendTo(trContent)
 
 			cell.on('click', () => {
-				bkd.renderDetail(d.PLCode, e.breakdowns)
+				kac.renderDetail(d.PLCode, e.breakdowns)
 			})
 
 			toolkit.newEl('td')
@@ -495,7 +500,7 @@ bkd.render = () => {
 			resg2 = _.find(grouppl2, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
 			resg3 = _.find(grouppl3, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
 
-			let idplyo = _.find(bkd.idarrayhide(), (a) => { return a == $trElem.attr("idheaderpl") })
+			let idplyo = _.find(kac.idarrayhide(), (a) => { return a == $trElem.attr("idheaderpl") })
 			if (idplyo != undefined){
 				$trElem.remove()
 				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).remove()
@@ -544,7 +549,7 @@ bkd.render = () => {
 				}
 			}
 
-			let idplyo2 = _.find(bkd.idarrayhide(), (a) => { return a == $trElem.attr("idparent") })
+			let idplyo2 = _.find(kac.idarrayhide(), (a) => { return a == $trElem.attr("idparent") })
 			if (idplyo2 != undefined){
 				$trElem.removeAttr('idparent')
 				$trElem.addClass('bold')
@@ -585,11 +590,11 @@ bkd.render = () => {
 		}
 	})
 
-	bkd.showZeroValue(false)
+	kac.showZeroValue(false)
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
 }
 
-bkd.prepareEvents = () => {
+kac.prepareEvents = () => {
 	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
 		let index = $(this).index()
         let elh = $(`.breakdown-view .table-header tr:eq(${index})`).addClass('hover')
@@ -600,7 +605,7 @@ bkd.prepareEvents = () => {
 	})
 }
 
-bkd.showExpandAll = (a) => {
+kac.showExpandAll = (a) => {
 	if (a == true) {
 		$(`tr.dd`).find('i').removeClass('fa-chevron-right')
 		$(`tr.dd`).find('i').addClass('fa-chevron-down')
@@ -616,8 +621,8 @@ bkd.showExpandAll = (a) => {
 	}
 }
 
-bkd.showZeroValue = (a) => {
-	bkd.zeroValue(a)
+kac.showZeroValue = (a) => {
+	kac.zeroValue(a)
 	if (a == true) {
 		$(".table-header tbody>tr").each(function( i ) {
 			if (i > 0){
@@ -638,577 +643,63 @@ bkd.showZeroValue = (a) => {
 		})
 	}
 
-	bkd.showExpandAll(false)
+	kac.showExpandAll(false)
 }
 
-bkd.optionBreakdownValues = ko.observableArray([])
-bkd.breakdownValueAll = { _id: 'All', Name: 'All' }
-bkd.changeBreakdown = () => {
-	let all = bkd.breakdownValueAll
-	let map = (arr) => arr.map((d) => {
-		if (bkd.breakdownBy() == "customer.channelname") {
-			return d
-		}
-
-		return { _id: d.Name, Name: d.Name }
-	})
+kac.optionBreakdownValues = ko.observableArray([])
+kac.breakdownValueAll = { _id: 'All', Name: 'All' }
+kac.changeBreakdown = () => {
+	let all = kac.breakdownValueAll
 	setTimeout(() => {
-		switch (bkd.breakdownBy()) {
-			case "customer.areaname":
-				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Area())))
-				bkd.breakdownValue([all._id])
-			break;
-			case "customer.region":
-				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Region())))
-				bkd.breakdownValue([all._id])
-			break;
-			case "customer.zone":
-				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())))
-				bkd.breakdownValue([all._id])
-			break;
-			case "product.brand":
-				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())))
-				bkd.breakdownValue([all._id])
-			break;
-			case "customer.branchname":
-				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
-				bkd.breakdownValue([all._id])
-			break;
-			case "customer.channelname":
-				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
-				bkd.breakdownValue([all._id])
-			break;
-			case "customer.keyaccount":
-				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))
-				bkd.breakdownValue([all._id])
-			break;
-		}
+		kac.optionBreakdownValues([all].concat(
+			rpt.masterData.KeyAccount().map((d) => { 
+				return { _id: d.Name, Name: d.Name } })
+			)
+		)
+		kac.breakdownValue([all._id])
 	}, 100)
 }
-bkd.changeBreakdownValue = () => {
-	let all = bkd.breakdownValueAll
+kac.changeBreakdownValue = () => {
+	let all = kac.breakdownValueAll
 	setTimeout(() => {
-		let condA1 = bkd.breakdownValue().length == 2
-		let condA2 = bkd.breakdownValue().indexOf(all._id) == 0
+		let condA1 = kac.breakdownValue().length == 2
+		let condA2 = kac.breakdownValue().indexOf(all._id) == 0
 		if (condA1 && condA2) {
-			bkd.breakdownValue.remove(all._id)
+			kac.breakdownValue.remove(all._id)
 			return
 		}
 
-		let condB1 = bkd.breakdownValue().length > 1
-		let condB2 = bkd.breakdownValue().reverse()[0] == all._id
+		let condB1 = kac.breakdownValue().length > 1
+		let condB2 = kac.breakdownValue().reverse()[0] == all._id
 		if (condB1 && condB2) {
-			bkd.breakdownValue([all._id])
+			kac.breakdownValue([all._id])
 			return
 		}
 
-		let condC1 = bkd.breakdownValue().length == 0
+		let condC1 = kac.breakdownValue().length == 0
 		if (condC1) {
-			bkd.breakdownValue([all._id])
+			kac.breakdownValue([all._id])
 		}
 	}, 100)
 }
 
-
-
-viewModel.scatter = new Object()
-let rs = viewModel.scatter
-let dataPoints = [
-	{field: "value1", name: "value1", aggr: "sum"}
-]
-
-rs.contentIsLoading = ko.observable(false)
-rs.title = ko.observable('P&L Analytic')
-rs.breakdownBy = ko.observable('customer.channelname')
-rs.selectedPNLNetSales = ko.observable("PL8A") // PL1
-rs.selectedPNL = ko.observable("PL44B")
-rs.chartComparisonNote = ko.observable('')
-rs.optionDimensionSelect = ko.observableArray([])
-rs.fiscalYear = ko.observable(rpt.value.FiscalYear())
-
-rs.getSalesHeaderList = () => {
-	app.ajaxPost("/report/getplmodel", {}, (res) => {
-		let data = res.map((d) => app.o({ field: d._id, name: d.PLHeader3 }))
-			.filter((d) => d.PLHeader3 !== rs.selectedPNLNetSales())
-		rs.optionDimensionSelect(data)
-
-		let prev = rs.selectedPNL()
-		rs.selectedPNL('')
-		setTimeout(() => {
-			rs.selectedPNL(prev)
-			rs.refresh(false)
-		}, 300)
-	})
-}
-
-rs.refresh = (useCache = false) => {
-	rs.contentIsLoading(true)
-
-	let param = {}
-	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
-	param.groups = rpt.parseGroups([rs.breakdownBy()])
-	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue(false, rs.fiscalYear)
-
-	let fetch = () => {
-		app.ajaxPost("/report/getpnldatanew", param, (res1) => {
-			if (res1.Status == "NOK") {
-				setTimeout(() => {
-					fetch()
-				}, 1000 * 5)
-				return
-			}
-
-			let date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-			rs.chartComparisonNote(`Last refreshed on: ${date}`)
-
-			let dataAllPNL = res1.Data.Data
-				.filter((d) => d.hasOwnProperty(rs.selectedPNL()))
-				.map((d) => { return { _id: d._id, value: d[rs.selectedPNL()] } })
-			let dataAllPNLNetSales = res1.Data.Data
-				.filter((d) => d.hasOwnProperty(rs.selectedPNLNetSales()))
-				.map((d) => { return { _id: d._id, value: d[rs.selectedPNLNetSales()] } })
-
-			let years = _.map(_.groupBy(dataAllPNL, (d) => d._id._id_date_year), (v, k) => k)
-
-			var sumNetSales = _.reduce(dataAllPNLNetSales, (m, x) => m + x.value, 0);
-			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x.value, 0)
-			let countPNL = dataAllPNL.length
-			let avgPNL = sumPNL
-
-			let dataScatter = []
-			let multiplier = (sumNetSales == 0 ? 1 : sumNetSales)
-
-			dataAllPNL.forEach((d, i) => {
-				dataScatter.push({
-					valueNetSales: dataAllPNLNetSales[i].value,
-					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, ''),
-					category: d._id[`_id_${app.idAble(rs.breakdownBy())}`],
-					year: d._id._id_date_year,
-					valuePNL: Math.abs(d.value),
-					valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
-					avgPNL: Math.abs(avgPNL),
-					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
-					// sumPNL: Math.abs(sumPNL),
-					// sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
-				})
-			})
-
-			console.log("dataScatter", dataScatter)
-			console.log("dataAllPNL", dataAllPNL)
-
-			rs.contentIsLoading(false)
-			rs.generateReport(dataScatter, years)
-		}, () => {
-			rs.contentIsLoading(false)
-		}, {
-			cache: (useCache == true) ? 'pivot chart' : false
-		})
-	}
-
-	fetch()
-}
-
-rs.generateReport = (data, years) => {
-	data = _.orderBy(data, (d) => d.valueNetSales, 'desc')
-
-	let max = _.max(_.map(data, (d) => d.avgNetSalesPercentage)
-		.concat(_.map(data, (d) => d.valuePNLPercentage)))
-
-	let netSalesTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNLNetSales()).name
-	let breakdownTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNL()).name
-
-	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>')
-	if ((data.length * 100) > $('#scatter-view').parent().width())
-    	$('#scatter-view').width(data.length * 120)
-    else
-	    $('#scatter-view').css('width', '100%')
-	$("#scatter-view").kendoChart({
-		dataSource: {
-            data: data
-        },
-        title: {
-            text: ""
-        },
-        legend: {
-            visible: true,
-            position: "bottom"
-        },
-        seriesDefaults: {
-            type: "line",
-            missingValues: "gap",
-        },
-		seriesColors: ['#3498DB', "#678900"],
-		series: [{
-			name: `Average ${breakdownTitle} to ${netSalesTitle}`,
-			field: 'avgPNLPercentage',
-			width: 3,
-			line: {
-				border: {
-					width: 1,
-					color: 'white'
-				},
-			},
-			tooltip: {
-				visible: true,
-				template: `Average ${breakdownTitle} to ${netSalesTitle}: #: kendo.toString(dataItem.avgPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.avgPNL, 'n2') #)`
-			},
-			markers: {
-				visible: false
-			}
-		},
-		{
-			type: 'column',
-			name: `${breakdownTitle} to ${netSalesTitle}`,
-			field: "valuePNLPercentage",
-			overlay: {
-				gradient: 'none'
-			},
-			border: {
-				width: 0
-			},
-			tooltip: {
-				visible: true,
-				template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
-			},
-			labels: {
-				font: '"Source Sans Pro" 11px',
-				visible: true,
-				position: 'outsideEnd',
-				template: (d) => {
-					return `${breakdownTitle} ${d.category}\n${kendo.toString(d.value, 'n2')} %`
-				}
-			},
-		}],
-        valueAxis: {
-			majorGridLines: {
-				color: '#fafafa'
-			},
-            label: {
-            	format: "{0}%"
-            },
-        },
-        categoryAxis: [{
-            field: 'category',
-            labels: {
-            	rotation: 20,
-				font: '"Source Sans Pro" 11px',
-            },
-			majorGridLines: {
-				color: '#fafafa'
-			}
-		}],
-    })
-}
-
-
-viewModel.chartCompare = {}
-let ccr = viewModel.chartCompare
-
-ccr.data = ko.observableArray([])
-ccr.dataComparison = ko.observableArray([])
-ccr.title = ko.observable('Chart Comparison')
-ccr.contentIsLoading = ko.observable(false)
-ccr.categoryAxisField = ko.observable('category')
-ccr.breakdownBy = ko.observable('')
-ccr.limitchart = ko.observable(6)
-ccr.optionComparison = ko.observableArray([
-	{ field: 'outlet', name: 'Outlet' },
-	{ field: 'price', name: 'Price' },
-	{ field: 'qty', name: 'Quantity' },
-])
-ccr.comparison = ko.observableArray(['price', 'qty'])
-ccr.fiscalYear = ko.observable(rpt.value.FiscalYear())
-ccr.order = ko.observable(ccr.optionComparison()[2].field)
-
-ccr.getDecreasedQty = (useCache = false) => {
-	let param = {}
-	param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
-	param.groups = ["skuid", "date.quartertxt"]
-
-	let fetch = () => {
-		toolkit.ajaxPost(`/report/GetDecreasedQty`, param, (res) => {
-			if (res.Status == "NOK") {
-				setTimeout(() => {
-					fetch()
-				}, 1000 * 5)
-				return
-			}
-
-			ccr.contentIsLoading(false)
-			ccr.dataComparison(res.Data.Data)
-			ccr.plot()
-		}, () => {
-			ccr.contentIsLoading(false)
-		}, {
-			cache: (useCache == true) ? 'chart comparison' : false
-		})
-	}
-
-	ccr.contentIsLoading(true)
-	fetch()
-}
-ccr.refresh = () => {
-	// if (ccr.dataComparison().length > 0) {
-	// 	ccr.plot()
-	// } else {
-		ccr.getDecreasedQty()
-	// }
-}
-ccr.plot = () => {
-	let orderedData = _.orderBy(ccr.dataComparison(), (d) => {
-		if (ccr.order() == 'outlet') {
-			return d.outletList
-		}
-
-		return d[ccr.order()]
-	}, 'desc')
-	ccr.dataComparison(orderedData)
-
-	// ccr.dataComparison(ccr.dummyJson)
-	let tempdata = []
-	// let qty = 0
-	// let price = 0
-	let outlet = 0, maxline = 0, maxprice = 0, maxqty = 0, quarter = []
-	for (var i in ccr.dataComparison()){
-		if (ccr.dataComparison()[i].productName != undefined){
-			// qty = _.filter(ccr.dataComparison()[i].qty, function(resqty){ return resqty == 0}).length
-			// price = _.filter(ccr.dataComparison()[i].price, function(resprice){ return resprice == 0}).length
-			maxprice = _.max(ccr.dataComparison()[i].price)
-			maxqty = _.max(ccr.dataComparison()[i].qty)
-			outlet = _.max(ccr.dataComparison()[i].outletList)
-			// if (maxprice > maxqty)
-			// 	maxline = maxprice
-			// else
-			// 	maxline = maxqty
-			quarter = []
-			for (var a in ccr.dataComparison()[i].qty){
-				quarter.push(`Quarter ${parseInt(a)+1}`)
-			}
-			tempdata.push({
-				qty: ccr.dataComparison()[i].qtyCount,
-				price: ccr.dataComparison()[i].priceCount,
-				quarter: quarter,
-				maxoutlet: outlet + (outlet/2),
-				maxprice: maxprice + (maxprice/4),
-				maxqty: maxqty + (maxqty/4),
-				productName: ccr.dataComparison()[i].productName,
-				data: ccr.dataComparison()[i]
-			})
-		}
-	}
-	// let sortPriceQty = _.take(_.sortBy(tempdata, function(item) {
-	//    return [item.qty, item.price]
-	// }).reverse(), ccr.limitchart())
-	console.log("--------> TEMP DATA", tempdata)
-	let sortPriceQty = _.take(tempdata, ccr.limitchart())
-	ccr.data(sortPriceQty)
-	ccr.render()
-}
-ccr.render = () => {
-	let configure = (data, full) => {
-		let seriesLibs = {
-			price: { 
-				name: 'Price', 
-				// field: 'value1', 
-				data: data.price, 
-				width: 3, 
-				markers: {
-					visible: true,
-					size: 10,
-					border: {
-						width: 3
-					}
-				},
-				axis: "price",
-				color: '#5499C7',
-				labels: {
-					visible: false,
-					background: 'rgba(84,153,199,0.2)'
-				}
-			},
-			qty: { 
-				name: 'Qty', 
-				// field: 'value2', 
-				data: data.qty, 
-				width: 3, 
-				markers: {
-					visible: true,
-					size: 10,
-					border: {
-						width: 3
-					}
-				},
-				axis: "qty",
-				color: '#ff8d00',
-				labels: {
-					visible: false,
-					background: 'rgba(255,141,0,0.2)'
-				}
-			},
-			outlet: { 
-				name: 'Outlet', 
-				// field: 'value3', 
-				data: data.outletList,
-				type: 'column', 
-				width: 3, 
-				overlay: {
-					gradient: 'none'
-				},
-				border: {
-					width: 0
-				},
-				markers: {
-					visible: true,
-					style: 'smooth',
-					type: 'column',
-				},
-				axis: "outlet",
-				color: '#678900',
-				labels: {
-					visible: false,
-					background: 'rgba(103,137,0,0.2)'
-				}
-			}
-		}
-
-		let series = []
-		ccr.comparison().forEach((d) => {
-			series.push(seriesLibs[d])
-		})
-
-		let valueAxes = []
-		// , maxyo = 0, fieldmax = '', maxselect = 0
-		// if (ccr.comparison().indexOf('qty') > -1 || ccr.comparison().indexOf('price') > -1) {
-		// 	valueAxes.push({
-		// 		name: "priceqty",
-  //               title: { text: "Qty & Price" },
-		// 		majorGridLines: {
-		// 			color: '#fafafa'
-		// 		},
-		// 		max: full.maxline,
-		// 	})
-		// }
-		// if (ccr.comparison().indexOf('outlet') > -1) {
-		// 	valueAxes.push({
-		// 		name: "outlet",
-  //               title: { text: "Outlet" },
-  //               majorGridLines: {
-		// 			color: '#fafafa'
-		// 		},
-		// 		max: full.maxoutlet,
-		// 	})
-		// }
-		// if (ccr.comparison().length > 1) {
-		// 	if (ccr.comparison()[0] > ccr.comparison()[1]){
-		// 		maxyo = full["max"+ccr.comparison()[0]]
-		// 		fieldmax = ccr.comparison()[0]
-		// 	} else {
-		// 		maxyo = full["max"+ccr.comparison()[1]]
-		// 		fieldmax = ccr.comparison()[1]
-		// 	}
-		// } else if (ccr.comparison() > 0) {
-		// 	maxyo = full["max"+ccr.comparison()[0]]
-		// 	fieldmax = ccr.comparison()[0]
-		// }
-		// maxyo += maxyo / 4
-		for (let e in ccr.comparison()){
-			valueAxes.push({
-				name: ccr.comparison()[e],
-                title: { text: ccr.comparison()[e].charAt(0).toUpperCase() + ccr.comparison()[e].slice(1) },
-                majorGridLines: {
-					color: '#fafafa'
-				},
-				max: full["max"+ccr.comparison()[e]],
-			})
-		}
-
-		return {
-			// dataSource: {
-			// 	data: data
-			// },
-			series: series,
-			seriesDefaults: {
-	            type: "line",
-	            style: "smooth",
-				labels: {
-					font: '"Source Sans Pro" 11px',
-					visible: true,
-					position: 'top',
-					template: (d) => {
-						return `${d.series.name}: ${kendo.toString(d.value, 'n0')}`
-					}
-				}
-			},
-			categoryAxis: {
-				baseUnit: "month",
-				// field: ccr.categoryAxisField(),
-				categories: full.quarter,
-				majorGridLines: {
-					color: '#fafafa'
-				},
-				axisCrossingValue: [0, 8],
-				labels: {
-					font: '"Source Sans Pro" 11px',
-					rotation: 40
-					// template: (d) => `${toolkit.capitalize(d.value).slice(0, 3)}`
-				}
-			},
-			legend: {
-				position: 'bottom'
-			},
-			valueAxes: valueAxes,
-			tooltip: {
-				visible: true,
-				template: (d) => `${d.series.name} on : ${kendo.toString(d.value, 'n0')}`
-			}
-		}
-	}
-
-	let chartContainer = $('.chart-comparison')
-	chartContainer.empty()
-	for (var e in ccr.data()){
-		let html = $($('#template-chart-comparison').html())
-		let config = configure(ccr.data()[e].data, ccr.data()[e])
-
-		html.appendTo(chartContainer)
-		html.find('.title').html(ccr.data()[e].data.productName)
-		html.find('.chart').kendoChart(config)
-	}
-	chartContainer.append($('<div />').addClass('clearfix'))
-}
-
-rpt.toggleFilterCallback = () => {
-	$('.chart-comparison .k-chart').each((i, e) => {
-		$(e).data('kendoChart').redraw()
-	})
-}
-
-vm.currentMenu('PNL Analysis')
-vm.currentTitle('PNL Analysis')
+vm.currentMenu('Key Account Analysis')
+vm.currentTitle('Key Account Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
 	{ title: 'Daashboard', href: '/web/report/dashboard' }
 ])
 
-bkd.title('P&L Analysis')
-rs.title('P&L Comparison to Net Sales')
-ccr.title('Quantity, Price & Outlet')
+kac.title('Key Account Analysis')
 
 rpt.refresh = () => {
-	rpt.refreshView('analysis')
-
-	rs.getSalesHeaderList()
-
-	bkd.changeBreakdown()
+	kac.changeBreakdown()
 	setTimeout(() => {
-		bkd.breakdownValue(['All'])
-		bkd.refresh(false)
+		kac.breakdownValue(['All'])
+		kac.refresh(false)
 	}, 200)
 
-	bkd.prepareEvents()
-
-	ccr.getDecreasedQty(false)
+	kac.prepareEvents()
 }
 
 $(() => {

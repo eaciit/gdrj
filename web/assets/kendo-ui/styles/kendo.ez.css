@@ -5984,7 +5984,9 @@ html .km-pane-wrapper .km-widget,
   color: #58666e;
 }
 .k-grid tr:hover,
-.k-grid tr:hover {
+.k-grid tr:hover,
+.k-grid tr.hover,
+.k-grid tr.hover {
   background-color: #74B841;
 }
 .k-pivot-rowheaders .k-grid tr:hover {
@@ -7372,7 +7374,9 @@ http://docs.telerik.com/kendo-ui/using-kendo-with-twitter-bootstrap
 .k-overflow-container .k-overflow-group + .k-overflow-group {
   box-shadow: 0 1px 0 #ffffff;
 }
-.k-grid tr:hover {
+.k-grid tr:hover,
+.k-grid tr.hover,
+.k-grid tr.hover {
   color: white;
 }
 .k-grid tr:not(.k-footer-template):hover {
