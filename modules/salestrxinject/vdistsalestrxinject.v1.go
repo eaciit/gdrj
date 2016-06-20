@@ -137,15 +137,15 @@ func main() {
 	defer gdrj.CloseDb()
 	mutex = &sync.Mutex{}
 
-	flag.StringVar(&vdistdetail, "vdistdetail", "", "vdistdetail representation of collection vdist detail that want to be processed. Default is blank")
+	flag.StringVar(&vdistdetail, "vdistdetail", "rawsalesdetail1415", "vdistdetail representation of collection vdist detail that want to be processed. Default is blank")
 	flag.StringVar(&vdistheader, "vdistheader", "rawsalesheader", "vdistheader representation of collection vdist header that want to be processed. Default is rawsalesheader")
 	flag.IntVar(&fiscalyear, "year", 2015, "fiscal year to process. Default is 2015")
 	flag.Parse()
 
-	if vdistdetail == "" {
-		toolkit.Println("VDist detail collection need to be fill,")
-		os.Exit(1)
-	}
+	// if vdistdetail == "" {
+	// 	toolkit.Println("VDist detail collection need to be fill,")
+	// 	os.Exit(1)
+	// }
 
 	eperiode = time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
 	speriode = eperiode.AddDate(-1, 0, 0)
