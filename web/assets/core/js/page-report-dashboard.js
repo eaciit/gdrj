@@ -340,7 +340,20 @@ dsbrd.render = function (res) {
 		resizable: false,
 		sortable: false,
 		pageable: false,
-		filterable: false
+		filterable: false,
+		dataBound: function dataBound() {
+			var sel = '.grid-dashboard .k-grid-content-locked tr, .grid-dashboard .k-grid-content tr';
+
+			$(sel).on('mouseenter', function () {
+				var index = $(this).index();
+				console.log(this, index);
+				var elh = $('.grid-dashboard .k-grid-content-locked tr:eq(' + index + ')').addClass('hover');
+				var elc = $('.grid-dashboard .k-grid-content tr:eq(' + index + ')').addClass('hover');
+			});
+			$(sel).on('mouseleave', function () {
+				$('.grid-dashboard tr.hover').removeClass('hover');
+			});
+		}
 	};
 
 	$('.grid-dashboard').replaceWith('<div class="grid-dashboard"></div>');

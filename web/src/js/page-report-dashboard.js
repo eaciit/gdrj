@@ -335,7 +335,20 @@ dsbrd.render = (res) => {
 		resizable: false,
 		sortable: false, 
 		pageable: false,
-		filterable: false
+		filterable: false,
+		dataBound: () => {
+			let sel = '.grid-dashboard .k-grid-content-locked tr, .grid-dashboard .k-grid-content tr'
+
+			$(sel).on('mouseenter', function () {
+				let index = $(this).index()
+				console.log(this, index)
+		        let elh = $(`.grid-dashboard .k-grid-content-locked tr:eq(${index})`).addClass('hover')
+		        let elc = $(`.grid-dashboard .k-grid-content tr:eq(${index})`).addClass('hover')
+			})
+			$(sel).on('mouseleave', function () {
+				$('.grid-dashboard tr.hover').removeClass('hover')
+			})
+		}
 	}
 
 	$('.grid-dashboard').replaceWith('<div class="grid-dashboard"></div>')
