@@ -1109,7 +1109,14 @@ ccr.render = () => {
 					style: 'smooth',
 					type: 'column',
 				},
-				axis: "outlet"
+				axis: "outlet",
+				labels: {
+					visible: true,
+					position: 'outsideEnd',
+					template: (d) => {
+						return `${kendo.toString(d.value, 'n2')}`
+					}
+				}
 			}
 		}
 
@@ -1172,7 +1179,15 @@ ccr.render = () => {
 			seriesColors: ["#5499C7", "#ff8d00", "#678900"],
 			seriesDefaults: {
 	            type: "line",
-	            style: "smooth"
+	            style: "smooth",
+				labels: {
+					visible: true,
+					position: 'top',
+					background: "transparent",
+					template: (d) => {
+						return `${kendo.toString(d.value, 'n2')}`
+					}
+				}
 			},
 			categoryAxis: {
 				baseUnit: "month",
