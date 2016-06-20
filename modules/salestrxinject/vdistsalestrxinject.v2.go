@@ -119,6 +119,7 @@ func prepMaster() {
 	sh := new(gdrj.SalesHeader)
 	// cshs := getCursor(sh)
 	filter := dbox.And(dbox.Gte("date", speriode), dbox.Lt("date", eperiode))
+	filter = nil
 	// filter = dbox.Eq("_id", "FK/IGA/14001247")
 
 	cshs, _ := gdrj.Find(sh,
