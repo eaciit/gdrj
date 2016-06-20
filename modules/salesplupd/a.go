@@ -14,6 +14,7 @@ import (
 	"github.com/eaciit/toolkit"
 
 	"flag"
+	"strings"
 )
 
 var mutex = new(sync.Mutex)
@@ -40,19 +41,17 @@ func setinitialconnection() {
 	}
 }
 
-var masters = toolkit.M{}
+var masters, masterbranchs = toolkit.M{}, toolkit.M{}
 
-/*
 func getCursor(obj orm.IModel) dbox.ICursor {
 	c, e := gdrj.Find(obj,
 		nil, nil)
-		//toolkit.M{}.Set("take", 10))
+	//toolkit.M{}.Set("take", 10))
 	if e != nil {
 		return nil
 	}
 	return c
 }
-*/
 
 var subchannels = toolkit.M{}
 
@@ -99,6 +98,19 @@ func prepMaster() {
 			o := obj.(*gdrj.PLModel)
 			h[o.ID] = o
 		}).(map[string]*gdrj.PLModel))
+
+	masterbranchs = toolkit.M{}
+	cmb := getCursor(new(gdrj.MasterBranch))
+	defer cmb.Close()
+	for {
+		stx := new(gdrj.MasterBranch)
+		e := c.Fetch(stx, 1, false)
+		if e != nil {
+			break
+		}
+
+		masterbranchs.Set(stx.ID, stx.Name)
+	}
 }
 
 func makeDateFromInt(i int, endofmth bool) time.Time {
@@ -213,34 +225,48 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 	for spl = range jobs {
 
 		//-- update channel and subchannel
-		subchannel := subchannels.GetString(spl.Customer.CustType)
-		if spl.Customer.ChannelID == "I1" {
-			spl.Customer.ReportChannel = "RD"
-			spl.Customer.ReportSubChannel = "RD"
-		} else if spl.Customer.ChannelID == "I3" {
-			spl.Customer.ReportChannel = "MT"
-			if subchannel == "" {
-				spl.Customer.ReportSubChannel = subchannels.GetString("M3")
-			} else {
-				spl.Customer.ReportSubChannel = subchannel
-			}
-		} else if spl.Customer.ChannelID == "I4" {
-			spl.Customer.ReportChannel = "IT"
-			spl.Customer.ReportSubChannel = "IT"
-		} else if spl.Customer.ChannelID == "I6" {
-			spl.Customer.ReportChannel = "Motoris"
-			spl.Customer.ReportSubChannel = "Motoris"
-		} else {
-			spl.Customer.ChannelID = "I2"
-			spl.Customer.ReportChannel = "GT"
+		/*
 			subchannel := subchannels.GetString(spl.Customer.CustType)
-			if subchannel == "" {
-				spl.Customer.ReportSubChannel = "R18 - Lain-lain"
+			if spl.Customer.ChannelID == "I1" {
+				spl.Customer.ReportChannel = "RD"
+				spl.Customer.ReportSubChannel = "RD"
+			} else if spl.Customer.ChannelID == "I3" {
+				spl.Customer.ReportChannel = "MT"
+				if subchannel == "" {
+					spl.Customer.ReportSubChannel = subchannels.GetString("M3")
+				} else {
+					spl.Customer.ReportSubChannel = subchannel
+				}
+			} else if spl.Customer.ChannelID == "I4" {
+				spl.Customer.ReportChannel = "IT"
+				spl.Customer.ReportSubChannel = "IT"
+			} else if spl.Customer.ChannelID == "I6" {
+				spl.Customer.ReportChannel = "Motoris"
+				spl.Customer.ReportSubChannel = "Motoris"
 			} else {
-				spl.Customer.ReportSubChannel = subchannel
+				spl.Customer.ChannelID = "I2"
+				spl.Customer.ReportChannel = "GT"
+				subchannel := subchannels.GetString(spl.Customer.CustType)
+				if subchannel == "" {
+					spl.Customer.ReportSubChannel = "R18 - Lain-lain"
+				} else {
+					spl.Customer.ReportSubChannel = subchannel
+				}
 			}
+		*/
+		//-- For fix branch name
+		spl.Customer.BranchName = toolkit.ToString(masterbranchs.Get(spl.Customer.BranchID, ""))
+
+		//-- For export
+		if strings.Contains(spl.ID, "EXPORT") {
+			spl.Customer.ChannelID = "EXP"
+			spl.Customer.ChannelName = "Export"
+
+			spl.Customer.ReportChannel = "EXPORT"
+			spl.Customer.ReportSubChannel = "EXPORT"
 		}
 
+		//--Recalculate the PL Model value
 		spl.CalcSum(masters)
 
 		workerConn.NewQuery().From(spl.TableName()).

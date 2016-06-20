@@ -20,6 +20,7 @@ var vdistdetail string
 var vdistheader string
 var mutex *sync.Mutex
 var eperiode, speriode time.Time
+var ggrossamount, cggrossamount float64
 
 func setinitialconnection() {
 	var err error
@@ -180,6 +181,16 @@ func main() {
 			break
 		}
 
+		invid := toolkit.ToString(tkmsd.Get("iv_no", ""))
+		if lastSalesLine.Has(invid) {
+			lastLineNo := lastSalesLine.GetInt(invid) + 1
+			tkmsd.Set("lineno", lastLineNo)
+			lastSalesLine.Set(invid, lastLineNo)
+		} else {
+			tkmsd.Set("lineno", 1)
+			lastSalesLine.Set(invid, 1)
+		}
+
 		jobs <- tkmsd
 		// gdrj.Save(st)
 		if step == 0 {
@@ -187,7 +198,7 @@ func main() {
 		}
 
 		if i%step == 0 {
-			toolkit.Printfn("Processing %d of %d (%d) %s in %s",
+			toolkit.Printfn("Processing %d of %d (%d) in %s",
 				i, count, i/step,
 				time.Since(t0).String())
 		}
@@ -205,8 +216,8 @@ func main() {
 		}
 	}
 
-	toolkit.Printfn("Processing done in %s",
-		time.Since(t0).String())
+	toolkit.Printfn("Processing done in %s with gross %v and correct %v",
+		time.Since(t0).String(), ggrossamount, cggrossamount)
 }
 
 func workerProc(wi int, jobs <-chan toolkit.M, result chan<- string) {
@@ -220,18 +231,9 @@ func workerProc(wi int, jobs <-chan toolkit.M, result chan<- string) {
 		st := new(gdrj.SalesTrx)
 		st.SalesHeaderID = toolkit.ToString(tkmsd.Get("iv_no", ""))
 
-		mutex.Lock()
-		if lastSalesLine.Has(st.SalesHeaderID) {
-			lastLineNo := lastSalesLine.GetInt(st.SalesHeaderID) + 1
-			st.LineNo = lastLineNo
-			lastSalesLine.Set(st.SalesHeaderID, lastLineNo)
-		} else {
-			st.LineNo = 1
-			lastSalesLine.Set(st.SalesHeaderID, 1)
-		}
-		mutex.Unlock()
-
+		st.LineNo = tkmsd.GetInt("lineno")
 		dgrossamount := toolkit.ToFloat64(tkmsd.Get("gross", 0), 6, toolkit.RoundingAuto)
+		ggrossamount += dgrossamount
 
 		if shs.Has(st.SalesHeaderID) {
 			sho := shs.Get(st.SalesHeaderID).(*gdrj.SalesHeader)
@@ -296,6 +298,10 @@ func workerProc(wi int, jobs <-chan toolkit.M, result chan<- string) {
 			}
 		} else {
 			st.PCValid = false
+		}
+
+		if st.CustomerValid && st.HeaderValid {
+			cggrossamount += st.GrossAmount
 		}
 
 		st.Src = "VDIST"

@@ -186,15 +186,15 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 		sga, opincome, directexpense, indirectexpense,
 		royaltiestrademark, advtpromoexpense, operatingexpense,
 		freightexpense, nonoprincome, ebt, taxexpense,
-		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties float64
+		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga float64
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 
 	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL94A", "PL39A", "PL41A", "PL44A",
-		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D"}
-	inexclude := func(f string)bool{
-		for _, v := range exclude{
-			if v==f {
+		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E"}
+	inexclude := func(f string) bool {
+		for _, v := range exclude {
+			if v == f {
 				return true
 			}
 		}
@@ -284,6 +284,7 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	eat = ebt + taxexpense
 	ebitda = totdepreexp + damagegoods + opincome
 	ebitdaroyalties = ebitda - royaltiestrademark
+	ebitsga = opincome - sga
 
 	pl.AddData("PL8A", netsales, plmodels)
 	pl.AddData("PL14A", directexpense, plmodels)
@@ -306,6 +307,7 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	pl.AddData("PL44B", opincome, plmodels)
 	pl.AddData("PL44C", ebitda, plmodels)
 	pl.AddData("PL44D", ebitdaroyalties, plmodels)
+	pl.AddData("PL44E", ebitsga, plmodels)
 }
 
 func (pl *SalesPL) CalcSales(masters toolkit.M) {
