@@ -142,7 +142,7 @@ dsbrd.refresh = () => {
 
 	let param = {}
 	param.pls = _.flatten(dsbrd.rows().map((d) => d.plcodes))
-	param.groups = [dsbrd.breakdown(), dsbrd.structure()]
+	param.groups = rpt.parseGroups([dsbrd.breakdown(), dsbrd.structure()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears)
 
@@ -367,7 +367,7 @@ rank.fiscalYear = ko.observable(rpt.value.FiscalYear())
 rank.refresh = () => {
 	let param = {}
 	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
-	param.groups = [rank.breakdown()]
+	param.groups = rpt.parseGroups([rank.breakdown()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, rank.fiscalYear)
 
@@ -566,7 +566,7 @@ sd.sortData = () => {
 sd.refresh = () => {
 	let param = {}
 	param.pls = ["PL8A"]
-	param.groups = [sd.breakdown(), sd.breakdownSub()]
+	param.groups = rpt.parseGroups([sd.breakdown(), sd.breakdownSub()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear)
 
