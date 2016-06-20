@@ -326,11 +326,11 @@ bkd.render = () => {
 		})
 		data.forEach((e) => {
 			let breakdown = e._id
-			let percentage = e[`${d._id}`] / row.PNLTotal * 100; 
+			let percentage = toolkit.number(e[`${d._id}`] / row.PNLTotal) * 100; 
 			percentage = toolkit.number(percentage)
 
 			if (d._id != netSalesPLCode) {
-				percentage = row[breakdown] / netSalesRow[breakdown] * 100
+				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
 			}
 
 			row[`${breakdown} %`] = percentage

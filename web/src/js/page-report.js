@@ -141,7 +141,7 @@ rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYea
 		{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
 		{ 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
 
-		{ 'Field': 'product.brandcategoryid', 'Op': '$in', Value: rpt.value.HBrandCategory() }
+		{ 'Field': 'product.brandcategoryid', 'Op': '$in', Value: rpt.value.HBrandCategory() },
 		// ---> Brand OK
 		{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() },
 	]

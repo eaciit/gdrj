@@ -37,12 +37,10 @@ rpt.getFilterValue = function () {
 	{ 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() },
 
 	// ---> Channel OK
-	{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() }, { 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
-
-	// ---> product group
+	{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() }, { 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() }, { 'Field': 'product.brandcategoryid', 'Op': '$in', Value: rpt.value.HBrandCategory() },
+	// ---> Brand OK
 	{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() }];
 
-	// ---> SKU
 	if (fiscalField !== false) {
 		if (multiFiscalYear) {
 			res.push({
