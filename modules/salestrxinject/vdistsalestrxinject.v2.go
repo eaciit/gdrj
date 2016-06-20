@@ -187,7 +187,7 @@ func main() {
 		st.SalesHeaderID = toolkit.ToString(tkmsd.Get("iv_no", ""))
 
 		if st.SalesHeaderID == "" {
-			st.SalesHeaderID = "OTHER/04/2016"
+			st.SalesHeaderID = "OTHER/03/2016"
 		}
 
 		if lastSalesLine.Has(st.SalesHeaderID) {
@@ -222,7 +222,7 @@ func main() {
 		}
 
 		if st.Date.IsZero() {
-			st.Date = time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
+			st.Date = time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC).AddDate(0, 0, -1)
 		}
 
 		gdrjdate = gdrj.SetDate(st.Date)
