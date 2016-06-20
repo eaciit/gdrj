@@ -185,7 +185,13 @@ dsbrd.render = (res) => {
 		title: 'PNL', 
 		attributes: { class: 'bold' }, 
 		headerAttributes: { style: 'font-weight: bold; vertical-align: middle;' }, 
-		width: 200
+		width: 120
+	}, { 
+		field: 'total', 
+		title: 'Total', 
+		attributes: { class: 'bold align-right bold' }, 
+		headerAttributes: { style: 'font-weight: bold; vertical-align: middle; text-align: right;' }, 
+		width: 150
 	}]
 
 	let data = res.Data.Data
@@ -222,6 +228,9 @@ dsbrd.render = (res) => {
 					column.value = `${percentage} %`;
 				}
 			})
+
+			let total = toolkit.sum(row.columnData, (d) => d.original)
+			row.total = kendo.toString(total, 'n0')
 		})
 	}
 
@@ -292,6 +301,7 @@ dsbrd.render = (res) => {
 
 	if (columnGrouped.length > 1) {
 		columnsPlaceholder[0].locked = true
+		columnsPlaceholder[1].locked = true
 	}
 
 	dsbrd.data(rowsAfter)
