@@ -81,7 +81,7 @@ pvt.render = () => {
 	let rows = []
 	let measures = []
 
-	let data = _.sortBy(pvt.data(), (d) => toolkit.redefine(d[toolkit.replace(pvt.column(), '.', '_')], 'Other'))
+	let data = _.sortBy(pvt.data(), (d) => toolkit.redefine(d[toolkit.replace(pvt.column(), '.', '_')], ''))
 
 	;[pvt.row()].forEach((d, i) => {
 		let row = pvt.optionRows().find((e) => e.field == d)

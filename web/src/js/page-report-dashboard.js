@@ -231,7 +231,7 @@ dsbrd.render = (res) => {
 
 		let column = {}
 		column.field = `columnData[${i}].value`
-		column.breakdown = $.trim(toolkit.redefine(columnInfo.breakdownTitle, 'Other'))
+		column.breakdown = $.trim(toolkit.redefine(columnInfo.breakdownTitle, ''))
 		column.title = $.trim(columnInfo.structureTitle)
 		column.width = 150
 		column.format = '{0:n0}'
@@ -264,7 +264,7 @@ dsbrd.render = (res) => {
 		})
 
 		return { 
-			title: ($.trim(k) == '' ? 'Other' : k), 
+			title: ($.trim(k) == '' ? '' : k), 
 			columns: v,
 			headerAttributes: { 
 				style: 'text-align: center !important; font-weight: bold; border: 1px solid white; border-top: none; border-left: none; box-sizing: border-box; background-color: #e9eced;',
@@ -390,7 +390,7 @@ rank.refresh = () => {
 }
 
 rank.render = (res) => {
-	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], 'Other'))
+	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], ''))
 
 	let rows = []
 	data.forEach((d) => {
@@ -398,8 +398,8 @@ rank.render = (res) => {
 		row.original = d._id[`_id_${toolkit.replace(rank.breakdown(), '.', '_')}`]
 		row.pnl = d._id[`_id_${toolkit.replace(rank.breakdown(), '.', '_')}`]
 		if ($.trim(row.pnl) == '') {
-			row.original = 'Other'
-			row.pnl = 'Other'
+			row.original = ''
+			row.pnl = ''
 		}
 		if (rank.breakdown() == 'date.month') {
 			row.original = (parseInt(row.pnl, 10) - 1)
@@ -513,8 +513,8 @@ sd.render = (res) => {
 		}
 
 		let channelgroup = _.map(_.groupBy(d.values, (o) => { return o.group }), (v, k) => {
-			if (k == "")
-				k = "Other" 
+			if (k == '')
+				k = '' 
 			return { key: k, values: v } 
 		})
 		let totalyo = 0, percentageyo = 0, indexyo = 0

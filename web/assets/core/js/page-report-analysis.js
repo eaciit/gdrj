@@ -318,7 +318,7 @@ bkd.render = function () {
 
 		breakdowns.forEach(function (e) {
 			var title = d._id['_id_' + toolkit.replace(e, '.', '_')];
-			title = toolkit.whenEmptyString(title, 'Uncategorized');
+			title = toolkit.whenEmptyString(title, '');
 			d.breakdowns[e] = title;
 			titleParts.push(title);
 		});
@@ -823,7 +823,7 @@ rs.refresh = function () {
 			dataAllPNL.forEach(function (d, i) {
 				dataScatter.push({
 					valueNetSales: dataAllPNLNetSales[i].value,
-					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
+					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, ''),
 					category: d._id['_id_' + app.idAble(rs.breakdownBy())],
 					year: d._id._id_date_year,
 					valuePNL: Math.abs(d.value),
@@ -974,31 +974,37 @@ ccr.getDecreasedQty = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
 	var param = {};
-	param.filters = [];
-	// param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
-	// param.filters = _.remove(param.filters, (d) => d.Field != "date.fiscal")
+	param.filters = rpt.getFilterValue(false, ccr.fiscalYear);
+	param.groups = ["skuid", "date.quartertxt"];
+
+	var fetch = function fetch() {
+		toolkit.ajaxPost('/report/GetDecreasedQty', param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			ccr.contentIsLoading(false);
+			ccr.dataComparison(res.Data.Data);
+			ccr.plot();
+		}, function () {
+			ccr.contentIsLoading(false);
+		}, {
+			cache: useCache == true ? 'chart comparison' : false
+		});
+	};
 
 	ccr.contentIsLoading(true);
-	toolkit.ajaxPost('/report/GetDecreasedQty', param, function (res) {
-		if (res.Status == "NOK") {
-			return;
-		}
-
-		ccr.dataComparison(res.Data);
-		ccr.contentIsLoading(false);
-		ccr.plot();
-	}, function () {
-		ccr.contentIsLoading(false);
-	}, {
-		cache: useCache == true ? 'chart comparison' : false
-	});
+	fetch();
 };
 ccr.refresh = function () {
-	if (ccr.dataComparison().length > 0) {
-		ccr.plot();
-	} else {
-		ccr.getDecreasedQty();
-	}
+	// if (ccr.dataComparison().length > 0) {
+	// 	ccr.plot()
+	// } else {
+	ccr.getDecreasedQty();
+	// }
 };
 ccr.plot = function () {
 	var orderedData = _.orderBy(ccr.dataComparison(), function (d) {
@@ -1049,6 +1055,7 @@ ccr.plot = function () {
 	// let sortPriceQty = _.take(_.sortBy(tempdata, function(item) {
 	//    return [item.qty, item.price]
 	// }).reverse(), ccr.limitchart())
+	console.log("--------> TEMP DATA", tempdata);
 	var sortPriceQty = _.take(tempdata, ccr.limitchart());
 	ccr.data(sortPriceQty);
 	ccr.render();

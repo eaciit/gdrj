@@ -264,18 +264,20 @@ rpt.getFilterValue = function () {
 
 	var res = [{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) }, { 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) }, { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() }, { 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() }, { 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() }, { 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() }, { 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() }, { 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() }];
 
-	if (multiFiscalYear) {
-		res.push({
-			'Field': 'date.fiscal',
-			'Op': '$in',
-			'Value': fiscalField()
-		});
-	} else {
-		res.push({
-			'Field': 'date.fiscal',
-			'Op': '$eq',
-			'Value': fiscalField()
-		});
+	if (fiscalField !== false) {
+		if (multiFiscalYear) {
+			res.push({
+				'Field': 'date.fiscal',
+				'Op': '$in',
+				'Value': fiscalField()
+			});
+		} else {
+			res.push({
+				'Field': 'date.fiscal',
+				'Op': '$eq',
+				'Value': fiscalField()
+			});
+		}
 	}
 
 	res = res.filter(function (d) {

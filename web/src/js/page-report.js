@@ -389,18 +389,20 @@ rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYea
 		{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() },
 	]
 
-	if (multiFiscalYear) {
-		res.push({ 
-			'Field': 'date.fiscal', 
-			'Op': '$in', 
-			'Value': fiscalField()
-		})
-	} else {
-		res.push({ 
-			'Field': 'date.fiscal', 
-			'Op': '$eq', 
-			'Value': fiscalField()
-		})
+	if (fiscalField !== false) {
+		if (multiFiscalYear) {
+			res.push({ 
+				'Field': 'date.fiscal', 
+				'Op': '$in', 
+				'Value': fiscalField()
+			})
+		} else {
+			res.push({ 
+				'Field': 'date.fiscal', 
+				'Op': '$eq', 
+				'Value': fiscalField()
+			})
+		}
 	}
 
 	res = res.filter((d) => {
