@@ -456,12 +456,15 @@ rank.render = (res) => {
 viewModel.salesDistribution = {}
 let sd = viewModel.salesDistribution
 sd.contentIsLoading = ko.observable(false)
-
+sd.isFirstTime = ko.observable(true)
 sd.breakdown = ko.observable('customer.reportchannel')
 sd.breakdownSub = ko.observable('customer.reportsubchannel')
 sd.data = ko.observableArray([])
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 sd.render = (res) => {
+	let isFirstTime = sd.isFirstTime()
+	sd.isFirstTime(false)
+
 	let data = res.Data.Data
 
 	let breakdown = toolkit.replace(sd.breakdown(), ".", "_")
@@ -497,20 +500,18 @@ sd.render = (res) => {
 	let maxRow = _.maxBy(op2, (d) => d.values.length)
 	let maxRowIndex = op2.indexOf(maxRow)
 	let height = 20 * maxRow.values.length
-	let width = 200
+	let width = 320
 
 	let container = $('.grid-sales-dist').empty()
 	let table = toolkit.newEl('table').addClass('width-full').appendTo(container).height(height)
 	let tr1st = toolkit.newEl('tr').appendTo(table)
 	let tr2nd = toolkit.newEl('tr').appendTo(table)
 
-	if (op2.length > 5) {
-		table.width(op2.length * width)
-	}
+	table.css('max-width', `${op2.length * width}px`)
 
 	let index = 0
 	op2.forEach((d) => {
-		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index]).css('cursor', 'pointer')
+		let td1st = toolkit.newEl('td').appendTo(tr1st).addClass('sortsales').attr('sort', sd.sortVal[index]).css('cursor', 'pointer')
 		let sumPercentage = _.sumBy(d.values, (e) => e.percentage)
 		let sumColumn = _.sumBy(d.values, (e) => e.value)
 		td1st.html(`<i class="fa"></i>${d.key}<br />${kendo.toString(sumPercentage, 'n2')} %`)
@@ -551,11 +552,28 @@ sd.render = (res) => {
 			$(`.sortsales:eq(${index})>i`).addClass('fa-chevron-up')
 			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-down')
 		}
+
+		if (isFirstTime) {
+			if (d.key == "MT") {
+				channelgroup = _.orderBy(channelgroup, (d) => {
+					switch (d.key) {
+						case 'Hyper': return 'A'; break
+						case 'Super': return 'B'; break
+						case 'Mini': return 'C'; break
+					}
+
+					return d.key
+				}, 'asc')
+			} else if (d.key == 'GT') {
+				channelgroup = _.orderBy(channelgroup, (d) => toolkit.getNumberFromString(d.key), 'asc')
+			}
+		}
+
 		channelgroup.forEach((e) => {
 			let tr = toolkit.newEl('tr').appendTo(innerTable)
-			toolkit.newEl('td').appendTo(tr).html(e.key).height(height / channelgroup.length)
-			toolkit.newEl('td').css('width', '55px').appendTo(tr).html(`${kendo.toString(e.percentageyo, 'n2')}&nbsp;%`)
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'))
+			toolkit.newEl('td').css('width', '150px').appendTo(tr).html(e.key).height(height / channelgroup.length)
+			toolkit.newEl('td').css('width', '40px').appendTo(tr).html(`${kendo.toString(e.percentageyo, 'n2')}&nbsp;%`)
+			toolkit.newEl('td').css('width', '120px').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'))
 		})
 		index++
 		// d.values.forEach((e) => {
