@@ -357,9 +357,11 @@ rpt.toggleFilter = () => {
 	if (panelFilter.is(':visible')) {
 		panelFilter.hide()
 		panelContent.attr('class', 'col-md-12 col-sm-12 ez panel-content')
+		$(`.breakdown-filter`).removeAttr('style')
 	} else {
 		panelFilter.show()
 		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content')
+		$(`.breakdown-filter`).css('width', '60%')
 	}
 
 	$('.k-grid').each((i, d) => {
