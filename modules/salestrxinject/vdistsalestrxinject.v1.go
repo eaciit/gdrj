@@ -204,6 +204,8 @@ func main() {
 		}
 	}
 
+	close(jobs)
+
 	for ri := 0; ri < i; ri++ {
 		<-result
 		if step == 0 {
