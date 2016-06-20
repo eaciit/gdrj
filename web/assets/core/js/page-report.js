@@ -31,6 +31,21 @@ rpt.optionDimensions = ko.observableArray([
 // { field: 'date.month', name: 'Month', title: 'date_month' },
 rpt.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
+rpt.parseGroups = function (what) {
+	return what;
+
+	if (what.indexOf('customer.branchname') > -1) {
+		what.push('customer.branchid');
+	}
+	if (what.indexOf('customer.channelname') > -1) {
+		what.push('customer.channelid');
+	}
+	if (what.indexOf('customer.customergroupname') > -1) {
+		what.push('customer.customergroup');
+	}
+
+	return what;
+};
 rpt.mode = ko.observable('render');
 rpt.refreshView = ko.observable('');
 rpt.modecustom = ko.observable(false);

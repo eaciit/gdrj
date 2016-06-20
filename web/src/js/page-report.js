@@ -154,6 +154,21 @@ rpt.optionAggregates = ko.observableArray([
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
+rpt.parseGroups = (what) => {
+	return what
+	
+	if (what.indexOf('customer.branchname') > -1) {
+		what.push('customer.branchid')
+	}
+	if (what.indexOf('customer.channelname') > -1) {
+		what.push('customer.channelid')
+	}
+	if (what.indexOf('customer.customergroupname') > -1) {
+		what.push('customer.customergroup')
+	}
+
+	return what
+}
 rpt.mode = ko.observable('render')
 rpt.refreshView = ko.observable('')
 rpt.modecustom = ko.observable(false)
