@@ -166,7 +166,7 @@ func main() {
 	step = count / 100
 	i := 0
 
-	jobs := make(chan *toolkit.M, count)
+	jobs := make(chan *gdrj.SalesTrx, count)
 	result := make(chan string, count)
 	for wi := 0; wi < 10; wi++ {
 		go workerProc(wi, jobs, result)
@@ -181,66 +181,24 @@ func main() {
 			break
 		}
 
-		invid := toolkit.ToString(tkmsd.Get("iv_no", ""))
-
-		if invid == "" {
-			invid = "OTHER/04/2016"
-			tkmsd.Set("iv_no", invid)
-		}
-
-		if lastSalesLine.Has(invid) {
-			lastLineNo := lastSalesLine.GetInt(invid) + 1
-			tkmsd.Set("lineno", lastLineNo)
-			lastSalesLine.Set(invid, lastLineNo)
-		} else {
-			tkmsd.Set("lineno", 1)
-			lastSalesLine.Set(invid, 1)
-		}
-
-		jobs <- tkmsd
-		// gdrj.Save(st)
-		if step == 0 {
-			step = 100
-		}
-
-		if i%step == 0 {
-			toolkit.Printfn("Processing %d of %d (%d) in %s",
-				i, count, i/step,
-				time.Since(t0).String())
-		}
-	}
-
-	close(jobs)
-
-	for ri := 0; ri < i; ri++ {
-		ri++
-		<-result
-		if step == 0 {
-			step = 100
-		}
-
-		if ri%step == 0 {
-			toolkit.Printfn("Saving %d of %d (%d pct) in %s",
-				ri, count, ri/step, time.Since(t0).String())
-		}
-	}
-
-	toolkit.Printfn("Processing done in %s with gross %v and correct %v",
-		time.Since(t0).String(), ggrossamount, cggrossamount)
-}
-
-func workerProc(wi int, jobs <-chan *toolkit.M, result chan<- string) {
-	workerconn, _ := modules.GetDboxIConnection("db_godrej")
-	defer workerconn.Close()
-
-	tkmsd := new(toolkit.M)
-	for tkmsd = range jobs {
 		gdrjdate := new(gdrj.Date)
-
 		st := new(gdrj.SalesTrx)
+
 		st.SalesHeaderID = toolkit.ToString(tkmsd.Get("iv_no", ""))
 
-		st.LineNo = tkmsd.GetInt("lineno")
+		if st.SalesHeaderID == "" {
+			st.SalesHeaderID = "OTHER/04/2016"
+		}
+
+		if lastSalesLine.Has(st.SalesHeaderID) {
+			lastLineNo := lastSalesLine.GetInt(st.SalesHeaderID) + 1
+			st.LineNo = lastLineNo
+			lastSalesLine.Set(st.SalesHeaderID, lastLineNo)
+		} else {
+			st.LineNo = 1
+			lastSalesLine.Set(st.SalesHeaderID, 1)
+		}
+
 		dgrossamount := toolkit.ToFloat64(tkmsd.Get("gross", 0), 6, toolkit.RoundingAuto)
 		ggrossamount += dgrossamount
 
@@ -259,15 +217,19 @@ func workerProc(wi int, jobs <-chan *toolkit.M, result chan<- string) {
 			st.OutletID = sho.BranchID + sho.OutletID
 			st.Date = sho.Date
 			st.HeaderValid = true
-
-			gdrjdate = gdrj.SetDate(sho.Date)
-			st.Year = gdrjdate.Year
-			st.Month = int(gdrjdate.Month)
-			st.Fiscal = gdrjdate.Fiscal
-
 		} else {
 			st.HeaderValid = false
 		}
+
+		if st.Date.IsZero() {
+			st.Date = time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
+		}
+
+		gdrjdate = gdrj.SetDate(st.Date)
+		st.Year = gdrjdate.Year
+		st.Month = int(gdrjdate.Month)
+		st.Fiscal = gdrjdate.Fiscal
+
 		//brsap,iv_no,dtsales,inv_no,qty,price,gross,net
 		st.SKUID_VDIST = toolkit.ToString(tkmsd.Get("inv_no", ""))
 		if vdistskus.Has(st.SKUID_VDIST) {
@@ -315,6 +277,48 @@ func workerProc(wi int, jobs <-chan *toolkit.M, result chan<- string) {
 
 		st.Src = "VDIST"
 		st.ID = toolkit.ToString(st.PrepareID())
+
+		//////////////////////////////////////////////
+
+		jobs <- st
+		// gdrj.Save(st)
+		if step == 0 {
+			step = 100
+		}
+
+		if i%step == 0 {
+			toolkit.Printfn("Processing %d of %d (%d) in %s",
+				i, count, i/step,
+				time.Since(t0).String())
+		}
+	}
+
+	close(jobs)
+
+	for ri := 0; ri < i; ri++ {
+		ri++
+		<-result
+		if step == 0 {
+			step = 100
+		}
+
+		if ri%step == 0 {
+			toolkit.Printfn("Saving %d of %d (%d pct) in %s",
+				ri, count, ri/step, time.Since(t0).String())
+		}
+	}
+
+	toolkit.Printfn("Processing done in %s with gross %v and correct %v",
+		time.Since(t0).String(), ggrossamount, cggrossamount)
+}
+
+func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
+
+	st := new(gdrj.SalesTrx)
+	for st = range jobs {
+
 		workerconn.NewQuery().From(st.TableName()).
 			Save().Exec(toolkit.M{}.Set("data", st))
 
