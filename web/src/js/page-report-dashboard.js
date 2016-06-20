@@ -61,7 +61,7 @@ dsbrd.optionStructures = ko.observableArray([
 	{ field: "date.month", name: "Month" }
 ])
 dsbrd.structure = ko.observable(dsbrd.optionStructures()[0].field)
-dsbrd.structureYear = ko.observable('date.fiscal')
+dsbrd.structureYear = ko.observable('date.year')
 dsbrd.optionBreakdownValues = ko.observableArray([])
 dsbrd.breakdownValue = ko.observableArray([])
 dsbrd.breakdownValueAll = { _id: 'All', Name: 'All' }
