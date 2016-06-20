@@ -276,7 +276,7 @@ func main() {
 		}
 
 		st.Src = "VDIST"
-		st.ID = toolkit.ToString(st.PrepareID())
+		st.ID = toolkit.Sprintf("VDIST/2015-2014/%v_%d", st.SalesHeaderID, st.LineNo)
 
 		//////////////////////////////////////////////
 
@@ -319,7 +319,9 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 	st := new(gdrj.SalesTrx)
 	for st = range jobs {
 
-		workerconn.NewQuery().From(st.TableName()).
+		tablename := toolkit.Sprintf("%v-1", st.TableName())
+
+		workerconn.NewQuery().From(tablename).
 			Save().Exec(toolkit.M{}.Set("data", st))
 
 		result <- st.ID
