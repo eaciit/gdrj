@@ -92,7 +92,7 @@ crt.configure = function (series, colorseries) {
 				font: 'Source Sans Pro 11',
 				template: function template(d) {
 					if ($.trim(d.value) == '') {
-						return 'Other';
+						return '';
 					}
 
 					var max = 20;
@@ -138,7 +138,7 @@ crt.configure = function (series, colorseries) {
 
 crt.render = function () {
 	var data = _.sortBy(crt.data(), function (d) {
-		return toolkit.redefine(d[toolkit.replace(crt.categoryAxisField(), '.', '_')], 'Other');
+		return toolkit.redefine(d[toolkit.replace(crt.categoryAxisField(), '.', '_')], '');
 	});
 	crt.data(data);
 

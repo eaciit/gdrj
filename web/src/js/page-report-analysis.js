@@ -308,7 +308,7 @@ bkd.render = () => {
 
 		breakdowns.forEach((e) => {
 			let title = d._id[`_id_${toolkit.replace(e, '.', '_')}`]
-			title = toolkit.whenEmptyString(title, 'Uncategorized')
+			title = toolkit.whenEmptyString(title, '')
 			d.breakdowns[e] = title
 			titleParts.push(title)
 		})
@@ -799,7 +799,7 @@ rs.refresh = (useCache = false) => {
 			dataAllPNL.forEach((d, i) => {
 				dataScatter.push({
 					valueNetSales: dataAllPNLNetSales[i].value,
-					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
+					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, ''),
 					category: d._id[`_id_${app.idAble(rs.breakdownBy())}`],
 					year: d._id._id_date_year,
 					valuePNL: Math.abs(d.value),
@@ -879,22 +879,39 @@ rs.generateReport = (data, years) => {
 			markers: {
 				visible: false
 			}
-		}, {
+		}, 
+		// {
+		// 	name: `${breakdownTitle} to ${netSalesTitle}`,
+		// 	field: "valuePNLPercentage",
+		// 	width: 3,
+		// 	opacity: 0,
+		// 	markers: {
+		// 		type: 'cross',
+		// 		size: 12
+		// 	},
+		// 	tooltip: {
+		// 		visible: true,
+		// 		template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
+		// 	},
+		// 	labels: {
+		// 		visible: true,
+		// 		position: 'top',
+		// 		template: (d) => {
+		// 			return `${breakdownTitle} ${d.category}\n${kendo.toString(d.value, 'n2')} %`
+		// 		}
+		// 	},
+		// },
+		{
+			type: 'column',
 			name: `${breakdownTitle} to ${netSalesTitle}`,
 			field: "valuePNLPercentage",
-			width: 3,
-			opacity: 0,
-			markers: {
-				type: 'cross',
-				size: 12
-			},
 			tooltip: {
 				visible: true,
 				template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
 			},
 			labels: {
 				visible: true,
-				position: 'top',
+				position: 'outsideEnd',
 				template: (d) => {
 					return `${breakdownTitle} ${d.category}\n${kendo.toString(d.value, 'n2')} %`
 				}
@@ -937,41 +954,47 @@ ccr.categoryAxisField = ko.observable('category')
 ccr.breakdownBy = ko.observable('')
 ccr.limitchart = ko.observable(4)
 ccr.optionComparison = ko.observableArray([
-	{ field: 'qty', name: 'Quantity' },
 	{ field: 'outlet', name: 'Outlet' },
 	{ field: 'price', name: 'Price' },
+	{ field: 'qty', name: 'Quantity' },
 ])
-ccr.comparison = ko.observableArray(['qty', 'outlet'])
+ccr.comparison = ko.observableArray(['price', 'qty'])
 ccr.fiscalYear = ko.observable(rpt.value.FiscalYear())
 ccr.order = ko.observable(ccr.optionComparison()[2].field)
 
 ccr.getDecreasedQty = (useCache = false) => {
 	let param = {}
-	param.filters = []
-	// param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
-	// param.filters = _.remove(param.filters, (d) => d.Field != "date.fiscal")
+	param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
+	param.groups = ["skuid", "date.quartertxt"]
+
+	let fetch = () => {
+		toolkit.ajaxPost(`/report/GetDecreasedQty`, param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
+			}
+
+			ccr.contentIsLoading(false)
+			ccr.dataComparison(res.Data.Data)
+			ccr.plot()
+		}, () => {
+			ccr.contentIsLoading(false)
+		}, {
+			cache: (useCache == true) ? 'chart comparison' : false
+		})
+	}
 
 	ccr.contentIsLoading(true)
-	toolkit.ajaxPost(`/report/GetDecreasedQty`, param, (res) => {
-		if (res.Status == "NOK") {
-			return
-		}
-
-		ccr.dataComparison(res.Data)
-		ccr.contentIsLoading(false)
-		ccr.plot()
-	}, () => {
-		ccr.contentIsLoading(false)
-	}, {
-		cache: (useCache == true) ? 'chart comparison' : false
-	})
+	fetch()
 }
 ccr.refresh = () => {
-	if (ccr.dataComparison().length > 0) {
-		ccr.plot()
-	} else {
+	// if (ccr.dataComparison().length > 0) {
+	// 	ccr.plot()
+	// } else {
 		ccr.getDecreasedQty()
-	}
+	// }
 }
 ccr.plot = () => {
 	let orderedData = _.orderBy(ccr.dataComparison(), (d) => {
@@ -1018,6 +1041,7 @@ ccr.plot = () => {
 	// let sortPriceQty = _.take(_.sortBy(tempdata, function(item) {
 	//    return [item.qty, item.price]
 	// }).reverse(), ccr.limitchart())
+	console.log("--------> TEMP DATA", tempdata)
 	let sortPriceQty = _.take(tempdata, ccr.limitchart())
 	ccr.data(sortPriceQty)
 	ccr.render()

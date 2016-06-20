@@ -318,7 +318,7 @@ bkd.render = function () {
 
 		breakdowns.forEach(function (e) {
 			var title = d._id['_id_' + toolkit.replace(e, '.', '_')];
-			title = toolkit.whenEmptyString(title, 'Uncategorized');
+			title = toolkit.whenEmptyString(title, '');
 			d.breakdowns[e] = title;
 			titleParts.push(title);
 		});
@@ -823,7 +823,7 @@ rs.refresh = function () {
 			dataAllPNL.forEach(function (d, i) {
 				dataScatter.push({
 					valueNetSales: dataAllPNLNetSales[i].value,
-					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
+					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, ''),
 					category: d._id['_id_' + app.idAble(rs.breakdownBy())],
 					year: d._id._id_date_year,
 					valuePNL: Math.abs(d.value),
@@ -909,22 +909,39 @@ rs.generateReport = function (data, years) {
 			markers: {
 				visible: false
 			}
-		}, {
+		},
+		// {
+		// 	name: `${breakdownTitle} to ${netSalesTitle}`,
+		// 	field: "valuePNLPercentage",
+		// 	width: 3,
+		// 	opacity: 0,
+		// 	markers: {
+		// 		type: 'cross',
+		// 		size: 12
+		// 	},
+		// 	tooltip: {
+		// 		visible: true,
+		// 		template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
+		// 	},
+		// 	labels: {
+		// 		visible: true,
+		// 		position: 'top',
+		// 		template: (d) => {
+		// 			return `${breakdownTitle} ${d.category}\n${kendo.toString(d.value, 'n2')} %`
+		// 		}
+		// 	},
+		// },
+		{
+			type: 'column',
 			name: breakdownTitle + ' to ' + netSalesTitle,
 			field: "valuePNLPercentage",
-			width: 3,
-			opacity: 0,
-			markers: {
-				type: 'cross',
-				size: 12
-			},
 			tooltip: {
 				visible: true,
 				template: breakdownTitle + ' #: dataItem.category # to ' + netSalesTitle + ': #: kendo.toString(dataItem.valuePNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.valuePNL, \'n2\') #)'
 			},
 			labels: {
 				visible: true,
-				position: 'top',
+				position: 'outsideEnd',
 				template: function template(d) {
 					return breakdownTitle + ' ' + d.category + '\n' + kendo.toString(d.value, 'n2') + ' %';
 				}
@@ -965,8 +982,8 @@ ccr.contentIsLoading = ko.observable(false);
 ccr.categoryAxisField = ko.observable('category');
 ccr.breakdownBy = ko.observable('');
 ccr.limitchart = ko.observable(4);
-ccr.optionComparison = ko.observableArray([{ field: 'qty', name: 'Quantity' }, { field: 'outlet', name: 'Outlet' }, { field: 'price', name: 'Price' }]);
-ccr.comparison = ko.observableArray(['qty', 'outlet']);
+ccr.optionComparison = ko.observableArray([{ field: 'outlet', name: 'Outlet' }, { field: 'price', name: 'Price' }, { field: 'qty', name: 'Quantity' }]);
+ccr.comparison = ko.observableArray(['price', 'qty']);
 ccr.fiscalYear = ko.observable(rpt.value.FiscalYear());
 ccr.order = ko.observable(ccr.optionComparison()[2].field);
 
@@ -974,31 +991,37 @@ ccr.getDecreasedQty = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
 	var param = {};
-	param.filters = [];
-	// param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
-	// param.filters = _.remove(param.filters, (d) => d.Field != "date.fiscal")
+	param.filters = rpt.getFilterValue(false, ccr.fiscalYear);
+	param.groups = ["skuid", "date.quartertxt"];
+
+	var fetch = function fetch() {
+		toolkit.ajaxPost('/report/GetDecreasedQty', param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			ccr.contentIsLoading(false);
+			ccr.dataComparison(res.Data.Data);
+			ccr.plot();
+		}, function () {
+			ccr.contentIsLoading(false);
+		}, {
+			cache: useCache == true ? 'chart comparison' : false
+		});
+	};
 
 	ccr.contentIsLoading(true);
-	toolkit.ajaxPost('/report/GetDecreasedQty', param, function (res) {
-		if (res.Status == "NOK") {
-			return;
-		}
-
-		ccr.dataComparison(res.Data);
-		ccr.contentIsLoading(false);
-		ccr.plot();
-	}, function () {
-		ccr.contentIsLoading(false);
-	}, {
-		cache: useCache == true ? 'chart comparison' : false
-	});
+	fetch();
 };
 ccr.refresh = function () {
-	if (ccr.dataComparison().length > 0) {
-		ccr.plot();
-	} else {
-		ccr.getDecreasedQty();
-	}
+	// if (ccr.dataComparison().length > 0) {
+	// 	ccr.plot()
+	// } else {
+	ccr.getDecreasedQty();
+	// }
 };
 ccr.plot = function () {
 	var orderedData = _.orderBy(ccr.dataComparison(), function (d) {
@@ -1049,6 +1072,7 @@ ccr.plot = function () {
 	// let sortPriceQty = _.take(_.sortBy(tempdata, function(item) {
 	//    return [item.qty, item.price]
 	// }).reverse(), ccr.limitchart())
+	console.log("--------> TEMP DATA", tempdata);
 	var sortPriceQty = _.take(tempdata, ccr.limitchart());
 	ccr.data(sortPriceQty);
 	ccr.render();
