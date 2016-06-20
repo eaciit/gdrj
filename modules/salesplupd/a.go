@@ -14,7 +14,7 @@ import (
 	"github.com/eaciit/toolkit"
 
 	"flag"
-	"strings"
+	_ "strings"
 )
 
 var mutex = new(sync.Mutex)
@@ -104,7 +104,7 @@ func prepMaster() {
 	defer cmb.Close()
 	for {
 		stx := new(gdrj.MasterBranch)
-		e := c.Fetch(stx, 1, false)
+		e := cmb.Fetch(stx, 1, false)
 		if e != nil {
 			break
 		}
@@ -162,6 +162,8 @@ func main() {
 
 	toolkit.Println("Reading Master")
 	prepMaster()
+
+	toolkit.Println(masterbranchs)
 
 	//spl := new(gdrj.SalesPL)
 	//toolkit.Println("Delete existing")
@@ -258,16 +260,16 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 		spl.Customer.BranchName = toolkit.ToString(masterbranchs.Get(spl.Customer.BranchID, ""))
 
 		//-- For export
-		if strings.Contains(spl.ID, "EXPORT") {
-			spl.Customer.ChannelID = "EXP"
-			spl.Customer.ChannelName = "Export"
+		// if strings.Contains(spl.ID, "EXPORT") {
+		// 	spl.Customer.ChannelID = "EXP"
+		// 	spl.Customer.ChannelName = "Export"
 
-			spl.Customer.ReportChannel = "EXPORT"
-			spl.Customer.ReportSubChannel = "EXPORT"
-		}
+		// 	spl.Customer.ReportChannel = "EXPORT"
+		// 	spl.Customer.ReportSubChannel = "EXPORT"
+		// }
 
 		//--Recalculate the PL Model value
-		spl.CalcSum(masters)
+		// spl.CalcSum(masters)
 
 		workerConn.NewQuery().From(spl.TableName()).
 			Save().Exec(toolkit.M{}.Set("data", spl))
