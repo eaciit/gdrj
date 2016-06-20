@@ -142,7 +142,7 @@ dsbrd.refresh = () => {
 
 	let param = {}
 	param.pls = _.flatten(dsbrd.rows().map((d) => d.plcodes))
-	param.groups = [dsbrd.breakdown(), dsbrd.structure()]
+	param.groups = rpt.parseGroups([dsbrd.breakdown(), dsbrd.structure()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears)
 
@@ -367,7 +367,7 @@ rank.fiscalYear = ko.observable(rpt.value.FiscalYear())
 rank.refresh = () => {
 	let param = {}
 	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
-	param.groups = [rank.breakdown()]
+	param.groups = rpt.parseGroups([rank.breakdown()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, rank.fiscalYear)
 
@@ -497,7 +497,7 @@ sd.render = (res) => {
 
 	let index = 0
 	op2.forEach((d) => {
-		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index])
+		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index]).css('cursor', 'pointer')
 		let sumPercentage = _.sumBy(d.values, (e) => e.percentage)
 		let sumColumn = _.sumBy(d.values, (e) => e.value)
 		td1st.html(`<i class="fa"></i>${d.key}<br />${kendo.toString(sumPercentage, 'n2')} %`)
@@ -561,12 +561,13 @@ sd.render = (res) => {
 }
 sd.sortVal = ['','','']
 sd.sortData = () => {
-	sd.refresh()
+	sd.render(sd.oldData())
 }
+sd.oldData = ko.observable({})
 sd.refresh = () => {
 	let param = {}
 	param.pls = ["PL8A"]
-	param.groups = [sd.breakdown(), sd.breakdownSub()]
+	param.groups = rpt.parseGroups([sd.breakdown(), sd.breakdownSub()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear)
 
@@ -577,6 +578,7 @@ sd.refresh = () => {
 				return
 			}
 	
+			sd.oldData(res)
 			sd.contentIsLoading(false)
 			sd.render(res)
 		}, () => {

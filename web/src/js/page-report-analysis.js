@@ -18,25 +18,6 @@ bkd.zeroValue = ko.observable(false)
 bkd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 bkd.breakdownValue = ko.observableArray([])
 
-bkd.generateDataForX = () => {
-	let param = {
-	    "pls": [],
-	    "groups": ["customer.channelname", "customer.branchname", "product.brand", "customer.region", "date.year", "date.fiscal"],
-	    "aggr": "sum",
-	    "filters": [{
-	        "Field": "date.year",
-	        "Op": "$gte",
-	        "Value": "2013-12-31T17:00:00.000Z"
-	    }, {
-	        "Field": "date.year",
-	        "Op": "$lte",
-	        "Value": "2016-12-30T17:00:00.000Z"
-	    }]
-	}
-
-	toolkit.ajaxPost("/report/getpnldatanew", param)
-}
-
 bkd.refresh = (useCache = false) => {
 	if (bkd.breakdownValue().length == 0) {
 		toolkit.showError('Please choose at least breakdown value')
@@ -45,7 +26,7 @@ bkd.refresh = (useCache = false) => {
 
 	let param = {}
 	param.pls = []
-	param.groups = [bkd.breakdownBy() /** , 'date.year' */]
+	param.groups = rpt.parseGroups([bkd.breakdownBy()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, bkd.fiscalYear)
 
@@ -414,6 +395,8 @@ bkd.render = () => {
 	let grouppl2 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
 	let grouppl3 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
+		if (d._id.length > 22)
+			colWidth += 30
 		toolkit.newEl('th')
 			.html(d._id)
 			.addClass('align-right')
@@ -763,7 +746,7 @@ rs.refresh = (useCache = false) => {
 
 	let param = {}
 	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
-	param.groups = [rs.breakdownBy() /** , 'date.year' */]
+	param.groups = rpt.parseGroups([rs.breakdownBy()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear)
 

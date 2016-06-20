@@ -125,7 +125,7 @@ dsbrd.refresh = function () {
 	param.pls = _.flatten(dsbrd.rows().map(function (d) {
 		return d.plcodes;
 	}));
-	param.groups = [dsbrd.breakdown(), dsbrd.structure()];
+	param.groups = rpt.parseGroups([dsbrd.breakdown(), dsbrd.structure()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears);
 
@@ -367,7 +367,7 @@ rank.fiscalYear = ko.observable(rpt.value.FiscalYear());
 rank.refresh = function () {
 	var param = {};
 	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"];
-	param.groups = [rank.breakdown()];
+	param.groups = rpt.parseGroups([rank.breakdown()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, rank.fiscalYear);
 
@@ -511,7 +511,7 @@ sd.render = function (res) {
 
 	var index = 0;
 	op2.forEach(function (d) {
-		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index]);
+		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index]).css('cursor', 'pointer');
 		var sumPercentage = _.sumBy(d.values, function (e) {
 			return e.percentage;
 		});
@@ -584,12 +584,13 @@ sd.render = function (res) {
 };
 sd.sortVal = ['', '', ''];
 sd.sortData = function () {
-	sd.refresh();
+	sd.render(sd.oldData());
 };
+sd.oldData = ko.observable({});
 sd.refresh = function () {
 	var param = {};
 	param.pls = ["PL8A"];
-	param.groups = [sd.breakdown(), sd.breakdownSub()];
+	param.groups = rpt.parseGroups([sd.breakdown(), sd.breakdownSub()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear);
 
@@ -602,6 +603,7 @@ sd.refresh = function () {
 				return;
 			}
 
+			sd.oldData(res);
 			sd.contentIsLoading(false);
 			sd.render(res);
 		}, function () {

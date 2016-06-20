@@ -52,7 +52,7 @@ pvt.refresh = function () {
 	var param = {};
 	param.pls = [];
 	param.flag = o.ID;
-	param.groups = [pvt.row(), pvt.column(), "date.fiscal"];
+	param.groups = rpt.parseGroups([pvt.row(), pvt.column(), "date.fiscal"]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, pvt.fiscalYear);
 
