@@ -375,6 +375,7 @@ rpt.toggleFilter = () => {
 	$('.k-chart').each((i, d) => {
 		$(d).data('kendoChart').redraw()
 	})
+	rpt.panel_relocated()
 }
 rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYear) => {
 	let res = [

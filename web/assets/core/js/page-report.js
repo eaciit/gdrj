@@ -259,6 +259,7 @@ rpt.toggleFilter = function () {
 	$('.k-chart').each(function (i, d) {
 		$(d).data('kendoChart').redraw();
 	});
+	rpt.panel_relocated();
 };
 rpt.getFilterValue = function () {
 	var multiFiscalYear = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
