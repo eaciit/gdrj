@@ -207,6 +207,7 @@ func main() {
 	close(jobs)
 
 	for ri := 0; ri < i; ri++ {
+		ri++
 		<-result
 		if step == 0 {
 			step = 100
