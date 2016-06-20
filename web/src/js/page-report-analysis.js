@@ -855,7 +855,7 @@ rs.generateReport = (data, years) => {
             type: "line",
             missingValues: "gap",
         },
-		seriesColors: ["#ff8d00", "#678900", '#3498DB'],
+		seriesColors: ['#3498DB', "#ff8d00", "#678900"],
 		series: [{
 			name: `Sum of ${breakdownTitle} to ${netSalesTitle}`,
 			field: 'sumPNLPercentage',
@@ -967,7 +967,7 @@ ccr.title = ko.observable('Chart Comparison')
 ccr.contentIsLoading = ko.observable(false)
 ccr.categoryAxisField = ko.observable('category')
 ccr.breakdownBy = ko.observable('')
-ccr.limitchart = ko.observable(4)
+ccr.limitchart = ko.observable(6)
 ccr.optionComparison = ko.observableArray([
 	{ field: 'outlet', name: 'Outlet' },
 	{ field: 'price', name: 'Price' },
@@ -1076,7 +1076,12 @@ ccr.render = () => {
 						width: 3
 					}
 				},
-				axis: "price"
+				axis: "price",
+				color: '#5499C7',
+				labels: {
+					visible: false,
+					background: 'rgba(84,153,199,0.2)'
+				}
 			},
 			qty: { 
 				name: 'Qty', 
@@ -1090,7 +1095,12 @@ ccr.render = () => {
 						width: 3
 					}
 				},
-				axis: "qty"
+				axis: "qty",
+				color: '#ff8d00',
+				labels: {
+					visible: false,
+					background: 'rgba(255,141,0,0.2)'
+				}
 			},
 			outlet: { 
 				name: 'Outlet', 
@@ -1110,12 +1120,10 @@ ccr.render = () => {
 					type: 'column',
 				},
 				axis: "outlet",
+				color: '#678900',
 				labels: {
-					visible: true,
-					position: 'outsideEnd',
-					template: (d) => {
-						return `${kendo.toString(d.value, 'n2')}`
-					}
+					visible: false,
+					background: 'rgba(103,137,0,0.2)'
 				}
 			}
 		}
@@ -1176,16 +1184,15 @@ ccr.render = () => {
 			// 	data: data
 			// },
 			series: series,
-			seriesColors: ["#5499C7", "#ff8d00", "#678900"],
 			seriesDefaults: {
 	            type: "line",
 	            style: "smooth",
 				labels: {
+					font: '"Source Sans Pro" 11px',
 					visible: true,
 					position: 'top',
-					background: "transparent",
 					template: (d) => {
-						return `${kendo.toString(d.value, 'n2')}`
+						return `${d.series.name}: ${kendo.toString(d.value, 'n0')}`
 					}
 				}
 			},
@@ -1209,7 +1216,7 @@ ccr.render = () => {
 			valueAxes: valueAxes,
 			tooltip: {
 				visible: true,
-				template: (d) => `${d.series.name} on : ${kendo.toString(d.value, 'n2')}`
+				template: (d) => `${d.series.name} on : ${kendo.toString(d.value, 'n0')}`
 			}
 		}
 	}
