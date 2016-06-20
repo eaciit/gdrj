@@ -937,11 +937,11 @@ ccr.categoryAxisField = ko.observable('category')
 ccr.breakdownBy = ko.observable('')
 ccr.limitchart = ko.observable(4)
 ccr.optionComparison = ko.observableArray([
-	{ field: 'qty', name: 'Quantity' },
 	{ field: 'outlet', name: 'Outlet' },
 	{ field: 'price', name: 'Price' },
+	{ field: 'qty', name: 'Quantity' },
 ])
-ccr.comparison = ko.observableArray(['qty', 'outlet'])
+ccr.comparison = ko.observableArray(['price', 'qty'])
 ccr.fiscalYear = ko.observable(rpt.value.FiscalYear())
 ccr.order = ko.observable(ccr.optionComparison()[2].field)
 
