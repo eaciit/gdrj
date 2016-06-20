@@ -299,7 +299,7 @@ func workerProc(wi int, jobs <-chan toolkit.M, result chan<- string) {
 		}
 
 		st.Src = "VDIST"
-
+		st.ID = toolkit.ToString(st.PrepareID())
 		workerconn.NewQuery().From(st.TableName()).
 			Save().Exec(toolkit.M{}.Set("data", st))
 
