@@ -458,8 +458,8 @@ viewModel.salesDistribution = {};
 var sd = viewModel.salesDistribution;
 sd.contentIsLoading = ko.observable(false);
 
-sd.breakdown = ko.observable('customer.channelname');
-sd.breakdownSub = ko.observable('customer.custtype');
+sd.breakdown = ko.observable('customer.reportchannel');
+sd.breakdownSub = ko.observable('customer.reportsubchannel');
 sd.data = ko.observableArray([]);
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear());
 sd.render = function (res) {

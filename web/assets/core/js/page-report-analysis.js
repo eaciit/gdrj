@@ -341,11 +341,11 @@ bkd.render = function () {
 		});
 		data.forEach(function (e) {
 			var breakdown = e._id;
-			var percentage = e['' + d._id] / row.PNLTotal * 100;
+			var percentage = toolkit.number(e['' + d._id] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
 			if (d._id != netSalesPLCode) {
-				percentage = row[breakdown] / netSalesRow[breakdown] * 100;
+				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
 			row[breakdown + ' %'] = percentage;
