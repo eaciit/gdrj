@@ -879,22 +879,39 @@ rs.generateReport = (data, years) => {
 			markers: {
 				visible: false
 			}
-		}, {
+		}, 
+		// {
+		// 	name: `${breakdownTitle} to ${netSalesTitle}`,
+		// 	field: "valuePNLPercentage",
+		// 	width: 3,
+		// 	opacity: 0,
+		// 	markers: {
+		// 		type: 'cross',
+		// 		size: 12
+		// 	},
+		// 	tooltip: {
+		// 		visible: true,
+		// 		template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
+		// 	},
+		// 	labels: {
+		// 		visible: true,
+		// 		position: 'top',
+		// 		template: (d) => {
+		// 			return `${breakdownTitle} ${d.category}\n${kendo.toString(d.value, 'n2')} %`
+		// 		}
+		// 	},
+		// },
+		{
+			type: 'column',
 			name: `${breakdownTitle} to ${netSalesTitle}`,
 			field: "valuePNLPercentage",
-			width: 3,
-			opacity: 0,
-			markers: {
-				type: 'cross',
-				size: 12
-			},
 			tooltip: {
 				visible: true,
 				template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
 			},
 			labels: {
 				visible: true,
-				position: 'top',
+				position: 'outsideEnd',
 				template: (d) => {
 					return `${breakdownTitle} ${d.category}\n${kendo.toString(d.value, 'n2')} %`
 				}
