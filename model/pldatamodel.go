@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+var (
+	totalQuarter int = 4
+)
+
 type PLDataModel struct {
 	orm.ModelBase `bson:"-" json:"-"`
 	ID            string `bson:"_id" json:"_id"`
@@ -230,15 +234,15 @@ func dataRemap(value toolkit.M, keys []string) (toolkit.M, toolkit.M) {
 		}
 		listVal = append(listVal, value.GetFloat64(key))
 		if prevSKUID == split[0] {
-			if count == 8 {
+			if count == totalQuarter {
 				valueList.Set(prevSKUID, listVal)
 				valueCount.Set(prevSKUID, count)
 			}
 		} else {
 			if prevSKUID != split[0] {
-				if count < 8 && count > 1 {
+				if count < totalQuarter && count > 1 {
 					listVal[toolkit.SliceLen(listVal)-1] = 0
-					for i := toolkit.SliceLen(listVal); i < 8; i++ {
+					for i := toolkit.SliceLen(listVal); i < totalQuarter; i++ {
 						listVal = append(listVal, 0)
 					}
 					valueList.Set(prevSKUID, listVal)
@@ -285,7 +289,7 @@ func GetDecreasedQty(payload *CompFinderParam) (toolkit.Ms, error) {
 		if prevSKUID == split[0] {
 			if isLess == true {
 				if prevVal > product.GetFloat64(key) && product.GetFloat64(key) != 0 && prevVal != 0 {
-					if count == 8 {
+					if count == totalQuarter {
 						productList.Set(prevSKUID, listVal)
 						qtyCount.Set(prevSKUID, count)
 					} else {
@@ -296,9 +300,9 @@ func GetDecreasedQty(payload *CompFinderParam) (toolkit.Ms, error) {
 				}
 			}
 		} else {
-			if (count < 8 && count > 1) && isLess {
+			if (count < totalQuarter && count > 1) && isLess {
 				listVal[toolkit.SliceLen(listVal)-1] = 0
-				for i := toolkit.SliceLen(listVal); i < 8; i++ {
+				for i := toolkit.SliceLen(listVal); i < totalQuarter; i++ {
 					listVal = append(listVal, 0)
 					qtyCount.Set(prevSKUID, count-1)
 				}
@@ -344,7 +348,7 @@ func GetDecreasedQty(payload *CompFinderParam) (toolkit.Ms, error) {
 	_results := results
 	results = toolkit.Ms{}
 
-	for index := 8; index >= 0; index-- {
+	for index := totalQuarter; index >= 0; index-- {
 		for _, val := range _results {
 			if val.GetInt("qtyCount") == index {
 				results = append(results, val)

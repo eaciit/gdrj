@@ -48,7 +48,7 @@ lg.getLogin = function () {
 		lg.ErrorMessage(res.message);
 
 		if (res.message == "Login Success") {
-			window.location = "/web/databrowser";
+			window.location = "/web/report/dashboard";
 		}
 	});
 };

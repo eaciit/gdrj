@@ -25,7 +25,7 @@ rpt.optionDimensions = ko.observableArray([
 // { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
 { field: "customer.areaname", name: "City", title: "customer_areaname" }, { field: 'customer.region', name: 'Region', title: 'customer_region' }, { field: "customer.zone", name: "Zone", title: "customer_zone" },
 // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
-{ field: 'customer.keyaccount', name: 'Key Account', title: 'customer_keyaccount' }]);
+{ field: 'customer.customergroupname', name: 'Key Account', title: 'customer_customergroupname' }]);
 
 // { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
 // { field: 'date.month', name: 'Month', title: 'date_month' },
@@ -239,9 +239,11 @@ rpt.toggleFilter = function () {
 	if (panelFilter.is(':visible')) {
 		panelFilter.hide();
 		panelContent.attr('class', 'col-md-12 col-sm-12 ez panel-content');
+		$('.breakdown-filter').removeAttr('style');
 	} else {
 		panelFilter.show();
 		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content');
+		$('.breakdown-filter').css('width', '60%');
 	}
 
 	$('.k-grid').each(function (i, d) {
@@ -264,18 +266,20 @@ rpt.getFilterValue = function () {
 
 	var res = [{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) }, { 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) }, { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() }, { 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() }, { 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() }, { 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() }, { 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() }, { 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() }];
 
-	if (multiFiscalYear) {
-		res.push({
-			'Field': 'date.fiscal',
-			'Op': '$in',
-			'Value': fiscalField()
-		});
-	} else {
-		res.push({
-			'Field': 'date.fiscal',
-			'Op': '$eq',
-			'Value': fiscalField()
-		});
+	if (fiscalField !== false) {
+		if (multiFiscalYear) {
+			res.push({
+				'Field': 'date.fiscal',
+				'Op': '$in',
+				'Value': fiscalField()
+			});
+		} else {
+			res.push({
+				'Field': 'date.fiscal',
+				'Op': '$eq',
+				'Value': fiscalField()
+			});
+		}
 	}
 
 	res = res.filter(function (d) {

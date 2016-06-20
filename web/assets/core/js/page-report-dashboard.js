@@ -228,7 +228,7 @@ dsbrd.render = function (res) {
 
 		var column = {};
 		column.field = 'columnData[' + i + '].value';
-		column.breakdown = $.trim(toolkit.redefine(columnInfo.breakdownTitle, 'Other'));
+		column.breakdown = $.trim(toolkit.redefine(columnInfo.breakdownTitle, ''));
 		column.title = $.trim(columnInfo.structureTitle);
 		column.width = 150;
 		column.format = '{0:n0}';
@@ -263,7 +263,7 @@ dsbrd.render = function (res) {
 		});
 
 		return {
-			title: $.trim(k) == '' ? 'Other' : k,
+			title: $.trim(k) == '' ? '' : k,
 			columns: v,
 			headerAttributes: {
 				style: 'text-align: center !important; font-weight: bold; border: 1px solid white; border-top: none; border-left: none; box-sizing: border-box; background-color: #e9eced;'
@@ -393,7 +393,7 @@ rank.refresh = function () {
 
 rank.render = function (res) {
 	var data = _.sortBy(res.Data.Data, function (d) {
-		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], 'Other');
+		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], '');
 	});
 
 	var rows = [];
@@ -402,8 +402,8 @@ rank.render = function (res) {
 		row.original = d._id['_id_' + toolkit.replace(rank.breakdown(), '.', '_')];
 		row.pnl = d._id['_id_' + toolkit.replace(rank.breakdown(), '.', '_')];
 		if ($.trim(row.pnl) == '') {
-			row.original = 'Other';
-			row.pnl = 'Other';
+			row.original = '';
+			row.pnl = '';
 		}
 		if (rank.breakdown() == 'date.month') {
 			row.original = parseInt(row.pnl, 10) - 1;
@@ -533,7 +533,7 @@ sd.render = function (res) {
 		var channelgroup = _.map(_.groupBy(d.values, function (o) {
 			return o.group;
 		}), function (v, k) {
-			if (k == "") k = "Other";
+			if (k == '') k = '';
 			return { key: k, values: v };
 		});
 		var totalyo = 0,

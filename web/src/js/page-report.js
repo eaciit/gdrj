@@ -139,7 +139,7 @@ rpt.optionDimensions = ko.observableArray([
     { field: 'customer.region', name: 'Region', title: 'customer_region' },
 	{ field: "customer.zone", name: "Zone", title: "customer_zone" },
     // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
-    { field: 'customer.keyaccount', name: 'Key Account', title: 'customer_keyaccount' },
+    { field: 'customer.customergroupname', name: 'Key Account', title: 'customer_customergroupname' },
     // { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
     // { field: 'date.month', name: 'Month', title: 'date_month' },
 ])
@@ -357,9 +357,11 @@ rpt.toggleFilter = () => {
 	if (panelFilter.is(':visible')) {
 		panelFilter.hide()
 		panelContent.attr('class', 'col-md-12 col-sm-12 ez panel-content')
+		$(`.breakdown-filter`).removeAttr('style')
 	} else {
 		panelFilter.show()
 		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content')
+		$(`.breakdown-filter`).css('width', '60%')
 	}
 
 	$('.k-grid').each((i, d) => {
@@ -389,18 +391,20 @@ rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYea
 		{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() },
 	]
 
-	if (multiFiscalYear) {
-		res.push({ 
-			'Field': 'date.fiscal', 
-			'Op': '$in', 
-			'Value': fiscalField()
-		})
-	} else {
-		res.push({ 
-			'Field': 'date.fiscal', 
-			'Op': '$eq', 
-			'Value': fiscalField()
-		})
+	if (fiscalField !== false) {
+		if (multiFiscalYear) {
+			res.push({ 
+				'Field': 'date.fiscal', 
+				'Op': '$in', 
+				'Value': fiscalField()
+			})
+		} else {
+			res.push({ 
+				'Field': 'date.fiscal', 
+				'Op': '$eq', 
+				'Value': fiscalField()
+			})
+		}
 	}
 
 	res = res.filter((d) => {

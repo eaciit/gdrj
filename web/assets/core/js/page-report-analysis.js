@@ -301,6 +301,8 @@ bkd.renderDetail = function (plcode, breakdowns) {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
 	$('.grid-detail').kendoGrid(config);
 };
+
+bkd.idarrayhide = ko.observableArray(['PL44A']);
 bkd.render = function () {
 	if (bkd.data().length == 0) {
 		$('.breakdown-view').html('No data found.');
@@ -310,39 +312,68 @@ bkd.render = function () {
 	var breakdowns = [bkd.breakdownBy() /** , 'date.year' */];
 	var rows = [];
 
-	var data = _.sortBy(_.map(bkd.data(), function (d) {
+	var data = _.map(bkd.data(), function (d) {
 		d.breakdowns = {};
 		var titleParts = [];
 
 		breakdowns.forEach(function (e) {
 			var title = d._id['_id_' + toolkit.replace(e, '.', '_')];
-			title = toolkit.whenEmptyString(title, 'Uncategorized');
+			title = toolkit.whenEmptyString(title, '');
 			d.breakdowns[e] = title;
 			titleParts.push(title);
 		});
 
 		d._id = titleParts.join(' ');
 		return d;
-	}), function (d) {
-		return d._id;
 	});
 
 	var plmodels = _.sortBy(bkd.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
 	});
+	var exceptions = ["PL94C" /* "Operating Income" */
+	, "PL39B" /* "Earning Before Tax" */
+	, "PL41C" /* "Earning After Tax" */
+	];
+	var netSalesPLCode = 'PL8A';
+	var netSalesPlModel = bkd.plmodels().find(function (d) {
+		return d._id == netSalesPLCode;
+	});
+	var netSalesRow = {};
+	data.forEach(function (e) {
+		var breakdown = e._id;
+		var value = e['' + netSalesPlModel._id];
+		value = toolkit.number(value);
+		netSalesRow[breakdown] = value;
+	});
+	data = _.orderBy(data, function (d) {
+		return netSalesRow[d._id];
+	}, 'desc');
+
 	plmodels.forEach(function (d) {
 		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
 		data.forEach(function (e) {
 			var breakdown = e._id;
-			var value = e['' + d._id];value = toolkit.number(value);
+			var value = e['' + d._id];
+			value = toolkit.number(value);
 			row[breakdown] = value;
 			row.PNLTotal += value;
 		});
 		data.forEach(function (e) {
 			var breakdown = e._id;
-			var value = e['' + d._id] / row.PNLTotal * 100;value = toolkit.number(value);
-			row[breakdown + ' %'] = value;
+			var percentage = e['' + d._id] / row.PNLTotal * 100;
+			percentage = toolkit.number(percentage);
+
+			if (d._id != netSalesPLCode) {
+				percentage = row[breakdown] / netSalesRow[breakdown] * 100;
+			}
+
+			row[breakdown + ' %'] = percentage;
 		});
+
+		if (exceptions.indexOf(row.PLCode) > -1) {
+			return;
+		}
+
 		rows.push(row);
 	});
 
@@ -479,7 +510,15 @@ bkd.render = function () {
 			resg3 = _.find(grouppl3, function (o) {
 				return o.key == $trElem.find('td:eq(0)').text();
 			});
-			if (resg1 == undefined) {
+
+			var idplyo = _.find(bkd.idarrayhide(), function (a) {
+				return a == $trElem.attr("idheaderpl");
+			});
+			if (idplyo != undefined) {
+				$trElem.remove();
+				$('.table-content tr.column' + $trElem.attr("idheaderpl")).remove();
+			}
+			if (resg1 == undefined && idplyo2 == undefined) {
 				if (resg2 != undefined) {
 					textPL = _.find(resg2.data, function (o) {
 						return o._id == $trElem.attr("idheaderpl");
@@ -530,6 +569,19 @@ bkd.render = function () {
 						}
 					}
 				}
+			}
+
+			var idplyo2 = _.find(bkd.idarrayhide(), function (a) {
+				return a == $trElem.attr("idparent");
+			});
+			if (idplyo2 != undefined) {
+				$trElem.removeAttr('idparent');
+				$trElem.addClass('bold');
+				$trElem.css('display', 'inline-grid');
+				$('.table-content tr.column' + $trElem.attr("idheaderpl")).removeAttr("idcontparent");
+				$('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusval', 'show');
+				$('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusvaltemp', 'show');
+				$('.table-content tr.column' + $trElem.attr("idheaderpl")).css('display', 'inline-grid');
 			}
 		}
 	});
@@ -614,6 +666,7 @@ bkd.showZeroValue = function (a) {
 
 	bkd.showExpandAll(false);
 };
+
 bkd.optionBreakdownValues = ko.observableArray([]);
 bkd.breakdownValueAll = { _id: 'All', Name: 'All' };
 bkd.changeBreakdown = function () {
@@ -695,7 +748,6 @@ rs.selectedPNLNetSales = ko.observable("PL8A"); // PL1
 rs.selectedPNL = ko.observable("PL44B");
 rs.chartComparisonNote = ko.observable('');
 rs.optionDimensionSelect = ko.observableArray([]);
-rs.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */]);
 rs.fiscalYear = ko.observable(rpt.value.FiscalYear());
 
 rs.getSalesHeaderList = function () {
@@ -723,7 +775,7 @@ rs.refresh = function () {
 
 	var param = {};
 	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()];
-	param.groups = rs.groups();
+	param.groups = [rs.breakdownBy() /** , 'date.year' */];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear);
 
@@ -768,13 +820,14 @@ rs.refresh = function () {
 			var dataScatter = [];
 			var multiplier = sumNetSales == 0 ? 1 : sumNetSales;
 
-			dataAllPNL.forEach(function (d) {
+			dataAllPNL.forEach(function (d, i) {
 				dataScatter.push({
-					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
+					valueNetSales: dataAllPNLNetSales[i].value,
+					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, ''),
 					category: d._id['_id_' + app.idAble(rs.breakdownBy())],
 					year: d._id._id_date_year,
 					valuePNL: Math.abs(d.value),
-					valuePNLPercentage: Math.abs(d.value / multiplier * 100),
+					valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
 					avgPNL: Math.abs(avgPNL),
 					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
 					sumPNL: Math.abs(sumPNL),
@@ -782,7 +835,8 @@ rs.refresh = function () {
 				});
 			});
 
-			console.log("-----", dataScatter);
+			console.log("dataScatter", dataScatter);
+			console.log("dataAllPNL", dataAllPNL);
 
 			rs.contentIsLoading(false);
 			rs.generateReport(dataScatter, years);
@@ -797,9 +851,9 @@ rs.refresh = function () {
 };
 
 rs.generateReport = function (data, years) {
-	data = _.sortBy(data, function (d) {
-		return d.year + ' ' + d.category;
-	});
+	data = _.orderBy(data, function (d) {
+		return d.valueNetSales;
+	}, 'desc');
 
 	var max = _.max(_.map(data, function (d) {
 		return d.avgNetSalesPercentage;
@@ -815,7 +869,7 @@ rs.generateReport = function (data, years) {
 	}).name;
 
 	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>');
-	if (data.length * 100 > $('#scatter-view').parent().width()) $('#scatter-view').width(data.length * 100);else $('#scatter-view').css('width', '100%');
+	if (data.length * 100 > $('#scatter-view').parent().width()) $('#scatter-view').width(data.length * 120);else $('#scatter-view').css('width', '100%');
 	$("#scatter-view").kendoChart({
 		dataSource: {
 			data: data
@@ -831,11 +885,17 @@ rs.generateReport = function (data, years) {
 			type: "line",
 			missingValues: "gap"
 		},
-		seriesColors: ["#ff8d00", "#678900", '#3498DB'],
+		seriesColors: ['#3498DB', "#ff8d00", "#678900"],
 		series: [{
 			name: 'Sum of ' + breakdownTitle + ' to ' + netSalesTitle,
 			field: 'sumPNLPercentage',
 			width: 3,
+			line: {
+				border: {
+					width: 1,
+					color: 'white'
+				}
+			},
 			tooltip: {
 				visible: true,
 				template: 'Sum of ' + breakdownTitle + ' to ' + netSalesTitle + ': #: kendo.toString(dataItem.sumPNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.sumPNL, \'n2\') #)'
@@ -848,6 +908,12 @@ rs.generateReport = function (data, years) {
 			field: 'avgPNLPercentage',
 			dashType: "dash",
 			width: 3,
+			line: {
+				border: {
+					width: 1,
+					color: 'white'
+				}
+			},
 			tooltip: {
 				visible: true,
 				template: 'Average of ' + breakdownTitle + ' to ' + netSalesTitle + ': #: kendo.toString(dataItem.avgPNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.avgPNL, \'n2\') #)'
@@ -855,24 +921,48 @@ rs.generateReport = function (data, years) {
 			markers: {
 				visible: false
 			}
-		}, {
+		},
+		// {
+		// 	name: `${breakdownTitle} to ${netSalesTitle}`,
+		// 	field: "valuePNLPercentage",
+		// 	width: 3,
+		// 	opacity: 0,
+		// 	markers: {
+		// 		type: 'cross',
+		// 		size: 12
+		// 	},
+		// 	tooltip: {
+		// 		visible: true,
+		// 		template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
+		// 	},
+		// 	labels: {
+		// 		visible: true,
+		// 		position: 'top',
+		// 		template: (d) => {
+		// 			return `${breakdownTitle} ${d.category}\n${kendo.toString(d.value, 'n2')} %`
+		// 		}
+		// 	},
+		// },
+		{
+			type: 'column',
 			name: breakdownTitle + ' to ' + netSalesTitle,
 			field: "valuePNLPercentage",
-			width: 3,
-			opacity: 0,
-			markers: {
-				type: 'cross',
-				size: 12
+			overlay: {
+				gradient: 'none'
+			},
+			border: {
+				width: 0
 			},
 			tooltip: {
 				visible: true,
 				template: breakdownTitle + ' #: dataItem.category # to ' + netSalesTitle + ': #: kendo.toString(dataItem.valuePNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.valuePNL, \'n2\') #)'
 			},
 			labels: {
+				font: '"Source Sans Pro" 11px',
 				visible: true,
-				position: 'top',
+				position: 'outsideEnd',
 				template: function template(d) {
-					return breakdownTitle + ' ' + d.category + ' : ' + kendo.toString(d.value, 'n2') + ' %';
+					return breakdownTitle + ' ' + d.category + '\n' + kendo.toString(d.value, 'n2') + ' %';
 				}
 			}
 		}],
@@ -887,17 +977,13 @@ rs.generateReport = function (data, years) {
 		categoryAxis: [{
 			field: 'category',
 			labels: {
-				rotation: 20
+				rotation: 20,
+				font: '"Source Sans Pro" 11px'
 			},
 			majorGridLines: {
 				color: '#fafafa'
 			}
-		} /**, {
-         	categories: years,
-    line: {
-    	visible: false
-    }
-         }*/]
+		}]
 	});
 };
 
@@ -910,9 +996,9 @@ ccr.title = ko.observable('Chart Comparison');
 ccr.contentIsLoading = ko.observable(false);
 ccr.categoryAxisField = ko.observable('category');
 ccr.breakdownBy = ko.observable('');
-ccr.limitchart = ko.observable(4);
-ccr.optionComparison = ko.observableArray([{ field: 'qty', name: 'Quantity' }, { field: 'outlet', name: 'Outlet' }, { field: 'price', name: 'Price' }]);
-ccr.comparison = ko.observableArray(['qty', 'outlet']);
+ccr.limitchart = ko.observable(6);
+ccr.optionComparison = ko.observableArray([{ field: 'outlet', name: 'Outlet' }, { field: 'price', name: 'Price' }, { field: 'qty', name: 'Quantity' }]);
+ccr.comparison = ko.observableArray(['price', 'qty']);
 ccr.fiscalYear = ko.observable(rpt.value.FiscalYear());
 ccr.order = ko.observable(ccr.optionComparison()[2].field);
 
@@ -920,31 +1006,37 @@ ccr.getDecreasedQty = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
 	var param = {};
-	param.filters = [];
-	// param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
-	// param.filters = _.remove(param.filters, (d) => d.Field != "date.fiscal")
+	param.filters = rpt.getFilterValue(false, ccr.fiscalYear);
+	param.groups = ["skuid", "date.quartertxt"];
+
+	var fetch = function fetch() {
+		toolkit.ajaxPost('/report/GetDecreasedQty', param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			ccr.contentIsLoading(false);
+			ccr.dataComparison(res.Data.Data);
+			ccr.plot();
+		}, function () {
+			ccr.contentIsLoading(false);
+		}, {
+			cache: useCache == true ? 'chart comparison' : false
+		});
+	};
 
 	ccr.contentIsLoading(true);
-	toolkit.ajaxPost('/report/GetDecreasedQty', param, function (res) {
-		if (res.Status == "NOK") {
-			return;
-		}
-
-		ccr.dataComparison(res.Data);
-		ccr.contentIsLoading(false);
-		ccr.plot();
-	}, function () {
-		ccr.contentIsLoading(false);
-	}, {
-		cache: useCache == true ? 'chart comparison' : false
-	});
+	fetch();
 };
 ccr.refresh = function () {
-	if (ccr.dataComparison().length > 0) {
-		ccr.plot();
-	} else {
-		ccr.getDecreasedQty();
-	}
+	// if (ccr.dataComparison().length > 0) {
+	// 	ccr.plot()
+	// } else {
+	ccr.getDecreasedQty();
+	// }
 };
 ccr.plot = function () {
 	var orderedData = _.orderBy(ccr.dataComparison(), function (d) {
@@ -995,6 +1087,7 @@ ccr.plot = function () {
 	// let sortPriceQty = _.take(_.sortBy(tempdata, function(item) {
 	//    return [item.qty, item.price]
 	// }).reverse(), ccr.limitchart())
+	console.log("--------> TEMP DATA", tempdata);
 	var sortPriceQty = _.take(tempdata, ccr.limitchart());
 	ccr.data(sortPriceQty);
 	ccr.render();
@@ -1014,7 +1107,12 @@ ccr.render = function () {
 						width: 3
 					}
 				},
-				axis: "price"
+				axis: "price",
+				color: '#5499C7',
+				labels: {
+					visible: false,
+					background: 'rgba(84,153,199,0.2)'
+				}
 			},
 			qty: {
 				name: 'Qty',
@@ -1028,7 +1126,12 @@ ccr.render = function () {
 						width: 3
 					}
 				},
-				axis: "qty"
+				axis: "qty",
+				color: '#ff8d00',
+				labels: {
+					visible: false,
+					background: 'rgba(255,141,0,0.2)'
+				}
 			},
 			outlet: {
 				name: 'Outlet',
@@ -1047,7 +1150,12 @@ ccr.render = function () {
 					style: 'smooth',
 					type: 'column'
 				},
-				axis: "outlet"
+				axis: "outlet",
+				color: '#678900',
+				labels: {
+					visible: false,
+					background: 'rgba(103,137,0,0.2)'
+				}
 			}
 		};
 
@@ -1107,10 +1215,17 @@ ccr.render = function () {
 			// 	data: data
 			// },
 			series: series,
-			seriesColors: ["#5499C7", "#ff8d00", "#678900"],
 			seriesDefaults: {
 				type: "line",
-				style: "smooth"
+				style: "smooth",
+				labels: {
+					font: '"Source Sans Pro" 11px',
+					visible: true,
+					position: 'top',
+					template: function template(d) {
+						return d.series.name + ': ' + kendo.toString(d.value, 'n0');
+					}
+				}
 			},
 			categoryAxis: {
 				baseUnit: "month",
@@ -1121,7 +1236,7 @@ ccr.render = function () {
 				},
 				axisCrossingValue: [0, 8],
 				labels: {
-					font: 'Source Sans Pro 11',
+					font: '"Source Sans Pro" 11px',
 					rotation: 40
 					// template: (d) => `${toolkit.capitalize(d.value).slice(0, 3)}`
 				}
@@ -1133,7 +1248,7 @@ ccr.render = function () {
 			tooltip: {
 				visible: true,
 				template: function template(d) {
-					return d.series.name + ' on : ' + kendo.toString(d.value, 'n2');
+					return d.series.name + ' on : ' + kendo.toString(d.value, 'n0');
 				}
 			}
 		};

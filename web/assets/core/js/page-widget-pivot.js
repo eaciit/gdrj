@@ -94,7 +94,7 @@ pvt.render = function () {
 	var measures = [];
 
 	var data = _.sortBy(pvt.data(), function (d) {
-		return toolkit.redefine(d[toolkit.replace(pvt.column(), '.', '_')], 'Other');
+		return toolkit.redefine(d[toolkit.replace(pvt.column(), '.', '_')], '');
 	});[pvt.row()].forEach(function (d, i) {
 		var row = pvt.optionRows().find(function (e) {
 			return e.field == d;

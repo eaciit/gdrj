@@ -34,21 +34,21 @@
 			<div class="filter" data-bind="visible: !bkd.contentIsLoading()">
 				<div class="form-inline pull-right">
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right" style="width: 120px;">Fiscal Year</span>
+						<span class="input-group-addon align-right">Fiscal Year</span>
 						<div class="width-full">
 							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: bkd.fiscalYear }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right" style="width: 120px;">Breakdown by</span>
+						<span class="input-group-addon align-right">Breakdown by</span>
 						<div class="width-full">
 							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: bkd.breakdownBy, select: bkd.changeBreakdown }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right" style="width: 120px;">Breakdown Value</span>
+						<span class="input-group-addon align-right">Breakdown Value</span>
 						<div class="width-full">
 							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: bkd.optionBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownValue, placeholder: 'Choose value', change: bkd.changeBreakdownValue }"></select>
 						</div>
@@ -178,35 +178,33 @@
 			<div class="filter pull-right" data-bind="visible: !ccr.contentIsLoading()">
 				<div class="form-inline">
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right" style="width: 80px;">Fiscal Year</span>
+						<span class="input-group-addon align-right">Top</span>
 						<div class="width-full">
-							<select type="text" style="width: 170px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: ccr.fiscalYear }"></select>
-						</div>
-					</div>
-
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right" style="width: 80px;">Series</span>
-						<div class="width-full">
-							<select data-bind="kendoMultiSelect: {data: ccr.optionComparison, value: ccr.comparison, dataTextField: 'name', dataValueField: 'field', maxSelectedItems: 2}" style="width: 220px;"></select>
-						</div>
-					</div>
-				</div>
-
-				<div class="form-inline">
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right" style="width: 80px;">Top</span>
-						<div class="width-full">
-							<input type="text" style="width: 170px;" data-bind="kendoNumericTextBox: {value: ccr.limitchart,format: '#',decimals: 0}"/>
+							<input type="text" style="width: 150px;" data-bind="kendoNumericTextBox: {value: ccr.limitchart,format: '#',decimals: 0}"/>
 						</div>
 						<div class="clearfix"></div>
 					</div>
 
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right" style="width: 80px;">Sort by</span>
+						<span class="input-group-addon align-right">Sort by</span>
 						<div class="width-full">
-							<select type="text" data-bind="kendoDropDownList: { data: ccr.optionComparison, dataValueField: 'field', dataTextField: 'name', value: ccr.order }" style="width: 220px;"></select>
+							<select type="text" data-bind="kendoDropDownList: { data: ccr.optionComparison, dataValueField: 'field', dataTextField: 'name', value: ccr.order }" style="width: 150px;"></select>
 						</div>
 						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: ccr.fiscalYear }"></select>
+						</div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Series</span>
+						<div class="width-full">
+							<select data-bind="kendoMultiSelect: {data: ccr.optionComparison, value: ccr.comparison, dataTextField: 'name', dataValueField: 'field', maxSelectedItems: 2}" style="width: 180px;"></select>
+						</div>
 					</div>
 				</div>
 			</div>
