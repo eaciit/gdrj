@@ -511,7 +511,7 @@ sd.render = function (res) {
 
 	var index = 0;
 	op2.forEach(function (d) {
-		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index]);
+		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index]).css('cursor', 'pointer');
 		var sumPercentage = _.sumBy(d.values, function (e) {
 			return e.percentage;
 		});
@@ -584,8 +584,9 @@ sd.render = function (res) {
 };
 sd.sortVal = ['', '', ''];
 sd.sortData = function () {
-	sd.refresh();
+	sd.render(sd.oldData());
 };
+sd.oldData = ko.observable({});
 sd.refresh = function () {
 	var param = {};
 	param.pls = ["PL8A"];
@@ -602,6 +603,7 @@ sd.refresh = function () {
 				return;
 			}
 
+			sd.oldData(res);
 			sd.contentIsLoading(false);
 			sd.render(res);
 		}, function () {

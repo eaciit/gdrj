@@ -497,7 +497,7 @@ sd.render = (res) => {
 
 	let index = 0
 	op2.forEach((d) => {
-		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index])
+		let td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index]).css('cursor', 'pointer')
 		let sumPercentage = _.sumBy(d.values, (e) => e.percentage)
 		let sumColumn = _.sumBy(d.values, (e) => e.value)
 		td1st.html(`<i class="fa"></i>${d.key}<br />${kendo.toString(sumPercentage, 'n2')} %`)
@@ -561,8 +561,9 @@ sd.render = (res) => {
 }
 sd.sortVal = ['','','']
 sd.sortData = () => {
-	sd.refresh()
+	sd.render(sd.oldData())
 }
+sd.oldData = ko.observable({})
 sd.refresh = () => {
 	let param = {}
 	param.pls = ["PL8A"]
@@ -577,6 +578,7 @@ sd.refresh = () => {
 				return
 			}
 	
+			sd.oldData(res)
 			sd.contentIsLoading(false)
 			sd.render(res)
 		}, () => {
