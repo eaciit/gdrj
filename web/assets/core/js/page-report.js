@@ -79,7 +79,7 @@ rpt.optionDimensions = ko.observableArray([
 // { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
 { field: "customer.areaname", name: "City", title: "customer_areaname" }, { field: 'customer.region', name: 'Region', title: 'customer_region' }, { field: "customer.zone", name: "Zone", title: "customer_zone" },
 // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
-{ field: 'customer.customergroupname', name: 'Key Account', title: 'customer_customergroupname' }]);
+{ field: 'customer.customergroupname', name: 'Customer Group', title: 'customer_customergroupname' }]);
 
 // { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
 // { field: 'date.month', name: 'Month', title: 'date_month' },
@@ -91,12 +91,12 @@ rpt.parseGroups = function (what) {
 	if (what.indexOf('customer.branchname') > -1) {
 		what.push('customer.branchid');
 	}
-	if (what.indexOf('customer.channelname') > -1) {
-		what.push('customer.channelid');
-	}
-	if (what.indexOf('customer.customergroupname') > -1) {
-		what.push('customer.customergroup');
-	}
+	// if (what.indexOf('customer.channelname') > -1) {
+	// 	what.push('customer.channelid')
+	// }
+	// if (what.indexOf('customer.customergroupname') > -1) {
+	// 	what.push('customer.customergroup')
+	// }
 
 	return what;
 };
