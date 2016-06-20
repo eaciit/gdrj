@@ -797,7 +797,7 @@ rs.refresh = function () {
 				return m + x.value;
 			}, 0);
 			var countPNL = dataAllPNL.length;
-			var avgPNL = sumPNL / countPNL;
+			var avgPNL = sumPNL;
 
 			var dataScatter = [];
 			var multiplier = sumNetSales == 0 ? 1 : sumNetSales;
@@ -811,12 +811,12 @@ rs.refresh = function () {
 					valuePNL: Math.abs(d.value),
 					valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
 					avgPNL: Math.abs(avgPNL),
-					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
-					sumPNL: Math.abs(sumPNL),
-					sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
+					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100)
 				});
 			});
 
+			// sumPNL: Math.abs(sumPNL),
+			// sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
 			console.log("dataScatter", dataScatter);
 			console.log("dataAllPNL", dataAllPNL);
 
@@ -867,10 +867,10 @@ rs.generateReport = function (data, years) {
 			type: "line",
 			missingValues: "gap"
 		},
-		seriesColors: ['#3498DB', "#ff8d00", "#678900"],
+		seriesColors: ['#3498DB', "#678900"],
 		series: [{
-			name: 'Sum of ' + breakdownTitle + ' to ' + netSalesTitle,
-			field: 'sumPNLPercentage',
+			name: 'Average ' + breakdownTitle + ' to ' + netSalesTitle,
+			field: 'avgPNLPercentage',
 			width: 3,
 			line: {
 				border: {
@@ -880,52 +880,12 @@ rs.generateReport = function (data, years) {
 			},
 			tooltip: {
 				visible: true,
-				template: 'Sum of ' + breakdownTitle + ' to ' + netSalesTitle + ': #: kendo.toString(dataItem.sumPNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.sumPNL, \'n2\') #)'
+				template: 'Average ' + breakdownTitle + ' to ' + netSalesTitle + ': #: kendo.toString(dataItem.avgPNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.avgPNL, \'n2\') #)'
 			},
 			markers: {
 				visible: false
 			}
 		}, {
-			name: 'Average of ' + breakdownTitle + ' to ' + netSalesTitle,
-			field: 'avgPNLPercentage',
-			dashType: "dash",
-			width: 3,
-			line: {
-				border: {
-					width: 1,
-					color: 'white'
-				}
-			},
-			tooltip: {
-				visible: true,
-				template: 'Average of ' + breakdownTitle + ' to ' + netSalesTitle + ': #: kendo.toString(dataItem.avgPNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.avgPNL, \'n2\') #)'
-			},
-			markers: {
-				visible: false
-			}
-		},
-		// {
-		// 	name: `${breakdownTitle} to ${netSalesTitle}`,
-		// 	field: "valuePNLPercentage",
-		// 	width: 3,
-		// 	opacity: 0,
-		// 	markers: {
-		// 		type: 'cross',
-		// 		size: 12
-		// 	},
-		// 	tooltip: {
-		// 		visible: true,
-		// 		template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
-		// 	},
-		// 	labels: {
-		// 		visible: true,
-		// 		position: 'top',
-		// 		template: (d) => {
-		// 			return `${breakdownTitle} ${d.category}\n${kendo.toString(d.value, 'n2')} %`
-		// 		}
-		// 	},
-		// },
-		{
 			type: 'column',
 			name: breakdownTitle + ' to ' + netSalesTitle,
 			field: "valuePNLPercentage",
