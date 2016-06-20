@@ -3,7 +3,7 @@ let ba = viewModel.breakdown
 
 ba.contentIsLoading = ko.observable(false)
 ba.popupIsLoading = ko.observable(false)
-ba.title = ko.observable('P&L Analytic')
+ba.title = ko.observable('Branch Analysis')
 ba.detail = ko.observableArray([])
 ba.limit = ko.observable(10)
 ba.breakdownNote = ko.observable('')
