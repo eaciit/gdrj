@@ -110,6 +110,7 @@ pvt.render = () => {
 	    filterable: false,
 	    reorderable: false,
 	    dataCellTemplate: (d) => `<div class="align-right">${kendo.toString(d.dataItem.value, "n2")}</div>`,
+	    columnWidth: 130,
 	    dataSource: {
 			data: data,
 			schema: {

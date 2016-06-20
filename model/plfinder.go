@@ -339,7 +339,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			case "I6":
 				_id.Set(channelname, "MOTORIST")
 			case "I4":
-				_id.Set(channelname, "INDUSTRIAL")
+				_id.Set(channelname, "IT")
 			case "I1":
 				_id.Set(channelname, "RD")
 			case "I3":
@@ -347,7 +347,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			case "I2":
 				_id.Set(channelname, "GT")
 			case "EXP":
-				_id.Set(channelname, "EXPORT")
+				_id.Set(channelname, "EXP")
 				// case "DISCOUNT":
 				// 	_id.Set(channelname, "DISCOUNT")
 				// case "":

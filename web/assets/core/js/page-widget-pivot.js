@@ -126,6 +126,7 @@ pvt.render = function () {
 		dataCellTemplate: function dataCellTemplate(d) {
 			return '<div class="align-right">' + kendo.toString(d.dataItem.value, "n2") + '</div>';
 		},
+		columnWidth: 130,
 		dataSource: {
 			data: data,
 			schema: {
