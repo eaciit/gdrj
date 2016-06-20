@@ -741,7 +741,6 @@ rs.selectedPNLNetSales = ko.observable("PL8A") // PL1
 rs.selectedPNL = ko.observable("PL44B")
 rs.chartComparisonNote = ko.observable('')
 rs.optionDimensionSelect = ko.observableArray([])
-rs.groups = ko.observableArray([bkd.breakdownBy() /** , 'date.year' */])
 rs.fiscalYear = ko.observable(rpt.value.FiscalYear())
 
 rs.getSalesHeaderList = () => {
@@ -764,7 +763,7 @@ rs.refresh = (useCache = false) => {
 
 	let param = {}
 	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
-	param.groups = rs.groups()
+	param.groups = [rs.breakdownBy() /** , 'date.year' */]
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear)
 
@@ -812,6 +811,9 @@ rs.refresh = (useCache = false) => {
 				})
 			})
 
+			console.log("dataScatter", dataScatter)
+			console.log("dataAllPNL", dataAllPNL)
+
 			rs.contentIsLoading(false)
 			rs.generateReport(dataScatter, years)
 		}, () => {
@@ -835,7 +837,7 @@ rs.generateReport = (data, years) => {
 
 	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>')
 	if ((data.length * 100) > $('#scatter-view').parent().width())
-    	$('#scatter-view').width(data.length * 100)
+    	$('#scatter-view').width(data.length * 120)
     else
 	    $('#scatter-view').css('width', '100%')
 	$("#scatter-view").kendoChart({
@@ -894,7 +896,7 @@ rs.generateReport = (data, years) => {
 				visible: true,
 				position: 'top',
 				template: (d) => {
-					return `${breakdownTitle} ${d.category} : ${kendo.toString(d.value, 'n2')} %`
+					return `${breakdownTitle} ${d.category}\n${kendo.toString(d.value, 'n2')} %`
 				}
 			},
 		}],
