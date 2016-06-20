@@ -326,9 +326,10 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 	channelname := "_id_customer_channelname"
 	res := []*toolkit.M{}
 
-	hasChannel := false
+	// hasChannel := false
+	otherData := map[int]*toolkit.M{}
 
-	for _, each := range *data {
+	for i, each := range *data {
 		fmt.Printf("------------ %#v\n", each)
 		_id := each.Get("_id").(toolkit.M)
 
@@ -338,11 +339,18 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			} else if val.(string) == "" {
 				_id.Set(key, "Other")
 			}
+
+			fmt.Println("==========", _id.GetString(key))
+
+			if _, ok := otherData[i]; strings.ToLower(_id.GetString(key)) == "other" && !ok {
+				otherData[i] = each
+			}
 		}
 
 		if _id.Has(channelid) {
-			hasChannel = true
+			// hasChannel = true
 			channelid := strings.ToUpper(_id.GetString(channelid))
+
 			switch channelid {
 			case "I6":
 				_id.Set(channelname, "MOTORIST")
@@ -364,6 +372,38 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 		}
 	}
 
+	fmt.Println("========= OTHER DATA")
+	fmt.Printf("%#v\n", otherData)
+	if len(otherData) > 1 {
+		sumOther := toolkit.M{}
+		for _, each := range otherData {
+			sumOther.Set("_id", each.Get("_id"))
+
+			for key := range *each {
+				if key == "_id" {
+					continue
+				}
+
+				if _, ok := sumOther[key]; !ok {
+					sumOther.Set(key, each.GetFloat64(key))
+				} else {
+					sumOther.Set(key, each.GetFloat64(key)+sumOther.GetFloat64(key))
+				}
+			}
+		}
+
+		newData := []*toolkit.M{&sumOther}
+		for i, each := range *data {
+			if _, ok := otherData[i]; ok {
+				continue
+			}
+
+			newData = append(newData, each)
+		}
+		data = &newData
+	}
+
+	/** NOT USED NOW, THE DAtA IS VALLID
 	// if breakdown channel
 	if hasChannel {
 		channelDiscountIndex := -1
@@ -447,7 +487,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			realData = append(realData[:channelEmptyIndex], realData[channelEmptyIndex+1:]...)
 			data = &realData
 		}
-	}
+	}*/
 
 	if s.Flag != "" {
 		for _, raw := range *data {
