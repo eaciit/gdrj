@@ -27,7 +27,7 @@ rpt.filter = [
 	] },
 	{ _id: 'customer', group: 'Customer', sub: [
 		{ _id: 'ChannelC', from: 'Channel', title: 'Channel' },
-		{ _id: 'KeyAccount', from: 'KeyAccount', title: 'Accounts' },
+		{ _id: 'KeyAccount', from: 'CustomerGroup', title: 'Accounts' },
 		{ _id: 'Customer', from: 'Customer', title: 'Outlet' }
 	] },
 	{ _id: 'product', group: 'Product', sub: [
@@ -138,7 +138,7 @@ rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYea
 		{ 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() },
 
 		// ---> Channel OK
-		{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
+		{ 'Field': 'customer.customergroup', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
 		{ 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
 
 		{ 'Field': 'product.brandcategoryid', 'Op': '$in', Value: rpt.value.HBrandCategory() },
@@ -347,7 +347,7 @@ rpt.filterMultiSelect = (d) => {
 			},
 			value: rpt.value[d._id]
 		})
-	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'LedgerAccount'].indexOf(d.from) > -1) {
+	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -373,14 +373,7 @@ rpt.filterMultiSelect = (d) => {
 				return
 			}
 
-			let data = _.map(res.data, (e) => {
-				if (d.from == 'KeyAccount') {
-					return { _id: e._id, Name: e._id }
-				}
-				return e
-			})
-
-			rpt.masterData[d._id](_.sortBy(data, (d) => d.Name))
+			rpt.masterData[d._id](_.sortBy(res.data, (d) => d.Name))
 		})
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
