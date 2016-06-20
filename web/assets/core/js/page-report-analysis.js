@@ -405,6 +405,7 @@ bkd.render = function () {
 		return { data: k, key: v };
 	});
 	data.forEach(function (d, i) {
+		if (d._id.length > 22) colWidth += 30;
 		toolkit.newEl('th').html(d._id).addClass('align-right').appendTo(trContent1).width(colWidth);
 
 		toolkit.newEl('th').html('%').addClass('align-right cell-percentage').appendTo(trContent1).width(colPercentWidth);

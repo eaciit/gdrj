@@ -395,6 +395,8 @@ bkd.render = () => {
 	let grouppl2 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
 	let grouppl3 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
+		if (d._id.length > 22)
+			colWidth += 30
 		toolkit.newEl('th')
 			.html(d._id)
 			.addClass('align-right')

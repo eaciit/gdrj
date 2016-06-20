@@ -331,6 +331,7 @@ rpt.toggleFilter = function () {
 	$('.k-chart').each(function (i, d) {
 		$(d).data('kendoChart').redraw();
 	});
+	rpt.panel_relocated();
 };
 
 rpt.getIdeas = function () {

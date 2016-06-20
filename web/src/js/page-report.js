@@ -440,6 +440,7 @@ rpt.toggleFilter = () => {
 	$('.k-chart').each((i, d) => {
 		$(d).data('kendoChart').redraw()
 	})
+	rpt.panel_relocated()
 }
 
 rpt.getIdeas = () => {
