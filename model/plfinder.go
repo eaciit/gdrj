@@ -332,6 +332,14 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 		fmt.Printf("------------ %#v\n", each)
 		_id := each.Get("_id").(toolkit.M)
 
+		for key, val := range _id {
+			if val == nil {
+				_id.Set(key, "Other")
+			} else if val.(string) == "" {
+				_id.Set(key, "Other")
+			}
+		}
+
 		if _id.Has(channelid) {
 			hasChannel = true
 			channelid := strings.ToUpper(_id.GetString(channelid))
