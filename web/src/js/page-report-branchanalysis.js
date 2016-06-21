@@ -290,7 +290,7 @@ ba.render = () => {
 	
 	let breakdowns = [ba.breakdownByChannel(), ba.breakdownBy() /** , 'date.year' */]
 	let rows = [], datayo = [], dataok = []
-	let breakdownKey = `_id_${toolkit.replace(ba.breakdownBy(), '.', '_')}`
+	let breakdownKey = `_id_${toolkit.replace(ba.breakdownByChannel(), '.', '_')}`
 
 	let groupbyrd = _.groupBy(ba.data(), (a) => { return a._id._id_customer_branchname})
 	$.each( groupbyrd, function( key, value ) {
