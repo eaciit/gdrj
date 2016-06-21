@@ -116,7 +116,7 @@ func prepMaster() {
 	defer ccb.Close()
 	for {
 		cust := new(gdrj.Customer)
-		e := ccb.Fetch(&cust, 1, false)
+		e := ccb.Fetch(cust, 1, false)
 		if e != nil {
 			break
 		}
@@ -182,7 +182,7 @@ func main() {
 	//toolkit.Println("Delete existing")
 	//conn.NewQuery().From(spl.TableName()).Delete().Exec(nil)
 
-	//f = dbox.Eq("_id", "CN/GBP/15000011_10")
+	// f = dbox.Eq("_id", "RK/IMN/14000038_1")
 	c, _ := gdrj.Find(new(gdrj.SalesPL), f, nil)
 	defer c.Close()
 
@@ -290,39 +290,20 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 		}
 
 		// Fix from Customer
-		cust := mastercust.Get(spl.Customer.ID, new(gdrj.Customer)).(*gdrj.Customer)
-		if spl.Customer.National == "" {
+		cust, check := mastercust[spl.Customer.ID].(*gdrj.Customer)
+		if check {
 			spl.Customer.National = cust.National
-		}
-
-		if spl.Customer.Zone == "" {
 			spl.Customer.Zone = cust.Zone
-		}
-
-		if spl.Customer.Region == "" {
 			spl.Customer.Region = cust.Region
-		}
-
-		if spl.Customer.AreaName == "" {
 			spl.Customer.AreaName = cust.AreaName
-		}
-
-		// Fix from Branch
-		tkm := masterbranchs.Get(spl.Customer.BranchID, toolkit.M{}).(toolkit.M)
-		if spl.Customer.National == "" {
-			spl.Customer.National = tkm.Get("national", "").(string)
-		}
-
-		if spl.Customer.Zone == "" {
-			spl.Customer.Zone = tkm.Get("zone", "").(string)
-		}
-
-		if spl.Customer.Region == "" {
-			spl.Customer.Region = tkm.Get("region", "").(string)
-		}
-
-		if spl.Customer.AreaName == "" {
-			spl.Customer.AreaName = tkm.Get("area", "").(string)
+		} else {
+			tkm, check := masterbranchs[spl.Customer.BranchID].(toolkit.M)
+			if check {
+				spl.Customer.National = tkm.Get("national", "").(string)
+				spl.Customer.Zone = tkm.Get("zone", "").(string)
+				spl.Customer.Region = tkm.Get("region", "").(string)
+				spl.Customer.AreaName = tkm.Get("area", "").(string)
+			}
 		}
 
 		//-- For export
@@ -335,7 +316,9 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 		// }
 
 		//--Recalculate the PL Model value
-		// spl.CalcSum(masters)
+
+		spl.CalcSales(masters)
+		spl.CalcSum(masters)
 
 		workerConn.NewQuery().From(spl.TableName()).
 			Save().Exec(toolkit.M{}.Set("data", spl))
