@@ -379,6 +379,14 @@ ba.render = () => {
 			let total = e[`${d._id}`][0] + e[`${d._id}`][1]; 
 			total = toolkit.number(total)
 			row[`${breakdown} total`] = total
+
+			if (ba.breakdownRD() == "OnlyRD") {
+				row.PNLTotal += e[`${d._id}`][0]
+			} else if (ba.breakdownRD() == "NonRD") {
+				row.PNLTotal += e[`${d._id}`][1]
+			} else {
+				row.PNLTotal += total
+			}
 		})
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -415,13 +423,19 @@ ba.render = () => {
 		.appendTo(tableHeader)
 
 	toolkit.newEl('th')
+		.attr('colspan', 2)
 		.html('&nbsp;')
 		.addClass('cell-percentage-header')
 		.appendTo(trHeader1)
 
 	toolkit.newEl('th')
-		.html('Branch Analysis')
+		.html('P&L')
 		.addClass('cell-percentage-header')
+		.appendTo(trHeader2)
+
+	toolkit.newEl('th')
+		.html('Total')
+		.addClass('align-right')
 		.appendTo(trHeader2)
 
 	let trContent1 = toolkit.newEl('tr')
@@ -512,6 +526,12 @@ ba.render = () => {
 
 		toolkit.newEl('td')
 			.html('<i></i>' + d.PNL)
+			.appendTo(trHeader)
+
+		let pnlTotal = kendo.toString(d.PNLTotal, 'n0')
+		toolkit.newEl('td')
+			.html(pnlTotal)
+			.addClass('align-right')
 			.appendTo(trHeader)
 
 		let trContent = toolkit.newEl('tr')
