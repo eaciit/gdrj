@@ -315,7 +315,7 @@ dsbrd.render = function (res) {
 		});
 	});
 
-	if (columnGrouped.length > 1) {
+	if (columnGrouped.length > 0) {
 		columnsPlaceholder[0].locked = true;
 		columnsPlaceholder[1].locked = true;
 	}

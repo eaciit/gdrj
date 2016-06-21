@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 viewModel.breakdown = new Object();
 var ba = viewModel.breakdown;
 
@@ -18,6 +20,7 @@ ba.optionDimensions = ko.observableArray(rpt.optionDimensions().filter(function 
 	return d.field != 'customer.channelname';
 }));
 
+ba.expandRD = ko.observable(false);
 ba.data = ko.observableArray([]);
 ba.plmodels = ko.observableArray([]);
 ba.zeroValue = ko.observable(false);
@@ -294,6 +297,10 @@ ba.renderDetail = function (plcode, breakdowns) {
 
 ba.idarrayhide = ko.observableArray(['PL44A']);
 ba.render = function () {
+	if (ba.breakdownRD() == "OnlyRD") {
+		ba.expandRD(false);
+	}
+
 	if (ba.data().length == 0) {
 		$('.breakdown-view').html('No data found.');
 		return;
@@ -341,14 +348,53 @@ ba.render = function () {
 			});
 		}
 
+		if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
+			var _ret = function () {
+				var sumdataOther = [];
+				rpt.masterData.Channel().filter(function (f) {
+					return f._id != "I1";
+				}).forEach(function (d) {
+					var sumdataEach = {};
+					datayo = _.filter(value, function (e) {
+						return e._id._id_customer_channelid == d._id;
+					});
+					for (var a in datayo) {
+						$.each(datayo[a], function (keya, valuea) {
+							if (keya != "_id") {
+								if (sumdataEach[keya] == undefined) sumdataEach[keya] = 0;
+								sumdataEach[keya] = sumdataEach[keya] + valuea;
+							}
+						});
+					}
+					sumdataOther.push(sumdataEach);
+				});
+
+				var newstruct = {};
+				newstruct["_id_customer_branchname"] = key;
+				toolkit.forEach(sumdata, function (key2, value2) {
+					var values = sumdataOther.map(function (d) {
+						return toolkit.number(d[key2]);
+					});
+					console.log("+++++", key2, value2, values);
+					newstruct[key2] = [value2, sumdata2[key2]].concat(values);
+				});
+				dataok.push(newstruct);
+				return {
+					v: void 0
+				};
+			}();
+
+			if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+		}
+
 		var newstruct = {};
-		// newstruct["_id"] = {}
 		newstruct["_id_customer_branchname"] = key;
 		toolkit.forEach(sumdata, function (key2, value2) {
 			newstruct[key2] = [value2, sumdata2[key2]];
 		});
 		dataok.push(newstruct);
 	});
+
 	var data = _.map(dataok, function (d) {
 		d.breakdowns = {};
 		var titleParts = [];
@@ -388,10 +434,16 @@ ba.render = function () {
 		data.forEach(function (e) {
 			var breakdown = e._id;
 			var value = e['' + d._id];
-			var value1 = toolkit.number(value[0]);
-			var value2 = toolkit.number(value[1]);
-			row[breakdown + '1'] = value1;
-			row[breakdown + '2'] = value2;
+			row[breakdown + '1'] = toolkit.number(value[0]);
+			row[breakdown + '2'] = toolkit.number(value[1]);
+
+			if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
+				row[breakdown + '3'] = toolkit.number(value[2]);
+				row[breakdown + '4'] = toolkit.number(value[3]);
+				row[breakdown + '5'] = toolkit.number(value[4]);
+				row[breakdown + '6'] = toolkit.number(value[5]);
+				row[breakdown + '7'] = toolkit.number(value[6]);
+			}
 		});
 		data.forEach(function (e) {
 			var breakdown = e._id;
@@ -440,17 +492,8 @@ ba.render = function () {
 	var trContent2 = toolkit.newEl('tr').appendTo(tableContent);
 
 	var colWidth = 100;
-	var colPercentWidth = 100;
-	var totalWidth = 0;
+	var totalColumn = 2;
 	var pnlTotalSum = 0;
-
-	if (ba.breakdownBy() == "customer.branchname") {
-		colWidth = 200;
-	}
-
-	if (ba.breakdownBy() == "customer.region") {
-		colWidth = 230;
-	}
 
 	var grouppl1 = _.map(_.groupBy(ba.plmodels(), function (d) {
 		return d.PLHeader1;
@@ -468,32 +511,53 @@ ba.render = function () {
 		return { data: k, key: v };
 	});
 	data.forEach(function (d, i) {
-		if (d._id.length > 22) colWidth += 30;
-		var thheader = toolkit.newEl('th').html(d._id).attr('colspan', '3').addClass('align-center cell-percentage-header').appendTo(trContent1).width(colWidth);
+		var thheader = toolkit.newEl('th').html(d._id).css('background-color', '#ccd1d3').attr('colspan', '3').addClass('align-center cell-percentage-header').appendTo(trContent1).width(colWidth);
+		totalColumn++;
 
-		var cell1 = toolkit.newEl('th').html('Total').addClass('align-center').attr('statuscolumn', 'TotalRD').appendTo(trContent2).width(colPercentWidth);
+		var cell1 = toolkit.newEl('th').html('Total').addClass('align-center').attr('statuscolumn', 'TotalRD').appendTo(trContent2).width(colWidth);
 
-		var cell2 = toolkit.newEl('th').html('RD').addClass('align-center').attr('statuscolumn', 'RD').appendTo(trContent2).width(colPercentWidth);
+		var cell2 = toolkit.newEl('th').html('RD').addClass('align-center').attr('statuscolumn', 'RD').appendTo(trContent2).width(colWidth);
 
-		var cell3 = toolkit.newEl('th').html('Non RD').attr('statuscolumn', 'NonRD').addClass('align-center cell-percentage-header').appendTo(trContent2).width(colPercentWidth);
+		var cell3 = toolkit.newEl('th').html('Non RD').attr('statuscolumn', 'NonRD').addClass('align-center cell-percentage-header').appendTo(trContent2).width(colWidth);
 
 		if (ba.breakdownRD() == "OnlyRD") {
 			cell1.css('display', 'none');
 			cell3.css('display', 'none');
-			cell2.addClass('cell-percentage-header').width(colWidth - 80);
+			cell2.addClass('cell-percentage-header').width(colWidth);
 			thheader.removeAttr("colspan");
-			totalWidth += colWidth - 80 + colPercentWidth;
+			totalColumn++;
 		} else if (ba.breakdownRD() == "NonRD") {
 			cell1.css('display', 'none');
 			cell2.css('display', 'none');
-			cell3.addClass('cell-percentage-header').width(colWidth - 80);
+			cell3.addClass('cell-percentage-header').width(colWidth);
 			thheader.removeAttr("colspan");
-			totalWidth += colWidth - 80 + colPercentWidth;
+			totalColumn++;
 		} else {
-			totalWidth += colWidth + colPercentWidth * 3;
+			totalColumn++;
+			totalColumn++;
+			totalColumn++;
+		}
+
+		if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
+			cell3.remove();
+			thheader.attr("colspan", 7);
+			rpt.masterData.Channel().filter(function (f) {
+				return f._id != "I1";
+			}).forEach(function (f) {
+				var cell4 = toolkit.newEl('th').html(f.Name).addClass('align-center').appendTo(trContent2).width(colWidth);
+				totalColumn++;
+			});
+			// I2, I4, I6, I3, EXP
 		}
 	});
 	// console.log('data ', data)
+
+	var totalWidth = totalColumn * colWidth;
+	// if (!(ba.breakdownRD() != "OnlyRD" && ba.expandRD())) {
+	// 	totalWidth -= 1000
+	// }
+
+	console.log("width", totalWidth);
 
 	tableContent.css('min-width', totalWidth);
 	rows.forEach(function (d, i) {
@@ -538,6 +602,16 @@ ba.render = function () {
 				cell1.css('display', 'none');
 				cell2.css('display', 'none');
 				cell3.addClass('cell-percentage-header');
+			}
+
+			if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
+				cell3.remove();
+				rpt.masterData.Channel().filter(function (f) {
+					return f._id != "I1";
+				}).forEach(function (f, i) {
+					var value = kendo.toString(d[key + (i + 3)], 'n0');
+					var cell4 = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trContent).width(colWidth);
+				});
 			}
 
 			// cell.on('click', () => {
