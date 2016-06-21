@@ -41,7 +41,7 @@ func setinitialconnection() {
 	}
 }
 
-var masters, masterbranchs = toolkit.M{}, toolkit.M{}
+var masters, masterbranchs, mastercust = toolkit.M{}, toolkit.M{}, toolkit.M{}
 
 func getCursor(obj orm.IModel) dbox.ICursor {
 	c, e := gdrj.Find(obj,
@@ -103,14 +103,27 @@ func prepMaster() {
 	cmb := getCursor(new(gdrj.MasterBranch))
 	defer cmb.Close()
 	for {
-		stx := new(gdrj.MasterBranch)
-		e := cmb.Fetch(stx, 1, false)
+		stx := toolkit.M{}
+		e := cmb.Fetch(&stx, 1, false)
 		if e != nil {
 			break
 		}
 
-		masterbranchs.Set(stx.ID, stx.Name)
+		masterbranchs.Set(stx.Get("_id", "").(string), stx)
 	}
+
+	ccb := getCursor(new(gdrj.Customer))
+	defer ccb.Close()
+	for {
+		cust := new(gdrj.Customer)
+		e := ccb.Fetch(&cust, 1, false)
+		if e != nil {
+			break
+		}
+
+		mastercust.Set(cust.ID, cust)
+	}
+
 }
 
 func makeDateFromInt(i int, endofmth bool) time.Time {
@@ -257,7 +270,60 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 			}
 		*/
 		//-- For fix branch name
-		spl.Customer.BranchName = toolkit.ToString(masterbranchs.Get(spl.Customer.BranchID, ""))
+		// spl.Customer.BranchName = toolkit.ToString(masterbranchs.Get(spl.Customer.BranchID, ""))
+
+		//Inotial value
+		if spl.Customer.National == "" {
+			spl.Customer.National = "OTHER"
+		}
+
+		if spl.Customer.Zone == "" {
+			spl.Customer.Zone = "OTHER"
+		}
+
+		if spl.Customer.Region == "" {
+			spl.Customer.Region = "OTHER"
+		}
+
+		if spl.Customer.AreaName == "" {
+			spl.Customer.AreaName = "OTHER"
+		}
+
+		// Fix from Customer
+		cust := mastercust.Get(spl.Customer.ID, new(gdrj.Customer)).(*gdrj.Customer)
+		if spl.Customer.National == "" {
+			spl.Customer.National = cust.National
+		}
+
+		if spl.Customer.Zone == "" {
+			spl.Customer.Zone = cust.Zone
+		}
+
+		if spl.Customer.Region == "" {
+			spl.Customer.Region = cust.Region
+		}
+
+		if spl.Customer.AreaName == "" {
+			spl.Customer.AreaName = cust.AreaName
+		}
+
+		// Fix from Branch
+		tkm := masterbranchs.Get(spl.Customer.BranchID, toolkit.M{}).(toolkit.M)
+		if spl.Customer.National == "" {
+			spl.Customer.National = tkm.Get("national", "").(string)
+		}
+
+		if spl.Customer.Zone == "" {
+			spl.Customer.Zone = tkm.Get("zone", "").(string)
+		}
+
+		if spl.Customer.Region == "" {
+			spl.Customer.Region = tkm.Get("region", "").(string)
+		}
+
+		if spl.Customer.AreaName == "" {
+			spl.Customer.AreaName = tkm.Get("area", "").(string)
+		}
 
 		//-- For export
 		// if strings.Contains(spl.ID, "EXPORT") {
