@@ -158,22 +158,25 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 			}
 
 			if len(values) > 0 {
-				subFilters := []*dbox.Filter{}
-				for _, value := range values {
-					subFilters = append(subFilters, dbox.Eq(field, value))
-				}
-				filters = append(filters, dbox.Or(subFilters...))
-				fmt.Printf("---- filter: %#v in %#v\n", field, values)
-			}
-
-			if hasOther {
-				filtersSub := []*dbox.Filter{
-					dbox.Eq(field, ""),
-					dbox.Eq(field, nil),
-					dbox.Contains(field, "other"),
+				valuesInt := []interface{}{}
+				for _, each := range values {
+					valuesInt = append(valuesInt, each)
 				}
 
-				filters = append(filters, dbox.Or(filtersSub...))
+				subFilter := []*dbox.Filter{
+					dbox.In(field, valuesInt...),
+				}
+
+				if hasOther {
+					subFilter = append(subFilter, dbox.Or(
+						dbox.Eq(field, nil),
+						dbox.Eq(field, ""),
+						dbox.Contains(field, "other"),
+					))
+				}
+
+				filters = append(filters, dbox.Or(subFilter...))
+				fmt.Printf("---- filter: %#v in %#v\n", field, valuesInt)
 			}
 		case dbox.FilterOpGte:
 			var value interface{} = each.Value
@@ -217,6 +220,11 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 			fmt.Println("---- filter: ", field, "eq", value)
 		}
 	}
+
+	// fb := dbox.NewFilterBuilder(nil)
+	// fb.AddFilter(dbox.And(filters...))
+	// a, _ := fb.Build()
+	// fmt.Printf("-----OTHEHERHER---------- %#v\n", a)
 
 	return dbox.And(filters...)
 }
