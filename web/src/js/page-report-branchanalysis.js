@@ -483,8 +483,7 @@ ba.render = () => {
 	let trContent2 = toolkit.newEl('tr')
 		.appendTo(tableContent)
 
-	let colWidth = 80
-	let colPercentWidth = 80
+	let colWidth = 100
 	let totalWidth = 0
 	let pnlTotalSum = 0
 
@@ -492,8 +491,6 @@ ba.render = () => {
 	let grouppl2 = _.map(_.groupBy(ba.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
 	let grouppl3 = _.map(_.groupBy(ba.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
-		if (d._id.length > 22)
-			colWidth += 30
 		let thheader = toolkit.newEl('th')
 			.html(d._id)
 			.attr('colspan', '3')
@@ -506,40 +503,41 @@ ba.render = () => {
 			.addClass('align-center')
 			.attr('statuscolumn', 'TotalRD')
 			.appendTo(trContent2)
-			.width(colPercentWidth)
+			.width(colWidth)
 
 		let cell2 = toolkit.newEl('th')
 			.html('RD')
 			.addClass('align-center')
 			.attr('statuscolumn', 'RD')
 			.appendTo(trContent2)
-			.width(colPercentWidth)
+			.width(colWidth)
 
 		let cell3 = toolkit.newEl('th')
 			.html('Non RD')
 			.attr('statuscolumn', 'NonRD')
 			.addClass('align-center cell-percentage-header')
 			.appendTo(trContent2)
-			.width(colPercentWidth)
+			.width(colWidth)
 
 		if (ba.breakdownRD() == "OnlyRD") {
 			cell1.css('display','none')
 			cell3.css('display','none')
-			cell2.addClass('cell-percentage-header').width(colWidth-80)
+			cell2.addClass('cell-percentage-header').width(colWidth)
 			thheader.removeAttr("colspan")
-			totalWidth += (colWidth - 80) + colPercentWidth
+			totalWidth += colWidth
 		} else if (ba.breakdownRD() == "NonRD") {
 			cell1.css('display','none')
 			cell2.css('display','none')
-			cell3.addClass('cell-percentage-header').width(colWidth-80)
+			cell3.addClass('cell-percentage-header').width(colWidth)
 			thheader.removeAttr("colspan")
-			totalWidth += (colWidth - 80) + colPercentWidth
+			totalWidth += colWidth
 		} else {
-			totalWidth += colWidth + (colPercentWidth*3)
+			totalWidth += (colWidth * 3)
 		}
 
 		if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
-			totalWidth -= (colWidth - 80)
+			totalWidth -= colWidth
+
 			cell3.remove()
 			thheader.attr("colspan", 7)
 			rpt.masterData.Channel().filter((f) => f._id != "I1").forEach((f) => {
@@ -547,8 +545,8 @@ ba.render = () => {
 					.html(f.Name)
 					.addClass('align-center')
 					.appendTo(trContent2)
-					.width(colPercentWidth)
-				totalWidth += (colPercentWidth)
+					.width(colWidth)
+				totalWidth += totalWidth
 			})
 			// I2, I4, I6, I3, EXP
 		}
@@ -634,7 +632,7 @@ ba.render = () => {
 						.html(value)
 						.addClass('align-right')
 						.appendTo(trContent)
-						.width(colPercentWidth)
+						.width(colWidth)
 				})
 			}
 
