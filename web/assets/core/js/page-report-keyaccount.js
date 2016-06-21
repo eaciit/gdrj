@@ -659,7 +659,7 @@ kac.breakdownValueAll = { _id: 'All', Name: 'All' };
 kac.changeBreakdown = function () {
 	var all = kac.breakdownValueAll;
 	setTimeout(function () {
-		kac.optionBreakdownValues([all].concat(rpt.masterData.KeyAccount().map(function (d) {
+		kac.optionBreakdownValues([all].concat(rpt.masterData.CustomerGroup().map(function (d) {
 			return { _id: d.Name, Name: d.Name };
 		})));
 		kac.breakdownValue([all._id]);
@@ -691,7 +691,7 @@ kac.changeBreakdownValue = function () {
 
 vm.currentMenu('Key Account Analysis');
 vm.currentTitle('Key Account Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Daashboard', href: '/web/report/dashboard' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Key Account Analysis', href: '/web/report/dashboard' }]);
 
 kac.title('Key Account Analysis');
 

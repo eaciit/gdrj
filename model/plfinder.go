@@ -372,7 +372,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 		}
 	}
 
-	fmt.Println("========= OTHER DATA")
+	fmt.Println("========= OTHER DATA BLEND INTO ONE OTHER")
 	fmt.Printf("%#v\n", otherData)
 	if len(otherData) > 1 {
 		sumOther := toolkit.M{}
