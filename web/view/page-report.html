@@ -23,6 +23,8 @@ var o = {
 		{{template "page-report-keyaccount.html"}}
 	{{else if eq .id "example"}}
 		{{template "page-report-example.html"}}
+	{{else if eq .id "branchanalysis"}}
+		{{template "page-report-branchanalysis.html"}}
 	{{else if eq .id "gross_sales_discount_and_net_sales"}}
 		{{template "page-report-widget-gross-sales-discount-and-net-sales.html"}}
 	{{else if eq .id "sales_by_outlet"}}
