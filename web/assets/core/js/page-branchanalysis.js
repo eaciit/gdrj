@@ -416,9 +416,9 @@ ba.render = function () {
 
 	var trHeader2 = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('&nbsp;').addClass('cell-percentage').appendTo(trHeader1);
+	toolkit.newEl('th').html('&nbsp;').addClass('cell-percentage-header').appendTo(trHeader1);
 
-	toolkit.newEl('th').html('Branch Analysis').addClass('cell-percentage').appendTo(trHeader2);
+	toolkit.newEl('th').html('Branch Analysis').addClass('cell-percentage-header').appendTo(trHeader2);
 
 	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
 
@@ -454,26 +454,26 @@ ba.render = function () {
 	});
 	data.forEach(function (d, i) {
 		if (d._id.length > 22) colWidth += 30;
-		var thheader = toolkit.newEl('th').html(d._id).attr('colspan', '3').addClass('align-center cell-percentage').appendTo(trContent1).width(colWidth);
+		var thheader = toolkit.newEl('th').html(d._id).attr('colspan', '3').addClass('align-center cell-percentage-header').appendTo(trContent1).width(colWidth);
 
 		var cell1 = toolkit.newEl('th').html('Total').addClass('align-right').attr('statuscolumn', 'TotalRD').appendTo(trContent2).width(colPercentWidth);
 
 		var cell2 = toolkit.newEl('th').html('RD').addClass('align-right').attr('statuscolumn', 'RD').appendTo(trContent2).width(colPercentWidth);
 
-		var cell3 = toolkit.newEl('th').html('Non RD').attr('statuscolumn', 'NonRD').addClass('align-right cell-percentage').appendTo(trContent2).width(colPercentWidth);
+		var cell3 = toolkit.newEl('th').html('Non RD').attr('statuscolumn', 'NonRD').addClass('align-right cell-percentage-header').appendTo(trContent2).width(colPercentWidth);
 
 		if (ba.breakdownRD() == "OnlyRD") {
 			cell1.css('display', 'none');
 			cell3.css('display', 'none');
-			cell2.addClass('cell-percentage').width(colWidth);
+			cell2.addClass('cell-percentage-header').width(colWidth - 80);
 			thheader.removeAttr("colspan");
-			totalWidth += colWidth + colPercentWidth;
+			totalWidth += colWidth - 80 + colPercentWidth;
 		} else if (ba.breakdownRD() == "NonRD") {
 			cell1.css('display', 'none');
 			cell2.css('display', 'none');
-			cell3.addClass('cell-percentage').width(colWidth);
+			cell3.addClass('cell-percentage-header').width(colWidth - 80);
 			thheader.removeAttr("colspan");
-			totalWidth += colWidth + colPercentWidth;
+			totalWidth += colWidth - 80 + colPercentWidth;
 		} else {
 			totalWidth += colWidth + colPercentWidth * 3;
 		}
@@ -510,16 +510,16 @@ ba.render = function () {
 
 			var cell2 = toolkit.newEl('td').html(value1).addClass('align-right').attr('statuscolumn', 'RD').appendTo(trContent);
 
-			var cell3 = toolkit.newEl('td').html(value2).addClass('align-right cell-percentage').attr('statuscolumn', 'NonRD').appendTo(trContent);
+			var cell3 = toolkit.newEl('td').html(value2).addClass('align-right cell-percentage-header').attr('statuscolumn', 'NonRD').appendTo(trContent);
 
 			if (ba.breakdownRD() == "OnlyRD") {
 				cell1.css('display', 'none');
 				cell3.css('display', 'none');
-				cell2.addClass('cell-percentage');
+				cell2.addClass('cell-percentage-header');
 			} else if (ba.breakdownRD() == "NonRD") {
 				cell1.css('display', 'none');
 				cell2.css('display', 'none');
-				cell3.addClass('cell-percentage');
+				cell3.addClass('cell-percentage-header');
 			}
 
 			// cell.on('click', () => {

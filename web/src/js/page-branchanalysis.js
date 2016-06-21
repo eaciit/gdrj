@@ -413,12 +413,12 @@ ba.render = () => {
 
 	toolkit.newEl('th')
 		.html('&nbsp;')
-		.addClass('cell-percentage')
+		.addClass('cell-percentage-header')
 		.appendTo(trHeader1)
 
 	toolkit.newEl('th')
 		.html('Branch Analysis')
-		.addClass('cell-percentage')
+		.addClass('cell-percentage-header')
 		.appendTo(trHeader2)
 
 	let trContent1 = toolkit.newEl('tr')
@@ -449,7 +449,7 @@ ba.render = () => {
 		let thheader = toolkit.newEl('th')
 			.html(d._id)
 			.attr('colspan', '3')
-			.addClass('align-center cell-percentage')
+			.addClass('align-center cell-percentage-header')
 			.appendTo(trContent1)
 			.width(colWidth)
 
@@ -470,22 +470,22 @@ ba.render = () => {
 		let cell3 = toolkit.newEl('th')
 			.html('Non RD')
 			.attr('statuscolumn', 'NonRD')
-			.addClass('align-right cell-percentage')
+			.addClass('align-right cell-percentage-header')
 			.appendTo(trContent2)
 			.width(colPercentWidth)
 
 		if (ba.breakdownRD() == "OnlyRD") {
 			cell1.css('display','none')
 			cell3.css('display','none')
-			cell2.addClass('cell-percentage').width(colWidth)
+			cell2.addClass('cell-percentage-header').width(colWidth-80)
 			thheader.removeAttr("colspan")
-			totalWidth += colWidth + colPercentWidth
+			totalWidth += (colWidth - 80) + colPercentWidth
 		} else if (ba.breakdownRD() == "NonRD") {
 			cell1.css('display','none')
 			cell2.css('display','none')
-			cell3.addClass('cell-percentage').width(colWidth)
+			cell3.addClass('cell-percentage-header').width(colWidth-80)
 			thheader.removeAttr("colspan")
-			totalWidth += colWidth + colPercentWidth
+			totalWidth += (colWidth - 80) + colPercentWidth
 		} else {
 			totalWidth += colWidth + (colPercentWidth*3)
 		}
@@ -543,18 +543,18 @@ ba.render = () => {
 
 			let cell3 = toolkit.newEl('td')
 				.html(value2)
-				.addClass('align-right cell-percentage')
+				.addClass('align-right cell-percentage-header')
 				.attr('statuscolumn', 'NonRD')
 				.appendTo(trContent)
 
 			if (ba.breakdownRD() == "OnlyRD") {
 				cell1.css('display','none')
 				cell3.css('display','none')
-				cell2.addClass('cell-percentage')
+				cell2.addClass('cell-percentage-header')
 			} else if (ba.breakdownRD() == "NonRD") {
 				cell1.css('display','none')
 				cell2.css('display','none')
-				cell3.addClass('cell-percentage')
+				cell3.addClass('cell-percentage-header')
 			}
 
 			// cell.on('click', () => {
