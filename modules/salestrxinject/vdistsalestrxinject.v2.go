@@ -40,6 +40,8 @@ func setinitialconnection() {
 
 var (
 	shs           = toolkit.M{}
+	shs11         = toolkit.M{}
+	sgrossamount  = toolkit.M{}
 	pcs           = toolkit.M{}
 	ccs           = toolkit.M{}
 	ledgers       = toolkit.M{}
@@ -49,6 +51,8 @@ var (
 	mapskuids     = toolkit.M{}
 	lastSalesLine = toolkit.M{}
 )
+
+var mwg sync.WaitGroup
 
 func getCursor(obj orm.IModel) dbox.ICursor {
 	c, e := gdrj.Find(obj, nil, nil)
@@ -116,20 +120,66 @@ func prepMaster() {
 		e = cskus.Fetch(sku, 1, false)
 	}
 
-	sh := new(gdrj.SalesHeader)
-	// cshs := getCursor(sh)
-	filter := dbox.And(dbox.Gte("date", speriode), dbox.Lt("date", eperiode))
-	filter = nil
-	// filter = dbox.Eq("_id", "FK/IGA/14001247")
+	// sh := new(gdrj.SalesHeader)
+	// filter := dbox.And(dbox.Gte("date", speriode), dbox.Lt("date", eperiode))
+	// filter = nil
 
-	cshs, _ := gdrj.Find(sh,
-		filter,
-		toolkit.M{})
-	defer cshs.Close()
-	for e = cshs.Fetch(sh, 1, false); e == nil; {
-		shs.Set(sh.ID, sh)
-		sh = new(gdrj.SalesHeader)
-		e = cshs.Fetch(sh, 1, false)
+	// cshs, _ := gdrj.Find(sh,
+	// 	filter,
+	// 	toolkit.M{})
+	// defer cshs.Close()
+	// for e = cshs.Fetch(sh, 1, false); e == nil; {
+	// 	shs.Set(sh.ID, sh)
+	// 	sh = new(gdrj.SalesHeader)
+	// 	e = cshs.Fetch(sh, 1, false)
+	// }
+	conn, _ := modules.GetDboxIConnection("db_godrej")
+	crsh, _ := conn.NewQuery().Select().From("rawsalesheader-1415").Cursor(nil)
+	crsh11, _ := conn.NewQuery().Select().From("rawsalesheader-cd11").Cursor(nil)
+	cgross, _ := conn.NewQuery().Select().From("rawsalesheader-cd11").Cursor(nil)
+	defer crsh.Close()
+	defer crsh11.Close()
+	defer cgross.Close()
+	defer conn.Close()
+
+	for {
+		tkmcrsh := new(toolkit.M)
+		e := crsh.Fetch(tkmcrsh, 1, false)
+		if e != nil {
+			break
+		}
+
+		ivid := toolkit.ToString(tkmcrsh.Get("iv_no", ""))
+		if ivid != "" {
+			shs.Set(ivid, tkmcrsh)
+		}
+	}
+
+	for {
+		tkmcrsh := new(toolkit.M)
+		e := crsh11.Fetch(tkmcrsh, 1, false)
+		if e != nil {
+			break
+		}
+
+		ivid := toolkit.ToString(tkmcrsh.Get("iv_no", ""))
+		if ivid != "" {
+			shs11.Set(ivid, tkmcrsh)
+		}
+	}
+
+	for {
+		// _id,
+		tkmcrsh := new(toolkit.M)
+		e := cgross.Fetch(tkmcrsh, 1, false)
+		if e != nil {
+			break
+		}
+
+		ivid := toolkit.ToString(tkmcrsh.Get("_id", ""))
+		if ivid != "" {
+			sgrossamount.Set(ivid, toolkit.ToFloat64(tkmcrsh.Get("salesgrossamount", 0), 6, toolkit.RoundingAuto))
+		}
 	}
 }
 
@@ -170,6 +220,7 @@ func main() {
 	jobs := make(chan *gdrj.SalesTrx, count)
 	result := make(chan string, count)
 	for wi := 0; wi < 10; wi++ {
+		mwg.Add(1)
 		go workerProc(wi, jobs, result)
 	}
 
@@ -203,20 +254,45 @@ func main() {
 		dgrossamount := toolkit.ToFloat64(tkmsd.Get("gross", 0), 6, toolkit.RoundingAuto)
 		ggrossamount += dgrossamount
 
+		asgrossamount := toolkit.ToFloat64(sgrossamount.Get(st.SalesHeaderID, ""), 6, toolkit.RoundingAuto)
+
 		if shs.Has(st.SalesHeaderID) {
-			sho := shs.Get(st.SalesHeaderID).(*gdrj.SalesHeader)
-			sho.OutletID = strings.ToUpper(sho.OutletID)
+			sho := shs.Get(st.SalesHeaderID).(*toolkit.M)
+			st.OutletID = strings.ToUpper(toolkit.ToString(sho.Get("outletid", "")))
 
-			if sho.SalesDiscountAmount != 0 && sho.SalesGrossAmount != 0 {
-				st.DiscountAmount = dgrossamount * sho.SalesDiscountAmount / sho.SalesGrossAmount
+			ddisc := toolkit.ToFloat64(sho.Get("disc", 0), 6, toolkit.RoundingAuto)
+			if ddisc != 0 && asgrossamount != 0 {
+				st.DiscountAmount = dgrossamount * ddisc / asgrossamount
 			}
 
-			if sho.SalesTaxAmount != 0 && sho.SalesGrossAmount != 0 {
-				st.TaxAmount = dgrossamount * sho.SalesTaxAmount / sho.SalesGrossAmount
+			dvppn := toolkit.ToFloat64(sho.Get("ivppn", 0), 6, toolkit.RoundingAuto)
+			if dvppn != 0 && asgrossamount != 0 {
+				st.TaxAmount = dgrossamount * dvppn / asgrossamount
 			}
 
-			st.OutletID = sho.BranchID + sho.OutletID
-			st.Date = sho.Date
+			st.OutletID = toolkit.ToString(sho.Get("branchid", "")) + st.OutletID
+			yr := toolkit.ToInt(sho.Get("year", ""), toolkit.RoundingAuto)
+			month := toolkit.ToInt(sho.Get("month", ""), toolkit.RoundingAuto)
+			st.Date = time.Date(yr, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+			st.HeaderValid = true
+		} else if shs11.Has(st.SalesHeaderID) {
+			sho := shs11.Get(st.SalesHeaderID).(*toolkit.M)
+			st.OutletID = strings.ToUpper(toolkit.ToString(sho.Get("outletid", "")))
+
+			ddisc := toolkit.ToFloat64(sho.Get("salesdiscountamount", 0), 6, toolkit.RoundingAuto)
+			if ddisc != 0 && asgrossamount != 0 {
+				st.DiscountAmount = dgrossamount * ddisc / asgrossamount
+			}
+
+			dvppn := toolkit.ToFloat64(sho.Get("salestaxamount", 0), 6, toolkit.RoundingAuto)
+			if dvppn != 0 && asgrossamount != 0 {
+				st.TaxAmount = dgrossamount * dvppn / asgrossamount
+			}
+
+			st.OutletID = toolkit.ToString(sho.Get("branchid", "")) + st.OutletID
+			yr := toolkit.ToInt(sho.Get("year", ""), toolkit.RoundingAuto)
+			month := toolkit.ToInt(sho.Get("month", ""), toolkit.RoundingAuto)
+			st.Date = time.Date(yr, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 			st.HeaderValid = true
 		} else {
 			st.HeaderValid = false
@@ -309,6 +385,8 @@ func main() {
 		}
 	}
 
+	mwg.Wait()
+
 	toolkit.Printfn("Processing done in %s with gross %v and correct %v",
 		time.Since(t0).String(), ggrossamount, cggrossamount)
 }
@@ -316,6 +394,7 @@ func main() {
 func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
+	defer mwg.Done()
 
 	st := new(gdrj.SalesTrx)
 	for st = range jobs {
@@ -327,4 +406,5 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 
 		result <- st.ID
 	}
+
 }
