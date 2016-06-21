@@ -732,82 +732,21 @@ ba.showZeroValue = (a) => {
 	ba.showExpandAll(false)
 }
 
-// ba.optionBreakdownValues = ko.observableArray([])
-// ba.breakdownValueAll = { _id: 'All', Name: 'All' }
-// ba.changeBreakdown = () => {
-// 	let all = ba.breakdownValueAll
-// 	let map = (arr) => arr.map((d) => {
-// 		if (ba.breakdownBy() == "customer.channelname") {
-// 			return d
-// 		}
+vm.currentMenu('Branch Analysis')
+vm.currentTitle('Branch Analysis')
+vm.breadcrumb([
+	{ title: 'Godrej', href: '#' },
+	{ title: 'Branch Analysis', href: '/web/report/dashboard' }
+])
 
-// 		return { _id: d.Name, Name: d.Name }
-// 	})
-// 	setTimeout(() => {
-// 		switch (ba.breakdownBy()) {
-// 			case "customer.areaname":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Area())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "customer.region":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Region())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "customer.zone":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "product.brand":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "customer.branchname":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "customer.channelname":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "customer.keyaccount":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 		}
-// 	}, 100)
-// }
-// ba.changeBreakdownValue = () => {
-// 	let all = ba.breakdownValueAll
-// 	setTimeout(() => {
-// 		let condA1 = ba.breakdownValue().length == 2
-// 		let condA2 = ba.breakdownValue().indexOf(all._id) == 0
-// 		if (condA1 && condA2) {
-// 			ba.breakdownValue.remove(all._id)
-// 			return
-// 		}
-
-// 		let condB1 = ba.breakdownValue().length > 1
-// 		let condB2 = ba.breakdownValue().reverse()[0] == all._id
-// 		if (condB1 && condB2) {
-// 			ba.breakdownValue([all._id])
-// 			return
-// 		}
-
-// 		let condC1 = ba.breakdownValue().length == 0
-// 		if (condC1) {
-// 			ba.breakdownValue([all._id])
-// 		}
-// 	}, 100)
-// }
+ba.title('Branch Analysis')
 
 rpt.refresh = () => {
-	rpt.refreshView('analysis')
-
-	// bkd.changeBreakdown()
-	setTimeout(() => {
-		// bkd.breakdownValue(['All'])
+	// ba.changeBreakdown()
+	// setTimeout(() => {
+	// 	ba.breakdownValue(['All'])
 		ba.refresh(false)
-	}, 200)
+	// }, 200)
 
 	ba.prepareEvents()
 }
