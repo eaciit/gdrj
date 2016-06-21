@@ -137,7 +137,7 @@ func prepMaster() {
 	conn, _ := modules.GetDboxIConnection("db_godrej")
 	// crsh, _ := conn.NewQuery().Select().From("rawsalesheader-1415").Cursor(nil)
 	// crsh11, _ := conn.NewQuery().Select().From("rawsalesheader-cd11").Cursor(nil)
-	cgross, _ := conn.NewQuery().Select().From("rawsalesdetail1415-grosstot").Cursor(nil)
+	cgross, _ := conn.NewQuery().Select().From("rawsalesdetail1415_rev_grossproc").Cursor(nil)
 	// defer crsh.Close()
 	// defer crsh11.Close()
 	defer cgross.Close()
@@ -177,7 +177,7 @@ func prepMaster() {
 			break
 		}
 
-		ivid := toolkit.Sprintf("%s_%s", tkmcrsh.Get("_id", ""), tkmcrsh.Get("branchid", ""))
+		ivid := toolkit.Sprintf("%s_%s", tkmcrsh.Get("invoice", ""), tkmcrsh.Get("branch", ""))
 		if ivid != "" {
 			sgrossamount.Set(ivid, toolkit.ToFloat64(tkmcrsh.Get("salesgrossamount", 0), 6, toolkit.RoundingAuto))
 		}
