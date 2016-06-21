@@ -159,12 +159,18 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 
 			if len(values) > 0 {
 				valuesInt := []interface{}{}
+				valuesIntSpace := []interface{}{}
 				for _, each := range values {
 					valuesInt = append(valuesInt, each)
+					valuesIntSpace = append(valuesIntSpace, fmt.Sprintf("%s ", each))
 				}
 
 				subFilter := []*dbox.Filter{
 					dbox.In(field, valuesInt...),
+				}
+
+				if field == "_id.customer_branchname" {
+					subFilter = append(subFilter, dbox.In(field, valuesIntSpace...))
 				}
 
 				if hasOther {
