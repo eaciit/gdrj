@@ -285,7 +285,16 @@ bkd.renderDetail = function (plcode, breakdowns) {
 
 bkd.arrChangeParent = ko.observableArray([{ idfrom: 'PL6A', idto: '', after: 'PL0' }, { idfrom: 'PL1', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL2', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL3', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL4', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL5', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL6', idto: 'PL8A', after: 'PL8A' }]);
 
-bkd.arrFormulaPL = ko.observableArray([{ id: "PL0", formula: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"], cal: "sum" }, { id: "PL6A", formula: ["PL7", "PL8", "PL7A"], cal: "sum" }]);
+// bkd.arrFormulaPL = ko.observableArray([
+// 	{ id: "PL0", formula: ["PL1","PL2","PL3","PL4","PL5","PL6"], cal: "sum"},
+// 	{ id: "PL6A", formula: ["PL7","PL8","PL7A"], cal: "sum"},
+// ])
+// bkd.arrFormulaPL = ko.observableArray([
+// 	{ id: "PL1", formula: ["PL7"], cal: "sum"},
+// 	{ id: "PL2", formula: ["PL8"], cal: "sum"},
+// ])
+
+bkd.arrFormulaPL = ko.observableArray([{ id: "PL2", formula: ["PL2", "PL8"], cal: "sum" }, { id: "PL1", formula: ["PL8A", "PL2", "PL6"], cal: "min" }]);
 
 bkd.changeParent = function (elemheader, elemcontent, PLCode) {
 	var change = _.find(bkd.arrChangeParent(), function (a) {
@@ -347,18 +356,26 @@ bkd.render = function () {
 	    formulayo = void 0;
 
 	data.forEach(function (e, a) {
-		var breakdown = e._id;
 		bkd.arrFormulaPL().forEach(function (d) {
-			$.each(e, function (key, value) {
-				formulayo = _.find(d.formula, function (w) {
-					return w == key;
-				});
-				if (formulayo != undefined) {
-					data[a][d.id] += toolkit.number(value);
+			// let total = toolkit.sum(d.formula, (f) => e[f])
+			var total = 0;
+			d.formula.forEach(function (f, l) {
+				if (l == 0) {
+					total = e[f];
+				} else {
+					if (d.cal == 'sum') {
+						total += e[f];
+					} else {
+						total -= e[f];
+					}
 				}
 			});
+
+			console.log(data[a], d.id, total);
+			data[a][d.id] = total;
 		});
 	});
+	// console.log(data)
 
 	data.forEach(function (e) {
 		var breakdown = e._id;

@@ -283,9 +283,18 @@ bkd.arrChangeParent = ko.observableArray([
 	{ idfrom: 'PL6', idto: 'PL8A', after: 'PL8A'}
 ])
 
+// bkd.arrFormulaPL = ko.observableArray([
+// 	{ id: "PL0", formula: ["PL1","PL2","PL3","PL4","PL5","PL6"], cal: "sum"},
+// 	{ id: "PL6A", formula: ["PL7","PL8","PL7A"], cal: "sum"},
+// ])
+// bkd.arrFormulaPL = ko.observableArray([
+// 	{ id: "PL1", formula: ["PL7"], cal: "sum"},
+// 	{ id: "PL2", formula: ["PL8"], cal: "sum"},
+// ])
+
 bkd.arrFormulaPL = ko.observableArray([
-	{ id: "PL0", formula: ["PL1","PL2","PL3","PL4","PL5","PL6"], cal: "sum"},
-	{ id: "PL6A", formula: ["PL7","PL8","PL7A"], cal: "sum"},
+	{ id: "PL2", formula: ["PL2", "PL8"], cal: "sum"},
+	{ id: "PL1", formula: ["PL8A", "PL2", "PL6"], cal: "min"},
 ])
 
 bkd.changeParent = (elemheader, elemcontent, PLCode) => {
@@ -343,16 +352,26 @@ bkd.render = () => {
 	let netSalesRow = {}, changeformula, formulayo
 
 	data.forEach((e,a) => {
-		let breakdown = e._id
 		bkd.arrFormulaPL().forEach((d) => {
-			$.each( e, function( key, value ) {
-				formulayo = _.find(d.formula, (w) => { return w == key })
-				if (formulayo != undefined){
-					data[a][d.id] += toolkit.number(value)
+			// let total = toolkit.sum(d.formula, (f) => e[f])
+			let total = 0
+			d.formula.forEach((f, l) => {
+				if (l == 0) {
+					total = e[f]
+				} else {
+					if (d.cal == 'sum') {
+						total += e[f]
+					} else {
+						total -= e[f]
+					}
 				}
 			})
+
+			console.log(data[a], d.id, total)
+			data[a][d.id] = total
 		})
 	})
+	// console.log(data)
 
 	data.forEach((e) => {
 		let breakdown = e._id
