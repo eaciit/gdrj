@@ -401,7 +401,7 @@ bkd.render = () => {
 
 			if (percentage < 0)
 				percentage = percentage * -1
-				
+
 			row[`${breakdown} %`] = percentage
 		})
 
@@ -809,6 +809,9 @@ rs.getSalesHeaderList = () => {
 	app.ajaxPost("/report/getplmodel", {}, (res) => {
 		let data = res.map((d) => app.o({ field: d._id, name: d.PLHeader3 }))
 			.filter((d) => d.PLHeader3 !== rs.selectedPNLNetSales())
+		data = _.sortBy(data, function(item) {
+					return [item.name]
+				})
 		rs.optionDimensionSelect(data)
 
 		let prev = rs.selectedPNL()

@@ -806,6 +806,9 @@ rs.getSalesHeaderList = function () {
 		}).filter(function (d) {
 			return d.PLHeader3 !== rs.selectedPNLNetSales();
 		});
+		data = _.sortBy(data, function (item) {
+			return [item.name];
+		});
 		rs.optionDimensionSelect(data);
 
 		var prev = rs.selectedPNL();
