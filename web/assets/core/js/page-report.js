@@ -257,6 +257,10 @@ rpt.filterMultiSelect = function (d) {
 			rpt.masterData[d._id](_.sortBy(res.data, function (d) {
 				return d.Name;
 			}));
+
+			if (['KeyAccount', 'Brand'].indexOf(d.from) > -1) {
+				rpt.masterData[d._id].push({ _id: "OTHER", Name: "OTHER" });
+			}
 		});
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -282,6 +286,7 @@ rpt.filterMultiSelect = function (d) {
 					rpt.masterData[e](_.sortBy(res, function (d) {
 						return d.Name;
 					}));
+					rpt.masterData[e].push({ _id: "OTHER", Name: "OTHER" });
 				});
 
 				rpt.masterData.RegionC(rpt.masterData.Region());
