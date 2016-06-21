@@ -367,7 +367,6 @@ bkd.render = () => {
 				}
 			})
 
-			console.log(data[a], d.id, total)
 			data[a][d.id] = total
 		})
 	})
@@ -400,6 +399,9 @@ bkd.render = () => {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
 			}
 
+			if (percentage < 0)
+				percentage = percentage * -1
+				
 			row[`${breakdown} %`] = percentage
 		})
 

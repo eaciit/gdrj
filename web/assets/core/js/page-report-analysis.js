@@ -371,7 +371,6 @@ bkd.render = function () {
 				}
 			});
 
-			console.log(data[a], d.id, total);
 			data[a][d.id] = total;
 		});
 	});
@@ -405,6 +404,8 @@ bkd.render = function () {
 			if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
+
+			if (percentage < 0) percentage = percentage * -1;
 
 			row[breakdown + ' %'] = percentage;
 		});
