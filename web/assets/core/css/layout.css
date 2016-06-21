@@ -530,6 +530,9 @@ body {
 .breakdown-view .cell-percentage {
   border-right: 1px solid #F0F3F4;
 }
+.breakdown-view .cell-percentage-header {
+  border-right: 1px solid #d6dbdc;
+}
 .breakdown-view table tr.hover {
   background-color: #74B841;
 }
