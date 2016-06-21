@@ -27,7 +27,8 @@ rpt.filter = [
 	] },
 	{ _id: 'customer', group: 'Customer', sub: [
 		{ _id: 'ChannelC', from: 'Channel', title: 'Channel' },
-		{ _id: 'KeyAccount', from: 'CustomerGroup', title: 'Accounts' },
+		{ _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' },
+		{ _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' },
 		{ _id: 'Customer', from: 'Customer', title: 'Outlet' }
 	] },
 	{ _id: 'product', group: 'Product', sub: [
@@ -138,7 +139,8 @@ rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYea
 		{ 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() },
 
 		// ---> Channel OK
-		{ 'Field': 'customer.customergroup', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
+		{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
+		{ 'Field': 'customer.customergroup', 'Op': '$in', 'Value': rpt.value.CustomerGroup() },
 		{ 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
 
 		{ 'Field': 'product.brandcategoryid', 'Op': '$in', Value: rpt.value.HBrandCategory() },
@@ -188,7 +190,7 @@ rpt.optionDimensions = ko.observableArray([
     { field: 'customer.region', name: 'Region', title: 'customer_region' },
 	{ field: "customer.zone", name: "Zone", title: "customer_zone" },
     // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
-    { field: 'customer.customergroupname', name: 'Customer Group', title: 'customer_customergroupname' },
+    { field: 'customer.keyaccount', name: 'Customer Group', title: 'customer_keyaccount' },
     // { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
     // { field: 'date.month', name: 'Month', title: 'date_month' },
 ])
@@ -347,7 +349,7 @@ rpt.filterMultiSelect = (d) => {
 			},
 			value: rpt.value[d._id]
 		})
-	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
+	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -364,7 +366,7 @@ rpt.filterMultiSelect = (d) => {
 				minLength: 1,
 				placeholder: 'Type min 1 chars'
 			})
-		} else if (d.from == 'Channel') {
+		} else if (['Channel', 'KeyAccount'].indexOf(d.from) > -1) {
 			config.dataValueField = '_id'
 		}
 
@@ -374,6 +376,10 @@ rpt.filterMultiSelect = (d) => {
 			}
 
 			rpt.masterData[d._id](_.sortBy(res.data, (d) => d.Name))
+
+			if (['KeyAccount', 'Brand'].indexOf(d.from) > -1) {
+				rpt.masterData[d._id].push({ _id: "OTHER", Name: "OTHER" })
+			}
 		})
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -395,6 +401,7 @@ rpt.filterMultiSelect = (d) => {
 				['Region', 'Area', 'Zone'].forEach((e) => {
 					let res = rpt.groupGeoBy(rpt.masterData.geographi(), e)
 					rpt.masterData[e](_.sortBy(res, (d) => d.Name))
+					rpt.masterData[e].push({ _id: "OTHER", Name: "OTHER" })
 				})
 
 				rpt.masterData.RegionC(rpt.masterData.Region())

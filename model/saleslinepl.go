@@ -186,12 +186,14 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 		sga, opincome, directexpense, indirectexpense,
 		royaltiestrademark, advtpromoexpense, operatingexpense,
 		freightexpense, nonoprincome, ebt, taxexpense,
-		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga float64
+		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga,
+		grosssales, discount float64
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 
 	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL94A", "PL39A", "PL41A", "PL44A",
-		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E"}
+		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
+		"PL44F", "PL6A", "PL0"}
 	inexclude := func(f string) bool {
 		for _, v := range exclude {
 			if v == f {
@@ -208,7 +210,7 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 			delete(pl.PLDatas, k)
 			continue
 		}
-
+		// toolkit.Println(k, " PL DATA : ", v)
 		switch v.Group1 {
 		case "Net Sales":
 			netsales += v.Amount
@@ -234,6 +236,13 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 			} else {
 				totdepreexp += v.Amount
 			}
+		}
+
+		switch v.Group2 {
+		case "Gross Sales":
+			grosssales += v.Amount
+		case "Discount":
+			discount += v.Amount
 		}
 
 		/*
@@ -285,7 +294,10 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	ebitda = totdepreexp + damagegoods + opincome
 	ebitdaroyalties = ebitda - royaltiestrademark
 	ebitsga = opincome - sga
+	ebitsgaroyalty := ebitsga - royaltiestrademark
 
+	pl.AddData("PL0", grosssales, plmodels)
+	pl.AddData("PL6A", discount, plmodels)
 	pl.AddData("PL8A", netsales, plmodels)
 	pl.AddData("PL14A", directexpense, plmodels)
 	pl.AddData("PL74A", indirectexpense, plmodels)
@@ -308,19 +320,41 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	pl.AddData("PL44C", ebitda, plmodels)
 	pl.AddData("PL44D", ebitdaroyalties, plmodels)
 	pl.AddData("PL44E", ebitsga, plmodels)
+	pl.AddData("PL44F", ebitsgaroyalty, plmodels)
 }
 
 func (pl *SalesPL) CalcSales(masters toolkit.M) {
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	if pl.Customer.IsRD {
+
+	aplmodel := pl.PLDatas
+	for k, _ := range aplmodel {
+		if k == "PL2" || k == "PL8" || k == "PL6" || k == "PL7A" || k == "PL1" || k == "PL7" {
+			delete(aplmodel, k)
+		}
+	}
+
+	pl.PLDatas = aplmodel
+
+	switch {
+	case pl.Customer.IsRD:
 		pl.AddData("PL2", pl.GrossAmount, plmodels)
 		pl.AddData("PL8", pl.DiscountAmount, plmodels)
-		//pl.AddData("PL8A", pl.GrossAmount, plmodels)
-	} else {
+	case strings.Contains(pl.ID, "EXPORT"):
+		pl.AddData("PL6", pl.GrossAmount, plmodels)
+	case strings.Contains(pl.ID, "DISCOUNT"):
+		pl.AddData("PL7A", pl.GrossAmount, plmodels)
+	default:
 		pl.AddData("PL1", pl.GrossAmount, plmodels)
 		pl.AddData("PL7", pl.DiscountAmount, plmodels)
-		//pl.AddData("PL8A", pl.GrossAmount, plmodels)
 	}
+
+	// if pl.Customer.IsRD {
+	// 	pl.AddData("PL2", pl.GrossAmount, plmodels)
+	// 	pl.AddData("PL8", pl.DiscountAmount, plmodels)
+	// } else {
+	// 	pl.AddData("PL1", pl.GrossAmount, plmodels)
+	// 	pl.AddData("PL7", pl.DiscountAmount, plmodels)
+	// }
 }
 
 func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
@@ -516,6 +550,7 @@ func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, mode
 	if !exist {
 		return
 	}
+	// toolkit.Println(plcode, " : ", amount)
 	if ccgroup != "" {
 		plcode = plcode + "_" + ccgroup
 	}

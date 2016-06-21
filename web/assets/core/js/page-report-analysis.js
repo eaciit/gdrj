@@ -701,8 +701,11 @@ bkd.changeBreakdown = function () {
 	var all = bkd.breakdownValueAll;
 	var map = function map(arr) {
 		return arr.map(function (d) {
-			if (bkd.breakdownBy() == "customer.channelname") {
+			if ("customer.channelname" == bkd.breakdownBy()) {
 				return d;
+			}
+			if ("customer.keyaccount" == bkd.breakdownBy()) {
+				return { _id: d._id, Name: d._id };
 			}
 
 			return { _id: d.Name, Name: d.Name };
@@ -1263,7 +1266,7 @@ rpt.toggleFilterCallback = function () {
 
 vm.currentMenu('PNL Analysis');
 vm.currentTitle('PNL Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Daashboard', href: '/web/report/dashboard' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'PNL Analysis', href: '/web/report/dashboard' }]);
 
 bkd.title('P&L Analysis');
 rs.title('P&L Comparison to Net Sales');

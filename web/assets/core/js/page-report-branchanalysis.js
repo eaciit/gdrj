@@ -11,8 +11,12 @@ ba.limit = ko.observable(10);
 ba.breakdownNote = ko.observable('');
 
 ba.breakdownBy = ko.observable('customer.branchname');
+ba.breakdownByChannel = ko.observable('customer.channelname');
 ba.breakdownByFiscalYear = ko.observable('date.fiscal');
 ba.oldBreakdownBy = ko.observable(ba.breakdownBy());
+ba.optionDimensions = ko.observableArray(rpt.optionDimensions().filter(function (d) {
+	return d.field != 'customer.channelname';
+}));
 
 ba.data = ko.observableArray([]);
 ba.plmodels = ko.observableArray([]);
@@ -22,7 +26,7 @@ ba.breakdownValue = ko.observableArray([]);
 ba.breakdownRD = ko.observable("All");
 ba.optionBranch = ko.observableArray([{
 	id: "All",
-	title: "All"
+	title: "RD & Non RD"
 }, {
 	id: "OnlyRD",
 	title: "Only RD Sales"
@@ -36,7 +40,7 @@ ba.refresh = function () {
 
 	var param = {};
 	param.pls = [];
-	param.groups = [ba.breakdownBy(), 'customer.channelname' /** , 'date.year' */];
+	param.groups = [ba.breakdownByChannel(), ba.breakdownBy() /** , 'date.year' */];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, ba.fiscalYear);
 
@@ -295,10 +299,11 @@ ba.render = function () {
 		return;
 	}
 
-	var breakdowns = [ba.breakdownBy(), "customer.channelname" /** , 'date.year' */];
+	var breakdowns = [ba.breakdownByChannel(), ba.breakdownBy() /** , 'date.year' */];
 	var rows = [],
 	    datayo = [],
 	    dataok = [];
+	var breakdownKey = '_id_' + toolkit.replace(ba.breakdownByChannel(), '.', '_');
 
 	var groupbyrd = _.groupBy(ba.data(), function (a) {
 		return a._id._id_customer_branchname;
@@ -307,7 +312,7 @@ ba.render = function () {
 		var sumdata = {};
 		var sumdata2 = {};
 		datayo = _.filter(value, function (d) {
-			return d._id._id_customer_channelname == "RD";
+			return d._id[breakdownKey] == "RD";
 		});
 		if (datayo.length > 0) {
 			for (var a in datayo) {
@@ -325,7 +330,7 @@ ba.render = function () {
 		}
 
 		datayo = _.filter(value, function (d) {
-			return d._id._id_customer_channelname != "RD";
+			return d._id[breakdownKey] != "RD";
 		});
 		for (var a in datayo) {
 			$.each(datayo[a], function (keya, valuea) {
@@ -393,6 +398,14 @@ ba.render = function () {
 			var total = e['' + d._id][0] + e['' + d._id][1];
 			total = toolkit.number(total);
 			row[breakdown + ' total'] = total;
+
+			if (ba.breakdownRD() == "OnlyRD") {
+				row.PNLTotal += e['' + d._id][0];
+			} else if (ba.breakdownRD() == "NonRD") {
+				row.PNLTotal += e['' + d._id][1];
+			} else {
+				row.PNLTotal += total;
+			}
 		});
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -402,7 +415,7 @@ ba.render = function () {
 		rows.push(row);
 	});
 
-	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
+	var wrapper = toolkit.newEl('div').addClass('pivot-pnl-branch pivot-pnl').appendTo($('.breakdown-view'));
 
 	var tableHeaderWrap = toolkit.newEl('div').addClass('table-header').appendTo(wrapper);
 
@@ -416,9 +429,11 @@ ba.render = function () {
 
 	var trHeader2 = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('&nbsp;').addClass('cell-percentage-header').appendTo(trHeader1);
+	toolkit.newEl('th').attr('colspan', 2).html('&nbsp;').addClass('cell-percentage-header').appendTo(trHeader1);
 
-	toolkit.newEl('th').html('Branch Analysis').addClass('cell-percentage-header').appendTo(trHeader2);
+	toolkit.newEl('th').html('P&L').addClass('cell-percentage-header').appendTo(trHeader2);
+
+	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader2);
 
 	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
 
@@ -456,11 +471,11 @@ ba.render = function () {
 		if (d._id.length > 22) colWidth += 30;
 		var thheader = toolkit.newEl('th').html(d._id).attr('colspan', '3').addClass('align-center cell-percentage-header').appendTo(trContent1).width(colWidth);
 
-		var cell1 = toolkit.newEl('th').html('Total').addClass('align-right').attr('statuscolumn', 'TotalRD').appendTo(trContent2).width(colPercentWidth);
+		var cell1 = toolkit.newEl('th').html('Total').addClass('align-center').attr('statuscolumn', 'TotalRD').appendTo(trContent2).width(colPercentWidth);
 
-		var cell2 = toolkit.newEl('th').html('RD').addClass('align-right').attr('statuscolumn', 'RD').appendTo(trContent2).width(colPercentWidth);
+		var cell2 = toolkit.newEl('th').html('RD').addClass('align-center').attr('statuscolumn', 'RD').appendTo(trContent2).width(colPercentWidth);
 
-		var cell3 = toolkit.newEl('th').html('Non RD').attr('statuscolumn', 'NonRD').addClass('align-right cell-percentage-header').appendTo(trContent2).width(colPercentWidth);
+		var cell3 = toolkit.newEl('th').html('Non RD').attr('statuscolumn', 'NonRD').addClass('align-center cell-percentage-header').appendTo(trContent2).width(colPercentWidth);
 
 		if (ba.breakdownRD() == "OnlyRD") {
 			cell1.css('display', 'none');
@@ -493,6 +508,9 @@ ba.render = function () {
 		});
 
 		toolkit.newEl('td').html('<i></i>' + d.PNL).appendTo(trHeader);
+
+		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
+		toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
 
 		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).appendTo(tableContent);
 
@@ -666,7 +684,7 @@ ba.render = function () {
 	});
 
 	ba.showZeroValue(false);
-	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
+	$(".pivot-pnl-branch.pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
 };
 
 ba.prepareEvents = function () {
@@ -721,80 +739,89 @@ ba.showZeroValue = function (a) {
 	ba.showExpandAll(false);
 };
 
-// ba.optionBreakdownValues = ko.observableArray([])
-// ba.breakdownValueAll = { _id: 'All', Name: 'All' }
-// ba.changeBreakdown = () => {
-// 	let all = ba.breakdownValueAll
-// 	let map = (arr) => arr.map((d) => {
-// 		if (ba.breakdownBy() == "customer.channelname") {
-// 			return d
-// 		}
+ba.optionBreakdownValues = ko.observableArray([]);
+ba.breakdownValueAll = { _id: 'All', Name: 'All' };
+ba.changeBreakdown = function () {
+	var all = ba.breakdownValueAll;
+	var map = function map(arr) {
+		return arr.map(function (d) {
+			if ("customer.channelname" == ba.breakdownBy()) {
+				return d;
+			}
+			if ("customer.keyaccount" == ba.breakdownBy()) {
+				return { _id: d._id, Name: d._id };
+			}
 
-// 		return { _id: d.Name, Name: d.Name }
-// 	})
-// 	setTimeout(() => {
-// 		switch (ba.breakdownBy()) {
-// 			case "customer.areaname":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Area())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "customer.region":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Region())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "customer.zone":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "product.brand":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "customer.branchname":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "customer.channelname":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 			case "customer.keyaccount":
-// 				ba.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))
-// 				ba.breakdownValue([all._id])
-// 			break;
-// 		}
-// 	}, 100)
-// }
-// ba.changeBreakdownValue = () => {
-// 	let all = ba.breakdownValueAll
-// 	setTimeout(() => {
-// 		let condA1 = ba.breakdownValue().length == 2
-// 		let condA2 = ba.breakdownValue().indexOf(all._id) == 0
-// 		if (condA1 && condA2) {
-// 			ba.breakdownValue.remove(all._id)
-// 			return
-// 		}
+			return { _id: d.Name, Name: d.Name };
+		});
+	};
+	setTimeout(function () {
+		switch (ba.breakdownBy()) {
+			case "customer.areaname":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Area())));
+				ba.breakdownValue([all._id]);
+				break;
+			case "customer.region":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Region())));
+				ba.breakdownValue([all._id]);
+				break;
+			case "customer.zone":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())));
+				ba.breakdownValue([all._id]);
+				break;
+			case "product.brand":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())));
+				ba.breakdownValue([all._id]);
+				break;
+			case "customer.branchname":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())));
+				ba.breakdownValue([all._id]);
+				break;
+			case "customer.channelname":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())));
+				ba.breakdownValue([all._id]);
+				break;
+			case "customer.keyaccount":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())));
+				ba.breakdownValue([all._id]);
+				break;
+		}
+	}, 100);
+};
+ba.changeBreakdownValue = function () {
+	var all = ba.breakdownValueAll;
+	setTimeout(function () {
+		var condA1 = ba.breakdownValue().length == 2;
+		var condA2 = ba.breakdownValue().indexOf(all._id) == 0;
+		if (condA1 && condA2) {
+			ba.breakdownValue.remove(all._id);
+			return;
+		}
 
-// 		let condB1 = ba.breakdownValue().length > 1
-// 		let condB2 = ba.breakdownValue().reverse()[0] == all._id
-// 		if (condB1 && condB2) {
-// 			ba.breakdownValue([all._id])
-// 			return
-// 		}
+		var condB1 = ba.breakdownValue().length > 1;
+		var condB2 = ba.breakdownValue().reverse()[0] == all._id;
+		if (condB1 && condB2) {
+			ba.breakdownValue([all._id]);
+			return;
+		}
 
-// 		let condC1 = ba.breakdownValue().length == 0
-// 		if (condC1) {
-// 			ba.breakdownValue([all._id])
-// 		}
-// 	}, 100)
-// }
+		var condC1 = ba.breakdownValue().length == 0;
+		if (condC1) {
+			ba.breakdownValue([all._id]);
+		}
+	}, 100);
+};
+
+vm.currentMenu('Branch Analysis');
+vm.currentTitle('Branch Analysis');
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Branch Analysis', href: '/web/report/dashboard' }]);
+
+ba.title('Branch Analysis');
 
 rpt.refresh = function () {
-	rpt.refreshView('analysis');
-
-	// bkd.changeBreakdown()
+	ba.changeBreakdown();
 	setTimeout(function () {
-		// bkd.breakdownValue(['All'])
+		ba.breakdownValue(['All']);
 		ba.refresh(false);
 	}, 200);
 

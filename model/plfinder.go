@@ -143,18 +143,40 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 		case dbox.FilterOpIn:
 			values := []string{}
 			field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+			hasOther := false
 
 			for _, v := range each.Value.([]interface{}) {
+				if strings.ToLower(v.(string)) == "other" {
+					if !hasOther {
+						hasOther = true
+					}
+
+					continue
+				}
+
 				values = append(values, v.(string))
 			}
 
 			if len(values) > 0 {
-				subFilters := []*dbox.Filter{}
-				for _, value := range values {
-					subFilters = append(subFilters, dbox.Eq(field, value))
+				valuesInt := []interface{}{}
+				for _, each := range values {
+					valuesInt = append(valuesInt, each)
 				}
-				filters = append(filters, dbox.Or(subFilters...))
-				fmt.Printf("---- filter: %#v in %#v\n", field, values)
+
+				subFilter := []*dbox.Filter{
+					dbox.In(field, valuesInt...),
+				}
+
+				if hasOther {
+					subFilter = append(subFilter, dbox.Or(
+						dbox.Eq(field, nil),
+						dbox.Eq(field, ""),
+						dbox.Contains(field, "other"),
+					))
+				}
+
+				filters = append(filters, dbox.Or(subFilter...))
+				fmt.Printf("---- filter: %#v in %#v\n", field, valuesInt)
 			}
 		case dbox.FilterOpGte:
 			var value interface{} = each.Value
@@ -198,6 +220,11 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 			fmt.Println("---- filter: ", field, "eq", value)
 		}
 	}
+
+	// fb := dbox.NewFilterBuilder(nil)
+	// fb.AddFilter(dbox.And(filters...))
+	// a, _ := fb.Build()
+	// fmt.Printf("-----OTHEHERHER---------- %#v\n", a)
 
 	return dbox.And(filters...)
 }
@@ -372,7 +399,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 		}
 	}
 
-	fmt.Println("========= OTHER DATA")
+	fmt.Println("========= OTHER DATA BLEND INTO ONE OTHER")
 	fmt.Printf("%#v\n", otherData)
 	if len(otherData) > 1 {
 		sumOther := toolkit.M{}

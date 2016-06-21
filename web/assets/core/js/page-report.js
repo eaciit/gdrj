@@ -10,7 +10,7 @@ vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Report', href: '/web/re
 viewModel.report = new Object();
 var rpt = viewModel.report;
 
-rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', from: 'Branch', title: 'Branch' }, { _id: 'Brand', from: 'Brand', title: 'Brand' }, { _id: 'Channel', from: 'Channel', title: 'Channel' }, { _id: 'RegionC', from: 'Region', title: 'Region' }, { _id: 'From', from: 'From' }, { _id: 'To', from: 'To' }] }, { _id: 'geo', group: 'Geographical', sub: [{ _id: 'Zone', from: 'Zone', title: 'Zone' }, { _id: 'Region', from: 'Region', title: 'Region' }, { _id: 'Area', from: 'Area', title: 'Area' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'ChannelC', from: 'Channel', title: 'Channel' }, { _id: 'KeyAccount', from: 'CustomerGroup', title: 'Accounts' }, { _id: 'Customer', from: 'Customer', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' }, { _id: 'BrandP', from: 'Brand', title: 'Brand' }, { _id: 'Product', from: 'Product', title: 'SKU' }] }];
+rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', from: 'Branch', title: 'Branch' }, { _id: 'Brand', from: 'Brand', title: 'Brand' }, { _id: 'Channel', from: 'Channel', title: 'Channel' }, { _id: 'RegionC', from: 'Region', title: 'Region' }, { _id: 'From', from: 'From' }, { _id: 'To', from: 'To' }] }, { _id: 'geo', group: 'Geographical', sub: [{ _id: 'Zone', from: 'Zone', title: 'Zone' }, { _id: 'Region', from: 'Region', title: 'Region' }, { _id: 'Area', from: 'Area', title: 'Area' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'ChannelC', from: 'Channel', title: 'Channel' }, { _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' }, { _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' }, { _id: 'Customer', from: 'Customer', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' }, { _id: 'BrandP', from: 'Brand', title: 'Brand' }, { _id: 'Product', from: 'Product', title: 'SKU' }] }];
 
 // { _id: 'profit_center', group: 'Profit Center', sub: [
 // 	{ _id: 'Entity', from: 'Entity', title: 'Entity' },
@@ -37,7 +37,7 @@ rpt.getFilterValue = function () {
 	{ 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() },
 
 	// ---> Channel OK
-	{ 'Field': 'customer.customergroup', 'Op': '$in', 'Value': rpt.value.KeyAccount() }, { 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() }, { 'Field': 'product.brandcategoryid', 'Op': '$in', Value: rpt.value.HBrandCategory() },
+	{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() }, { 'Field': 'customer.customergroup', 'Op': '$in', 'Value': rpt.value.CustomerGroup() }, { 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() }, { 'Field': 'product.brandcategoryid', 'Op': '$in', Value: rpt.value.HBrandCategory() },
 	// ---> Brand OK
 	{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() }];
 
@@ -79,7 +79,7 @@ rpt.optionDimensions = ko.observableArray([
 // { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
 { field: "customer.areaname", name: "City", title: "customer_areaname" }, { field: 'customer.region', name: 'Region', title: 'customer_region' }, { field: "customer.zone", name: "Zone", title: "customer_zone" },
 // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
-{ field: 'customer.customergroupname', name: 'Customer Group', title: 'customer_customergroupname' }]);
+{ field: 'customer.keyaccount', name: 'Customer Group', title: 'customer_keyaccount' }]);
 
 // { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
 // { field: 'date.month', name: 'Month', title: 'date_month' },
@@ -228,7 +228,7 @@ rpt.filterMultiSelect = function (d) {
 			},
 			value: rpt.value[d._id]
 		});
-	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
+	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -245,7 +245,7 @@ rpt.filterMultiSelect = function (d) {
 				minLength: 1,
 				placeholder: 'Type min 1 chars'
 			});
-		} else if (d.from == 'Channel') {
+		} else if (['Channel', 'KeyAccount'].indexOf(d.from) > -1) {
 			config.dataValueField = '_id';
 		}
 
@@ -257,6 +257,10 @@ rpt.filterMultiSelect = function (d) {
 			rpt.masterData[d._id](_.sortBy(res.data, function (d) {
 				return d.Name;
 			}));
+
+			if (['KeyAccount', 'Brand'].indexOf(d.from) > -1) {
+				rpt.masterData[d._id].push({ _id: "OTHER", Name: "OTHER" });
+			}
 		});
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -282,6 +286,7 @@ rpt.filterMultiSelect = function (d) {
 					rpt.masterData[e](_.sortBy(res, function (d) {
 						return d.Name;
 					}));
+					rpt.masterData[e].push({ _id: "OTHER", Name: "OTHER" });
 				});
 
 				rpt.masterData.RegionC(rpt.masterData.Region());

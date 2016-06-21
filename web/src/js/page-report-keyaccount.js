@@ -652,7 +652,7 @@ kac.changeBreakdown = () => {
 	let all = kac.breakdownValueAll
 	setTimeout(() => {
 		kac.optionBreakdownValues([all].concat(
-			rpt.masterData.KeyAccount().map((d) => { 
+			rpt.masterData.CustomerGroup().map((d) => { 
 				return { _id: d.Name, Name: d.Name } })
 			)
 		)
@@ -687,7 +687,7 @@ vm.currentMenu('Key Account Analysis')
 vm.currentTitle('Key Account Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'Daashboard', href: '/web/report/dashboard' }
+	{ title: 'Key Account Analysis', href: '/web/report/dashboard' }
 ])
 
 kac.title('Key Account Analysis')

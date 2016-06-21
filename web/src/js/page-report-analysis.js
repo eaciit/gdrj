@@ -701,8 +701,11 @@ bkd.breakdownValueAll = { _id: 'All', Name: 'All' }
 bkd.changeBreakdown = () => {
 	let all = bkd.breakdownValueAll
 	let map = (arr) => arr.map((d) => {
-		if (bkd.breakdownBy() == "customer.channelname") {
+		if ("customer.channelname" == bkd.breakdownBy()) {
 			return d
+		}
+		if ("customer.keyaccount" == bkd.breakdownBy()) {
+			return { _id: d._id, Name: d._id }
 		}
 
 		return { _id: d.Name, Name: d.Name }
@@ -1243,7 +1246,7 @@ vm.currentMenu('PNL Analysis')
 vm.currentTitle('PNL Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'Daashboard', href: '/web/report/dashboard' }
+	{ title: 'PNL Analysis', href: '/web/report/dashboard' }
 ])
 
 bkd.title('P&L Analysis')
