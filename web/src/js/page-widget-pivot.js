@@ -42,7 +42,7 @@ pvt.refresh = () => {
 	let param = {}
 	param.pls = []
 	param.flag = o.ID
-	param.groups = [pvt.row(), pvt.column(), "date.fiscal"]
+	param.groups = rpt.parseGroups([pvt.row(), pvt.column(), "date.fiscal"])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, pvt.fiscalYear)
 
@@ -81,7 +81,7 @@ pvt.render = () => {
 	let rows = []
 	let measures = []
 
-	let data = _.sortBy(pvt.data(), (d) => toolkit.redefine(d[toolkit.replace(pvt.column(), '.', '_')], 'Other'))
+	let data = _.sortBy(pvt.data(), (d) => toolkit.redefine(d[toolkit.replace(pvt.column(), '.', '_')], ''))
 
 	;[pvt.row()].forEach((d, i) => {
 		let row = pvt.optionRows().find((e) => e.field == d)
@@ -110,6 +110,7 @@ pvt.render = () => {
 	    filterable: false,
 	    reorderable: false,
 	    dataCellTemplate: (d) => `<div class="align-right">${kendo.toString(d.dataItem.value, "n2")}</div>`,
+	    columnWidth: 130,
 	    dataSource: {
 			data: data,
 			schema: {

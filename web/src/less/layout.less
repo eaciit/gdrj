@@ -612,6 +612,26 @@ html, body{
 	}
 }
 
+.pivot-pnl-branch {
+	.table-header {
+		tr {
+			th {
+				border-right-color: white !important;
+			}
+		}
+	}
+	.table-content {
+		margin-bottom: 0;
+
+		tr {
+			th {
+				border-color: white !important;
+				border-right: 1px solid white !important;
+			}
+		}
+	}
+}
+
 .pivot-pnl {
     position: relative;
     // height: 300px;
@@ -706,6 +726,10 @@ html, body{
 
 	.cell-percentage {
 		border-right: 1px solid @color-base-grey;
+	}
+
+	.cell-percentage-header {
+		border-right: 1px solid #d6dbdc;
 	}
 
 	table {

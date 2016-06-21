@@ -10,9 +10,63 @@ vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Report', href: '/web/re
 viewModel.report = new Object();
 var rpt = viewModel.report;
 
-rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', from: 'Branch', title: 'Branch' }, { _id: 'Brand', from: 'Brand', title: 'Brand' }, { _id: 'Channel', from: 'Channel', title: 'Channel' }, { _id: 'RegionC', from: 'Region', title: 'Region' }, { _id: 'From', from: 'From' }, { _id: 'To', from: 'To' }] }, { _id: 'geo', group: 'Geographical', sub: [{ _id: 'Zone', from: 'Zone', title: 'Zone' }, { _id: 'Region', from: 'Region', title: 'Region' }, { _id: 'Area', from: 'Area', title: 'Area' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'ChannelC', from: 'Channel', title: 'Channel' }, { _id: 'KeyAccount', from: 'KeyAccount', title: 'Accounts' }, { _id: 'Customer', from: 'Customer', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' }, { _id: 'BrandP', from: 'Brand', title: 'Brand' }, { _id: 'Product', from: 'Product', title: 'SKU' }] }, { _id: 'profit_center', group: 'Profit Center', sub: [{ _id: 'Entity', from: 'Entity', title: 'Entity' }, { _id: 'Type', from: 'Type', title: 'Type' }, { _id: 'BranchPC', from: 'Branch', title: 'Branch' }, { _id: 'HQ', from: 'HQ', title: 'HQ' }] }, { _id: 'cost_center', group: 'Cost Center', sub: [{ _id: 'Group1', from: 'Group1', title: 'Group 1' }, { _id: 'Group2', from: 'Group2', title: 'Group 2' }, { _id: 'HCostCenterGroup', from: 'HCostCenterGroup', title: 'Function' }] }, { _id: 'ledger', group: 'Ledger', sub: [{ _id: 'LedgerAccount', from: 'LedgerAccount', title: 'GL Code' }] }];
+rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', from: 'Branch', title: 'Branch' }, { _id: 'Brand', from: 'Brand', title: 'Brand' }, { _id: 'Channel', from: 'Channel', title: 'Channel' }, { _id: 'RegionC', from: 'Region', title: 'Region' }, { _id: 'From', from: 'From' }, { _id: 'To', from: 'To' }] }, { _id: 'geo', group: 'Geographical', sub: [{ _id: 'Zone', from: 'Zone', title: 'Zone' }, { _id: 'Region', from: 'Region', title: 'Region' }, { _id: 'Area', from: 'Area', title: 'Area' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'ChannelC', from: 'Channel', title: 'Channel' }, { _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' }, { _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' }, { _id: 'Customer', from: 'Customer', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' }, { _id: 'BrandP', from: 'Brand', title: 'Brand' }, { _id: 'Product', from: 'Product', title: 'SKU' }] }];
 
+// { _id: 'profit_center', group: 'Profit Center', sub: [
+// 	{ _id: 'Entity', from: 'Entity', title: 'Entity' },
+// 	{ _id: 'Type', from: 'Type', title: 'Type' },
+// 	{ _id: 'BranchPC', from: 'Branch', title: 'Branch' },
+// 	{ _id: 'HQ', from: 'HQ', title: 'HQ' }
+// ] },
+// { _id: 'cost_center', group: 'Cost Center', sub: [
+// 	{ _id: 'Group1', from: 'Group1', title: 'Group 1' },
+// 	{ _id: 'Group2', from: 'Group2', title: 'Group 2' },
+// 	{ _id: 'HCostCenterGroup', from: 'HCostCenterGroup', title: 'Function' }
+// ] },
+// { _id: 'ledger', group: 'Ledger', sub: [
+// 	{ _id: 'LedgerAccount', from: 'LedgerAccount', title: 'GL Code' }
+// ] },
 rpt.pivotModel = [{ field: '_id', type: 'string', name: 'ID' }, { field: 'PC._id', type: 'string', name: 'Profit Center - ID' }, { field: 'PC.EntityID', type: 'string', name: 'Profit Center - Entity ID' }, { field: 'PC.Name', type: 'string', name: 'Profit Center - Name' }, { field: 'PC.BrandID', type: 'string', name: 'Profit Center - Brand ID' }, { field: 'PC.BrandCategoryID', type: 'string', name: 'Profit Center - Brand Category ID' }, { field: 'PC.BranchID', type: 'string', name: 'Profit Center - Branch ID' }, { field: 'PC.BranchType', type: 'int', name: 'Profit Center - Branch Type' }, { field: 'CC._id', type: 'string', name: 'Cost Center - ID' }, { field: 'CC.EntityID', type: 'string', name: 'Cost Center - Entity ID' }, { field: 'CC.Name', type: 'string', name: 'Cost Center - Name' }, { field: 'CC.CostGroup01', type: 'string', name: 'Cost Center - Cost Group 01' }, { field: 'CC.CostGroup02', type: 'string', name: 'Cost Center - Cost Group 02' }, { field: 'CC.CostGroup03', type: 'string', name: 'Cost Center - Cost Group 03' }, { field: 'CC.BranchID', type: 'string', name: 'Cost Center - Branch ID' }, { field: 'CC.BranchType', type: 'string', name: 'Cost Center - Branch Type' }, { field: 'CC.CCTypeID', type: 'string', name: 'Cost Center - Type' }, { field: 'CC.HCCGroupID', type: 'string', name: 'Cost Center - HCC Group ID' }, { field: 'CompanyCode', type: 'string', name: 'Company Code' }, { field: 'LedgerAccount', type: 'string', name: 'Ledger Account' }, { field: 'Customer._id', type: 'string', name: 'Customer - ID' }, { field: 'Customer.BranchID', type: 'string', name: 'Customer - Branch ID' }, { field: 'Customer.BranchName', type: 'string', name: 'Customer - branch Name' }, { field: 'Customer.Name', type: 'string', name: 'Customer - Name' }, { field: 'Customer.KeyAccount', type: 'string', name: 'Customer - Key Account' }, { field: 'Customer.ChannelID', type: 'string', name: 'Customer - Channel ID' }, { field: 'Customer.ChannelName', type: 'string', name: 'Customer - Channel Name' }, { field: 'Customer.CustomerGroup', type: 'string', name: 'Customer - Customer Group' }, { field: 'Customer.CustomerGroupName', type: 'string', name: 'Customer - Customer Group Name' }, { field: 'Customer.National', type: 'string', name: 'Customer - National' }, { field: 'Customer.Zone', type: 'string', name: 'Customer - Zone' }, { field: 'Customer.Region', type: 'string', name: 'Customer - Region' }, { field: 'Customer.Area', type: 'string', name: 'Customer - Area' }, { field: 'Product._id', type: 'string', name: 'Product - ID' }, { field: 'Product.Name', type: 'string', name: 'Product - Name' }, { field: 'Product.ProdCategory', type: 'string', name: 'Product - Category' }, { field: 'Product.Brand', type: 'string', name: 'Product - Brand' }, { field: 'Product.BrandCategoryID', type: 'string', name: 'Product - Brand Category ID' }, { field: 'Product.PCID', type: 'string', name: 'Product - PCID' }, { field: 'Product.ProdSubCategory', type: 'string', name: 'Product - Sub Category' }, { field: 'Product.ProdSubBrand', type: 'string', name: 'Product - Sub Brand' }, { field: 'Product.ProdVariant', type: 'string', name: 'Product - Variant' }, { field: 'Product.ProdDesignType', type: 'string', name: 'Product - Design Type' }, { field: 'Date.ID', type: 'string', name: 'Date - ID' }, { field: 'Date.Date', type: 'string', name: 'Date - Date' }, { field: 'Date.Month', type: 'string', name: 'Date - Month' }, { field: 'Date.Quarter', type: 'int', name: 'Date - Quarter' }, { field: 'Date.YearTxt', type: 'string', name: 'Date - YearTxt' }, { field: 'Date.QuarterTxt', type: 'string', name: 'Date - QuarterTxt' }, { field: 'Date.Year', type: 'int', name: 'Date - Year' }, { field: 'PLGroup1', type: 'string', name: 'PL Group 1' }, { field: 'PLGroup2', type: 'string', name: 'PL Group 2' }, { field: 'PLGroup3', type: 'string', name: 'PL Group 3' }, { field: 'PLGroup4', type: 'string', name: 'PL Group 4' }, { field: 'Value1', type: 'double', name: 'Value 1', as: 'dataPoints' }, { field: 'Value2', type: 'double', name: 'Value 2', as: 'dataPoints' }, { field: 'Value3', type: 'double', name: 'Value 3', as: 'dataPoints' }, { field: 'PCID', type: 'string', name: 'Profit Center ID' }, { field: 'CCID', type: 'string', name: 'Cost Center ID' }, { field: 'SKUID', type: 'string', name: 'SKU ID' }, { field: 'PLCode', type: 'string', name: 'PL Code' }, { field: 'Month', type: 'string', name: 'Month' }, { field: 'Year', type: 'string', name: 'Year' }];
+
+rpt.getFilterValue = function () {
+	var multiFiscalYear = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+	var fiscalField = arguments.length <= 1 || arguments[1] === undefined ? rpt.value.FiscalYear : arguments[1];
+
+	var res = [{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) }, { 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) }, { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() }, { 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
+	// ---> Region OK
+	{ 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() },
+
+	// ---> Channel OK
+	{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() }, { 'Field': 'customer.customergroup', 'Op': '$in', 'Value': rpt.value.CustomerGroup() }, { 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() }, { 'Field': 'product.brandcategoryid', 'Op': '$in', Value: rpt.value.HBrandCategory() },
+	// ---> Brand OK
+	{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() }];
+
+	if (fiscalField !== false) {
+		if (multiFiscalYear) {
+			res.push({
+				'Field': 'date.fiscal',
+				'Op': '$in',
+				'Value': fiscalField()
+			});
+		} else {
+			res.push({
+				'Field': 'date.fiscal',
+				'Op': '$eq',
+				'Value': fiscalField()
+			});
+		}
+	}
+
+	res = res.filter(function (d) {
+		if (d.Value instanceof Array) {
+			return d.Value.length > 0;
+		} else {
+			return d.Value != '';
+		}
+	});
+
+	return res;
+};
 
 rpt.optionFiscalYears = ko.observableArray(['2014-2015', '2015-2016']);
 rpt.analysisIdeas = ko.observableArray([]);
@@ -25,12 +79,27 @@ rpt.optionDimensions = ko.observableArray([
 // { field: 'customer.zone', name: 'Zone', title: 'customer_zone' },
 { field: "customer.areaname", name: "City", title: "customer_areaname" }, { field: 'customer.region', name: 'Region', title: 'customer_region' }, { field: "customer.zone", name: "Zone", title: "customer_zone" },
 // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
-{ field: 'customer.keyaccount', name: 'Key Account', title: 'customer_keyaccount' }]);
+{ field: 'customer.keyaccount', name: 'Customer Group', title: 'customer_keyaccount' }]);
 
 // { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
 // { field: 'date.month', name: 'Month', title: 'date_month' },
 rpt.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
+rpt.parseGroups = function (what) {
+	return what;
+
+	if (what.indexOf('customer.branchname') > -1) {
+		what.push('customer.branchid');
+	}
+	// if (what.indexOf('customer.channelname') > -1) {
+	// 	what.push('customer.channelid')
+	// }
+	// if (what.indexOf('customer.customergroupname') > -1) {
+	// 	what.push('customer.customergroup')
+	// }
+
+	return what;
+};
 rpt.mode = ko.observable('render');
 rpt.refreshView = ko.observable('');
 rpt.modecustom = ko.observable(false);
@@ -136,7 +205,7 @@ rpt.filterMultiSelect = function (d) {
 			autoBind: false,
 			minLength: 1,
 			placeholder: 'Type min 1 chars',
-			dataValueField: '_id',
+			dataValueField: 'Name',
 			dataTextField: 'Name',
 			template: function template(d) {
 				return d._id + ' - ' + d.Name;
@@ -159,7 +228,7 @@ rpt.filterMultiSelect = function (d) {
 			},
 			value: rpt.value[d._id]
 		});
-	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'LedgerAccount'].indexOf(d.from) > -1) {
+	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -172,10 +241,11 @@ rpt.filterMultiSelect = function (d) {
 			config.dataValueField = 'Name';
 		} else if (d.from == 'Product') {
 			config = $.extend(true, config, {
+				dataValueField: 'Name',
 				minLength: 1,
 				placeholder: 'Type min 1 chars'
 			});
-		} else if (d.from == 'Channel') {
+		} else if (['Channel', 'KeyAccount'].indexOf(d.from) > -1) {
 			config.dataValueField = '_id';
 		}
 
@@ -184,16 +254,13 @@ rpt.filterMultiSelect = function (d) {
 				return;
 			}
 
-			var data = _.map(res.data, function (e) {
-				if (d.from == 'KeyAccount') {
-					return { _id: e._id, Name: e._id };
-				}
-				return e;
-			});
-
-			rpt.masterData[d._id](_.sortBy(data, function (d) {
+			rpt.masterData[d._id](_.sortBy(res.data, function (d) {
 				return d.Name;
 			}));
+
+			if (['KeyAccount', 'Brand'].indexOf(d.from) > -1) {
+				rpt.masterData[d._id].push({ _id: "OTHER", Name: "OTHER" });
+			}
 		});
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -219,6 +286,7 @@ rpt.filterMultiSelect = function (d) {
 					rpt.masterData[e](_.sortBy(res, function (d) {
 						return d.Name;
 					}));
+					rpt.masterData[e].push({ _id: "OTHER", Name: "OTHER" });
 				});
 
 				rpt.masterData.RegionC(rpt.masterData.Region());
@@ -239,9 +307,11 @@ rpt.toggleFilter = function () {
 	if (panelFilter.is(':visible')) {
 		panelFilter.hide();
 		panelContent.attr('class', 'col-md-12 col-sm-12 ez panel-content');
+		$('.breakdown-filter').removeAttr('style');
 	} else {
 		panelFilter.show();
 		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content');
+		$('.breakdown-filter').css('width', '60%');
 	}
 
 	$('.k-grid').each(function (i, d) {
@@ -257,36 +327,7 @@ rpt.toggleFilter = function () {
 	$('.k-chart').each(function (i, d) {
 		$(d).data('kendoChart').redraw();
 	});
-};
-rpt.getFilterValue = function () {
-	var multiFiscalYear = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
-	var fiscalField = arguments.length <= 1 || arguments[1] === undefined ? rpt.value.FiscalYear : arguments[1];
-
-	var res = [{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) }, { 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) }, { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() }, { 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() }, { 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() }, { 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() }, { 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() }, { 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() }];
-
-	if (multiFiscalYear) {
-		res.push({
-			'Field': 'date.fiscal',
-			'Op': '$in',
-			'Value': fiscalField()
-		});
-	} else {
-		res.push({
-			'Field': 'date.fiscal',
-			'Op': '$eq',
-			'Value': fiscalField()
-		});
-	}
-
-	res = res.filter(function (d) {
-		if (d.Value instanceof Array) {
-			return d.Value.length > 0;
-		} else {
-			return d.Value != '';
-		}
-	});
-
-	return res;
+	rpt.panel_relocated();
 };
 
 rpt.getIdeas = function () {

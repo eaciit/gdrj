@@ -14,6 +14,7 @@ import (
 	"github.com/eaciit/toolkit"
 
 	"flag"
+	"strings"
 )
 
 var mutex = new(sync.Mutex)
@@ -40,19 +41,17 @@ func setinitialconnection() {
 	}
 }
 
-var masters = toolkit.M{}
+var masters, masterbranchs, mastercust = toolkit.M{}, toolkit.M{}, toolkit.M{}
 
-/*
 func getCursor(obj orm.IModel) dbox.ICursor {
 	c, e := gdrj.Find(obj,
 		nil, nil)
-		//toolkit.M{}.Set("take", 10))
+	//toolkit.M{}.Set("take", 10))
 	if e != nil {
 		return nil
 	}
 	return c
 }
-*/
 
 var subchannels = toolkit.M{}
 
@@ -99,6 +98,60 @@ func prepMaster() {
 			o := obj.(*gdrj.PLModel)
 			h[o.ID] = o
 		}).(map[string]*gdrj.PLModel))
+	// promo
+	// adv
+	promos := map[string]*gdrj.RawDataPL{}
+	csrpromo, _ := gdrj.Find(new(gdrj.RawDataPL), dbox.Eq("src", "APROMO"), nil)
+	defer csrpromo.Close()
+	for {
+
+		o := new(gdrj.RawDataPL)
+		e := csrpromo.Fetch(o, 1, false)
+		if e != nil {
+			break
+		}
+
+		agroup := "promo"
+		if strings.Contains(o.Grouping, "Advertising") {
+			agroup = "adv"
+		}
+
+		key := toolkit.Sprintf("%d_%d_%s", o.Year, o.Period, agroup)
+		prm, exist := promos[key]
+		if !exist {
+			prm = new(gdrj.RawDataPL)
+		}
+
+		prm.AmountinIDR += o.AmountinIDR
+		promos[key] = prm
+
+	}
+	masters.Set("promo", promos)
+	// masterbranchs = toolkit.M{}
+	// cmb := getCursor(new(gdrj.MasterBranch))
+	// defer cmb.Close()
+	// for {
+	// 	stx := toolkit.M{}
+	// 	e := cmb.Fetch(&stx, 1, false)
+	// 	if e != nil {
+	// 		break
+	// 	}
+
+	// 	masterbranchs.Set(stx.Get("_id", "").(string), stx)
+	// }
+
+	// ccb := getCursor(new(gdrj.Customer))
+	// defer ccb.Close()
+	// for {
+	// 	cust := new(gdrj.Customer)
+	// 	e := ccb.Fetch(cust, 1, false)
+	// 	if e != nil {
+	// 		break
+	// 	}
+
+	// 	mastercust.Set(cust.ID, cust)
+	// }
+
 }
 
 func makeDateFromInt(i int, endofmth bool) time.Time {
@@ -151,11 +204,13 @@ func main() {
 	toolkit.Println("Reading Master")
 	prepMaster()
 
+	toolkit.Println(masterbranchs)
+
 	//spl := new(gdrj.SalesPL)
 	//toolkit.Println("Delete existing")
 	//conn.NewQuery().From(spl.TableName()).Delete().Exec(nil)
 
-	//f = dbox.Eq("_id", "CN/GBP/15000011_10")
+	// f = dbox.Eq("_id", "RK/IMN/14000038_1")
 	c, _ := gdrj.Find(new(gdrj.SalesPL), f, nil)
 	defer c.Close()
 
@@ -213,37 +268,89 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 	for spl = range jobs {
 
 		//-- update channel and subchannel
-		subchannel := subchannels.GetString(spl.Customer.CustType)
-		if spl.Customer.ChannelID == "I1" {
-			spl.Customer.ReportChannel = "RD"
-			spl.Customer.ReportSubChannel = "RD"
-		} else if spl.Customer.ChannelID == "I3" {
-			spl.Customer.ReportChannel = "MT"
-			if subchannel == "" {
-				spl.Customer.ReportSubChannel = subchannels.GetString("M3")
-			} else {
-				spl.Customer.ReportSubChannel = subchannel
-			}
-		} else if spl.Customer.ChannelID == "I4" {
-			spl.Customer.ReportChannel = "IT"
-			spl.Customer.ReportSubChannel = "IT"
-		} else if spl.Customer.ChannelID == "I6" {
-			spl.Customer.ReportChannel = "Motoris"
-			spl.Customer.ReportSubChannel = "Motoris"
-		} else {
-			spl.Customer.ChannelID = "I2"
-			spl.Customer.ReportChannel = "GT"
+		/*
 			subchannel := subchannels.GetString(spl.Customer.CustType)
-			if subchannel == "" {
-				spl.Customer.ReportSubChannel = "R18 - Lain-lain"
+			if spl.Customer.ChannelID == "I1" {
+				spl.Customer.ReportChannel = "RD"
+				spl.Customer.ReportSubChannel = "RD"
+			} else if spl.Customer.ChannelID == "I3" {
+				spl.Customer.ReportChannel = "MT"
+				if subchannel == "" {
+					spl.Customer.ReportSubChannel = subchannels.GetString("M3")
+				} else {
+					spl.Customer.ReportSubChannel = subchannel
+				}
+			} else if spl.Customer.ChannelID == "I4" {
+				spl.Customer.ReportChannel = "IT"
+				spl.Customer.ReportSubChannel = "IT"
+			} else if spl.Customer.ChannelID == "I6" {
+				spl.Customer.ReportChannel = "Motoris"
+				spl.Customer.ReportSubChannel = "Motoris"
 			} else {
-				spl.Customer.ReportSubChannel = subchannel
+				spl.Customer.ChannelID = "I2"
+				spl.Customer.ReportChannel = "GT"
+				subchannel := subchannels.GetString(spl.Customer.CustType)
+				if subchannel == "" {
+					spl.Customer.ReportSubChannel = "R18 - Lain-lain"
+				} else {
+					spl.Customer.ReportSubChannel = subchannel
+				}
 			}
-		}
+		*/
+		//-- For fix branch name
+		// spl.Customer.BranchName = toolkit.ToString(masterbranchs.Get(spl.Customer.BranchID, ""))
 
+		//Inotial value
+		/*
+			if spl.Customer.National == "" {
+				spl.Customer.National = "OTHER"
+			}
+
+			if spl.Customer.Zone == "" {
+				spl.Customer.Zone = "OTHER"
+			}
+
+			if spl.Customer.Region == "" {
+				spl.Customer.Region = "OTHER"
+			}
+
+			if spl.Customer.AreaName == "" {
+				spl.Customer.AreaName = "OTHER"
+			}
+		*/
+		// Fix from Customer
+		/*
+			cust, check := mastercust[spl.Customer.ID].(*gdrj.Customer)
+			if check {
+				spl.Customer.National = cust.National
+				spl.Customer.Zone = cust.Zone
+				spl.Customer.Region = cust.Region
+				spl.Customer.AreaName = cust.AreaName
+			} else {
+				tkm, check := masterbranchs[spl.Customer.BranchID].(toolkit.M)
+				if check {
+					spl.Customer.National = tkm.Get("national", "").(string)
+					spl.Customer.Zone = tkm.Get("zone", "").(string)
+					spl.Customer.Region = tkm.Get("region", "").(string)
+					spl.Customer.AreaName = tkm.Get("area", "").(string)
+				}
+			}
+		*/
+		//-- For export
+		// if strings.Contains(spl.ID, "EXPORT") {
+		// 	spl.Customer.ChannelID = "EXP"
+		// 	spl.Customer.ChannelName = "Export"
+
+		// 	spl.Customer.ReportChannel = "EXPORT"
+		// 	spl.Customer.ReportSubChannel = "EXPORT"
+		// }
+
+		//--Recalculate the PL Model value
+
+		spl.CalcPromo(masters)
 		spl.CalcSum(masters)
-
-		workerConn.NewQuery().From(spl.TableName()).
+		tablename := toolkit.Sprintf("%v-1", spl.TableName())
+		workerConn.NewQuery().From(tablename).
 			Save().Exec(toolkit.M{}.Set("data", spl))
 
 		result <- spl.ID

@@ -91,7 +91,7 @@ crt.configure = (series, colorseries, maxchart = 0) => {
 				font: 'Source Sans Pro 11',
 				template: (d) => {
 					if ($.trim(d.value) == '') {
-						return 'Other'
+						return ''
 					}
 
 					let max = 20
@@ -134,7 +134,7 @@ crt.configure = (series, colorseries, maxchart = 0) => {
 }
 
 crt.render = () => {
-	let data = _.sortBy(crt.data(), (d) => toolkit.redefine(d[toolkit.replace(crt.categoryAxisField(), '.', '_')], 'Other'))
+	let data = _.sortBy(crt.data(), (d) => toolkit.redefine(d[toolkit.replace(crt.categoryAxisField(), '.', '_')], ''))
 	crt.data(data)
 			
 	let series = ko.mapping.toJS(crt.series)
@@ -236,7 +236,7 @@ crt.refresh = () => {
 	let param = {}
 	param.pls = []
 	param.flag = o.ID
-	param.groups = [crt.categoryAxisField(), "date.fiscal"]
+	param.groups = rpt.parseGroups([crt.categoryAxisField(), "date.fiscal"])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, crt.fiscalYear)
 

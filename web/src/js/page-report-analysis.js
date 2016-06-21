@@ -18,25 +18,6 @@ bkd.zeroValue = ko.observable(false)
 bkd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 bkd.breakdownValue = ko.observableArray([])
 
-bkd.generateDataForX = () => {
-	let param = {
-	    "pls": [],
-	    "groups": ["customer.channelname", "customer.branchname", "product.brand", "customer.region", "date.year", "date.fiscal"],
-	    "aggr": "sum",
-	    "filters": [{
-	        "Field": "date.year",
-	        "Op": "$gte",
-	        "Value": "2013-12-31T17:00:00.000Z"
-	    }, {
-	        "Field": "date.year",
-	        "Op": "$lte",
-	        "Value": "2016-12-30T17:00:00.000Z"
-	    }]
-	}
-
-	toolkit.ajaxPost("/report/getpnldatanew", param)
-}
-
 bkd.refresh = (useCache = false) => {
 	if (bkd.breakdownValue().length == 0) {
 		toolkit.showError('Please choose at least breakdown value')
@@ -45,7 +26,7 @@ bkd.refresh = (useCache = false) => {
 
 	let param = {}
 	param.pls = []
-	param.groups = [bkd.breakdownBy() /** , 'date.year' */]
+	param.groups = rpt.parseGroups([bkd.breakdownBy()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, bkd.fiscalYear)
 
@@ -292,6 +273,49 @@ bkd.renderDetail = (plcode, breakdowns) => {
 	$('.grid-detail').kendoGrid(config)
 }
 
+bkd.arrChangeParent = ko.observableArray([
+	{ idfrom: 'PL6A', idto: '', after: 'PL0'},
+	{ idfrom: 'PL1', idto: 'PL8A', after: 'PL8A'},
+	{ idfrom: 'PL2', idto: 'PL8A', after: 'PL8A'},
+	{ idfrom: 'PL3', idto: 'PL8A', after: 'PL8A'},
+	{ idfrom: 'PL4', idto: 'PL8A', after: 'PL8A'},
+	{ idfrom: 'PL5', idto: 'PL8A', after: 'PL8A'},
+	{ idfrom: 'PL6', idto: 'PL8A', after: 'PL8A'}
+])
+
+// bkd.arrFormulaPL = ko.observableArray([
+// 	{ id: "PL0", formula: ["PL1","PL2","PL3","PL4","PL5","PL6"], cal: "sum"},
+// 	{ id: "PL6A", formula: ["PL7","PL8","PL7A"], cal: "sum"},
+// ])
+// bkd.arrFormulaPL = ko.observableArray([
+// 	{ id: "PL1", formula: ["PL7"], cal: "sum"},
+// 	{ id: "PL2", formula: ["PL8"], cal: "sum"},
+// ])
+
+bkd.arrFormulaPL = ko.observableArray([
+	{ id: "PL2", formula: ["PL2", "PL8"], cal: "sum"},
+	{ id: "PL1", formula: ["PL8A", "PL2", "PL6"], cal: "min"},
+])
+
+bkd.changeParent = (elemheader, elemcontent, PLCode) => {
+	let change = _.find(bkd.arrChangeParent(), (a) => {
+		return a.idfrom == PLCode
+	})
+	if (change != undefined){
+		if (change.idto != ''){
+			elemheader.attr('idparent', change.idto)
+			elemcontent.attr('idcontparent', change.idto)
+		} else {
+			elemheader.removeAttr('idparent')
+			elemheader.find('td:eq(0)').css('padding-left','8px')
+			elemcontent.removeAttr('idcontparent')
+		}
+		return change.after
+	} else {
+		return ""
+	}
+}
+
 bkd.idarrayhide = ko.observableArray(['PL44A'])
 bkd.render = () => {
 	if (bkd.data().length == 0) {
@@ -308,7 +332,7 @@ bkd.render = () => {
 
 		breakdowns.forEach((e) => {
 			let title = d._id[`_id_${toolkit.replace(e, '.', '_')}`]
-			title = toolkit.whenEmptyString(title, 'Uncategorized')
+			title = toolkit.whenEmptyString(title, '')
 			d.breakdowns[e] = title
 			titleParts.push(title)
 		})
@@ -325,13 +349,36 @@ bkd.render = () => {
 	]
 	let netSalesPLCode = 'PL8A'
 	let netSalesPlModel = bkd.plmodels().find((d) => d._id == netSalesPLCode)
-	let netSalesRow = {}
+	let netSalesRow = {}, changeformula, formulayo
+
+	data.forEach((e,a) => {
+		bkd.arrFormulaPL().forEach((d) => {
+			// let total = toolkit.sum(d.formula, (f) => e[f])
+			let total = 0
+			d.formula.forEach((f, l) => {
+				if (l == 0) {
+					total = e[f]
+				} else {
+					if (d.cal == 'sum') {
+						total += e[f]
+					} else {
+						total -= e[f]
+					}
+				}
+			})
+
+			data[a][d.id] = total
+		})
+	})
+	// console.log(data)
+
 	data.forEach((e) => {
 		let breakdown = e._id
 		let value = e[`${netSalesPlModel._id}`]; 
 		value = toolkit.number(value)
 		netSalesRow[breakdown] = value
 	})
+
 	data = _.orderBy(data, (d) => netSalesRow[d._id], 'desc')
 
 	plmodels.forEach((d) => {
@@ -345,12 +392,15 @@ bkd.render = () => {
 		})
 		data.forEach((e) => {
 			let breakdown = e._id
-			let percentage = e[`${d._id}`] / row.PNLTotal * 100; 
+			let percentage = toolkit.number(e[`${d._id}`] / row.PNLTotal) * 100; 
 			percentage = toolkit.number(percentage)
 
 			if (d._id != netSalesPLCode) {
-				percentage = row[breakdown] / netSalesRow[breakdown] * 100
+				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
 			}
+
+			if (percentage < 0)
+				percentage = percentage * -1
 
 			row[`${breakdown} %`] = percentage
 		})
@@ -361,6 +411,7 @@ bkd.render = () => {
 
 		rows.push(row)
 	})
+	// console.log(rows)
 
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl')
@@ -414,6 +465,8 @@ bkd.render = () => {
 	let grouppl2 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
 	let grouppl3 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
+		if (d._id.length > 22)
+			colWidth += 30
 		toolkit.newEl('th')
 			.html(d._id)
 			.addClass('align-right')
@@ -527,6 +580,9 @@ bkd.render = () => {
 					child = $(`tr[idparent=${PLyo.PLCode}]`).length
 					$columnElem = $(`.table-content tr.column${PLyo2.PLCode}`)
 					$columnElem.attr('idcontparent', PLyo.PLCode)
+					let PLCodeChange = bkd.changeParent($trElem, $columnElem, $columnElem.attr('idpl'))
+					if (PLCodeChange != "")
+						PLyo.PLCode = PLCodeChange
 					if (child > 1){
 						$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
 						$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
@@ -549,6 +605,9 @@ bkd.render = () => {
 						child = $(`tr[idparent=${PLyo.PLCode}]`).length
 						$columnElem = $(`.table-content tr.column${PLyo2.PLCode}`)
 						$columnElem.attr('idcontparent', PLyo.PLCode)
+						let PLCodeChange = bkd.changeParent($trElem, $columnElem, $columnElem.attr('idpl'))
+						if (PLCodeChange != "")
+							PLyo.PLCode = PLCodeChange
 						if (child > 1){
 							$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
 							$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
@@ -663,8 +722,11 @@ bkd.breakdownValueAll = { _id: 'All', Name: 'All' }
 bkd.changeBreakdown = () => {
 	let all = bkd.breakdownValueAll
 	let map = (arr) => arr.map((d) => {
-		if (bkd.breakdownBy() == "customer.channelname") {
+		if ("customer.channelname" == bkd.breakdownBy()) {
 			return d
+		}
+		if ("customer.keyaccount" == bkd.breakdownBy()) {
+			return { _id: d._id, Name: d._id }
 		}
 
 		return { _id: d.Name, Name: d.Name }
@@ -747,6 +809,9 @@ rs.getSalesHeaderList = () => {
 	app.ajaxPost("/report/getplmodel", {}, (res) => {
 		let data = res.map((d) => app.o({ field: d._id, name: d.PLHeader3 }))
 			.filter((d) => d.PLHeader3 !== rs.selectedPNLNetSales())
+		data = _.sortBy(data, function(item) {
+					return [item.name]
+				})
 		rs.optionDimensionSelect(data)
 
 		let prev = rs.selectedPNL()
@@ -763,7 +828,7 @@ rs.refresh = (useCache = false) => {
 
 	let param = {}
 	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
-	param.groups = [rs.breakdownBy() /** , 'date.year' */]
+	param.groups = rpt.parseGroups([rs.breakdownBy()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear)
 
@@ -791,7 +856,7 @@ rs.refresh = (useCache = false) => {
 			var sumNetSales = _.reduce(dataAllPNLNetSales, (m, x) => m + x.value, 0);
 			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x.value, 0)
 			let countPNL = dataAllPNL.length
-			let avgPNL = sumPNL / countPNL
+			let avgPNL = sumPNL
 
 			let dataScatter = []
 			let multiplier = (sumNetSales == 0 ? 1 : sumNetSales)
@@ -799,15 +864,15 @@ rs.refresh = (useCache = false) => {
 			dataAllPNL.forEach((d, i) => {
 				dataScatter.push({
 					valueNetSales: dataAllPNLNetSales[i].value,
-					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, 'Uncategorized'),
+					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, ''),
 					category: d._id[`_id_${app.idAble(rs.breakdownBy())}`],
 					year: d._id._id_date_year,
 					valuePNL: Math.abs(d.value),
 					valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
 					avgPNL: Math.abs(avgPNL),
 					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
-					sumPNL: Math.abs(sumPNL),
-					sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
+					// sumPNL: Math.abs(sumPNL),
+					// sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
 				})
 			})
 
@@ -855,46 +920,43 @@ rs.generateReport = (data, years) => {
             type: "line",
             missingValues: "gap",
         },
-		seriesColors: ["#ff8d00", "#678900", '#3498DB'],
+		seriesColors: ['#3498DB', "#678900"],
 		series: [{
-			name: `Sum of ${breakdownTitle} to ${netSalesTitle}`,
-			field: 'sumPNLPercentage',
-			width: 3,
-			tooltip: {
-				visible: true,
-				template: `Sum of ${breakdownTitle} to ${netSalesTitle}: #: kendo.toString(dataItem.sumPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.sumPNL, 'n2') #)`
-			},
-			markers: {
-				visible: false
-			}
-		}, {
-			name: `Average of ${breakdownTitle} to ${netSalesTitle}`,
+			name: `Average ${breakdownTitle} to ${netSalesTitle}`,
 			field: 'avgPNLPercentage',
-			dashType: "dash",
 			width: 3,
+			line: {
+				border: {
+					width: 1,
+					color: 'white'
+				},
+			},
 			tooltip: {
 				visible: true,
-				template: `Average of ${breakdownTitle} to ${netSalesTitle}: #: kendo.toString(dataItem.avgPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.avgPNL, 'n2') #)`
+				template: `Average ${breakdownTitle} to ${netSalesTitle}: #: kendo.toString(dataItem.avgPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.avgPNL, 'n2') #)`
 			},
 			markers: {
 				visible: false
 			}
-		}, {
+		},
+		{
+			type: 'column',
 			name: `${breakdownTitle} to ${netSalesTitle}`,
 			field: "valuePNLPercentage",
-			width: 3,
-			opacity: 0,
-			markers: {
-				type: 'cross',
-				size: 12
+			overlay: {
+				gradient: 'none'
+			},
+			border: {
+				width: 0
 			},
 			tooltip: {
 				visible: true,
 				template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
 			},
 			labels: {
+				font: '"Source Sans Pro" 11px',
 				visible: true,
-				position: 'top',
+				position: 'outsideEnd',
 				template: (d) => {
 					return `${breakdownTitle} ${d.category}\n${kendo.toString(d.value, 'n2')} %`
 				}
@@ -911,17 +973,13 @@ rs.generateReport = (data, years) => {
         categoryAxis: [{
             field: 'category',
             labels: {
-            	rotation: 20
+            	rotation: 20,
+				font: '"Source Sans Pro" 11px',
             },
 			majorGridLines: {
 				color: '#fafafa'
 			}
-		}/**, {
-        	categories: years,
-			line: {
-				visible: false
-			}
-        }*/],
+		}],
     })
 }
 
@@ -935,43 +993,49 @@ ccr.title = ko.observable('Chart Comparison')
 ccr.contentIsLoading = ko.observable(false)
 ccr.categoryAxisField = ko.observable('category')
 ccr.breakdownBy = ko.observable('')
-ccr.limitchart = ko.observable(4)
+ccr.limitchart = ko.observable(6)
 ccr.optionComparison = ko.observableArray([
-	{ field: 'qty', name: 'Quantity' },
 	{ field: 'outlet', name: 'Outlet' },
 	{ field: 'price', name: 'Price' },
+	{ field: 'qty', name: 'Quantity' },
 ])
-ccr.comparison = ko.observableArray(['qty', 'outlet'])
+ccr.comparison = ko.observableArray(['price', 'qty'])
 ccr.fiscalYear = ko.observable(rpt.value.FiscalYear())
 ccr.order = ko.observable(ccr.optionComparison()[2].field)
 
 ccr.getDecreasedQty = (useCache = false) => {
 	let param = {}
-	param.filters = []
-	// param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
-	// param.filters = _.remove(param.filters, (d) => d.Field != "date.fiscal")
+	param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
+	param.groups = ["skuid", "date.quartertxt"]
+
+	let fetch = () => {
+		toolkit.ajaxPost(`/report/GetDecreasedQty`, param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
+			}
+
+			ccr.contentIsLoading(false)
+			ccr.dataComparison(res.Data.Data)
+			ccr.plot()
+		}, () => {
+			ccr.contentIsLoading(false)
+		}, {
+			cache: (useCache == true) ? 'chart comparison' : false
+		})
+	}
 
 	ccr.contentIsLoading(true)
-	toolkit.ajaxPost(`/report/GetDecreasedQty`, param, (res) => {
-		if (res.Status == "NOK") {
-			return
-		}
-
-		ccr.dataComparison(res.Data)
-		ccr.contentIsLoading(false)
-		ccr.plot()
-	}, () => {
-		ccr.contentIsLoading(false)
-	}, {
-		cache: (useCache == true) ? 'chart comparison' : false
-	})
+	fetch()
 }
 ccr.refresh = () => {
-	if (ccr.dataComparison().length > 0) {
-		ccr.plot()
-	} else {
+	// if (ccr.dataComparison().length > 0) {
+	// 	ccr.plot()
+	// } else {
 		ccr.getDecreasedQty()
-	}
+	// }
 }
 ccr.plot = () => {
 	let orderedData = _.orderBy(ccr.dataComparison(), (d) => {
@@ -1018,6 +1082,7 @@ ccr.plot = () => {
 	// let sortPriceQty = _.take(_.sortBy(tempdata, function(item) {
 	//    return [item.qty, item.price]
 	// }).reverse(), ccr.limitchart())
+	console.log("--------> TEMP DATA", tempdata)
 	let sortPriceQty = _.take(tempdata, ccr.limitchart())
 	ccr.data(sortPriceQty)
 	ccr.render()
@@ -1037,7 +1102,12 @@ ccr.render = () => {
 						width: 3
 					}
 				},
-				axis: "price"
+				axis: "price",
+				color: '#5499C7',
+				labels: {
+					visible: false,
+					background: 'rgba(84,153,199,0.2)'
+				}
 			},
 			qty: { 
 				name: 'Qty', 
@@ -1051,7 +1121,12 @@ ccr.render = () => {
 						width: 3
 					}
 				},
-				axis: "qty"
+				axis: "qty",
+				color: '#ff8d00',
+				labels: {
+					visible: false,
+					background: 'rgba(255,141,0,0.2)'
+				}
 			},
 			outlet: { 
 				name: 'Outlet', 
@@ -1070,7 +1145,12 @@ ccr.render = () => {
 					style: 'smooth',
 					type: 'column',
 				},
-				axis: "outlet"
+				axis: "outlet",
+				color: '#678900',
+				labels: {
+					visible: false,
+					background: 'rgba(103,137,0,0.2)'
+				}
 			}
 		}
 
@@ -1130,10 +1210,17 @@ ccr.render = () => {
 			// 	data: data
 			// },
 			series: series,
-			seriesColors: ["#5499C7", "#ff8d00", "#678900"],
 			seriesDefaults: {
 	            type: "line",
-	            style: "smooth"
+	            style: "smooth",
+				labels: {
+					font: '"Source Sans Pro" 11px',
+					visible: true,
+					position: 'top',
+					template: (d) => {
+						return `${d.series.name}: ${kendo.toString(d.value, 'n0')}`
+					}
+				}
 			},
 			categoryAxis: {
 				baseUnit: "month",
@@ -1144,7 +1231,7 @@ ccr.render = () => {
 				},
 				axisCrossingValue: [0, 8],
 				labels: {
-					font: 'Source Sans Pro 11',
+					font: '"Source Sans Pro" 11px',
 					rotation: 40
 					// template: (d) => `${toolkit.capitalize(d.value).slice(0, 3)}`
 				}
@@ -1155,7 +1242,7 @@ ccr.render = () => {
 			valueAxes: valueAxes,
 			tooltip: {
 				visible: true,
-				template: (d) => `${d.series.name} on : ${kendo.toString(d.value, 'n2')}`
+				template: (d) => `${d.series.name} on : ${kendo.toString(d.value, 'n0')}`
 			}
 		}
 	}
@@ -1183,7 +1270,7 @@ vm.currentMenu('PNL Analysis')
 vm.currentTitle('PNL Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'Daashboard', href: '/web/report/dashboard' }
+	{ title: 'PNL Analysis', href: '/web/report/dashboard' }
 ])
 
 bkd.title('P&L Analysis')

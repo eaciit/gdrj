@@ -92,7 +92,7 @@ crt.configure = function (series, colorseries) {
 				font: 'Source Sans Pro 11',
 				template: function template(d) {
 					if ($.trim(d.value) == '') {
-						return 'Other';
+						return '';
 					}
 
 					var max = 20;
@@ -138,7 +138,7 @@ crt.configure = function (series, colorseries) {
 
 crt.render = function () {
 	var data = _.sortBy(crt.data(), function (d) {
-		return toolkit.redefine(d[toolkit.replace(crt.categoryAxisField(), '.', '_')], 'Other');
+		return toolkit.redefine(d[toolkit.replace(crt.categoryAxisField(), '.', '_')], '');
 	});
 	crt.data(data);
 
@@ -265,7 +265,7 @@ crt.refresh = function () {
 	var param = {};
 	param.pls = [];
 	param.flag = o.ID;
-	param.groups = [crt.categoryAxisField(), "date.fiscal"];
+	param.groups = rpt.parseGroups([crt.categoryAxisField(), "date.fiscal"]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, crt.fiscalYear);
 

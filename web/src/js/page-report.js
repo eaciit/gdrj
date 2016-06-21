@@ -27,7 +27,8 @@ rpt.filter = [
 	] },
 	{ _id: 'customer', group: 'Customer', sub: [
 		{ _id: 'ChannelC', from: 'Channel', title: 'Channel' },
-		{ _id: 'KeyAccount', from: 'KeyAccount', title: 'Accounts' },
+		{ _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' },
+		{ _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' },
 		{ _id: 'Customer', from: 'Customer', title: 'Outlet' }
 	] },
 	{ _id: 'product', group: 'Product', sub: [
@@ -35,20 +36,20 @@ rpt.filter = [
 		{ _id: 'BrandP', from: 'Brand', title: 'Brand' },
 		{ _id: 'Product', from: 'Product', title: 'SKU' }
 	] },
-	{ _id: 'profit_center', group: 'Profit Center', sub: [
-		{ _id: 'Entity', from: 'Entity', title: 'Entity' },
-		{ _id: 'Type', from: 'Type', title: 'Type' },
-		{ _id: 'BranchPC', from: 'Branch', title: 'Branch' },
-		{ _id: 'HQ', from: 'HQ', title: 'HQ' }
-	] },
-	{ _id: 'cost_center', group: 'Cost Center', sub: [
-		{ _id: 'Group1', from: 'Group1', title: 'Group 1' },
-		{ _id: 'Group2', from: 'Group2', title: 'Group 2' },
-		{ _id: 'HCostCenterGroup', from: 'HCostCenterGroup', title: 'Function' }
-	] },
-	{ _id: 'ledger', group: 'Ledger', sub: [
-		{ _id: 'LedgerAccount', from: 'LedgerAccount', title: 'GL Code' }
-	] },
+	// { _id: 'profit_center', group: 'Profit Center', sub: [
+	// 	{ _id: 'Entity', from: 'Entity', title: 'Entity' },
+	// 	{ _id: 'Type', from: 'Type', title: 'Type' },
+	// 	{ _id: 'BranchPC', from: 'Branch', title: 'Branch' },
+	// 	{ _id: 'HQ', from: 'HQ', title: 'HQ' }
+	// ] },
+	// { _id: 'cost_center', group: 'Cost Center', sub: [
+	// 	{ _id: 'Group1', from: 'Group1', title: 'Group 1' },
+	// 	{ _id: 'Group2', from: 'Group2', title: 'Group 2' },
+	// 	{ _id: 'HCostCenterGroup', from: 'HCostCenterGroup', title: 'Function' }
+	// ] },
+	// { _id: 'ledger', group: 'Ledger', sub: [
+	// 	{ _id: 'LedgerAccount', from: 'LedgerAccount', title: 'GL Code' }
+	// ] },
 ]
 
 rpt.pivotModel = [
@@ -124,6 +125,56 @@ rpt.pivotModel = [
     { field: 'Year', type: 'string', name: 'Year' },
 ]
 
+rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYear) => {
+	let res = [
+		{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() },
+		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) },
+		{ 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) },
+		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) },
+		{ 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
+		{ 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
+		
+		{ 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
+		// ---> Region OK
+		{ 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() },
+
+		// ---> Channel OK
+		{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
+		{ 'Field': 'customer.customergroup', 'Op': '$in', 'Value': rpt.value.CustomerGroup() },
+		{ 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
+
+		{ 'Field': 'product.brandcategoryid', 'Op': '$in', Value: rpt.value.HBrandCategory() },
+		// ---> Brand OK
+		{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() },
+	]
+
+	if (fiscalField !== false) {
+		if (multiFiscalYear) {
+			res.push({ 
+				'Field': 'date.fiscal', 
+				'Op': '$in', 
+				'Value': fiscalField()
+			})
+		} else {
+			res.push({ 
+				'Field': 'date.fiscal', 
+				'Op': '$eq', 
+				'Value': fiscalField()
+			})
+		}
+	}
+
+	res = res.filter((d) => {
+		if (d.Value instanceof Array) {
+			return d.Value.length > 0
+		} else {
+			return d.Value != ''
+		}
+	})
+
+	return res
+}
+
 rpt.optionFiscalYears = ko.observableArray(['2014-2015', '2015-2016'])
 rpt.analysisIdeas = ko.observableArray([])
 rpt.data = ko.observableArray([])
@@ -139,7 +190,7 @@ rpt.optionDimensions = ko.observableArray([
     { field: 'customer.region', name: 'Region', title: 'customer_region' },
 	{ field: "customer.zone", name: "Zone", title: "customer_zone" },
     // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
-    { field: 'customer.keyaccount', name: 'Key Account', title: 'customer_keyaccount' },
+    { field: 'customer.keyaccount', name: 'Customer Group', title: 'customer_keyaccount' },
     // { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
     // { field: 'date.month', name: 'Month', title: 'date_month' },
 ])
@@ -154,6 +205,21 @@ rpt.optionAggregates = ko.observableArray([
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
+rpt.parseGroups = (what) => {
+	return what
+
+	if (what.indexOf('customer.branchname') > -1) {
+		what.push('customer.branchid')
+	}
+	// if (what.indexOf('customer.channelname') > -1) {
+	// 	what.push('customer.channelid')
+	// }
+	// if (what.indexOf('customer.customergroupname') > -1) {
+	// 	what.push('customer.customergroup')
+	// }
+
+	return what
+}
 rpt.mode = ko.observable('render')
 rpt.refreshView = ko.observable('')
 rpt.modecustom = ko.observable(false)
@@ -262,7 +328,7 @@ rpt.filterMultiSelect = (d) => {
 			autoBind: false,
 			minLength: 1,
 			placeholder: 'Type min 1 chars',
-			dataValueField: '_id',
+			dataValueField: 'Name',
 			dataTextField: 'Name',
 			template: (d) => `${d._id} - ${d.Name}`,
 			enabled: rpt.enableHolder[d._id],
@@ -283,7 +349,7 @@ rpt.filterMultiSelect = (d) => {
 			},
 			value: rpt.value[d._id]
 		})
-	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'LedgerAccount'].indexOf(d.from) > -1) {
+	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -296,10 +362,11 @@ rpt.filterMultiSelect = (d) => {
 			config.dataValueField = 'Name'
 		} else if (d.from == 'Product') {
 			config = $.extend(true, config, {
+				dataValueField: 'Name',
 				minLength: 1,
 				placeholder: 'Type min 1 chars'
 			})
-		} else if (d.from == 'Channel') {
+		} else if (['Channel', 'KeyAccount'].indexOf(d.from) > -1) {
 			config.dataValueField = '_id'
 		}
 
@@ -308,14 +375,11 @@ rpt.filterMultiSelect = (d) => {
 				return
 			}
 
-			let data = _.map(res.data, (e) => {
-				if (d.from == 'KeyAccount') {
-					return { _id: e._id, Name: e._id }
-				}
-				return e
-			})
+			rpt.masterData[d._id](_.sortBy(res.data, (d) => d.Name))
 
-			rpt.masterData[d._id](_.sortBy(data, (d) => d.Name))
+			if (['KeyAccount', 'Brand'].indexOf(d.from) > -1) {
+				rpt.masterData[d._id].push({ _id: "OTHER", Name: "OTHER" })
+			}
 		})
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -337,6 +401,7 @@ rpt.filterMultiSelect = (d) => {
 				['Region', 'Area', 'Zone'].forEach((e) => {
 					let res = rpt.groupGeoBy(rpt.masterData.geographi(), e)
 					rpt.masterData[e](_.sortBy(res, (d) => d.Name))
+					rpt.masterData[e].push({ _id: "OTHER", Name: "OTHER" })
 				})
 
 				rpt.masterData.RegionC(rpt.masterData.Region())
@@ -357,9 +422,11 @@ rpt.toggleFilter = () => {
 	if (panelFilter.is(':visible')) {
 		panelFilter.hide()
 		panelContent.attr('class', 'col-md-12 col-sm-12 ez panel-content')
+		$(`.breakdown-filter`).removeAttr('style')
 	} else {
 		panelFilter.show()
 		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content')
+		$(`.breakdown-filter`).css('width', '60%')
 	}
 
 	$('.k-grid').each((i, d) => {
@@ -373,45 +440,7 @@ rpt.toggleFilter = () => {
 	$('.k-chart').each((i, d) => {
 		$(d).data('kendoChart').redraw()
 	})
-}
-rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYear) => {
-	let res = [
-		{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() },
-		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) },
-		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) },
-		{ 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) },
-		{ 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
-		{ 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
-		{ 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
-		{ 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() },
-		{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
-		{ 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
-		{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() },
-	]
-
-	if (multiFiscalYear) {
-		res.push({ 
-			'Field': 'date.fiscal', 
-			'Op': '$in', 
-			'Value': fiscalField()
-		})
-	} else {
-		res.push({ 
-			'Field': 'date.fiscal', 
-			'Op': '$eq', 
-			'Value': fiscalField()
-		})
-	}
-
-	res = res.filter((d) => {
-		if (d.Value instanceof Array) {
-			return d.Value.length > 0
-		} else {
-			return d.Value != ''
-		}
-	})
-
-	return res
+	rpt.panel_relocated()
 }
 
 rpt.getIdeas = () => {

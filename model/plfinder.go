@@ -143,18 +143,48 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 		case dbox.FilterOpIn:
 			values := []string{}
 			field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+			hasOther := false
 
 			for _, v := range each.Value.([]interface{}) {
+				if strings.ToLower(v.(string)) == "other" {
+					if !hasOther {
+						hasOther = true
+					}
+
+					continue
+				}
+
 				values = append(values, v.(string))
 			}
 
-			if len(values) > 0 {
-				subFilters := []*dbox.Filter{}
-				for _, value := range values {
-					subFilters = append(subFilters, dbox.Eq(field, value))
+			if len(values) > 0 || hasOther {
+				valuesInt := []interface{}{}
+				valuesIntSpace := []interface{}{}
+				for _, each := range values {
+					valuesInt = append(valuesInt, each)
+					valuesIntSpace = append(valuesIntSpace, fmt.Sprintf("%s ", each))
 				}
-				filters = append(filters, dbox.Or(subFilters...))
-				fmt.Printf("---- filter: %#v in %#v\n", field, values)
+
+				subFilter := []*dbox.Filter{
+					dbox.In(field, valuesInt...),
+				}
+
+				if field == "_id.customer_branchname" {
+					subFilter = append(subFilter, dbox.In(field, valuesIntSpace...))
+				}
+
+				if hasOther {
+					subFilter = append(subFilter, dbox.Or(
+						dbox.Eq(field, nil),
+						dbox.Eq(field, ""),
+						dbox.Contains(field, "other"),
+					))
+
+					fmt.Printf("---- filter: %#v in %#v\n", field, valuesIntSpace)
+				}
+
+				filters = append(filters, dbox.Or(subFilter...))
+				fmt.Printf("---- filter: %#v in %#v\n", field, valuesInt)
 			}
 		case dbox.FilterOpGte:
 			var value interface{} = each.Value
@@ -198,6 +228,11 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 			fmt.Println("---- filter: ", field, "eq", value)
 		}
 	}
+
+	// fb := dbox.NewFilterBuilder(nil)
+	// fb.AddFilter(dbox.And(filters...))
+	// a, _ := fb.Build()
+	// fmt.Printf("-----OTHEHERHER---------- %#v\n", a)
 
 	return dbox.And(filters...)
 }
@@ -326,20 +361,42 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 	channelname := "_id_customer_channelname"
 	res := []*toolkit.M{}
 
-	hasChannel := false
+	// hasChannel := false
+	otherData := map[int]*toolkit.M{}
 
-	for _, each := range *data {
-		fmt.Printf("------------ %#v\n", each)
+	for i, each := range *data {
 		_id := each.Get("_id").(toolkit.M)
 
+		for _, brkdwn := range s.Breakdowns {
+			key := fmt.Sprintf("_id_%s", strings.Replace(brkdwn, ".", "_", -1))
+			if !_id.Has(key) {
+				_id.Set(key, "Other")
+			}
+		}
+
+		fmt.Printf("------------ %#v\n", _id)
+
+		for key, val := range _id {
+			if val == nil {
+				_id.Set(key, "Other")
+			} else if val.(string) == "" {
+				_id.Set(key, "Other")
+			}
+
+			if _, ok := otherData[i]; strings.ToLower(_id.GetString(key)) == "other" && !ok {
+				otherData[i] = each
+			}
+		}
+
 		if _id.Has(channelid) {
-			hasChannel = true
+			// hasChannel = true
 			channelid := strings.ToUpper(_id.GetString(channelid))
+
 			switch channelid {
 			case "I6":
 				_id.Set(channelname, "MOTORIST")
 			case "I4":
-				_id.Set(channelname, "INDUSTRIAL")
+				_id.Set(channelname, "IT")
 			case "I1":
 				_id.Set(channelname, "RD")
 			case "I3":
@@ -347,7 +404,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			case "I2":
 				_id.Set(channelname, "GT")
 			case "EXP":
-				_id.Set(channelname, "EXPORT")
+				_id.Set(channelname, "EXP")
 				// case "DISCOUNT":
 				// 	_id.Set(channelname, "DISCOUNT")
 				// case "":
@@ -356,6 +413,38 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 		}
 	}
 
+	fmt.Println("========= OTHER DATA BLEND INTO ONE OTHER")
+	fmt.Printf("%#v\n", otherData)
+	if len(otherData) > 1 {
+		sumOther := toolkit.M{}
+		for _, each := range otherData {
+			sumOther.Set("_id", each.Get("_id"))
+
+			for key := range *each {
+				if key == "_id" {
+					continue
+				}
+
+				if _, ok := sumOther[key]; !ok {
+					sumOther.Set(key, each.GetFloat64(key))
+				} else {
+					sumOther.Set(key, each.GetFloat64(key)+sumOther.GetFloat64(key))
+				}
+			}
+		}
+
+		newData := []*toolkit.M{&sumOther}
+		for i, each := range *data {
+			if _, ok := otherData[i]; ok {
+				continue
+			}
+
+			newData = append(newData, each)
+		}
+		data = &newData
+	}
+
+	/** NOT USED NOW, THE DAtA IS VALLID
 	// if breakdown channel
 	if hasChannel {
 		channelDiscountIndex := -1
@@ -439,7 +528,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			realData = append(realData[:channelEmptyIndex], realData[channelEmptyIndex+1:]...)
 			data = &realData
 		}
-	}
+	}*/
 
 	if s.Flag != "" {
 		for _, raw := range *data {

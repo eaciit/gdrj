@@ -31,7 +31,10 @@ viewModel.dashboard = {};
 var dsbrd = viewModel.dashboard;
 
 dsbrd.rows = ko.observableArray([{ pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"] }, { pnl: 'Growth', plcodes: [] }, // NOT YET
-{ pnl: 'Sales Discount', plcodes: ["PL7", "PL8"] }, { pnl: 'ATL', plcodes: ["PL28"] }, { pnl: 'BTL', plcodes: ["PL29", "PL30", "PL31", "PL32"] }, { pnl: "COGS", plcodes: ["PL74B"] }, { pnl: "Gross Margin", plcodes: ["PL74C"] }, { pnl: "SGA", plcodes: ["PL94A"] }, { pnl: "Royalties", plcodes: ["PL26A"] }, { pnl: "EBITDA", plcodes: ["PL44C"] }, { pnl: "EBIT %", plcodes: [] }, { pnl: "EBIT", plcodes: ["PL44B"] }]);
+{ pnl: 'Sales Discount', plcodes: ["PL7", "PL8"] },
+// { pnl: 'ATL', plcodes: ["PL28"] },
+// { pnl: 'BTL', plcodes: ["PL29", "PL30", "PL31", "PL32"] },
+{ pnl: "COGS", plcodes: ["PL74B"] }, { pnl: "Gross Margin", plcodes: ["PL74C"] }, { pnl: "SGA", plcodes: ["PL94A"] }, { pnl: "Royalties", plcodes: ["PL26A"] }, { pnl: "EBITDA", plcodes: ["PL44C"] }, { pnl: "EBIT %", plcodes: [] }, { pnl: "EBIT", plcodes: ["PL44B"] }]);
 
 dsbrd.data = ko.observableArray([]);
 dsbrd.columns = ko.observableArray([]);
@@ -39,7 +42,7 @@ dsbrd.breakdown = ko.observable('customer.channelname');
 dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears());
 dsbrd.contentIsLoading = ko.observable(false);
 dsbrd.optionStructures = ko.observableArray([{ field: "date.fiscal", name: "Fiscal Year" }, { field: "date.quartertxt", name: "Quarter" }, { field: "date.month", name: "Month" }]);
-dsbrd.structure = ko.observable(dsbrd.optionStructures()[1].field);
+dsbrd.structure = ko.observable(dsbrd.optionStructures()[0].field);
 dsbrd.structureYear = ko.observable('date.year');
 dsbrd.optionBreakdownValues = ko.observableArray([]);
 dsbrd.breakdownValue = ko.observableArray([]);
@@ -125,7 +128,7 @@ dsbrd.refresh = function () {
 	param.pls = _.flatten(dsbrd.rows().map(function (d) {
 		return d.plcodes;
 	}));
-	param.groups = [dsbrd.breakdown(), dsbrd.structure()];
+	param.groups = rpt.parseGroups([dsbrd.breakdown(), dsbrd.structure()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears);
 
@@ -172,7 +175,13 @@ dsbrd.render = function (res) {
 		title: 'PNL',
 		attributes: { class: 'bold' },
 		headerAttributes: { style: 'font-weight: bold; vertical-align: middle;' },
-		width: 200
+		width: 120
+	}, {
+		field: 'total',
+		title: 'Total',
+		attributes: { class: 'bold align-right bold' },
+		headerAttributes: { style: 'font-weight: bold; vertical-align: middle; text-align: right;' },
+		width: 150
 	}];
 
 	var data = res.Data.Data;
@@ -218,6 +227,21 @@ dsbrd.render = function (res) {
 						column.value = _percentage + ' %';
 					}
 				});
+
+				var total = toolkit.sum(row.columnData, function (d) {
+					return d.original;
+				});
+				row.total = kendo.toString(total, 'n0');
+				if (row.pnl == 'EBIT %') {
+					var totalGrossSales = toolkit.sum(grossSales.columnData, function (d) {
+						return d.original;
+					});
+					var totalEbit = toolkit.sum(ebit.columnData, function (d) {
+						return d.original;
+					});
+					var percentage = toolkit.number(totalEbit / totalGrossSales) * 100;
+					row.total = kendo.toString(percentage, 'n2') + ' %';
+				}
 			});
 		})();
 	}
@@ -228,7 +252,7 @@ dsbrd.render = function (res) {
 
 		var column = {};
 		column.field = 'columnData[' + i + '].value';
-		column.breakdown = $.trim(toolkit.redefine(columnInfo.breakdownTitle, 'Other'));
+		column.breakdown = $.trim(toolkit.redefine(columnInfo.breakdownTitle, ''));
 		column.title = $.trim(columnInfo.structureTitle);
 		column.width = 150;
 		column.format = '{0:n0}';
@@ -263,7 +287,7 @@ dsbrd.render = function (res) {
 		});
 
 		return {
-			title: $.trim(k) == '' ? 'Other' : k,
+			title: $.trim(k) == '' ? '' : k,
 			columns: v,
 			headerAttributes: {
 				style: 'text-align: center !important; font-weight: bold; border: 1px solid white; border-top: none; border-left: none; box-sizing: border-box; background-color: #e9eced;'
@@ -291,8 +315,9 @@ dsbrd.render = function (res) {
 		});
 	});
 
-	if (columnGrouped.length > 1) {
+	if (columnGrouped.length > 0) {
 		columnsPlaceholder[0].locked = true;
+		columnsPlaceholder[1].locked = true;
 	}
 
 	dsbrd.data(rowsAfter);
@@ -340,7 +365,20 @@ dsbrd.render = function (res) {
 		resizable: false,
 		sortable: false,
 		pageable: false,
-		filterable: false
+		filterable: false,
+		dataBound: function dataBound() {
+			var sel = '.grid-dashboard .k-grid-content-locked tr, .grid-dashboard .k-grid-content tr';
+
+			$(sel).on('mouseenter', function () {
+				var index = $(this).index();
+				console.log(this, index);
+				var elh = $('.grid-dashboard .k-grid-content-locked tr:eq(' + index + ')').addClass('hover');
+				var elc = $('.grid-dashboard .k-grid-content tr:eq(' + index + ')').addClass('hover');
+			});
+			$(sel).on('mouseleave', function () {
+				$('.grid-dashboard tr.hover').removeClass('hover');
+			});
+		}
 	};
 
 	$('.grid-dashboard').replaceWith('<div class="grid-dashboard"></div>');
@@ -367,7 +405,7 @@ rank.fiscalYear = ko.observable(rpt.value.FiscalYear());
 rank.refresh = function () {
 	var param = {};
 	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"];
-	param.groups = [rank.breakdown()];
+	param.groups = rpt.parseGroups([rank.breakdown()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, rank.fiscalYear);
 
@@ -393,7 +431,7 @@ rank.refresh = function () {
 
 rank.render = function (res) {
 	var data = _.sortBy(res.Data.Data, function (d) {
-		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], 'Other');
+		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], '');
 	});
 
 	var rows = [];
@@ -402,8 +440,8 @@ rank.render = function (res) {
 		row.original = d._id['_id_' + toolkit.replace(rank.breakdown(), '.', '_')];
 		row.pnl = d._id['_id_' + toolkit.replace(rank.breakdown(), '.', '_')];
 		if ($.trim(row.pnl) == '') {
-			row.original = 'Other';
-			row.pnl = 'Other';
+			row.original = '';
+			row.pnl = '';
 		}
 		if (rank.breakdown() == 'date.month') {
 			row.original = parseInt(row.pnl, 10) - 1;
@@ -444,12 +482,15 @@ rank.render = function (res) {
 viewModel.salesDistribution = {};
 var sd = viewModel.salesDistribution;
 sd.contentIsLoading = ko.observable(false);
-
-sd.breakdown = ko.observable('customer.channelname');
-sd.breakdownSub = ko.observable('customer.custtype');
+sd.isFirstTime = ko.observable(true);
+sd.breakdown = ko.observable('customer.reportchannel');
+sd.breakdownSub = ko.observable('customer.reportsubchannel');
 sd.data = ko.observableArray([]);
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear());
 sd.render = function (res) {
+	var isFirstTime = sd.isFirstTime();
+	sd.isFirstTime(false);
+
 	var data = res.Data.Data;
 
 	var breakdown = toolkit.replace(sd.breakdown(), ".", "_");
@@ -498,20 +539,18 @@ sd.render = function (res) {
 	});
 	var maxRowIndex = op2.indexOf(maxRow);
 	var height = 20 * maxRow.values.length;
-	var width = 200;
+	var width = 320;
 
 	var container = $('.grid-sales-dist').empty();
 	var table = toolkit.newEl('table').addClass('width-full').appendTo(container).height(height);
 	var tr1st = toolkit.newEl('tr').appendTo(table);
 	var tr2nd = toolkit.newEl('tr').appendTo(table);
 
-	if (op2.length > 5) {
-		table.width(op2.length * width);
-	}
+	table.css('max-width', op2.length * width + 'px');
 
 	var index = 0;
 	op2.forEach(function (d) {
-		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index]);
+		var td1st = toolkit.newEl('td').appendTo(tr1st).addClass('sortsales').attr('sort', sd.sortVal[index]).css('cursor', 'pointer');
 		var sumPercentage = _.sumBy(d.values, function (e) {
 			return e.percentage;
 		});
@@ -533,7 +572,7 @@ sd.render = function (res) {
 		var channelgroup = _.map(_.groupBy(d.values, function (o) {
 			return o.group;
 		}), function (v, k) {
-			if (k == "") k = "Other";
+			if (k == '') k = '';
 			return { key: k, values: v };
 		});
 		var totalyo = 0,
@@ -561,11 +600,33 @@ sd.render = function (res) {
 			$('.sortsales:eq(' + index + ')>i').addClass('fa-chevron-up');
 			$('.sortsales:eq(' + index + ')>i').removeClass('fa-chevron-down');
 		}
+
+		if (isFirstTime) {
+			if (d.key == "MT") {
+				channelgroup = _.orderBy(channelgroup, function (d) {
+					switch (d.key) {
+						case 'Hyper':
+							return 'A';break;
+						case 'Super':
+							return 'B';break;
+						case 'Mini':
+							return 'C';break;
+					}
+
+					return d.key;
+				}, 'asc');
+			} else if (d.key == 'GT') {
+				channelgroup = _.orderBy(channelgroup, function (d) {
+					return toolkit.getNumberFromString(d.key);
+				}, 'asc');
+			}
+		}
+
 		channelgroup.forEach(function (e) {
 			var tr = toolkit.newEl('tr').appendTo(innerTable);
-			toolkit.newEl('td').appendTo(tr).html(e.key).height(height / channelgroup.length);
-			toolkit.newEl('td').css('width', '55px').appendTo(tr).html(kendo.toString(e.percentageyo, 'n2') + '&nbsp;%');
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'));
+			toolkit.newEl('td').css('width', '150px').appendTo(tr).html(e.key).height(height / channelgroup.length);
+			toolkit.newEl('td').css('width', '40px').appendTo(tr).html(kendo.toString(e.percentageyo, 'n2') + '&nbsp;%');
+			toolkit.newEl('td').css('width', '120px').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'));
 		});
 		index++;
 		// d.values.forEach((e) => {
@@ -584,12 +645,13 @@ sd.render = function (res) {
 };
 sd.sortVal = ['', '', ''];
 sd.sortData = function () {
-	sd.refresh();
+	sd.render(sd.oldData());
 };
+sd.oldData = ko.observable({});
 sd.refresh = function () {
 	var param = {};
 	param.pls = ["PL8A"];
-	param.groups = [sd.breakdown(), sd.breakdownSub()];
+	param.groups = rpt.parseGroups([sd.breakdown(), sd.breakdownSub()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear);
 
@@ -602,6 +664,7 @@ sd.refresh = function () {
 				return;
 			}
 
+			sd.oldData(res);
 			sd.contentIsLoading(false);
 			sd.render(res);
 		}, function () {
