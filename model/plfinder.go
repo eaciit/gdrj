@@ -157,14 +157,20 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 				values = append(values, v.(string))
 			}
 
-			if len(values) > 0 {
+			if len(values) > 0 || hasOther {
 				valuesInt := []interface{}{}
+				valuesIntSpace := []interface{}{}
 				for _, each := range values {
 					valuesInt = append(valuesInt, each)
+					valuesIntSpace = append(valuesIntSpace, fmt.Sprintf("%s ", each))
 				}
 
 				subFilter := []*dbox.Filter{
 					dbox.In(field, valuesInt...),
+				}
+
+				if field == "_id.customer_branchname" {
+					subFilter = append(subFilter, dbox.In(field, valuesIntSpace...))
 				}
 
 				if hasOther {
@@ -173,6 +179,8 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 						dbox.Eq(field, ""),
 						dbox.Contains(field, "other"),
 					))
+
+					fmt.Printf("---- filter: %#v in %#v\n", field, valuesIntSpace)
 				}
 
 				filters = append(filters, dbox.Or(subFilter...))
@@ -357,8 +365,16 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 	otherData := map[int]*toolkit.M{}
 
 	for i, each := range *data {
-		fmt.Printf("------------ %#v\n", each)
 		_id := each.Get("_id").(toolkit.M)
+
+		for _, brkdwn := range s.Breakdowns {
+			key := fmt.Sprintf("_id_%s", strings.Replace(brkdwn, ".", "_", -1))
+			if !_id.Has(key) {
+				_id.Set(key, "Other")
+			}
+		}
+
+		fmt.Printf("------------ %#v\n", _id)
 
 		for key, val := range _id {
 			if val == nil {
@@ -366,8 +382,6 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			} else if val.(string) == "" {
 				_id.Set(key, "Other")
 			}
-
-			fmt.Println("==========", _id.GetString(key))
 
 			if _, ok := otherData[i]; strings.ToLower(_id.GetString(key)) == "other" && !ok {
 				otherData[i] = each
