@@ -467,9 +467,20 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 }
 
 func (pl *SalesPL) CalcPromo(masters toolkit.M) {
+
 	if masters.Has("promo") == false {
 		return
 	}
+
+	aplmodel := pl.PLDatas
+	for k, _ := range aplmodel {
+		if k == "PL28" || k == "PL28A" || k == "PL29" || k == "PL30" || k == "PL31" || k == "PL32" || k == "PL32A" {
+			delete(aplmodel, k)
+		}
+	}
+
+	pl.PLDatas = aplmodel
+
 	promos := masters.Get("promo").(map[string]*RawDataPL)
 
 	find := func(x string) *RawDataPL {
@@ -481,18 +492,20 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 		return f
 	}
 
-	fAtl := find("atl")
-	fBtlBonus := find("bonus")
-	fBtlGondola := find("gondola")
-	fBtlSPG := find("spg")
-	fBtlOtherpromo := find("promo")
+	fpromo := find("promo")
+	fadv := find("adv")
+	// fAtl := find("atl")
+	// fBtlBonus := find("bonus")
+	// fBtlGondola := find("gondola")
+	// fBtlSPG := find("spg")
+	// fBtlOtherpromo := find("promo")
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL28", -fAtl.AmountinIDR*pl.RatioToBranchSales, plmodels)
-	pl.AddData("PL29", -fBtlBonus.AmountinIDR*pl.RatioToBranchSales, plmodels)
-	pl.AddData("PL30", -fBtlGondola.AmountinIDR*pl.RatioToBranchSales, plmodels)
-	pl.AddData("PL31", -fBtlOtherpromo.AmountinIDR*pl.RatioToBranchSales, plmodels)
-	pl.AddData("PL32", -fBtlSPG.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	pl.AddData("PL28A", -fpromo.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	// pl.AddData("PL30", -fBtlGondola.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	// pl.AddData("PL31", -fBtlOtherpromo.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	// pl.AddData("PL32", -fBtlSPG.AmountinIDR*pl.RatioToBranchSales, plmodels)
 }
 
 func (pl *SalesPL) CalcSGA(masters toolkit.M) {
