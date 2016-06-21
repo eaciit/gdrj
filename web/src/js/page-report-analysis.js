@@ -273,6 +273,40 @@ bkd.renderDetail = (plcode, breakdowns) => {
 	$('.grid-detail').kendoGrid(config)
 }
 
+bkd.arrChangeParent = ko.observableArray([
+	{ idfrom: 'PL6A', idto: '', after: 'PL0'},
+	{ idfrom: 'PL1', idto: 'PL8A', after: 'PL8A'},
+	{ idfrom: 'PL2', idto: 'PL8A', after: 'PL8A'},
+	{ idfrom: 'PL3', idto: 'PL8A', after: 'PL8A'},
+	{ idfrom: 'PL4', idto: 'PL8A', after: 'PL8A'},
+	{ idfrom: 'PL5', idto: 'PL8A', after: 'PL8A'},
+	{ idfrom: 'PL6', idto: 'PL8A', after: 'PL8A'}
+])
+
+bkd.arrFormulaPL = ko.observableArray([
+	{ id: "PL0", formula: ["PL1","PL2","PL3","PL4","PL5","PL6"], cal: "sum"},
+	{ id: "PL6A", formula: ["PL7","PL8","PL7A"], cal: "sum"},
+])
+
+bkd.changeParent = (elemheader, elemcontent, PLCode) => {
+	let change = _.find(bkd.arrChangeParent(), (a) => {
+		return a.idfrom == PLCode
+	})
+	if (change != undefined){
+		if (change.idto != ''){
+			elemheader.attr('idparent', change.idto)
+			elemcontent.attr('idcontparent', change.idto)
+		} else {
+			elemheader.removeAttr('idparent')
+			elemheader.find('td:eq(0)').css('padding-left','8px')
+			elemcontent.removeAttr('idcontparent')
+		}
+		return change.after
+	} else {
+		return ""
+	}
+}
+
 bkd.idarrayhide = ko.observableArray(['PL44A'])
 bkd.render = () => {
 	if (bkd.data().length == 0) {
@@ -306,13 +340,27 @@ bkd.render = () => {
 	]
 	let netSalesPLCode = 'PL8A'
 	let netSalesPlModel = bkd.plmodels().find((d) => d._id == netSalesPLCode)
-	let netSalesRow = {}
+	let netSalesRow = {}, changeformula, formulayo
+
+	data.forEach((e,a) => {
+		let breakdown = e._id
+		bkd.arrFormulaPL().forEach((d) => {
+			$.each( e, function( key, value ) {
+				formulayo = _.find(d.formula, (w) => { return w == key })
+				if (formulayo != undefined){
+					data[a][d.id] += toolkit.number(value)
+				}
+			})
+		})
+	})
+
 	data.forEach((e) => {
 		let breakdown = e._id
 		let value = e[`${netSalesPlModel._id}`]; 
 		value = toolkit.number(value)
 		netSalesRow[breakdown] = value
 	})
+
 	data = _.orderBy(data, (d) => netSalesRow[d._id], 'desc')
 
 	plmodels.forEach((d) => {
@@ -342,6 +390,7 @@ bkd.render = () => {
 
 		rows.push(row)
 	})
+	// console.log(rows)
 
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl')
@@ -510,6 +559,9 @@ bkd.render = () => {
 					child = $(`tr[idparent=${PLyo.PLCode}]`).length
 					$columnElem = $(`.table-content tr.column${PLyo2.PLCode}`)
 					$columnElem.attr('idcontparent', PLyo.PLCode)
+					let PLCodeChange = bkd.changeParent($trElem, $columnElem, $columnElem.attr('idpl'))
+					if (PLCodeChange != "")
+						PLyo.PLCode = PLCodeChange
 					if (child > 1){
 						$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
 						$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
@@ -532,6 +584,9 @@ bkd.render = () => {
 						child = $(`tr[idparent=${PLyo.PLCode}]`).length
 						$columnElem = $(`.table-content tr.column${PLyo2.PLCode}`)
 						$columnElem.attr('idcontparent', PLyo.PLCode)
+						let PLCodeChange = bkd.changeParent($trElem, $columnElem, $columnElem.attr('idpl'))
+						if (PLCodeChange != "")
+							PLyo.PLCode = PLCodeChange
 						if (child > 1){
 							$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
 							$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))

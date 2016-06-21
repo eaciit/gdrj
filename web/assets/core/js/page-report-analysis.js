@@ -283,6 +283,29 @@ bkd.renderDetail = function (plcode, breakdowns) {
 	$('.grid-detail').kendoGrid(config);
 };
 
+bkd.arrChangeParent = ko.observableArray([{ idfrom: 'PL6A', idto: '', after: 'PL0' }, { idfrom: 'PL1', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL2', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL3', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL4', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL5', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL6', idto: 'PL8A', after: 'PL8A' }]);
+
+bkd.arrFormulaPL = ko.observableArray([{ id: "PL0", formula: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"], cal: "sum" }, { id: "PL6A", formula: ["PL7", "PL8", "PL7A"], cal: "sum" }]);
+
+bkd.changeParent = function (elemheader, elemcontent, PLCode) {
+	var change = _.find(bkd.arrChangeParent(), function (a) {
+		return a.idfrom == PLCode;
+	});
+	if (change != undefined) {
+		if (change.idto != '') {
+			elemheader.attr('idparent', change.idto);
+			elemcontent.attr('idcontparent', change.idto);
+		} else {
+			elemheader.removeAttr('idparent');
+			elemheader.find('td:eq(0)').css('padding-left', '8px');
+			elemcontent.removeAttr('idcontparent');
+		}
+		return change.after;
+	} else {
+		return "";
+	}
+};
+
 bkd.idarrayhide = ko.observableArray(['PL44A']);
 bkd.render = function () {
 	if (bkd.data().length == 0) {
@@ -319,13 +342,31 @@ bkd.render = function () {
 	var netSalesPlModel = bkd.plmodels().find(function (d) {
 		return d._id == netSalesPLCode;
 	});
-	var netSalesRow = {};
+	var netSalesRow = {},
+	    changeformula = void 0,
+	    formulayo = void 0;
+
+	data.forEach(function (e, a) {
+		var breakdown = e._id;
+		bkd.arrFormulaPL().forEach(function (d) {
+			$.each(e, function (key, value) {
+				formulayo = _.find(d.formula, function (w) {
+					return w == key;
+				});
+				if (formulayo != undefined) {
+					data[a][d.id] += toolkit.number(value);
+				}
+			});
+		});
+	});
+
 	data.forEach(function (e) {
 		var breakdown = e._id;
 		var value = e['' + netSalesPlModel._id];
 		value = toolkit.number(value);
 		netSalesRow[breakdown] = value;
 	});
+
 	data = _.orderBy(data, function (d) {
 		return netSalesRow[d._id];
 	}, 'desc');
@@ -357,6 +398,7 @@ bkd.render = function () {
 
 		rows.push(row);
 	});
+	// console.log(rows)
 
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
 
@@ -516,6 +558,8 @@ bkd.render = function () {
 					child = $('tr[idparent=' + PLyo.PLCode + ']').length;
 					$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
 					$columnElem.attr('idcontparent', PLyo.PLCode);
+					var PLCodeChange = bkd.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
+					if (PLCodeChange != "") PLyo.PLCode = PLCodeChange;
 					if (child > 1) {
 						$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
 						$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
@@ -542,6 +586,8 @@ bkd.render = function () {
 						child = $('tr[idparent=' + PLyo.PLCode + ']').length;
 						$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
 						$columnElem.attr('idcontparent', PLyo.PLCode);
+						var _PLCodeChange = bkd.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
+						if (_PLCodeChange != "") PLyo.PLCode = _PLCodeChange;
 						if (child > 1) {
 							$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
 							$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
