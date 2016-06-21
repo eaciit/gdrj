@@ -303,7 +303,7 @@ ba.render = function () {
 	var rows = [],
 	    datayo = [],
 	    dataok = [];
-	var breakdownKey = '_id_' + toolkit.replace(ba.breakdownBy(), '.', '_');
+	var breakdownKey = '_id_' + toolkit.replace(ba.breakdownByChannel(), '.', '_');
 
 	var groupbyrd = _.groupBy(ba.data(), function (a) {
 		return a._id._id_customer_branchname;
