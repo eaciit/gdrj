@@ -484,7 +484,7 @@ ba.render = () => {
 		.appendTo(tableContent)
 
 	let colWidth = 100
-	let totalWidth = 0
+	let totalColumn = 2
 	let pnlTotalSum = 0
 
 	let grouppl1 = _.map(_.groupBy(ba.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
@@ -493,10 +493,12 @@ ba.render = () => {
 	data.forEach((d, i) => {
 		let thheader = toolkit.newEl('th')
 			.html(d._id)
+			.css('background-color', '#ccd1d3')
 			.attr('colspan', '3')
 			.addClass('align-center cell-percentage-header')
 			.appendTo(trContent1)
 			.width(colWidth)
+		totalColumn++
 
 		let cell1 = toolkit.newEl('th')
 			.html('Total')
@@ -524,20 +526,20 @@ ba.render = () => {
 			cell3.css('display','none')
 			cell2.addClass('cell-percentage-header').width(colWidth)
 			thheader.removeAttr("colspan")
-			totalWidth += colWidth
+			totalColumn++
 		} else if (ba.breakdownRD() == "NonRD") {
 			cell1.css('display','none')
 			cell2.css('display','none')
 			cell3.addClass('cell-percentage-header').width(colWidth)
 			thheader.removeAttr("colspan")
-			totalWidth += colWidth
+			totalColumn++
 		} else {
-			totalWidth += (colWidth * 3)
+			totalColumn++
+			totalColumn++
+			totalColumn++
 		}
 
 		if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
-			totalWidth -= colWidth
-
 			cell3.remove()
 			thheader.attr("colspan", 7)
 			rpt.masterData.Channel().filter((f) => f._id != "I1").forEach((f) => {
@@ -546,12 +548,19 @@ ba.render = () => {
 					.addClass('align-center')
 					.appendTo(trContent2)
 					.width(colWidth)
-				totalWidth += totalWidth
+				totalColumn++
 			})
 			// I2, I4, I6, I3, EXP
 		}
 	})
 	// console.log('data ', data)
+
+	let totalWidth = totalColumn * colWidth
+	// if (!(ba.breakdownRD() != "OnlyRD" && ba.expandRD())) {
+	// 	totalWidth -= 1000
+	// }
+
+	console.log("width", totalWidth)
 
 	tableContent.css('min-width', totalWidth)
 	rows.forEach((d, i) => {

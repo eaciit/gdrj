@@ -492,7 +492,7 @@ ba.render = function () {
 	var trContent2 = toolkit.newEl('tr').appendTo(tableContent);
 
 	var colWidth = 100;
-	var totalWidth = 0;
+	var totalColumn = 2;
 	var pnlTotalSum = 0;
 
 	var grouppl1 = _.map(_.groupBy(ba.plmodels(), function (d) {
@@ -511,7 +511,8 @@ ba.render = function () {
 		return { data: k, key: v };
 	});
 	data.forEach(function (d, i) {
-		var thheader = toolkit.newEl('th').html(d._id).attr('colspan', '3').addClass('align-center cell-percentage-header').appendTo(trContent1).width(colWidth);
+		var thheader = toolkit.newEl('th').html(d._id).css('background-color', '#ccd1d3').attr('colspan', '3').addClass('align-center cell-percentage-header').appendTo(trContent1).width(colWidth);
+		totalColumn++;
 
 		var cell1 = toolkit.newEl('th').html('Total').addClass('align-center').attr('statuscolumn', 'TotalRD').appendTo(trContent2).width(colWidth);
 
@@ -524,32 +525,39 @@ ba.render = function () {
 			cell3.css('display', 'none');
 			cell2.addClass('cell-percentage-header').width(colWidth);
 			thheader.removeAttr("colspan");
-			totalWidth += colWidth;
+			totalColumn++;
 		} else if (ba.breakdownRD() == "NonRD") {
 			cell1.css('display', 'none');
 			cell2.css('display', 'none');
 			cell3.addClass('cell-percentage-header').width(colWidth);
 			thheader.removeAttr("colspan");
-			totalWidth += colWidth;
+			totalColumn++;
 		} else {
-			totalWidth += colWidth * 3;
+			totalColumn++;
+			totalColumn++;
+			totalColumn++;
 		}
 
 		if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
-			totalWidth -= colWidth;
-
 			cell3.remove();
 			thheader.attr("colspan", 7);
 			rpt.masterData.Channel().filter(function (f) {
 				return f._id != "I1";
 			}).forEach(function (f) {
 				var cell4 = toolkit.newEl('th').html(f.Name).addClass('align-center').appendTo(trContent2).width(colWidth);
-				totalWidth += totalWidth;
+				totalColumn++;
 			});
 			// I2, I4, I6, I3, EXP
 		}
 	});
 	// console.log('data ', data)
+
+	var totalWidth = totalColumn * colWidth;
+	// if (!(ba.breakdownRD() != "OnlyRD" && ba.expandRD())) {
+	// 	totalWidth -= 1000
+	// }
+
+	console.log("width", totalWidth);
 
 	tableContent.css('min-width', totalWidth);
 	rows.forEach(function (d, i) {
