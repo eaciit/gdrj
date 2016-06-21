@@ -1,52 +1,56 @@
 viewModel.breakdown = new Object()
-let kac = viewModel.breakdown
+let ba = viewModel.breakdown
 
-kac.contentIsLoading = ko.observable(false)
-kac.popupIsLoading = ko.observable(false)
-kac.title = ko.observable('Key Account Analysis')
-kac.detail = ko.observableArray([])
-kac.limit = ko.observable(10)
-kac.breakdownNote = ko.observable('')
+ba.contentIsLoading = ko.observable(false)
+ba.popupIsLoading = ko.observable(false)
+ba.title = ko.observable('Branch Analysis')
+ba.detail = ko.observableArray([])
+ba.limit = ko.observable(10)
+ba.breakdownNote = ko.observable('')
 
-kac.breakdownBy = ko.observable('customer.customergroupname')
-kac.breakdownByFiscalYear = ko.observable('date.fiscal')
-kac.oldBreakdownBy = ko.observable(kac.breakdownBy())
+ba.breakdownBy = ko.observable('customer.branchname')
+ba.breakdownByChannel = ko.observable('customer.channelname')
+ba.breakdownByFiscalYear = ko.observable('date.fiscal')
+ba.oldBreakdownBy = ko.observable(ba.breakdownBy())
+ba.optionDimensions = ko.observableArray(rpt.optionDimensions().filter((d) => d.field != 'customer.channelname'))
 
-kac.data = ko.observableArray([])
-kac.plmodels = ko.observableArray([])
-kac.zeroValue = ko.observable(false)
-kac.fiscalYear = ko.observable(rpt.value.FiscalYear())
-kac.breakdownValue = ko.observableArray([])
-
-kac.refresh = (useCache = false) => {
-	if (kac.breakdownValue().length == 0) {
-		toolkit.showError('Please choose at least breakdown value')
-		return
+ba.data = ko.observableArray([])
+ba.plmodels = ko.observableArray([])
+ba.zeroValue = ko.observable(false)
+ba.fiscalYear = ko.observable(rpt.value.FiscalYear())
+ba.breakdownValue = ko.observableArray([])
+ba.breakdownRD = ko.observable("All")
+ba.optionBranch = ko.observableArray([{
+		id: "All",
+		title: "RD & Non RD",
+	}, {
+		id: "OnlyRD",
+		title: "Only RD Sales"
+	}, {
+		id: "NonRD",
+		title: "Non RD Sales"
 	}
+]) //rpt.masterData.Channel()
 
+ba.refresh = (useCache = false) => {
 	let param = {}
 	param.pls = []
-	param.groups = rpt.parseGroups([kac.breakdownBy()])
+	param.groups = [ba.breakdownByChannel(), ba.breakdownBy() /** , 'date.year' */]
 	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue(false, kac.fiscalYear)
-	param.filters.push({
-		Field: 'customer.keyaccount',
-		Op: '$eq',
-		Value: 'KEY'
-	})
+	param.filters = rpt.getFilterValue(false, ba.fiscalYear)
 
-	let breakdownValue = kac.breakdownValue().filter((d) => d != 'All')
+	let breakdownValue = ba.breakdownValue().filter((d) => d != 'All')
 	if (breakdownValue.length > 0) {
 		param.filters.push({
-			Field: kac.breakdownBy(),
+			Field: ba.breakdownBy(),
 			Op: '$in',
-			Value: kac.breakdownValue()
+			Value: ba.breakdownValue()
 		})
 	}
 	console.log("bdk", param.filters)
 	
-	kac.oldBreakdownBy(kac.breakdownBy())
-	kac.contentIsLoading(true)
+	ba.oldBreakdownBy(ba.breakdownBy())
+	ba.contentIsLoading(true)
 
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
@@ -56,18 +60,17 @@ kac.refresh = (useCache = false) => {
 				}, 1000 * 5)
 				return
 			}
-
+			ba.data(res.Data.Data)
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-			kac.breakdownNote(`Last refreshed on: ${date}`)
+			ba.breakdownNote(`Last refreshed on: ${date}`)
 
-			kac.data(res.Data.Data)
-			kac.plmodels(res.Data.PLModels)
-			kac.emptyGrid()
-			kac.contentIsLoading(false)
-			kac.render()
+			ba.plmodels(res.Data.PLModels)
+			ba.emptyGrid()
+			ba.contentIsLoading(false)
+			ba.render()
 		}, () => {
-			kac.emptyGrid()
-			kac.contentIsLoading(false)
+			ba.emptyGrid()
+			ba.contentIsLoading(false)
 		}, {
 			cache: (useCache == true) ? 'breakdown chart' : false
 		})
@@ -76,7 +79,7 @@ kac.refresh = (useCache = false) => {
 	fetch()
 }
 
-kac.clickExpand = (e) => {
+ba.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
 	let down = $(e).find('i.fa-chevron-down').length
 	if (right > 0){
@@ -93,12 +96,12 @@ kac.clickExpand = (e) => {
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 	}
 }
-kac.emptyGrid = () => {
+ba.emptyGrid = () => {
 	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
 }
 
-kac.renderDetailSalesTrans = (breakdown) => {
-	kac.popupIsLoading(true)
+ba.renderDetailSalesTrans = (breakdown) => {
+	ba.popupIsLoading(true)
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
 
@@ -122,7 +125,7 @@ kac.renderDetailSalesTrans = (breakdown) => {
 			    read: (options) => {
 			    	let param = options.data
 			    	param.tablename = "browsesalestrxs"
-			    	param[kac.breakdownBy()] = [breakdown]
+			    	param[ba.breakdownBy()] = [breakdown]
 
 			    	if (toolkit.isUndefined(param.page)) {
 			    		param = $.extend(true, param, {
@@ -140,13 +143,13 @@ kac.renderDetailSalesTrans = (breakdown) => {
 		                dataType: 'json',
 		                data: JSON.stringify(param),
 		                success: (res) => {
-							kac.popupIsLoading(false)
+							ba.popupIsLoading(false)
 							setTimeout(() => {
 								options.success(res.data)
 							}, 200)
 		                },
 		                error: () => {
-							kac.popupIsLoading(false)
+							ba.popupIsLoading(false)
 		                }
 		            });
 		        },
@@ -169,8 +172,8 @@ kac.renderDetailSalesTrans = (breakdown) => {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
 	$('.grid-detail').kendoGrid(config)
 }
-kac.renderDetail = (plcode, breakdowns) => {
-	kac.popupIsLoading(true)
+ba.renderDetail = (plcode, breakdowns) => {
+	ba.popupIsLoading(true)
 	$('#modal-detail-ledger-summary .modal-title').html('Detail')
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
@@ -231,14 +234,14 @@ kac.renderDetail = (plcode, breakdowns) => {
 		                dataType: 'json',
 		                data: JSON.stringify(param),
 		                success: (res) => {
-							kac.popupIsLoading(false)
+							ba.popupIsLoading(false)
 							setTimeout(() => {
 								console.log("++++", res)
 								options.success(res.Data)
 							}, 200)
 		                },
 		                error: () => {
-							kac.popupIsLoading(false)
+							ba.popupIsLoading(false)
 		                }
 		            });
 		        },
@@ -278,22 +281,63 @@ kac.renderDetail = (plcode, breakdowns) => {
 	$('.grid-detail').kendoGrid(config)
 }
 
-kac.idarrayhide = ko.observableArray(['PL44A'])
-kac.render = () => {
-	if (kac.data().length == 0) {
+ba.idarrayhide = ko.observableArray(['PL44A'])
+ba.render = () => {
+	if (ba.data().length == 0) {
 		$('.breakdown-view').html('No data found.')
 		return
 	}
 	
-	let breakdowns = [kac.breakdownBy() /** , 'date.year' */]
-	let rows = []
-	
-	let data = _.map(kac.data(), (d) => {
+	let breakdowns = [ba.breakdownByChannel(), ba.breakdownBy() /** , 'date.year' */]
+	let rows = [], datayo = [], dataok = []
+	let breakdownKey = `_id_${toolkit.replace(ba.breakdownByChannel(), '.', '_')}`
+
+	let groupbyrd = _.groupBy(ba.data(), (a) => { return a._id._id_customer_branchname})
+	$.each( groupbyrd, function( key, value ) {
+		let sumdata = {}
+		let sumdata2 = {}
+		datayo = _.filter(value, (d) => { return d._id[breakdownKey] == "RD" })
+		if (datayo.length > 0) {
+			for (var a in datayo) {
+				$.each( datayo[a], function( keya, valuea ) {
+					if (keya != "_id"){
+						if (sumdata[keya] == undefined)
+							sumdata[keya] = 0
+						sumdata[keya] = sumdata[keya] + valuea
+					}
+				}) 
+			}
+		} else {
+			$.each( value[0], function( keya, valuea ) {
+				sumdata[keya] = 0
+			})
+		}
+
+		datayo = _.filter(value, (d) => { return d._id[breakdownKey] != "RD" })
+		for (var a in datayo) {
+			$.each( datayo[a], function( keya, valuea ) {
+				if (keya != "_id"){
+					if (sumdata2[keya] == undefined)
+						sumdata2[keya] = 0
+					sumdata2[keya] = sumdata2[keya] + valuea
+				}
+			}) 
+		}
+
+		let newstruct = {}
+		// newstruct["_id"] = {}
+		newstruct["_id_customer_branchname"] = key
+		toolkit.forEach( sumdata, function( key2, value2 ) {
+			newstruct[key2] = [value2, sumdata2[key2]]
+		})
+		dataok.push(newstruct)
+	});
+	let data = _.map(dataok, (d) => {
 		d.breakdowns = {}
 		let titleParts = []
 
 		breakdowns.forEach((e) => {
-			let title = d._id[`_id_${toolkit.replace(e, '.', '_')}`]
+			let title = d[`_id_${toolkit.replace(e, '.', '_')}`]
 			title = toolkit.whenEmptyString(title, '')
 			d.breakdowns[e] = title
 			titleParts.push(title)
@@ -303,14 +347,14 @@ kac.render = () => {
 		return d 
 	})
 	
-	let plmodels = _.sortBy(kac.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
+	let plmodels = _.sortBy(ba.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
 	let exceptions = [
-		"PL94C" /* "Operating Income" */, 
-		"PL39B" /* "Earning Before Tax" */, 
-		"PL41C" /* "Earning After Tax" */,
+		"PL94C" , 
+		"PL39B" , 
+		"PL41C" ,
 	]
 	let netSalesPLCode = 'PL8A'
-	let netSalesPlModel = kac.plmodels().find((d) => d._id == netSalesPLCode)
+	let netSalesPlModel = ba.plmodels().find((d) => d._id == netSalesPLCode)
 	let netSalesRow = {}
 	data.forEach((e) => {
 		let breakdown = e._id
@@ -324,21 +368,25 @@ kac.render = () => {
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
 		data.forEach((e) => {
 			let breakdown = e._id
-			let value = e[`${d._id}`]; 
-			value = toolkit.number(value)
-			row[breakdown] = value
-			row.PNLTotal += value
+			let value = e[`${d._id}`];
+			let value1 = toolkit.number(value[0])
+			let value2 = toolkit.number(value[1])
+			row[breakdown+'1'] = value1
+			row[breakdown+'2'] = value2
 		})
 		data.forEach((e) => {
 			let breakdown = e._id
-			let percentage = toolkit.number(e[`${d._id}`] / row.PNLTotal) * 100; 
-			percentage = toolkit.number(percentage)
+			let total = e[`${d._id}`][0] + e[`${d._id}`][1]; 
+			total = toolkit.number(total)
+			row[`${breakdown} total`] = total
 
-			if (d._id != netSalesPLCode) {
-				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
+			if (ba.breakdownRD() == "OnlyRD") {
+				row.PNLTotal += e[`${d._id}`][0]
+			} else if (ba.breakdownRD() == "NonRD") {
+				row.PNLTotal += e[`${d._id}`][1]
+			} else {
+				row.PNLTotal += total
 			}
-
-			row[`${breakdown} %`] = percentage
 		})
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -349,7 +397,7 @@ kac.render = () => {
 	})
 
 	let wrapper = toolkit.newEl('div')
-		.addClass('pivot-pnl')
+		.addClass('pivot-pnl-branch pivot-pnl')
 		.appendTo($('.breakdown-view'))
 
 	let tableHeaderWrap = toolkit.newEl('div')
@@ -371,56 +419,97 @@ kac.render = () => {
 	let trHeader1 = toolkit.newEl('tr')
 		.appendTo(tableHeader)
 
+	let trHeader2 = toolkit.newEl('tr')
+		.appendTo(tableHeader)
+
+	toolkit.newEl('th')
+		.attr('colspan', 2)
+		.html('&nbsp;')
+		.addClass('cell-percentage-header')
+		.appendTo(trHeader1)
+
 	toolkit.newEl('th')
 		.html('P&L')
-		.appendTo(trHeader1)
+		.addClass('cell-percentage-header')
+		.appendTo(trHeader2)
 
 	toolkit.newEl('th')
 		.html('Total')
 		.addClass('align-right')
-		.appendTo(trHeader1)
+		.appendTo(trHeader2)
 
 	let trContent1 = toolkit.newEl('tr')
 		.appendTo(tableContent)
 
-	let colWidth = 160
-	let colPercentWidth = 60
+	let trContent2 = toolkit.newEl('tr')
+		.appendTo(tableContent)
+
+	let colWidth = 100
+	let colPercentWidth = 100
 	let totalWidth = 0
 	let pnlTotalSum = 0
 
-	if (kac.breakdownBy() == "customer.branchname") {
+	if (ba.breakdownBy() == "customer.branchname") {
 		colWidth = 200
 	}
 
-	if (kac.breakdownBy() == "customer.region") {
+	if (ba.breakdownBy() == "customer.region") {
 		colWidth = 230
 	}
 
-	let grouppl1 = _.map(_.groupBy(kac.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
-	let grouppl2 = _.map(_.groupBy(kac.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
-	let grouppl3 = _.map(_.groupBy(kac.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
+	let grouppl1 = _.map(_.groupBy(ba.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
+	let grouppl2 = _.map(_.groupBy(ba.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
+	let grouppl3 = _.map(_.groupBy(ba.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
 		if (d._id.length > 22)
 			colWidth += 30
-		toolkit.newEl('th')
+		let thheader = toolkit.newEl('th')
 			.html(d._id)
-			.addClass('align-right')
+			.attr('colspan', '3')
+			.addClass('align-center cell-percentage-header')
 			.appendTo(trContent1)
 			.width(colWidth)
 
-		toolkit.newEl('th')
-			.html('%')
-			.addClass('align-right cell-percentage')
-			.appendTo(trContent1)
+		let cell1 = toolkit.newEl('th')
+			.html('Total')
+			.addClass('align-center')
+			.attr('statuscolumn', 'TotalRD')
+			.appendTo(trContent2)
 			.width(colPercentWidth)
 
-		totalWidth += colWidth + colPercentWidth
+		let cell2 = toolkit.newEl('th')
+			.html('RD')
+			.addClass('align-center')
+			.attr('statuscolumn', 'RD')
+			.appendTo(trContent2)
+			.width(colPercentWidth)
+
+		let cell3 = toolkit.newEl('th')
+			.html('Non RD')
+			.attr('statuscolumn', 'NonRD')
+			.addClass('align-center cell-percentage-header')
+			.appendTo(trContent2)
+			.width(colPercentWidth)
+
+		if (ba.breakdownRD() == "OnlyRD") {
+			cell1.css('display','none')
+			cell3.css('display','none')
+			cell2.addClass('cell-percentage-header').width(colWidth-80)
+			thheader.removeAttr("colspan")
+			totalWidth += (colWidth - 80) + colPercentWidth
+		} else if (ba.breakdownRD() == "NonRD") {
+			cell1.css('display','none')
+			cell2.css('display','none')
+			cell3.addClass('cell-percentage-header').width(colWidth-80)
+			thheader.removeAttr("colspan")
+			totalWidth += (colWidth - 80) + colPercentWidth
+		} else {
+			totalWidth += colWidth + (colPercentWidth*3)
+		}
 	})
 	// console.log('data ', data)
 
 	tableContent.css('min-width', totalWidth)
-
-	// console.log('row ', rows)
 	rows.forEach((d, i) => {
 		pnlTotalSum += d.PNLTotal
 
@@ -432,7 +521,7 @@ kac.render = () => {
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
-			kac.clickExpand(trHeader)
+			ba.clickExpand(trHeader)
 		})
 
 		toolkit.newEl('td')
@@ -452,33 +541,53 @@ kac.render = () => {
 
 		data.forEach((e, f) => {
 			let key = e._id
-			let value = kendo.toString(d[key], 'n0')
+			let value1 = kendo.toString(d[key+"1"], 'n0')
+			let value2 = kendo.toString(d[key+"2"], 'n0')
+			let total = kendo.toString(d[key+" total"], 'n0')
 
-			let percentage = kendo.toString(d[`${key} %`], 'n2')
+			if ($.trim(value1) == '') 
+				value1 = 0
+			if ($.trim(value2) == '') 
+				value2 = 0
+			if ($.trim(total) == '') 
+				total = 0
 
-			if ($.trim(value) == '') {
-				value = 0
+			let cell1 = toolkit.newEl('td')
+				.html(total)
+				.addClass('align-right')
+				.attr('statuscolumn', 'TotalRD')
+				.appendTo(trContent)
+
+			let cell2 = toolkit.newEl('td')
+				.html(value1)
+				.addClass('align-right')
+				.attr('statuscolumn', 'RD')
+				.appendTo(trContent)
+
+			let cell3 = toolkit.newEl('td')
+				.html(value2)
+				.addClass('align-right cell-percentage-header')
+				.attr('statuscolumn', 'NonRD')
+				.appendTo(trContent)
+
+			if (ba.breakdownRD() == "OnlyRD") {
+				cell1.css('display','none')
+				cell3.css('display','none')
+				cell2.addClass('cell-percentage-header')
+			} else if (ba.breakdownRD() == "NonRD") {
+				cell1.css('display','none')
+				cell2.css('display','none')
+				cell3.addClass('cell-percentage-header')
 			}
 
-			let cell = toolkit.newEl('td')
-				.html(value)
-				.addClass('align-right')
-				.appendTo(trContent)
-
-			cell.on('click', () => {
-				kac.renderDetail(d.PLCode, e.breakdowns)
-			})
-
-			toolkit.newEl('td')
-				.html(`${percentage} %`)
-				.addClass('align-right cell-percentage')
-				.appendTo(trContent)
+			// cell.on('click', () => {
+			// 	ba.renderDetail(d.PLCode, e.breakdowns)
+			// })
 		})
 
 		let boolStatus = false
 		trContent.find('td').each((a,e) => {
-			// console.log(trHeader.find('td:eq(0)').text(),$(e).text())
-			if ($(e).text() != '0' && $(e).text() != '0.00 %') {
+			if ($(e).text() != '0') {
 				boolStatus = true
 			}
 		})
@@ -500,12 +609,12 @@ kac.render = () => {
 			resg2 = _.find(grouppl2, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
 			resg3 = _.find(grouppl3, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
 
-			let idplyo = _.find(kac.idarrayhide(), (a) => { return a == $trElem.attr("idheaderpl") })
+			let idplyo = _.find(ba.idarrayhide(), (a) => { return a == $trElem.attr("idheaderpl") })
 			if (idplyo != undefined){
 				$trElem.remove()
 				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).remove()
 			}
-			if (resg1 == undefined && idplyo2 == undefined){
+			if (resg1 == undefined){
 				if (resg2 != undefined){ 
 					textPL = _.find(resg2.data, function(o) { return o._id == $trElem.attr("idheaderpl") })
 					PLyo = _.find(rows, function(o) { return o.PNL == textPL.PLHeader1 })
@@ -549,7 +658,7 @@ kac.render = () => {
 				}
 			}
 
-			let idplyo2 = _.find(kac.idarrayhide(), (a) => { return a == $trElem.attr("idparent") })
+			let idplyo2 = _.find(ba.idarrayhide(), (a) => { return a == $trElem.attr("idparent") })
 			if (idplyo2 != undefined){
 				$trElem.removeAttr('idparent')
 				$trElem.addClass('bold')
@@ -590,11 +699,11 @@ kac.render = () => {
 		}
 	})
 
-	kac.showZeroValue(false)
-	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
+	ba.showZeroValue(false)
+	$(".pivot-pnl-branch.pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
 }
 
-kac.prepareEvents = () => {
+ba.prepareEvents = () => {
 	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
 		let index = $(this).index()
         let elh = $(`.breakdown-view .table-header tr:eq(${index})`).addClass('hover')
@@ -605,7 +714,7 @@ kac.prepareEvents = () => {
 	})
 }
 
-kac.showExpandAll = (a) => {
+ba.showExpandAll = (a) => {
 	if (a == true) {
 		$(`tr.dd`).find('i').removeClass('fa-chevron-right')
 		$(`tr.dd`).find('i').addClass('fa-chevron-down')
@@ -621,8 +730,8 @@ kac.showExpandAll = (a) => {
 	}
 }
 
-kac.showZeroValue = (a) => {
-	kac.zeroValue(a)
+ba.showZeroValue = (a) => {
+	ba.zeroValue(a)
 	if (a == true) {
 		$(".table-header tbody>tr").each(function( i ) {
 			if (i > 0){
@@ -643,63 +752,97 @@ kac.showZeroValue = (a) => {
 		})
 	}
 
-	kac.showExpandAll(false)
+	ba.showExpandAll(false)
 }
 
-kac.optionBreakdownValues = ko.observableArray([])
-kac.breakdownValueAll = { _id: 'All', Name: 'All' }
-kac.changeBreakdown = () => {
-	let all = kac.breakdownValueAll
+ba.optionBreakdownValues = ko.observableArray([])
+ba.breakdownValueAll = { _id: 'All', Name: 'All' }
+ba.changeBreakdown = () => {
+	let all = ba.breakdownValueAll
+	let map = (arr) => arr.map((d) => {
+		if ("customer.channelname" == ba.breakdownBy()) {
+			return d
+		}
+		if ("customer.keyaccount" == ba.breakdownBy()) {
+			return { _id: d._id, Name: d._id }
+		}
+
+		return { _id: d.Name, Name: d.Name }
+	})
 	setTimeout(() => {
-		kac.optionBreakdownValues([all].concat(
-			rpt.masterData.CustomerGroup().map((d) => { 
-				return { _id: d.Name, Name: d.Name } })
-			)
-		)
-		kac.breakdownValue([all._id])
+		switch (ba.breakdownBy()) {
+			case "customer.areaname":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Area())))
+				ba.breakdownValue([all._id])
+			break;
+			case "customer.region":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Region())))
+				ba.breakdownValue([all._id])
+			break;
+			case "customer.zone":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())))
+				ba.breakdownValue([all._id])
+			break;
+			case "product.brand":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())))
+				ba.breakdownValue([all._id])
+			break;
+			case "customer.branchname":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
+				ba.breakdownValue([all._id])
+			break;
+			case "customer.channelname":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
+				ba.breakdownValue([all._id])
+			break;
+			case "customer.keyaccount":
+				ba.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))
+				ba.breakdownValue([all._id])
+			break;
+		}
 	}, 100)
 }
-kac.changeBreakdownValue = () => {
-	let all = kac.breakdownValueAll
+ba.changeBreakdownValue = () => {
+	let all = ba.breakdownValueAll
 	setTimeout(() => {
-		let condA1 = kac.breakdownValue().length == 2
-		let condA2 = kac.breakdownValue().indexOf(all._id) == 0
+		let condA1 = ba.breakdownValue().length == 2
+		let condA2 = ba.breakdownValue().indexOf(all._id) == 0
 		if (condA1 && condA2) {
-			kac.breakdownValue.remove(all._id)
+			ba.breakdownValue.remove(all._id)
 			return
 		}
 
-		let condB1 = kac.breakdownValue().length > 1
-		let condB2 = kac.breakdownValue().reverse()[0] == all._id
+		let condB1 = ba.breakdownValue().length > 1
+		let condB2 = ba.breakdownValue().reverse()[0] == all._id
 		if (condB1 && condB2) {
-			kac.breakdownValue([all._id])
+			ba.breakdownValue([all._id])
 			return
 		}
 
-		let condC1 = kac.breakdownValue().length == 0
+		let condC1 = ba.breakdownValue().length == 0
 		if (condC1) {
-			kac.breakdownValue([all._id])
+			ba.breakdownValue([all._id])
 		}
 	}, 100)
 }
 
-vm.currentMenu('Key Account Analysis')
-vm.currentTitle('Key Account Analysis')
+vm.currentMenu('Branch Analysis')
+vm.currentTitle('Branch Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'Key Account Analysis', href: '/web/report/dashboard' }
+	{ title: 'Branch Analysis', href: '/web/report/dashboard' }
 ])
 
-kac.title('Key Account Analysis')
+ba.title('Branch Analysis')
 
 rpt.refresh = () => {
-	kac.changeBreakdown()
+	ba.changeBreakdown()
 	setTimeout(() => {
-		kac.breakdownValue(['All'])
-		kac.refresh(false)
+		ba.breakdownValue(['All'])
+		ba.refresh(false)
 	}, 200)
 
-	kac.prepareEvents()
+	ba.prepareEvents()
 }
 
 $(() => {

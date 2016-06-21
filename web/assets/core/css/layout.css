@@ -463,6 +463,16 @@ body {
 .chart-comparison .each-chart .wrapper .chart {
   height: 300px;
 }
+.pivot-pnl-branch .table-header tr th {
+  border-right-color: white !important;
+}
+.pivot-pnl-branch .table-content {
+  margin-bottom: 0;
+}
+.pivot-pnl-branch .table-content tr th {
+  border-color: white !important;
+  border-right: 1px solid white !important;
+}
 .pivot-pnl {
   position: relative;
   overflow-y: scroll;
@@ -529,6 +539,9 @@ body {
 }
 .breakdown-view .cell-percentage {
   border-right: 1px solid #F0F3F4;
+}
+.breakdown-view .cell-percentage-header {
+  border-right: 1px solid #d6dbdc;
 }
 .breakdown-view table tr.hover {
   background-color: #74B841;
