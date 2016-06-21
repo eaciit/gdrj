@@ -398,6 +398,14 @@ ba.render = function () {
 			var total = e['' + d._id][0] + e['' + d._id][1];
 			total = toolkit.number(total);
 			row[breakdown + ' total'] = total;
+
+			if (ba.breakdownRD() == "OnlyRD") {
+				row.PNLTotal += e['' + d._id][0];
+			} else if (ba.breakdownRD() == "NonRD") {
+				row.PNLTotal += e['' + d._id][1];
+			} else {
+				row.PNLTotal += total;
+			}
 		});
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -421,9 +429,11 @@ ba.render = function () {
 
 	var trHeader2 = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('&nbsp;').addClass('cell-percentage-header').appendTo(trHeader1);
+	toolkit.newEl('th').attr('colspan', 2).html('&nbsp;').addClass('cell-percentage-header').appendTo(trHeader1);
 
-	toolkit.newEl('th').html('Branch Analysis').addClass('cell-percentage-header').appendTo(trHeader2);
+	toolkit.newEl('th').html('P&L').addClass('cell-percentage-header').appendTo(trHeader2);
+
+	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader2);
 
 	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
 
@@ -498,6 +508,9 @@ ba.render = function () {
 		});
 
 		toolkit.newEl('td').html('<i></i>' + d.PNL).appendTo(trHeader);
+
+		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
+		toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
 
 		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).appendTo(tableContent);
 
