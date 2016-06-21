@@ -136,7 +136,7 @@ func prepMaster() {
 	conn, _ := modules.GetDboxIConnection("db_godrej")
 	crsh, _ := conn.NewQuery().Select().From("rawsalesheader-1415").Cursor(nil)
 	crsh11, _ := conn.NewQuery().Select().From("rawsalesheader-cd11").Cursor(nil)
-	cgross, _ := conn.NewQuery().Select().From("rawsalesheader-cd11").Cursor(nil)
+	cgross, _ := conn.NewQuery().Select().From("rawsalesdetail1415-grosstot").Cursor(nil)
 	defer crsh.Close()
 	defer crsh11.Close()
 	defer cgross.Close()
@@ -149,7 +149,7 @@ func prepMaster() {
 			break
 		}
 
-		ivid := toolkit.ToString(tkmcrsh.Get("iv_no", ""))
+		ivid := toolkit.Sprintf("%s_%s", tkmcrsh.Get("iv_no", ""), tkmcrsh.Get("branchid", ""))
 		if ivid != "" {
 			shs.Set(ivid, tkmcrsh)
 		}
@@ -162,7 +162,7 @@ func prepMaster() {
 			break
 		}
 
-		ivid := toolkit.ToString(tkmcrsh.Get("iv_no", ""))
+		ivid := toolkit.Sprintf("%s_%s", tkmcrsh.Get("_id", ""), tkmcrsh.Get("branchid", ""))
 		if ivid != "" {
 			shs11.Set(ivid, tkmcrsh)
 		}
@@ -176,7 +176,7 @@ func prepMaster() {
 			break
 		}
 
-		ivid := toolkit.ToString(tkmcrsh.Get("_id", ""))
+		ivid := toolkit.Sprintf("%s_%s", tkmcrsh.Get("_id", ""), tkmcrsh.Get("branchid", ""))
 		if ivid != "" {
 			sgrossamount.Set(ivid, toolkit.ToFloat64(tkmcrsh.Get("salesgrossamount", 0), 6, toolkit.RoundingAuto))
 		}
@@ -236,7 +236,7 @@ func main() {
 		gdrjdate := new(gdrj.Date)
 		st := new(gdrj.SalesTrx)
 
-		st.SalesHeaderID = toolkit.ToString(tkmsd.Get("iv_no", ""))
+		st.SalesHeaderID = toolkit.Sprintf("%s_%s", tkmsd.Get("iv_no", ""), tkmsd.Get("brsap", ""))
 
 		if st.SalesHeaderID == "" {
 			st.SalesHeaderID = "OTHER/03/2016"
