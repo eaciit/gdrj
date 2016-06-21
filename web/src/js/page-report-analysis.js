@@ -390,7 +390,7 @@ bkd.render = () => {
 
 		rows.push(row)
 	})
-	console.log(rows)
+	// console.log(rows)
 
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl')
@@ -640,7 +640,7 @@ bkd.render = () => {
 		}
 	})
 
-	bkd.showZeroValue(true)
+	bkd.showZeroValue(false)
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
 }
 

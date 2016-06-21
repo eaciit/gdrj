@@ -398,7 +398,7 @@ bkd.render = function () {
 
 		rows.push(row);
 	});
-	console.log(rows);
+	// console.log(rows)
 
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
 
@@ -639,7 +639,7 @@ bkd.render = function () {
 		}
 	});
 
-	bkd.showZeroValue(true);
+	bkd.showZeroValue(false);
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
 };
 
