@@ -116,7 +116,13 @@ func prepMaster() {
 			agroup = "adv"
 		}
 
-		key := toolkit.Sprintf("%d_%d_%s", o.Year, o.Period, agroup)
+		key := toolkit.Sprintf("_%s", agroup)
+		if len(o.PCID) > 0 {
+			key = toolkit.Sprintf("%s_%s", o.PCID[:4], agroup)
+		} else {
+			key = toolkit.Sprintf("oth_%s", agroup)
+		}
+
 		prm, exist := promos[key]
 		if !exist {
 			prm = new(gdrj.RawDataPL)
@@ -126,6 +132,7 @@ func prepMaster() {
 		promos[key] = prm
 
 	}
+	toolkit.Println(promos)
 	masters.Set("promo", promos)
 	// masterbranchs = toolkit.M{}
 	// cmb := getCursor(new(gdrj.MasterBranch))
