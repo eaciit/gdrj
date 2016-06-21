@@ -402,7 +402,7 @@ ba.render = function () {
 		rows.push(row);
 	});
 
-	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
+	var wrapper = toolkit.newEl('div').addClass('pivot-pnl-branch pivot-pnl').appendTo($('.breakdown-view'));
 
 	var tableHeaderWrap = toolkit.newEl('div').addClass('table-header').appendTo(wrapper);
 
@@ -666,7 +666,7 @@ ba.render = function () {
 	});
 
 	ba.showZeroValue(false);
-	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
+	$(".pivot-pnl-branch.pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
 };
 
 ba.prepareEvents = function () {

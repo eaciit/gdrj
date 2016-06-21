@@ -386,7 +386,7 @@ ba.render = () => {
 	})
 
 	let wrapper = toolkit.newEl('div')
-		.addClass('pivot-pnl')
+		.addClass('pivot-pnl-branch pivot-pnl')
 		.appendTo($('.breakdown-view'))
 
 	let tableHeaderWrap = toolkit.newEl('div')
@@ -677,7 +677,7 @@ ba.render = () => {
 	})
 
 	ba.showZeroValue(false)
-	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
+	$(".pivot-pnl-branch.pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
 }
 
 ba.prepareEvents = () => {
