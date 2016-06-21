@@ -52,6 +52,8 @@ var (
 	lastSalesLine = toolkit.M{}
 )
 
+var mwg sync.WaitGroup
+
 func getCursor(obj orm.IModel) dbox.ICursor {
 	c, e := gdrj.Find(obj, nil, nil)
 	if e != nil {
@@ -218,6 +220,7 @@ func main() {
 	jobs := make(chan *gdrj.SalesTrx, count)
 	result := make(chan string, count)
 	for wi := 0; wi < 10; wi++ {
+		mwg.Add(1)
 		go workerProc(wi, jobs, result)
 	}
 
@@ -382,6 +385,8 @@ func main() {
 		}
 	}
 
+	mwg.Wait()
+
 	toolkit.Printfn("Processing done in %s with gross %v and correct %v",
 		time.Since(t0).String(), ggrossamount, cggrossamount)
 }
@@ -389,6 +394,7 @@ func main() {
 func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
+	defer mwg.Done()
 
 	st := new(gdrj.SalesTrx)
 	for st = range jobs {
@@ -400,4 +406,5 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 
 		result <- st.ID
 	}
+
 }
