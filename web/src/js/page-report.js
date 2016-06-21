@@ -376,6 +376,10 @@ rpt.filterMultiSelect = (d) => {
 			}
 
 			rpt.masterData[d._id](_.sortBy(res.data, (d) => d.Name))
+
+			if (['KeyAccount', 'Brand'].indexOf(d.from) > -1) {
+				rpt.masterData[d._id].push({ _id: "OTHER", Name: "OTHER" })
+			}
 		})
 	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
@@ -397,6 +401,7 @@ rpt.filterMultiSelect = (d) => {
 				['Region', 'Area', 'Zone'].forEach((e) => {
 					let res = rpt.groupGeoBy(rpt.masterData.geographi(), e)
 					rpt.masterData[e](_.sortBy(res, (d) => d.Name))
+					rpt.masterData[e].push({ _id: "OTHER", Name: "OTHER" })
 				})
 
 				rpt.masterData.RegionC(rpt.masterData.Region())

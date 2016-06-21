@@ -143,8 +143,17 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 		case dbox.FilterOpIn:
 			values := []string{}
 			field := fmt.Sprintf("_id.%s", strings.Replace(each.Field, ".", "_", -1))
+			hasOther := false
 
 			for _, v := range each.Value.([]interface{}) {
+				if strings.ToLower(v.(string)) == "other" {
+					if !hasOther {
+						hasOther = true
+					}
+
+					continue
+				}
+
 				values = append(values, v.(string))
 			}
 
@@ -155,6 +164,16 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 				}
 				filters = append(filters, dbox.Or(subFilters...))
 				fmt.Printf("---- filter: %#v in %#v\n", field, values)
+			}
+
+			if hasOther {
+				filtersSub := []*dbox.Filter{
+					dbox.Eq(field, ""),
+					dbox.Eq(field, nil),
+					dbox.Contains(field, "other"),
+				}
+
+				filters = append(filters, dbox.Or(filtersSub...))
 			}
 		case dbox.FilterOpGte:
 			var value interface{} = each.Value
