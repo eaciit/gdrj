@@ -284,6 +284,10 @@ ba.renderDetail = (plcode, breakdowns) => {
 
 ba.idarrayhide = ko.observableArray(['PL44A'])
 ba.render = () => {
+	if (ba.breakdownRD() == "OnlyRD") {
+		ba.expandRD(false)
+	}
+
 	if (ba.data().length == 0) {
 		$('.breakdown-view').html('No data found.')
 		return
