@@ -14,6 +14,7 @@ ba.breakdownByFiscalYear = ko.observable('date.fiscal')
 ba.oldBreakdownBy = ko.observable(ba.breakdownBy())
 ba.optionDimensions = ko.observableArray(rpt.optionDimensions().filter((d) => d.field != 'customer.channelname'))
 
+ba.expandRD = ko.observable(false)
 ba.data = ko.observableArray([])
 ba.plmodels = ko.observableArray([])
 ba.zeroValue = ko.observable(false)
@@ -324,14 +325,42 @@ ba.render = () => {
 			}) 
 		}
 
+		if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
+			let sumdataOther = []
+			rpt.masterData.Channel().filter((f) => f._id != "I1").forEach((d) => {
+				let sumdataEach = {}
+				datayo = _.filter(value, (e) => { return e._id._id_customer_channelid == d._id })
+				for (var a in datayo) {
+					$.each( datayo[a], function( keya, valuea ) {
+						if (keya != "_id"){
+							if (sumdataEach[keya] == undefined)
+								sumdataEach[keya] = 0
+							sumdataEach[keya] = sumdataEach[keya] + valuea
+						}
+					}) 
+				}
+				sumdataOther.push(sumdataEach)
+			})
+
+			let newstruct = {}
+			newstruct["_id_customer_branchname"] = key
+			toolkit.forEach( sumdata, function( key2, value2 ) {
+				let values = sumdataOther.map((d) => toolkit.number(d[key2]))
+				console.log("+++++", key2, value2, values)
+				newstruct[key2] = [value2, sumdata2[key2]].concat(values)
+			})
+			dataok.push(newstruct)
+			return
+		}
+
 		let newstruct = {}
-		// newstruct["_id"] = {}
 		newstruct["_id_customer_branchname"] = key
 		toolkit.forEach( sumdata, function( key2, value2 ) {
 			newstruct[key2] = [value2, sumdata2[key2]]
 		})
 		dataok.push(newstruct)
 	});
+
 	let data = _.map(dataok, (d) => {
 		d.breakdowns = {}
 		let titleParts = []
@@ -369,10 +398,16 @@ ba.render = () => {
 		data.forEach((e) => {
 			let breakdown = e._id
 			let value = e[`${d._id}`];
-			let value1 = toolkit.number(value[0])
-			let value2 = toolkit.number(value[1])
-			row[breakdown+'1'] = value1
-			row[breakdown+'2'] = value2
+			row[breakdown+'1'] = toolkit.number(value[0])
+			row[breakdown+'2'] = toolkit.number(value[1])
+
+			if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
+				row[breakdown+'3'] = toolkit.number(value[2])
+				row[breakdown+'4'] = toolkit.number(value[3])
+				row[breakdown+'5'] = toolkit.number(value[4])
+				row[breakdown+'6'] = toolkit.number(value[5])
+				row[breakdown+'7'] = toolkit.number(value[6])
+			}
 		})
 		data.forEach((e) => {
 			let breakdown = e._id
@@ -444,18 +479,10 @@ ba.render = () => {
 	let trContent2 = toolkit.newEl('tr')
 		.appendTo(tableContent)
 
-	let colWidth = 100
-	let colPercentWidth = 100
+	let colWidth = 80
+	let colPercentWidth = 80
 	let totalWidth = 0
 	let pnlTotalSum = 0
-
-	if (ba.breakdownBy() == "customer.branchname") {
-		colWidth = 200
-	}
-
-	if (ba.breakdownBy() == "customer.region") {
-		colWidth = 230
-	}
 
 	let grouppl1 = _.map(_.groupBy(ba.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
 	let grouppl2 = _.map(_.groupBy(ba.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
@@ -505,6 +532,21 @@ ba.render = () => {
 			totalWidth += (colWidth - 80) + colPercentWidth
 		} else {
 			totalWidth += colWidth + (colPercentWidth*3)
+		}
+
+		if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
+			totalWidth -= (colWidth - 80)
+			cell3.remove()
+			thheader.attr("colspan", 7)
+			rpt.masterData.Channel().filter((f) => f._id != "I1").forEach((f) => {
+				let cell4 = toolkit.newEl('th')
+					.html(f.Name)
+					.addClass('align-center')
+					.appendTo(trContent2)
+					.width(colPercentWidth)
+				totalWidth += (colPercentWidth)
+			})
+			// I2, I4, I6, I3, EXP
 		}
 	})
 	// console.log('data ', data)
@@ -578,6 +620,18 @@ ba.render = () => {
 				cell1.css('display','none')
 				cell2.css('display','none')
 				cell3.addClass('cell-percentage-header')
+			}
+
+			if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
+				cell3.remove()
+				rpt.masterData.Channel().filter((f) => f._id != "I1").forEach((f, i) => {
+					let value = kendo.toString(d[key+ (i + 3)], 'n0')
+					let cell4 = toolkit.newEl('td')
+						.html(value)
+						.addClass('align-right')
+						.appendTo(trContent)
+						.width(colPercentWidth)
+				})
 			}
 
 			// cell.on('click', () => {
