@@ -296,6 +296,7 @@ ba.renderDetail = function (plcode, breakdowns) {
 };
 
 ba.arrChangeParent = ko.observableArray([{ idfrom: 'PL6A', idto: '', after: 'PL0' }, { idfrom: 'PL1', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL2', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL3', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL4', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL5', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL6', idto: 'PL8A', after: 'PL8A' }]);
+ba.arrFormulaPL = ko.observableArray([{ id: "PL2", formula: ["PL2", "PL8"], cal: "sum" }, { id: "PL1", formula: ["PL8A", "PL2", "PL6"], cal: "min" }]);
 
 ba.changeParent = function (elemheader, elemcontent, PLCode) {
 	var change = _.find(ba.arrChangeParent(), function (a) {
@@ -440,6 +441,33 @@ ba.render = function () {
 		return d._id == netSalesPLCode;
 	});
 	var netSalesRow = {};
+
+	console.log(data);
+	data.forEach(function (e, a) {
+		ba.arrFormulaPL().forEach(function (d) {
+			var total1 = 0;
+			var total2 = 0;
+			d.formula.forEach(function (f, l) {
+				console.log(e);
+				if (l == 0) {
+					total1 = e[f][0];
+					total2 = e[f][1];
+				} else {
+					if (d.cal == 'sum') {
+						total1 += e[f][0];
+						total2 += e[f][1];
+					} else {
+						total1 -= e[f][0];
+						total2 -= e[f][1];
+					}
+				}
+			});
+
+			data[a][d.id][0] = total1;
+			data[a][d.id][1] = total2;
+		});
+	});
+
 	data.forEach(function (e) {
 		var breakdown = e._id;
 		var value = e['' + netSalesPlModel._id];

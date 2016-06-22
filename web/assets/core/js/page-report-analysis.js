@@ -351,13 +351,10 @@ bkd.render = function () {
 	var netSalesPlModel = bkd.plmodels().find(function (d) {
 		return d._id == netSalesPLCode;
 	});
-	var netSalesRow = {},
-	    changeformula = void 0,
-	    formulayo = void 0;
+	var netSalesRow = {};
 
 	data.forEach(function (e, a) {
 		bkd.arrFormulaPL().forEach(function (d) {
-			// let total = toolkit.sum(d.formula, (f) => e[f])
 			var total = 0;
 			d.formula.forEach(function (f, l) {
 				if (l == 0) {
@@ -374,7 +371,6 @@ bkd.render = function () {
 			data[a][d.id] = total;
 		});
 	});
-	// console.log(data)
 
 	data.forEach(function (e) {
 		var breakdown = e._id;

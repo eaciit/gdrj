@@ -291,6 +291,10 @@ ba.arrChangeParent = ko.observableArray([
 	{ idfrom: 'PL5', idto: 'PL8A', after: 'PL8A'},
 	{ idfrom: 'PL6', idto: 'PL8A', after: 'PL8A'}
 ])
+ba.arrFormulaPL = ko.observableArray([
+	{ id: "PL2", formula: ["PL2", "PL8"], cal: "sum"},
+	{ id: "PL1", formula: ["PL8A", "PL2", "PL6"], cal: "min"},
+])
 
 ba.changeParent = (elemheader, elemcontent, PLCode) => {
 	let change = _.find(ba.arrChangeParent(), (a) => {
@@ -418,6 +422,33 @@ ba.render = () => {
 	let netSalesPLCode = 'PL8A'
 	let netSalesPlModel = ba.plmodels().find((d) => d._id == netSalesPLCode)
 	let netSalesRow = {}
+
+	console.log(data)
+	data.forEach((e,a) => {
+		ba.arrFormulaPL().forEach((d) => {
+			let total1 = 0
+			let total2 = 0
+			d.formula.forEach((f, l) => {
+				console.log(e)
+				if (l == 0) {
+					total1 = e[f][0]
+					total2 = e[f][1]
+				} else {
+					if (d.cal == 'sum') {
+						total1 += e[f][0]
+						total2 += e[f][1]
+					} else {
+						total1 -= e[f][0]
+						total2 -= e[f][1]
+					}
+				}
+			})
+
+			data[a][d.id][0] = total1
+			data[a][d.id][1] = total2
+		})
+	})
+
 	data.forEach((e) => {
 		let breakdown = e._id
 		let value = e[`${netSalesPlModel._id}`]; 

@@ -349,11 +349,10 @@ bkd.render = () => {
 	]
 	let netSalesPLCode = 'PL8A'
 	let netSalesPlModel = bkd.plmodels().find((d) => d._id == netSalesPLCode)
-	let netSalesRow = {}, changeformula, formulayo
+	let netSalesRow = {}
 
 	data.forEach((e,a) => {
 		bkd.arrFormulaPL().forEach((d) => {
-			// let total = toolkit.sum(d.formula, (f) => e[f])
 			let total = 0
 			d.formula.forEach((f, l) => {
 				if (l == 0) {
@@ -370,7 +369,6 @@ bkd.render = () => {
 			data[a][d.id] = total
 		})
 	})
-	// console.log(data)
 
 	data.forEach((e) => {
 		let breakdown = e._id
