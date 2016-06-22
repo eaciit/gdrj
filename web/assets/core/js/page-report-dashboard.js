@@ -30,7 +30,9 @@ vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Dashboard', href: '/rep
 viewModel.dashboard = {};
 var dsbrd = viewModel.dashboard;
 
-dsbrd.rows = ko.observableArray([{ pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"] }, { pnl: 'Growth', plcodes: [] }, // NOT YET
+dsbrd.rows = ko.observableArray([
+// { pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"] },
+{ pnl: "Net Sales", plcodes: ["PL8A"] }, { pnl: 'Growth', plcodes: [] }, // NOT YET
 { pnl: 'Sales Discount', plcodes: ["PL7", "PL8"] },
 // { pnl: 'ATL', plcodes: ["PL28"] },
 // { pnl: 'BTL', plcodes: ["PL29", "PL30", "PL31", "PL32"] },
@@ -155,7 +157,7 @@ dsbrd.refresh = function () {
 				}, 1000 * 5);
 				return;
 			}
-
+			console.log(res);
 			dsbrd.contentIsLoading(false);
 			dsbrd.render(res);
 		}, function () {
@@ -206,11 +208,11 @@ dsbrd.render = function (res) {
 
 		rowsAfter.push(row);
 	});
-
+	console.log(rowsAfter);
 	if (rowsAfter.length > 0) {
 		(function () {
 			var grossSales = rowsAfter.find(function (d) {
-				return d.pnl == 'Gross Sales';
+				return d.pnl == 'Net Sales';
 			});
 			var ebit = rowsAfter.find(function (d) {
 				return d.pnl == 'EBIT';
@@ -222,7 +224,7 @@ dsbrd.render = function (res) {
 					if (row.pnl == 'EBIT %') {
 						var percentage = kendo.toString(toolkit.number(ebit.columnData[columnIndex].original / grossSales.columnData[columnIndex].original) * 100, 'n2');
 						column.value = percentage + ' %';
-					} else if (row.pnl != 'Gross Sales' && row.pnl != 'EBIT') {
+					} else if (row.pnl != 'Net Sales' && row.pnl != 'EBIT') {
 						var _percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original) * 100, 'n2');
 						column.value = _percentage + ' %';
 					}
@@ -324,7 +326,7 @@ dsbrd.render = function (res) {
 	dsbrd.columns(columnsPlaceholder.concat(columnGrouped));
 
 	var grossSales = dsbrd.data().find(function (d) {
-		return d.pnl == "Gross Sales";
+		return d.pnl == "Net Sales";
 	});
 	var growth = dsbrd.data().find(function (d) {
 		return d.pnl == "Growth";

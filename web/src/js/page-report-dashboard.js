@@ -36,7 +36,8 @@ viewModel.dashboard = {}
 let dsbrd = viewModel.dashboard
 
 dsbrd.rows = ko.observableArray([
-	{ pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"] },
+	// { pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"] },
+	{ pnl: "Net Sales", plcodes: ["PL8A"] },
 	{ pnl: 'Growth', plcodes: [] }, // NOT YET
 	{ pnl: 'Sales Discount', plcodes: ["PL7", "PL8"] },
 	// { pnl: 'ATL', plcodes: ["PL28"] },
@@ -165,7 +166,7 @@ dsbrd.refresh = () => {
 				setTimeout(() => { fetch() }, 1000 * 5)
 				return
 			}
-
+			console.log(res)
 			dsbrd.contentIsLoading(false)
 			dsbrd.render(res)
 		}, () => {
@@ -212,9 +213,9 @@ dsbrd.render = (res) => {
 
 		rowsAfter.push(row)
 	})
-
+	console.log(rowsAfter)
 	if (rowsAfter.length > 0) {
-		let grossSales = rowsAfter.find((d) => d.pnl == 'Gross Sales')
+		let grossSales = rowsAfter.find((d) => d.pnl == 'Net Sales')
 		let ebit = rowsAfter.find((d) => d.pnl == 'EBIT')
 		let columns = rowsAfter[0].columnData
 
@@ -223,7 +224,7 @@ dsbrd.render = (res) => {
 				if (row.pnl == 'EBIT %') {
 					let percentage = kendo.toString(toolkit.number(ebit.columnData[columnIndex].original / grossSales.columnData[columnIndex].original) * 100, 'n2')
 					column.value = `${percentage} %`;
-				} else if (row.pnl != 'Gross Sales' && row.pnl != 'EBIT') {
+				} else if (row.pnl != 'Net Sales' && row.pnl != 'EBIT') {
 					let percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original) * 100, 'n2')
 					column.value = `${percentage} %`;
 				}
@@ -313,7 +314,7 @@ dsbrd.render = (res) => {
 	dsbrd.data(rowsAfter)
 	dsbrd.columns(columnsPlaceholder.concat(columnGrouped))
 
-	let grossSales = dsbrd.data().find((d) => d.pnl == "Gross Sales")
+	let grossSales = dsbrd.data().find((d) => d.pnl == "Net Sales")
 	let growth = dsbrd.data().find((d) => d.pnl == "Growth")
 
 	let counter = 0

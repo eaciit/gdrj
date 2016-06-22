@@ -357,7 +357,7 @@ kac.render = function () {
 	}, 'desc');
 
 	plmodels.forEach(function (d) {
-		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
+		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 };
 		data.forEach(function (e) {
 			var breakdown = e._id;
 			var value = e['' + d._id];
@@ -374,6 +374,8 @@ kac.render = function () {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
+			if (percentage < 0) percentage = percentage * -1;
+
 			row[breakdown + ' %'] = percentage;
 		});
 
@@ -382,6 +384,15 @@ kac.render = function () {
 		}
 
 		rows.push(row);
+	});
+
+	var TotalNetSales = _.find(rows, function (r) {
+		return r.PLCode == "PL8A";
+	}).PNLTotal;
+	rows.forEach(function (d, e) {
+		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
+		rows[e].Percentage = TotalPercentage;
 	});
 
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
@@ -399,6 +410,8 @@ kac.render = function () {
 	toolkit.newEl('th').html('P&L').appendTo(trHeader1);
 
 	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader1);
+
+	toolkit.newEl('th').html('%').addClass('align-right').appendTo(trHeader1);
 
 	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
 
@@ -458,6 +471,8 @@ kac.render = function () {
 
 		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
 		toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
+
+		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + '%').addClass('align-right').appendTo(trHeader);
 
 		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).appendTo(tableContent);
 

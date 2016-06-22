@@ -423,7 +423,6 @@ ba.render = () => {
 	let netSalesPlModel = ba.plmodels().find((d) => d._id == netSalesPLCode)
 	let netSalesRow = {}
 
-	console.log(data)
 	data.forEach((e,a) => {
 		ba.arrFormulaPL().forEach((d) => {
 			let total1 = 0
@@ -458,7 +457,7 @@ ba.render = () => {
 	data = _.orderBy(data, (d) => netSalesRow[d._id], 'desc')
 
 	plmodels.forEach((d) => {
-		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
+		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
 		data.forEach((e) => {
 			let breakdown = e._id
 			let value = e[`${d._id}`];
@@ -495,6 +494,14 @@ ba.render = () => {
 		rows.push(row)
 	})
 
+	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == "PL8A" }).PNLTotal
+	rows.forEach((d, e) => {
+		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100;
+		if (TotalPercentage < 0)
+			TotalPercentage = TotalPercentage * -1 
+		rows[e].Percentage = TotalPercentage
+	})
+
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl-branch pivot-pnl')
 		.appendTo($('.breakdown-view'))
@@ -522,7 +529,7 @@ ba.render = () => {
 		.appendTo(tableHeader)
 
 	toolkit.newEl('th')
-		.attr('colspan', 2)
+		.attr('colspan', 3)
 		.html('&nbsp;')
 		.addClass('cell-percentage-header')
 		.appendTo(trHeader1)
@@ -534,6 +541,11 @@ ba.render = () => {
 
 	toolkit.newEl('th')
 		.html('Total')
+		.addClass('align-right')
+		.appendTo(trHeader2)
+
+	toolkit.newEl('th')
+		.html('%')
 		.addClass('align-right')
 		.appendTo(trHeader2)
 
@@ -668,6 +680,11 @@ ba.render = () => {
 		let pnlTotal = kendo.toString(d.PNLTotal, 'n0')
 		toolkit.newEl('td')
 			.html(pnlTotal)
+			.addClass('align-right')
+			.appendTo(trHeader)
+
+		toolkit.newEl('td')
+			.html(kendo.toString(d.Percentage, 'n2') + '%')
 			.addClass('align-right')
 			.appendTo(trHeader)
 
