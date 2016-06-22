@@ -39,6 +39,7 @@ type SalesPL struct {
 	RatioToBranchSales float64
 	RatioToBrandSales  float64
 	RatioToSKUSales    float64
+	RatioToMonthSales  float64
 
 	PLDatas map[string]*PLData
 
@@ -435,7 +436,6 @@ func (pl *SalesPL) CalcDepre(masters toolkit.M) {
 	depretiationid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	d, exist := depretiations[depretiationid]
 	if !exist {
-		// toolkit.Printfn("Depretiation error: key is not exist %s", depretiationid)
 		return
 	}
 
@@ -458,7 +458,6 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	royalid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	r, exist := royals[royalid]
 	if !exist {
-		// toolkit.Printfn("Royalty error: key is not exist %s", royalid)
 		return
 	}
 
@@ -484,14 +483,14 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	promos := masters.Get("promo").(map[string]*RawDataPL)
 
 	find := func(x string) *RawDataPL {
-		freightid := toolkit.Sprintf("%s_%s", pl.Customer.BranchID, x)
+		freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, x)
 		f, exist := promos[freightid]
 		if !exist {
 			return &RawDataPL{}
 		}
 		return f
 	}
-
+	// key := toolkit.Sprintf("%d_%d_%s", Date.Year(), Date.Month(), agroup)
 	fpromo := find("promo")
 	fadv := find("adv")
 	// fAtl := find("atl")
@@ -501,8 +500,8 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	// fBtlOtherpromo := find("promo")
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL28A", -fpromo.AmountinIDR*pl.RatioToBranchSales, plmodels)
-	pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	pl.AddData("PL28A", -fpromo.AmountinIDR*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToMonthSales, plmodels)
 	// pl.AddData("PL30", -fBtlGondola.AmountinIDR*pl.RatioToBranchSales, plmodels)
 	// pl.AddData("PL31", -fBtlOtherpromo.AmountinIDR*pl.RatioToBranchSales, plmodels)
 	// pl.AddData("PL32", -fBtlSPG.AmountinIDR*pl.RatioToBranchSales, plmodels)
