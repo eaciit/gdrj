@@ -732,8 +732,26 @@ bkd.showZeroValue = function (a) {
 			}
 		});
 	}
-
 	bkd.showExpandAll(false);
+	if (a == false) {
+		(function () {
+			var countchild = 0,
+			    hidechild = 0;
+			$(".table-header tbody>tr.dd").each(function (i) {
+				if (i > 0) {
+					countchild = $('.table-header tr[idparent=' + $(this).attr('idheaderpl') + ']').length;
+					hidechild = $('.table-header tr[idparent=' + $(this).attr('idheaderpl') + '][statusvaltemp=hide]').length;
+					if (countchild > 0) {
+						console.log(countchild, hidechild, $(this));
+						if (countchild == hidechild) {
+							$(this).find('td:eq(0)>i').removeClass().css('margin-right', '0px');
+							$(this).find('td:eq(0)').css('padding-left', '20px');
+						}
+					}
+				}
+			});
+		})();
+	}
 };
 
 bkd.optionBreakdownValues = ko.observableArray([]);
