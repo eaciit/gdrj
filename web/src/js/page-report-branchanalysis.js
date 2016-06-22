@@ -14,7 +14,7 @@ ba.breakdownByFiscalYear = ko.observable('date.fiscal')
 ba.oldBreakdownBy = ko.observable(ba.breakdownBy())
 ba.optionDimensions = ko.observableArray(rpt.optionDimensions().filter((d) => d.field != 'customer.channelname'))
 
-ba.expandRD = ko.observable(false)
+ba.expand = ko.observable(false)
 ba.data = ko.observableArray([])
 ba.zeroValue = ko.observable(false)
 ba.fiscalYear = ko.observable(rpt.value.FiscalYear())
@@ -115,7 +115,7 @@ ba.buildStructure = (data) => {
 				data.forEach((d) => {
 					d.subs = d.subs.filter((e) => e._id != 'RD')
 
-					if (ba.expandRD()) {
+					if (ba.expand()) {
 						let totalColumn = renderTotalColumn(d)
 						d.subs = [totalColumn].concat(d.subs)
 					}
@@ -144,7 +144,7 @@ ba.buildStructure = (data) => {
 		return op2
 	}
 
-	if (ba.expandRD()) {
+	if (ba.expand()) {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
@@ -306,8 +306,8 @@ ba.emptyGrid = () => {
 
 ba.idarrayhide = ko.observableArray(['PL44A'])
 ba.render = () => {
-	if (ba.breakdownRD() == "OnlyRD") {
-		ba.expandRD(false)
+	if (ba.breakdownRD() == "All") {
+		ba.expand(false)
 	}
 
 	if (ba.data().length == 0) {
