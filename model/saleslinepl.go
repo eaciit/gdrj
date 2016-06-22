@@ -484,7 +484,7 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	promos := masters.Get("promo").(map[string]*RawDataPL)
 
 	find := func(x string) *RawDataPL {
-		freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, x)
+		freightid := toolkit.Sprintf("%s_%s", pl.Customer.BranchID, x)
 		f, exist := promos[freightid]
 		if !exist {
 			return &RawDataPL{}
