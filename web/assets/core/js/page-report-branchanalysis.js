@@ -181,10 +181,9 @@ ba.buildStructure = function (data) {
 			d.subs = groupThenMap(d.subs, function (e) {
 				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
 			}).map(function (e) {
-				e.subs = groupThenMap(d.subs, function (f) {
+				e.subs = groupThenMap(e.subs, function (f) {
 					return f._id._id_customer_channelname;
 				}).map(function (f) {
-					f.subs = [];
 					f.count = 1;
 					return f;
 				});

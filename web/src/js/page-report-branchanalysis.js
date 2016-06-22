@@ -151,10 +151,9 @@ ba.buildStructure = (data) => {
 			d.subs = groupThenMap(d.subs, (e) => {
 				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1]
 			}).map((e) => {
-				e.subs = groupThenMap(d.subs, (f) => {
+				e.subs = groupThenMap(e.subs, (f) => {
 					return f._id._id_customer_channelname
 				}).map((f) => {
-					f.subs = []
 					f.count = 1
 					return f
 				})
