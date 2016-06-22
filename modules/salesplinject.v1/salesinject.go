@@ -142,9 +142,7 @@ func main() {
 
 	var f *dbox.Filter
 	f = dbox.And(dbox.Gte("date", speriode), dbox.Lt("date", eperiode))
-	f = dbox.Or(dbox.Eq("_id", "RD_2014_4_40007354_24260"),
-		dbox.Eq("_id", "EXPORT_2014_4_40007767_13"),
-		dbox.Eq("_id", "VDIST/2015-2014/FK/IPR/14003129_CD04_2"))
+	// f = dbox.Or(dbox.Eq("_id", "RD_2014_4_40007354_24260"),dbox.Eq("_id", "EXPORT_2014_4_40007767_13"),dbox.Eq("_id", "VDIST/2015-2014/FK/IPR/14003129_CD04_2"))
 
 	toolkit.Printfn("Prepare : %v", t0)
 	prepmaster()
@@ -162,6 +160,10 @@ func main() {
 	}
 
 	step := count / 100
+	if step == 0 {
+		step = 10
+	}
+
 	i := 0
 	toolkit.Printfn("START ... %d records ", count)
 	for {

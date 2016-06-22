@@ -475,6 +475,24 @@ rpt.showZeroValue = function (a) {
 	}
 
 	rpt.showExpandAll(false);
+	if (a == false) {
+		(function () {
+			var countchild = 0,
+			    hidechild = 0;
+			$(".table-header tbody>tr.dd").each(function (i) {
+				if (i > 0) {
+					countchild = $('.table-header tr[idparent=' + $(this).attr('idheaderpl') + ']').length;
+					hidechild = $('.table-header tr[idparent=' + $(this).attr('idheaderpl') + '][statusvaltemp=hide]').length;
+					if (countchild > 0) {
+						if (countchild == hidechild) {
+							$(this).find('td:eq(0)>i').removeClass().css('margin-right', '0px');
+							if ($(this).attr('idparent') == undefined) $(this).find('td:eq(0)').css('padding-left', '20px');
+						}
+					}
+				}
+			});
+		})();
+	}
 };
 
 rpt.arrChangeParent = ko.observableArray([{ idfrom: 'PL6A', idto: '', after: 'PL0' }, { idfrom: 'PL1', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL2', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL3', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL4', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL5', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL6', idto: 'PL8A', after: 'PL8A' }]);
