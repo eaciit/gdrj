@@ -81,6 +81,107 @@ func TrxToSalesPL(conn dbox.IConnection,
 	return pl
 }
 
+func (spl *SalesPL) CleanAndClasify(masters toolkit.M) {
+
+	if spl.Customer == nil {
+		c := new(Customer)
+		c.BranchID = "CD02"
+		c.CustType = "General"
+		c.IsRD = false
+		spl.Customer = c
+	}
+
+	inexclude := func(f string, list []string) bool {
+		for _, v := range list {
+			if v == f {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	subchannels := masters.Get("subchannels").(toolkit.M)
+	subchannel := subchannels.GetString(spl.Customer.CustType)
+	switch spl.Customer.ChannelID {
+	case "I1":
+		spl.Customer.IsRD = true
+		spl.Customer.ChannelName = "RD"
+		spl.Customer.ReportChannel = "RD"
+		spl.Customer.ReportSubChannel = spl.Customer.Name
+	case "I3": //MT
+		I3list := []string{"M1", "M2", "M3"}
+		spl.Customer.ChannelName = "MT"
+		spl.Customer.ReportChannel = "MT"
+		if inexclude(spl.Customer.CustType, I3list) {
+			subchannel = ""
+		}
+
+		if subchannel == "" {
+			spl.Customer.ReportSubChannel = subchannels.GetString("M3")
+		} else {
+			spl.Customer.ReportSubChannel = subchannel
+		}
+	case "I4":
+		spl.Customer.ChannelName = "INDUSTRIAL"
+		spl.Customer.ReportChannel = "IT"
+		spl.Customer.ReportSubChannel = spl.Customer.Name
+	case "I6":
+		spl.Customer.ChannelName = "MOTORIST"
+		spl.Customer.ReportChannel = "Motoris"
+		spl.Customer.ReportSubChannel = "Motoris"
+	case "EXP":
+		spl.Customer.ChannelName = "EXPORT"
+		spl.Customer.ReportChannel = "EXPORT"
+		spl.Customer.ReportSubChannel = "EXPORT"
+	default:
+		spl.Customer.ChannelID = "I2"
+		spl.Customer.ChannelName = "GT"
+		spl.Customer.ReportChannel = "GT"
+		subchannel := subchannels.GetString(spl.Customer.CustType)
+
+		if spl.Customer.CustType == "" || (len(spl.Customer.CustType) > 1 && spl.Customer.CustType[:1] != "R") {
+			subchannel = ""
+		}
+
+		if subchannel == "" {
+			spl.Customer.ReportSubChannel = "R18 - Lain-lain"
+		} else {
+			spl.Customer.ReportSubChannel = subchannel
+		}
+	}
+
+	if spl.Product == nil {
+		p := new(Product)
+		p.Brand = "Other"
+		p.Name = "Other"
+	}
+
+	mcustomers := masters["customers"].(toolkit.M)
+	mbranchs := masters["branchs"].(toolkit.M)
+
+	cust, iscust := mcustomers[spl.Customer.ID].(*Customer)
+	branch, isbranch := mbranchs[spl.Customer.BranchID].(toolkit.M)
+
+	if iscust {
+		spl.Customer.National = cust.National
+		spl.Customer.Zone = cust.Zone
+		spl.Customer.Region = cust.Region
+		spl.Customer.AreaName = cust.AreaName
+	} else if isbranch {
+		spl.Customer.National = branch.Get("national", "").(string)
+		spl.Customer.Zone = branch.Get("zone", "").(string)
+		spl.Customer.Region = branch.Get("region", "").(string)
+		spl.Customer.AreaName = branch.Get("area", "").(string)
+	} else {
+		spl.Customer.National = "OTHER"
+		spl.Customer.Zone = "OTHER"
+		spl.Customer.Region = "OTHER"
+		spl.Customer.AreaName = "OTHER"
+	}
+
+}
+
 func (pl *SalesPL) Calc(conn dbox.IConnection,
 	masters toolkit.M,
 	config toolkit.M) *SalesPL {

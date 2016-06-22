@@ -1,7 +1,5 @@
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
-
 viewModel.breakdown = new Object();
 var ba = viewModel.breakdown;
 
@@ -22,7 +20,6 @@ ba.optionDimensions = ko.observableArray(rpt.optionDimensions().filter(function 
 
 ba.expandRD = ko.observable(false);
 ba.data = ko.observableArray([]);
-ba.plmodels = ko.observableArray([]);
 ba.zeroValue = ko.observable(false);
 ba.fiscalYear = ko.observable(rpt.value.FiscalYear());
 ba.breakdownValue = ko.observableArray([]);
@@ -38,12 +35,240 @@ ba.optionBranch = ko.observableArray([{
 	title: "Non RD Sales"
 }]); //rpt.masterData.Channel()
 
+ba.breakdown2ndLevel = ko.observable(false);
+ba.breakdown2ndLevelKey = ko.observable('customer.name');
+ba.level = ko.observable(2);
+
+ba.buildStructure = function (data) {
+	var rdCategories = ["RD", "Non RD"];
+	var keys = ["_id_customer_branchname", "_id_customer_channelid", "_id_customer_channelname"];
+
+	var fixEmptySubs = function fixEmptySubs(d) {
+		var subs = [];
+		rdCategories.forEach(function (cat, i) {
+			var row = d.subs.find(function (e) {
+				return e._id == cat;
+			});
+			if (row == undefined) {
+				var newRow = {};
+				newRow._id = cat;
+				newRow.count = 1;
+				newRow.subs = [];
+
+				var newSubRow = {};
+				newSubRow._id = cat;
+				newSubRow.count = 1;
+				newSubRow.subs = [];
+				for (var p in d.subs[0]) {
+					if (d.subs[0].hasOwnProperty(p) && p.search("PL") > -1) {
+						newSubRow[p] = 0;
+						newRow[p] = 0;
+					}
+				}
+				newRow.subs.push(newSubRow);
+
+				row = newRow;
+			}
+
+			subs[i] = row;
+		});
+		return subs;
+	};
+
+	var showAsBreakdown = function showAsBreakdown(data) {
+		var renderTotalColumn = function renderTotalColumn(d) {
+			var totalColumn = {};
+			totalColumn._id = 'Total';
+			totalColumn.count = 1;
+			totalColumn.excludeFromTotal = true;
+
+			var totalSubColumn = {};
+			totalSubColumn._id = 'Total';
+			totalSubColumn.count = 1;
+			totalSubColumn.excludeFromTotal = true;
+
+			var _loop = function _loop(p) {
+				if (d.subs[0].hasOwnProperty(p) && p.search('PL') > -1) {
+					totalColumn[p] = toolkit.sum(d.subs, function (e) {
+						return e[p];
+					});
+					totalSubColumn[p] = toolkit.sum(d.subs, function (e) {
+						return e[p];
+					});
+				}
+			};
+
+			for (var p in d.subs[0]) {
+				_loop(p);
+			}
+
+			totalColumn.subs = [totalSubColumn];
+			return totalColumn;
+		};
+
+		switch (ba.breakdownRD()) {
+			case 'All':
+				{
+					data.forEach(function (d) {
+						var totalColumn = renderTotalColumn(d);
+						d.subs = [totalColumn].concat(d.subs);
+						d.count = toolkit.sum(d.subs, function (e) {
+							return e.count;
+						});
+					});
+				}break;
+			case 'OnlyRD':
+				{
+					data.forEach(function (d) {
+						d.subs = d.subs.filter(function (e) {
+							return e._id == 'RD';
+						});
+						d.count = toolkit.sum(d.subs, function (e) {
+							return e.count;
+						});
+					});
+				}break;
+			case 'NonRD':
+				{
+					data.forEach(function (d) {
+						d.subs = d.subs.filter(function (e) {
+							return e._id != 'RD';
+						});
+
+						if (ba.expandRD()) {
+							var totalColumn = renderTotalColumn(d);
+							d.subs = [totalColumn].concat(d.subs);
+						}
+
+						d.count = toolkit.sum(d.subs, function (e) {
+							return e.count;
+						});
+					});
+				}break;
+		}
+	};
+
+	var groupThenMap = function groupThenMap(data, group) {
+		var op1 = _.groupBy(data, function (d) {
+			return group(d);
+		});
+		var op2 = _.map(op1, function (v, k) {
+			var key = { _id: k, subs: v };
+			var sample = v[0];
+
+			var _loop2 = function _loop2(prop) {
+				if (sample.hasOwnProperty(prop) && prop != '_id') {
+					key[prop] = toolkit.sum(v, function (d) {
+						return d[prop];
+					});
+				}
+			};
+
+			for (var prop in sample) {
+				_loop2(prop);
+			}
+
+			return key;
+		});
+
+		return op2;
+	};
+
+	if (ba.expandRD()) {
+		var _parsed = groupThenMap(data, function (d) {
+			return d._id._id_customer_branchname;
+		}).map(function (d) {
+			d.subs = groupThenMap(d.subs, function (e) {
+				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
+			}).map(function (e) {
+				e.subs = groupThenMap(d.subs, function (f) {
+					return f._id._id_customer_channelname;
+				}).map(function (f) {
+					f.subs = [];
+					f.count = 1;
+					return f;
+				});
+
+				e.count = e.subs.length;
+				return e;
+			});
+
+			// INJECT THE EMPTY RD / NON RD
+			d.subs = fixEmptySubs(d);
+
+			d.count = toolkit.sum(d.subs, function (e) {
+				return e.count;
+			});
+			return d;
+		});
+
+		ba.level(3);
+		showAsBreakdown(_parsed);
+		return _parsed;
+	}
+
+	if (ba.breakdown2ndLevel()) {
+		var _parsed2 = groupThenMap(data, function (d) {
+			return d._id._id_customer_branchname;
+		}).map(function (d) {
+
+			d.subs = groupThenMap(d.subs, function (e) {
+				return e._id._id_customer_channelname;
+			}).map(function (e) {
+
+				e.subs = groupThenMap(d.subs, function (f) {
+					return f._id._id_customer_name;
+				}).map(function (f) {
+					f.subs = [];
+					f.count = 1;
+					return f;
+				});
+
+				e.count = e.subs.length;
+				return e;
+			});
+
+			d.count = toolkit.sum(d.subs, function (e) {
+				return e.count;
+			});
+			return d;
+		});
+
+		ba.level(3);
+		return _parsed2;
+	}
+
+	var parsed = groupThenMap(data, function (d) {
+		return d._id._id_customer_branchname;
+	}).map(function (d) {
+
+		d.subs = groupThenMap(d.subs, function (e) {
+			return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
+		}).map(function (e) {
+			e.subs = [];
+			e.count = 1;
+			return e;
+		});
+
+		// INJECT THE EMPTY RD / NON RD
+		d.subs = fixEmptySubs(d);
+
+		d.count = toolkit.sum(d.subs, function (e) {
+			return e.count;
+		});
+		return d;
+	});
+
+	ba.level(2);
+	showAsBreakdown(parsed);
+	return parsed;
+};
 ba.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
 	var param = {};
 	param.pls = [];
-	param.groups = [ba.breakdownByChannel(), ba.breakdownBy() /** , 'date.year' */];
+	param.groups = [ba.breakdownByChannel(), ba.breakdownBy()];
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, ba.fiscalYear);
 
@@ -57,7 +282,10 @@ ba.refresh = function () {
 			Value: ba.breakdownValue()
 		});
 	}
-	console.log("bdk", param.filters);
+
+	if (ba.breakdown2ndLevel()) {
+		param.groups.push(ba.breakdown2ndLevelKey());
+	}
 
 	ba.oldBreakdownBy(ba.breakdownBy());
 	ba.contentIsLoading(true);
@@ -70,11 +298,18 @@ ba.refresh = function () {
 				}, 1000 * 5);
 				return;
 			}
-			ba.data(res.Data.Data);
+
+			// if (ba.breakdown2ndLevel()) { // hardcode, use DUMMY data
+			// 	res.Data.Data = branch_analysis_dummy
+			// }
+
+			var data = ba.buildStructure(res.Data.Data);
+
+			ba.data(data);
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			ba.breakdownNote('Last refreshed on: ' + date);
 
-			ba.plmodels(res.Data.PLModels);
+			rpt.plmodels(res.Data.PLModels);
 			ba.emptyGrid();
 			ba.contentIsLoading(false);
 			ba.render();
@@ -110,213 +345,6 @@ ba.emptyGrid = function () {
 	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
 };
 
-ba.renderDetailSalesTrans = function (breakdown) {
-	ba.popupIsLoading(true);
-	$('#modal-detail-ledger-summary').appendTo($('body'));
-	$('#modal-detail-ledger-summary').modal('show');
-
-	var columns = [
-	// { field: '_id', title: 'ID', width: 100, locked: true },
-	{ field: 'date', title: 'Date', width: 150, locked: true, template: function template(d) {
-			return moment(d.date).format('DD/MM/YYYY HH:mm');
-		} }, { field: "grossamount", headerTemplate: '<div class="align-right">Gross</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "discountamount", headerTemplate: '<div class="align-right">Discount</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "netamount", headerTemplate: '<div class="align-right">Net Sales</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "salesqty", headerTemplate: '<div class="align-right">Sales Qty</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "customer.branchname", title: 'Branch', width: 100 }, { field: "product.name", title: 'Product', width: 250 }, { field: "product.brand", title: 'Brand', width: 100 }];
-
-	var config = {
-		dataSource: {
-			transport: {
-				read: function read(options) {
-					var param = options.data;
-					param.tablename = "browsesalestrxs";
-					param[ba.breakdownBy()] = [breakdown];
-
-					if (toolkit.isUndefined(param.page)) {
-						param = $.extend(true, param, {
-							take: 5,
-							skip: 0,
-							page: 1,
-							pageSize: 5
-						});
-					}
-
-					$.ajax({
-						type: "POST",
-						url: "/databrowser/getdatabrowser",
-						contentType: "application/json; charset=utf-8",
-						dataType: 'json',
-						data: JSON.stringify(param),
-						success: function success(res) {
-							ba.popupIsLoading(false);
-							setTimeout(function () {
-								options.success(res.data);
-							}, 200);
-						},
-						error: function error() {
-							ba.popupIsLoading(false);
-						}
-					});
-				},
-				pageSize: 5
-			},
-			schema: {
-				data: function data(d) {
-					return d.DataValue;
-				},
-				total: function total(d) {
-					return d.DataCount;
-				}
-			},
-			serverPaging: true,
-			columns: [],
-			pageSize: 5
-		},
-		sortable: true,
-		pageable: true,
-		scrollable: true,
-		columns: columns
-	};
-
-	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
-	$('.grid-detail').kendoGrid(config);
-};
-ba.renderDetail = function (plcode, breakdowns) {
-	ba.popupIsLoading(true);
-	$('#modal-detail-ledger-summary .modal-title').html('Detail');
-	$('#modal-detail-ledger-summary').appendTo($('body'));
-	$('#modal-detail-ledger-summary').modal('show');
-
-	var titleParts = [];
-	for (var p in breakdowns) {
-		if (breakdowns.hasOwnProperty(p)) {
-			titleParts.push(breakdowns[p]);
-		}
-	}
-
-	$('#modal-detail-ledger-summary .modal-title').html('Detail of ' + titleParts.join(' '));
-
-	var columns = [{ title: 'Date', width: 120, locked: true, footerTemplate: 'Total :', template: function template(d) {
-			return moment(d.date.date).format('DD/MM/YYYY HH:mm');
-		}, attributes: { class: 'bold' } },
-	// { field: `pldatas.${plcode}.amount`, width: 120, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => d[`pldatas.${plcode}.amount`].sum, format: '{0:n2}', attributes: { class: 'align-right' } },
-	{ field: 'grossamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Gross</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.grossamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'discountamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Discount</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.discountamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'netamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Net Sales</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.netamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } },
-	// { title: 'Cost Center', template: (d) => toolkit.redefine(toolkit.redefine(d.cc, {}).name, ''), width: 250 },
-	{ title: 'Outlet', template: function template(d) {
-			return toolkit.redefine(toolkit.redefine(d.customer, {}).name, '');
-		}, width: 200 }, { title: 'Branch', template: function template(d) {
-			return toolkit.redefine(toolkit.redefine(d.customer, {}).branchname, '');
-		}, width: 150 }, { title: 'Channel', template: function template(d) {
-			return toolkit.redefine(toolkit.redefine(d.customer, {}).channelname, '');
-		}, width: 150 }, { title: 'Brand', template: function template(d) {
-			return toolkit.redefine(toolkit.redefine(d.product, {}).brand, '');
-		}, width: 100 }, { title: 'Product', template: function template(d) {
-			return toolkit.redefine(toolkit.redefine(d.product, {}).name, '');
-		}, width: 250 }];
-
-	var config = {
-		dataSource: {
-			transport: {
-				read: function read(options) {
-					var param = options.data;
-					param.filters = [];
-
-					for (var _p in breakdowns) {
-						if (breakdowns.hasOwnProperty(_p)) {
-							param.filters.push({
-								field: _p,
-								op: "$eq",
-								value: breakdowns[_p]
-							});
-						}
-					}
-
-					if (toolkit.isUndefined(param.page)) {
-						param = $.extend(true, param, {
-							take: 5,
-							skip: 0,
-							page: 1,
-							pageSize: 5
-						});
-					}
-
-					$.ajax({
-						type: "POST",
-						url: "/report/getpnldetail",
-						contentType: "application/json; charset=utf-8",
-						dataType: 'json',
-						data: JSON.stringify(param),
-						success: function success(res) {
-							ba.popupIsLoading(false);
-							setTimeout(function () {
-								console.log("++++", res);
-								options.success(res.Data);
-							}, 200);
-						},
-						error: function error() {
-							ba.popupIsLoading(false);
-						}
-					});
-				},
-				pageSize: 5
-			},
-			schema: {
-				data: function data(d) {
-					return d.DataValue;
-				},
-				total: function total(d) {
-					return d.DataCount;
-				}
-			},
-			//       aggregates: [
-			// 	{ field: "netamount", aggregate: "sum" },
-			// 	{ field: "grossamount", aggregate: "sum" },
-			// 	{ field: "discountamount", aggregate: "sum" },
-			// 	{ field: `pldatas.${plcode}.amount`, aggregate: 'sum' }
-			// ],
-			serverPaging: true,
-			pageSize: 5
-		},
-		sortable: true,
-		pageable: true,
-		scrollable: true,
-		columns: columns,
-		dataBound: function dataBound(d) {
-			$('.grid-detail .k-pager-nav.k-pager-last').hide();
-
-			setTimeout(function () {
-				var pager = $('.grid-detail .k-pager-info');
-				var text = 'rows ' + pager.html().split(" ").slice(0, 3).join(" ");
-				pager.html(text);
-			}, 10);
-		}
-	};
-
-	console.log("======", config);
-
-	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
-	$('.grid-detail').kendoGrid(config);
-};
-
-ba.arrChangeParent = ko.observableArray([{ idfrom: 'PL6A', idto: '', after: 'PL0' }, { idfrom: 'PL1', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL2', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL3', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL4', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL5', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL6', idto: 'PL8A', after: 'PL8A' }]);
-ba.arrFormulaPL = ko.observableArray([{ id: "PL2", formula: ["PL2", "PL8"], cal: "sum" }, { id: "PL1", formula: ["PL8A", "PL2", "PL6"], cal: "min" }]);
-
-ba.changeParent = function (elemheader, elemcontent, PLCode) {
-	var change = _.find(ba.arrChangeParent(), function (a) {
-		return a.idfrom == PLCode;
-	});
-	if (change != undefined) {
-		if (change.idto != '') {
-			elemheader.attr('idparent', change.idto);
-			elemcontent.attr('idcontparent', change.idto);
-		} else {
-			elemheader.removeAttr('idparent');
-			elemheader.find('td:eq(0)').css('padding-left', '8px');
-			elemcontent.removeAttr('idcontparent');
-		}
-		return change.after;
-	} else {
-		return "";
-	}
-};
-
 ba.idarrayhide = ko.observableArray(['PL44A']);
 ba.render = function () {
 	if (ba.breakdownRD() == "OnlyRD") {
@@ -328,201 +356,11 @@ ba.render = function () {
 		return;
 	}
 
-	var breakdowns = [ba.breakdownByChannel(), ba.breakdownBy() /** , 'date.year' */];
-	var rows = [],
-	    datayo = [],
-	    dataok = [];
-	var breakdownKey = '_id_' + toolkit.replace(ba.breakdownByChannel(), '.', '_');
+	// ========================= TABLE STRUCTURE
 
-	var groupbyrd = _.groupBy(ba.data(), function (a) {
-		return a._id._id_customer_branchname;
-	});
-	$.each(groupbyrd, function (key, value) {
-		var sumdata = {};
-		var sumdata2 = {};
-		datayo = _.filter(value, function (d) {
-			return d._id[breakdownKey] == "RD";
-		});
-		if (datayo.length > 0) {
-			for (var a in datayo) {
-				$.each(datayo[a], function (keya, valuea) {
-					if (keya != "_id") {
-						if (sumdata[keya] == undefined) sumdata[keya] = 0;
-						sumdata[keya] = sumdata[keya] + valuea;
-					}
-				});
-			}
-		} else {
-			$.each(value[0], function (keya, valuea) {
-				sumdata[keya] = 0;
-			});
-		}
-
-		datayo = _.filter(value, function (d) {
-			return d._id[breakdownKey] != "RD";
-		});
-		for (var a in datayo) {
-			$.each(datayo[a], function (keya, valuea) {
-				if (keya != "_id") {
-					if (sumdata2[keya] == undefined) sumdata2[keya] = 0;
-					sumdata2[keya] = sumdata2[keya] + valuea;
-				}
-			});
-		}
-
-		if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
-			var _ret = function () {
-				var sumdataOther = [];
-				rpt.masterData.Channel().filter(function (f) {
-					return f._id != "I1";
-				}).forEach(function (d) {
-					var sumdataEach = {};
-					datayo = _.filter(value, function (e) {
-						return e._id._id_customer_channelid == d._id;
-					});
-					for (var a in datayo) {
-						$.each(datayo[a], function (keya, valuea) {
-							if (keya != "_id") {
-								if (sumdataEach[keya] == undefined) sumdataEach[keya] = 0;
-								sumdataEach[keya] = sumdataEach[keya] + valuea;
-							}
-						});
-					}
-					sumdataOther.push(sumdataEach);
-				});
-
-				var newstruct = {};
-				newstruct["_id_customer_branchname"] = key;
-				toolkit.forEach(sumdata, function (key2, value2) {
-					var values = sumdataOther.map(function (d) {
-						return toolkit.number(d[key2]);
-					});
-					console.log("+++++", key2, value2, values);
-					newstruct[key2] = [value2, sumdata2[key2]].concat(values);
-				});
-				dataok.push(newstruct);
-				return {
-					v: void 0
-				};
-			}();
-
-			if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
-		}
-
-		var newstruct = {};
-		newstruct["_id_customer_branchname"] = key;
-		toolkit.forEach(sumdata, function (key2, value2) {
-			newstruct[key2] = [value2, sumdata2[key2]];
-		});
-		dataok.push(newstruct);
-	});
-
-	var data = _.map(dataok, function (d) {
-		d.breakdowns = {};
-		var titleParts = [];
-
-		breakdowns.forEach(function (e) {
-			var title = d['_id_' + toolkit.replace(e, '.', '_')];
-			title = toolkit.whenEmptyString(title, '');
-			d.breakdowns[e] = title;
-			titleParts.push(title);
-		});
-
-		d._id = titleParts.join(' ');
-		return d;
-	});
-
-	var plmodels = _.sortBy(ba.plmodels(), function (d) {
-		return parseInt(d.OrderIndex.replace(/PL/g, ''));
-	});
-	var exceptions = ["PL94C", "PL39B", "PL41C"];
-	var netSalesPLCode = 'PL8A';
-	var netSalesPlModel = ba.plmodels().find(function (d) {
-		return d._id == netSalesPLCode;
-	});
-	var netSalesRow = {};
-
-	data.forEach(function (e, a) {
-		ba.arrFormulaPL().forEach(function (d) {
-			var total1 = 0;
-			var total2 = 0;
-			d.formula.forEach(function (f, l) {
-				console.log(e);
-				if (l == 0) {
-					total1 = e[f][0];
-					total2 = e[f][1];
-				} else {
-					if (d.cal == 'sum') {
-						total1 += e[f][0];
-						total2 += e[f][1];
-					} else {
-						total1 -= e[f][0];
-						total2 -= e[f][1];
-					}
-				}
-			});
-
-			data[a][d.id][0] = total1;
-			data[a][d.id][1] = total2;
-		});
-	});
-
-	data.forEach(function (e) {
-		var breakdown = e._id;
-		var value = e['' + netSalesPlModel._id];
-		value = toolkit.number(value);
-		netSalesRow[breakdown] = value;
-	});
-	data = _.orderBy(data, function (d) {
-		return netSalesRow[d._id];
+	var data = _.orderBy(ba.data(), function (d) {
+		return d.PL8A;
 	}, 'desc');
-
-	plmodels.forEach(function (d) {
-		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 };
-		data.forEach(function (e) {
-			var breakdown = e._id;
-			var value = e['' + d._id];
-			row[breakdown + '1'] = toolkit.number(value[0]);
-			row[breakdown + '2'] = toolkit.number(value[1]);
-
-			if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
-				row[breakdown + '3'] = toolkit.number(value[2]);
-				row[breakdown + '4'] = toolkit.number(value[3]);
-				row[breakdown + '5'] = toolkit.number(value[4]);
-				row[breakdown + '6'] = toolkit.number(value[5]);
-				row[breakdown + '7'] = toolkit.number(value[6]);
-			}
-		});
-		data.forEach(function (e) {
-			var breakdown = e._id;
-			var total = e['' + d._id][0] + e['' + d._id][1];
-			total = toolkit.number(total);
-			row[breakdown + ' total'] = total;
-
-			if (ba.breakdownRD() == "OnlyRD") {
-				row.PNLTotal += toolkit.number(e['' + d._id][0]);
-			} else if (ba.breakdownRD() == "NonRD") {
-				row.PNLTotal += toolkit.number(e['' + d._id][1]);
-			} else {
-				row.PNLTotal += toolkit.number(total);
-			}
-		});
-
-		if (exceptions.indexOf(row.PLCode) > -1) {
-			return;
-		}
-
-		rows.push(row);
-	});
-
-	var TotalNetSales = _.find(rows, function (r) {
-		return r.PLCode == "PL8A";
-	}).PNLTotal;
-	rows.forEach(function (d, e) {
-		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
-		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = TotalPercentage;
-	});
 
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl-branch pivot-pnl').appendTo($('.breakdown-view'));
 
@@ -534,123 +372,130 @@ ba.render = function () {
 
 	var tableContent = toolkit.newEl('table').addClass('table').appendTo(tableContentWrap);
 
-	var trHeader1 = toolkit.newEl('tr').appendTo(tableHeader);
+	var trHeader = toolkit.newEl('tr').appendTo(tableHeader);
 
-	var trHeader2 = toolkit.newEl('tr').appendTo(tableHeader);
+	toolkit.newEl('th').html('P&L').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
 
-	toolkit.newEl('th').attr('colspan', 3).html('&nbsp;').addClass('cell-percentage-header').appendTo(trHeader1);
+	toolkit.newEl('th').html('Total').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('P&L').addClass('cell-percentage-header').appendTo(trHeader2);
+	var trContents = [];
+	for (var i = 0; i < ba.level(); i++) {
+		trContents.push(toolkit.newEl('tr').appendTo(tableContent));
+	}
 
-	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader2);
+	// ========================= BUILD HEADER
 
-	toolkit.newEl('th').html('%').addClass('align-right').appendTo(trHeader2);
-
-	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
-
-	var trContent2 = toolkit.newEl('tr').appendTo(tableContent);
-
-	var colWidth = 100;
-	var totalColumn = 2;
+	var columnWidth = 100;
+	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
+	var dataFlat = [];
 
-	var grouppl1 = _.map(_.groupBy(ba.plmodels(), function (d) {
-		return d.PLHeader1;
-	}), function (k, v) {
-		return { data: k, key: v };
-	});
-	var grouppl2 = _.map(_.groupBy(ba.plmodels(), function (d) {
-		return d.PLHeader2;
-	}), function (k, v) {
-		return { data: k, key: v };
-	});
-	var grouppl3 = _.map(_.groupBy(ba.plmodels(), function (d) {
-		return d.PLHeader3;
-	}), function (k, v) {
-		return { data: k, key: v };
-	});
+	var countWidthThenPush = function countWidthThenPush(each, key) {
+		var currentColumnWidth = each._id.length * 4;
+		if (currentColumnWidth < columnWidth) {
+			currentColumnWidth = columnWidth;
+		}
 
-	data = _.orderBy(data, function (d) {
-		var key = 'PL8A';
-		var src = d[key];
+		each.key = key.join('_');
+		dataFlat.push(each);
+		totalColumnWidth += currentColumnWidth;
+	};
 
-		if (ba.breakdownRD() == "OnlyRD") {
-			// nothing
-		} else if (ba.breakdownRD() == "NonRD") {
-				if (ba.expandRD()) {
-					src = d[key].slice(0, 1);
+	data.forEach(function (lvl1, i) {
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]);
+
+		if (ba.level() == 1) {
+			countWidthThenPush(lvl1, [lvl1._id]);
+			return;
+		}
+		thheader1.attr('colspan', lvl1.count);
+
+		lvl1.subs.forEach(function (lvl2, j) {
+			var thheader2 = toolkit.newEl('th').html(lvl2._id).addClass('align-center').appendTo(trContents[1]);
+
+			if (ba.level() == 2) {
+				countWidthThenPush(lvl2, [lvl1._id, lvl2._id]);
+				return;
+			}
+			thheader2.attr('colspan', lvl2.count);
+
+			lvl2.subs.forEach(function (lvl3, k) {
+				console.log("---------------", lvl3._id, lvl3);
+
+				var thheader3 = toolkit.newEl('th').html(lvl3._id).addClass('align-center').appendTo(trContents[2]);
+
+				if (ba.level() == 3) {
+					countWidthThenPush(lvl3, [lvl1._id, lvl2._id, lvl3._id]);
+					return;
 				}
-			} else {
-				src = d[key].slice(0, 1);
-			}
-
-		return toolkit.sum(src, function (e) {
-			return e;
-		});
-	}, 'desc');
-	console.log("data", data);
-
-	data.forEach(function (d, i) {
-		var thheader = toolkit.newEl('th').html(d._id).css('background-color', '#ccd1d3').attr('colspan', '3').addClass('align-center cell-percentage-header').appendTo(trContent1).width(colWidth);
-		totalColumn++;
-
-		var cell1 = toolkit.newEl('th').html('Total').addClass('align-center').attr('statuscolumn', 'TotalRD').appendTo(trContent2).width(colWidth);
-
-		var cell2 = toolkit.newEl('th').html('RD').addClass('align-center').attr('statuscolumn', 'RD').appendTo(trContent2).width(colWidth);
-
-		var cell3 = toolkit.newEl('th').html('Non RD').attr('statuscolumn', 'NonRD').addClass('align-center cell-percentage-header').appendTo(trContent2).width(colWidth);
-
-		if (ba.breakdownRD() == "OnlyRD") {
-			cell1.css('display', 'none');
-			cell3.css('display', 'none');
-			cell2.addClass('cell-percentage-header').width(colWidth);
-			thheader.removeAttr("colspan");
-			totalColumn++;
-		} else if (ba.breakdownRD() == "NonRD") {
-			cell1.css('display', 'none');
-			cell2.css('display', 'none');
-			cell3.addClass('cell-percentage-header').width(colWidth);
-			thheader.removeAttr("colspan");
-			totalColumn++;
-
-			if (ba.expandRD()) {
-				cell1.css('display', 'table-cell');
-				totalColumn++;
-			}
-		} else {
-			totalColumn++;
-			totalColumn++;
-			totalColumn++;
-		}
-
-		if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
-			cell3.remove();
-			thheader.attr("colspan", 7 - (ba.breakdownRD() == "NonRD" ? 1 : 0));
-			rpt.masterData.Channel().filter(function (f) {
-				return f._id != "I1";
-			}).forEach(function (f) {
-				var cell4 = toolkit.newEl('th').html(f.Name).addClass('align-center').appendTo(trContent2).width(colWidth);
-				totalColumn++;
+				thheader3.attr('colspan', lvl3.count);
 			});
-			// I2, I4, I6, I3, EXP
-		}
+		});
 	});
-	// console.log('data ', data)
 
-	var totalWidth = totalColumn * colWidth;
-	// if (!(ba.breakdownRD() != "OnlyRD" && ba.expandRD())) {
-	// 	totalWidth -= 1000
-	// }
+	// ========================= CONSTRUCT DATA
 
-	console.log("width", totalWidth);
+	var plmodels = _.sortBy(rpt.plmodels(), function (d) {
+		return parseInt(d.OrderIndex.replace(/PL/g, ''));
+	});
+	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */];
+	var netSalesPLCode = 'PL8A';
+	var netSalesPlModel = rpt.plmodels().find(function (d) {
+		return d._id == netSalesPLCode;
+	});
+	var netSalesRow = {},
+	    changeformula = void 0,
+	    formulayo = void 0;
 
-	tableContent.css('min-width', totalWidth);
+	var rows = [];
+
+	rpt.fixRowValue(dataFlat);
+
+	plmodels.forEach(function (d) {
+		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
+		dataFlat.forEach(function (e) {
+			var breakdown = e.key;
+			var value = e['' + d._id];
+			value = toolkit.number(value);
+			row[breakdown] = value;
+
+			if (toolkit.isDefined(e.excludeFromTotal)) {
+				return;
+			}
+
+			row.PNLTotal += value;
+		});
+		dataFlat.forEach(function (e) {
+			var breakdown = e.key;
+			var percentage = toolkit.number(e['' + d._id] / row.PNLTotal) * 100;
+			percentage = toolkit.number(percentage);
+
+			if (d._id != netSalesPLCode) {
+				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
+			}
+
+			if (percentage < 0) percentage = percentage * -1;
+
+			row[breakdown + ' %'] = percentage;
+		});
+
+		if (exceptions.indexOf(row.PLCode) > -1) {
+			return;
+		}
+
+		rows.push(row);
+	});
+
+	// ========================= PLOT DATA
+
+	tableContent.css('min-width', totalColumnWidth);
+
 	rows.forEach(function (d, i) {
 		pnlTotalSum += d.PNLTotal;
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader);
 
 		trHeader.on('click', function () {
 			ba.clickExpand(trHeader);
@@ -661,61 +506,28 @@ ba.render = function () {
 		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
 		toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
 
-		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + '%').addClass('align-right').appendTo(trHeader);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).appendTo(tableContent);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).appendTo(tableContent);
+		dataFlat.forEach(function (e, f) {
+			var key = e.key;
+			var value = kendo.toString(d[key], 'n0');
 
-		data.forEach(function (e, f) {
-			var key = e._id;
-			var value1 = kendo.toString(d[key + "1"], 'n0');
-			var value2 = kendo.toString(d[key + "2"], 'n0');
-			var total = kendo.toString(d[key + " total"], 'n0');
+			var percentage = kendo.toString(d[key + ' %'], 'n2');
 
-			if ($.trim(value1) == '') value1 = 0;
-			if ($.trim(value2) == '') value2 = 0;
-			if ($.trim(total) == '') total = 0;
-
-			var cell1 = toolkit.newEl('td').html(total).addClass('align-right').attr('statuscolumn', 'TotalRD').appendTo(trContent);
-
-			var cell2 = toolkit.newEl('td').html(value1).addClass('align-right').attr('statuscolumn', 'RD').appendTo(trContent);
-
-			var cell3 = toolkit.newEl('td').html(value2).addClass('align-right cell-percentage-header').attr('statuscolumn', 'NonRD').appendTo(trContent);
-
-			if (ba.breakdownRD() == "OnlyRD") {
-				cell1.css('display', 'none');
-				cell3.css('display', 'none');
-				cell2.addClass('cell-percentage-header');
-			} else if (ba.breakdownRD() == "NonRD") {
-				cell1.css('display', 'none');
-				cell2.css('display', 'none');
-				cell3.addClass('cell-percentage-header');
-
-				if (ba.expandRD()) {
-					cell1.css('display', 'table-cell');
-				}
+			if ($.trim(value) == '') {
+				value = 0;
 			}
 
-			if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
-				cell3.remove();
-				rpt.masterData.Channel().filter(function (f) {
-					return f._id != "I1";
-				}).forEach(function (f, i) {
-					var value = kendo.toString(d[key + (i + 3)], 'n0');
-					var cell4 = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trContent).width(colWidth);
-				});
-			}
-
-			// cell.on('click', () => {
-			// 	ba.renderDetail(d.PLCode, e.breakdowns)
-			// })
+			var cell = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trContent);
 		});
 
 		var boolStatus = false;
 		trContent.find('td').each(function (a, e) {
-			if ($(e).text() != '0') {
+			if ($(e).text() != '0' && $(e).text() != '0.00 %') {
 				boolStatus = true;
 			}
 		});
+
 		if (boolStatus) {
 			trContent.attr('statusval', 'show');
 			trHeader.attr('statusval', 'show');
@@ -725,142 +537,16 @@ ba.render = function () {
 		}
 	});
 
-	var $trElem = void 0,
-	    $columnElem = void 0;
-	var resg1 = void 0,
-	    resg2 = void 0,
-	    resg3 = void 0,
-	    PLyo = void 0,
-	    PLyo2 = void 0,
-	    child = 0,
-	    parenttr = 0,
-	    textPL = void 0;
-	$(".table-header tbody>tr").each(function (i) {
-		if (i > 0) {
-			$trElem = $(this);
-			resg1 = _.find(grouppl1, function (o) {
-				return o.key == $trElem.find('td:eq(0)').text();
-			});
-			resg2 = _.find(grouppl2, function (o) {
-				return o.key == $trElem.find('td:eq(0)').text();
-			});
-			resg3 = _.find(grouppl3, function (o) {
-				return o.key == $trElem.find('td:eq(0)').text();
-			});
-
-			var idplyo = _.find(ba.idarrayhide(), function (a) {
-				return a == $trElem.attr("idheaderpl");
-			});
-			if (idplyo != undefined) {
-				$trElem.remove();
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).remove();
-			}
-			if (resg1 == undefined) {
-				if (resg2 != undefined) {
-					textPL = _.find(resg2.data, function (o) {
-						return o._id == $trElem.attr("idheaderpl");
-					});
-					PLyo = _.find(rows, function (o) {
-						return o.PNL == textPL.PLHeader1;
-					});
-					PLyo2 = _.find(rows, function (o) {
-						return o.PLCode == textPL._id;
-					});
-					$trElem.find('td:eq(0)').css('padding-left', '40px');
-					$trElem.attr('idparent', PLyo.PLCode);
-					child = $('tr[idparent=' + PLyo.PLCode + ']').length;
-					$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
-					$columnElem.attr('idcontparent', PLyo.PLCode);
-					var PLCodeChange = ba.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
-					if (PLCodeChange != "") PLyo.PLCode = PLCodeChange;
-					if (child > 1) {
-						$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-						$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-					} else {
-						$trElem.insertAfter($('tr.header' + PLyo.PLCode));
-						$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
-					}
-				} else if (resg2 == undefined) {
-					if (resg3 != undefined) {
-						PLyo = _.find(rows, function (o) {
-							return o.PNL == resg3.data[0].PLHeader2;
-						});
-						PLyo2 = _.find(rows, function (o) {
-							return o.PNL == resg3.data[0].PLHeader3;
-						});
-						$trElem.find('td:eq(0)').css('padding-left', '70px');
-						if (PLyo == undefined) {
-							PLyo = _.find(rows, function (o) {
-								return o.PNL == resg3.data[0].PLHeader1;
-							});
-							if (PLyo != undefined) $trElem.find('td:eq(0)').css('padding-left', '40px');
-						}
-						$trElem.attr('idparent', PLyo.PLCode);
-						child = $('tr[idparent=' + PLyo.PLCode + ']').length;
-						$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
-						$columnElem.attr('idcontparent', PLyo.PLCode);
-						var _PLCodeChange = ba.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
-						if (_PLCodeChange != "") PLyo.PLCode = _PLCodeChange;
-						if (child > 1) {
-							$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-							$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-						} else {
-							$trElem.insertAfter($('tr.header' + PLyo.PLCode));
-							$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
-						}
-					}
-				}
-			}
-
-			var idplyo2 = _.find(ba.idarrayhide(), function (a) {
-				return a == $trElem.attr("idparent");
-			});
-			if (idplyo2 != undefined) {
-				$trElem.removeAttr('idparent');
-				$trElem.addClass('bold');
-				$trElem.css('display', 'inline-grid');
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).removeAttr("idcontparent");
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusval', 'show');
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusvaltemp', 'show');
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).css('display', 'inline-grid');
-			}
-		}
-	});
-
-	var countChild = '';
-	$(".table-header tbody>tr").each(function (i) {
-		$trElem = $(this);
-		parenttr = $('tr[idparent=' + $trElem.attr('idheaderpl') + ']').length;
-		if (parenttr > 0) {
-			$trElem.addClass('dd');
-			$trElem.find('td:eq(0)>i').addClass('fa fa-chevron-right').css('margin-right', '5px');
-			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
-			$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
-			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').each(function (a, e) {
-				if ($(e).attr('statusval') == 'show') {
-					$('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').attr('statusval', 'show');
-					$('tr[idpl=' + $trElem.attr('idheaderpl') + ']').attr('statusval', 'show');
-					if ($('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').attr('idparent') == undefined) {
-						$('tr[idpl=' + $trElem.attr('idheaderpl') + ']').css('display', '');
-						$('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').css('display', '');
-					}
-				}
-			});
-		} else {
-			countChild = $trElem.attr('idparent');
-			if (countChild == '' || countChild == undefined) $trElem.find('td:eq(0)').css('padding-left', '20px');
-		}
-	});
-
-	ba.showZeroValue(false);
-	$(".pivot-pnl-branch.pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
+	// ========================= CONFIGURE THE HIRARCHY
+	rpt.buildGridLevels(rows);
 };
 
 ba.prepareEvents = function () {
 	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
-		var index = $(this).index();
-		var elh = $('.breakdown-view .table-header tr:eq(' + index + ')').addClass('hover');
-		var elc = $('.breakdown-view .table-content tr:eq(' + index + ')').addClass('hover');
+		var rowID = $(this).attr('data-row');
+
+		var elh = $('.breakdown-view .table-header tr[data-row="' + rowID + '"]').addClass('hover');
+		var elc = $('.breakdown-view .table-content tr[data-row="' + rowID + '"]').addClass('hover');
 	});
 	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover');
@@ -904,26 +590,8 @@ ba.showZeroValue = function (a) {
 			}
 		});
 	}
+
 	ba.showExpandAll(false);
-	if (a == false) {
-		(function () {
-			var countchild = 0,
-			    hidechild = 0;
-			$(".table-header tbody>tr.dd").each(function (i) {
-				if (i > 0) {
-					countchild = $('.table-header tr[idparent=' + $(this).attr('idheaderpl') + ']').length;
-					hidechild = $('.table-header tr[idparent=' + $(this).attr('idheaderpl') + '][statusvaltemp=hide]').length;
-					if (countchild > 0) {
-						console.log(countchild, hidechild, $(this));
-						if (countchild == hidechild) {
-							$(this).find('td:eq(0)>i').removeClass().css('margin-right', '0px');
-							if ($(this).attr('idparent') == undefined) $(this).find('td:eq(0)').css('padding-left', '20px');
-						}
-					}
-				}
-			});
-		})();
-	}
 };
 
 ba.optionBreakdownValues = ko.observableArray([]);
