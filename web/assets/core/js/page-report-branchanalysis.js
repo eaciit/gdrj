@@ -377,6 +377,8 @@ ba.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
+	toolkit.newEl('th').html('%').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+
 	var trContents = [];
 	for (var i = 0; i < ba.level(); i++) {
 		trContents.push(toolkit.newEl('tr').appendTo(tableContent));
@@ -451,7 +453,7 @@ ba.render = function () {
 	rpt.fixRowValue(dataFlat);
 
 	plmodels.forEach(function (d) {
-		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
+		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 };
 		dataFlat.forEach(function (e) {
 			var breakdown = e.key;
 			var value = e['' + d._id];
@@ -485,6 +487,15 @@ ba.render = function () {
 		rows.push(row);
 	});
 
+	var TotalNetSales = _.find(rows, function (r) {
+		return r.PLCode == "PL8A";
+	}).PNLTotal;
+	rows.forEach(function (d, e) {
+		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
+		rows[e].Percentage = TotalPercentage;
+	});
+
 	// ========================= PLOT DATA
 
 	tableContent.css('min-width', totalColumnWidth);
@@ -504,6 +515,8 @@ ba.render = function () {
 
 		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
 		toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
+
+		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + '%').addClass('align-right').appendTo(trHeader);
 
 		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).appendTo(tableContent);
 

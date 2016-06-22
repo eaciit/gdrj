@@ -357,6 +357,13 @@ ba.render = () => {
 		.addClass('cell-percentage-header align-right')
 		.appendTo(trHeader)
 
+	toolkit.newEl('th')
+		.html('%')
+		.css('height', `${34 * ba.level()}px`)
+		.css('vertical-align', 'middle')
+		.addClass('cell-percentage-header align-right')
+		.appendTo(trHeader)
+
 	let trContents = []
 	for (let i = 0; i < ba.level(); i++) {
 		trContents.push(toolkit.newEl('tr').appendTo(tableContent))
@@ -437,7 +444,7 @@ ba.render = () => {
 	rpt.fixRowValue(dataFlat)
 	
 	plmodels.forEach((d) => {
-		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
+		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
 		dataFlat.forEach((e) => {
 			let breakdown = e.key
 			let value = e[`${d._id}`]; 
@@ -472,7 +479,13 @@ ba.render = () => {
 		rows.push(row)
 	})
 	
-
+	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == "PL8A" }).PNLTotal
+	rows.forEach((d, e) => {
+		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100;
+		if (TotalPercentage < 0)
+			TotalPercentage = TotalPercentage * -1 
+		rows[e].Percentage = TotalPercentage
+	})
 
 	// ========================= PLOT DATA
 
@@ -500,6 +513,11 @@ ba.render = () => {
 		let pnlTotal = kendo.toString(d.PNLTotal, 'n0')
 		toolkit.newEl('td')
 			.html(pnlTotal)
+			.addClass('align-right')
+			.appendTo(trHeader)
+
+		toolkit.newEl('td')
+			.html(kendo.toString(d.Percentage, 'n2') + '%')
 			.addClass('align-right')
 			.appendTo(trHeader)
 
