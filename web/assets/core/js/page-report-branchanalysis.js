@@ -35,8 +35,6 @@ ba.optionBranch = ko.observableArray([{
 	title: "Non RD Sales"
 }]); //rpt.masterData.Channel()
 
-ba.breakdown2ndLevel = ko.observable(false);
-ba.breakdown2ndLevelKey = ko.observable('customer.name');
 ba.level = ko.observable(2);
 
 ba.buildStructure = function (data) {
@@ -174,7 +172,7 @@ ba.buildStructure = function (data) {
 		return op2;
 	};
 
-	if (ba.expand()) {
+	if (ba.expand() && ba.breakdownRD() == 'NonRD') {
 		var _parsed = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
@@ -206,7 +204,7 @@ ba.buildStructure = function (data) {
 		return _parsed;
 	}
 
-	if (ba.breakdown2ndLevel()) {
+	if (ba.expand() && ba.breakdownRD() == 'OnlyRD') {
 		var _parsed2 = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
@@ -216,7 +214,7 @@ ba.buildStructure = function (data) {
 			}).map(function (e) {
 
 				e.subs = groupThenMap(d.subs, function (f) {
-					return f._id._id_customer_name;
+					return f._id._id_customer_reportsubchannel;
 				}).map(function (f) {
 					f.subs = [];
 					f.count = 1;
@@ -234,6 +232,7 @@ ba.buildStructure = function (data) {
 		});
 
 		ba.level(3);
+		showAsBreakdown(_parsed2);
 		return _parsed2;
 	}
 
@@ -282,8 +281,28 @@ ba.refresh = function () {
 		});
 	}
 
-	if (ba.breakdown2ndLevel()) {
-		param.groups.push(ba.breakdown2ndLevelKey());
+	if (ba.breakdownRD() == 'OnlyRD') {
+		if (ba.expand()) {
+			param.groups.push('customer.reportsubchannel');
+		}
+
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: ["I1"]
+		});
+	}
+
+	if (ba.breakdownRD() == 'NonRD') {
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: rpt.masterData.Channel().map(function (d) {
+				return d._id;
+			}).filter(function (d) {
+				return d != 'I1';
+			})
+		});
 	}
 
 	ba.oldBreakdownBy(ba.breakdownBy());
@@ -297,10 +316,6 @@ ba.refresh = function () {
 				}, 1000 * 5);
 				return;
 			}
-
-			// if (ba.breakdown2ndLevel()) { // hardcode, use DUMMY data
-			// 	res.Data.Data = branch_analysis_dummy
-			// }
 
 			var data = ba.buildStructure(res.Data.Data);
 
@@ -391,8 +406,8 @@ ba.render = function () {
 	var pnlTotalSum = 0;
 	var dataFlat = [];
 
-	var countWidthThenPush = function countWidthThenPush(each, key) {
-		var currentColumnWidth = each._id.length * 4;
+	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
+		var currentColumnWidth = each._id.length * 8;
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth;
 		}
@@ -400,13 +415,15 @@ ba.render = function () {
 		each.key = key.join('_');
 		dataFlat.push(each);
 		totalColumnWidth += currentColumnWidth;
+
+		thheader.width(currentColumnWidth);
 	};
 
 	data.forEach(function (lvl1, i) {
 		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]);
 
 		if (ba.level() == 1) {
-			countWidthThenPush(lvl1, [lvl1._id]);
+			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 			return;
 		}
 		thheader1.attr('colspan', lvl1.count);
@@ -415,24 +432,24 @@ ba.render = function () {
 			var thheader2 = toolkit.newEl('th').html(lvl2._id).addClass('align-center').appendTo(trContents[1]);
 
 			if (ba.level() == 2) {
-				countWidthThenPush(lvl2, [lvl1._id, lvl2._id]);
+				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 				return;
 			}
 			thheader2.attr('colspan', lvl2.count);
 
 			lvl2.subs.forEach(function (lvl3, k) {
-				console.log("---------------", lvl3._id, lvl3);
-
 				var thheader3 = toolkit.newEl('th').html(lvl3._id).addClass('align-center').appendTo(trContents[2]);
 
 				if (ba.level() == 3) {
-					countWidthThenPush(lvl3, [lvl1._id, lvl2._id, lvl3._id]);
+					countWidthThenPush(thheader3, lvl3, [lvl1._id, lvl2._id, lvl3._id]);
 					return;
 				}
 				thheader3.attr('colspan', lvl3.count);
 			});
 		});
 	});
+
+	tableContent.css('min-width', totalColumnWidth);
 
 	// ========================= CONSTRUCT DATA
 
@@ -497,8 +514,6 @@ ba.render = function () {
 	});
 
 	// ========================= PLOT DATA
-
-	tableContent.css('min-width', totalColumnWidth);
 
 	rows.forEach(function (d, i) {
 		pnlTotalSum += d.PNLTotal;
