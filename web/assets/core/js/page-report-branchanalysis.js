@@ -18,7 +18,7 @@ ba.optionDimensions = ko.observableArray(rpt.optionDimensions().filter(function 
 	return d.field != 'customer.channelname';
 }));
 
-ba.expandRD = ko.observable(false);
+ba.expand = ko.observable(false);
 ba.data = ko.observableArray([]);
 ba.zeroValue = ko.observable(false);
 ba.fiscalYear = ko.observable(rpt.value.FiscalYear());
@@ -135,7 +135,7 @@ ba.buildStructure = function (data) {
 							return e._id != 'RD';
 						});
 
-						if (ba.expandRD()) {
+						if (ba.expand()) {
 							var totalColumn = renderTotalColumn(d);
 							d.subs = [totalColumn].concat(d.subs);
 						}
@@ -174,17 +174,16 @@ ba.buildStructure = function (data) {
 		return op2;
 	};
 
-	if (ba.expandRD()) {
+	if (ba.expand()) {
 		var _parsed = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
 			d.subs = groupThenMap(d.subs, function (e) {
 				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
 			}).map(function (e) {
-				e.subs = groupThenMap(d.subs, function (f) {
+				e.subs = groupThenMap(e.subs, function (f) {
 					return f._id._id_customer_channelname;
 				}).map(function (f) {
-					f.subs = [];
 					f.count = 1;
 					return f;
 				});
@@ -347,8 +346,8 @@ ba.emptyGrid = function () {
 
 ba.idarrayhide = ko.observableArray(['PL44A']);
 ba.render = function () {
-	if (ba.breakdownRD() == "OnlyRD") {
-		ba.expandRD(false);
+	if (ba.breakdownRD() == "All") {
+		ba.expand(false);
 	}
 
 	if (ba.data().length == 0) {
