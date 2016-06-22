@@ -317,7 +317,7 @@ bkd.render = () => {
 	data = _.orderBy(data, (d) => netSalesRow[d._id], 'desc')
 
 	plmodels.forEach((d) => {
-		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
+		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
 		data.forEach((e) => {
 			let breakdown = e._id
 			let value = e[`${d._id}`]; 
@@ -346,7 +346,14 @@ bkd.render = () => {
 
 		rows.push(row)
 	})
-	// console.log(rows)
+
+	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == "PL8A" }).PNLTotal
+	rows.forEach((d, e) => {
+		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100; 
+		if (TotalPercentage < 0)
+			TotalPercentage = TotalPercentage * -1
+		rows[e].Percentage = TotalPercentage
+	})
 
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl')
@@ -377,6 +384,11 @@ bkd.render = () => {
 
 	toolkit.newEl('th')
 		.html('Total')
+		.addClass('align-right')
+		.appendTo(trHeader1)
+
+	toolkit.newEl('th')
+		.html('%')
 		.addClass('align-right')
 		.appendTo(trHeader1)
 
@@ -442,6 +454,11 @@ bkd.render = () => {
 			.addClass('align-right')
 			.appendTo(trHeader)
 
+		toolkit.newEl('td')
+			.html(kendo.toString(d.Percentage, 'n2') + '%')
+			.addClass('align-right')
+			.appendTo(trHeader)
+
 		let trContent = toolkit.newEl('tr')
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
@@ -489,6 +506,17 @@ bkd.render = () => {
 	})
 
 	rpt.buildGridLevels(rows)
+
+	setTimeout(() => {
+		let newdata  = [], finddata
+		$('.table-header tr.bold').each((a, e) => {
+			finddata = _.find(rs.optionDimensionSelect(), (a) => { return a.field == $(e).attr('idheaderpl') })
+			if (finddata != undefined)
+				newdata.push(finddata)
+		})
+		newdata = _.sortBy(newdata, function(item) { return [item.name] })
+		rs.optionDimensionSelect(newdata)
+	})
 }
 
 bkd.optionBreakdownValues = ko.observableArray([])

@@ -13,8 +13,6 @@ kac.breakdownByFiscalYear = ko.observable('date.fiscal')
 kac.oldBreakdownBy = ko.observable(kac.breakdownBy())
 
 kac.data = ko.observableArray([])
-kac.plmodels = ko.observableArray([])
-kac.zeroValue = ko.observable(false)
 kac.fiscalYear = ko.observable(rpt.value.FiscalYear())
 kac.breakdownValue = ko.observableArray([])
 
@@ -61,7 +59,7 @@ kac.refresh = (useCache = false) => {
 			kac.breakdownNote(`Last refreshed on: ${date}`)
 
 			kac.data(res.Data.Data)
-			kac.plmodels(res.Data.PLModels)
+			rpt.plmodels(res.Data.PLModels)
 			kac.emptyGrid()
 			kac.contentIsLoading(false)
 			kac.render()
@@ -278,7 +276,6 @@ kac.renderDetail = (plcode, breakdowns) => {
 	$('.grid-detail').kendoGrid(config)
 }
 
-kac.idarrayhide = ko.observableArray(['PL44A'])
 kac.render = () => {
 	if (kac.data().length == 0) {
 		$('.breakdown-view').html('No data found.')
@@ -303,15 +300,18 @@ kac.render = () => {
 		return d 
 	})
 	
-	let plmodels = _.sortBy(kac.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
+	let plmodels = _.sortBy(rpt.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
 	let exceptions = [
 		"PL94C" /* "Operating Income" */, 
 		"PL39B" /* "Earning Before Tax" */, 
 		"PL41C" /* "Earning After Tax" */,
 	]
 	let netSalesPLCode = 'PL8A'
-	let netSalesPlModel = kac.plmodels().find((d) => d._id == netSalesPLCode)
+	let netSalesPlModel = rpt.plmodels().find((d) => d._id == netSalesPLCode)
 	let netSalesRow = {}
+
+	rpt.fixRowValue(data)
+
 	data.forEach((e) => {
 		let breakdown = e._id
 		let value = e[`${netSalesPlModel._id}`]; 
@@ -321,7 +321,7 @@ kac.render = () => {
 	data = _.orderBy(data, (d) => netSalesRow[d._id], 'desc')
 
 	plmodels.forEach((d) => {
-		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 }
+		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
 		data.forEach((e) => {
 			let breakdown = e._id
 			let value = e[`${d._id}`]; 
@@ -338,6 +338,9 @@ kac.render = () => {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
 			}
 
+			if (percentage < 0)
+				percentage = percentage * -1
+
 			row[`${breakdown} %`] = percentage
 		})
 
@@ -346,6 +349,14 @@ kac.render = () => {
 		}
 
 		rows.push(row)
+	})
+
+	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == "PL8A" }).PNLTotal
+	rows.forEach((d, e) => {
+		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100;
+		if (TotalPercentage < 0)
+			TotalPercentage = TotalPercentage * -1 
+		rows[e].Percentage = TotalPercentage
 	})
 
 	let wrapper = toolkit.newEl('div')
@@ -380,6 +391,11 @@ kac.render = () => {
 		.addClass('align-right')
 		.appendTo(trHeader1)
 
+	toolkit.newEl('th')
+		.html('%')
+		.addClass('align-right')
+		.appendTo(trHeader1)
+
 	let trContent1 = toolkit.newEl('tr')
 		.appendTo(tableContent)
 
@@ -396,9 +412,6 @@ kac.render = () => {
 		colWidth = 230
 	}
 
-	let grouppl1 = _.map(_.groupBy(kac.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
-	let grouppl2 = _.map(_.groupBy(kac.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
-	let grouppl3 = _.map(_.groupBy(kac.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
 		if (d._id.length > 22)
 			colWidth += 30
@@ -442,6 +455,11 @@ kac.render = () => {
 		let pnlTotal = kendo.toString(d.PNLTotal, 'n0')
 		toolkit.newEl('td')
 			.html(pnlTotal)
+			.addClass('align-right')
+			.appendTo(trHeader)
+
+		toolkit.newEl('td')
+			.html(kendo.toString(d.Percentage, 'n2') + '%')
 			.addClass('align-right')
 			.appendTo(trHeader)
 
@@ -491,159 +509,7 @@ kac.render = () => {
 		}
 	})
 
-	let $trElem, $columnElem
-	let resg1, resg2, resg3, PLyo, PLyo2, child = 0, parenttr = 0, textPL
-	$(".table-header tbody>tr").each(function( i ) {
-		if (i > 0){
-			$trElem = $(this)
-			resg1 = _.find(grouppl1, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
-			resg2 = _.find(grouppl2, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
-			resg3 = _.find(grouppl3, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
-
-			let idplyo = _.find(kac.idarrayhide(), (a) => { return a == $trElem.attr("idheaderpl") })
-			if (idplyo != undefined){
-				$trElem.remove()
-				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).remove()
-			}
-			if (resg1 == undefined && idplyo2 == undefined){
-				if (resg2 != undefined){ 
-					textPL = _.find(resg2.data, function(o) { return o._id == $trElem.attr("idheaderpl") })
-					PLyo = _.find(rows, function(o) { return o.PNL == textPL.PLHeader1 })
-					PLyo2 = _.find(rows, function(o) { return o.PLCode == textPL._id })
-					$trElem.find('td:eq(0)').css('padding-left','40px')
-					$trElem.attr('idparent', PLyo.PLCode)
-					child = $(`tr[idparent=${PLyo.PLCode}]`).length
-					$columnElem = $(`.table-content tr.column${PLyo2.PLCode}`)
-					$columnElem.attr('idcontparent', PLyo.PLCode)
-					if (child > 1){
-						$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-						$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-					}
-					else{
-						$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
-						$columnElem.insertAfter($(`tr.column${PLyo.PLCode}`))
-					}
-				} else if (resg2 == undefined){
-					if (resg3 != undefined){
-						PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader2 })
-						PLyo2 = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader3 })
-						$trElem.find('td:eq(0)').css('padding-left','70px')
-						if (PLyo == undefined){
-							PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader1 })
-							if(PLyo != undefined)
-								$trElem.find('td:eq(0)').css('padding-left','40px')
-						}
-						$trElem.attr('idparent', PLyo.PLCode)
-						child = $(`tr[idparent=${PLyo.PLCode}]`).length
-						$columnElem = $(`.table-content tr.column${PLyo2.PLCode}`)
-						$columnElem.attr('idcontparent', PLyo.PLCode)
-						if (child > 1){
-							$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-							$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-						}
-						else{
-							$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
-							$columnElem.insertAfter($(`tr.column${PLyo.PLCode}`))
-						}
-					}
-				}
-			}
-
-			let idplyo2 = _.find(kac.idarrayhide(), (a) => { return a == $trElem.attr("idparent") })
-			if (idplyo2 != undefined){
-				$trElem.removeAttr('idparent')
-				$trElem.addClass('bold')
-				$trElem.css('display','inline-grid')
-				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).removeAttr("idcontparent")
-				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).attr('statusval', 'show')
-				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).attr('statusvaltemp', 'show')
-				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).css('display','inline-grid')
-			}
-		}
-	})
-
-	let countChild = ''
-	$(".table-header tbody>tr").each(function( i ) {
-		$trElem = $(this)
-		parenttr = $(`tr[idparent=${$trElem.attr('idheaderpl')}]`).length
-		if (parenttr>0){
-			$trElem.addClass('dd')
-			$trElem.find(`td:eq(0)>i`)
-				.addClass('fa fa-chevron-right')
-				.css('margin-right', '5px')
-			$(`tr[idparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
-			$(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
-			$(`tr[idparent=${$trElem.attr('idheaderpl')}]`).each((a,e) => {
-				if ($(e).attr('statusval') == 'show'){
-					$(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).attr('statusval', 'show')
-					$(`tr[idpl=${$trElem.attr('idheaderpl')}]`).attr('statusval', 'show')
-					if ($(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).attr('idparent') == undefined) {
-						$(`tr[idpl=${$trElem.attr('idheaderpl')}]`).css('display', '')
-						$(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).css('display', '')
-					}
-				}
-			})
-		} else {
-			countChild = $trElem.attr('idparent')
-			if (countChild == '' || countChild == undefined)
-				$trElem.find(`td:eq(0)`).css('padding-left', '20px')
-		}
-	})
-
-	kac.showZeroValue(false)
-	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
-}
-
-kac.prepareEvents = () => {
-	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
-		let index = $(this).index()
-        let elh = $(`.breakdown-view .table-header tr:eq(${index})`).addClass('hover')
-        let elc = $(`.breakdown-view .table-content tr:eq(${index})`).addClass('hover')
-	})
-	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
-		$('.breakdown-view tr.hover').removeClass('hover')
-	})
-}
-
-kac.showExpandAll = (a) => {
-	if (a == true) {
-		$(`tr.dd`).find('i').removeClass('fa-chevron-right')
-		$(`tr.dd`).find('i').addClass('fa-chevron-down')
-		$(`tr[idparent]`).css('display', '')
-		$(`tr[idcontparent]`).css('display', '')
-		$(`tr[statusvaltemp=hide]`).css('display', 'none')
-	} else {
-		$(`tr.dd`).find('i').removeClass('fa-chevron-down')
-		$(`tr.dd`).find('i').addClass('fa-chevron-right')
-		$(`tr[idparent]`).css('display', 'none')
-		$(`tr[idcontparent]`).css('display', 'none')
-		$(`tr[statusvaltemp=hide]`).css('display', 'none')
-	}
-}
-
-kac.showZeroValue = (a) => {
-	kac.zeroValue(a)
-	if (a == true) {
-		$(".table-header tbody>tr").each(function( i ) {
-			if (i > 0){
-				$(this).attr('statusvaltemp', 'show')
-				$(`tr[idpl=${$(this).attr('idheaderpl')}]`).attr('statusvaltemp', 'show')
-				if (!$(this).attr('idparent')){
-					$(this).show()
-					$(`tr[idpl=${$(this).attr('idheaderpl')}]`).show()
-				}
-			}
-		})
-	} else {
-		$(".table-header tbody>tr").each(function( i ) {
-			if (i > 0){
-				$(this).attr('statusvaltemp', $(this).attr('statusval'))
-				$(`tr[idpl=${$(this).attr('idheaderpl')}]`).attr('statusvaltemp', $(this).attr('statusval'))
-			}
-		})
-	}
-
-	kac.showExpandAll(false)
+	rpt.buildGridLevels(rows)
 }
 
 kac.optionBreakdownValues = ko.observableArray([])
@@ -699,7 +565,7 @@ rpt.refresh = () => {
 		kac.refresh(false)
 	}, 200)
 
-	kac.prepareEvents()
+	rpt.prepareEvents()
 }
 
 $(() => {
