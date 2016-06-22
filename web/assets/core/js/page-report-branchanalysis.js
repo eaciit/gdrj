@@ -452,11 +452,11 @@ ba.render = function () {
 			row[breakdown + ' total'] = total;
 
 			if (ba.breakdownRD() == "OnlyRD") {
-				row.PNLTotal += e['' + d._id][0];
+				row.PNLTotal += toolkit.number(e['' + d._id][0]);
 			} else if (ba.breakdownRD() == "NonRD") {
-				row.PNLTotal += e['' + d._id][1];
+				row.PNLTotal += toolkit.number(e['' + d._id][1]);
 			} else {
-				row.PNLTotal += total;
+				row.PNLTotal += toolkit.number(total);
 			}
 		});
 
@@ -555,7 +555,7 @@ ba.render = function () {
 			totalColumn++;
 
 			if (ba.expandRD()) {
-				cell1.css('display', 'block');
+				cell1.css('display', 'table-cell');
 				totalColumn++;
 			}
 		} else {
@@ -566,7 +566,7 @@ ba.render = function () {
 
 		if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
 			cell3.remove();
-			thheader.attr("colspan", 7);
+			thheader.attr("colspan", 7 - (ba.breakdownRD() == "NonRD" ? 1 : 0));
 			rpt.masterData.Channel().filter(function (f) {
 				return f._id != "I1";
 			}).forEach(function (f) {
@@ -630,7 +630,7 @@ ba.render = function () {
 				cell3.addClass('cell-percentage-header');
 
 				if (ba.expandRD()) {
-					cell1.css('display', 'block');
+					cell1.css('display', 'table-cell');
 				}
 			}
 
