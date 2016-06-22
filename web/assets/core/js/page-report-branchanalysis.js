@@ -510,6 +510,27 @@ ba.render = function () {
 	}), function (k, v) {
 		return { data: k, key: v };
 	});
+
+	data = _.orderBy(data, function (d) {
+		var key = 'PL8A';
+		var src = d[key];
+
+		if (ba.breakdownRD() == "OnlyRD") {
+			// nothing
+		} else if (ba.breakdownRD() == "NonRD") {
+				if (ba.expandRD()) {
+					src = d[key].slice(0, 1);
+				}
+			} else {
+				src = d[key].slice(0, 1);
+			}
+
+		return toolkit.sum(src, function (e) {
+			return e;
+		});
+	}, 'desc');
+	console.log("data", data);
+
 	data.forEach(function (d, i) {
 		var thheader = toolkit.newEl('th').html(d._id).css('background-color', '#ccd1d3').attr('colspan', '3').addClass('align-center cell-percentage-header').appendTo(trContent1).width(colWidth);
 		totalColumn++;
@@ -532,6 +553,11 @@ ba.render = function () {
 			cell3.addClass('cell-percentage-header').width(colWidth);
 			thheader.removeAttr("colspan");
 			totalColumn++;
+
+			if (ba.expandRD()) {
+				cell1.css('display', 'block');
+				totalColumn++;
+			}
 		} else {
 			totalColumn++;
 			totalColumn++;
@@ -602,6 +628,10 @@ ba.render = function () {
 				cell1.css('display', 'none');
 				cell2.css('display', 'none');
 				cell3.addClass('cell-percentage-header');
+
+				if (ba.expandRD()) {
+					cell1.css('display', 'block');
+				}
 			}
 
 			if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
