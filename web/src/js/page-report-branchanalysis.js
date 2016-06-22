@@ -32,8 +32,6 @@ ba.optionBranch = ko.observableArray([{
 	}
 ]) //rpt.masterData.Channel()
 
-ba.breakdown2ndLevel = ko.observable(false)
-ba.breakdown2ndLevelKey = ko.observable('customer.name')
 ba.level = ko.observable(2)
 
 ba.buildStructure = (data) => {
@@ -144,7 +142,7 @@ ba.buildStructure = (data) => {
 		return op2
 	}
 
-	if (ba.expand()) {
+	if (ba.expand() && ba.breakdownRD() == 'NonRD') {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
@@ -174,7 +172,7 @@ ba.buildStructure = (data) => {
 		return parsed
 	}
 
-	if (ba.breakdown2ndLevel()) {
+	if (ba.expand() && ba.breakdownRD() == 'OnlyRD') {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
@@ -184,7 +182,7 @@ ba.buildStructure = (data) => {
 			}).map((e) => {
 
 				e.subs = groupThenMap(d.subs, (f) => {
-					return f._id._id_customer_name
+					return f._id._id_customer_reportsubchannel
 				}).map((f) => {
 					f.subs = []
 					f.count = 1
@@ -200,6 +198,7 @@ ba.buildStructure = (data) => {
 		})
 
 		ba.level(3)
+		showAsBreakdown(parsed)
 		return parsed
 	}
 
@@ -233,6 +232,7 @@ ba.refresh = (useCache = false) => {
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, ba.fiscalYear)
 
+
 	let breakdownValue = ba.breakdownValue().filter((d) => d != 'All')
 	if (breakdownValue.length > 0) {
 		param.filters.push({
@@ -242,8 +242,24 @@ ba.refresh = (useCache = false) => {
 		})
 	}
 
-	if (ba.breakdown2ndLevel()) {
-		param.groups.push(ba.breakdown2ndLevelKey())
+	if (ba.breakdownRD() == 'OnlyRD') {
+		if (ba.expand()) {
+			param.groups.push('customer.reportsubchannel')
+		}
+		
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: ["I1"]
+		})
+	}
+
+	if (ba.breakdownRD() == 'NonRD') {
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: rpt.masterData.Channel().map((d) => d._id).filter((d) => d != 'I1')
+		})
 	}
 	
 	ba.oldBreakdownBy(ba.breakdownBy())
@@ -257,10 +273,6 @@ ba.refresh = (useCache = false) => {
 				}, 1000 * 5)
 				return
 			}
-
-			// if (ba.breakdown2ndLevel()) { // hardcode, use DUMMY data
-			// 	res.Data.Data = branch_analysis_dummy
-			// }
 
 			let data = ba.buildStructure(res.Data.Data)
 
@@ -376,8 +388,8 @@ ba.render = () => {
 	let pnlTotalSum = 0
 	let dataFlat = []
 
-	let countWidthThenPush = (each, key) => {
-		let currentColumnWidth = each._id.length * 4
+	let countWidthThenPush = (thheader, each, key) => {
+		let currentColumnWidth = each._id.length * 8
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth
 		}
@@ -385,6 +397,8 @@ ba.render = () => {
 		each.key = key.join('_')
 		dataFlat.push(each)
 		totalColumnWidth += currentColumnWidth
+
+		thheader.width(currentColumnWidth)
 	}
 
 	data.forEach((lvl1, i) => {
@@ -395,7 +409,7 @@ ba.render = () => {
 			.appendTo(trContents[0])
 
 		if (ba.level() == 1) {
-			countWidthThenPush(lvl1, [lvl1._id])
+			countWidthThenPush(thheader1, lvl1, [lvl1._id])
 			return
 		}
 		thheader1.attr('colspan', lvl1.count)
@@ -407,27 +421,27 @@ ba.render = () => {
 				.appendTo(trContents[1])
 
 			if (ba.level() == 2) {
-				countWidthThenPush(lvl2, [lvl1._id, lvl2._id])
+				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id])
 				return
 			}
 			thheader2.attr('colspan', lvl2.count)
 
 			lvl2.subs.forEach((lvl3, k) => {
-				console.log("---------------", lvl3._id, lvl3)
-
 				let thheader3 = toolkit.newEl('th')
 					.html(lvl3._id)
 					.addClass('align-center')
 					.appendTo(trContents[2])
 
 				if (ba.level() == 3) {
-					countWidthThenPush(lvl3, [lvl1._id, lvl2._id, lvl3._id])
+					countWidthThenPush(thheader3, lvl3, [lvl1._id, lvl2._id, lvl3._id])
 					return
 				}
 				thheader3.attr('colspan', lvl3.count)
 			})
 		})
 	})
+
+	tableContent.css('min-width', totalColumnWidth)
 
 
 
@@ -488,8 +502,6 @@ ba.render = () => {
 	})
 
 	// ========================= PLOT DATA
-
-	tableContent.css('min-width', totalColumnWidth)
 
 	rows.forEach((d, i) => {
 		pnlTotalSum += d.PNLTotal

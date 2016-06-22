@@ -23,7 +23,7 @@
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: ('All' != ba.breakdownRD())">
 						<span class="input-group-addon align-right">
 							Expand
-							<span data-ind="text: (ba.breakdownRD() == 'OnlyRD') ? 'RD' : 'Non RD'"></span>
+							<span data-bind="text: (ba.breakdownRD() == 'OnlyRD') ? 'RD' : 'Non RD'"></span>
 						</span>
 						<div class="width-50">
 							<input type="checkbox" class="form-control input-sm" data-bind="checked: ba.expand">

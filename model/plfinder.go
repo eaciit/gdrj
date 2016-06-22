@@ -374,7 +374,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			}
 		}
 
-		fmt.Printf("------------ %#v\n", _id)
+		// fmt.Printf("------------ %#v\n", _id)
 
 		for key, val := range _id {
 			if val == nil {
