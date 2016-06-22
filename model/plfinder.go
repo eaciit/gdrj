@@ -758,7 +758,7 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	pipe := []bson.M{{"$match": matches}, {"$group": groups}} //, {"$project": projects}} //
 
 	res := []*toolkit.M{}
-	err = db.C(tableName).Pipe(pipe).All(&res)
+	err = db.C(tableName).Pipe(pipe).AllowDiskUse().All(&res)
 	if err != nil {
 		return nil, err
 	}

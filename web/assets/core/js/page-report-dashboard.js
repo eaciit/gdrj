@@ -536,23 +536,55 @@ sd.render = function (res) {
 	var op2 = _.map(op1, function (v, k) {
 		return { key: k, values: v };
 	});
-	var maxRow = _.maxBy(op2, function (d) {
+	var op3 = _.orderBy(op2, function (d) {
+		return {
+			'MT': 0,
+			'GT': 1,
+			'RD': 2,
+			'IT': 3,
+			'MOTORIST': 4,
+			'EXPORT': 5
+		}[d.key];
+	}, 'asc');
+
+	// hack IT, too much data
+	var it = op3.find(function (d) {
+		return d.key == "IT";
+	});
+	if (it != undefined) {
+		if (it.values.length > 0) {
+			var totalIT = toolkit.sum(it.values, function (e) {
+				return e.value;
+			});
+			var fake = {};
+			fake.customer_reportchannel = it.values[0].customer_reportchannel;
+			fake.group = it.group;
+			fake.percentage = toolkit.number(totalIT / total) * 100;
+			fake.value = totalIT;
+
+			it.valuesBackup = it.values.slice(0);
+			it.values = [fake];
+		}
+	}
+
+	var maxRow = _.maxBy(op3, function (d) {
 		return d.values.length;
 	});
-	var maxRowIndex = op2.indexOf(maxRow);
+	var maxRowIndex = op3.indexOf(maxRow);
 	var height = 20 * maxRow.values.length;
-	var width = 320;
+	var width = 280;
 
 	var container = $('.grid-sales-dist').empty();
 	var table = toolkit.newEl('table').addClass('width-full').appendTo(container).height(height);
-	var tr1st = toolkit.newEl('tr').appendTo(table);
+	var tr1st = toolkit.newEl('tr').appendTo(table).addClass('head');
 	var tr2nd = toolkit.newEl('tr').appendTo(table);
 
-	table.css('max-width', op2.length * width + 'px');
+	table.css('width', op3.length * width);
 
 	var index = 0;
-	op2.forEach(function (d) {
-		var td1st = toolkit.newEl('td').appendTo(tr1st).addClass('sortsales').attr('sort', sd.sortVal[index]).css('cursor', 'pointer');
+	op3.forEach(function (d) {
+		var td1st = toolkit.newEl('td').appendTo(tr1st).width(width).addClass('sortsales').attr('sort', sd.sortVal[index]).css('cursor', 'pointer');
+
 		var sumPercentage = _.sumBy(d.values, function (e) {
 			return e.percentage;
 		});
@@ -561,13 +593,19 @@ sd.render = function (res) {
 		});
 		td1st.html('<i class="fa"></i>' + d.key + '<br />' + kendo.toString(sumPercentage, 'n2') + ' %');
 
-		var td2nd = toolkit.newEl('td').appendTo(tr2nd);
+		var td2nd = toolkit.newEl('td').appendTo(tr2nd).css('vertical-align', 'top');
 
 		var innerTable = toolkit.newEl('table').appendTo(td2nd);
+		var innerTbody = toolkit.newEl('tbody').appendTo(innerTable);
+		// .css('display', 'block')
+		// .css('overflow-y', 'auto')
+		// .height(800)
 
 		if (d.values.length == 1) {
-			var tr = toolkit.newEl('tr').appendTo(innerTable);
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(d.values[0].value, 'n0')).height(height).addClass('single');
+			var tr = toolkit.newEl('tr').appendTo(innerTbody);
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(d.values[0].value, 'n0'))
+			// .height(height)
+			.addClass('single');
 			return;
 		}
 
@@ -605,8 +643,8 @@ sd.render = function (res) {
 
 		if (isFirstTime) {
 			if (d.key == "MT") {
-				channelgroup = _.orderBy(channelgroup, function (d) {
-					switch (d.key) {
+				channelgroup = _.orderBy(channelgroup, function (e) {
+					switch (e.key) {
 						case 'Hyper':
 							return 'A';break;
 						case 'Super':
@@ -615,18 +653,19 @@ sd.render = function (res) {
 							return 'C';break;
 					}
 
-					return d.key;
+					return e.key;
 				}, 'asc');
 			} else if (d.key == 'GT') {
-				channelgroup = _.orderBy(channelgroup, function (d) {
-					return toolkit.getNumberFromString(d.key);
+				channelgroup = _.orderBy(channelgroup, function (e) {
+					return toolkit.getNumberFromString(e.key);
 				}, 'asc');
 			}
 		}
 
 		channelgroup.forEach(function (e) {
 			var tr = toolkit.newEl('tr').appendTo(innerTable);
-			toolkit.newEl('td').css('width', '150px').appendTo(tr).html(e.key).height(height / channelgroup.length);
+			toolkit.newEl('td').css('width', '150px').appendTo(tr).html(e.key);
+			// .height(height / channelgroup.length)
 			toolkit.newEl('td').css('width', '40px').appendTo(tr).html(kendo.toString(e.percentageyo, 'n2') + '&nbsp;%');
 			toolkit.newEl('td').css('width', '120px').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'));
 		});
@@ -639,10 +678,13 @@ sd.render = function (res) {
 		// })
 	});
 
-	var trTotal = toolkit.newEl('tr').appendTo(table);
-	var tdTotal = toolkit.newEl('td').addClass('align-center total').attr('colspan', op2.length).appendTo(trTotal).html(kendo.toString(total, 'n0'));
+	var trTotalTop = toolkit.newEl('tr').prependTo(table);
+	toolkit.newEl('td').addClass('align-center total').attr('colspan', op3.length).appendTo(trTotalTop).html(kendo.toString(total, 'n0'));
+
+	var trTotalBottom = toolkit.newEl('tr').appendTo(table);
+	toolkit.newEl('td').addClass('align-center total').attr('colspan', op3.length).appendTo(trTotalBottom).html(kendo.toString(total, 'n0'));
 	$(".grid-sales-dist>table tbody>tr:eq(1) td").each(function (index) {
-		$(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height());
+		// $(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height())
 	});
 };
 sd.sortVal = ['', '', ''];

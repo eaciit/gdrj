@@ -514,32 +514,79 @@ sd.render = (res) => {
 	let op0 = _.filter(sd.data(), (d) => d.percentage > 0 || d.value > 0)
 	let op1 = _.groupBy(op0, (d) => d[breakdown])
 	let op2 = _.map(op1, (v, k) => { return { key: k, values: v } })
-	let maxRow = _.maxBy(op2, (d) => d.values.length)
-	let maxRowIndex = op2.indexOf(maxRow)
+	let op3 = _.orderBy(op2, (d) => {
+		return {
+			'MT': 0,
+			'GT': 1,
+			'RD': 2,
+			'IT': 3,
+			'MOTORIST': 4,
+			'EXPORT': 5
+		}[d.key]
+	}, 'asc')
+
+	// hack IT, too much data
+	let it = op3.find((d) => d.key == "IT")
+	if (it != undefined) {
+		if (it.values.length > 0) {
+			let totalIT = toolkit.sum(it.values, (e) => e.value)
+			let fake = {}
+			fake.customer_reportchannel = it.values[0].customer_reportchannel
+			fake.group = it.group
+			fake.percentage = toolkit.number(totalIT / total) * 100
+			fake.value = totalIT
+
+			it.valuesBackup = it.values.slice(0)
+			it.values = [fake]
+		}
+	}
+
+	let maxRow = _.maxBy(op3, (d) => d.values.length)
+	let maxRowIndex = op3.indexOf(maxRow)
 	let height = 20 * maxRow.values.length
-	let width = 320
+	let width = 280
 
 	let container = $('.grid-sales-dist').empty()
-	let table = toolkit.newEl('table').addClass('width-full').appendTo(container).height(height)
-	let tr1st = toolkit.newEl('tr').appendTo(table)
+	let table = toolkit.newEl('table')
+		.addClass('width-full')
+		.appendTo(container)
+		.height(height)
+	let tr1st = toolkit.newEl('tr').appendTo(table).addClass('head')
 	let tr2nd = toolkit.newEl('tr').appendTo(table)
 
-	table.css('max-width', `${op2.length * width}px`)
+	table.css('width', op3.length * width)
 
 	let index = 0
-	op2.forEach((d) => {
-		let td1st = toolkit.newEl('td').appendTo(tr1st).addClass('sortsales').attr('sort', sd.sortVal[index]).css('cursor', 'pointer')
+	op3.forEach((d) => {
+		let td1st = toolkit.newEl('td')
+			.appendTo(tr1st)
+			.width(width)
+			.addClass('sortsales')
+			.attr('sort', sd.sortVal[index])
+			.css('cursor', 'pointer')
+
 		let sumPercentage = _.sumBy(d.values, (e) => e.percentage)
 		let sumColumn = _.sumBy(d.values, (e) => e.value)
 		td1st.html(`<i class="fa"></i>${d.key}<br />${kendo.toString(sumPercentage, 'n2')} %`)
 
-		let td2nd = toolkit.newEl('td').appendTo(tr2nd)
+		let td2nd = toolkit.newEl('td')
+			.appendTo(tr2nd)
+			.css('vertical-align', 'top')
 
 		let innerTable = toolkit.newEl('table').appendTo(td2nd)
+		let innerTbody = toolkit.newEl('tbody')
+			.appendTo(innerTable)
+			// .css('display', 'block')
+			// .css('overflow-y', 'auto')
+			// .height(800)
 
 		if (d.values.length == 1) {
-			let tr = toolkit.newEl('tr').appendTo(innerTable)
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(d.values[0].value, 'n0')).height(height).addClass('single')
+			let tr = toolkit.newEl('tr').appendTo(innerTbody)
+			toolkit.newEl('td')
+				.appendTo(tr)
+				.html(kendo.toString(d.values[0].value, 'n0'))
+				// .height(height)
+				.addClass('single')
 			return
 		}
 
@@ -572,25 +619,34 @@ sd.render = (res) => {
 
 		if (isFirstTime) {
 			if (d.key == "MT") {
-				channelgroup = _.orderBy(channelgroup, (d) => {
-					switch (d.key) {
+				channelgroup = _.orderBy(channelgroup, (e) => {
+					switch (e.key) {
 						case 'Hyper': return 'A'; break
 						case 'Super': return 'B'; break
 						case 'Mini': return 'C'; break
 					}
 
-					return d.key
+					return e.key
 				}, 'asc')
 			} else if (d.key == 'GT') {
-				channelgroup = _.orderBy(channelgroup, (d) => toolkit.getNumberFromString(d.key), 'asc')
+				channelgroup = _.orderBy(channelgroup, (e) => {
+					return toolkit.getNumberFromString(e.key)
+				}, 'asc')
 			}
 		}
 
 		channelgroup.forEach((e) => {
 			let tr = toolkit.newEl('tr').appendTo(innerTable)
-			toolkit.newEl('td').css('width', '150px').appendTo(tr).html(e.key).height(height / channelgroup.length)
-			toolkit.newEl('td').css('width', '40px').appendTo(tr).html(`${kendo.toString(e.percentageyo, 'n2')}&nbsp;%`)
-			toolkit.newEl('td').css('width', '120px').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'))
+			toolkit.newEl('td').css('width', '150px')
+				.appendTo(tr)
+				.html(e.key)
+				// .height(height / channelgroup.length)
+			toolkit.newEl('td').css('width', '40px')
+				.appendTo(tr)
+				.html(`${kendo.toString(e.percentageyo, 'n2')}&nbsp;%`)
+			toolkit.newEl('td').css('width', '120px')
+				.appendTo(tr)
+				.html(kendo.toString(e.totalyo, 'n0'))
 		})
 		index++
 		// d.values.forEach((e) => {
@@ -601,10 +657,13 @@ sd.render = (res) => {
 		// })
 	})
 
-	let trTotal = toolkit.newEl('tr').appendTo(table)
-	let tdTotal = toolkit.newEl('td').addClass('align-center total').attr('colspan', op2.length).appendTo(trTotal).html(kendo.toString(total, 'n0'))
+	let trTotalTop = toolkit.newEl('tr').prependTo(table)
+	toolkit.newEl('td').addClass('align-center total').attr('colspan', op3.length).appendTo(trTotalTop).html(kendo.toString(total, 'n0'))
+
+	let trTotalBottom = toolkit.newEl('tr').appendTo(table)
+	toolkit.newEl('td').addClass('align-center total').attr('colspan', op3.length).appendTo(trTotalBottom).html(kendo.toString(total, 'n0'))
 	$(".grid-sales-dist>table tbody>tr:eq(1) td").each(function(index) {
-		$(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height())
+		// $(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height())
 	})
 }
 sd.sortVal = ['','','']
