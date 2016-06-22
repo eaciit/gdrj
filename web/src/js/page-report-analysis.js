@@ -13,8 +13,6 @@ bkd.breakdownByFiscalYear = ko.observable('date.fiscal')
 bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy())
 
 bkd.data = ko.observableArray([])
-bkd.plmodels = ko.observableArray([])
-bkd.zeroValue = ko.observable(false)
 bkd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 bkd.breakdownValue = ko.observableArray([])
 
@@ -56,7 +54,7 @@ bkd.refresh = (useCache = false) => {
 			bkd.breakdownNote(`Last refreshed on: ${date}`)
 
 			bkd.data(res.Data.Data)
-			bkd.plmodels(res.Data.PLModels)
+			rpt.plmodels(res.Data.PLModels)
 			bkd.emptyGrid()
 			bkd.contentIsLoading(false)
 			bkd.render()
@@ -273,50 +271,6 @@ bkd.renderDetail = (plcode, breakdowns) => {
 	$('.grid-detail').kendoGrid(config)
 }
 
-bkd.arrChangeParent = ko.observableArray([
-	{ idfrom: 'PL6A', idto: '', after: 'PL0'},
-	{ idfrom: 'PL1', idto: 'PL8A', after: 'PL8A'},
-	{ idfrom: 'PL2', idto: 'PL8A', after: 'PL8A'},
-	{ idfrom: 'PL3', idto: 'PL8A', after: 'PL8A'},
-	{ idfrom: 'PL4', idto: 'PL8A', after: 'PL8A'},
-	{ idfrom: 'PL5', idto: 'PL8A', after: 'PL8A'},
-	{ idfrom: 'PL6', idto: 'PL8A', after: 'PL8A'}
-])
-
-// bkd.arrFormulaPL = ko.observableArray([
-// 	{ id: "PL0", formula: ["PL1","PL2","PL3","PL4","PL5","PL6"], cal: "sum"},
-// 	{ id: "PL6A", formula: ["PL7","PL8","PL7A"], cal: "sum"},
-// ])
-// bkd.arrFormulaPL = ko.observableArray([
-// 	{ id: "PL1", formula: ["PL7"], cal: "sum"},
-// 	{ id: "PL2", formula: ["PL8"], cal: "sum"},
-// ])
-
-bkd.arrFormulaPL = ko.observableArray([
-	{ id: "PL2", formula: ["PL2", "PL8"], cal: "sum"},
-	{ id: "PL1", formula: ["PL8A", "PL2", "PL6"], cal: "min"},
-])
-
-bkd.changeParent = (elemheader, elemcontent, PLCode) => {
-	let change = _.find(bkd.arrChangeParent(), (a) => {
-		return a.idfrom == PLCode
-	})
-	if (change != undefined){
-		if (change.idto != ''){
-			elemheader.attr('idparent', change.idto)
-			elemcontent.attr('idcontparent', change.idto)
-		} else {
-			elemheader.removeAttr('idparent')
-			elemheader.find('td:eq(0)').css('padding-left','8px')
-			elemcontent.removeAttr('idcontparent')
-		}
-		return change.after
-	} else {
-		return ""
-	}
-}
-
-bkd.idarrayhide = ko.observableArray(['PL44A'])
 bkd.render = () => {
 	if (bkd.data().length == 0) {
 		$('.breakdown-view').html('No data found.')
@@ -341,36 +295,17 @@ bkd.render = () => {
 		return d 
 	})
 	
-	let plmodels = _.sortBy(bkd.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
+	let plmodels = _.sortBy(rpt.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
 	let exceptions = [
 		"PL94C" /* "Operating Income" */, 
 		"PL39B" /* "Earning Before Tax" */, 
 		"PL41C" /* "Earning After Tax" */,
 	]
 	let netSalesPLCode = 'PL8A'
-	let netSalesPlModel = bkd.plmodels().find((d) => d._id == netSalesPLCode)
+	let netSalesPlModel = rpt.plmodels().find((d) => d._id == netSalesPLCode)
 	let netSalesRow = {}, changeformula, formulayo
 
-	data.forEach((e,a) => {
-		bkd.arrFormulaPL().forEach((d) => {
-			// let total = toolkit.sum(d.formula, (f) => e[f])
-			let total = 0
-			d.formula.forEach((f, l) => {
-				if (l == 0) {
-					total = e[f]
-				} else {
-					if (d.cal == 'sum') {
-						total += e[f]
-					} else {
-						total -= e[f]
-					}
-				}
-			})
-
-			data[a][d.id] = total
-		})
-	})
-	// console.log(data)
+	rpt.fixRowValue(data)
 
 	data.forEach((e) => {
 		let breakdown = e._id
@@ -461,9 +396,6 @@ bkd.render = () => {
 		colWidth = 230
 	}
 
-	let grouppl1 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
-	let grouppl2 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
-	let grouppl3 = _.map(_.groupBy(bkd.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 	data.forEach((d, i) => {
 		if (d._id.length > 22)
 			colWidth += 30
@@ -556,165 +488,7 @@ bkd.render = () => {
 		}
 	})
 
-	let $trElem, $columnElem
-	let resg1, resg2, resg3, PLyo, PLyo2, child = 0, parenttr = 0, textPL
-	$(".table-header tbody>tr").each(function( i ) {
-		if (i > 0){
-			$trElem = $(this)
-			resg1 = _.find(grouppl1, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
-			resg2 = _.find(grouppl2, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
-			resg3 = _.find(grouppl3, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
-
-			let idplyo = _.find(bkd.idarrayhide(), (a) => { return a == $trElem.attr("idheaderpl") })
-			if (idplyo != undefined){
-				$trElem.remove()
-				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).remove()
-			}
-			if (resg1 == undefined && idplyo2 == undefined){
-				if (resg2 != undefined){ 
-					textPL = _.find(resg2.data, function(o) { return o._id == $trElem.attr("idheaderpl") })
-					PLyo = _.find(rows, function(o) { return o.PNL == textPL.PLHeader1 })
-					PLyo2 = _.find(rows, function(o) { return o.PLCode == textPL._id })
-					$trElem.find('td:eq(0)').css('padding-left','40px')
-					$trElem.attr('idparent', PLyo.PLCode)
-					child = $(`tr[idparent=${PLyo.PLCode}]`).length
-					$columnElem = $(`.table-content tr.column${PLyo2.PLCode}`)
-					$columnElem.attr('idcontparent', PLyo.PLCode)
-					let PLCodeChange = bkd.changeParent($trElem, $columnElem, $columnElem.attr('idpl'))
-					if (PLCodeChange != "")
-						PLyo.PLCode = PLCodeChange
-					if (child > 1){
-						$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-						$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-					}
-					else{
-						$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
-						$columnElem.insertAfter($(`tr.column${PLyo.PLCode}`))
-					}
-				} else if (resg2 == undefined){
-					if (resg3 != undefined){
-						PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader2 })
-						PLyo2 = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader3 })
-						$trElem.find('td:eq(0)').css('padding-left','70px')
-						if (PLyo == undefined){
-							PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader1 })
-							if(PLyo != undefined)
-								$trElem.find('td:eq(0)').css('padding-left','40px')
-						}
-						$trElem.attr('idparent', PLyo.PLCode)
-						child = $(`tr[idparent=${PLyo.PLCode}]`).length
-						$columnElem = $(`.table-content tr.column${PLyo2.PLCode}`)
-						$columnElem.attr('idcontparent', PLyo.PLCode)
-						let PLCodeChange = bkd.changeParent($trElem, $columnElem, $columnElem.attr('idpl'))
-						if (PLCodeChange != "")
-							PLyo.PLCode = PLCodeChange
-						if (child > 1){
-							$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-							$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-						}
-						else{
-							$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
-							$columnElem.insertAfter($(`tr.column${PLyo.PLCode}`))
-						}
-					}
-				}
-			}
-
-			let idplyo2 = _.find(bkd.idarrayhide(), (a) => { return a == $trElem.attr("idparent") })
-			if (idplyo2 != undefined){
-				$trElem.removeAttr('idparent')
-				$trElem.addClass('bold')
-				$trElem.css('display','inline-grid')
-				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).removeAttr("idcontparent")
-				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).attr('statusval', 'show')
-				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).attr('statusvaltemp', 'show')
-				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).css('display','inline-grid')
-			}
-		}
-	})
-
-	let countChild = ''
-	$(".table-header tbody>tr").each(function( i ) {
-		$trElem = $(this)
-		parenttr = $(`tr[idparent=${$trElem.attr('idheaderpl')}]`).length
-		if (parenttr>0){
-			$trElem.addClass('dd')
-			$trElem.find(`td:eq(0)>i`)
-				.addClass('fa fa-chevron-right')
-				.css('margin-right', '5px')
-			$(`tr[idparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
-			$(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
-			$(`tr[idparent=${$trElem.attr('idheaderpl')}]`).each((a,e) => {
-				if ($(e).attr('statusval') == 'show'){
-					$(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).attr('statusval', 'show')
-					$(`tr[idpl=${$trElem.attr('idheaderpl')}]`).attr('statusval', 'show')
-					if ($(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).attr('idparent') == undefined) {
-						$(`tr[idpl=${$trElem.attr('idheaderpl')}]`).css('display', '')
-						$(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).css('display', '')
-					}
-				}
-			})
-		} else {
-			countChild = $trElem.attr('idparent')
-			if (countChild == '' || countChild == undefined)
-				$trElem.find(`td:eq(0)`).css('padding-left', '20px')
-		}
-	})
-
-	bkd.showZeroValue(false)
-	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
-}
-
-bkd.prepareEvents = () => {
-	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
-		let index = $(this).index()
-        let elh = $(`.breakdown-view .table-header tr:eq(${index})`).addClass('hover')
-        let elc = $(`.breakdown-view .table-content tr:eq(${index})`).addClass('hover')
-	})
-	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
-		$('.breakdown-view tr.hover').removeClass('hover')
-	})
-}
-
-bkd.showExpandAll = (a) => {
-	if (a == true) {
-		$(`tr.dd`).find('i').removeClass('fa-chevron-right')
-		$(`tr.dd`).find('i').addClass('fa-chevron-down')
-		$(`tr[idparent]`).css('display', '')
-		$(`tr[idcontparent]`).css('display', '')
-		$(`tr[statusvaltemp=hide]`).css('display', 'none')
-	} else {
-		$(`tr.dd`).find('i').removeClass('fa-chevron-down')
-		$(`tr.dd`).find('i').addClass('fa-chevron-right')
-		$(`tr[idparent]`).css('display', 'none')
-		$(`tr[idcontparent]`).css('display', 'none')
-		$(`tr[statusvaltemp=hide]`).css('display', 'none')
-	}
-}
-
-bkd.showZeroValue = (a) => {
-	bkd.zeroValue(a)
-	if (a == true) {
-		$(".table-header tbody>tr").each(function( i ) {
-			if (i > 0){
-				$(this).attr('statusvaltemp', 'show')
-				$(`tr[idpl=${$(this).attr('idheaderpl')}]`).attr('statusvaltemp', 'show')
-				if (!$(this).attr('idparent')){
-					$(this).show()
-					$(`tr[idpl=${$(this).attr('idheaderpl')}]`).show()
-				}
-			}
-		})
-	} else {
-		$(".table-header tbody>tr").each(function( i ) {
-			if (i > 0){
-				$(this).attr('statusvaltemp', $(this).attr('statusval'))
-				$(`tr[idpl=${$(this).attr('idheaderpl')}]`).attr('statusvaltemp', $(this).attr('statusval'))
-			}
-		})
-	}
-
-	bkd.showExpandAll(false)
+	rpt.buildGridLevels(rows)
 }
 
 bkd.optionBreakdownValues = ko.observableArray([])
@@ -1288,7 +1062,7 @@ rpt.refresh = () => {
 		bkd.refresh(false)
 	}, 200)
 
-	bkd.prepareEvents()
+	rpt.prepareEvents()
 
 	ccr.getDecreasedQty(false)
 }
