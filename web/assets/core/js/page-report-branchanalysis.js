@@ -20,7 +20,6 @@ ba.optionDimensions = ko.observableArray(rpt.optionDimensions().filter(function 
 
 ba.expandRD = ko.observable(false);
 ba.data = ko.observableArray([]);
-ba.plmodels = ko.observableArray([]);
 ba.zeroValue = ko.observable(false);
 ba.fiscalYear = ko.observable(rpt.value.FiscalYear());
 ba.breakdownValue = ko.observableArray([]);
@@ -310,7 +309,7 @@ ba.refresh = function () {
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			ba.breakdownNote('Last refreshed on: ' + date);
 
-			ba.plmodels(res.Data.PLModels);
+			rpt.plmodels(res.Data.PLModels);
 			ba.emptyGrid();
 			ba.contentIsLoading(false);
 			ba.render();
@@ -436,15 +435,21 @@ ba.render = function () {
 
 	// ========================= CONSTRUCT DATA
 
-	var plmodels = _.sortBy(ba.plmodels(), function (d) {
+	var plmodels = _.sortBy(rpt.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
 	});
 	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */];
 	var netSalesPLCode = 'PL8A';
+	var netSalesPlModel = rpt.plmodels().find(function (d) {
+		return d._id == netSalesPLCode;
+	});
 	var netSalesRow = {},
 	    changeformula = void 0,
 	    formulayo = void 0;
+
 	var rows = [];
+
+	rpt.fixRowValue(dataFlat);
 
 	plmodels.forEach(function (d) {
 		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
@@ -533,148 +538,7 @@ ba.render = function () {
 	});
 
 	// ========================= CONFIGURE THE HIRARCHY
-
-	var grouppl1 = _.map(_.groupBy(ba.plmodels(), function (d) {
-		return d.PLHeader1;
-	}), function (k, v) {
-		return { data: k, key: v };
-	});
-	var grouppl2 = _.map(_.groupBy(ba.plmodels(), function (d) {
-		return d.PLHeader2;
-	}), function (k, v) {
-		return { data: k, key: v };
-	});
-	var grouppl3 = _.map(_.groupBy(ba.plmodels(), function (d) {
-		return d.PLHeader3;
-	}), function (k, v) {
-		return { data: k, key: v };
-	});
-
-	var $trElem = void 0,
-	    $columnElem = void 0;
-	var resg1 = void 0,
-	    resg2 = void 0,
-	    resg3 = void 0,
-	    PLyo = void 0,
-	    PLyo2 = void 0,
-	    child = 0,
-	    parenttr = 0,
-	    textPL = void 0;
-	$(".table-header tbody>tr").each(function (i) {
-		if (i > 0) {
-			$trElem = $(this);
-			resg1 = _.find(grouppl1, function (o) {
-				return o.key == $trElem.find('td:eq(0)').text();
-			});
-			resg2 = _.find(grouppl2, function (o) {
-				return o.key == $trElem.find('td:eq(0)').text();
-			});
-			resg3 = _.find(grouppl3, function (o) {
-				return o.key == $trElem.find('td:eq(0)').text();
-			});
-
-			var idplyo = _.find(ba.idarrayhide(), function (a) {
-				return a == $trElem.attr("idheaderpl");
-			});
-			if (idplyo != undefined) {
-				$trElem.remove();
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).remove();
-			}
-			if (resg1 == undefined) {
-				if (resg2 != undefined) {
-					textPL = _.find(resg2.data, function (o) {
-						return o._id == $trElem.attr("idheaderpl");
-					});
-					PLyo = _.find(rows, function (o) {
-						return o.PNL == textPL.PLHeader1;
-					});
-					PLyo2 = _.find(rows, function (o) {
-						return o.PLCode == textPL._id;
-					});
-					$trElem.find('td:eq(0)').css('padding-left', '40px');
-					$trElem.attr('idparent', PLyo.PLCode);
-					child = $('tr[idparent=' + PLyo.PLCode + ']').length;
-					$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
-					$columnElem.attr('idcontparent', PLyo.PLCode);
-					if (child > 1) {
-						$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-						$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-					} else {
-						$trElem.insertAfter($('tr.header' + PLyo.PLCode));
-						$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
-					}
-				} else if (resg2 == undefined) {
-					if (resg3 != undefined) {
-						PLyo = _.find(rows, function (o) {
-							return o.PNL == resg3.data[0].PLHeader2;
-						});
-						PLyo2 = _.find(rows, function (o) {
-							return o.PNL == resg3.data[0].PLHeader3;
-						});
-						$trElem.find('td:eq(0)').css('padding-left', '70px');
-						if (PLyo == undefined) {
-							PLyo = _.find(rows, function (o) {
-								return o.PNL == resg3.data[0].PLHeader1;
-							});
-							if (PLyo != undefined) $trElem.find('td:eq(0)').css('padding-left', '40px');
-						}
-						$trElem.attr('idparent', PLyo.PLCode);
-						child = $('tr[idparent=' + PLyo.PLCode + ']').length;
-						$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
-						$columnElem.attr('idcontparent', PLyo.PLCode);
-						if (child > 1) {
-							$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-							$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-						} else {
-							$trElem.insertAfter($('tr.header' + PLyo.PLCode));
-							$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
-						}
-					}
-				}
-			}
-
-			var idplyo2 = _.find(ba.idarrayhide(), function (a) {
-				return a == $trElem.attr("idparent");
-			});
-			if (idplyo2 != undefined) {
-				$trElem.removeAttr('idparent');
-				$trElem.addClass('bold');
-				$trElem.css('display', 'inline-grid');
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).removeAttr("idcontparent");
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusval', 'show');
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusvaltemp', 'show');
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).css('display', 'inline-grid');
-			}
-		}
-	});
-
-	var countChild = '';
-	$(".table-header tbody>tr").each(function (i) {
-		$trElem = $(this);
-		parenttr = $('tr[idparent=' + $trElem.attr('idheaderpl') + ']').length;
-		if (parenttr > 0) {
-			$trElem.addClass('dd');
-			$trElem.find('td:eq(0)>i').addClass('fa fa-chevron-right').css('margin-right', '5px');
-			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
-			$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
-			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').each(function (a, e) {
-				if ($(e).attr('statusval') == 'show') {
-					$('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').attr('statusval', 'show');
-					$('tr[idpl=' + $trElem.attr('idheaderpl') + ']').attr('statusval', 'show');
-					if ($('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').attr('idparent') == undefined) {
-						$('tr[idpl=' + $trElem.attr('idheaderpl') + ']').css('display', '');
-						$('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').css('display', '');
-					}
-				}
-			});
-		} else {
-			countChild = $trElem.attr('idparent');
-			if (countChild == '' || countChild == undefined) $trElem.find('td:eq(0)').css('padding-left', '20px');
-		}
-	});
-
-	ba.showZeroValue(false);
-	$(".pivot-pnl-branch.pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
+	rpt.buildGridLevels(rows);
 };
 
 ba.prepareEvents = function () {
