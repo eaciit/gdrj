@@ -41,7 +41,7 @@ func setinitialconnection() {
 	}
 }
 
-var masters, masterbranchs, mastercust = toolkit.M{}, toolkit.M{}, toolkit.M{}
+var masters, masterbranchs, mastercust, mastergrossmonth = toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}
 
 func getCursor(obj orm.IModel) dbox.ICursor {
 	c, e := gdrj.Find(obj,
@@ -103,6 +103,9 @@ func prepMaster() {
 	promos := map[string]*gdrj.RawDataPL{}
 	csrpromo, _ := gdrj.Find(new(gdrj.RawDataPL), dbox.Eq("src", "APROMO"), nil)
 	defer csrpromo.Close()
+
+	vPromo, vAdv := float64(0), float64(0)
+
 	for {
 
 		o := new(gdrj.RawDataPL)
@@ -114,14 +117,19 @@ func prepMaster() {
 		agroup := "promo"
 		if strings.Contains(o.Grouping, "Advertising") {
 			agroup = "adv"
+			vAdv += o.AmountinIDR
+		} else {
+			vPromo += o.AmountinIDR
 		}
 
-		key := toolkit.Sprintf("_%s", agroup)
-		if len(o.PCID) > 0 {
-			key = toolkit.Sprintf("%s_%s", o.PCID[:4], agroup)
-		} else {
-			key = toolkit.Sprintf("oth_%s", agroup)
-		}
+		Date := time.Date(o.Year, time.Month(o.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
+
+		key := toolkit.Sprintf("%d_%d_%s", Date.Year(), Date.Month(), agroup)
+		// if len(o.PCID) > 0 {
+		// 	key = toolkit.Sprintf("%s_%s", o.PCID[:4], agroup)
+		// } else {
+		// 	key = toolkit.Sprintf("oth_%s", agroup)
+		// }
 
 		prm, exist := promos[key]
 		if !exist {
@@ -132,8 +140,10 @@ func prepMaster() {
 		promos[key] = prm
 
 	}
-	toolkit.Println(promos)
+
+	toolkit.Printfn("PROMO : %v, ADV : %v", vPromo, vAdv)
 	masters.Set("promo", promos)
+
 	// masterbranchs = toolkit.M{}
 	// cmb := getCursor(new(gdrj.MasterBranch))
 	// defer cmb.Close()
@@ -158,6 +168,30 @@ func prepMaster() {
 
 	// 	mastercust.Set(cust.ID, cust)
 	// }
+
+	// mastergrossmonth
+	conn, _ := modules.GetDboxIConnection("db_godrej")
+	cgross, _ := conn.NewQuery().Select().From("salespls-grossbymonthbranch").Cursor(nil)
+	defer cgross.Close()
+	defer conn.Close()
+
+	for {
+		tkmcrsh := new(toolkit.M)
+		e := cgross.Fetch(tkmcrsh, 1, false)
+		if e != nil {
+			break
+		}
+
+		ivid := toolkit.Sprintf("%d_%d", tkmcrsh.Get("year", ""), tkmcrsh.Get("month", ""))
+		if ivid == "" {
+			continue
+		}
+
+		val := toolkit.ToFloat64(mastergrossmonth.Get(ivid, 0), 6, toolkit.RoundingAuto)
+		val += toolkit.ToFloat64(tkmcrsh.Get("grossamount", 0), 6, toolkit.RoundingAuto)
+
+		mastergrossmonth.Set(ivid, val)
+	}
 
 }
 
@@ -217,7 +251,7 @@ func main() {
 	//toolkit.Println("Delete existing")
 	//conn.NewQuery().From(spl.TableName()).Delete().Exec(nil)
 
-	// f = dbox.Eq("_id", "RK/IMN/14000038_1")
+	// f = dbox.Or(dbox.Eq("_id", "RD_2015_10_20010074_639316"), dbox.Eq("_id", "CN/GBS/15000021_1"))
 	c, _ := gdrj.Find(new(gdrj.SalesPL), f, nil)
 	defer c.Close()
 
@@ -275,35 +309,47 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 	for spl = range jobs {
 
 		//-- update channel and subchannel
-		/*
-			subchannel := subchannels.GetString(spl.Customer.CustType)
-			if spl.Customer.ChannelID == "I1" {
-				spl.Customer.ReportChannel = "RD"
-				spl.Customer.ReportSubChannel = "RD"
-			} else if spl.Customer.ChannelID == "I3" {
-				spl.Customer.ReportChannel = "MT"
-				if subchannel == "" {
-					spl.Customer.ReportSubChannel = subchannels.GetString("M3")
-				} else {
-					spl.Customer.ReportSubChannel = subchannel
-				}
-			} else if spl.Customer.ChannelID == "I4" {
-				spl.Customer.ReportChannel = "IT"
-				spl.Customer.ReportSubChannel = "IT"
-			} else if spl.Customer.ChannelID == "I6" {
-				spl.Customer.ReportChannel = "Motoris"
-				spl.Customer.ReportSubChannel = "Motoris"
-			} else {
-				spl.Customer.ChannelID = "I2"
-				spl.Customer.ReportChannel = "GT"
-				subchannel := subchannels.GetString(spl.Customer.CustType)
-				if subchannel == "" {
-					spl.Customer.ReportSubChannel = "R18 - Lain-lain"
-				} else {
-					spl.Customer.ReportSubChannel = subchannel
-				}
+		subchannel := subchannels.GetString(spl.Customer.CustType)
+		if spl.Customer.ChannelID == "I1" {
+			spl.Customer.ReportChannel = "RD"
+			spl.Customer.ReportSubChannel = spl.Customer.Name
+		} else if spl.Customer.ChannelID == "I3" { //MT
+			spl.Customer.ReportChannel = "MT"
+			if spl.Customer.CustType != "M1" && spl.Customer.CustType != "M2" && spl.Customer.CustType != "M3" {
+				subchannel = ""
 			}
-		*/
+			if subchannel == "" {
+				spl.Customer.ReportSubChannel = subchannels.GetString("M3")
+			} else {
+				spl.Customer.ReportSubChannel = subchannel
+			}
+		} else if spl.Customer.ChannelID == "I4" { //INDUSTRIAL
+			spl.Customer.ReportChannel = "IT"
+			spl.Customer.ReportSubChannel = spl.Customer.Name
+		} else if spl.Customer.ChannelID == "I6" { //MOTORIS
+			spl.Customer.ReportChannel = "Motoris"
+			spl.Customer.ReportSubChannel = "Motoris"
+		} else if spl.Customer.ChannelID == "EXP" {
+			spl.Customer.ReportChannel = "EXPORT"
+			spl.Customer.ReportSubChannel = "EXPORT"
+		} else {
+			spl.Customer.ChannelID = "I2"
+			spl.Customer.ReportChannel = "GT"
+			subchannel := subchannels.GetString(spl.Customer.CustType)
+
+			if spl.Customer.CustType == "" {
+				subchannel = ""
+			} else if len(spl.Customer.CustType) > 1 && spl.Customer.CustType[:1] != "R" {
+				subchannel = ""
+			}
+
+			if subchannel == "" {
+				spl.Customer.ReportSubChannel = "R18 - Lain-lain"
+			} else {
+				spl.Customer.ReportSubChannel = subchannel
+			}
+		}
+
 		//-- For fix branch name
 		// spl.Customer.BranchName = toolkit.ToString(masterbranchs.Get(spl.Customer.BranchID, ""))
 
@@ -343,19 +389,17 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 				}
 			}
 		*/
-		//-- For export
-		// if strings.Contains(spl.ID, "EXPORT") {
-		// 	spl.Customer.ChannelID = "EXP"
-		// 	spl.Customer.ChannelName = "Export"
 
-		// 	spl.Customer.ReportChannel = "EXPORT"
-		// 	spl.Customer.ReportSubChannel = "EXPORT"
-		// }
+		//--Gross Month Ratio
+		keyid := toolkit.Sprintf("%d_%d", spl.Date.Year, spl.Date.Month)
+		grossmonth := toolkit.ToFloat64(mastergrossmonth.Get(keyid, 0), 6, toolkit.RoundingAuto)
 
+		spl.RatioToMonthSales = spl.GrossAmount / grossmonth
 		//--Recalculate the PL Model value
 
 		spl.CalcPromo(masters)
 		spl.CalcSum(masters)
+
 		tablename := toolkit.Sprintf("%v-1", spl.TableName())
 		workerConn.NewQuery().From(tablename).
 			Save().Exec(toolkit.M{}.Set("data", spl))
