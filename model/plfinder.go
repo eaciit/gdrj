@@ -833,7 +833,7 @@ func (s *PLFinderParam) GeneratePLData() error {
 	pipe := col.Pipe(pipes)
 
 	res := []*toolkit.M{}
-	err = pipe.All(&res)
+	err = pipe.AllowDiskUse().All(&res)
 	if err != nil {
 		return err
 	}
