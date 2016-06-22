@@ -398,7 +398,7 @@ func workerProc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 	st := new(gdrj.SalesTrx)
 	for st = range jobs {
 
-		tablename := toolkit.Sprintf("%v-1", st.TableName())
+		tablename := toolkit.Sprintf("%v", st.TableName())
 
 		workerconn.NewQuery().From(tablename).
 			Save().Exec(toolkit.M{}.Set("data", st))
