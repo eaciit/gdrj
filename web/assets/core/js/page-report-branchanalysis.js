@@ -295,6 +295,27 @@ ba.renderDetail = function (plcode, breakdowns) {
 	$('.grid-detail').kendoGrid(config);
 };
 
+ba.arrChangeParent = ko.observableArray([{ idfrom: 'PL6A', idto: '', after: 'PL0' }, { idfrom: 'PL1', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL2', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL3', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL4', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL5', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL6', idto: 'PL8A', after: 'PL8A' }]);
+
+ba.changeParent = function (elemheader, elemcontent, PLCode) {
+	var change = _.find(ba.arrChangeParent(), function (a) {
+		return a.idfrom == PLCode;
+	});
+	if (change != undefined) {
+		if (change.idto != '') {
+			elemheader.attr('idparent', change.idto);
+			elemcontent.attr('idcontparent', change.idto);
+		} else {
+			elemheader.removeAttr('idparent');
+			elemheader.find('td:eq(0)').css('padding-left', '8px');
+			elemcontent.removeAttr('idcontparent');
+		}
+		return change.after;
+	} else {
+		return "";
+	}
+};
+
 ba.idarrayhide = ko.observableArray(['PL44A']);
 ba.render = function () {
 	if (ba.breakdownRD() == "OnlyRD") {
@@ -710,6 +731,8 @@ ba.render = function () {
 					child = $('tr[idparent=' + PLyo.PLCode + ']').length;
 					$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
 					$columnElem.attr('idcontparent', PLyo.PLCode);
+					var PLCodeChange = ba.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
+					if (PLCodeChange != "") PLyo.PLCode = PLCodeChange;
 					if (child > 1) {
 						$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
 						$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
@@ -736,6 +759,8 @@ ba.render = function () {
 						child = $('tr[idparent=' + PLyo.PLCode + ']').length;
 						$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
 						$columnElem.attr('idcontparent', PLyo.PLCode);
+						var _PLCodeChange = ba.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
+						if (_PLCodeChange != "") PLyo.PLCode = _PLCodeChange;
 						if (child > 1) {
 							$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
 							$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
