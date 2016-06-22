@@ -576,6 +576,10 @@ body {
   right: 20px;
   z-index: 10000;
 }
+.pivot-pnl table tr th[statuscolumn="TotalRD"] {
+  background-color: #74B841;
+  color: white;
+}
 .grid-sales-dist > table > tbody > tr:first-child {
   background-color: #F0F3F4;
 }
