@@ -106,7 +106,7 @@ func prepMaster() {
 	ccust := getCursor(cust)
 	defer ccust.Close()
 	for e = ccust.Fetch(cust, 1, false); e == nil; {
-		custs.Set(cust.ID, cust)
+		custs.Set(strings.ToUpper(cust.ID), cust)
 		cust = new(gdrj.Customer)
 		e = ccust.Fetch(cust, 1, false)
 	}
@@ -179,9 +179,12 @@ func prepMaster() {
 
 		ivid := toolkit.Sprintf("%s_%s", tkmcrsh.Get("invoice", ""), tkmcrsh.Get("branch", ""))
 		if ivid != "" {
-			sgrossamount.Set(ivid, toolkit.ToFloat64(tkmcrsh.Get("salesgrossamount", 0), 6, toolkit.RoundingAuto))
+			sgrossamount.Set(ivid, toolkit.ToFloat64(tkmcrsh.Get("grossamount", 0), 6, toolkit.RoundingAuto))
 		}
 	}
+
+	toolkit.Println(sgrossamount)
+
 }
 
 func main() {
