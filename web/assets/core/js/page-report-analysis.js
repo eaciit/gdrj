@@ -659,6 +659,22 @@ bkd.render = function () {
 
 	bkd.showZeroValue(false);
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
+
+	setTimeout(function () {
+		var newdata = [],
+		    finddata = void 0;
+		console.log($('.table-header tr.bold'), rs.optionDimensionSelect());
+		$('.table-header tr.bold').each(function (a, e) {
+			finddata = _.find(rs.optionDimensionSelect(), function (a) {
+				return a.field == $(e).attr('idheaderpl');
+			});
+			if (finddata != undefined) newdata.push(finddata);
+		});
+		newdata = _.sortBy(newdata, function (item) {
+			return [item.name];
+		});
+		rs.optionDimensionSelect(newdata);
+	});
 };
 
 bkd.prepareEvents = function () {

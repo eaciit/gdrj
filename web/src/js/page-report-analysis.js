@@ -663,6 +663,18 @@ bkd.render = () => {
 
 	bkd.showZeroValue(false)
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
+
+	setTimeout(() => {
+		let newdata  = [], finddata
+		console.log($('.table-header tr.bold'), rs.optionDimensionSelect())
+		$('.table-header tr.bold').each((a, e) => {
+			finddata = _.find(rs.optionDimensionSelect(), (a) => { return a.field == $(e).attr('idheaderpl') })
+			if (finddata != undefined)
+				newdata.push(finddata)
+		})
+		newdata = _.sortBy(newdata, function(item) { return [item.name] })
+		rs.optionDimensionSelect(newdata)
+	})
 }
 
 bkd.prepareEvents = () => {
@@ -809,9 +821,7 @@ rs.getSalesHeaderList = () => {
 	app.ajaxPost("/report/getplmodel", {}, (res) => {
 		let data = res.map((d) => app.o({ field: d._id, name: d.PLHeader3 }))
 			.filter((d) => d.PLHeader3 !== rs.selectedPNLNetSales())
-		data = _.sortBy(data, function(item) {
-					return [item.name]
-				})
+		data = _.sortBy(data, function(item) { return [item.name] })
 		rs.optionDimensionSelect(data)
 
 		let prev = rs.selectedPNL()
