@@ -160,6 +160,10 @@ func main() {
 	}
 
 	step := count / 100
+	if step == 0 {
+		step = 10
+	}
+
 	i := 0
 	toolkit.Printfn("START ... %d records ", count)
 	for {
