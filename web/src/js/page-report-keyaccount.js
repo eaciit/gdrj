@@ -707,10 +707,10 @@ kac.showZeroValue = (a) => {
 				countchild = $(`.table-header tr[idparent=${$(this).attr('idheaderpl')}]`).length
 				hidechild = $(`.table-header tr[idparent=${$(this).attr('idheaderpl')}][statusvaltemp=hide]`).length
 				if (countchild > 0) {
-					console.log(countchild, hidechild, $(this))
 					if (countchild == hidechild){
 						$(this).find('td:eq(0)>i').removeClass().css('margin-right', '0px')
-						$(this).find('td:eq(0)').css('padding-left', '20px')
+						if ($(this).attr('idparent') == undefined)
+							$(this).find('td:eq(0)').css('padding-left', '20px')
 					}
 				}
 			}

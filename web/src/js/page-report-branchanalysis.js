@@ -938,7 +938,8 @@ ba.showZeroValue = (a) => {
 					console.log(countchild, hidechild, $(this))
 					if (countchild == hidechild){
 						$(this).find('td:eq(0)>i').removeClass().css('margin-right', '0px')
-						$(this).find('td:eq(0)').css('padding-left', '20px')
+						if ($(this).attr('idparent') == undefined)
+							$(this).find('td:eq(0)').css('padding-left', '20px')
 					}
 				}
 			}
