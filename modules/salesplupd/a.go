@@ -114,15 +114,18 @@ func prepMaster() {
 			break
 		}
 
+		Date := time.Date(o.Year, time.Month(o.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		agroup := "promo"
 		if strings.Contains(o.Grouping, "Advertising") {
 			agroup = "adv"
-			vAdv += o.AmountinIDR
+			if o.Year == 2015 {
+				vAdv += o.AmountinIDR
+			}
 		} else {
-			vPromo += o.AmountinIDR
+			if o.Year == 2015 {
+				vPromo += o.AmountinIDR
+			}
 		}
-
-		Date := time.Date(o.Year, time.Month(o.Period), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 
 		key := toolkit.Sprintf("%d_%d_%s", Date.Year(), Date.Month(), agroup)
 		// if len(o.PCID) > 0 {
