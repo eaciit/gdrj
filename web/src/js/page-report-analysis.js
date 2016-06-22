@@ -1068,7 +1068,7 @@ rpt.toggleFilterCallback = () => {
 	})
 }
 
-vm.currentMenu('PNL Analysis')
+vm.currentMenu('Analysis')
 vm.currentTitle('PNL Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },

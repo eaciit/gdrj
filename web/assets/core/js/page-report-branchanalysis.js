@@ -694,7 +694,7 @@ ba.changeBreakdownValue = function () {
 	}, 100);
 };
 
-vm.currentMenu('Branch Analysis');
+vm.currentMenu('Analysis');
 vm.currentTitle('Branch Analysis');
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Branch Analysis', href: '/web/report/dashboard' }]);
 

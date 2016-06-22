@@ -700,7 +700,7 @@ ba.changeBreakdownValue = () => {
 	}, 100)
 }
 
-vm.currentMenu('Branch Analysis')
+vm.currentMenu('Analysis')
 vm.currentTitle('Branch Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
