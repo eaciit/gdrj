@@ -377,7 +377,7 @@ rpt.filterMultiSelect = (d) => {
 
 			rpt.masterData[d._id](_.sortBy(res.data, (d) => d.Name))
 
-			if (['KeyAccount', 'Brand'].indexOf(d.from) > -1) {
+			if (['KeyAccount', 'Brand', 'Branch'].indexOf(d.from) > -1) {
 				rpt.masterData[d._id].push({ _id: "OTHER", Name: "OTHER" })
 			}
 		})

@@ -420,11 +420,11 @@ ba.render = () => {
 			row[`${breakdown} total`] = total
 
 			if (ba.breakdownRD() == "OnlyRD") {
-				row.PNLTotal += e[`${d._id}`][0]
+				row.PNLTotal += toolkit.number(e[`${d._id}`][0])
 			} else if (ba.breakdownRD() == "NonRD") {
-				row.PNLTotal += e[`${d._id}`][1]
+				row.PNLTotal += toolkit.number(e[`${d._id}`][1])
 			} else {
-				row.PNLTotal += total
+				row.PNLTotal += toolkit.number(total)
 			}
 		})
 
@@ -490,6 +490,25 @@ ba.render = () => {
 	let grouppl1 = _.map(_.groupBy(ba.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
 	let grouppl2 = _.map(_.groupBy(ba.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
 	let grouppl3 = _.map(_.groupBy(ba.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
+
+	data = _.orderBy(data, (d) => {
+		let key = 'PL8A'
+		let src = d[key]
+
+		if (ba.breakdownRD() == "OnlyRD") {
+			// nothing
+		} else if (ba.breakdownRD() == "NonRD") {
+			if (ba.expandRD()) {
+				src = d[key].slice(0, 1)
+			}
+		} else {
+			src = d[key].slice(0, 1)
+		}
+
+		return toolkit.sum(src, (e) => e)
+	}, 'desc')
+	console.log("data", data)
+
 	data.forEach((d, i) => {
 		let thheader = toolkit.newEl('th')
 			.html(d._id)
@@ -533,6 +552,11 @@ ba.render = () => {
 			cell3.addClass('cell-percentage-header').width(colWidth)
 			thheader.removeAttr("colspan")
 			totalColumn++
+
+			if (ba.expandRD()) {
+				cell1.css('display','table-cell')
+				totalColumn++
+			}
 		} else {
 			totalColumn++
 			totalColumn++
@@ -541,7 +565,7 @@ ba.render = () => {
 
 		if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
 			cell3.remove()
-			thheader.attr("colspan", 7)
+			thheader.attr("colspan", 7 - ((ba.breakdownRD() == "NonRD") ? 1 : 0))
 			rpt.masterData.Channel().filter((f) => f._id != "I1").forEach((f) => {
 				let cell4 = toolkit.newEl('th')
 					.html(f.Name)
@@ -631,6 +655,10 @@ ba.render = () => {
 				cell1.css('display','none')
 				cell2.css('display','none')
 				cell3.addClass('cell-percentage-header')
+
+				if (ba.expandRD()) {
+					cell1.css('display','table-cell')
+				}
 			}
 
 			if (ba.breakdownRD() != "OnlyRD" && ba.expandRD()) {
