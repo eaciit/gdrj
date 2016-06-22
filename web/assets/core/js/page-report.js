@@ -258,7 +258,7 @@ rpt.filterMultiSelect = function (d) {
 				return d.Name;
 			}));
 
-			if (['KeyAccount', 'Brand'].indexOf(d.from) > -1) {
+			if (['KeyAccount', 'Brand', 'Branch'].indexOf(d.from) > -1) {
 				rpt.masterData[d._id].push({ _id: "OTHER", Name: "OTHER" });
 			}
 		});
