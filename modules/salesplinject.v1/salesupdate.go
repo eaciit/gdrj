@@ -195,6 +195,24 @@ func prepmaster() {
 		}
 	}
 
+	subtot := float64(0)
+	for _, v := range royalties {
+		subtot += v.AmountinIDR
+	}
+	toolkit.Printfn("Royaties : %v", subtot)
+
+	subtot = float64(0)
+	for _, v := range damages {
+		subtot += v.AmountinIDR
+	}
+	toolkit.Printfn("Damages : %v", subtot)
+
+	subtot = float64(0)
+	for _, v := range depreciation {
+		subtot += v.AmountinIDR
+	}
+	toolkit.Printfn("Depreciation : %v", subtot)
+
 	toolkit.Printfn("PROMO : %v, ADV : %v", vPromo, vAdv)
 	masters.Set("promos", promos).Set("freight", freight).Set("depreciation", depreciation).
 		Set("royalties", royalties).Set("damages", damages)
@@ -204,7 +222,7 @@ func prepmaster() {
 	//can be by brach,brand,channelid,month
 	cda, _ := conn.NewQuery().From("rawdatadiscountactivity_rev").Cursor(nil)
 	defer cda.Close()
-
+	chlist := []string{"I1", "I2", "I3", "I4", "I6", "EXP"}
 	tkmdiscount := toolkit.M{}
 	for {
 		m := toolkit.M{}
@@ -213,7 +231,12 @@ func prepmaster() {
 			break
 		}
 		date := time.Date(m.GetInt("year"), time.Month(m.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
-		key := toolkit.Sprintf("%d_%d_%s", date.Year(), date.Month(), strings.ToUpper(m.GetString("channel")))
+		ch := strings.ToUpper(m.GetString("channel"))
+		if !toolkit.HasMember(chlist, ch) {
+			ch = "I2"
+		}
+
+		key := toolkit.Sprintf("%d_%d_%s", date.Year(), date.Month(), ch)
 		ln := len(m.GetString("pcid"))
 		brand := ""
 		if ln >= 7 {
