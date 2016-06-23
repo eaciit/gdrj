@@ -240,7 +240,7 @@ func main() {
 			break
 		}
 
-		if strings.ToUpper(m.GetString("src")) == "DISCOUNT" {
+		if strings.ToUpper(stx.Src) == "DISCOUNT" {
 			continue
 		}
 
