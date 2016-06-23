@@ -173,8 +173,8 @@ func prepmaster() {
 		case "ROYALTY":
 			royalties[key] += o.AmountinIDR
 		case "DEPRECIATION":
-			dgroup = "indirect"
-			if strings.Contains(troy.Grouping, "Factory") {
+			dgroup := "indirect"
+			if strings.Contains(o.Grouping, "Factory") {
 				dgroup = "direct"
 			}
 			key := toolkit.Sprintf("%s_%s", key, dgroup)
@@ -201,7 +201,7 @@ func prepmaster() {
 
 	subtot = float64(0)
 	for _, v := range depreciation {
-		subtot += v.AmountinIDR
+		subtot += v
 	}
 	toolkit.Printfn("Depreciation : %v", subtot)
 
