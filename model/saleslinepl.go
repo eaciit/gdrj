@@ -186,11 +186,10 @@ func (spl *SalesPL) CleanAndClasify(masters toolkit.M) {
 	case "I4":
 		spl.Customer.ChannelName = "INDUSTRIAL"
 		spl.Customer.ReportChannel = "IT"
-		spl.Customer.ReportSubChannel = spl.Customer.Name
-		spl.Customer.ReportSubChannel = subchannels.GetString("ITS8")
-		if len(spl.Customer.CustType) < 2 {
-			k := toolkit.Sprintf("IT%v", strings.ToUpper(spl.Customer.CustType))
-			spl.Customer.ReportSubChannel = subchannels.GetString(k)
+		// spl.Customer.ReportSubChannel = spl.Customer.Name
+		spl.Customer.ReportSubChannel = subchannels.GetString("S8")
+		if len(spl.Customer.CustType) == 2 && spl.Customer.CustType[:1] == "S" {
+			spl.Customer.ReportSubChannel = subchannels.GetString(spl.Customer.CustType)
 		}
 	case "I6":
 		spl.Customer.ChannelName = "MOTORIST"
