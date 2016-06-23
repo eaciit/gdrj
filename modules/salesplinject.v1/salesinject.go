@@ -138,6 +138,10 @@ func prepmaster() {
 			break
 		}
 
+		if strings.ToUpper(m.GetString("src")) == "DISCOUNT" {
+			continue
+		}
+
 		agross := m.GetFloat64("gross")
 		globalgross += agross
 		if strings.ToUpper(m.GetString("src")) == "VDIST" {
@@ -236,6 +240,10 @@ func main() {
 			break
 		}
 
+		if strings.ToUpper(m.GetString("src")) == "DISCOUNT" {
+			continue
+		}
+
 		i++
 		jobs <- stx
 		if i%step == 0 {
@@ -282,7 +290,6 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 
 		pl.CleanAndClasify(masters)
 		pl.RatioCalc(masters)
-		// RatioCalc(pl)
 
 		pl.CalcSales(masters)
 		pl.CalcSum(masters)
