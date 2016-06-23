@@ -34,7 +34,7 @@ ba.optionBranch = ko.observableArray([{
 
 ba.level = ko.observable(2)
 
-ba.buildStructure = (data) => {
+ba.buildStructure = (breakdownRD, expand, data) => {
 	let rdCategories = ["RD", "Non RD"]
 	let keys = [
 		"_id_customer_branchname",
@@ -148,7 +148,7 @@ ba.buildStructure = (data) => {
 		return op2
 	}
 
-	if (ba.expand() && ba.breakdownRD() == 'NonRD') {
+	if (expand && breakdownRD == 'NonRD') {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
@@ -178,7 +178,7 @@ ba.buildStructure = (data) => {
 		return parsed
 	}
 
-	if (ba.expand() && ba.breakdownRD() == 'OnlyRD') {
+	if (expand && breakdownRD == 'OnlyRD') {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
@@ -232,9 +232,9 @@ ba.buildStructure = (data) => {
 	return parsed
 }
 ba.refresh = (useCache = false) => {
-	if (ba.breakdownRD() == "All") {
-		ba.expand(false)
-	}
+	// if (ba.breakdownRD() == "All") {
+	// 	ba.expand(false)
+	// }
 
 	let request = (breakdownRD, expand, callback) => {
 		let param = {}
@@ -305,43 +305,89 @@ ba.refresh = (useCache = false) => {
 				let rd = dataRD.find((d) => d._id == id)
 				let sampleData = (nonrd == undefined) ? rd : nonrd
 				let mergedData = {}
-				mergedData._id = null
+				mergedData._id = id
 				mergedData.count = 0
 				mergedData.subs = []
 
 				if (nonrd != undefined) {
 					let nonrdSub = nonrd.subs.find((d) => d._id == 'Non RD')
 
-					mergedData._id = nonrd._id
 					mergedData.count += nonrdSub.subs.length
 					mergedData.subs.push(nonrdSub)
+				} else {
+					let fake = {}
+					fake._id = 'Non RD'
+					fake.count = 0
+					fake.subs = []
+
+					for (let prop in sampleData) {
+						if (sampleData.hasOwnProperty(prop) && prop.search("PL") > -1) {
+							fake[prop] = 0
+						}
+					}
+
+					let fakseSub = toolkit.clone(fake)
+					fakseSub._id = 'Total'
+
+					fake.subs = [fakseSub]
+					fake.count++
+
+					mergedData.count++
+					mergedData.subs.push(fake)
 				}
 
 				if (rd != undefined) {
-					let rdSub = rd.subs.find((d) => d._id == 'Non RD')
+					let rdSub = rd.subs.find((d) => d._id == 'RD')
 
-					mergedData._id = rd._id
 					mergedData.count += rdSub.subs.length
 					mergedData.subs.push(rdSub)
+				} else {
+					let fake = {}
+					fake._id = 'RD'
+					fake.count = 0
+					fake.subs = []
+
+					for (let prop in sampleData) {
+						if (sampleData.hasOwnProperty(prop) && prop.search("PL") > -1) {
+							fake[prop] = 0
+						}
+					}
+
+					let fakseSub = toolkit.clone(fake)
+					fakseSub._id = 'Total'
+
+					fake.subs = [fakseSub]
+					fake.count++
+
+					mergedData.count++
+					mergedData.subs.push(fake)
 				}
+
+				console.log("---tokl", toolkit.clone(mergedData))
+				console.log("---", toolkit.clone(nonrd))
+				console.log("---", toolkit.clone(rd))
 
 				// Inject and recalculate TOTAL
 
-				let totalRDNonRD = {}
-				totalRDNonRD._id = 'Total'
-				totalRDNonRD.count = 1
-				totalRDNonRD.subs = []
+				let totalAll = {}
+				totalAll._id = 'Total'
+				totalAll.count = 0
+				totalAll.subs = []
 
 				for (let prop in sampleData) {
 					if (sampleData.hasOwnProperty(prop) && prop.search("PL") > -1) {
-						totalRDNonRD[prop] = toolkit.sum(mergedData.subs, (e) => e[prop])
+						totalAll[prop] = toolkit.sum(mergedData.subs, (e) => e[prop])
 					}
 				}
 
-				let totalRDNonRDSub = toolkit.clone(totalRDNonRD)
-				delete totalRDNonRDSub.subs
-				totalRDNonRD.subs.push(totalRDNonRDSub)
-				mergedData.subs = totalRDNonRD.subs.concat(mergedData.subs)
+				let totalAllSub = toolkit.clone(totalAll)
+				totalAllSub.subs = []
+
+				totalAll.count++
+				totalAll.subs.push(totalAllSub)
+
+				mergedData.subs = [totalAll].concat(mergedData.subs)
+				mergedData.count++
 
 				data.push(mergedData)
 			})
@@ -350,20 +396,22 @@ ba.refresh = (useCache = false) => {
 		}
 
 		console.log("fetching non rd")
-		request("NonRD", ba.expand(), (res) => {
-			let dataNonRD = ba.buildStructure(res.Data.Data)
+		request("NonRD", ba.expand(), (res1) => {
+			let dataNonRD = ba.buildStructure("NonRD", ba.expand(), res1.Data.Data)
 
 			console.log("fetching rd")
-			request("OnlyRD", ba.expand(), (res) => {
-				let dataRD = ba.buildStructure(res.Data.Data)
+			request("OnlyRD", ba.expand(), (res2) => {
+				let dataRD = ba.buildStructure("OnlyRD", ba.expand(), res2.Data.Data)
 
+				console.log("non rd", dataNonRD.slice(0))
+				console.log("rd", dataRD.slice(0))
 				console.log("merging data")
 				let data = mergeData(dataNonRD, dataRD)
 				ba.data(data)
-				let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+				let date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 				ba.breakdownNote(`Last refreshed on: ${date}`)
 
-				rpt.plmodels(res.Data.PLModels)
+				rpt.plmodels(res2.Data.PLModels)
 				ba.emptyGrid()
 				ba.contentIsLoading(false)
 				ba.render()
@@ -374,7 +422,7 @@ ba.refresh = (useCache = false) => {
 	}
 
 	request(ba.breakdownRD(), ba.expand(), (res) => {
-		let data = ba.buildStructure(res.Data.Data)
+		let data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data)
 
 		ba.data(data)
 		let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
@@ -521,11 +569,14 @@ ba.render = () => {
 					.appendTo(trContents[2])
 
 				if (ba.level() == 3) {
-					// if (lvl3._id == 'Total') {
-					// 	thheader2.html('&nbsp;')
-					// }
-
 					countWidthThenPush(thheader3, lvl3, [lvl1._id, lvl2._id, lvl3._id])
+
+					if (lvl3._id == 'Total') {
+						thheader2.attr('rowspan', 2)
+						thheader2.css('vertical-align', 'middle')
+						thheader3.remove()
+					}
+
 					return
 				}
 				thheader3.attr('colspan', lvl3.count)
