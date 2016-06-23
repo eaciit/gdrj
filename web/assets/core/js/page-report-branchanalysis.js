@@ -209,6 +209,9 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 
 		ba.level(3);
 		showAsBreakdown(_parsed);
+		_parsed = _.orderBy(_parsed, function (d) {
+			return d.total;
+		}, 'desc');
 		return _parsed;
 	}
 
@@ -241,6 +244,9 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 
 		ba.level(3);
 		showAsBreakdown(_parsed2);
+		_parsed2 = _.orderBy(_parsed2, function (d) {
+			return d.total;
+		}, 'desc');
 		return _parsed2;
 	}
 
@@ -267,6 +273,9 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 
 	ba.level(2);
 	showAsBreakdown(parsed);
+	parsed = _.orderBy(parsed, function (d) {
+		return d.total;
+	}, 'desc');
 	return parsed;
 };
 ba.refresh = function () {
@@ -458,6 +467,9 @@ ba.refresh = function () {
 					data.push(mergedData);
 				});
 
+				data = _.orderBy(data, function (d) {
+					return d.total;
+				}, 'desc');
 				return data;
 			};
 

@@ -175,6 +175,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 
 		ba.level(3)
 		showAsBreakdown(parsed)
+		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
 		return parsed
 	}
 
@@ -205,6 +206,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 
 		ba.level(3)
 		showAsBreakdown(parsed)
+		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
 		return parsed
 	}
 
@@ -229,6 +231,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 
 	ba.level(2)
 	showAsBreakdown(parsed)
+	parsed = _.orderBy(parsed, (d) => d.total, 'desc')
 	return parsed
 }
 ba.refresh = (useCache = false) => {
@@ -393,6 +396,7 @@ ba.refresh = (useCache = false) => {
 				data.push(mergedData)
 			})
 
+			data = _.orderBy(data, (d) => d.total, 'desc')
 			return data
 		}
 
