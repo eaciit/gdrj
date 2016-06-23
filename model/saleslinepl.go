@@ -94,14 +94,15 @@ func (pl *SalesPL) RatioCalc(masters toolkit.M) {
 	pl.RatioToGlobalSalesVdist = pl.GrossAmount / masters.GetFloat64("globalgrossvdist")
 	pl.RatioToBranchSales = pl.GrossAmount / masters.GetFloat64(pl.Customer.BranchID)
 
-	if pl.Product.Brand != "" && masters.Has("grossbybrand") {
-		gbybrand := masters["grossbybrand"].(toolkit.M)
-		pl.RatioToBrandSales = pl.GrossAmount / gbybrand.GetFloat64(pl.Product.Brand)
+	tmp := toolkit.M{}
+	if pl.Product.Brand != "" && pl.Product.Brand != "Other" && masters.Has("grossbybrand") {
+		tmp = masters["grossbybrand"].(toolkit.M)
+		pl.RatioToBrandSales = pl.GrossAmount / tmp.GetFloat64(pl.Product.Brand)
 	}
 
 	if pl.SKUID != "" && masters.Has("grossbysku") {
-		gbyskus := masters["grossbysku"].(toolkit.M)
-		pl.RatioToSKUSales = pl.GrossAmount / gbyskus.GetFloat64(pl.SKUID)
+		tmp = masters["grossbysku"].(toolkit.M)
+		pl.RatioToSKUSales = pl.GrossAmount / tmp.GetFloat64(pl.SKUID)
 	}
 
 	if masters.Has("grossbychannel") {
