@@ -281,8 +281,8 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 		pl.Product = trx.Product
 
 		pl.CleanAndClasify(masters)
-		// pl.RatioCalc(masters)
-		RatioCalc(pl)
+		pl.RatioCalc(masters)
+		// RatioCalc(pl)
 
 		pl.CalcSales(masters)
 		pl.CalcSum(masters)
