@@ -281,7 +281,8 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 		pl.Product = trx.Product
 
 		pl.CleanAndClasify(masters)
-		pl.RatioCalc(masters)
+		// pl.RatioCalc(masters)
+		RatioCalc(pl)
 
 		pl.CalcSales(masters)
 		pl.CalcSum(masters)
@@ -292,4 +293,59 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 
 		result <- pl.ID
 	}
+}
+
+func RatioCalc(pl *SalesPL) {
+
+	pl.RatioToGlobalSales = pl.GrossAmount / masters.GetFloat64("globalgross")
+	pl.RatioToGlobalSalesVdist = pl.GrossAmount / masters.GetFloat64("globalgrossvdist")
+	pl.RatioToBranchSales = pl.GrossAmount / masters.GetFloat64(pl.Customer.BranchID)
+
+	tmp := toolkit.M{}
+	if pl.Product.Brand != "" && pl.Product.Brand != "Other" && masters.Has("grossbybrand") {
+		tmp = masters["grossbybrand"].(toolkit.M)
+		pl.RatioToBrandSales = pl.GrossAmount / tmp.GetFloat64(pl.Product.Brand)
+	}
+
+	if pl.SKUID != "" && masters.Has("grossbysku") {
+		tmp = masters["grossbysku"].(toolkit.M)
+		pl.RatioToSKUSales = pl.GrossAmount / tmp.GetFloat64(pl.SKUID)
+	}
+
+	if masters.Has("grossbychannel") {
+		gbychannel := masters["grossbychannel"].(toolkit.M)
+		pl.RatioToChannelSales = pl.GrossAmount / gbychannel.GetFloat64(pl.Customer.ChannelID)
+	}
+
+	if masters.Has("grossbymonth") {
+		gdt := masters["grossbymonth"].(toolkit.M)
+		key := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
+		pl.RatioToMonthSales = pl.GrossAmount / gdt.GetFloat64(key)
+	}
+
+	if masters.Has("grossbymonthvdist") {
+		gdt := masters["grossbymonthvdist"].(toolkit.M)
+		key := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
+		pl.RatioToMonthSalesVdist = pl.GrossAmount / gdt.GetFloat64(key)
+	}
+
+	if masters.Has("grossbymonthsku") {
+		gdt := masters["grossbymonthsku"].(toolkit.M)
+		key := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.SKUID)
+		pl.RatioToMonthSKUSales = pl.GrossAmount / gdt.GetFloat64(key)
+	}
+
+	if masters.Has("grossbymonthchannel") {
+		gdt := masters["grossbymonthchannel"].(toolkit.M)
+		key := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.ChannelID)
+		pl.RatioToMonthChannelSales = pl.GrossAmount / gdt.GetFloat64(key)
+	}
+
+	if masters.Has("grossbymonthbrandchannel") {
+		gdt := masters["grossbymonthbrandchannel"].(toolkit.M)
+		key := toolkit.Sprintf("%d_%d_%s_%s", pl.Date.Year, pl.Date.Month, pl.Product.Brand, pl.Customer.ChannelID)
+		pl.RatioToMonthChannelBrandSales = pl.GrossAmount / gdt.GetFloat64(key)
+	}
+
+	return
 }
