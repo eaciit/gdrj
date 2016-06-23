@@ -35,13 +35,12 @@ type SalesPL struct {
 	PC       *ProfitCenter
 	CC       *CostCenter
 
-	RatioToGlobalSales      float64
-	RatioToGlobalSalesVdist float64
-	RatioToBranchSales      float64
-	RatioToBrandSales       float64
-	RatioToSKUSales         float64
-	RatioToChannelSales     float64
-
+	RatioToGlobalSales            float64
+	RatioToGlobalSalesVdist       float64
+	RatioToBranchSales            float64
+	RatioToBrandSales             float64
+	RatioToSKUSales               float64
+	RatioToChannelSales           float64
 	RatioToMonthSales             float64 //APROMO
 	RatioToMonthSKUSales          float64
 	RatioToMonthChannelSales      float64 //DISCOUNT_ALL
@@ -50,7 +49,7 @@ type SalesPL struct {
 
 	PLDatas map[string]*PLData
 
-	Source, Ref string
+	TrxSrc, Source, Ref string
 }
 
 func (s *SalesPL) TableName() string {
@@ -127,7 +126,7 @@ func (pl *SalesPL) RatioCalc(masters toolkit.M) {
 		pl.RatioToMonthSales = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
 	}
 
-	if masters.Has("grossbymonthvdist") {
+	if masters.Has("grossbymonthvdist") && strings.ToUpper(pl.TrxSrc) == "VDIST" {
 		gdt := masters["grossbymonthvdist"].(toolkit.M)
 		key := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 		pl.RatioToMonthSalesVdist = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
@@ -726,7 +725,7 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	}
 	pl.PLDatas = aplmodel
 
-	royalid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
+	royalid := toolkit.Sprintf("%d", pl.Date.Year)
 	r, exist := royals[royalid]
 	if !exist {
 		return
