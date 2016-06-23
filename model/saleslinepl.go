@@ -520,8 +520,8 @@ func (pl *SalesPL) CalcSales(masters toolkit.M) {
 		pl.AddData("PL8", pl.DiscountAmount, plmodels)
 	case strings.Contains(pl.ID, "EXPORT"):
 		pl.AddData("PL6", pl.GrossAmount, plmodels)
-	case strings.Contains(pl.ID, "DISCOUNT"):
-		pl.AddData("PL7A", pl.GrossAmount, plmodels)
+	// case strings.Contains(pl.ID, "DISCOUNT"):
+	// 	pl.AddData("PL7A", pl.GrossAmount, plmodels)
 	default:
 		pl.AddData("PL1", pl.GrossAmount, plmodels)
 		pl.AddData("PL7", pl.DiscountAmount, plmodels)
@@ -596,9 +596,9 @@ func (pl *SalesPL) CalcCOGSRev(masters toolkit.M) {
 
 	pl.PLDatas = aplmodel
 
-	cogsid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.SKUID)
+	cogsid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, strings.ToUpper(pl.SKUID))
 	if pl.Date.Year == 2014 && pl.Date.Month <= 9 {
-		cogsid = toolkit.Sprintf("%d_%d_%s", 2014, 9, pl.SKUID)
+		cogsid = toolkit.Sprintf("%d_%d_%s", 2014, 9, strings.ToUpper(pl.SKUID))
 	}
 
 	cogsdatas := masters.Get("cogs").(map[string]*COGSConsolidate)
@@ -712,9 +712,10 @@ func (pl *SalesPL) CalcDamage(masters toolkit.M) {
 }
 
 func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
-	if masters.Has("royalties") == false {
+	if !masters.Has("royalties") {
 		return
 	}
+
 	royals := masters.Get("royalties").(map[string]*RawDataPL)
 
 	aplmodel := pl.PLDatas
@@ -737,15 +738,11 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 
 func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
 
-	discounts, discount_all := map[string]float64{}, map[string]float64{}
-
-	if masters.Has("discounts_all") {
-		discount_all = masters.Get("discount_all").(map[string]float64)
+	if !masters.Has("discounts") {
+		return
 	}
 
-	if masters.Has("discounts") {
-		discounts = masters.Get("discounts").(map[string]float64)
-	}
+	discounts := masters.Get("discounts").(toolkit.M)
 
 	aplmodel := pl.PLDatas
 	for k, _ := range aplmodel {
@@ -755,14 +752,10 @@ func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
 	}
 	pl.PLDatas = aplmodel
 
-	if len(discounts) == 0 && len(discount_all) == 0 {
-		return
-	}
+	key01 := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, strings.ToUpper(pl.Customer.ChannelID))
+	key02 := toolkit.Sprintf("%s_%s", key01, strings.ToUpper(pl.Product.Brand))
 
-	key01 := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.ChannelID)
-	key02 := toolkit.Sprintf("%s_%s", key01, pl.Product.Brand)
-
-	amount := (-pl.RatioToMonthChannelBrandSales * discounts[key02]) + (-pl.RatioToMonthChannelSales * discount_all[key01])
+	amount := (pl.RatioToMonthChannelBrandSales * discounts.GetFloat64(key02)) + (pl.RatioToMonthChannelSales * discounts.GetFloat64(key01))
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	pl.AddData("PL7A", amount, plmodels)
@@ -795,10 +788,12 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 
 	fpromo := find("promo")
 	fadv := find("adv")
+	fspg := find("spg")
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	pl.AddData("PL28A", -fpromo.AmountinIDR*pl.RatioToMonthSales, plmodels)
 	pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL32", -fspg.AmountinIDR*pl.RatioToMonthSales, plmodels)
 }
 
 //Handle by other

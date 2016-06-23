@@ -36,16 +36,12 @@ func setinitialconnection() {
 }
 
 var (
-	masters                                                 = toolkit.M{}
-	t0                                                      time.Time
-	fiscalyear                                              int
-	subchannels                                             = toolkit.M{}
-	customers                                               = toolkit.M{}
-	branchs                                                 = toolkit.M{}
-	globalgross, globalgrossvdist                           = float64(0), float64(0)
-	grossbybranch, grossbybrand, grossbysku, grossbychannel = toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}
-	grossbymonthvdist, grossbymonth, grossbymonthsku        = toolkit.M{}, toolkit.M{}, toolkit.M{}
-	grossbymonthchannel, grossbymonthbrandchannel           = toolkit.M{}, toolkit.M{}
+	masters     = toolkit.M{}
+	t0          time.Time
+	fiscalyear  int
+	subchannels = toolkit.M{}
+	customers   = toolkit.M{}
+	branchs     = toolkit.M{}
 )
 
 func buildmap(holder interface{},
@@ -127,6 +123,15 @@ func prepmaster() {
 		branchs.Set(stx.Get("_id", "").(string), stx)
 	}
 	masters.Set("branchs", branchs)
+
+}
+
+func prepmastergrossproc() {
+
+	globalgross, globalgrossvdist := float64(0), float64(0)
+	grossbybranch, grossbybrand, grossbysku, grossbychannel := toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}
+	grossbymonthvdist, grossbymonth, grossbymonthsku := toolkit.M{}, toolkit.M{}, toolkit.M{}
+	grossbymonthchannel, grossbymonthbrandchannel := toolkit.M{}, toolkit.M{}
 
 	toolkit.Println("--> Trx Gross Proc")
 	csr01, _ := conn.NewQuery().From("salestrxs-grossproc").Cursor(nil)
