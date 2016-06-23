@@ -5,7 +5,7 @@ import (
 	"eaciit/gdrj/modules"
 	"os"
 
-	// "strings"
+	"strings"
 	"sync"
 	"time"
 
@@ -124,8 +124,70 @@ func prepmaster() {
 	}
 	masters.Set("branchs", branchs)
 
-	//Another master
+	toolkit.Println("--> Trx Gross Proc")
+	globalgross, globalgrossvdist := float64(0), float64(0)
+	grossbybranch, grossbybrand, grossbysku, grossbychannel := toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}
+	grossbymonthvdist, grossbymonth, grossbymonthsku, grossbymonthchannel, grossbymonthbrandchannel := toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}
+	csr01, _ := conn.NewQuery().From("salestrxs-grossproc").Cursor(nil)
+	defer csr01.Close()
+	for {
+		m := toolkit.M{}
+		e := csr01.Fetch(&m, 1, false)
+		if e != nil {
+			break
+		}
 
+		agross := m.GetFloat64("gross")
+		globalgross += agross
+		if strings.ToUpper(m.GetString("src")) == "VDIST" {
+			globalgrossvdist += agross
+		}
+
+		key := toolkit.Sprintf("%s", m.GetString("brand"))
+		tempval := grossbybrand.GetFloat64(key) + agross
+		grossbybrand.Set(key, tempval)
+
+		key = toolkit.Sprintf("%s", m.GetString("branchid"))
+		tempval = grossbybranch.GetFloat64(key) + agross
+		grossbybranch.Set(key, tempval)
+
+		key = toolkit.Sprintf("%s", m.GetString("skuid"))
+		tempval = grossbysku.GetFloat64(key) + agross
+		grossbysku.Set(key, tempval)
+
+		key = toolkit.Sprintf("%s", m.GetString("channelcheck"))
+		tempval = grossbychannel.GetFloat64(key) + agross
+		grossbychannel.Set(key, tempval)
+
+		key = toolkit.Sprintf("%d_%d", m.GetInt("year"), m.GetInt("month"))
+		tempval = grossbymonth.GetFloat64(key) + agross
+		grossbymonth.Set(key, tempval)
+
+		if strings.ToUpper(m.GetString("src")) == "VDIST" {
+			key = toolkit.Sprintf("%d_%d", m.GetInt("year"), m.GetInt("month"))
+			tempval = grossbymonthvdist.GetFloat64(key) + agross
+			grossbymonthvdist.Set(key, tempval)
+		}
+
+		key = toolkit.Sprintf("%d_%d_%s", m.GetInt("year"), m.GetInt("month"), m.GetString("skuid"))
+		tempval = grossbymonthsku.GetFloat64(key) + agross
+		grossbymonthsku.Set(key, tempval)
+
+		key = toolkit.Sprintf("%d_%d_%s", m.GetInt("year"), m.GetInt("month"), m.GetString("channelcheck"))
+		tempval = grossbymonthchannel.GetFloat64(key) + agross
+		grossbymonthchannel.Set(key, tempval)
+
+		key = toolkit.Sprintf("%d_%d_%s_%s", m.GetInt("year"), m.GetInt("month"), m.GetString("brand"), m.GetString("channelcheck"))
+		tempval = grossbymonthbrandchannel.GetFloat64(key) + agross
+		grossbymonthbrandchannel.Set(key, tempval)
+
+	}
+
+	masters.Set("globalgross", globalgross).Set("globalgrossvdist", globalgrossvdist)
+	// tkm
+	masters.Set("grossbybranch", grossbybranch).Set("grossbybrand", grossbybrand).Set("grossbysku", grossbysku).Set("grossbychannel", grossbychannel)
+	masters.Set("grossbymonth", grossbymonth).Set("grossbymonthvdist", grossbymonthvdist).Set("grossbymonthsku", grossbymonthsku).
+		Set("grossbymonthchannel", grossbymonthchannel).Set("grossbymonthbrandchannel", grossbymonthbrandchannel)
 }
 
 func main() {
@@ -218,6 +280,7 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 		pl.Product = trx.Product
 
 		pl.CleanAndClasify(masters)
+		pl.RatioCalc(masters)
 
 		pl.CalcSales(masters)
 		pl.CalcSum(masters)

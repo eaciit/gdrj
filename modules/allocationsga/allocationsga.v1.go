@@ -300,7 +300,10 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 				toolkit.ToInt(skey[1], toolkit.RoundingAuto) != int(j.Date.Month) {
 				continue
 			}
-			// 0.698721471, 0.265383214, 0.035895315
+
+			//2016 - 0.698721471, 0.265383214, 0.035895315
+			//2015 - 0.608479563, 0.349442677, 0.04207776
+
 			j.AddDataCC("PL33", (-totsgaline*v/totsgaperiod)*0.698721471, skey[2], plmodels)
 			j.AddDataCC("PL34", (-totsgaline*v/totsgaperiod)*0.265383214, skey[2], plmodels)
 			j.AddDataCC("PL35", (-totsgaline*v/totsgaperiod)*0.035895315, skey[2], plmodels)
