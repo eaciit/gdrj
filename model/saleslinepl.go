@@ -35,10 +35,18 @@ type SalesPL struct {
 	PC       *ProfitCenter
 	CC       *CostCenter
 
-	RatioToGlobalSales float64
-	RatioToBranchSales float64
-	RatioToBrandSales  float64
-	RatioToSKUSales    float64
+	RatioToGlobalSales      float64
+	RatioToGlobalSalesVdist float64
+	RatioToBranchSales      float64
+	RatioToBrandSales       float64
+	RatioToSKUSales         float64
+	RatioToChannelSales     float64
+
+	RatioToMonthSales             float64 //APROMO
+	RatioToMonthSKUSales          float64
+	RatioToMonthChannelSales      float64 //DISCOUNT_ALL
+	RatioToMonthChannelBrandSales float64 //DISCOUNT
+	RatioToMonthSalesVdist        float64 //FREIGHT
 
 	PLDatas map[string]*PLData
 
@@ -78,6 +86,165 @@ func TrxToSalesPL(conn dbox.IConnection,
 	pl.Calc(conn, masters, config)
 
 	return pl
+}
+
+func (pl *SalesPL) RatioCalc(masters toolkit.M) {
+
+	pl.RatioToGlobalSales = pl.GrossAmount / masters.GetFloat64("globalgross")
+	pl.RatioToGlobalSalesVdist = pl.GrossAmount / masters.GetFloat64("globalgrossvdist")
+	pl.RatioToBranchSales = pl.GrossAmount / masters.GetFloat64(pl.Customer.BranchID)
+
+	if pl.Product.Brand != "" && masters.Has("grossbybrand") {
+		gbybrand := masters["grossbybrand"].(toolkit.M)
+		pl.RatioToBrandSales = pl.GrossAmount / gbybrand.GetFloat64(pl.Product.Brand)
+	}
+
+	if pl.SKUID != "" && masters.Has("grossbysku") {
+		gbyskus := masters["grossbysku"].(toolkit.M)
+		pl.RatioToSKUSales = pl.GrossAmount / gbyskus.GetFloat64(pl.SKUID)
+	}
+
+	if masters.Has("grossbychannel") {
+		gbychannel := masters["grossbychannel"].(toolkit.M)
+		pl.RatioToChannelSales = pl.GrossAmount / gbychannel.GetFloat64(pl.Customer.ChannelID)
+	}
+
+	if masters.Has("grossbymonth") {
+		gdt := masters["grossbymonth"].(toolkit.M)
+		key := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
+		pl.RatioToMonthSales = pl.GrossAmount / gdt.GetFloat64(key)
+	}
+
+	if masters.Has("grossbymonthvdist") {
+		gdt := masters["grossbymonthvdist"].(toolkit.M)
+		key := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
+		pl.RatioToMonthSalesVdist = pl.GrossAmount / gdt.GetFloat64(key)
+	}
+
+	if masters.Has("grossbymonthsku") {
+		gdt := masters["grossbymonthsku"].(toolkit.M)
+		key := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.SKUID)
+		pl.RatioToMonthSKUSales = pl.GrossAmount / gdt.GetFloat64(key)
+	}
+
+	if masters.Has("grossbymonthchannel") {
+		gdt := masters["grossbymonthchannel"].(toolkit.M)
+		key := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.ChannelID)
+		pl.RatioToMonthChannelSales = pl.GrossAmount / gdt.GetFloat64(key)
+	}
+
+	if masters.Has("grossbymonthbrandchannel") {
+		gdt := masters["grossbymonthbrandchannel"].(toolkit.M)
+		key := toolkit.Sprintf("%d_%d_%s_%s", pl.Date.Year, pl.Date.Month, pl.Product.Brand, pl.Customer.ChannelID)
+		pl.RatioToMonthChannelBrandSales = pl.GrossAmount / gdt.GetFloat64(key)
+	}
+
+	return
+}
+
+func (spl *SalesPL) CleanAndClasify(masters toolkit.M) {
+
+	if spl.Customer == nil {
+		c := new(Customer)
+		c.BranchID = "CD02"
+		c.CustType = "General"
+		c.IsRD = false
+		spl.Customer = c
+	}
+
+	inexclude := func(f string, list []string) bool {
+		for _, v := range list {
+			if v == f {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	subchannels := masters.Get("subchannels").(toolkit.M)
+	subchannel := subchannels.GetString(spl.Customer.CustType)
+	switch spl.Customer.ChannelID {
+	case "I1":
+		spl.Customer.IsRD = true
+		spl.Customer.ChannelName = "RD"
+		spl.Customer.ReportChannel = "RD"
+		spl.Customer.ReportSubChannel = spl.Customer.Name
+	case "I3": //MT
+		I3list := []string{"M1", "M2", "M3"}
+		spl.Customer.ChannelName = "MT"
+		spl.Customer.ReportChannel = "MT"
+		if inexclude(spl.Customer.CustType, I3list) {
+			subchannel = ""
+		}
+
+		if subchannel == "" {
+			spl.Customer.ReportSubChannel = subchannels.GetString("M3")
+		} else {
+			spl.Customer.ReportSubChannel = subchannel
+		}
+	case "I4":
+		spl.Customer.ChannelName = "INDUSTRIAL"
+		spl.Customer.ReportChannel = "IT"
+		// spl.Customer.ReportSubChannel = spl.Customer.Name
+		spl.Customer.ReportSubChannel = subchannels.GetString("S8")
+		if len(spl.Customer.CustType) == 2 && spl.Customer.CustType[:1] == "S" {
+			spl.Customer.ReportSubChannel = subchannels.GetString(spl.Customer.CustType)
+		}
+	case "I6":
+		spl.Customer.ChannelName = "MOTORIST"
+		spl.Customer.ReportChannel = "Motoris"
+		spl.Customer.ReportSubChannel = "Motoris"
+	case "EXP":
+		spl.Customer.ChannelName = "EXPORT"
+		spl.Customer.ReportChannel = "EXPORT"
+		spl.Customer.ReportSubChannel = "EXPORT"
+	default:
+		spl.Customer.ChannelID = "I2"
+		spl.Customer.ChannelName = "GT"
+		spl.Customer.ReportChannel = "GT"
+		subchannel := subchannels.GetString(spl.Customer.CustType)
+
+		if spl.Customer.CustType == "" || (len(spl.Customer.CustType) > 1 && spl.Customer.CustType[:1] != "R") {
+			subchannel = ""
+		}
+
+		if subchannel == "" {
+			spl.Customer.ReportSubChannel = "R18 - Lain-lain"
+		} else {
+			spl.Customer.ReportSubChannel = subchannel
+		}
+	}
+
+	if spl.Product == nil {
+		p := new(Product)
+		p.Brand = "Other"
+		p.Name = "Other"
+	}
+
+	mcustomers := masters["customers"].(toolkit.M)
+	mbranchs := masters["branchs"].(toolkit.M)
+
+	cust, iscust := mcustomers[spl.Customer.ID].(*Customer)
+	branch, isbranch := mbranchs[spl.Customer.BranchID].(toolkit.M)
+
+	if iscust {
+		spl.Customer.National = cust.National
+		spl.Customer.Zone = cust.Zone
+		spl.Customer.Region = cust.Region
+		spl.Customer.AreaName = cust.AreaName
+	} else if isbranch {
+		spl.Customer.National = branch.Get("national", "").(string)
+		spl.Customer.Zone = branch.Get("zone", "").(string)
+		spl.Customer.Region = branch.Get("region", "").(string)
+		spl.Customer.AreaName = branch.Get("area", "").(string)
+	} else {
+		spl.Customer.National = "OTHER"
+		spl.Customer.Zone = "OTHER"
+		spl.Customer.Region = "OTHER"
+		spl.Customer.AreaName = "OTHER"
+	}
+
 }
 
 func (pl *SalesPL) Calc(conn dbox.IConnection,
@@ -384,6 +551,7 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 	} else {
 		cogsShemaAmount = cogsSchema.COGS_Amount
 	}
+	//rm_amount	lc_amount	pf_amount	other_amount	fixed_amount	depre_amount
 
 	if cogsShemaAmount == 0 {
 		// toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
@@ -409,33 +577,96 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 	//pl.AddData("PL74B", cogsAmount, plmodels)
 }
 
+func (pl *SalesPL) CalcCOGSRev(masters toolkit.M) {
+	// PL9 PL14 Pl20 PL21 PL74
+	if !masters.Has("cogs") {
+		return
+	}
+
+	aplmodel := pl.PLDatas
+	for k, _ := range aplmodel {
+		if k == "PL9" || k == "PL14" || k == "PL20" || k == "PL21" || k == "PL74" {
+			delete(aplmodel, k)
+		}
+	}
+
+	pl.PLDatas = aplmodel
+
+	cogsid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.SKUID)
+	if pl.Date.Year == 2014 && pl.Date.Month <= 9 {
+		cogsid = toolkit.Sprintf("%d_%d_%s", 2014, 9, pl.SKUID)
+	}
+
+	cogsdatas := masters.Get("cogs").(map[string]*COGSConsolidate)
+	cogsdata, exist := cogsdatas[cogsid]
+	if !exist {
+		return
+	}
+
+	//rm_amount	lc_amount	pf_amount	other_amount	fixed_amount	depre_amount
+	totamount := cogsdata.COGS_Amount * pl.RatioToMonthSKUSales
+	if totamount == 0 {
+		return
+	}
+
+	rmamount := cogsdata.RM_Amount * pl.RatioToMonthSKUSales
+	lcamount := cogsdata.LC_Amount * pl.RatioToMonthSKUSales
+	energyamount := cogsdata.PF_Amount * pl.RatioToMonthSKUSales
+	depreamount := cogsdata.Depre_Amount * pl.RatioToMonthSKUSales
+	otheramount := totamount - rmamount - lcamount - energyamount - depreamount
+
+	plmodels := masters.Get("plmodel").(map[string]*PLModel)
+	pl.AddData("PL9", rmamount, plmodels)
+	pl.AddData("PL14", lcamount, plmodels)
+	pl.AddData("Pl20", otheramount, plmodels)
+	pl.AddData("PL21", depreamount, plmodels)
+	pl.AddData("PL74", energyamount, plmodels)
+
+}
+
 func (pl *SalesPL) CalcFreight(masters toolkit.M) {
 	if masters.Has("freight") == false {
 		return
 	}
+
+	aplmodel := pl.PLDatas
+	for k, _ := range aplmodel {
+		if k == "PL23" {
+			delete(aplmodel, k)
+		}
+	}
+	pl.PLDatas = aplmodel
+
 	freights := masters.Get("freight").(map[string]*RawDataPL)
 
 	freightid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	f, exist := freights[freightid]
 	if !exist {
-		// toolkit.Printfn("Freight error: key is not exist %s", freightid)
 		return
 	}
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL23", -f.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	pl.AddData("PL23", -f.AmountinIDR*pl.RatioToMonthSalesVdist, plmodels)
 }
 
 func (pl *SalesPL) CalcDepre(masters toolkit.M) {
 	if masters.Has("depreciation") == false {
 		return
 	}
+
 	depretiations := masters.Get("depreciation").(map[string]*RawDataPL)
+
+	aplmodel := pl.PLDatas
+	for k, _ := range aplmodel {
+		if k == "PL43" || k == "PL42" {
+			delete(aplmodel, k)
+		}
+	}
+	pl.PLDatas = aplmodel
 
 	depretiationid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	d, exist := depretiations[depretiationid]
 	if !exist {
-		// toolkit.Printfn("Depretiation error: key is not exist %s", depretiationid)
 		return
 	}
 
@@ -446,7 +677,7 @@ func (pl *SalesPL) CalcDepre(masters toolkit.M) {
 		plcode = "PL42"
 	}
 
-	pl.AddData(plcode, -d.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	pl.AddData(plcode, -d.AmountinIDR*pl.RatioToMonthSales, plmodels)
 }
 
 func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
@@ -455,15 +686,55 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	}
 	royals := masters.Get("royalties").(map[string]*RawDataPL)
 
+	aplmodel := pl.PLDatas
+	for k, _ := range aplmodel {
+		if k == "PL26A" {
+			delete(aplmodel, k)
+		}
+	}
+	pl.PLDatas = aplmodel
+
 	royalid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	r, exist := royals[royalid]
 	if !exist {
-		// toolkit.Printfn("Royalty error: key is not exist %s", royalid)
 		return
 	}
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	pl.AddData("PL26A", -r.AmountinIDR*pl.RatioToGlobalSales, plmodels)
+}
+
+func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
+
+	discounts, discount_all := map[string]float64{}, map[string]float64{}
+
+	if masters.Has("discounts_all") {
+		discount_all = masters.Get("discount_all").(map[string]float64)
+	}
+
+	if masters.Has("discounts") {
+		discounts = masters.Get("discounts").(map[string]float64)
+	}
+
+	aplmodel := pl.PLDatas
+	for k, _ := range aplmodel {
+		if k == "PL7A" {
+			delete(aplmodel, k)
+		}
+	}
+	pl.PLDatas = aplmodel
+
+	if len(discounts) == 0 && len(discount_all) == 0 {
+		return
+	}
+
+	key01 := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.ChannelID)
+	key02 := toolkit.Sprintf("%s_%s", key01, pl.Product.Brand)
+
+	amount := (-pl.RatioToMonthChannelBrandSales * discounts[key02]) + (-pl.RatioToMonthChannelSales * discount_all[key01])
+
+	plmodels := masters.Get("plmodel").(map[string]*PLModel)
+	pl.AddData("PL7A", amount, plmodels)
 }
 
 func (pl *SalesPL) CalcPromo(masters toolkit.M) {
@@ -478,7 +749,6 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 			delete(aplmodel, k)
 		}
 	}
-
 	pl.PLDatas = aplmodel
 
 	promos := masters.Get("promo").(map[string]*RawDataPL)
@@ -494,20 +764,13 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 
 	fpromo := find("promo")
 	fadv := find("adv")
-	// fAtl := find("atl")
-	// fBtlBonus := find("bonus")
-	// fBtlGondola := find("gondola")
-	// fBtlSPG := find("spg")
-	// fBtlOtherpromo := find("promo")
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL28A", -fpromo.AmountinIDR*pl.RatioToBranchSales, plmodels)
-	pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToBranchSales, plmodels)
-	// pl.AddData("PL30", -fBtlGondola.AmountinIDR*pl.RatioToBranchSales, plmodels)
-	// pl.AddData("PL31", -fBtlOtherpromo.AmountinIDR*pl.RatioToBranchSales, plmodels)
-	// pl.AddData("PL32", -fBtlSPG.AmountinIDR*pl.RatioToBranchSales, plmodels)
+	pl.AddData("PL28A", -fpromo.AmountinIDR*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToMonthSales, plmodels)
 }
 
+//Handle by other
 func (pl *SalesPL) CalcSGA(masters toolkit.M) {
 	if masters.Has("sga") == false || masters.Has("ledger") == false {
 		return
@@ -518,7 +781,6 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
 	sgaid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	raws, exist := sgas[sgaid]
 	if !exist {
-		// toolkit.Printfn("SGA Error: Can't find key %s", sgaid)
 		return
 	}
 

@@ -15,8 +15,6 @@ kac.breakdownByFiscalYear = ko.observable('date.fiscal');
 kac.oldBreakdownBy = ko.observable(kac.breakdownBy());
 
 kac.data = ko.observableArray([]);
-kac.plmodels = ko.observableArray([]);
-kac.zeroValue = ko.observable(false);
 kac.fiscalYear = ko.observable(rpt.value.FiscalYear());
 kac.breakdownValue = ko.observableArray([]);
 
@@ -67,7 +65,7 @@ kac.refresh = function () {
 			kac.breakdownNote('Last refreshed on: ' + date);
 
 			kac.data(res.Data.Data);
-			kac.plmodels(res.Data.PLModels);
+			rpt.plmodels(res.Data.PLModels);
 			kac.emptyGrid();
 			kac.contentIsLoading(false);
 			kac.render();
@@ -288,7 +286,6 @@ kac.renderDetail = function (plcode, breakdowns) {
 	$('.grid-detail').kendoGrid(config);
 };
 
-kac.idarrayhide = ko.observableArray(['PL44A']);
 kac.render = function () {
 	if (kac.data().length == 0) {
 		$('.breakdown-view').html('No data found.');
@@ -313,7 +310,7 @@ kac.render = function () {
 		return d;
 	});
 
-	var plmodels = _.sortBy(kac.plmodels(), function (d) {
+	var plmodels = _.sortBy(rpt.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
 	});
 	var exceptions = ["PL94C" /* "Operating Income" */
@@ -321,10 +318,13 @@ kac.render = function () {
 	, "PL41C" /* "Earning After Tax" */
 	];
 	var netSalesPLCode = 'PL8A';
-	var netSalesPlModel = kac.plmodels().find(function (d) {
+	var netSalesPlModel = rpt.plmodels().find(function (d) {
 		return d._id == netSalesPLCode;
 	});
 	var netSalesRow = {};
+
+	rpt.fixRowValue(data);
+
 	data.forEach(function (e) {
 		var breakdown = e._id;
 		var value = e['' + netSalesPlModel._id];
@@ -336,7 +336,7 @@ kac.render = function () {
 	}, 'desc');
 
 	plmodels.forEach(function (d) {
-		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0 };
+		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 };
 		data.forEach(function (e) {
 			var breakdown = e._id;
 			var value = e['' + d._id];
@@ -353,6 +353,8 @@ kac.render = function () {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
+			if (percentage < 0) percentage = percentage * -1;
+
 			row[breakdown + ' %'] = percentage;
 		});
 
@@ -361,6 +363,15 @@ kac.render = function () {
 		}
 
 		rows.push(row);
+	});
+
+	var TotalNetSales = _.find(rows, function (r) {
+		return r.PLCode == "PL8A";
+	}).PNLTotal;
+	rows.forEach(function (d, e) {
+		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
+		rows[e].Percentage = TotalPercentage;
 	});
 
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
@@ -379,6 +390,8 @@ kac.render = function () {
 
 	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader1);
 
+	toolkit.newEl('th').html('%').addClass('align-right').appendTo(trHeader1);
+
 	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
 
 	var colWidth = 160;
@@ -394,21 +407,6 @@ kac.render = function () {
 		colWidth = 230;
 	}
 
-	var grouppl1 = _.map(_.groupBy(kac.plmodels(), function (d) {
-		return d.PLHeader1;
-	}), function (k, v) {
-		return { data: k, key: v };
-	});
-	var grouppl2 = _.map(_.groupBy(kac.plmodels(), function (d) {
-		return d.PLHeader2;
-	}), function (k, v) {
-		return { data: k, key: v };
-	});
-	var grouppl3 = _.map(_.groupBy(kac.plmodels(), function (d) {
-		return d.PLHeader3;
-	}), function (k, v) {
-		return { data: k, key: v };
-	});
 	data.forEach(function (d, i) {
 		if (d._id.length > 22) colWidth += 30;
 		toolkit.newEl('th').html(d._id).addClass('align-right').appendTo(trContent1).width(colWidth);
@@ -437,6 +435,8 @@ kac.render = function () {
 
 		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
 		toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
+
+		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + '%').addClass('align-right').appendTo(trHeader);
 
 		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).appendTo(tableContent);
 
@@ -475,183 +475,7 @@ kac.render = function () {
 		}
 	});
 
-	var $trElem = void 0,
-	    $columnElem = void 0;
-	var resg1 = void 0,
-	    resg2 = void 0,
-	    resg3 = void 0,
-	    PLyo = void 0,
-	    PLyo2 = void 0,
-	    child = 0,
-	    parenttr = 0,
-	    textPL = void 0;
-	$(".table-header tbody>tr").each(function (i) {
-		if (i > 0) {
-			$trElem = $(this);
-			resg1 = _.find(grouppl1, function (o) {
-				return o.key == $trElem.find('td:eq(0)').text();
-			});
-			resg2 = _.find(grouppl2, function (o) {
-				return o.key == $trElem.find('td:eq(0)').text();
-			});
-			resg3 = _.find(grouppl3, function (o) {
-				return o.key == $trElem.find('td:eq(0)').text();
-			});
-
-			var idplyo = _.find(kac.idarrayhide(), function (a) {
-				return a == $trElem.attr("idheaderpl");
-			});
-			if (idplyo != undefined) {
-				$trElem.remove();
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).remove();
-			}
-			if (resg1 == undefined && idplyo2 == undefined) {
-				if (resg2 != undefined) {
-					textPL = _.find(resg2.data, function (o) {
-						return o._id == $trElem.attr("idheaderpl");
-					});
-					PLyo = _.find(rows, function (o) {
-						return o.PNL == textPL.PLHeader1;
-					});
-					PLyo2 = _.find(rows, function (o) {
-						return o.PLCode == textPL._id;
-					});
-					$trElem.find('td:eq(0)').css('padding-left', '40px');
-					$trElem.attr('idparent', PLyo.PLCode);
-					child = $('tr[idparent=' + PLyo.PLCode + ']').length;
-					$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
-					$columnElem.attr('idcontparent', PLyo.PLCode);
-					if (child > 1) {
-						$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-						$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-					} else {
-						$trElem.insertAfter($('tr.header' + PLyo.PLCode));
-						$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
-					}
-				} else if (resg2 == undefined) {
-					if (resg3 != undefined) {
-						PLyo = _.find(rows, function (o) {
-							return o.PNL == resg3.data[0].PLHeader2;
-						});
-						PLyo2 = _.find(rows, function (o) {
-							return o.PNL == resg3.data[0].PLHeader3;
-						});
-						$trElem.find('td:eq(0)').css('padding-left', '70px');
-						if (PLyo == undefined) {
-							PLyo = _.find(rows, function (o) {
-								return o.PNL == resg3.data[0].PLHeader1;
-							});
-							if (PLyo != undefined) $trElem.find('td:eq(0)').css('padding-left', '40px');
-						}
-						$trElem.attr('idparent', PLyo.PLCode);
-						child = $('tr[idparent=' + PLyo.PLCode + ']').length;
-						$columnElem = $('.table-content tr.column' + PLyo2.PLCode);
-						$columnElem.attr('idcontparent', PLyo.PLCode);
-						if (child > 1) {
-							$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-							$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-						} else {
-							$trElem.insertAfter($('tr.header' + PLyo.PLCode));
-							$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
-						}
-					}
-				}
-			}
-
-			var idplyo2 = _.find(kac.idarrayhide(), function (a) {
-				return a == $trElem.attr("idparent");
-			});
-			if (idplyo2 != undefined) {
-				$trElem.removeAttr('idparent');
-				$trElem.addClass('bold');
-				$trElem.css('display', 'inline-grid');
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).removeAttr("idcontparent");
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusval', 'show');
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusvaltemp', 'show');
-				$('.table-content tr.column' + $trElem.attr("idheaderpl")).css('display', 'inline-grid');
-			}
-		}
-	});
-
-	var countChild = '';
-	$(".table-header tbody>tr").each(function (i) {
-		$trElem = $(this);
-		parenttr = $('tr[idparent=' + $trElem.attr('idheaderpl') + ']').length;
-		if (parenttr > 0) {
-			$trElem.addClass('dd');
-			$trElem.find('td:eq(0)>i').addClass('fa fa-chevron-right').css('margin-right', '5px');
-			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
-			$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
-			$('tr[idparent=' + $trElem.attr('idheaderpl') + ']').each(function (a, e) {
-				if ($(e).attr('statusval') == 'show') {
-					$('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').attr('statusval', 'show');
-					$('tr[idpl=' + $trElem.attr('idheaderpl') + ']').attr('statusval', 'show');
-					if ($('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').attr('idparent') == undefined) {
-						$('tr[idpl=' + $trElem.attr('idheaderpl') + ']').css('display', '');
-						$('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').css('display', '');
-					}
-				}
-			});
-		} else {
-			countChild = $trElem.attr('idparent');
-			if (countChild == '' || countChild == undefined) $trElem.find('td:eq(0)').css('padding-left', '20px');
-		}
-	});
-
-	kac.showZeroValue(false);
-	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
-};
-
-kac.prepareEvents = function () {
-	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
-		var index = $(this).index();
-		var elh = $('.breakdown-view .table-header tr:eq(' + index + ')').addClass('hover');
-		var elc = $('.breakdown-view .table-content tr:eq(' + index + ')').addClass('hover');
-	});
-	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
-		$('.breakdown-view tr.hover').removeClass('hover');
-	});
-};
-
-kac.showExpandAll = function (a) {
-	if (a == true) {
-		$('tr.dd').find('i').removeClass('fa-chevron-right');
-		$('tr.dd').find('i').addClass('fa-chevron-down');
-		$('tr[idparent]').css('display', '');
-		$('tr[idcontparent]').css('display', '');
-		$('tr[statusvaltemp=hide]').css('display', 'none');
-	} else {
-		$('tr.dd').find('i').removeClass('fa-chevron-down');
-		$('tr.dd').find('i').addClass('fa-chevron-right');
-		$('tr[idparent]').css('display', 'none');
-		$('tr[idcontparent]').css('display', 'none');
-		$('tr[statusvaltemp=hide]').css('display', 'none');
-	}
-};
-
-kac.showZeroValue = function (a) {
-	kac.zeroValue(a);
-	if (a == true) {
-		$(".table-header tbody>tr").each(function (i) {
-			if (i > 0) {
-				$(this).attr('statusvaltemp', 'show');
-				$('tr[idpl=' + $(this).attr('idheaderpl') + ']').attr('statusvaltemp', 'show');
-				if (!$(this).attr('idparent')) {
-					$(this).show();
-					$('tr[idpl=' + $(this).attr('idheaderpl') + ']').show();
-				}
-			}
-		});
-	} else {
-		$(".table-header tbody>tr").each(function (i) {
-			if (i > 0) {
-				$(this).attr('statusvaltemp', $(this).attr('statusval'));
-				$('tr[idpl=' + $(this).attr('idheaderpl') + ']').attr('statusvaltemp', $(this).attr('statusval'));
-			}
-		});
-	}
-
-	kac.showExpandAll(false);
+	rpt.buildGridLevels(rows);
 };
 
 kac.optionBreakdownValues = ko.observableArray([]);
@@ -689,7 +513,7 @@ kac.changeBreakdownValue = function () {
 	}, 100);
 };
 
-vm.currentMenu('Key Account Analysis');
+vm.currentMenu('Analysis');
 vm.currentTitle('Key Account Analysis');
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Key Account Analysis', href: '/web/report/dashboard' }]);
 
@@ -702,7 +526,7 @@ rpt.refresh = function () {
 		kac.refresh(false);
 	}, 200);
 
-	kac.prepareEvents();
+	rpt.prepareEvents();
 };
 
 $(function () {

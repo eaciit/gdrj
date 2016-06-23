@@ -643,13 +643,13 @@ html, body{
 		position: absolute;
 		left: 0;
 		top: 0;
-		width: 320px;
+		width: 365px;
 		border-right: 1px solid @color-base-grey;
 	}
 
 	.table-content {
 		overflow-x: scroll;
-		margin-left: 320px;
+		margin-left: 365px;
 	}
 
 	table {
@@ -773,13 +773,30 @@ html, body{
 	z-index: 10000;
 }
 
+.pivot-pnl {
+	table {
+		tr {
+			th[statuscolumn="TotalRD"] {
+				background-color: #74B841;
+   				color: white;
+			}
+		}
+	}
+}
+
 .grid-sales-dist {
 	> table {
 		> tbody {
 			> tr {
-				&:first-child {
+				&.head {
 					background-color: @color-base-grey;
-				}
+					
+			    	td {
+					    font-weight: bold;
+					    font-size: 14px;
+					    text-transform: capitalize;
+			    	}
+			    }
 
 				> td {
 					padding: 2px 6px;
@@ -837,15 +854,6 @@ html, body{
 					    padding-bottom: 4px;
 					}
 				}
-
-
-			    &:first-child {
-			    	td {
-					    font-weight: bold;
-					    font-size: 14px;
-					    text-transform: capitalize;
-			    	}
-			    }
 			}
 		}
 	}
