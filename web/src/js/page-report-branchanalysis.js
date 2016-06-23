@@ -372,6 +372,7 @@ ba.refresh = (useCache = false) => {
 				let totalAll = {}
 				totalAll._id = 'Total'
 				totalAll.count = 0
+				totalAll.excludeFromTotal = true
 				totalAll.subs = []
 
 				for (let prop in sampleData) {

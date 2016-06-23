@@ -431,6 +431,7 @@ ba.refresh = function () {
 					var totalAll = {};
 					totalAll._id = 'Total';
 					totalAll.count = 0;
+					totalAll.excludeFromTotal = true;
 					totalAll.subs = [];
 
 					var _loop3 = function _loop3(_prop2) {
