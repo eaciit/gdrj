@@ -100,7 +100,6 @@ func (pl *SalesPL) RatioCalc(masters toolkit.M) {
 
 	pl.RatioToGlobalSales = SaveDiv(pl.GrossAmount, masters.GetFloat64("globalgross"))
 	pl.RatioToGlobalSalesVdist = SaveDiv(pl.GrossAmount, masters.GetFloat64("globalgrossvdist"))
-	pl.RatioToBranchSales = SaveDiv(pl.GrossAmount, masters.GetFloat64(pl.Customer.BranchID))
 
 	tgrossbybrand := masters.Get("grossbybrand", toolkit.M{}).(toolkit.M)
 	if pl.Product.Brand != "" && pl.Product.Brand != "Other" && masters.Has("grossbybrand") {
@@ -110,6 +109,11 @@ func (pl *SalesPL) RatioCalc(masters toolkit.M) {
 	if pl.SKUID != "" && masters.Has("grossbysku") {
 		tmp := masters["grossbysku"].(toolkit.M)
 		pl.RatioToSKUSales = SaveDiv(pl.GrossAmount, tmp.GetFloat64(pl.SKUID))
+	}
+
+	if pl.Customer.BranchID != "" && masters.Has("grossbybranch") {
+		tmp := masters["grossbybranch"].(toolkit.M)
+		pl.RatioToBranchSales = SaveDiv(pl.GrossAmount, tmp.GetFloat64(pl.Customer.BranchID))
 	}
 
 	if masters.Has("grossbychannel") {
