@@ -232,73 +232,159 @@ ba.buildStructure = (data) => {
 	return parsed
 }
 ba.refresh = (useCache = false) => {
-	let param = {}
-	param.pls = []
-	param.groups = [ba.breakdownByChannel(), ba.breakdownBy()]
-	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue(false, ba.fiscalYear)
-
-
-	let breakdownValue = ba.breakdownValue().filter((d) => d != 'All')
-	if (breakdownValue.length > 0) {
-		param.filters.push({
-			Field: ba.breakdownBy(),
-			Op: '$in',
-			Value: ba.breakdownValue()
-		})
+	if (ba.breakdownRD() == "All") {
+		ba.expand(false)
 	}
 
-	if (ba.breakdownRD() == 'OnlyRD') {
-		if (ba.expand()) {
-			param.groups.push('customer.reportsubchannel')
+	let request = (breakdownRD, expand, callback) => {
+		let param = {}
+		param.pls = []
+		param.groups = [ba.breakdownByChannel(), ba.breakdownBy()]
+		param.aggr = 'sum'
+		param.filters = rpt.getFilterValue(false, ba.fiscalYear)
+
+		let breakdownValue = ba.breakdownValue().filter((d) => d != 'All')
+		if (breakdownValue.length > 0) {
+			param.filters.push({
+				Field: ba.breakdownBy(),
+				Op: '$in',
+				Value: ba.breakdownValue()
+			})
 		}
-		
-		param.filters.push({
-			Field: 'customer.channelname',
-			Op: '$in',
-			Value: ["I1"]
-		})
-	}
 
-	if (ba.breakdownRD() == 'NonRD') {
-		param.filters.push({
-			Field: 'customer.channelname',
-			Op: '$in',
-			Value: rpt.masterData.Channel().map((d) => d._id).filter((d) => d != 'I1')
-		})
-	}
-	
-	ba.oldBreakdownBy(ba.breakdownBy())
-	ba.contentIsLoading(true)
-
-	let fetch = () => {
-		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
-			if (res.Status == "NOK") {
-				setTimeout(() => {
-					fetch()
-				}, 1000 * 5)
-				return
+		if (breakdownRD == 'OnlyRD') {
+			if (expand) {
+				param.groups.push('customer.reportsubchannel')
 			}
+			
+			param.filters.push({
+				Field: 'customer.channelname',
+				Op: '$in',
+				Value: ["I1"]
+			})
+		}
 
-			let data = ba.buildStructure(res.Data.Data)
+		if (breakdownRD == 'NonRD') {
+			param.filters.push({
+				Field: 'customer.channelname',
+				Op: '$in',
+				Value: rpt.masterData.Channel().map((d) => d._id).filter((d) => d != 'I1')
+			})
+		}
 
-			ba.data(data)
-			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-			ba.breakdownNote(`Last refreshed on: ${date}`)
+		let fetch = () => {
+			toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
+				if (res.Status == "NOK") {
+					setTimeout(() => {
+						fetch()
+					}, 1000 * 5)
+					return
+				}
 
-			rpt.plmodels(res.Data.PLModels)
-			ba.emptyGrid()
-			ba.contentIsLoading(false)
-			ba.render()
-		}, () => {
-			ba.emptyGrid()
-			ba.contentIsLoading(false)
-		}, {
-			cache: (useCache == true) ? 'breakdown chart' : false
-		})
+				callback(res)
+			}, () => {
+				ba.emptyGrid()
+				ba.contentIsLoading(false)
+			}, {
+				cache: (useCache == true) ? 'breakdown chart' : false
+			})
+		}
+
+		ba.oldBreakdownBy(ba.breakdownBy())
+		ba.contentIsLoading(true)
+		fetch()
 	}
 
-	fetch()
+	if (ba.breakdownRD() == "All" && ba.expand()) {
+		let mergeData = (dataNonRD, dataRD) => {
+			let data = []
+			let ids = _.uniq(dataNonRD.map((d) => d._id).concat(dataRD.map((d) => d._id)))
+
+			ids.forEach((id) => {
+				let nonrd = dataNonRD.find((d) => d._id == id)
+				let rd = dataRD.find((d) => d._id == id)
+				let sampleData = (nonrd == undefined) ? rd : nonrd
+				let mergedData = {}
+				mergedData._id = null
+				mergedData.count = 0
+				mergedData.subs = []
+
+				if (nonrd != undefined) {
+					let nonrdSub = nonrd.subs.find((d) => d._id == 'Non RD')
+
+					mergedData._id = nonrd._id
+					mergedData.count += nonrdSub.subs.length
+					mergedData.subs.push(nonrdSub)
+				}
+
+				if (rd != undefined) {
+					let rdSub = rd.subs.find((d) => d._id == 'Non RD')
+
+					mergedData._id = rd._id
+					mergedData.count += rdSub.subs.length
+					mergedData.subs.push(rdSub)
+				}
+
+				// Inject and recalculate TOTAL
+
+				let totalRDNonRD = {}
+				totalRDNonRD._id = 'Total'
+				totalRDNonRD.count = 1
+				totalRDNonRD.subs = []
+
+				for (let prop in sampleData) {
+					if (sampleData.hasOwnProperty(prop) && prop.search("PL") > -1) {
+						totalRDNonRD[prop] = toolkit.sum(mergedData.subs, (e) => e[prop])
+					}
+				}
+
+				let totalRDNonRDSub = toolkit.clone(totalRDNonRD)
+				delete totalRDNonRDSub.subs
+				totalRDNonRD.subs.push(totalRDNonRDSub)
+				mergedData.subs = totalRDNonRD.subs.concat(mergedData.subs)
+
+				data.push(mergedData)
+			})
+
+			return data
+		}
+
+		console.log("fetching non rd")
+		request("NonRD", ba.expand(), (res) => {
+			let dataNonRD = ba.buildStructure(res.Data.Data)
+
+			console.log("fetching rd")
+			request("OnlyRD", ba.expand(), (res) => {
+				let dataRD = ba.buildStructure(res.Data.Data)
+
+				console.log("merging data")
+				let data = mergeData(dataNonRD, dataRD)
+				ba.data(data)
+				let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+				ba.breakdownNote(`Last refreshed on: ${date}`)
+
+				rpt.plmodels(res.Data.PLModels)
+				ba.emptyGrid()
+				ba.contentIsLoading(false)
+				ba.render()
+			})
+		})
+
+		return
+	}
+
+	request(ba.breakdownRD(), ba.expand(), (res) => {
+		let data = ba.buildStructure(res.Data.Data)
+
+		ba.data(data)
+		let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+		ba.breakdownNote(`Last refreshed on: ${date}`)
+
+		rpt.plmodels(res.Data.PLModels)
+		ba.emptyGrid()
+		ba.contentIsLoading(false)
+		ba.render()
+	})
 }
 
 ba.clickExpand = (e) => {
@@ -324,10 +410,6 @@ ba.emptyGrid = () => {
 
 ba.idarrayhide = ko.observableArray(['PL44A'])
 ba.render = () => {
-	if (ba.breakdownRD() == "All") {
-		ba.expand(false)
-	}
-
 	if (ba.data().length == 0) {
 		$('.breakdown-view').html('No data found.')
 		return
@@ -442,7 +524,7 @@ ba.render = () => {
 					// if (lvl3._id == 'Total') {
 					// 	thheader2.html('&nbsp;')
 					// }
-					
+
 					countWidthThenPush(thheader3, lvl3, [lvl1._id, lvl2._id, lvl3._id])
 					return
 				}
