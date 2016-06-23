@@ -22,13 +22,7 @@ ba.breakdownRD = ko.observable("All")
 ba.optionBreakdownRD = ko.observableArray([
 	{ id: "All", title: "RD & Non RD" },
 	{ id: "NonRD", title: "Non RD Sales" },
-	{ id: "OnlyMT", title: "MT Sales", label: "MT", channelid: "I3" },
-	{ id: "OnlyGT", title: "GT Sales", label: "GT", channelid: "I2" },
-	{ id: "OnlyRD", title: "RD Sales", label: "RD", channelid: "I1" },
-	{ id: "OnlyIT", title: "IT Sales", label: "IT", channelid: "I4" },
-	{ id: 'ByLocationZone', title: 'By Zone', field: 'zone' },
-	{ id: 'ByLocationRegion', title: 'By Region', field: 'region' },
-	{ id: 'ByLocationCity', title: 'By City', field: 'areaname' }
+	{ id: "OnlyRD", title: "Only RD Sales", label: "RD", channelid: "I1" },
 ])
 
 ba.expand = ko.observable(false)
@@ -258,6 +252,32 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		showAsBreakdown(parsed)
 		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
 		return parsed
+	} else 
+
+	if (breakdownRD == "All") {
+		let parsed = groupThenMap(data, (d) => {
+			return d._id._id_customer_branchname
+		}).map((d) => {
+
+			d.subs = groupThenMap(d.subs, (e) => {
+				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1]
+			}).map((e) => {
+				e.subs = []
+				e.count = 1
+				return e
+			})
+
+			// INJECT THE EMPTY RD / NON RD
+			d.subs = fixEmptySubs(d)
+
+			d.count = toolkit.sum(d.subs, (e) => e.count)
+			return d
+		})
+
+		ba.level(2)
+		showAsBreakdown(parsed)
+		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
+		return parsed
 	}
 
 	let parsed = groupThenMap(data, (d) => {
@@ -265,15 +285,12 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 	}).map((d) => {
 
 		d.subs = groupThenMap(d.subs, (e) => {
-			return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1]
+			return e._id._id_customer_channelname
 		}).map((e) => {
 			e.subs = []
 			e.count = 1
 			return e
 		})
-
-		// INJECT THE EMPTY RD / NON RD
-		d.subs = fixEmptySubs(d)
 
 		d.count = toolkit.sum(d.subs, (e) => e.count)
 		return d
@@ -284,6 +301,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 	parsed = _.orderBy(parsed, (d) => d.total, 'desc')
 	return parsed
 }
+
 ba.refresh = (useCache = false) => {
 	// if (ba.breakdownRD() == "All") {
 	// 	ba.expand(false)
@@ -505,6 +523,7 @@ ba.clickExpand = (e) => {
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 	}
 }
+
 ba.emptyGrid = () => {
 	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
 }

@@ -426,9 +426,10 @@ rpt.idarrayhide = ko.observableArray(['PL44A']);
 
 rpt.prepareEvents = function () {
 	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
-		var index = $(this).index();
-		var elh = $('.breakdown-view .table-header tr:eq(' + index + ')').addClass('hover');
-		var elc = $('.breakdown-view .table-content tr:eq(' + index + ')').addClass('hover');
+		var rowID = $(this).attr('data-row');
+
+		var elh = $('.breakdown-view .table-header tr[data-row="' + rowID + '"]').addClass('hover');
+		var elc = $('.breakdown-view .table-content tr[data-row="' + rowID + '"]').addClass('hover');
 	});
 	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover');

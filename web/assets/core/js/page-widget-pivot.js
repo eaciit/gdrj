@@ -138,13 +138,13 @@ pvt.render = function () {
 					measures: schemaCubeMeasures
 				}
 			},
-			columns: columns,
-			rows: rows,
+			columns: rows,
+			rows: columns,
 			measures: measures
 		}
 	};
 
-	// app.log('pivot', app.clone(config))
+	app.log('pivot', app.clone(config));
 	$('.pivot').replaceWith('<div class="pivot ez"></div>');
 	$('.pivot').kendoPivotGrid(config);
 };
