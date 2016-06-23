@@ -215,7 +215,11 @@ func prepmaster() {
 		date := time.Date(m.GetInt("year"), time.Month(m.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		key := toolkit.Sprintf("%d_%d_%s", date.Year(), date.Month(), strings.ToUpper(m.GetString("channel")))
 		ln := len(m.GetString("pcid"))
-		brand := strings.ToUpper(tkmbrandcategory.GetString(m.GetString("pcid")[(ln - 3):ln]))
+		brand := ""
+		if ln >= 7 {
+			brand = strings.ToUpper(tkmbrandcategory.GetString(m.GetString("pcid")[(ln - 3):ln]))
+		}
+
 		if len(brand) > 2 {
 			key = toolkit.Sprintf("%s_%s", key, brand)
 		}
