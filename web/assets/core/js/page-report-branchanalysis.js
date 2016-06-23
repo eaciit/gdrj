@@ -26,16 +26,7 @@ ba.zeroValue = ko.observable(false);
 ba.fiscalYear = ko.observable(rpt.value.FiscalYear());
 ba.breakdownValue = ko.observableArray([]);
 ba.breakdownRD = ko.observable("All");
-ba.optionBranch = ko.observableArray([{
-	id: "All",
-	title: "RD & Non RD"
-}, {
-	id: "OnlyRD",
-	title: "Only RD Sales"
-}, {
-	id: "NonRD",
-	title: "Non RD Sales"
-}]); //rpt.masterData.Channel()
+ba.optionBreakdownRD = ko.observableArray([{ id: "All", title: "RD & Non RD" }, { id: "NonRD", title: "Non RD Sales" }, { id: "OnlyRD", title: "RD Sales", label: "RD", channelid: "I1" }, { id: "OnlyMT", title: "MT Sales", label: "MT", channelid: "I3" }, { id: "OnlyGT", title: "GT Sales", label: "GT", channelid: "I2" }, { id: "OnlyIT", title: "IT Sales", label: "IT", channelid: "I4" }]);
 
 ba.level = ko.observable(2);
 
@@ -117,22 +108,30 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 						});
 					});
 				}break;
+			case 'OnlyMT':
+			case 'OnlyGT':
 			case 'OnlyRD':
+			case 'OnlyIT':
 				{
-					data.forEach(function (d) {
-						d.subs = d.subs.filter(function (e) {
-							return e._id == 'RD';
+					(function () {
+						var opt = ba.optionBreakdownRD().find(function (d) {
+							return d.id == ba.breakdownRD();
 						});
+						data.forEach(function (d) {
+							d.subs = d.subs.filter(function (e) {
+								return e._id == opt.label;
+							});
 
-						if (ba.expand()) {
-							var totalColumn = renderTotalColumn(d);
-							d.subs = [totalColumn].concat(d.subs);
-						}
+							if (ba.expand()) {
+								var totalColumn = renderTotalColumn(d);
+								d.subs = [totalColumn].concat(d.subs);
+							}
 
-						d.count = toolkit.sum(d.subs, function (e) {
-							return e.count;
+							d.count = toolkit.sum(d.subs, function (e) {
+								return e.count;
+							});
 						});
-					});
+					})();
 				}break;
 			case 'NonRD':
 				{
@@ -215,7 +214,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		return _parsed;
 	}
 
-	if (expand && breakdownRD == 'OnlyRD') {
+	if (expand && breakdownRD.search('Only') > -1) {
 		var _parsed2 = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
@@ -303,15 +302,19 @@ ba.refresh = function () {
 			});
 		}
 
-		if (breakdownRD == 'OnlyRD') {
+		if (breakdownRD.search('Only') > -1) {
 			if (expand) {
 				param.groups.push('customer.reportsubchannel');
 			}
 
+			var opt = ba.optionBreakdownRD().find(function (d) {
+				return d.id == breakdownRD;
+			});
+
 			param.filters.push({
 				Field: 'customer.channelname',
 				Op: '$in',
-				Value: ["I1"]
+				Value: [opt.channelid]
 			});
 		}
 
@@ -351,7 +354,7 @@ ba.refresh = function () {
 	};
 
 	if (ba.breakdownRD() == "All" && ba.expand()) {
-		var _ret3 = function () {
+		var _ret4 = function () {
 			var mergeData = function mergeData(dataNonRD, dataRD) {
 				var data = [];
 				var ids = _.uniq(dataNonRD.map(function (d) {
@@ -431,10 +434,6 @@ ba.refresh = function () {
 						mergedData.subs.push(_fake);
 					}
 
-					console.log("---tokl", toolkit.clone(mergedData));
-					console.log("---", toolkit.clone(nonrd));
-					console.log("---", toolkit.clone(rd));
-
 					// Inject and recalculate TOTAL
 
 					var totalAll = {};
@@ -501,7 +500,7 @@ ba.refresh = function () {
 			};
 		}();
 
-		if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
+		if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
 	}
 
 	request(ba.breakdownRD(), ba.expand(), function (res) {

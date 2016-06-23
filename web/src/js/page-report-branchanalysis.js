@@ -20,17 +20,14 @@ ba.zeroValue = ko.observable(false)
 ba.fiscalYear = ko.observable(rpt.value.FiscalYear())
 ba.breakdownValue = ko.observableArray([])
 ba.breakdownRD = ko.observable("All")
-ba.optionBranch = ko.observableArray([{
-		id: "All",
-		title: "RD & Non RD",
-	}, {
-		id: "OnlyRD",
-		title: "Only RD Sales"
-	}, {
-		id: "NonRD",
-		title: "Non RD Sales"
-	}
-]) //rpt.masterData.Channel()
+ba.optionBreakdownRD = ko.observableArray([
+	{ id: "All", title: "RD & Non RD" },
+	{ id: "NonRD", title: "Non RD Sales" },
+	{ id: "OnlyRD", title: "RD Sales", label: "RD", channelid: "I1" },
+	{ id: "OnlyMT", title: "MT Sales", label: "MT", channelid: "I3" },
+	{ id: "OnlyGT", title: "GT Sales", label: "GT", channelid: "I2" },
+	{ id: "OnlyIT", title: "IT Sales", label: "IT", channelid: "I4" },
+])
 
 ba.level = ko.observable(2)
 
@@ -103,9 +100,13 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 					d.count = toolkit.sum(d.subs, (e) => e.count)
 				})
 			} break;
-			case 'OnlyRD': {
+			case 'OnlyMT':
+			case 'OnlyGT':
+			case 'OnlyRD':
+			case 'OnlyIT': {
+				let opt = ba.optionBreakdownRD().find((d) => d.id == ba.breakdownRD())
 				data.forEach((d) => {
-					d.subs = d.subs.filter((e) => e._id == 'RD')
+					d.subs = d.subs.filter((e) => e._id == opt.label)
 
 					if (ba.expand()) {
 						let totalColumn = renderTotalColumn(d)
@@ -179,7 +180,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		return parsed
 	}
 
-	if (expand && breakdownRD == 'OnlyRD') {
+	if (expand && breakdownRD.search('Only') > -1) {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
@@ -255,15 +256,17 @@ ba.refresh = (useCache = false) => {
 			})
 		}
 
-		if (breakdownRD == 'OnlyRD') {
+		if (breakdownRD.search('Only') > -1) {
 			if (expand) {
 				param.groups.push('customer.reportsubchannel')
 			}
 			
+			let opt = ba.optionBreakdownRD().find((d) => d.id == breakdownRD)
+
 			param.filters.push({
 				Field: 'customer.channelname',
 				Op: '$in',
-				Value: ["I1"]
+				Value: [opt.channelid]
 			})
 		}
 
@@ -365,10 +368,6 @@ ba.refresh = (useCache = false) => {
 					mergedData.count++
 					mergedData.subs.push(fake)
 				}
-
-				console.log("---tokl", toolkit.clone(mergedData))
-				console.log("---", toolkit.clone(nonrd))
-				console.log("---", toolkit.clone(rd))
 
 				// Inject and recalculate TOTAL
 
