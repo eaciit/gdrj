@@ -220,6 +220,7 @@ func (spl *SalesPL) CleanAndClasify(masters toolkit.M) {
 		p := new(Product)
 		p.Brand = "Other"
 		p.Name = "Other"
+		spl.Product = p
 	}
 
 	mcustomers := masters["customers"].(toolkit.M)
