@@ -379,18 +379,18 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 		for key, val := range _id {
 			if val == nil {
 				_id.Set(key, "Other")
-			} else if val.(string) == "" {
+			} else if fmt.Sprintf("%v", val) == "" {
 				_id.Set(key, "Other")
 			}
 
-			if _, ok := otherData[i]; strings.ToLower(_id.GetString(key)) == "other" && !ok {
+			if _, ok := otherData[i]; strings.ToLower(fmt.Sprintf("%v", _id[key])) == "other" && !ok {
 				otherData[i] = each
 			}
 		}
 
 		if _id.Has(channelid) {
 			// hasChannel = true
-			channelid := strings.ToUpper(_id.GetString(channelid))
+			channelid := strings.ToUpper(fmt.Sprintf("%v", _id[channelid]))
 
 			switch channelid {
 			case "I6":
