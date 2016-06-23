@@ -716,8 +716,7 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 		return
 	}
 
-	royals := masters.Get("royalties").(map[string]*RawDataPL)
-	toolkit.Println(royals)
+	royals := masters.Get("royalties").(map[string]float64)
 
 	aplmodel := pl.PLDatas
 	for k, _ := range aplmodel {
@@ -732,9 +731,9 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	if !exist {
 		return
 	}
-
+	toolkit.Println(royalid, ":", r)
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL26A", -r.AmountinIDR*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL26A", -r*pl.RatioToMonthSales, plmodels)
 }
 
 func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {

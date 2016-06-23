@@ -130,7 +130,7 @@ func prepmaster() {
 
 	toolkit.Println("--> RAW DATA PL")
 	promos, freight, depreciation := map[string]*gdrj.RawDataPL{}, map[string]*gdrj.RawDataPL{}, map[string]*gdrj.RawDataPL{}
-	royalties, damages := map[string]*gdrj.RawDataPL{}, map[string]*gdrj.RawDataPL{}
+	royalties, damages := map[string]float64{}, map[string]*gdrj.RawDataPL{}
 	f := dbox.Eq("year", fiscalyear-1)
 	csrpromo, _ := gdrj.Find(new(gdrj.RawDataPL), f, nil)
 	defer csrpromo.Close()
@@ -171,12 +171,7 @@ func prepmaster() {
 			frg.AmountinIDR += o.AmountinIDR
 			freight[key] = frg
 		case "ROYALTY":
-			roy, exist := royalties[key]
-			if !exist {
-				roy = new(gdrj.RawDataPL)
-			}
-			roy.AmountinIDR += o.AmountinIDR
-			royalties[key] = roy
+			royalties[key] += o.AmountinIDR
 		case "DEPRECIATION":
 			dpr, exist := depreciation[key]
 			if !exist {
@@ -196,9 +191,10 @@ func prepmaster() {
 
 	subtot := float64(0)
 	for _, v := range royalties {
-		subtot += v.AmountinIDR
+		subtot += v
 	}
 	toolkit.Printfn("Royaties : %v", subtot)
+	toolkit.Printfn("Royaties : %v", royalties)
 
 	subtot = float64(0)
 	for _, v := range damages {
