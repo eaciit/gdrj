@@ -161,7 +161,7 @@ func main() {
 	toolkit.Printfn("subtotal 2 : %v", subtot)
 
 	toolkit.Println("Start Data Process...")
-	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("skuid_vdist", ""))
+	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode))
 	// filter = dbox.Eq("_id", "RK/IMN/15000001_1")
 
 	c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
@@ -233,7 +233,7 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 		key := toolkit.Sprintf("%d_%d", j.Date.Year, int(j.Date.Month))
 
 		// ratio := j.GrossAmount / mapsgross[key]
-		ratio := j.RatioToMonthSales
+		ratio := j.RatioToMonthSalesVdist
 		totsgaperiod, _ := mapsperiod[key]
 		totsgaline := ratio * totsgaperiod
 
