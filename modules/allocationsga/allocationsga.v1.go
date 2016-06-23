@@ -17,14 +17,11 @@ import (
 var conn dbox.IConnection
 var count int
 
-// var mwg sync.WaitGroup
-
 var (
 	t0                                                time.Time
 	custgroup, prodgroup, plcode, ref                 string
 	value, fiscalyear, iscount, gscount, scount, step int
-	globalgross, globalsga                            float64
-	mapsperiod, mapkeysvalue, mapsgross               map[string]float64
+	mapsperiod, mapkeysvalue                          map[string]float64
 	masters                                           toolkit.M
 	mwg                                               sync.WaitGroup
 )
@@ -93,18 +90,13 @@ func main() {
 	t0 = time.Now()
 	mapkeysvalue = make(map[string]float64)
 	mapsperiod = make(map[string]float64)
-	mapsgross = make(map[string]float64)
+
 	flag.IntVar(&fiscalyear, "year", 2015, "YYYY representation of godrej fiscal year. Default is 2015")
 	flag.StringVar(&ref, "ref", "", "Reference from document or other. Default is blank")
 	flag.Parse()
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
 	speriode := eperiode.AddDate(-1, 0, 0)
-
-	// if plcode == "" || value == 0 {
-	// 	toolkit.Println("PLCode and Value are mandatory to fill")
-	// 	os.Exit(1)
-	// }
 
 	setinitialconnection()
 	defer gdrj.CloseDb()
@@ -147,7 +139,6 @@ func main() {
 		kval := toolkit.Sprintf("%v_%v", pval, group)
 		mapkeysvalue[kval] += toolkit.ToFloat64(tsga.Get("amount", 0), 6, toolkit.RoundingAuto)
 		mapsperiod[pval] += toolkit.ToFloat64(tsga.Get("amount", 0), 6, toolkit.RoundingAuto)
-		globalsga += toolkit.ToFloat64(tsga.Get("amount", 0), 6, toolkit.RoundingAuto)
 
 		if ssga%500 == 0 {
 			toolkit.Printfn("Prepare sga master %d of %d in %s",
@@ -169,24 +160,6 @@ func main() {
 	}
 	toolkit.Printfn("subtotal 2 : %v", subtot)
 
-	toolkit.Println("Start Get Gross Ratio...")
-	cgrossratio, _ := conn.NewQuery().Select().From("tmpsgasalesgrossratio").Cursor(nil)
-	defer cgrossratio.Close()
-
-	for {
-
-		tgr := toolkit.M{}
-		e := cgrossratio.Fetch(&tgr, 1, false)
-		if e != nil {
-			break
-		}
-
-		key := toolkit.Sprintf("%v_%v", tgr.Get("year", ""), tgr.Get("month", ""))
-		mapsgross[key] = toolkit.ToFloat64(tgr.Get("amount", 0), 6, toolkit.RoundingAuto)
-		globalgross += toolkit.ToFloat64(tgr.Get("amount", 0), 6, toolkit.RoundingAuto)
-
-	}
-
 	toolkit.Println("Start Data Process...")
 	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Gt("skuid_vdist", ""))
 	// filter = dbox.Eq("_id", "RK/IMN/15000001_1")
@@ -205,34 +178,7 @@ func main() {
 		mwg.Add(1)
 		go worker(wi, jobs)
 	}
-	// ====================================
-	// for {
-	// 	iscount++
 
-	// 	spl := new(gdrj.SalesPL)
-	// 	e := c.Fetch(spl, 1, false)
-	// 	if e != nil {
-	// 		toolkit.Println("EOF")
-	// 		break
-	// 	}
-
-	// 	globalgross += spl.GrossAmount
-	// 	pval := toolkit.Sprintf("%d_%d", spl.Date.Year, spl.Date.Month)
-	// 	mapsgross[pval] += spl.GrossAmount
-
-	// 	if step == 0 {
-	// 		step = 100
-	// 	}
-
-	// 	if iscount%step == 0 {
-	// 		toolkit.Printfn("Preparing %d of %d (%d) in %s", iscount, scount, iscount/step,
-	// 			time.Since(t0).String())
-	// 	}
-	// }
-
-	// c.ResetFetch()
-	// iscount = 0
-	// ===========================
 	for {
 		iscount++
 
@@ -286,7 +232,8 @@ func worker(wi int, jobs <-chan *gdrj.SalesPL) {
 
 		key := toolkit.Sprintf("%d_%d", j.Date.Year, int(j.Date.Month))
 
-		ratio := j.GrossAmount / mapsgross[key]
+		// ratio := j.GrossAmount / mapsgross[key]
+		ratio := j.RatioToMonthSales
 		totsgaperiod, _ := mapsperiod[key]
 		totsgaline := ratio * totsgaperiod
 
