@@ -39,7 +39,7 @@ ba.optionBranch = ko.observableArray([{
 
 ba.level = ko.observable(2);
 
-ba.buildStructure = function (data) {
+ba.buildStructure = function (breakdownRD, expand, data) {
 	var rdCategories = ["RD", "Non RD"];
 	var keys = ["_id_customer_branchname", "_id_customer_channelid", "_id_customer_channelname"];
 
@@ -180,7 +180,7 @@ ba.buildStructure = function (data) {
 		return op2;
 	};
 
-	if (ba.expand() && ba.breakdownRD() == 'NonRD') {
+	if (expand && breakdownRD == 'NonRD') {
 		var _parsed = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
@@ -212,7 +212,7 @@ ba.buildStructure = function (data) {
 		return _parsed;
 	}
 
-	if (ba.expand() && ba.breakdownRD() == 'OnlyRD') {
+	if (expand && breakdownRD == 'OnlyRD') {
 		var _parsed2 = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
@@ -272,9 +272,9 @@ ba.buildStructure = function (data) {
 ba.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
-	if (ba.breakdownRD() == "All") {
-		ba.expand(false);
-	}
+	// if (ba.breakdownRD() == "All") {
+	// 	ba.expand(false)
+	// }
 
 	var request = function request(breakdownRD, expand, callback) {
 		var param = {};
@@ -360,7 +360,7 @@ ba.refresh = function () {
 					});
 					var sampleData = nonrd == undefined ? rd : nonrd;
 					var mergedData = {};
-					mergedData._id = null;
+					mergedData._id = id;
 					mergedData.count = 0;
 					mergedData.subs = [];
 
@@ -369,44 +369,91 @@ ba.refresh = function () {
 							return d._id == 'Non RD';
 						});
 
-						mergedData._id = nonrd._id;
 						mergedData.count += nonrdSub.subs.length;
 						mergedData.subs.push(nonrdSub);
+					} else {
+						var fake = {};
+						fake._id = 'Non RD';
+						fake.count = 0;
+						fake.subs = [];
+
+						for (var prop in sampleData) {
+							if (sampleData.hasOwnProperty(prop) && prop.search("PL") > -1) {
+								fake[prop] = 0;
+							}
+						}
+
+						var fakseSub = toolkit.clone(fake);
+						fakseSub._id = 'Total';
+
+						fake.subs = [fakseSub];
+						fake.count++;
+
+						mergedData.count++;
+						mergedData.subs.push(fake);
 					}
 
 					if (rd != undefined) {
 						var rdSub = rd.subs.find(function (d) {
-							return d._id == 'Non RD';
+							return d._id == 'RD';
 						});
 
-						mergedData._id = rd._id;
 						mergedData.count += rdSub.subs.length;
 						mergedData.subs.push(rdSub);
+					} else {
+						var _fake = {};
+						_fake._id = 'RD';
+						_fake.count = 0;
+						_fake.subs = [];
+
+						for (var _prop in sampleData) {
+							if (sampleData.hasOwnProperty(_prop) && _prop.search("PL") > -1) {
+								_fake[_prop] = 0;
+							}
+						}
+
+						var _fakseSub = toolkit.clone(_fake);
+						_fakseSub._id = 'Total';
+
+						_fake.subs = [_fakseSub];
+						_fake.count++;
+
+						mergedData.count++;
+						mergedData.subs.push(_fake);
 					}
+
+					console.log("---tokl", toolkit.clone(mergedData));
+					console.log("---", toolkit.clone(nonrd));
+					console.log("---", toolkit.clone(rd));
 
 					// Inject and recalculate TOTAL
 
-					var totalRDNonRD = {};
-					totalRDNonRD._id = 'Total';
-					totalRDNonRD.count = 1;
-					totalRDNonRD.subs = [];
+					var totalAll = {};
+					totalAll._id = 'Total';
+					totalAll.count = 0;
+					totalAll.excludeFromTotal = true;
+					totalAll.subs = [];
 
-					var _loop3 = function _loop3(prop) {
-						if (sampleData.hasOwnProperty(prop) && prop.search("PL") > -1) {
-							totalRDNonRD[prop] = toolkit.sum(mergedData.subs, function (e) {
-								return e[prop];
+					var _loop3 = function _loop3(_prop2) {
+						if (sampleData.hasOwnProperty(_prop2) && _prop2.search("PL") > -1) {
+							totalAll[_prop2] = toolkit.sum(mergedData.subs, function (e) {
+								return e[_prop2];
 							});
 						}
 					};
 
-					for (var prop in sampleData) {
-						_loop3(prop);
+					for (var _prop2 in sampleData) {
+						_loop3(_prop2);
 					}
 
-					var totalRDNonRDSub = toolkit.clone(totalRDNonRD);
-					delete totalRDNonRDSub.subs;
-					totalRDNonRD.subs.push(totalRDNonRDSub);
-					mergedData.subs = totalRDNonRD.subs.concat(mergedData.subs);
+					var totalAllSub = toolkit.clone(totalAll);
+					totalAllSub.subs = [];
+
+					totalAll.count++;
+					totalAll.subs.push(totalAllSub);
+
+					mergedData.subs = [totalAll].concat(mergedData.subs);
+					mergedData.count++;
 
 					data.push(mergedData);
 				});
@@ -415,20 +462,22 @@ ba.refresh = function () {
 			};
 
 			console.log("fetching non rd");
-			request("NonRD", ba.expand(), function (res) {
-				var dataNonRD = ba.buildStructure(res.Data.Data);
+			request("NonRD", ba.expand(), function (res1) {
+				var dataNonRD = ba.buildStructure("NonRD", ba.expand(), res1.Data.Data);
 
 				console.log("fetching rd");
-				request("OnlyRD", ba.expand(), function (res) {
-					var dataRD = ba.buildStructure(res.Data.Data);
+				request("OnlyRD", ba.expand(), function (res2) {
+					var dataRD = ba.buildStructure("OnlyRD", ba.expand(), res2.Data.Data);
 
+					console.log("non rd", dataNonRD.slice(0));
+					console.log("rd", dataRD.slice(0));
 					console.log("merging data");
 					var data = mergeData(dataNonRD, dataRD);
 					ba.data(data);
-					var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+					var date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 					ba.breakdownNote('Last refreshed on: ' + date);
 
-					rpt.plmodels(res.Data.PLModels);
+					rpt.plmodels(res2.Data.PLModels);
 					ba.emptyGrid();
 					ba.contentIsLoading(false);
 					ba.render();
@@ -444,7 +493,7 @@ ba.refresh = function () {
 	}
 
 	request(ba.breakdownRD(), ba.expand(), function (res) {
-		var data = ba.buildStructure(res.Data.Data);
+		var data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data);
 
 		ba.data(data);
 		var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
@@ -556,11 +605,14 @@ ba.render = function () {
 				var thheader3 = toolkit.newEl('th').html(lvl3._id).addClass('align-center').appendTo(trContents[2]);
 
 				if (ba.level() == 3) {
-					// if (lvl3._id == 'Total') {
-					// 	thheader2.html('&nbsp;')
-					// }
-
 					countWidthThenPush(thheader3, lvl3, [lvl1._id, lvl2._id, lvl3._id]);
+
+					if (lvl3._id == 'Total') {
+						thheader2.attr('rowspan', 2);
+						thheader2.css('vertical-align', 'middle');
+						thheader3.remove();
+					}
+
 					return;
 				}
 				thheader3.attr('colspan', lvl3.count);
