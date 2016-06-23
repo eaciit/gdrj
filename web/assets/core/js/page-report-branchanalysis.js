@@ -301,6 +301,34 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		}();
 
 		if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
+	} else if (breakdownRD == "All") {
+		var _parsed3 = groupThenMap(data, function (d) {
+			return d._id._id_customer_branchname;
+		}).map(function (d) {
+
+			d.subs = groupThenMap(d.subs, function (e) {
+				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
+			}).map(function (e) {
+				e.subs = [];
+				e.count = 1;
+				return e;
+			});
+
+			// INJECT THE EMPTY RD / NON RD
+			d.subs = fixEmptySubs(d);
+
+			d.count = toolkit.sum(d.subs, function (e) {
+				return e.count;
+			});
+			return d;
+		});
+
+		ba.level(2);
+		showAsBreakdown(_parsed3);
+		_parsed3 = _.orderBy(_parsed3, function (d) {
+			return d.total;
+		}, 'desc');
+		return _parsed3;
 	}
 
 	var parsed = groupThenMap(data, function (d) {
@@ -308,15 +336,12 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 	}).map(function (d) {
 
 		d.subs = groupThenMap(d.subs, function (e) {
-			return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
+			return e._id._id_customer_channelname;
 		}).map(function (e) {
 			e.subs = [];
 			e.count = 1;
 			return e;
 		});
-
-		// INJECT THE EMPTY RD / NON RD
-		d.subs = fixEmptySubs(d);
 
 		d.count = toolkit.sum(d.subs, function (e) {
 			return e.count;
