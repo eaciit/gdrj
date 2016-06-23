@@ -320,7 +320,7 @@ func main() {
 	defer gdrj.CloseDb()
 
 	var f *dbox.Filter
-	f = dbox.And(dbox.Gte("date", speriode), dbox.Lt("date", eperiode))
+	f = dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode))
 	// f = dbox.Or(dbox.Eq("_id", "RD_2015_10_20010074_639316"), dbox.Eq("_id", "CN/GBS/15000021_1"))
 
 	toolkit.Println("Reading Master")
