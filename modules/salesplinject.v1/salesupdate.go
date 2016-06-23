@@ -129,7 +129,7 @@ func prepmaster() {
 		}).(map[string]*gdrj.COGSConsolidate))
 
 	toolkit.Println("--> RAW DATA PL")
-	promos, freight, depreciation := map[string]*gdrj.RawDataPL{}, map[string]*gdrj.RawDataPL{}, map[string]*gdrj.RawDataPL{}
+	promos, freight, depreciation := map[string]*gdrj.RawDataPL{}, map[string]*gdrj.RawDataPL{}, map[string]float64{}
 	royalties, damages := map[string]float64{}, map[string]float64{}
 	f := dbox.Eq("year", fiscalyear-1)
 	csrpromo, _ := gdrj.Find(new(gdrj.RawDataPL), f, nil)
@@ -173,13 +173,14 @@ func prepmaster() {
 		case "ROYALTY":
 			royalties[key] += o.AmountinIDR
 		case "DEPRECIATION":
-			dpr, exist := depreciation[key]
-			if !exist {
-				dpr = new(gdrj.RawDataPL)
+			dgroup = "indirect"
+			if strings.Contains(troy.Grouping, "Factory") {
+				dgroup = "direct"
 			}
-			dpr.AmountinIDR += o.AmountinIDR
-			depreciation[key] = dpr
+			key := toolkit.Sprintf("%s_%s", key, dgroup)
+			depreciation[key] += o.AmountinIDR
 		case "DAMAGEGOODS":
+			key = toolkit.Sprintf("%d", Date.Year())
 			damages[key] += o.AmountinIDR
 		}
 	}
@@ -196,7 +197,7 @@ func prepmaster() {
 		subtot += v
 	}
 	toolkit.Printfn("Damages : %v", subtot)
-	toolkit.Printfn("Damages : %v", damages)
+	// toolkit.Printfn("Damages : %v", damages)
 
 	subtot = float64(0)
 	for _, v := range depreciation {

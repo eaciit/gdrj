@@ -658,7 +658,7 @@ func (pl *SalesPL) CalcDepre(masters toolkit.M) {
 		return
 	}
 
-	depretiations := masters.Get("depreciation").(map[string]*RawDataPL)
+	depreciation := masters.Get("depreciation").(map[string]float64)
 
 	aplmodel := pl.PLDatas
 	for k, _ := range aplmodel {
@@ -668,13 +668,9 @@ func (pl *SalesPL) CalcDepre(masters toolkit.M) {
 	}
 	pl.PLDatas = aplmodel
 
-	find := func(x string) *RawDataPL {
+	find := func(x string) float64 {
 		id := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, x)
-		f, exist := depretiations[id]
-		if !exist {
-			return &RawDataPL{}
-		}
-		return f
+		return depreciation[id]
 	}
 
 	findirect := find("indirect")
@@ -682,8 +678,8 @@ func (pl *SalesPL) CalcDepre(masters toolkit.M) {
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 
-	pl.AddData("PL43", -findirect.AmountinIDR*pl.RatioToMonthSales, plmodels)
-	pl.AddData("PL42", -fdirect.AmountinIDR*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL43", -findirect*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL42", -fdirect*pl.RatioToMonthSales, plmodels)
 }
 
 func (pl *SalesPL) CalcDamage(masters toolkit.M) {
@@ -701,14 +697,14 @@ func (pl *SalesPL) CalcDamage(masters toolkit.M) {
 	}
 	pl.PLDatas = aplmodel
 
-	damagesid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
+	damagesid := toolkit.Sprintf("%d", pl.Date.Year)
 	d, exist := damages[damagesid]
 	if !exist {
 		return
 	}
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL44", d*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL44", d*pl.RatioToGlobalSales, plmodels)
 }
 
 func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
