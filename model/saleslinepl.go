@@ -717,6 +717,7 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	}
 
 	royals := masters.Get("royalties").(map[string]*RawDataPL)
+	toolkit.Println(royals)
 
 	aplmodel := pl.PLDatas
 	for k, _ := range aplmodel {
