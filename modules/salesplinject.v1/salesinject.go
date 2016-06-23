@@ -36,9 +36,16 @@ func setinitialconnection() {
 }
 
 var (
-	masters    = toolkit.M{}
-	t0         time.Time
-	fiscalyear int
+	masters                                                 = toolkit.M{}
+	t0                                                      time.Time
+	fiscalyear                                              int
+	subchannels                                             = toolkit.M{}
+	customers                                               = toolkit.M{}
+	branchs                                                 = toolkit.M{}
+	globalgross, globalgrossvdist                           = float64(0), float64(0)
+	grossbybranch, grossbybrand, grossbysku, grossbychannel = toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}
+	grossbymonthvdist, grossbymonth, grossbymonthsku        = toolkit.M{}, toolkit.M{}, toolkit.M{}
+	grossbymonthchannel, grossbymonthbrandchannel           = toolkit.M{}, toolkit.M{}
 )
 
 func buildmap(holder interface{},
@@ -82,7 +89,6 @@ func prepmaster() {
 		}).(map[string]*gdrj.PLModel))
 
 	toolkit.Println("--> Sub Channel")
-	subchannels := toolkit.M{}
 	csr, _ := conn.NewQuery().From("subchannels").Cursor(nil)
 	defer csr.Close()
 	for {
@@ -96,7 +102,6 @@ func prepmaster() {
 	masters.Set("subchannels", subchannels)
 
 	toolkit.Println("--> Customer")
-	customers := toolkit.M{}
 	ccb := getCursor(new(gdrj.Customer))
 	defer ccb.Close()
 	for {
@@ -110,7 +115,6 @@ func prepmaster() {
 	}
 	masters.Set("customers", customers)
 
-	branchs := toolkit.M{}
 	cmb := getCursor(new(gdrj.MasterBranch))
 	defer cmb.Close()
 	for {
@@ -125,9 +129,6 @@ func prepmaster() {
 	masters.Set("branchs", branchs)
 
 	toolkit.Println("--> Trx Gross Proc")
-	globalgross, globalgrossvdist := float64(0), float64(0)
-	grossbybranch, grossbybrand, grossbysku, grossbychannel := toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}
-	grossbymonthvdist, grossbymonth, grossbymonthsku, grossbymonthchannel, grossbymonthbrandchannel := toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}
 	csr01, _ := conn.NewQuery().From("salestrxs-grossproc").Cursor(nil)
 	defer csr01.Close()
 	for {
