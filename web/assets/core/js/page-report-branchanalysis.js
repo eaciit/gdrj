@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 viewModel.breakdown = new Object();
 var ba = viewModel.breakdown;
 
@@ -270,78 +272,189 @@ ba.buildStructure = function (data) {
 ba.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
-	var param = {};
-	param.pls = [];
-	param.groups = [ba.breakdownByChannel(), ba.breakdownBy()];
-	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue(false, ba.fiscalYear);
-
-	var breakdownValue = ba.breakdownValue().filter(function (d) {
-		return d != 'All';
-	});
-	if (breakdownValue.length > 0) {
-		param.filters.push({
-			Field: ba.breakdownBy(),
-			Op: '$in',
-			Value: ba.breakdownValue()
-		});
+	if (ba.breakdownRD() == "All") {
+		ba.expand(false);
 	}
 
-	if (ba.breakdownRD() == 'OnlyRD') {
-		if (ba.expand()) {
-			param.groups.push('customer.reportsubchannel');
+	var request = function request(breakdownRD, expand, callback) {
+		var param = {};
+		param.pls = [];
+		param.groups = [ba.breakdownByChannel(), ba.breakdownBy()];
+		param.aggr = 'sum';
+		param.filters = rpt.getFilterValue(false, ba.fiscalYear);
+
+		var breakdownValue = ba.breakdownValue().filter(function (d) {
+			return d != 'All';
+		});
+		if (breakdownValue.length > 0) {
+			param.filters.push({
+				Field: ba.breakdownBy(),
+				Op: '$in',
+				Value: ba.breakdownValue()
+			});
 		}
 
-		param.filters.push({
-			Field: 'customer.channelname',
-			Op: '$in',
-			Value: ["I1"]
-		});
-	}
-
-	if (ba.breakdownRD() == 'NonRD') {
-		param.filters.push({
-			Field: 'customer.channelname',
-			Op: '$in',
-			Value: rpt.masterData.Channel().map(function (d) {
-				return d._id;
-			}).filter(function (d) {
-				return d != 'I1';
-			})
-		});
-	}
-
-	ba.oldBreakdownBy(ba.breakdownBy());
-	ba.contentIsLoading(true);
-
-	var fetch = function fetch() {
-		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
-			if (res.Status == "NOK") {
-				setTimeout(function () {
-					fetch();
-				}, 1000 * 5);
-				return;
+		if (breakdownRD == 'OnlyRD') {
+			if (expand) {
+				param.groups.push('customer.reportsubchannel');
 			}
 
-			var data = ba.buildStructure(res.Data.Data);
+			param.filters.push({
+				Field: 'customer.channelname',
+				Op: '$in',
+				Value: ["I1"]
+			});
+		}
 
-			ba.data(data);
-			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
-			ba.breakdownNote('Last refreshed on: ' + date);
+		if (breakdownRD == 'NonRD') {
+			param.filters.push({
+				Field: 'customer.channelname',
+				Op: '$in',
+				Value: rpt.masterData.Channel().map(function (d) {
+					return d._id;
+				}).filter(function (d) {
+					return d != 'I1';
+				})
+			});
+		}
 
-			rpt.plmodels(res.Data.PLModels);
-			ba.emptyGrid();
-			ba.contentIsLoading(false);
-			ba.render();
-		}, function () {
-			ba.emptyGrid();
-			ba.contentIsLoading(false);
-		}, {
-			cache: useCache == true ? 'breakdown chart' : false
-		});
+		var fetch = function fetch() {
+			toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
+				if (res.Status == "NOK") {
+					setTimeout(function () {
+						fetch();
+					}, 1000 * 5);
+					return;
+				}
+
+				callback(res);
+			}, function () {
+				ba.emptyGrid();
+				ba.contentIsLoading(false);
+			}, {
+				cache: useCache == true ? 'breakdown chart' : false
+			});
+		};
+
+		ba.oldBreakdownBy(ba.breakdownBy());
+		ba.contentIsLoading(true);
+		fetch();
 	};
 
-	fetch();
+	if (ba.breakdownRD() == "All" && ba.expand()) {
+		var _ret3 = function () {
+			var mergeData = function mergeData(dataNonRD, dataRD) {
+				var data = [];
+				var ids = _.uniq(dataNonRD.map(function (d) {
+					return d._id;
+				}).concat(dataRD.map(function (d) {
+					return d._id;
+				})));
+
+				ids.forEach(function (id) {
+					var nonrd = dataNonRD.find(function (d) {
+						return d._id == id;
+					});
+					var rd = dataRD.find(function (d) {
+						return d._id == id;
+					});
+					var sampleData = nonrd == undefined ? rd : nonrd;
+					var mergedData = {};
+					mergedData._id = null;
+					mergedData.count = 0;
+					mergedData.subs = [];
+
+					if (nonrd != undefined) {
+						var nonrdSub = nonrd.subs.find(function (d) {
+							return d._id == 'Non RD';
+						});
+
+						mergedData._id = nonrd._id;
+						mergedData.count += nonrdSub.subs.length;
+						mergedData.subs.push(nonrdSub);
+					}
+
+					if (rd != undefined) {
+						var rdSub = rd.subs.find(function (d) {
+							return d._id == 'Non RD';
+						});
+
+						mergedData._id = rd._id;
+						mergedData.count += rdSub.subs.length;
+						mergedData.subs.push(rdSub);
+					}
+
+					// Inject and recalculate TOTAL
+
+					var totalRDNonRD = {};
+					totalRDNonRD._id = 'Total';
+					totalRDNonRD.count = 1;
+					totalRDNonRD.subs = [];
+
+					var _loop3 = function _loop3(prop) {
+						if (sampleData.hasOwnProperty(prop) && prop.search("PL") > -1) {
+							totalRDNonRD[prop] = toolkit.sum(mergedData.subs, function (e) {
+								return e[prop];
+							});
+						}
+					};
+
+					for (var prop in sampleData) {
+						_loop3(prop);
+					}
+
+					var totalRDNonRDSub = toolkit.clone(totalRDNonRD);
+					delete totalRDNonRDSub.subs;
+					totalRDNonRD.subs.push(totalRDNonRDSub);
+					mergedData.subs = totalRDNonRD.subs.concat(mergedData.subs);
+
+					data.push(mergedData);
+				});
+
+				return data;
+			};
+
+			console.log("fetching non rd");
+			request("NonRD", ba.expand(), function (res) {
+				var dataNonRD = ba.buildStructure(res.Data.Data);
+
+				console.log("fetching rd");
+				request("OnlyRD", ba.expand(), function (res) {
+					var dataRD = ba.buildStructure(res.Data.Data);
+
+					console.log("merging data");
+					var data = mergeData(dataNonRD, dataRD);
+					ba.data(data);
+					var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+					ba.breakdownNote('Last refreshed on: ' + date);
+
+					rpt.plmodels(res.Data.PLModels);
+					ba.emptyGrid();
+					ba.contentIsLoading(false);
+					ba.render();
+				});
+			});
+
+			return {
+				v: void 0
+			};
+		}();
+
+		if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
+	}
+
+	request(ba.breakdownRD(), ba.expand(), function (res) {
+		var data = ba.buildStructure(res.Data.Data);
+
+		ba.data(data);
+		var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+		ba.breakdownNote('Last refreshed on: ' + date);
+
+		rpt.plmodels(res.Data.PLModels);
+		ba.emptyGrid();
+		ba.contentIsLoading(false);
+		ba.render();
+	});
 };
 
 ba.clickExpand = function (e) {
@@ -367,10 +480,6 @@ ba.emptyGrid = function () {
 
 ba.idarrayhide = ko.observableArray(['PL44A']);
 ba.render = function () {
-	if (ba.breakdownRD() == "All") {
-		ba.expand(false);
-	}
-
 	if (ba.data().length == 0) {
 		$('.breakdown-view').html('No data found.');
 		return;
