@@ -307,6 +307,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 	parsed = _.orderBy(parsed, (d) => d.total, 'desc')
 	return parsed
 }
+
 ba.refresh = (useCache = false) => {
 	// if (ba.breakdownRD() == "All") {
 	// 	ba.expand(false)
@@ -528,6 +529,7 @@ ba.clickExpand = (e) => {
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 	}
 }
+
 ba.emptyGrid = () => {
 	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
 }

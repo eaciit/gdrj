@@ -356,6 +356,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 	}, 'desc');
 	return parsed;
 };
+
 ba.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
@@ -613,6 +614,7 @@ ba.clickExpand = function (e) {
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
 	}
 };
+
 ba.emptyGrid = function () {
 	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
 };
