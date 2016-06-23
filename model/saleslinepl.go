@@ -691,7 +691,7 @@ func (pl *SalesPL) CalcDamage(masters toolkit.M) {
 		return
 	}
 
-	damages := masters.Get("damages").(map[string]*RawDataPL)
+	damages := masters.Get("damages").(map[string]float64)
 
 	aplmodel := pl.PLDatas
 	for k, _ := range aplmodel {
@@ -708,7 +708,7 @@ func (pl *SalesPL) CalcDamage(masters toolkit.M) {
 	}
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL44", d.AmountinIDR*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL44", d*pl.RatioToMonthSales, plmodels)
 }
 
 func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
@@ -720,7 +720,7 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 
 	aplmodel := pl.PLDatas
 	for k, _ := range aplmodel {
-		if k == "PL26A" {
+		if k == "PL25" {
 			delete(aplmodel, k)
 		}
 	}
@@ -731,9 +731,9 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	if !exist {
 		return
 	}
-	toolkit.Println(royalid, ":", r)
+	// toolkit.Println(royalid, ":", r)
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL26A", -r*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL25", -r*pl.RatioToMonthSales, plmodels)
 }
 
 func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
