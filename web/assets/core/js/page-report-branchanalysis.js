@@ -20,13 +20,26 @@ ba.optionDimensions = ko.observableArray(rpt.optionDimensions().filter(function 
 	return d.field != 'customer.channelname';
 }));
 
-ba.expand = ko.observable(false);
 ba.data = ko.observableArray([]);
 ba.zeroValue = ko.observable(false);
 ba.fiscalYear = ko.observable(rpt.value.FiscalYear());
 ba.breakdownValue = ko.observableArray([]);
 ba.breakdownRD = ko.observable("All");
-ba.optionBreakdownRD = ko.observableArray([{ id: "All", title: "RD & Non RD" }, { id: "NonRD", title: "Non RD Sales" }, { id: "OnlyRD", title: "RD Sales", label: "RD", channelid: "I1" }, { id: "OnlyMT", title: "MT Sales", label: "MT", channelid: "I3" }, { id: "OnlyGT", title: "GT Sales", label: "GT", channelid: "I2" }, { id: "OnlyIT", title: "IT Sales", label: "IT", channelid: "I4" }]);
+ba.optionBreakdownRD = ko.observableArray([{ id: "All", title: "RD & Non RD" }, { id: "NonRD", title: "Non RD Sales" }, { id: "OnlyMT", title: "MT Sales", label: "MT", channelid: "I3" }, { id: "OnlyGT", title: "GT Sales", label: "GT", channelid: "I2" }, { id: "OnlyRD", title: "RD Sales", label: "RD", channelid: "I1" }, { id: "OnlyIT", title: "IT Sales", label: "IT", channelid: "I4" }, { id: 'ByLocationZone', title: 'By Zone', field: 'zone' }, { id: 'ByLocationRegion', title: 'By Region', field: 'region' }, { id: 'ByLocationCity', title: 'By City', field: 'areaname' }]);
+
+ba.expand = ko.observable(false);
+ba.enableExpand = ko.observable(true);
+ba.changeBreakdownRD = function () {
+	setTimeout(function () {
+		if (ba.breakdownRD().search('ByLocation') > -1) {
+			ba.expand(true);
+			ba.enableExpand(false);
+			return;
+		}
+
+		ba.enableExpand(true);
+	}, 100);
+};
 
 ba.level = ko.observable(2);
 
@@ -212,9 +225,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 			return d.total;
 		}, 'desc');
 		return _parsed;
-	}
-
-	if (expand && breakdownRD.search('Only') > -1) {
+	} else if (expand && breakdownRD.search('Only') > -1) {
 		var _parsed2 = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
@@ -247,6 +258,49 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 			return d.total;
 		}, 'desc');
 		return _parsed2;
+	} else if (expand && breakdownRD.search('ByLocation') > -1) {
+		var _ret4 = function () {
+			var opt = ba.optionBreakdownRD().find(function (d) {
+				return d.id == ba.breakdownRD();
+			});
+
+			var parsed = groupThenMap(data, function (d) {
+				return d._id._id_customer_branchname;
+			}).map(function (d) {
+
+				d.subs = groupThenMap(d.subs, function (e) {
+					return e._id._id_customer_channelname;
+				}).map(function (e) {
+
+					e.subs = groupThenMap(d.subs, function (f) {
+						return f._id['_id_customer_' + opt.field];
+					}).map(function (f) {
+						f.subs = [];
+						f.count = 1;
+						return f;
+					});
+
+					e.count = e.subs.length;
+					return e;
+				});
+
+				d.count = toolkit.sum(d.subs, function (e) {
+					return e.count;
+				});
+				return d;
+			});
+
+			ba.level(3);
+			showAsBreakdown(parsed);
+			parsed = _.orderBy(parsed, function (d) {
+				return d.total;
+			}, 'desc');
+			return {
+				v: parsed
+			};
+		}();
+
+		if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
 	}
 
 	var parsed = groupThenMap(data, function (d) {
@@ -302,21 +356,9 @@ ba.refresh = function () {
 			});
 		}
 
-		if (breakdownRD.search('Only') > -1) {
-			if (expand) {
-				param.groups.push('customer.reportsubchannel');
-			}
-
-			var opt = ba.optionBreakdownRD().find(function (d) {
-				return d.id == breakdownRD;
-			});
-
-			param.filters.push({
-				Field: 'customer.channelname',
-				Op: '$in',
-				Value: [opt.channelid]
-			});
-		}
+		var opt = ba.optionBreakdownRD().find(function (d) {
+			return d.id == breakdownRD;
+		});
 
 		if (breakdownRD == 'NonRD') {
 			param.filters.push({
@@ -328,6 +370,18 @@ ba.refresh = function () {
 					return d != 'I1';
 				})
 			});
+		} else if (breakdownRD.search('Only') > -1) {
+			if (expand) {
+				param.groups.push('customer.reportsubchannel');
+			}
+
+			param.filters.push({
+				Field: 'customer.channelname',
+				Op: '$in',
+				Value: [opt.channelid]
+			});
+		} else if (breakdownRD.search('ByLocation') > -1) {
+			param.groups.push('customer.' + opt.field);
 		}
 
 		var fetch = function fetch() {
@@ -354,7 +408,7 @@ ba.refresh = function () {
 	};
 
 	if (ba.breakdownRD() == "All" && ba.expand()) {
-		var _ret4 = function () {
+		var _ret5 = function () {
 			var mergeData = function mergeData(dataNonRD, dataRD) {
 				var data = [];
 				var ids = _.uniq(dataNonRD.map(function (d) {
@@ -500,7 +554,7 @@ ba.refresh = function () {
 			};
 		}();
 
-		if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
+		if ((typeof _ret5 === 'undefined' ? 'undefined' : _typeof(_ret5)) === "object") return _ret5.v;
 	}
 
 	request(ba.breakdownRD(), ba.expand(), function (res) {
@@ -582,7 +636,7 @@ ba.render = function () {
 	var dataFlat = [];
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
-		var currentColumnWidth = each._id.length * 8;
+		var currentColumnWidth = each._id.length * 10;
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth;
 		}

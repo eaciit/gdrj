@@ -14,7 +14,6 @@ ba.breakdownByFiscalYear = ko.observable('date.fiscal')
 ba.oldBreakdownBy = ko.observable(ba.breakdownBy())
 ba.optionDimensions = ko.observableArray(rpt.optionDimensions().filter((d) => d.field != 'customer.channelname'))
 
-ba.expand = ko.observable(false)
 ba.data = ko.observableArray([])
 ba.zeroValue = ko.observable(false)
 ba.fiscalYear = ko.observable(rpt.value.FiscalYear())
@@ -23,11 +22,28 @@ ba.breakdownRD = ko.observable("All")
 ba.optionBreakdownRD = ko.observableArray([
 	{ id: "All", title: "RD & Non RD" },
 	{ id: "NonRD", title: "Non RD Sales" },
-	{ id: "OnlyRD", title: "RD Sales", label: "RD", channelid: "I1" },
 	{ id: "OnlyMT", title: "MT Sales", label: "MT", channelid: "I3" },
 	{ id: "OnlyGT", title: "GT Sales", label: "GT", channelid: "I2" },
+	{ id: "OnlyRD", title: "RD Sales", label: "RD", channelid: "I1" },
 	{ id: "OnlyIT", title: "IT Sales", label: "IT", channelid: "I4" },
+	{ id: 'ByLocationZone', title: 'By Zone', field: 'zone' },
+	{ id: 'ByLocationRegion', title: 'By Region', field: 'region' },
+	{ id: 'ByLocationCity', title: 'By City', field: 'areaname' }
 ])
+
+ba.expand = ko.observable(false)
+ba.enableExpand = ko.observable(true)
+ba.changeBreakdownRD = () => {
+	setTimeout(() => {
+		if (ba.breakdownRD().search('ByLocation') > -1) {
+			ba.expand(true)
+			ba.enableExpand(false)
+			return
+		}
+
+		ba.enableExpand(true)
+	}, 100)
+}
 
 ba.level = ko.observable(2)
 
@@ -178,7 +194,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		showAsBreakdown(parsed)
 		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
 		return parsed
-	}
+	} else
 
 	if (expand && breakdownRD.search('Only') > -1) {
 		let parsed = groupThenMap(data, (d) => {
@@ -191,6 +207,39 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 
 				e.subs = groupThenMap(d.subs, (f) => {
 					return f._id._id_customer_reportsubchannel
+				}).map((f) => {
+					f.subs = []
+					f.count = 1
+					return f
+				})
+				
+				e.count = e.subs.length
+				return e
+			})
+
+			d.count = toolkit.sum(d.subs, (e) => e.count)
+			return d
+		})
+
+		ba.level(3)
+		showAsBreakdown(parsed)
+		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
+		return parsed
+	} else
+
+	if (expand && breakdownRD.search('ByLocation') > -1) {
+		let opt = ba.optionBreakdownRD().find((d) => d.id == ba.breakdownRD())
+
+		let parsed = groupThenMap(data, (d) => {
+			return d._id._id_customer_branchname
+		}).map((d) => {
+
+			d.subs = groupThenMap(d.subs, (e) => {
+				return e._id._id_customer_channelname
+			}).map((e) => {
+
+				e.subs = groupThenMap(d.subs, (f) => {
+					return f._id[`_id_customer_${opt.field}`]
 				}).map((f) => {
 					f.subs = []
 					f.count = 1
@@ -256,19 +305,7 @@ ba.refresh = (useCache = false) => {
 			})
 		}
 
-		if (breakdownRD.search('Only') > -1) {
-			if (expand) {
-				param.groups.push('customer.reportsubchannel')
-			}
-			
-			let opt = ba.optionBreakdownRD().find((d) => d.id == breakdownRD)
-
-			param.filters.push({
-				Field: 'customer.channelname',
-				Op: '$in',
-				Value: [opt.channelid]
-			})
-		}
+		let opt = ba.optionBreakdownRD().find((d) => d.id == breakdownRD)
 
 		if (breakdownRD == 'NonRD') {
 			param.filters.push({
@@ -276,6 +313,18 @@ ba.refresh = (useCache = false) => {
 				Op: '$in',
 				Value: rpt.masterData.Channel().map((d) => d._id).filter((d) => d != 'I1')
 			})
+		} else if (breakdownRD.search('Only') > -1) {
+			if (expand) {
+				param.groups.push('customer.reportsubchannel')
+			}
+
+			param.filters.push({
+				Field: 'customer.channelname',
+				Op: '$in',
+				Value: [opt.channelid]
+			})
+		} else if (breakdownRD.search('ByLocation') > -1) {
+			param.groups.push(`customer.${opt.field}`)
 		}
 
 		let fetch = () => {
@@ -529,7 +578,7 @@ ba.render = () => {
 	let dataFlat = []
 
 	let countWidthThenPush = (thheader, each, key) => {
-		let currentColumnWidth = each._id.length * 8
+		let currentColumnWidth = each._id.length * 10
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth
 		}
