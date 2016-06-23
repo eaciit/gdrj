@@ -45,16 +45,16 @@
 
 				<div class="form-inline pull-right" data-bind="visible: bkd.isBreakdownChannel">
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right">Sub channel</span>
+						<span class="input-group-addon align-right">Breakdown by sub channels</span>
 						<div class="width-full">
 							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: bkd.optionBreakdownChannels, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownChannels, placeholder: 'Choose channels', enabled: ko.computed(function () { return bkd.breakdownChannelLocation() == '' }, bkd) }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
 					<div class="input-group input-group-sm ez margin-bottom-10">
-						<span class="input-group-addon align-right">Or location</span>
+						<span class="input-group-addon align-right">Or by location</span>
 						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: bkd.optionBreakdownChannelLocations, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownChannelLocation, optionLabel: 'Select channel', enabled: ko.computed(function () { return bkd.breakdownChannels().length == 0 }, bkd) }"></select>
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: bkd.optionBreakdownChannelLocations, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownChannelLocation, optionLabel: 'Select location', enabled: ko.computed(function () { return bkd.breakdownChannels().length == 0 }, bkd) }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>

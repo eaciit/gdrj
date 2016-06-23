@@ -22,13 +22,7 @@ ba.breakdownRD = ko.observable("All")
 ba.optionBreakdownRD = ko.observableArray([
 	{ id: "All", title: "RD & Non RD" },
 	{ id: "NonRD", title: "Non RD Sales" },
-	{ id: "OnlyMT", title: "MT Sales", label: "MT", channelid: "I3" },
-	{ id: "OnlyGT", title: "GT Sales", label: "GT", channelid: "I2" },
-	{ id: "OnlyRD", title: "RD Sales", label: "RD", channelid: "I1" },
-	{ id: "OnlyIT", title: "IT Sales", label: "IT", channelid: "I4" },
-	{ id: 'ByLocationZone', title: 'By Zone', field: 'zone' },
-	{ id: 'ByLocationRegion', title: 'By Region', field: 'region' },
-	{ id: 'ByLocationCity', title: 'By City', field: 'areaname' }
+	{ id: "OnlyRD", title: "Only RD Sales", label: "RD", channelid: "I1" },
 ])
 
 ba.expand = ko.observable(false)

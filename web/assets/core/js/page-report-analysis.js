@@ -22,7 +22,7 @@ bkd.isBreakdownChannel = ko.observable(false);
 bkd.breakdownChannels = ko.observableArray([]);
 bkd.optionBreakdownChannels = ko.observableArray([{ _id: "I1", Name: "RD" }, { _id: "I2", Name: "GT" }, { _id: "I3", Name: "MT" }, { _id: "I4", Name: "IT" }]);
 bkd.breakdownChannelLocation = ko.observable('');
-bkd.optionBreakdownChannelLocations = ko.observableArray([{ _id: "area", Name: "Area" }, { _id: "region", Name: "Region" }, { _id: "zone", Name: "Zone" }]);
+bkd.optionBreakdownChannelLocations = ko.observableArray([{ _id: "zone", Name: "Zone" }, { _id: "region", Name: "Region" }, { _id: "areaname", Name: "City" }]);
 
 bkd.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];

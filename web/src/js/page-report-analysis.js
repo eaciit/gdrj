@@ -26,9 +26,9 @@ bkd.optionBreakdownChannels = ko.observableArray([
 ])
 bkd.breakdownChannelLocation = ko.observable('')
 bkd.optionBreakdownChannelLocations = ko.observableArray([
-	{ _id: "area", Name: "Area" },
-	{ _id: "region", Name: "Region" },
 	{ _id: "zone", Name: "Zone" },
+	{ _id: "region", Name: "Region" },
+	{ _id: "areaname", Name: "City" },
 ])
 
 bkd.refresh = (useCache = false) => {
