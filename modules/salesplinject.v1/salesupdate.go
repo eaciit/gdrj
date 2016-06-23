@@ -171,7 +171,6 @@ func prepmaster() {
 			frg.AmountinIDR += o.AmountinIDR
 			freight[key] = frg
 		case "ROYALTY":
-			key = toolkit.Sprintf("%d", Date.Year())
 			roy, exist := royalties[key]
 			if !exist {
 				roy = new(gdrj.RawDataPL)
@@ -375,7 +374,7 @@ func main() {
 		}
 
 		if i == 1000 {
-			//break
+			break
 		}
 
 		i++
@@ -420,7 +419,7 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 		spl.CalcPromo(masters)
 		spl.CalcSum(masters)
 
-		tablename := toolkit.Sprintf("%v", spl.TableName())
+		tablename := toolkit.Sprintf("%v-1", spl.TableName())
 		workerconn.NewQuery().From(tablename).
 			Save().Exec(toolkit.M{}.Set("data", spl))
 

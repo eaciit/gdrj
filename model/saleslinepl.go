@@ -726,14 +726,14 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	}
 	pl.PLDatas = aplmodel
 
-	royalid := toolkit.Sprintf("%d", pl.Date.Year)
+	royalid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	r, exist := royals[royalid]
 	if !exist {
 		return
 	}
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL26A", -r.AmountinIDR*pl.RatioToGlobalSales, plmodels)
+	pl.AddData("PL26A", -r.AmountinIDR*pl.RatioToMonthSales, plmodels)
 }
 
 func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
