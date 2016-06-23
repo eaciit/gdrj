@@ -295,7 +295,7 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 	}
 }
 
-func RatioCalc(pl *SalesPL) {
+func RatioCalc(pl *gdrj.SalesPL) {
 
 	pl.RatioToGlobalSales = pl.GrossAmount / masters.GetFloat64("globalgross")
 	pl.RatioToGlobalSalesVdist = pl.GrossAmount / masters.GetFloat64("globalgrossvdist")
