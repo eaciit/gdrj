@@ -121,6 +121,12 @@ ba.buildStructure = function (data) {
 						d.subs = d.subs.filter(function (e) {
 							return e._id == 'RD';
 						});
+
+						if (ba.expand()) {
+							var totalColumn = renderTotalColumn(d);
+							d.subs = [totalColumn].concat(d.subs);
+						}
+
 						d.count = toolkit.sum(d.subs, function (e) {
 							return e.count;
 						});
@@ -441,6 +447,10 @@ ba.render = function () {
 				var thheader3 = toolkit.newEl('th').html(lvl3._id).addClass('align-center').appendTo(trContents[2]);
 
 				if (ba.level() == 3) {
+					// if (lvl3._id == 'Total') {
+					// 	thheader2.html('&nbsp;')
+					// }
+
 					countWidthThenPush(thheader3, lvl3, [lvl1._id, lvl2._id, lvl3._id]);
 					return;
 				}

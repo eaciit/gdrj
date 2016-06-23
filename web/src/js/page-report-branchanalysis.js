@@ -106,6 +106,12 @@ ba.buildStructure = (data) => {
 			case 'OnlyRD': {
 				data.forEach((d) => {
 					d.subs = d.subs.filter((e) => e._id == 'RD')
+
+					if (ba.expand()) {
+						let totalColumn = renderTotalColumn(d)
+						d.subs = [totalColumn].concat(d.subs)
+					}
+
 					d.count = toolkit.sum(d.subs, (e) => e.count)
 				})
 			} break;
@@ -433,6 +439,10 @@ ba.render = () => {
 					.appendTo(trContents[2])
 
 				if (ba.level() == 3) {
+					// if (lvl3._id == 'Total') {
+					// 	thheader2.html('&nbsp;')
+					// }
+					
 					countWidthThenPush(thheader3, lvl3, [lvl1._id, lvl2._id, lvl3._id])
 					return
 				}
