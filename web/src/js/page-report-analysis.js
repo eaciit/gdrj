@@ -1092,7 +1092,7 @@ rpt.refresh = () => {
 
 	rpt.prepareEvents()
 
-	ccr.getDecreasedQty(false)
+	// ccr.getDecreasedQty(false)
 }
 
 $(() => {
