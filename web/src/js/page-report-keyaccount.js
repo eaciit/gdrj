@@ -549,7 +549,7 @@ kac.changeBreakdownValue = () => {
 	}, 100)
 }
 
-vm.currentMenu('Key Account Analysis')
+vm.currentMenu('Analysis')
 vm.currentTitle('Key Account Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
