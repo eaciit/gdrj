@@ -125,7 +125,19 @@ func prepmaster() {
 			h := holder.(map[string]*gdrj.COGSConsolidate)
 			o := obj.(*gdrj.COGSConsolidate)
 			cogsid := toolkit.Sprintf("%d_%d_%s", o.Year, int(o.Month), o.SAPCode)
-			h[cogsid] = o
+
+			cog, exist := h[cogsid]
+			if !exist {
+				cog = new(gdrj.COGSConsolidate)
+			}
+
+			cog.COGS_Amount += o.COGS_Amount
+			cog.RM_Amount += o.RM_Amount
+			cog.LC_Amount += o.LC_Amount
+			cog.PF_Amount += o.PF_Amount
+			cog.Depre_Amount += o.Depre_Amount
+
+			h[cogsid] = cog
 		}).(map[string]*gdrj.COGSConsolidate))
 
 	toolkit.Println("--> RAW DATA PL")
