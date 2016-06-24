@@ -535,9 +535,10 @@ rpt.idarrayhide = ko.observableArray(['PL44A'])
 
 rpt.prepareEvents = () => {
 	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
-		let index = $(this).index()
-        let elh = $(`.breakdown-view .table-header tr:eq(${index})`).addClass('hover')
-        let elc = $(`.breakdown-view .table-content tr:eq(${index})`).addClass('hover')
+		let rowID = $(this).attr('data-row')
+
+        let elh = $(`.breakdown-view .table-header tr[data-row="${rowID}"]`).addClass('hover')
+        let elc = $(`.breakdown-view .table-content tr[data-row="${rowID}"]`).addClass('hover')
 	})
 	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover')
