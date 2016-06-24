@@ -129,9 +129,6 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 					// let opt = ba.optionBreakdownRD().find((d) => d.id == ba.breakdownRD())
 					data.forEach(function (d) {
 						// d.subs = d.subs.filter((e) => e._id == opt.label)
-						d.subs = d.subs.filter(function (e) {
-							return e._id != "Total";
-						});
 
 						if (ba.expand()) {
 							var totalColumn = renderTotalColumn(d);
