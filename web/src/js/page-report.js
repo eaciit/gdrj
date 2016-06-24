@@ -226,7 +226,8 @@ rpt.modecustom = ko.observable(false)
 rpt.idanalysisreport = ko.observable()
 rpt.valueMasterData = {}
 rpt.masterData = {
-	geographi: ko.observableArray([])
+	geographi: ko.observableArray([]),
+	subchannel: ko.observableArray([])
 }
 rpt.enableHolder = {}
 rpt.eventChange = {}
@@ -297,6 +298,16 @@ rpt.filter.forEach((d) => {
 		}
 	})
 })
+
+rpt.getOtherMasterData = () => {
+	toolkit.ajaxPost(`/report/getdatasubchannel`, {}, (res) => {
+		if (!res.success) {
+			return
+		}
+
+		rpt.masterData.subchannel(res.data)
+	})
+}
 
 rpt.groupGeoBy = (raw, category) => {
 	let groupKey = (category == 'Area') ? '_id' : category
@@ -789,4 +800,5 @@ $(() => {
 	$(window).scroll(rpt.panel_relocated);
     rpt.panel_relocated()
 	rpt.getIdeas()
+	rpt.getOtherMasterData()
 })

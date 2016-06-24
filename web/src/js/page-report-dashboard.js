@@ -380,6 +380,11 @@ dsbrd.render = (res) => {
 viewModel.dashboardRanking = {}
 let rank = viewModel.dashboardRanking
 
+rank.optionDimensions = ko.observableArray([
+	{ field: 'NonRD', name: 'Non RD Sales' },
+	{ field: 'OnlyRD', name: 'Only RD Sales' },
+	{ field: 'customer.keyaccount', name: 'Key Account' },
+].concat(rpt.optionDimensions().slice(0)))
 rank.breakdown = ko.observable('customer.channelname')
 rank.columns = ko.observableArray([
 	{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
@@ -395,11 +400,29 @@ rank.data = ko.observableArray([])
 rank.fiscalYear = ko.observable(rpt.value.FiscalYear())
 
 rank.refresh = () => {
+	let breakdown = rank.breakdown()
+	let isRDNonRD = (['OnlyRD', 'NonRD'].indexOf(rank.breakdown()) > -1)
+
+	if (isRDNonRD) {
+		breakdown = 'customer.channelname'
+	}
+
 	let param = {}
 	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
-	param.groups = rpt.parseGroups([rank.breakdown()])
+	param.groups = rpt.parseGroups([breakdown])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, rank.fiscalYear)
+
+	if (isRDNonRD) {
+		let values = ('OnlyRD' == rank.breakdown()) ? 
+			['I1'] : ["EXP", "I2", "I4", "I6", "I3"]
+
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: values
+		})
+	}
 
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
@@ -409,7 +432,7 @@ rank.refresh = () => {
 			}
 
 			rank.contentIsLoading(false)
-			rank.render(res)
+			rank.render(breakdown, res)
 		}, () => {
 			rank.contentIsLoading(false)
 		})
@@ -419,19 +442,19 @@ rank.refresh = () => {
 	fetch()
 }
 
-rank.render = (res) => {
-	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], ''))
+rank.render = (breakdown, res) => {
+	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`], ''))
 
 	let rows = []
 	data.forEach((d) => {
 		let row = {}
-		row.original = d._id[`_id_${toolkit.replace(rank.breakdown(), '.', '_')}`]
-		row.pnl = d._id[`_id_${toolkit.replace(rank.breakdown(), '.', '_')}`]
+		row.original = d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`]
+		row.pnl = d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`]
 		if ($.trim(row.pnl) == '') {
 			row.original = ''
 			row.pnl = ''
 		}
-		if (rank.breakdown() == 'date.month') {
+		if (breakdown == 'date.month') {
 			row.original = (parseInt(row.pnl, 10) - 1)
 			row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM')
 		}
@@ -478,6 +501,14 @@ sd.breakdown = ko.observable('customer.reportchannel')
 sd.breakdownSub = ko.observable('customer.reportsubchannel')
 sd.data = ko.observableArray([])
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear())
+sd.selectedPL = ko.observable('PL8A')
+sd.getPLModels = () => {
+	app.ajaxPost("/report/getplmodel", {}, (res) => {
+		sd.selectedPL('')
+		rpt.plmodels(_.orderBy(res, (d) => d.OrderIndex))
+		sd.selectedPL('PL8A')
+	})
+}
 sd.render = (res) => {
 	let isFirstTime = sd.isFirstTime()
 	sd.isFirstTime(false)
@@ -485,7 +516,7 @@ sd.render = (res) => {
 	let data = res.Data.Data
 
 	let breakdown = toolkit.replace(sd.breakdown(), ".", "_")
-	let total = toolkit.sum(data, (d) => d.PL8A)
+	let total = toolkit.sum(data, (d) => d[sd.selectedPL()])
 
 	sd.data(data)
 
@@ -493,8 +524,8 @@ sd.render = (res) => {
 		let row = {}
 		row[breakdown] = d._id[`_id_${breakdown}`]
 		row.group = d._id[`_id_${toolkit.replace(sd.breakdownSub(), '.', '_')}`]
-		row.percentage = toolkit.number(d.PL8A / total) * 100
-		row.value = d.PL8A
+		row.percentage = toolkit.number(d[sd.selectedPL()] / total) * 100
+		row.value = d[sd.selectedPL()]
 		return row
 	})
 
@@ -673,7 +704,7 @@ sd.sortData = () => {
 sd.oldData = ko.observable({})
 sd.refresh = () => {
 	let param = {}
-	param.pls = ["PL8A"]
+	param.pls = [sd.selectedPL()]
 	param.groups = rpt.parseGroups([sd.breakdown(), sd.breakdownSub()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear)
@@ -723,4 +754,5 @@ $(() => {
 	rank.refresh()
 	sd.refresh()
 	sd.initSort()
+	sd.getPLModels()
 })
