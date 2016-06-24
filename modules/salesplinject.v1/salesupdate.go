@@ -171,25 +171,25 @@ func prepmaster() {
 				if !exist {
 					tspg = toolkit.M{}
 				}
-				skey := "28I"
+				skey := "PL28I"
 				tstr := strings.TrimSpace(o.AccountDescription)
 				switch tstr {
 				case "ADVERTISEMENT - INTERNET":
-					skey = "28A"
+					skey = "PL28A"
 				case "ADVERTISEMENT - PRODN - DESIGN - DVLOPMNT":
-					skey = "28B"
+					skey = "PL28B"
 				case "ADVERTISEMENT - TV":
-					skey = "28C"
+					skey = "PL28C"
 				case "MARKET RESEARCH":
-					skey = "28D"
+					skey = "PL28D"
 				case "FAIRS & EVENTS":
-					skey = "28E"
+					skey = "PL28E"
 				case "AGENCY FEES":
-					skey = "28F"
+					skey = "PL28F"
 				case "ADVERTISEMENT - POP MATERIALS":
-					skey = "28G"
+					skey = "PL28G"
 				case "SPONSORSHIP":
-					skey = "28H"
+					skey = "PL28H"
 				}
 
 				v := tspg.GetFloat64(skey) + o.AmountinIDR
