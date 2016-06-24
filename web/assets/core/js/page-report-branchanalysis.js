@@ -150,7 +150,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 				{
 					data.forEach(function (d) {
 						d.subs = d.subs.filter(function (e) {
-							return e._id != 'RD';
+							return ['regional distributor', 'rd'].indexOf(e._id.toLowerCase()) == -1;
 						});
 
 						if (ba.expand()) {
@@ -475,7 +475,7 @@ ba.refresh = function () {
 							return d._id == 'Non RD';
 						});
 
-						mergedData.count += nonrdSub.length;
+						mergedData.count += nonrdSub.subs.length;
 						mergedData.subs.push(nonrdSub);
 					} else {
 						var fake = {};
@@ -501,10 +501,10 @@ ba.refresh = function () {
 
 					if (rd != undefined) {
 						var rdSub = rd.subs.find(function (d) {
-							return d._id == 'RD';
+							return ['regional distributor', 'rd'].indexOf(d._id.toLowerCase()) > -1;
 						});
 
-						mergedData.count += rdSub.length;
+						mergedData.count += rdSub.subs.length;
 						mergedData.subs.push(rdSub);
 					} else {
 						var _fake = {};

@@ -128,7 +128,9 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 			} break;
 			case 'NonRD': {
 				data.forEach((d) => {
-					d.subs = d.subs.filter((e) => e._id != 'RD')
+					d.subs = d.subs.filter((e) => 
+						(['regional distributor', 'rd'].indexOf(e._id.toLowerCase()) == -1)
+					)
 
 					if (ba.expand()) {
 						let totalColumn = renderTotalColumn(d)
@@ -383,7 +385,7 @@ ba.refresh = (useCache = false) => {
 				if (nonrd != undefined) {
 					let nonrdSub = nonrd.subs.find((d) => d._id == 'Non RD')
 
-					mergedData.count += nonrdSub.length
+					mergedData.count += nonrdSub.subs.length
 					mergedData.subs.push(nonrdSub)
 				} else {
 					let fake = {}
@@ -408,9 +410,9 @@ ba.refresh = (useCache = false) => {
 				}
 
 				if (rd != undefined) {
-					let rdSub = rd.subs.find((d) => d._id == 'RD')
+					let rdSub = rd.subs.find((d) => (['regional distributor', 'rd'].indexOf(d._id.toLowerCase()) > -1))
 
-					mergedData.count += rdSub.length
+					mergedData.count += rdSub.subs.length
 					mergedData.subs.push(rdSub)
 				} else {
 					let fake = {}
