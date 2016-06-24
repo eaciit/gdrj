@@ -43,6 +43,16 @@ func setinitialconnection() {
 	}
 }
 
+func getCursor(obj orm.IModel) dbox.ICursor {
+	c, e := gdrj.Find(obj,
+		nil, nil)
+	//toolkit.M{}.Set("take", 10))
+	if e != nil {
+		return nil
+	}
+	return c
+}
+
 func buildmap(holder interface{},
 	fnModel func() orm.IModel,
 	filter *dbox.Filter,
@@ -74,6 +84,65 @@ func prepmaster() {
 		}).(map[string]*gdrj.PLModel))
 }
 
+func prepmasterclean() {
+	subchannels := toolkit.M{}
+	toolkit.Println("--> Sub Channel")
+	csr, _ := conn.NewQuery().From("subchannels").Cursor(nil)
+	defer csr.Close()
+	for {
+		m := toolkit.M{}
+		e := csr.Fetch(&m, 1, false)
+		if e != nil {
+			break
+		}
+		subchannels.Set(m.GetString("_id"), m.GetString("title"))
+	}
+	masters.Set("subchannels", subchannels)
+
+	customers := toolkit.M{}
+	toolkit.Println("--> Customer")
+	ccb := getCursor(new(gdrj.Customer))
+	defer ccb.Close()
+	for {
+		cust := new(gdrj.Customer)
+		e := ccb.Fetch(cust, 1, false)
+		if e != nil {
+			break
+		}
+
+		customers.Set(cust.ID, cust)
+	}
+	masters.Set("customers", customers)
+
+	branchs := toolkit.M{}
+	cmb := getCursor(new(gdrj.MasterBranch))
+	defer cmb.Close()
+	for {
+		stx := toolkit.M{}
+		e := cmb.Fetch(&stx, 1, false)
+		if e != nil {
+			break
+		}
+
+		branchs.Set(stx.Get("_id", "").(string), stx)
+	}
+	masters.Set("branchs", branchs)
+
+	rdlocations := toolkit.M{}
+	crdloc, _ := conn.NewQuery().From("outletgeo").Cursor(nil)
+	defer crdloc.Close()
+	for {
+		stx := toolkit.M{}
+		e := crdloc.Fetch(&stx, 1, false)
+		if e != nil {
+			break
+		}
+
+		branchs.Set(stx.GetString("_id"), stx)
+	}
+	masters.Set("rdlocations", rdlocations)
+}
+
 func main() {
 	t0 = time.Now()
 	mapkeysvalue = make(map[string]float64)
@@ -103,6 +172,7 @@ func main() {
 
 	toolkit.Println("Get Data Master...")
 	prepmaster()
+	prepmasterclean()
 
 	toolkit.Println("Start Data Process...")
 	c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
@@ -136,6 +206,10 @@ func main() {
 			default:
 				key = toolkit.Sprintf("%v_", key)
 			}
+		}
+
+		if prodgroup == "skuid" && (spl.Product.ID == "" || len(spl.Product.ID) < 3) {
+			continue
 		}
 
 		if spl.Product != nil {
@@ -217,7 +291,6 @@ func main() {
 		}
 
 		spl := new(gdrj.SalesPL)
-		spl.ID = toolkit.Sprintf("%v%v%v%v", akey[0], akey[1], "", "")
 		spl.Date = gdrj.SetDate(time.Date(toolkit.ToInt(akey[1], toolkit.RoundingAuto),
 			time.Month(toolkit.ToInt(akey[0], toolkit.RoundingAuto)),
 			1, 0, 0, 0, 0, time.UTC))
@@ -231,6 +304,10 @@ func main() {
 
 		amount := toolkit.ToFloat64(value, 6, toolkit.RoundingAuto) * (v / globalval)
 		plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
+
+		spl.ID = toolkit.Sprintf("%v_%v_%v_%v", "ALLOCATION-SCRIPT", spl.Date.Fiscal, akey[0], akey[1])
+
+		spl.CleanAndClasify(masters)
 		spl.AddData(plcode, amount, plmodels)
 		spl.CalcSum(masters)
 
