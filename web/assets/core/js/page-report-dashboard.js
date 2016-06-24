@@ -537,28 +537,45 @@ sd.render = function (res) {
 
 	var rows = data.map(function (d) {
 		var row = {};
-		row[breakdown] = d._id['_id_' + breakdown];
+
+		var breakdownAbbr = d._id['_id_' + breakdown];
+		row[breakdown] = breakdownAbbr;
+		switch (breakdownAbbr) {
+			case "MT":
+				row[breakdown] = "Modern Trade";break;
+			case "GT":
+				row[breakdown] = "General Trade";break;
+			case "IT":
+				row[breakdown] = "Industrial";break;
+			case "RD":
+				row[breakdown] = "Regional Distributor";break;
+			case "EXPORT":
+				row[breakdown] = "Export";break;
+			case "Motoris":
+				row[breakdown] = "Motorist";break;
+			default:
+				row[breakdown] = breakdownAbbr;
+		}
+
 		row.group = d._id['_id_' + toolkit.replace(sd.breakdownSub(), '.', '_')];
 		row.percentage = toolkit.number(d[sd.selectedPL()] / total) * 100;
 		row.value = d[sd.selectedPL()];
 		return row;
 	});
 
-	sd.data(_.sortBy(rows, function (d) {
-		var subGroup = ('00' + toolkit.number(toolkit.getNumberFromString(d.group))).split('').reverse().splice(0, 2).reverse().join('');
-		var group = d[breakdown];
+	sd.data(rows);
+	// sd.data(_.sortBy(rows, (d) => {
+	// 	let subGroup = `00${toolkit.number(toolkit.getNumberFromString(d.group))}`.split('').reverse().splice(0, 2).reverse().join('')
+	// 	let group = d[breakdown]
 
-		switch (d[breakdown]) {
-			case "MT":
-				group = "A";break;
-			case "GT":
-				group = "B";break;
-			case "IT":
-				group = "C";break;
-		}
+	// 	switch (d[breakdown]) {
+	// 		case "MT": group = "A"; break
+	// 		case "GT": group = "B"; break
+	// 		case "IT": group = "C"; break
+	// 	}
 
-		return [group, subGroup].join(' ');
-	}));
+	// 	return [group, subGroup].join(' ')
+	// }))
 
 	var op0 = _.filter(sd.data(), function (d) {
 		return d.percentage > 0 || d.value > 0;
@@ -575,25 +592,21 @@ sd.render = function (res) {
 		});
 	}, 'desc');
 
-	// hack IT, too much data
-	var it = op3.find(function (d) {
-		return d.key == "IT";
-	});
-	if (it != undefined) {
-		if (it.values.length > 0) {
-			var totalIT = toolkit.sum(it.values, function (e) {
-				return e.value;
-			});
-			var fake = {};
-			fake.customer_reportchannel = it.values[0].customer_reportchannel;
-			fake.group = it.group;
-			fake.percentage = toolkit.number(totalIT / total) * 100;
-			fake.value = totalIT;
+	// // hack IT, too much data
+	// let it = op3.find((d) => d.key == "IT")
+	// if (it != undefined) {
+	// 	if (it.values.length > 0) {
+	// 		let totalIT = toolkit.sum(it.values, (e) => e.value)
+	// 		let fake = {}
+	// 		fake.customer_reportchannel = it.values[0].customer_reportchannel
+	// 		fake.group = it.group
+	// 		fake.percentage = toolkit.number(totalIT / total) * 100
+	// 		fake.value = totalIT
 
-			it.valuesBackup = it.values.slice(0);
-			it.values = [fake];
-		}
-	}
+	// 		it.valuesBackup = it.values.slice(0)
+	// 		it.values = [fake]
+	// 	}
+	// }
 
 	var maxRow = _.maxBy(op3, function (d) {
 		return d.values.length;

@@ -947,11 +947,14 @@ var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 rs.contentIsLoading = ko.observable(false);
 rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
+rs.breakdownSubBy = ko.observable('');
 rs.selectedPNLNetSales = ko.observable("PL8A"); // PL1
 rs.selectedPNL = ko.observable("PL44B");
 rs.chartComparisonNote = ko.observable('');
 rs.optionDimensionSelect = ko.observableArray([]);
+rs.optionTimeBreakdowns = ko.observableArray([{ field: 'date.fiscal', name: 'Fiscal Year' }, { field: 'date.quartertxt', name: 'Quarter' }, { field: 'date.month', name: 'Month' }]);
 rs.fiscalYear = ko.observable(rpt.value.FiscalYear());
+rs.columnWidth = ko.observable(130);
 
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/getplmodel", {}, function (res) {
@@ -979,9 +982,14 @@ rs.refresh = function () {
 
 	rs.contentIsLoading(true);
 
+	var groups = [rs.breakdownBy()];
+	if (rs.breakdownSubBy() != '') {
+		groups.push(rs.breakdownSubBy());
+	}
+
 	var param = {};
 	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()];
-	param.groups = rpt.parseGroups([rs.breakdownBy()]);
+	param.groups = rpt.parseGroups(groups);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear);
 
@@ -997,55 +1005,22 @@ rs.refresh = function () {
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			rs.chartComparisonNote('Last refreshed on: ' + date);
 
-			var dataAllPNL = res.Data.Data.filter(function (d) {
-				return d.hasOwnProperty(rs.selectedPNL());
-			}).map(function (d) {
-				return { _id: d._id, value: d[rs.selectedPNL()] };
-			});
-			var dataAllPNLNetSales = res.Data.Data.filter(function (d) {
-				return d.hasOwnProperty(rs.selectedPNLNetSales());
-			}).map(function (d) {
-				return { _id: d._id, value: d[rs.selectedPNLNetSales()] };
-			});
-
-			var years = _.map(_.groupBy(dataAllPNL, function (d) {
-				return d._id._id_date_year;
-			}), function (v, k) {
-				return k;
-			});
-
-			var sumNetSales = _.reduce(dataAllPNLNetSales, function (m, x) {
-				return m + x.value;
-			}, 0);
-			var sumPNL = _.reduce(dataAllPNL, function (m, x) {
-				return m + x.value;
-			}, 0);
-			var countPNL = dataAllPNL.length;
-			var avgPNL = sumPNL;
-
-			var dataScatter = [];
-			var multiplier = sumNetSales == 0 ? 1 : sumNetSales;
-
-			dataAllPNL.forEach(function (d, i) {
-				dataScatter.push({
-					valueNetSales: dataAllPNLNetSales[i].value,
-					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, ''),
-					category: d._id['_id_' + app.idAble(rs.breakdownBy())],
-					year: d._id._id_date_year,
-					valuePNL: Math.abs(d.value),
-					valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
-					avgPNL: Math.abs(avgPNL),
-					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100)
-				});
-			});
-
-			// sumPNL: Math.abs(sumPNL),
-			// sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
-			console.log("dataScatter", dataScatter);
-			console.log("dataAllPNL", dataAllPNL);
-
 			rs.contentIsLoading(false);
-			rs.generateReport(dataScatter, years);
+
+			var scatterViewWrapper = $('.scatter-view-wrapper').empty().width(rs.columnWidth() * res.Data.Data.length);
+
+			if (rs.breakdownSubBy() != '') {
+				var op1 = _.groupBy(res.Data.Data, function (d) {
+					return d._id['_id_' + app.idAble(rs.breakdownBy())];
+				});
+				_.map(op1, function (v, k) {
+					rs.generateReport(k, v);
+				});
+			} else {
+				rs.generateReport('', res.Data.Data);
+			}
+
+			scatterViewWrapper.append('<div class="clearfix" style="clear: both;"></div>');
 		}, function () {
 			rs.contentIsLoading(false);
 		}, {
@@ -1056,10 +1031,60 @@ rs.refresh = function () {
 	fetch();
 };
 
-rs.generateReport = function (data, years) {
-	data = _.orderBy(data, function (d) {
-		return d.valueNetSales;
-	}, 'desc');
+rs.generateReport = function (title, raw) {
+	var breakdown = rs.breakdownSubBy() == '' ? rs.breakdownBy() : rs.breakdownSubBy();
+
+	var dataAllPNL = raw.filter(function (d) {
+		return d.hasOwnProperty(rs.selectedPNL());
+	}).map(function (d) {
+		return { _id: d._id, value: d[rs.selectedPNL()] };
+	});
+	var dataAllPNLNetSales = raw.filter(function (d) {
+		return d.hasOwnProperty(rs.selectedPNLNetSales());
+	}).map(function (d) {
+		return { _id: d._id, value: d[rs.selectedPNLNetSales()] };
+	});
+
+	var sumNetSales = _.reduce(dataAllPNLNetSales, function (m, x) {
+		return m + x.value;
+	}, 0);
+	var sumPNL = _.reduce(dataAllPNL, function (m, x) {
+		return m + x.value;
+	}, 0);
+	var countPNL = dataAllPNL.length;
+	var avgPNL = sumPNL;
+
+	var data = [];
+	var multiplier = sumNetSales == 0 ? 1 : sumNetSales;
+
+	dataAllPNL.forEach(function (d, i) {
+		var category = d._id['_id_' + app.idAble(breakdown)];
+		var order = category;
+
+		if (breakdown == 'date.month') {
+			category = moment(new Date(2015, category - 1, 1)).format('MMMM');
+		}
+
+		data.push({
+			valueNetSales: dataAllPNLNetSales[i].value,
+			category: category,
+			order: order,
+			valuePNL: Math.abs(d.value),
+			valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
+			avgPNL: Math.abs(avgPNL),
+			avgPNLPercentage: Math.abs(avgPNL / multiplier * 100)
+		});
+	});
+
+	if (breakdown == 'date.month') {
+		data = _.orderBy(data, function (d) {
+			return parseInt(d.order, 10);
+		}, 'asc');
+	} else {
+		data = _.orderBy(data, function (d) {
+			return d.valueNetSales;
+		}, 'desc');
+	}
 
 	var max = _.max(_.map(data, function (d) {
 		return d.avgNetSalesPercentage;
@@ -1074,15 +1099,15 @@ rs.generateReport = function (data, years) {
 		return d.field == rs.selectedPNL();
 	}).name;
 
-	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>');
-	if (data.length * 100 > $('#scatter-view').parent().width()) $('#scatter-view').width(data.length * 120);else $('#scatter-view').css('width', '100%');
-	$("#scatter-view").kendoChart({
-		dataSource: {
-			data: data
-		},
-		title: {
-			text: ""
-		},
+	var width = data.length * rs.columnWidth();
+	width = width < 300 ? 300 : width;
+
+	var scatterViewWrapper = $('.scatter-view-wrapper');
+	var scatterView = $('<div id="scatter-view"></div>').height(350).css('float', 'left').appendTo(scatterViewWrapper);
+
+	var config = {
+		dataSource: { data: data },
+		// title: title,
 		legend: {
 			visible: true,
 			position: "bottom"
@@ -1106,9 +1131,7 @@ rs.generateReport = function (data, years) {
 				visible: true,
 				template: 'Average ' + breakdownTitle + ' to ' + netSalesTitle + ': #: kendo.toString(dataItem.avgPNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.avgPNL, \'n2\') #)'
 			},
-			markers: {
-				visible: false
-			}
+			markers: { visible: false }
 		}, {
 			type: 'column',
 			name: breakdownTitle + ' to ' + netSalesTitle,
@@ -1116,9 +1139,7 @@ rs.generateReport = function (data, years) {
 			overlay: {
 				gradient: 'none'
 			},
-			border: {
-				width: 0
-			},
+			border: { width: 0 },
 			tooltip: {
 				visible: true,
 				template: breakdownTitle + ' #: dataItem.category # to ' + netSalesTitle + ': #: kendo.toString(dataItem.valuePNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.valuePNL, \'n2\') #)'
@@ -1133,24 +1154,38 @@ rs.generateReport = function (data, years) {
 			}
 		}],
 		valueAxis: {
-			majorGridLines: {
-				color: '#fafafa'
-			},
-			label: {
-				format: "{0}%"
-			}
+			majorGridLines: { color: '#fafafa' },
+			label: { format: "{0}%" },
+			axisCrossingValue: [0, -10],
+			max: max < 100 ? max + 20 : 100
 		},
 		categoryAxis: [{
 			field: 'category',
 			labels: {
-				rotation: 20,
 				font: '"Source Sans Pro" 11px'
 			},
-			majorGridLines: {
-				color: '#fafafa'
-			}
+			majorGridLines: { color: '#fafafa' }
 		}]
-	});
+	};
+
+	if (rs.breakdownSubBy() != '') {
+		config.categoryAxis.push({
+			categories: [title],
+			labels: {
+				font: '"Source Sans Pro" 18px bold'
+			}
+		});
+	} else {
+		if (width < scatterViewWrapper.parent().width()) {
+			width = '100%';
+		}
+	}
+
+	if (scatterViewWrapper.width() < scatterViewWrapper.parent().width()) {
+		scatterViewWrapper.width('100%');
+	}
+
+	scatterView.width(width).kendoChart(config);
 };
 
 viewModel.chartCompare = {};
