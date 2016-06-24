@@ -478,7 +478,7 @@ func main() {
 			break
 		}
 
-		if i == 20 {
+		if i == 5 {
 			break
 		}
 

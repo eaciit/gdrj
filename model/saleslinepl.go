@@ -781,7 +781,7 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	for k, v := range advertisement {
 		toolkit.Printf("[%v:%v]", k, v)
 		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-		pl.AddData(k, -pl.RatioToMonthSales*fv, plmodels)
+		pl.AddData("PL28I", -pl.RatioToMonthSales*fv, plmodels)
 	}
 }
 
