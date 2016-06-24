@@ -390,6 +390,7 @@ dsbrd.render = function (res) {
 viewModel.dashboardRanking = {};
 var rank = viewModel.dashboardRanking;
 
+rank.optionDimensions = ko.observableArray([{ field: 'NonRD', name: 'Non RD Sales' }, { field: 'OnlyRD', name: 'Only RD Sales' }, { field: 'customer.keyaccount', name: 'Key Account' }].concat(rpt.optionDimensions().slice(0)));
 rank.breakdown = ko.observable('customer.channelname');
 rank.columns = ko.observableArray([{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } }, { field: 'gmPercentage', template: function template(d) {
 		return kendo.toString(d.gmPercentage, 'n2') + ' %';
@@ -405,11 +406,28 @@ rank.data = ko.observableArray([]);
 rank.fiscalYear = ko.observable(rpt.value.FiscalYear());
 
 rank.refresh = function () {
+	var breakdown = rank.breakdown();
+	var isRDNonRD = ['OnlyRD', 'NonRD'].indexOf(rank.breakdown()) > -1;
+
+	if (isRDNonRD) {
+		breakdown = 'customer.channelname';
+	}
+
 	var param = {};
 	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"];
-	param.groups = rpt.parseGroups([rank.breakdown()]);
+	param.groups = rpt.parseGroups([breakdown]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, rank.fiscalYear);
+
+	if (isRDNonRD) {
+		var values = 'OnlyRD' == rank.breakdown() ? ['I1'] : ["EXP", "I2", "I4", "I6", "I3"];
+
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: values
+		});
+	}
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
@@ -421,7 +439,7 @@ rank.refresh = function () {
 			}
 
 			rank.contentIsLoading(false);
-			rank.render(res);
+			rank.render(breakdown, res);
 		}, function () {
 			rank.contentIsLoading(false);
 		});
@@ -431,21 +449,21 @@ rank.refresh = function () {
 	fetch();
 };
 
-rank.render = function (res) {
+rank.render = function (breakdown, res) {
 	var data = _.sortBy(res.Data.Data, function (d) {
-		return toolkit.redefine(d._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')], '');
+		return toolkit.redefine(d._id['_id_' + toolkit.replace(breakdown, '.', '_')], '');
 	});
 
 	var rows = [];
 	data.forEach(function (d) {
 		var row = {};
-		row.original = d._id['_id_' + toolkit.replace(rank.breakdown(), '.', '_')];
-		row.pnl = d._id['_id_' + toolkit.replace(rank.breakdown(), '.', '_')];
+		row.original = d._id['_id_' + toolkit.replace(breakdown, '.', '_')];
+		row.pnl = d._id['_id_' + toolkit.replace(breakdown, '.', '_')];
 		if ($.trim(row.pnl) == '') {
 			row.original = '';
 			row.pnl = '';
 		}
-		if (rank.breakdown() == 'date.month') {
+		if (breakdown == 'date.month') {
 			row.original = parseInt(row.pnl, 10) - 1;
 			row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM');
 		}
@@ -489,6 +507,16 @@ sd.breakdown = ko.observable('customer.reportchannel');
 sd.breakdownSub = ko.observable('customer.reportsubchannel');
 sd.data = ko.observableArray([]);
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear());
+sd.selectedPL = ko.observable('PL8A');
+sd.getPLModels = function () {
+	app.ajaxPost("/report/getplmodel", {}, function (res) {
+		sd.selectedPL('');
+		rpt.plmodels(_.orderBy(res, function (d) {
+			return d.OrderIndex;
+		}));
+		sd.selectedPL('PL8A');
+	});
+};
 sd.render = function (res) {
 	var isFirstTime = sd.isFirstTime();
 	sd.isFirstTime(false);
@@ -497,7 +525,7 @@ sd.render = function (res) {
 
 	var breakdown = toolkit.replace(sd.breakdown(), ".", "_");
 	var total = toolkit.sum(data, function (d) {
-		return d.PL8A;
+		return d[sd.selectedPL()];
 	});
 
 	sd.data(data);
@@ -506,8 +534,8 @@ sd.render = function (res) {
 		var row = {};
 		row[breakdown] = d._id['_id_' + breakdown];
 		row.group = d._id['_id_' + toolkit.replace(sd.breakdownSub(), '.', '_')];
-		row.percentage = toolkit.number(d.PL8A / total) * 100;
-		row.value = d.PL8A;
+		row.percentage = toolkit.number(d[sd.selectedPL()] / total) * 100;
+		row.value = d[sd.selectedPL()];
 		return row;
 	});
 
@@ -694,7 +722,7 @@ sd.sortData = function () {
 sd.oldData = ko.observable({});
 sd.refresh = function () {
 	var param = {};
-	param.pls = ["PL8A"];
+	param.pls = [sd.selectedPL()];
 	param.groups = rpt.parseGroups([sd.breakdown(), sd.breakdownSub()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear);
@@ -743,4 +771,5 @@ $(function () {
 	rank.refresh();
 	sd.refresh();
 	sd.initSort();
+	sd.getPLModels();
 });

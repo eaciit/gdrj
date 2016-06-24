@@ -22,6 +22,17 @@ func CreateReportController(s *knot.Server) *ReportController {
 	return controller
 }
 
+func (m *ReportController) GetDataSubChannel(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.SubChannelGetAll()
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.SubChannel{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
 func (m *ReportController) GetDataBranch(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
