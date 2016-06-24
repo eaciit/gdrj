@@ -846,7 +846,7 @@ func (pl *SalesPL) AddData(plcode string, amount float64, models map[string]*PLM
 func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, models map[string]*PLModel) {
 	astr := []string{"28A", "28B", "28C", "28D", "28E", "28F", "28G", "28H", "28I"}
 	if toolkit.HasMember(astr, plcode) {
-		toolkit.Printfn("%#v", plcode)
+		toolkit.Printfn("[ %#v ]", plcode)
 		for key, _ := range models {
 			toolkit.Printfn("%#v", key)
 		}
