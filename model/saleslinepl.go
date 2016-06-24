@@ -775,12 +775,13 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 
 	advertisement, exist := advertisements[toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)]
 	if exist {
-		toolkit.Printfn("\nFound :")
-		for k, v := range advertisement {
-			toolkit.Printf("[%v:%v]", k, v)
-			fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-			pl.AddData(k, -fv*pl.RatioToMonthSales, plmodels)
-		}
+		return
+	}
+
+	for k, v := range advertisement {
+		toolkit.Printf("[%v:%v]", k, v)
+		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+		pl.AddData(k, -pl.RatioToMonthSales*fv, plmodels)
 	}
 }
 
