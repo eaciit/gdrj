@@ -59,6 +59,16 @@ func buildmap(holder interface{},
 	return holder
 }
 
+func getCursor(obj orm.IModel) dbox.ICursor {
+	c, e := gdrj.Find(obj,
+		nil, nil)
+	//toolkit.M{}.Set("take", 10))
+	if e != nil {
+		return nil
+	}
+	return c
+}
+
 func prepmaster() {
 	masters = toolkit.M{}
 	masters.Set("plmodel", buildmap(map[string]*gdrj.PLModel{},
@@ -71,6 +81,49 @@ func prepmaster() {
 			o := obj.(*gdrj.PLModel)
 			h[o.ID] = o
 		}).(map[string]*gdrj.PLModel))
+	toolkit.Println("--> Sub Channel")
+
+	subchannels := toolkit.M{}
+	csr, _ := conn.NewQuery().From("subchannels").Cursor(nil)
+	defer csr.Close()
+	for {
+		m := toolkit.M{}
+		e := csr.Fetch(&m, 1, false)
+		if e != nil {
+			break
+		}
+		subchannels.Set(m.GetString("_id"), m.GetString("title"))
+	}
+	masters.Set("subchannels", subchannels)
+
+	customers := toolkit.M{}
+	toolkit.Println("--> Customer")
+	ccb := getCursor(new(gdrj.Customer))
+	defer ccb.Close()
+	for {
+		cust := new(gdrj.Customer)
+		e := ccb.Fetch(cust, 1, false)
+		if e != nil {
+			break
+		}
+
+		customers.Set(cust.ID, cust)
+	}
+	masters.Set("customers", customers)
+
+	branchs := toolkit.M{}
+	cmb := getCursor(new(gdrj.MasterBranch))
+	defer cmb.Close()
+	for {
+		stx := toolkit.M{}
+		e := cmb.Fetch(&stx, 1, false)
+		if e != nil {
+			break
+		}
+
+		branchs.Set(stx.Get("_id", "").(string), stx)
+	}
+	masters.Set("branchs", branchs)
 }
 
 func main() {
@@ -126,8 +179,9 @@ func main() {
 		spl.GrossAmount = amount
 		spl.NetAmount = amount
 
-		plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
-		spl.AddData("PL1", amount, plmodels)
+		// plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
+		spl.CleanAndClasify(masters)
+		spl.CalcSales(masters)
 		spl.CalcSum(masters)
 
 		gdrj.Save(spl)
