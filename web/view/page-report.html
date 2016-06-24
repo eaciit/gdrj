@@ -71,6 +71,8 @@ var o = {
 		{{template "page-report-widget-custom-analysis.html"}}
 	{{else if eq .id "non_sales_pnl_items"}}
 		{{template "page-report-widget-nonsales-pnl-items.html"}}
+	{{else if eq .id "customanalysis"}}
+		{{template "page-report-customanalysis.html"}}
 	{{end}}
 	</div>
 

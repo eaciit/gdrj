@@ -15,6 +15,7 @@ pvt.fiscalYear = ko.observable(rpt.value.FiscalYear())
 pvt.valueplmodel = ko.observableArray(["PL8A", "PL94C"])
 
 pvt.renderCustomChart = (data) => {
+	console.log(data)
 	let series = [], dataresult = []
 	let breakdown = toolkit.replace(pvt.column(), ".", "_"), breakdownrow = toolkit.replace(pvt.row(), ".", "_"), keydata, dataseries
 	let rows = data.map((d) => {
@@ -105,6 +106,9 @@ pvt.render = () => {
 		schemaCubeMeasures[d.title] = { field: field, format: '{0:c}', aggregate: 'sum' }
 		measures.push(d.title)
 	})
+	console.log("schemaModelFields ", schemaModelFields)
+	console.log("schemaCubeDimensions ", schemaCubeDimensions)
+	console.log("schemaCubeMeasures ", schemaCubeMeasures)
 
 	let config = {
 	    filterable: false,
