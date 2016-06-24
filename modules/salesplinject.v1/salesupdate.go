@@ -249,7 +249,16 @@ func prepmaster() {
 	}
 	toolkit.Printfn("Depreciation : %v", subtot)
 
-	toolkit.Printfn("PROMO : %v, ADV : %v", vPromo, vAdv)
+	subtot = float64(0)
+	for k, v := range advertisements {
+		toolkit.Printfn("KEY : %v", k)
+		for xk, xv := range v {
+			toolkit.Printfn("KEY : %v", xk)
+			subtot += toolkit.ToFloat64(xv, 6, toolkit.RoundingAuto)
+		}
+	}
+	toolkit.Printfn("Advertisement : %v", subtot)
+
 	masters.Set("promos", promos).Set("freight", freight).Set("depreciation", depreciation).
 		Set("royalties", royalties).Set("damages", damages).Set("advertisements", advertisements)
 
@@ -500,7 +509,7 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 	var spl *gdrj.SalesPL
 	for spl = range jobs {
 
-		spl.CleanAndClasify(masters)
+		// spl.CleanAndClasify(masters)
 
 		// === For ratio update and calc
 		// spl.RatioCalc(masters)
@@ -511,7 +520,7 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 		//calculate process
 		// spl.CalcFreight(masters)
 		// spl.CalcDepre(masters)
-		spl.CalcDamage(masters)
+		// spl.CalcDamage(masters)
 		// spl.CalcDepre(masters)
 		// spl.CalcRoyalties(masters)
 		// spl.CalcDiscountActivity(masters)
