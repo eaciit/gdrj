@@ -537,7 +537,26 @@ sd.render = function (res) {
 
 	var rows = data.map(function (d) {
 		var row = {};
-		row[breakdown] = d._id['_id_' + breakdown];
+
+		var breakdownAbbr = d._id['_id_' + breakdown];
+		row[breakdown] = breakdownAbbr;
+		switch (breakdownAbbr) {
+			case "MT":
+				row[breakdown] = "Modern Trade";break;
+			case "GT":
+				row[breakdown] = "General Trade";break;
+			case "IT":
+				row[breakdown] = "Industrial";break;
+			case "RD":
+				row[breakdown] = "Regional Distributor";break;
+			case "EXPORT":
+				row[breakdown] = "Export";break;
+			case "Motoris":
+				row[breakdown] = "Motorist";break;
+			default:
+				row[breakdown] = breakdownAbbr;
+		}
+
 		row.group = d._id['_id_' + toolkit.replace(sd.breakdownSub(), '.', '_')];
 		row.percentage = toolkit.number(d[sd.selectedPL()] / total) * 100;
 		row.value = d[sd.selectedPL()];
