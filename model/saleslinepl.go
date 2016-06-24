@@ -697,7 +697,7 @@ func (pl *SalesPL) CalcDamage(masters toolkit.M) {
 	}
 	pl.PLDatas = aplmodel
 
-	damagesid := toolkit.Sprintf("%d", pl.Date.Year)
+	damagesid := toolkit.Sprintf("%s", pl.Date.Fiscal)
 	d, exist := damages[damagesid]
 	if !exist {
 		return

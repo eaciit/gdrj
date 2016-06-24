@@ -191,8 +191,8 @@ func prepmaster() {
 			}
 			key := toolkit.Sprintf("%s_%s", key, dgroup)
 			depreciation[key] += o.AmountinIDR
-		case "DAMAGEGOODS":
-			key = toolkit.Sprintf("%d", Date.Year())
+		case "DAMAGEGOODS": //2015-2016
+			key = toolkit.Sprintf("%s", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 			damages[key] += o.AmountinIDR
 		}
 	}
