@@ -141,7 +141,7 @@ func prepmaster() {
 		}).(map[string]*gdrj.COGSConsolidate))
 
 	toolkit.Println("--> RAW DATA PL")
-	promos, freight, depreciation := map[string]*gdrj.RawDataPL{}, map[string]*gdrj.RawDataPL{}, map[string]float64{}
+	promos, freight, depreciation := map[string]float64{}, map[string]*gdrj.RawDataPL{}, map[string]float64{}
 	royalties, damages, advertisements := map[string]float64{}, map[string]float64{}, map[string]toolkit.M{}
 	f := dbox.Eq("year", fiscalyear-1)
 	csrpromo, _ := gdrj.Find(new(gdrj.RawDataPL), f, nil)
@@ -195,16 +195,9 @@ func prepmaster() {
 				v := tspg.GetFloat64(skey) + o.AmountinIDR
 				tspg.Set(skey, v)
 				advertisements[key] = tspg
-
 			} else {
 				key = toolkit.Sprintf("%s_%s", key, agroup)
-				prm, exist := promos[key]
-				if !exist {
-					prm = new(gdrj.RawDataPL)
-				}
-
-				prm.AmountinIDR += o.AmountinIDR
-				promos[key] = prm
+				promos[key] += o.AmountinIDR
 			}
 		case "FREIGHT":
 			frg, exist := freight[key]
@@ -249,10 +242,14 @@ func prepmaster() {
 	toolkit.Printfn("Depreciation : %v", subtot)
 
 	subtot = float64(0)
+	for _, v := range promos {
+		subtot += v
+	}
+	toolkit.Printfn("Promos : %v", subtot)
+
+	subtot = float64(0)
 	for _, v := range advertisements {
-		// toolkit.Printfn("KEY : %v", k)
 		for _, xv := range v {
-			// toolkit.Printfn("KEY : %v", xk)
 			subtot += toolkit.ToFloat64(xv, 6, toolkit.RoundingAuto)
 		}
 	}
@@ -351,7 +348,7 @@ func prepmasterclean() {
 			break
 		}
 
-		branchs.Set(stx.GetString("_id"), stx)
+		rdlocations.Set(stx.GetString("_id"), stx)
 	}
 	masters.Set("rdlocations", rdlocations)
 }
@@ -508,7 +505,7 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 	var spl *gdrj.SalesPL
 	for spl = range jobs {
 
-		spl.CleanAndClasify(masters)
+		// spl.CleanAndClasify(masters)
 
 		// === For ratio update and calc
 		// spl.RatioCalc(masters)
