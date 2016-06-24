@@ -980,23 +980,23 @@ rs.refresh = function () {
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear);
 
 	var fetch = function fetch() {
-		app.ajaxPost("/report/getpnldatanew", param, function (res1) {
-			if (res1.Status == "NOK") {
+		app.ajaxPost("/report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
 				}, 1000 * 5);
 				return;
 			}
 
-			var date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			rs.chartComparisonNote('Last refreshed on: ' + date);
 
-			var dataAllPNL = res1.Data.Data.filter(function (d) {
+			var dataAllPNL = res.Data.Data.filter(function (d) {
 				return d.hasOwnProperty(rs.selectedPNL());
 			}).map(function (d) {
 				return { _id: d._id, value: d[rs.selectedPNL()] };
 			});
-			var dataAllPNLNetSales = res1.Data.Data.filter(function (d) {
+			var dataAllPNLNetSales = res.Data.Data.filter(function (d) {
 				return d.hasOwnProperty(rs.selectedPNLNetSales());
 			}).map(function (d) {
 				return { _id: d._id, value: d[rs.selectedPNLNetSales()] };

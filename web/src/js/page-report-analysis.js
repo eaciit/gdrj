@@ -1036,21 +1036,21 @@ rs.refresh = (useCache = false) => {
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear)
 
 	let fetch = () => {
-		app.ajaxPost("/report/getpnldatanew", param, (res1) => {
-			if (res1.Status == "NOK") {
+		app.ajaxPost("/report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
 				setTimeout(() => {
 					fetch()
 				}, 1000 * 5)
 				return
 			}
 
-			let date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
-			let dataAllPNL = res1.Data.Data
+			let dataAllPNL = res.Data.Data
 				.filter((d) => d.hasOwnProperty(rs.selectedPNL()))
 				.map((d) => { return { _id: d._id, value: d[rs.selectedPNL()] } })
-			let dataAllPNLNetSales = res1.Data.Data
+			let dataAllPNLNetSales = res.Data.Data
 				.filter((d) => d.hasOwnProperty(rs.selectedPNLNetSales()))
 				.map((d) => { return { _id: d._id, value: d[rs.selectedPNLNetSales()] } })
 
