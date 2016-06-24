@@ -114,9 +114,10 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 			case 'OnlyGT':
 			case 'OnlyRD':
 			case 'OnlyIT': {
-				let opt = ba.optionBreakdownRD().find((d) => d.id == ba.breakdownRD())
+				// let opt = ba.optionBreakdownRD().find((d) => d.id == ba.breakdownRD())
 				data.forEach((d) => {
-					d.subs = d.subs.filter((e) => e._id == opt.label)
+					// d.subs = d.subs.filter((e) => e._id == opt.label)
+					d.subs = d.subs.filter((e) => e._id != "Total")
 
 					if (ba.expand()) {
 						let totalColumn = renderTotalColumn(d)

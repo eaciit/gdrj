@@ -126,25 +126,22 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 			case 'OnlyRD':
 			case 'OnlyIT':
 				{
-					(function () {
-						var opt = ba.optionBreakdownRD().find(function (d) {
-							return d.id == ba.breakdownRD();
+					// let opt = ba.optionBreakdownRD().find((d) => d.id == ba.breakdownRD())
+					data.forEach(function (d) {
+						// d.subs = d.subs.filter((e) => e._id == opt.label)
+						d.subs = d.subs.filter(function (e) {
+							return e._id != "Total";
 						});
-						data.forEach(function (d) {
-							d.subs = d.subs.filter(function (e) {
-								return e._id == opt.label;
-							});
 
-							if (ba.expand()) {
-								var totalColumn = renderTotalColumn(d);
-								d.subs = [totalColumn].concat(d.subs);
-							}
+						if (ba.expand()) {
+							var totalColumn = renderTotalColumn(d);
+							d.subs = [totalColumn].concat(d.subs);
+						}
 
-							d.count = toolkit.sum(d.subs, function (e) {
-								return e.count;
-							});
+						d.count = toolkit.sum(d.subs, function (e) {
+							return e.count;
 						});
-					})();
+					});
 				}break;
 			case 'NonRD':
 				{
@@ -267,7 +264,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		}, 'desc');
 		return _parsed2;
 	} else if (expand && breakdownRD.search('ByLocation') > -1) {
-		var _ret4 = function () {
+		var _ret3 = function () {
 			var opt = ba.optionBreakdownRD().find(function (d) {
 				return d.id == ba.breakdownRD();
 			});
@@ -312,7 +309,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 			};
 		}();
 
-		if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
+		if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
 	} else if (breakdownRD == "All") {
 		var _parsed3 = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
@@ -448,7 +445,7 @@ ba.refresh = function () {
 	};
 
 	if (ba.breakdownRD() == "All" && ba.expand()) {
-		var _ret5 = function () {
+		var _ret4 = function () {
 			var mergeData = function mergeData(dataNonRD, dataRD) {
 				var data = [];
 				var ids = _.uniq(dataNonRD.map(function (d) {
@@ -594,7 +591,7 @@ ba.refresh = function () {
 			};
 		}();
 
-		if ((typeof _ret5 === 'undefined' ? 'undefined' : _typeof(_ret5)) === "object") return _ret5.v;
+		if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
 	}
 
 	request(ba.breakdownRD(), ba.expand(), function (res) {
