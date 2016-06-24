@@ -898,55 +898,13 @@ ba.showZeroValue = function (a) {
 	ba.showExpandAll(false);
 };
 
-ba.optionBreakdownValues = ko.observableArray([]);
 ba.breakdownValueAll = { _id: 'All', Name: 'All' };
-ba.changeBreakdown = function () {
-	var all = ba.breakdownValueAll;
-	var map = function map(arr) {
-		return arr.map(function (d) {
-			if ("customer.channelname" == ba.breakdownBy()) {
-				return d;
-			}
-			if ("customer.keyaccount" == ba.breakdownBy()) {
-				return { _id: d._id, Name: d._id };
-			}
-
-			return { _id: d.Name, Name: d.Name };
-		});
-	};
-	setTimeout(function () {
-		switch (ba.breakdownBy()) {
-			case "customer.areaname":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Area())));
-				ba.breakdownValue([all._id]);
-				break;
-			case "customer.region":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Region())));
-				ba.breakdownValue([all._id]);
-				break;
-			case "customer.zone":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())));
-				ba.breakdownValue([all._id]);
-				break;
-			case "product.brand":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())));
-				ba.breakdownValue([all._id]);
-				break;
-			case "customer.branchname":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())));
-				ba.breakdownValue([all._id]);
-				break;
-			case "customer.channelname":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())));
-				ba.breakdownValue([all._id]);
-				break;
-			case "customer.keyaccount":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())));
-				ba.breakdownValue([all._id]);
-				break;
-		}
-	}, 100);
-};
+ba.optionBreakdownValues = ko.computed(function () {
+	var branches = rpt.masterData.Branch().map(function (d) {
+		return { _id: d.Name, Name: d.Name };
+	});
+	return [ba.breakdownValueAll].concat(branches);
+}, rpt.masterData.Branch);
 ba.changeBreakdownValue = function () {
 	var all = ba.breakdownValueAll;
 	setTimeout(function () {
@@ -978,12 +936,7 @@ vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Branch Analysis', href:
 ba.title('Branch Analysis');
 
 rpt.refresh = function () {
-	ba.changeBreakdown();
-	setTimeout(function () {
-		ba.breakdownValue(['All']);
-		ba.refresh(false);
-	}, 200);
-
+	ba.refresh(false);
 	ba.prepareEvents();
 };
 

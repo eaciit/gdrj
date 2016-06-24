@@ -532,39 +532,40 @@ sd.render = (res) => {
 		return row
 	})
 
-	sd.data(_.sortBy(rows, (d) => {
-		let subGroup = `00${toolkit.number(toolkit.getNumberFromString(d.group))}`.split('').reverse().splice(0, 2).reverse().join('')
-		let group = d[breakdown]
+	sd.data(rows)
+	// sd.data(_.sortBy(rows, (d) => {
+	// 	let subGroup = `00${toolkit.number(toolkit.getNumberFromString(d.group))}`.split('').reverse().splice(0, 2).reverse().join('')
+	// 	let group = d[breakdown]
 
-		switch (d[breakdown]) {
-			case "MT": group = "A"; break
-			case "GT": group = "B"; break
-			case "IT": group = "C"; break
-		}
+	// 	switch (d[breakdown]) {
+	// 		case "MT": group = "A"; break
+	// 		case "GT": group = "B"; break
+	// 		case "IT": group = "C"; break
+	// 	}
 
-		return [group, subGroup].join(' ')
-	}))
+	// 	return [group, subGroup].join(' ')
+	// }))
 
 	let op0 = _.filter(sd.data(), (d) => d.percentage > 0 || d.value > 0)
 	let op1 = _.groupBy(op0, (d) => d[breakdown])
 	let op2 = _.map(op1, (v, k) => { return { key: k, values: v } })
 	let op3 = _.orderBy(op2, (d) => toolkit.sum(d.values, (e) => e.percentage), 'desc')
 
-	// hack IT, too much data
-	let it = op3.find((d) => d.key == "IT")
-	if (it != undefined) {
-		if (it.values.length > 0) {
-			let totalIT = toolkit.sum(it.values, (e) => e.value)
-			let fake = {}
-			fake.customer_reportchannel = it.values[0].customer_reportchannel
-			fake.group = it.group
-			fake.percentage = toolkit.number(totalIT / total) * 100
-			fake.value = totalIT
+	// // hack IT, too much data
+	// let it = op3.find((d) => d.key == "IT")
+	// if (it != undefined) {
+	// 	if (it.values.length > 0) {
+	// 		let totalIT = toolkit.sum(it.values, (e) => e.value)
+	// 		let fake = {}
+	// 		fake.customer_reportchannel = it.values[0].customer_reportchannel
+	// 		fake.group = it.group
+	// 		fake.percentage = toolkit.number(totalIT / total) * 100
+	// 		fake.value = totalIT
 
-			it.valuesBackup = it.values.slice(0)
-			it.values = [fake]
-		}
-	}
+	// 		it.valuesBackup = it.values.slice(0)
+	// 		it.values = [fake]
+	// 	}
+	// }
 
 	let maxRow = _.maxBy(op3, (d) => d.values.length)
 	let maxRowIndex = op3.indexOf(maxRow)
