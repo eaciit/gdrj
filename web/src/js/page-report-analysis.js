@@ -327,7 +327,7 @@ bkd.buildStructure = (data) => {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id[`_id_${toolkit.replace(bkd.breakdownBy(), '.', '_')}`]
 		}).map((d) => {
-			d.subs = groupThenMap(d.subs, (e) => {
+			let subs = groupThenMap(d.subs, (e) => {
 				return e._id._id_customer_reportsubchannel
 			}).map((e) => {
 				e.breakdowns = e.subs[0]._id
@@ -335,6 +335,7 @@ bkd.buildStructure = (data) => {
 				return e
 			})
 
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 			d.breakdowns = d.subs[0]._id
 			d.count = d.subs.length
 			return d
@@ -349,7 +350,7 @@ bkd.buildStructure = (data) => {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id[`_id_${toolkit.replace(bkd.breakdownBy(), '.', '_')}`]
 		}).map((d) => {
-			d.subs = groupThenMap(d.subs, (e) => {
+			let subs = groupThenMap(d.subs, (e) => {
 				return e._id[`_id_customer_${bkd.breakdownChannelLocation()}`]
 			}).map((e) => {
 				e.breakdowns = e.subs[0]._id
@@ -357,6 +358,7 @@ bkd.buildStructure = (data) => {
 				return e
 			})
 
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 			d.breakdowns = d.subs[0]._id
 			d.count = d.subs.length
 			return d
@@ -1036,21 +1038,21 @@ rs.refresh = (useCache = false) => {
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear)
 
 	let fetch = () => {
-		app.ajaxPost("/report/getpnldatanew", param, (res1) => {
-			if (res1.Status == "NOK") {
+		app.ajaxPost("/report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
 				setTimeout(() => {
 					fetch()
 				}, 1000 * 5)
 				return
 			}
 
-			let date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
-			let dataAllPNL = res1.Data.Data
+			let dataAllPNL = res.Data.Data
 				.filter((d) => d.hasOwnProperty(rs.selectedPNL()))
 				.map((d) => { return { _id: d._id, value: d[rs.selectedPNL()] } })
-			let dataAllPNLNetSales = res1.Data.Data
+			let dataAllPNLNetSales = res.Data.Data
 				.filter((d) => d.hasOwnProperty(rs.selectedPNLNetSales()))
 				.map((d) => { return { _id: d._id, value: d[rs.selectedPNLNetSales()] } })
 

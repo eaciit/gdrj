@@ -112,8 +112,6 @@ dsbrd.changeBreakdown = () => {
 dsbrd.changeBreakdownValue = () => {
 	let all = dsbrd.breakdownValueAll
 	setTimeout(() => {
-		console.log("-----", dsbrd.breakdownValue())
-
 		let condA1 = dsbrd.breakdownValue().length == 2
 		let condA2 = dsbrd.breakdownValue().indexOf(all._id) == 0
 		if (condA1 && condA2) {
@@ -213,7 +211,7 @@ dsbrd.render = (res) => {
 
 		rowsAfter.push(row)
 	})
-	console.log(rowsAfter)
+
 	if (rowsAfter.length > 0) {
 		let grossSales = rowsAfter.find((d) => d.pnl == 'Net Sales')
 		let ebit = rowsAfter.find((d) => d.pnl == 'EBIT')
@@ -287,6 +285,7 @@ dsbrd.render = (res) => {
 			}
 		}
 	})
+
 	let columnGrouped = _.sortBy(op2, (d) => d.title)
 
 	op2.forEach((d) => {
@@ -310,6 +309,11 @@ dsbrd.render = (res) => {
 		columnsPlaceholder[0].locked = true
 		columnsPlaceholder[1].locked = true
 	}
+
+	columnGrouped = _.orderBy(columnGrouped, (d) => {
+		let dataColumn = rowsAfter[0].columnData.find((e) => e.breakdownTitle == d.title)
+		return dataColumn.value
+	}, 'desc')
 
 	dsbrd.data(rowsAfter)
 	dsbrd.columns(columnsPlaceholder.concat(columnGrouped))
@@ -469,8 +473,7 @@ rank.render = (breakdown, res) => {
 		rows.push(row)
 	})
 
-	console.log("---", rows)
-	rank.data(_.sortBy(rows, (d) => d.original))
+	rank.data(_.orderBy(rows, (d) => d.netSales, 'desc'))
 
 	let config = {
 		dataSource: {
@@ -545,16 +548,7 @@ sd.render = (res) => {
 	let op0 = _.filter(sd.data(), (d) => d.percentage > 0 || d.value > 0)
 	let op1 = _.groupBy(op0, (d) => d[breakdown])
 	let op2 = _.map(op1, (v, k) => { return { key: k, values: v } })
-	let op3 = _.orderBy(op2, (d) => {
-		return {
-			'MT': 0,
-			'GT': 1,
-			'RD': 2,
-			'IT': 3,
-			'MOTORIST': 4,
-			'EXPORT': 5
-		}[d.key]
-	}, 'asc')
+	let op3 = _.orderBy(op2, (d) => toolkit.sum(d.values, (e) => e.percentage), 'desc')
 
 	// hack IT, too much data
 	let it = op3.find((d) => d.key == "IT")
@@ -607,25 +601,23 @@ sd.render = (res) => {
 		let innerTable = toolkit.newEl('table').appendTo(td2nd)
 		let innerTbody = toolkit.newEl('tbody')
 			.appendTo(innerTable)
-			// .css('display', 'block')
-			// .css('overflow-y', 'auto')
-			// .height(800)
 
 		if (d.values.length == 1) {
 			let tr = toolkit.newEl('tr').appendTo(innerTbody)
 			toolkit.newEl('td')
 				.appendTo(tr)
 				.html(kendo.toString(d.values[0].value, 'n0'))
-				// .height(height)
 				.addClass('single')
+
 			return
 		}
 
-		let channelgroup = _.map(_.groupBy(d.values, (o) => { return o.group }), (v, k) => {
-			if (k == '')
-				k = '' 
+		let op1 = _.groupBy(d.values, (o) => { return o.group })
+		let channelgroup = _.map(op1, (v, k) => {
+			if (k == '') k = '' 
 			return { key: k, values: v } 
 		})
+
 		let totalyo = 0, percentageyo = 0, indexyo = 0
 		channelgroup.forEach((e) => {
 			totalyo = toolkit.sum(e.values, (b) => b.value)
@@ -634,6 +626,7 @@ sd.render = (res) => {
 			channelgroup[indexyo]['percentageyo'] = percentageyo
 			indexyo++
 		})
+
 		if (sd.sortVal[index] == ''){
 			channelgroup = _.orderBy(channelgroup, ['key'], ['asc'])
 			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-up')
@@ -648,30 +641,12 @@ sd.render = (res) => {
 			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-down')
 		}
 
-		if (isFirstTime) {
-			if (d.key == "MT") {
-				channelgroup = _.orderBy(channelgroup, (e) => {
-					switch (e.key) {
-						case 'Hyper': return 'A'; break
-						case 'Super': return 'B'; break
-						case 'Mini': return 'C'; break
-					}
-
-					return e.key
-				}, 'asc')
-			} else if (d.key == 'GT') {
-				channelgroup = _.orderBy(channelgroup, (e) => {
-					return toolkit.getNumberFromString(e.key)
-				}, 'asc')
-			}
-		}
-
-		channelgroup.forEach((e) => {
+		let op2 = _.orderBy(channelgroup, (e) => e.totalyo, 'desc')
+		op2.forEach((e) => {
 			let tr = toolkit.newEl('tr').appendTo(innerTable)
 			toolkit.newEl('td').css('width', '150px')
 				.appendTo(tr)
 				.html(e.key)
-				// .height(height / channelgroup.length)
 			toolkit.newEl('td').css('width', '40px')
 				.appendTo(tr)
 				.html(`${kendo.toString(e.percentageyo, 'n2')}&nbsp;%`)
@@ -679,13 +654,8 @@ sd.render = (res) => {
 				.appendTo(tr)
 				.html(kendo.toString(e.totalyo, 'n0'))
 		})
+
 		index++
-		// d.values.forEach((e) => {
-		// 	let tr = toolkit.newEl('tr').appendTo(innerTable)
-		// 	toolkit.newEl('td').appendTo(tr).html(e[breakdown]).height(height / d.values.length)
-		// 	toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(e.percentage, 'n2')} %`)
-		// 	toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.value, 'n0'))
-		// })
 	})
 
 	let trTotalTop = toolkit.newEl('tr').prependTo(table)

@@ -196,23 +196,27 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		var _parsed = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
-			d.subs = groupThenMap(d.subs, function (e) {
+			var subs = groupThenMap(d.subs, function (e) {
 				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
 			}).map(function (e) {
-				e.subs = groupThenMap(e.subs, function (f) {
+				var subs = groupThenMap(e.subs, function (f) {
 					return f._id._id_customer_channelname;
 				}).map(function (f) {
 					f.count = 1;
 					return f;
 				});
 
+				e.subs = _.orderBy(subs, function (f) {
+					return f.PL8A;
+				}, 'desc');
 				e.count = e.subs.length;
 				return e;
 			});
 
-			// INJECT THE EMPTY RD / NON RD
-			d.subs = fixEmptySubs(d);
-
+			d.subs = _.orderBy(subs, function (e) {
+				return e.PL8A;
+			}, 'desc');
+			d.subs = fixEmptySubs(d); // INJECT THE EMPTY RD / NON RD
 			d.count = toolkit.sum(d.subs, function (e) {
 				return e.count;
 			});
@@ -229,12 +233,10 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		var _parsed2 = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
-
-			d.subs = groupThenMap(d.subs, function (e) {
+			var subs = groupThenMap(d.subs, function (e) {
 				return e._id._id_customer_channelname;
 			}).map(function (e) {
-
-				e.subs = groupThenMap(d.subs, function (f) {
+				var subs = groupThenMap(d.subs, function (f) {
 					return f._id._id_customer_reportsubchannel;
 				}).map(function (f) {
 					f.subs = [];
@@ -242,10 +244,16 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 					return f;
 				});
 
+				e.subs = _.orderBy(subs, function (f) {
+					return f.PL8A;
+				}, 'desc');
 				e.count = e.subs.length;
 				return e;
 			});
 
+			d.subs = _.orderBy(subs, function (e) {
+				return e.PL8A;
+			}, 'desc');
 			d.count = toolkit.sum(d.subs, function (e) {
 				return e.count;
 			});
@@ -267,12 +275,10 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 			var parsed = groupThenMap(data, function (d) {
 				return d._id._id_customer_branchname;
 			}).map(function (d) {
-
-				d.subs = groupThenMap(d.subs, function (e) {
+				var subs = groupThenMap(d.subs, function (e) {
 					return e._id._id_customer_channelname;
 				}).map(function (e) {
-
-					e.subs = groupThenMap(d.subs, function (f) {
+					var subs = groupThenMap(d.subs, function (f) {
 						return f._id['_id_customer_' + opt.field];
 					}).map(function (f) {
 						f.subs = [];
@@ -280,10 +286,16 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 						return f;
 					});
 
+					e.subs = _.orderBy(subs, function (f) {
+						return f.PL8A;
+					}, 'desc');
 					e.count = e.subs.length;
 					return e;
 				});
 
+				d.subs = _.orderBy(subs, function (e) {
+					return e.PL8A;
+				}, 'desc');
 				d.count = toolkit.sum(d.subs, function (e) {
 					return e.count;
 				});
@@ -305,8 +317,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		var _parsed3 = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
-
-			d.subs = groupThenMap(d.subs, function (e) {
+			var subs = groupThenMap(d.subs, function (e) {
 				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
 			}).map(function (e) {
 				e.subs = [];
@@ -314,9 +325,10 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 				return e;
 			});
 
-			// INJECT THE EMPTY RD / NON RD
-			d.subs = fixEmptySubs(d);
-
+			d.subs = _.orderBy(subs, function (e) {
+				return e.PL8A;
+			}, 'desc');
+			d.subs = fixEmptySubs(d); // INJECT THE EMPTY RD / NON RD
 			d.count = toolkit.sum(d.subs, function (e) {
 				return e.count;
 			});
@@ -334,8 +346,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 	var parsed = groupThenMap(data, function (d) {
 		return d._id._id_customer_branchname;
 	}).map(function (d) {
-
-		d.subs = groupThenMap(d.subs, function (e) {
+		var subs = groupThenMap(d.subs, function (e) {
 			return e._id._id_customer_channelname;
 		}).map(function (e) {
 			e.subs = [];
@@ -343,6 +354,9 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 			return e;
 		});
 
+		d.subs = _.orderBy(subs, function (e) {
+			return e.PL8A;
+		}, 'desc');
 		d.count = toolkit.sum(d.subs, function (e) {
 			return e.count;
 		});
