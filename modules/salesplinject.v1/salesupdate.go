@@ -444,6 +444,7 @@ func main() {
 
 	var f *dbox.Filter
 	f = dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode))
+	f = dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Eq("customer.channelid", "I1"))
 	// f = dbox.Or(dbox.Eq("_id", "RD_2015_10_20010074_639316"), dbox.Eq("_id", "CN/GBS/15000021_1"))
 
 	toolkit.Println("Reading Master")
@@ -475,7 +476,7 @@ func main() {
 			break
 		}
 
-		if i == 5 {
+		if i == 25 {
 			break
 		}
 
@@ -505,7 +506,7 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 	var spl *gdrj.SalesPL
 	for spl = range jobs {
 
-		// spl.CleanAndClasify(masters)
+		spl.CleanAndClasify(masters)
 
 		// === For ratio update and calc
 		// spl.RatioCalc(masters)
@@ -520,8 +521,8 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 		// spl.CalcDepre(masters)
 		// spl.CalcRoyalties(masters)
 		// spl.CalcDiscountActivity(masters)
-		spl.CalcPromo(masters)
-		spl.CalcSum(masters)
+		// spl.CalcPromo(masters)
+		// spl.CalcSum(masters)
 
 		tablename := toolkit.Sprintf("%v-1", spl.TableName())
 		workerconn.NewQuery().From(tablename).
