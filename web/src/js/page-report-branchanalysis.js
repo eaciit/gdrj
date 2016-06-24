@@ -163,23 +163,23 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
-			d.subs = groupThenMap(d.subs, (e) => {
+			let subs = groupThenMap(d.subs, (e) => {
 				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1]
 			}).map((e) => {
-				e.subs = groupThenMap(e.subs, (f) => {
+				let subs = groupThenMap(e.subs, (f) => {
 					return f._id._id_customer_channelname
 				}).map((f) => {
 					f.count = 1
 					return f
 				})
 
+				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
 				e.count = e.subs.length
 				return e
 			})
 
-			// INJECT THE EMPTY RD / NON RD
-			d.subs = fixEmptySubs(d)
-
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+			d.subs = fixEmptySubs(d) // INJECT THE EMPTY RD / NON RD
 			d.count = toolkit.sum(d.subs, (e) => e.count)
 			return d
 		})
@@ -194,12 +194,10 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
-
-			d.subs = groupThenMap(d.subs, (e) => {
+			let subs = groupThenMap(d.subs, (e) => {
 				return e._id._id_customer_channelname
 			}).map((e) => {
-
-				e.subs = groupThenMap(d.subs, (f) => {
+				let subs = groupThenMap(d.subs, (f) => {
 					return f._id._id_customer_reportsubchannel
 				}).map((f) => {
 					f.subs = []
@@ -207,10 +205,12 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 					return f
 				})
 				
+				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
 				e.count = e.subs.length
 				return e
 			})
 
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 			d.count = toolkit.sum(d.subs, (e) => e.count)
 			return d
 		})
@@ -227,12 +227,10 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
-
-			d.subs = groupThenMap(d.subs, (e) => {
+			let subs = groupThenMap(d.subs, (e) => {
 				return e._id._id_customer_channelname
 			}).map((e) => {
-
-				e.subs = groupThenMap(d.subs, (f) => {
+				let subs = groupThenMap(d.subs, (f) => {
 					return f._id[`_id_customer_${opt.field}`]
 				}).map((f) => {
 					f.subs = []
@@ -240,10 +238,12 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 					return f
 				})
 				
+				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
 				e.count = e.subs.length
 				return e
 			})
 
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 			d.count = toolkit.sum(d.subs, (e) => e.count)
 			return d
 		})
@@ -258,8 +258,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
-
-			d.subs = groupThenMap(d.subs, (e) => {
+			let subs = groupThenMap(d.subs, (e) => {
 				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1]
 			}).map((e) => {
 				e.subs = []
@@ -267,9 +266,8 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 				return e
 			})
 
-			// INJECT THE EMPTY RD / NON RD
-			d.subs = fixEmptySubs(d)
-
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+			d.subs = fixEmptySubs(d) // INJECT THE EMPTY RD / NON RD
 			d.count = toolkit.sum(d.subs, (e) => e.count)
 			return d
 		})
@@ -283,8 +281,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 	let parsed = groupThenMap(data, (d) => {
 		return d._id._id_customer_branchname
 	}).map((d) => {
-
-		d.subs = groupThenMap(d.subs, (e) => {
+		let subs = groupThenMap(d.subs, (e) => {
 			return e._id._id_customer_channelname
 		}).map((e) => {
 			e.subs = []
@@ -292,6 +289,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 			return e
 		})
 
+		d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 		d.count = toolkit.sum(d.subs, (e) => e.count)
 		return d
 	})

@@ -327,7 +327,7 @@ bkd.buildStructure = (data) => {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id[`_id_${toolkit.replace(bkd.breakdownBy(), '.', '_')}`]
 		}).map((d) => {
-			d.subs = groupThenMap(d.subs, (e) => {
+			let subs = groupThenMap(d.subs, (e) => {
 				return e._id._id_customer_reportsubchannel
 			}).map((e) => {
 				e.breakdowns = e.subs[0]._id
@@ -335,6 +335,7 @@ bkd.buildStructure = (data) => {
 				return e
 			})
 
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 			d.breakdowns = d.subs[0]._id
 			d.count = d.subs.length
 			return d
@@ -349,7 +350,7 @@ bkd.buildStructure = (data) => {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id[`_id_${toolkit.replace(bkd.breakdownBy(), '.', '_')}`]
 		}).map((d) => {
-			d.subs = groupThenMap(d.subs, (e) => {
+			let subs = groupThenMap(d.subs, (e) => {
 				return e._id[`_id_customer_${bkd.breakdownChannelLocation()}`]
 			}).map((e) => {
 				e.breakdowns = e.subs[0]._id
@@ -357,6 +358,7 @@ bkd.buildStructure = (data) => {
 				return e
 			})
 
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 			d.breakdowns = d.subs[0]._id
 			d.count = d.subs.length
 			return d

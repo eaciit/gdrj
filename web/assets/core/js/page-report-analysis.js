@@ -336,7 +336,7 @@ bkd.buildStructure = function (data) {
 		var _parsed = groupThenMap(data, function (d) {
 			return d._id['_id_' + toolkit.replace(bkd.breakdownBy(), '.', '_')];
 		}).map(function (d) {
-			d.subs = groupThenMap(d.subs, function (e) {
+			var subs = groupThenMap(d.subs, function (e) {
 				return e._id._id_customer_reportsubchannel;
 			}).map(function (e) {
 				e.breakdowns = e.subs[0]._id;
@@ -344,6 +344,9 @@ bkd.buildStructure = function (data) {
 				return e;
 			});
 
+			d.subs = _.orderBy(subs, function (e) {
+				return e.PL8A;
+			}, 'desc');
 			d.breakdowns = d.subs[0]._id;
 			d.count = d.subs.length;
 			return d;
@@ -360,7 +363,7 @@ bkd.buildStructure = function (data) {
 		var _parsed2 = groupThenMap(data, function (d) {
 			return d._id['_id_' + toolkit.replace(bkd.breakdownBy(), '.', '_')];
 		}).map(function (d) {
-			d.subs = groupThenMap(d.subs, function (e) {
+			var subs = groupThenMap(d.subs, function (e) {
 				return e._id['_id_customer_' + bkd.breakdownChannelLocation()];
 			}).map(function (e) {
 				e.breakdowns = e.subs[0]._id;
@@ -368,6 +371,9 @@ bkd.buildStructure = function (data) {
 				return e;
 			});
 
+			d.subs = _.orderBy(subs, function (e) {
+				return e.PL8A;
+			}, 'desc');
 			d.breakdowns = d.subs[0]._id;
 			d.count = d.subs.length;
 			return d;

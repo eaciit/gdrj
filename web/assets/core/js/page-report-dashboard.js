@@ -97,8 +97,6 @@ dsbrd.changeBreakdown = function () {
 dsbrd.changeBreakdownValue = function () {
 	var all = dsbrd.breakdownValueAll;
 	setTimeout(function () {
-		console.log("-----", dsbrd.breakdownValue());
-
 		var condA1 = dsbrd.breakdownValue().length == 2;
 		var condA2 = dsbrd.breakdownValue().indexOf(all._id) == 0;
 		if (condA1 && condA2) {
@@ -208,7 +206,7 @@ dsbrd.render = function (res) {
 
 		rowsAfter.push(row);
 	});
-	console.log(rowsAfter);
+
 	if (rowsAfter.length > 0) {
 		(function () {
 			var grossSales = rowsAfter.find(function (d) {
@@ -296,6 +294,7 @@ dsbrd.render = function (res) {
 			}
 		};
 	});
+
 	var columnGrouped = _.sortBy(op2, function (d) {
 		return d.title;
 	});
@@ -321,6 +320,13 @@ dsbrd.render = function (res) {
 		columnsPlaceholder[0].locked = true;
 		columnsPlaceholder[1].locked = true;
 	}
+
+	columnGrouped = _.orderBy(columnGrouped, function (d) {
+		var dataColumn = rowsAfter[0].columnData.find(function (e) {
+			return e.breakdownTitle == d.title;
+		});
+		return dataColumn.value;
+	}, 'desc');
 
 	dsbrd.data(rowsAfter);
 	dsbrd.columns(columnsPlaceholder.concat(columnGrouped));
@@ -477,10 +483,9 @@ rank.render = function (breakdown, res) {
 		rows.push(row);
 	});
 
-	console.log("---", rows);
-	rank.data(_.sortBy(rows, function (d) {
-		return d.original;
-	}));
+	rank.data(_.orderBy(rows, function (d) {
+		return d.netSales;
+	}, 'desc'));
 
 	var config = {
 		dataSource: {
@@ -565,15 +570,10 @@ sd.render = function (res) {
 		return { key: k, values: v };
 	});
 	var op3 = _.orderBy(op2, function (d) {
-		return {
-			'MT': 0,
-			'GT': 1,
-			'RD': 2,
-			'IT': 3,
-			'MOTORIST': 4,
-			'EXPORT': 5
-		}[d.key];
-	}, 'asc');
+		return toolkit.sum(d.values, function (e) {
+			return e.percentage;
+		});
+	}, 'desc');
 
 	// hack IT, too much data
 	var it = op3.find(function (d) {
@@ -625,24 +625,22 @@ sd.render = function (res) {
 
 		var innerTable = toolkit.newEl('table').appendTo(td2nd);
 		var innerTbody = toolkit.newEl('tbody').appendTo(innerTable);
-		// .css('display', 'block')
-		// .css('overflow-y', 'auto')
-		// .height(800)
 
 		if (d.values.length == 1) {
 			var tr = toolkit.newEl('tr').appendTo(innerTbody);
-			toolkit.newEl('td').appendTo(tr).html(kendo.toString(d.values[0].value, 'n0'))
-			// .height(height)
-			.addClass('single');
+			toolkit.newEl('td').appendTo(tr).html(kendo.toString(d.values[0].value, 'n0')).addClass('single');
+
 			return;
 		}
 
-		var channelgroup = _.map(_.groupBy(d.values, function (o) {
+		var op1 = _.groupBy(d.values, function (o) {
 			return o.group;
-		}), function (v, k) {
+		});
+		var channelgroup = _.map(op1, function (v, k) {
 			if (k == '') k = '';
 			return { key: k, values: v };
 		});
+
 		var totalyo = 0,
 		    percentageyo = 0,
 		    indexyo = 0;
@@ -655,6 +653,7 @@ sd.render = function (res) {
 			channelgroup[indexyo]['percentageyo'] = percentageyo;
 			indexyo++;
 		});
+
 		if (sd.sortVal[index] == '') {
 			channelgroup = _.orderBy(channelgroup, ['key'], ['asc']);
 			$('.sortsales:eq(' + index + ')>i').removeClass('fa-chevron-up');
@@ -669,41 +668,17 @@ sd.render = function (res) {
 			$('.sortsales:eq(' + index + ')>i').removeClass('fa-chevron-down');
 		}
 
-		if (isFirstTime) {
-			if (d.key == "MT") {
-				channelgroup = _.orderBy(channelgroup, function (e) {
-					switch (e.key) {
-						case 'Hyper':
-							return 'A';break;
-						case 'Super':
-							return 'B';break;
-						case 'Mini':
-							return 'C';break;
-					}
-
-					return e.key;
-				}, 'asc');
-			} else if (d.key == 'GT') {
-				channelgroup = _.orderBy(channelgroup, function (e) {
-					return toolkit.getNumberFromString(e.key);
-				}, 'asc');
-			}
-		}
-
-		channelgroup.forEach(function (e) {
+		var op2 = _.orderBy(channelgroup, function (e) {
+			return e.totalyo;
+		}, 'desc');
+		op2.forEach(function (e) {
 			var tr = toolkit.newEl('tr').appendTo(innerTable);
 			toolkit.newEl('td').css('width', '150px').appendTo(tr).html(e.key);
-			// .height(height / channelgroup.length)
 			toolkit.newEl('td').css('width', '40px').appendTo(tr).html(kendo.toString(e.percentageyo, 'n2') + '&nbsp;%');
 			toolkit.newEl('td').css('width', '120px').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'));
 		});
+
 		index++;
-		// d.values.forEach((e) => {
-		// 	let tr = toolkit.newEl('tr').appendTo(innerTable)
-		// 	toolkit.newEl('td').appendTo(tr).html(e[breakdown]).height(height / d.values.length)
-		// 	toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(e.percentage, 'n2')} %`)
-		// 	toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.value, 'n0'))
-		// })
 	});
 
 	var trTotalTop = toolkit.newEl('tr').prependTo(table);
