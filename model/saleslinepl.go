@@ -778,20 +778,21 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 		return
 	}
 
-	// for key, v := range advertisement {
-	// 	fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-	// 	pl.AddData(toolkit.ToString(key), -pl.RatioToMonthSales*fv, plmodels)
-	// }
+	for key, v := range advertisement {
+		tplmodels := masters.Get("plmodel").(map[string]*PLModel)
+		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+		pl.AddData(toolkit.ToString(key), -pl.RatioToMonthSales*fv, tplmodels)
+	}
 
-	pl.AddData("28A", -pl.RatioToMonthSales*advertisement.GetFloat64("28A"), plmodels)
-	pl.AddData("28B", -pl.RatioToMonthSales*advertisement.GetFloat64("28B"), plmodels)
-	pl.AddData("28C", -pl.RatioToMonthSales*advertisement.GetFloat64("28C"), plmodels)
-	pl.AddData("28D", -pl.RatioToMonthSales*advertisement.GetFloat64("28D"), plmodels)
-	pl.AddData("28E", -pl.RatioToMonthSales*advertisement.GetFloat64("28E"), plmodels)
-	pl.AddData("28F", -pl.RatioToMonthSales*advertisement.GetFloat64("28F"), plmodels)
-	pl.AddData("28G", -pl.RatioToMonthSales*advertisement.GetFloat64("28G"), plmodels)
-	pl.AddData("28H", -pl.RatioToMonthSales*advertisement.GetFloat64("28H"), plmodels)
-	pl.AddData("28I", -pl.RatioToMonthSales*advertisement.GetFloat64("28I"), plmodels)
+	// pl.AddData("28A", -pl.RatioToMonthSales*advertisement.GetFloat64("28A"), plmodels)
+	// pl.AddData("28B", -pl.RatioToMonthSales*advertisement.GetFloat64("28B"), plmodels)
+	// pl.AddData("28C", -pl.RatioToMonthSales*advertisement.GetFloat64("28C"), plmodels)
+	// pl.AddData("28D", -pl.RatioToMonthSales*advertisement.GetFloat64("28D"), plmodels)
+	// pl.AddData("28E", -pl.RatioToMonthSales*advertisement.GetFloat64("28E"), plmodels)
+	// pl.AddData("28F", -pl.RatioToMonthSales*advertisement.GetFloat64("28F"), plmodels)
+	// pl.AddData("28G", -pl.RatioToMonthSales*advertisement.GetFloat64("28G"), plmodels)
+	// pl.AddData("28H", -pl.RatioToMonthSales*advertisement.GetFloat64("28H"), plmodels)
+	// pl.AddData("28I", -pl.RatioToMonthSales*advertisement.GetFloat64("28I"), plmodels)
 }
 
 //Handle by other
@@ -860,12 +861,15 @@ func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, mode
 		pl_m.Group2 = m.PLHeader2
 		pl_m.Group3 = m.PLHeader3
 	}
+
 	if ccgroup != "" {
 		pl_m.Group3 = ccgroup
 	}
+
 	pl_m.Amount += amount
 	if pl.PLDatas == nil {
 		pl.PLDatas = map[string]*PLData{}
 	}
+
 	pl.PLDatas[plcode] = pl_m
 }
