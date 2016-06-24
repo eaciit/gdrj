@@ -764,6 +764,15 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 		return f
 	}
 
+	advertisement, exist := advertisements[toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)]
+	if exist {
+		for key, v := range advertisement {
+			tplmodels := masters.Get("plmodel").(map[string]*PLModel)
+			fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+			pl.AddData(key, -pl.RatioToMonthSales*fv, tplmodels)
+		}
+	}
+
 	fpromo := find("promo")
 	// fadv := find("adv")
 	fspg := find("spg")
@@ -772,17 +781,6 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	pl.AddData("PL29A", -fpromo.AmountinIDR*pl.RatioToMonthSales, plmodels)
 	// pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToMonthSales, plmodels)
 	pl.AddData("PL32", -fspg.AmountinIDR*pl.RatioToMonthSales, plmodels)
-
-	advertisement, exist := advertisements[toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)]
-	if !exist {
-		return
-	}
-
-	for key, v := range advertisement {
-		tplmodels := masters.Get("plmodel").(map[string]*PLModel)
-		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-		pl.AddData(key, -pl.RatioToMonthSales*fv, tplmodels)
-	}
 
 	// pl.AddData("28A", -pl.RatioToMonthSales*advertisement.GetFloat64("28A"), plmodels)
 	// pl.AddData("28B", -pl.RatioToMonthSales*advertisement.GetFloat64("28B"), plmodels)
@@ -848,7 +846,7 @@ func (pl *SalesPL) AddData(plcode string, amount float64, models map[string]*PLM
 func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, models map[string]*PLModel) {
 	astr := []string{"28A", "28B", "28C", "28D", "28E", "28F", "28G", "28H", "28I"}
 	if toolkit.HasMember(astr, plcode) {
-		toolkit.Println(models)
+		toolkit.Println(models[plcode])
 	}
 
 	m, exist := models[plcode]
