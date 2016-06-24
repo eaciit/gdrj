@@ -394,17 +394,17 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 
 			switch channelid {
 			case "I6":
-				_id.Set(channelname, "MOTORIST")
+				_id.Set(channelname, "Motorist")
 			case "I4":
-				_id.Set(channelname, "IT")
+				_id.Set(channelname, "Industrial")
 			case "I1":
-				_id.Set(channelname, "RD")
+				_id.Set(channelname, "Regional Distributor")
 			case "I3":
-				_id.Set(channelname, "MT")
+				_id.Set(channelname, "Modern Trade")
 			case "I2":
-				_id.Set(channelname, "GT")
+				_id.Set(channelname, "General Trade")
 			case "EXP":
-				_id.Set(channelname, "EXP")
+				_id.Set(channelname, "Export")
 				// case "DISCOUNT":
 				// 	_id.Set(channelname, "DISCOUNT")
 				// case "":

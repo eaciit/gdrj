@@ -17,6 +17,7 @@ pvt.fiscalYear = ko.observable(rpt.value.FiscalYear());
 pvt.valueplmodel = ko.observableArray(["PL8A", "PL94C"]);
 
 pvt.renderCustomChart = function (data) {
+	console.log(data);
 	var series = [],
 	    dataresult = [];
 	var breakdown = toolkit.replace(pvt.column(), ".", "_"),
@@ -119,6 +120,9 @@ pvt.render = function () {
 		schemaCubeMeasures[d.title] = { field: field, format: '{0:c}', aggregate: 'sum' };
 		measures.push(d.title);
 	});
+	console.log("schemaModelFields ", schemaModelFields);
+	console.log("schemaCubeDimensions ", schemaCubeDimensions);
+	console.log("schemaCubeMeasures ", schemaCubeMeasures);
 
 	var config = {
 		filterable: false,

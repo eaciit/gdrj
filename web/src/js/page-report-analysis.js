@@ -1004,11 +1004,18 @@ let dataPoints = [
 rs.contentIsLoading = ko.observable(false)
 rs.title = ko.observable('P&L Analytic')
 rs.breakdownBy = ko.observable('customer.channelname')
+rs.breakdownSubBy = ko.observable('')
 rs.selectedPNLNetSales = ko.observable("PL8A") // PL1
 rs.selectedPNL = ko.observable("PL44B")
 rs.chartComparisonNote = ko.observable('')
 rs.optionDimensionSelect = ko.observableArray([])
+rs.optionTimeBreakdowns = ko.observableArray([
+	{ field: 'date.fiscal', name: 'Fiscal Year' },
+	{ field: 'date.quartertxt', name: 'Quarter' },
+	{ field: 'date.month', name: 'Month' },
+])
 rs.fiscalYear = ko.observable(rpt.value.FiscalYear())
+rs.columnWidth = ko.observable(130)
 
 rs.getSalesHeaderList = () => {
 	app.ajaxPost("/report/getplmodel", {}, (res) => {
@@ -1031,9 +1038,14 @@ rs.getSalesHeaderList = () => {
 rs.refresh = (useCache = false) => {
 	rs.contentIsLoading(true)
 
+	let groups = [rs.breakdownBy()]
+	if (rs.breakdownSubBy() != '') {
+		groups.push(rs.breakdownSubBy())
+	}
+
 	let param = {}
 	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()]
-	param.groups = rpt.parseGroups([rs.breakdownBy()])
+	param.groups = rpt.parseGroups(groups)
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear)
 
@@ -1049,43 +1061,21 @@ rs.refresh = (useCache = false) => {
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
-			let dataAllPNL = res.Data.Data
-				.filter((d) => d.hasOwnProperty(rs.selectedPNL()))
-				.map((d) => { return { _id: d._id, value: d[rs.selectedPNL()] } })
-			let dataAllPNLNetSales = res.Data.Data
-				.filter((d) => d.hasOwnProperty(rs.selectedPNLNetSales()))
-				.map((d) => { return { _id: d._id, value: d[rs.selectedPNLNetSales()] } })
-
-			let years = _.map(_.groupBy(dataAllPNL, (d) => d._id._id_date_year), (v, k) => k)
-
-			var sumNetSales = _.reduce(dataAllPNLNetSales, (m, x) => m + x.value, 0);
-			let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x.value, 0)
-			let countPNL = dataAllPNL.length
-			let avgPNL = sumPNL
-
-			let dataScatter = []
-			let multiplier = (sumNetSales == 0 ? 1 : sumNetSales)
-
-			dataAllPNL.forEach((d, i) => {
-				dataScatter.push({
-					valueNetSales: dataAllPNLNetSales[i].value,
-					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, ''),
-					category: d._id[`_id_${app.idAble(rs.breakdownBy())}`],
-					year: d._id._id_date_year,
-					valuePNL: Math.abs(d.value),
-					valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
-					avgPNL: Math.abs(avgPNL),
-					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
-					// sumPNL: Math.abs(sumPNL),
-					// sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
-				})
-			})
-
-			console.log("dataScatter", dataScatter)
-			console.log("dataAllPNL", dataAllPNL)
-
 			rs.contentIsLoading(false)
-			rs.generateReport(dataScatter, years)
+
+			let scatterViewWrapper = $('.scatter-view-wrapper')
+				.empty().width(rs.columnWidth() * res.Data.Data.length)
+
+			if (rs.breakdownSubBy() != '') {
+				let op1 = _.groupBy(res.Data.Data, (d) => d._id[`_id_${app.idAble(rs.breakdownBy())}`])
+				_.map(op1, (v, k) => { 
+					rs.generateReport(k, v)
+				})
+			} else {
+				rs.generateReport('', res.Data.Data)
+			}
+
+			scatterViewWrapper.append('<div class="clearfix" style="clear: both;"></div>')
 		}, () => {
 			rs.contentIsLoading(false)
 		}, {
@@ -1096,8 +1086,48 @@ rs.refresh = (useCache = false) => {
 	fetch()
 }
 
-rs.generateReport = (data, years) => {
-	data = _.orderBy(data, (d) => d.valueNetSales, 'desc')
+rs.generateReport = (title, raw) => {
+	let breakdown = rs.breakdownSubBy() == '' ? rs.breakdownBy() : rs.breakdownSubBy()
+
+	let dataAllPNL = raw
+		.filter((d) => d.hasOwnProperty(rs.selectedPNL()))
+		.map((d) => { return { _id: d._id, value: d[rs.selectedPNL()] } })
+	let dataAllPNLNetSales = raw
+		.filter((d) => d.hasOwnProperty(rs.selectedPNLNetSales()))
+		.map((d) => { return { _id: d._id, value: d[rs.selectedPNLNetSales()] } })
+
+	var sumNetSales = _.reduce(dataAllPNLNetSales, (m, x) => m + x.value, 0);
+	let sumPNL = _.reduce(dataAllPNL, (m, x) => m + x.value, 0)
+	let countPNL = dataAllPNL.length
+	let avgPNL = sumPNL
+
+	let data = []
+	let multiplier = (sumNetSales == 0 ? 1 : sumNetSales)
+
+	dataAllPNL.forEach((d, i) => {
+		let category = d._id[`_id_${app.idAble(breakdown)}`]
+		let order = category
+
+		if (breakdown == 'date.month') {
+			category = moment(new Date(2015, category - 1, 1)).format('MMMM')
+		}
+
+		data.push({
+			valueNetSales: dataAllPNLNetSales[i].value,
+			category: category,
+			order: order,
+			valuePNL: Math.abs(d.value),
+			valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
+			avgPNL: Math.abs(avgPNL),
+			avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
+		})
+	})
+
+	if (breakdown == 'date.month') {
+		data = _.orderBy(data, (d) => parseInt(d.order, 10), 'asc')
+	} else {
+		data = _.orderBy(data, (d) => d.valueNetSales, 'desc')
+	}
 
 	let max = _.max(_.map(data, (d) => d.avgNetSalesPercentage)
 		.concat(_.map(data, (d) => d.valuePNLPercentage)))
@@ -1105,18 +1135,18 @@ rs.generateReport = (data, years) => {
 	let netSalesTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNLNetSales()).name
 	let breakdownTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNL()).name
 
-	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>')
-	if ((data.length * 100) > $('#scatter-view').parent().width())
-    	$('#scatter-view').width(data.length * 120)
-    else
-	    $('#scatter-view').css('width', '100%')
-	$("#scatter-view").kendoChart({
-		dataSource: {
-            data: data
-        },
-        title: {
-            text: ""
-        },
+	let width = (data.length * rs.columnWidth())
+	width = width < 300 ? 300 : width
+
+	let scatterViewWrapper = $('.scatter-view-wrapper')
+	let scatterView = $('<div id="scatter-view"></div>')
+		.height(350)
+		.css('float', 'left')
+		.appendTo(scatterViewWrapper)
+
+	let config = {
+		dataSource: { data: data },
+        // title: title,
         legend: {
             visible: true,
             position: "bottom"
@@ -1140,20 +1170,15 @@ rs.generateReport = (data, years) => {
 				visible: true,
 				template: `Average ${breakdownTitle} to ${netSalesTitle}: #: kendo.toString(dataItem.avgPNLPercentage, 'n2') # % (#: kendo.toString(dataItem.avgPNL, 'n2') #)`
 			},
-			markers: {
-				visible: false
-			}
-		},
-		{
+			markers: { visible: false }
+		}, {
 			type: 'column',
 			name: `${breakdownTitle} to ${netSalesTitle}`,
 			field: "valuePNLPercentage",
 			overlay: {
 				gradient: 'none'
 			},
-			border: {
-				width: 0
-			},
+			border: { width: 0 },
 			tooltip: {
 				visible: true,
 				template: `${breakdownTitle} #: dataItem.category # to ${netSalesTitle}: #: kendo.toString(dataItem.valuePNLPercentage, 'n2') # % (#: kendo.toString(dataItem.valuePNL, 'n2') #)`
@@ -1168,24 +1193,38 @@ rs.generateReport = (data, years) => {
 			},
 		}],
         valueAxis: {
-			majorGridLines: {
-				color: '#fafafa'
-			},
-            label: {
-            	format: "{0}%"
-            },
+			majorGridLines: { color: '#fafafa' },
+            label: { format: "{0}%" },
+            axisCrossingValue: [0, -10],
+        	max: (max < 100 ? (max + 20) : 100),
         },
         categoryAxis: [{
             field: 'category',
             labels: {
-            	rotation: 20,
 				font: '"Source Sans Pro" 11px',
             },
-			majorGridLines: {
-				color: '#fafafa'
-			}
+			majorGridLines: { color: '#fafafa' }
 		}],
-    })
+    }
+
+    if (rs.breakdownSubBy() != '') {
+    	config.categoryAxis.push({
+			categories: [title],
+            labels: {
+				font: '"Source Sans Pro" 18px bold',
+            },
+		})
+    } else {
+		if (width < scatterViewWrapper.parent().width()) {
+			width = '100%'
+		}
+    }
+
+    if (scatterViewWrapper.width() < scatterViewWrapper.parent().width()) {
+    	scatterViewWrapper.width('100%')
+    }
+
+	scatterView.width(width).kendoChart(config)
 }
 
 

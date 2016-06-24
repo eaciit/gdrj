@@ -55,6 +55,7 @@ crt.configure = (series, colorseries, maxchart = 0) => {
 	}
 
 	if (crt.typeChart() == 'stack') {
+		let maxyo = 0
 		let datayo = _.map(dataSort, (k, e) => {
 			let data = {}
 			$.each( k, ( key, value ) => {

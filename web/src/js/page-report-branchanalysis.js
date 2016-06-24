@@ -114,9 +114,9 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 			case 'OnlyGT':
 			case 'OnlyRD':
 			case 'OnlyIT': {
-				let opt = ba.optionBreakdownRD().find((d) => d.id == ba.breakdownRD())
+				// let opt = ba.optionBreakdownRD().find((d) => d.id == ba.breakdownRD())
 				data.forEach((d) => {
-					d.subs = d.subs.filter((e) => e._id == opt.label)
+					// d.subs = d.subs.filter((e) => e._id == opt.label)
 
 					if (ba.expand()) {
 						let totalColumn = renderTotalColumn(d)
@@ -128,7 +128,9 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 			} break;
 			case 'NonRD': {
 				data.forEach((d) => {
-					d.subs = d.subs.filter((e) => e._id != 'RD')
+					d.subs = d.subs.filter((e) => 
+						(['regional distributor', 'rd'].indexOf(e._id.toLowerCase()) == -1)
+					)
 
 					if (ba.expand()) {
 						let totalColumn = renderTotalColumn(d)
@@ -408,7 +410,7 @@ ba.refresh = (useCache = false) => {
 				}
 
 				if (rd != undefined) {
-					let rdSub = rd.subs.find((d) => d._id == 'RD')
+					let rdSub = rd.subs.find((d) => (['regional distributor', 'rd'].indexOf(d._id.toLowerCase()) > -1))
 
 					mergedData.count += rdSub.subs.length
 					mergedData.subs.push(rdSub)
@@ -842,53 +844,12 @@ ba.showZeroValue = (a) => {
 	ba.showExpandAll(false)
 }
 
-ba.optionBreakdownValues = ko.observableArray([])
 ba.breakdownValueAll = { _id: 'All', Name: 'All' }
-ba.changeBreakdown = () => {
-	let all = ba.breakdownValueAll
-	let map = (arr) => arr.map((d) => {
-		if ("customer.channelname" == ba.breakdownBy()) {
-			return d
-		}
-		if ("customer.keyaccount" == ba.breakdownBy()) {
-			return { _id: d._id, Name: d._id }
-		}
-
-		return { _id: d.Name, Name: d.Name }
-	})
-	setTimeout(() => {
-		switch (ba.breakdownBy()) {
-			case "customer.areaname":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Area())))
-				ba.breakdownValue([all._id])
-			break;
-			case "customer.region":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Region())))
-				ba.breakdownValue([all._id])
-			break;
-			case "customer.zone":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())))
-				ba.breakdownValue([all._id])
-			break;
-			case "product.brand":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())))
-				ba.breakdownValue([all._id])
-			break;
-			case "customer.branchname":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
-				ba.breakdownValue([all._id])
-			break;
-			case "customer.channelname":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
-				ba.breakdownValue([all._id])
-			break;
-			case "customer.keyaccount":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))
-				ba.breakdownValue([all._id])
-			break;
-		}
-	}, 100)
-}
+ba.optionBreakdownValues = ko.computed(() => {
+	let branches = rpt.masterData.Branch()
+		.map((d) => { return { _id: d.Name, Name: d.Name }})
+	return [ba.breakdownValueAll].concat(branches)
+}, rpt.masterData.Branch)
 ba.changeBreakdownValue = () => {
 	let all = ba.breakdownValueAll
 	setTimeout(() => {
@@ -923,12 +884,7 @@ vm.breadcrumb([
 ba.title('Branch Analysis')
 
 rpt.refresh = () => {
-	ba.changeBreakdown()
-	setTimeout(() => {
-		ba.breakdownValue(['All'])
-		ba.refresh(false)
-	}, 200)
-
+	ba.refresh(false)
 	ba.prepareEvents()
 }
 
