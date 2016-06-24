@@ -752,16 +752,12 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	}
 	pl.PLDatas = aplmodel
 
-	promos := masters.Get("promos").(map[string]*RawDataPL)
+	promos := masters.Get("promos").(map[string]float64)
 	advertisements := masters.Get("advertisements").(map[string]toolkit.M)
 
-	find := func(x string) *RawDataPL {
+	find := func(x string) float64 {
 		freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, x)
-		f, exist := promos[freightid]
-		if !exist {
-			return &RawDataPL{}
-		}
-		return f
+		return promos[freightid]
 	}
 
 	advertisement, exist := advertisements[toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)]
@@ -778,9 +774,9 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	fspg := find("spg")
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL29A", -fpromo.AmountinIDR*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL29A", -fpromo*pl.RatioToMonthSales, plmodels)
 	// pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToMonthSales, plmodels)
-	pl.AddData("PL32", -fspg.AmountinIDR*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL32", -fspg*pl.RatioToMonthSales, plmodels)
 
 }
 
