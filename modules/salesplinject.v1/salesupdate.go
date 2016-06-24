@@ -142,7 +142,7 @@ func prepmaster() {
 
 	toolkit.Println("--> RAW DATA PL")
 	promos, freight, depreciation := map[string]*gdrj.RawDataPL{}, map[string]*gdrj.RawDataPL{}, map[string]float64{}
-	royalties, damages := map[string]float64{}, map[string]float64{}
+	royalties, damages, advertisements := map[string]float64{}, map[string]float64{}, map[string]toolkit.M{}
 	f := dbox.Eq("year", fiscalyear-1)
 	csrpromo, _ := gdrj.Find(new(gdrj.RawDataPL), f, nil)
 	defer csrpromo.Close()
@@ -167,14 +167,46 @@ func prepmaster() {
 				agroup = "spg"
 			}
 
-			key = toolkit.Sprintf("%s_%s", key, agroup)
-			prm, exist := promos[key]
-			if !exist {
-				prm = new(gdrj.RawDataPL)
-			}
+			if agroup == "spg" {
+				tspg, exist := advertisements[key]
+				if !exist {
+					tspg = toolkit.M{}
+				}
+				skey := "28I"
+				tstr := strings.TrimSpace(o.AccountDescription)
+				switch tstr {
+				case "ADVERTISEMENT - INTERNET":
+					skey = "28A"
+				case "ADVERTISEMENT - PRODN - DESIGN - DVLOPMNT":
+					skey = "28B"
+				case "ADVERTISEMENT - TV":
+					skey = "28C"
+				case "MARKET RESEARCH":
+					skey = "28D"
+				case "FAIRS & EVENTS":
+					skey = "28E"
+				case "AGENCY FEES":
+					skey = "28F"
+				case "ADVERTISEMENT - POP MATERIALS":
+					skey = "28G"
+				case "SPONSORSHIP":
+					skey = "28H"
+				}
 
-			prm.AmountinIDR += o.AmountinIDR
-			promos[key] = prm
+				v := tspg.GetFloat64(skey) + o.AmountinIDR
+				tspg.Set(skey, v)
+				advertisements[key] = tspg
+
+			} else {
+				key = toolkit.Sprintf("%s_%s", key, agroup)
+				prm, exist := promos[key]
+				if !exist {
+					prm = new(gdrj.RawDataPL)
+				}
+
+				prm.AmountinIDR += o.AmountinIDR
+				promos[key] = prm
+			}
 		case "FREIGHT":
 			frg, exist := freight[key]
 			if !exist {
@@ -219,7 +251,7 @@ func prepmaster() {
 
 	toolkit.Printfn("PROMO : %v, ADV : %v", vPromo, vAdv)
 	masters.Set("promos", promos).Set("freight", freight).Set("depreciation", depreciation).
-		Set("royalties", royalties).Set("damages", damages)
+		Set("royalties", royalties).Set("damages", damages).Set("advertisements", advertisements)
 
 	toolkit.Println("--> DISCOUNT ACTIVITY")
 	//discounts_all discounts
@@ -255,6 +287,65 @@ func prepmaster() {
 		tkmdiscount.Set(key, tamount)
 	}
 	masters.Set("discounts", tkmdiscount)
+}
+
+func prepmasterclean() {
+
+	toolkit.Println("--> Sub Channel")
+	csr, _ := conn.NewQuery().From("subchannels").Cursor(nil)
+	defer csr.Close()
+	for {
+		m := toolkit.M{}
+		e := csr.Fetch(&m, 1, false)
+		if e != nil {
+			break
+		}
+		subchannels.Set(m.GetString("_id"), m.GetString("title"))
+	}
+	masters.Set("subchannels", subchannels)
+
+	customers := toolkit.M{}
+	toolkit.Println("--> Customer")
+	ccb := getCursor(new(gdrj.Customer))
+	defer ccb.Close()
+	for {
+		cust := new(gdrj.Customer)
+		e := ccb.Fetch(cust, 1, false)
+		if e != nil {
+			break
+		}
+
+		customers.Set(cust.ID, cust)
+	}
+	masters.Set("customers", customers)
+
+	branchs := toolkit.M{}
+	cmb := getCursor(new(gdrj.MasterBranch))
+	defer cmb.Close()
+	for {
+		stx := toolkit.M{}
+		e := cmb.Fetch(&stx, 1, false)
+		if e != nil {
+			break
+		}
+
+		branchs.Set(stx.Get("_id", "").(string), stx)
+	}
+	masters.Set("branchs", branchs)
+
+	rdlocations := toolkit.M{}
+	crdloc, _ := conn.NewQuery().From("outletgeo").Cursor(nil)
+	defer crdloc.Close()
+	for {
+		stx := toolkit.M{}
+		e := crdloc.Fetch(&stx, 1, false)
+		if e != nil {
+			break
+		}
+
+		branchs.Set(stx.GetString("_id"), stx)
+	}
+	masters.Set("rdlocations", rdlocations)
 }
 
 func prepmastergrossproc() {
@@ -352,6 +443,7 @@ func main() {
 
 	toolkit.Println("Reading Master")
 	prepmaster()
+	prepmasterclean()
 	// prepmastergrossproc()
 
 	c, _ := gdrj.Find(new(gdrj.SalesPL), f, nil)
@@ -378,7 +470,7 @@ func main() {
 			break
 		}
 
-		if i == 10 {
+		if i == 20 {
 			break
 		}
 
@@ -408,19 +500,21 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 	var spl *gdrj.SalesPL
 	for spl = range jobs {
 
-		// spl.CleanAndClasify(masters)
+		spl.CleanAndClasify(masters)
 
 		// === For ratio update and calc
 		// spl.RatioCalc(masters)
 
+		//calculate process -- better not re-run
+		// spl.CalcCOGSRev(masters)
+
 		//calculate process
-		spl.CalcCOGSRev(masters)
-		spl.CalcFreight(masters)
-		spl.CalcDepre(masters)
+		// spl.CalcFreight(masters)
+		// spl.CalcDepre(masters)
 		spl.CalcDamage(masters)
-		spl.CalcDepre(masters)
-		spl.CalcRoyalties(masters)
-		spl.CalcDiscountActivity(masters)
+		// spl.CalcDepre(masters)
+		// spl.CalcRoyalties(masters)
+		// spl.CalcDiscountActivity(masters)
 		spl.CalcPromo(masters)
 		spl.CalcSum(masters)
 
