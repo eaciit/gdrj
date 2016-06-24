@@ -383,7 +383,7 @@ ba.refresh = (useCache = false) => {
 				if (nonrd != undefined) {
 					let nonrdSub = nonrd.subs.find((d) => d._id == 'Non RD')
 
-					mergedData.count += nonrdSub.subs.length
+					mergedData.count += nonrdSub.length
 					mergedData.subs.push(nonrdSub)
 				} else {
 					let fake = {}
@@ -410,7 +410,7 @@ ba.refresh = (useCache = false) => {
 				if (rd != undefined) {
 					let rdSub = rd.subs.find((d) => d._id == 'RD')
 
-					mergedData.count += rdSub.subs.length
+					mergedData.count += rdSub.length
 					mergedData.subs.push(rdSub)
 				} else {
 					let fake = {}
