@@ -774,7 +774,7 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	pl.AddData("PL32", -fspg.AmountinIDR*pl.RatioToMonthSales, plmodels)
 
 	advertisement, exist := advertisements[toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)]
-	if exist {
+	if !exist {
 		return
 	}
 
