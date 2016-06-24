@@ -336,7 +336,7 @@ bkd.buildStructure = function (data) {
 		var _parsed = groupThenMap(data, function (d) {
 			return d._id['_id_' + toolkit.replace(bkd.breakdownBy(), '.', '_')];
 		}).map(function (d) {
-			d.subs = groupThenMap(d.subs, function (e) {
+			var subs = groupThenMap(d.subs, function (e) {
 				return e._id._id_customer_reportsubchannel;
 			}).map(function (e) {
 				e.breakdowns = e.subs[0]._id;
@@ -344,6 +344,9 @@ bkd.buildStructure = function (data) {
 				return e;
 			});
 
+			d.subs = _.orderBy(subs, function (e) {
+				return e.PL8A;
+			}, 'desc');
 			d.breakdowns = d.subs[0]._id;
 			d.count = d.subs.length;
 			return d;
@@ -360,7 +363,7 @@ bkd.buildStructure = function (data) {
 		var _parsed2 = groupThenMap(data, function (d) {
 			return d._id['_id_' + toolkit.replace(bkd.breakdownBy(), '.', '_')];
 		}).map(function (d) {
-			d.subs = groupThenMap(d.subs, function (e) {
+			var subs = groupThenMap(d.subs, function (e) {
 				return e._id['_id_customer_' + bkd.breakdownChannelLocation()];
 			}).map(function (e) {
 				e.breakdowns = e.subs[0]._id;
@@ -368,6 +371,9 @@ bkd.buildStructure = function (data) {
 				return e;
 			});
 
+			d.subs = _.orderBy(subs, function (e) {
+				return e.PL8A;
+			}, 'desc');
 			d.breakdowns = d.subs[0]._id;
 			d.count = d.subs.length;
 			return d;
@@ -980,23 +986,23 @@ rs.refresh = function () {
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear);
 
 	var fetch = function fetch() {
-		app.ajaxPost("/report/getpnldatanew", param, function (res1) {
-			if (res1.Status == "NOK") {
+		app.ajaxPost("/report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
 				}, 1000 * 5);
 				return;
 			}
 
-			var date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			rs.chartComparisonNote('Last refreshed on: ' + date);
 
-			var dataAllPNL = res1.Data.Data.filter(function (d) {
+			var dataAllPNL = res.Data.Data.filter(function (d) {
 				return d.hasOwnProperty(rs.selectedPNL());
 			}).map(function (d) {
 				return { _id: d._id, value: d[rs.selectedPNL()] };
 			});
-			var dataAllPNLNetSales = res1.Data.Data.filter(function (d) {
+			var dataAllPNLNetSales = res.Data.Data.filter(function (d) {
 				return d.hasOwnProperty(rs.selectedPNLNetSales());
 			}).map(function (d) {
 				return { _id: d._id, value: d[rs.selectedPNLNetSales()] };
