@@ -166,7 +166,7 @@ func prepmaster() {
 				agroup = "spg"
 			}
 
-			if agroup == "spg" {
+			if agroup == "adv" {
 				tspg, exist := advertisements[key]
 				if !exist {
 					tspg = toolkit.M{}
