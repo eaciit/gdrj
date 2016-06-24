@@ -146,7 +146,6 @@ func prepmaster() {
 	f := dbox.Eq("year", fiscalyear-1)
 	csrpromo, _ := gdrj.Find(new(gdrj.RawDataPL), f, nil)
 	defer csrpromo.Close()
-	vPromo, vAdv := float64(0), float64(0)
 
 	for {
 		o := new(gdrj.RawDataPL)
