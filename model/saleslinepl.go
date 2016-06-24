@@ -835,11 +835,11 @@ func (pl *SalesPL) AddData(plcode string, amount float64, models map[string]*PLM
 }
 
 func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, models map[string]*PLModel) {
+	toolkit.Println(plcode, " : ", amount)
 	m, exist := models[plcode]
 	if !exist {
 		return
 	}
-	// toolkit.Println(plcode, " : ", amount)
 	if ccgroup != "" {
 		plcode = plcode + "_" + ccgroup
 	}
