@@ -508,7 +508,7 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 	var spl *gdrj.SalesPL
 	for spl = range jobs {
 
-		// spl.CleanAndClasify(masters)
+		spl.CleanAndClasify(masters)
 
 		// === For ratio update and calc
 		// spl.RatioCalc(masters)
