@@ -781,7 +781,7 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	for key, v := range advertisement {
 		tplmodels := masters.Get("plmodel").(map[string]*PLModel)
 		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-		pl.AddData(toolkit.ToString(key), -pl.RatioToMonthSales*fv, tplmodels)
+		pl.AddData(key, -pl.RatioToMonthSales*fv, tplmodels)
 	}
 
 	// pl.AddData("28A", -pl.RatioToMonthSales*advertisement.GetFloat64("28A"), plmodels)
@@ -846,6 +846,11 @@ func (pl *SalesPL) AddData(plcode string, amount float64, models map[string]*PLM
 }
 
 func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, models map[string]*PLModel) {
+	astr := []string{"28A", "28B", "28C", "28D", "28E", "28F", "28G", "28H", "28I"}
+	if toolkit.HasMember(astr, plcode) {
+		toolkit.Println(models)
+	}
+
 	m, exist := models[plcode]
 	if !exist {
 		return
