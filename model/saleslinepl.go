@@ -778,10 +778,20 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 		return
 	}
 
-	for key, v := range advertisement {
-		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-		pl.AddData(toolkit.ToString(key), -pl.RatioToMonthSales*fv, plmodels)
-	}
+	// for key, v := range advertisement {
+	// 	fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+	// 	pl.AddData(toolkit.ToString(key), -pl.RatioToMonthSales*fv, plmodels)
+	// }
+
+	pl.AddData("28A", -pl.RatioToMonthSales*advertisement.GetFloat64("28A"), plmodels)
+	pl.AddData("28B", -pl.RatioToMonthSales*advertisement.GetFloat64("28B"), plmodels)
+	pl.AddData("28C", -pl.RatioToMonthSales*advertisement.GetFloat64("28C"), plmodels)
+	pl.AddData("28D", -pl.RatioToMonthSales*advertisement.GetFloat64("28D"), plmodels)
+	pl.AddData("28E", -pl.RatioToMonthSales*advertisement.GetFloat64("28E"), plmodels)
+	pl.AddData("28F", -pl.RatioToMonthSales*advertisement.GetFloat64("28F"), plmodels)
+	pl.AddData("28G", -pl.RatioToMonthSales*advertisement.GetFloat64("28G"), plmodels)
+	pl.AddData("28H", -pl.RatioToMonthSales*advertisement.GetFloat64("28H"), plmodels)
+	pl.AddData("28I", -pl.RatioToMonthSales*advertisement.GetFloat64("28I"), plmodels)
 }
 
 //Handle by other
@@ -835,7 +845,6 @@ func (pl *SalesPL) AddData(plcode string, amount float64, models map[string]*PLM
 }
 
 func (pl *SalesPL) AddDataCC(plcode string, amount float64, ccgroup string, models map[string]*PLModel) {
-	toolkit.Println(plcode, " : ", amount)
 	m, exist := models[plcode]
 	if !exist {
 		return
