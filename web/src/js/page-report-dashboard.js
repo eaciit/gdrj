@@ -501,6 +501,14 @@ sd.breakdown = ko.observable('customer.reportchannel')
 sd.breakdownSub = ko.observable('customer.reportsubchannel')
 sd.data = ko.observableArray([])
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear())
+sd.selectedPL = ko.observable('PL8A')
+sd.getPLModels = () => {
+	app.ajaxPost("/report/getplmodel", {}, (res) => {
+		sd.selectedPL('')
+		rpt.plmodels(_.orderBy(res, (d) => d.OrderIndex))
+		sd.selectedPL('PL8A')
+	})
+}
 sd.render = (res) => {
 	let isFirstTime = sd.isFirstTime()
 	sd.isFirstTime(false)
@@ -508,7 +516,7 @@ sd.render = (res) => {
 	let data = res.Data.Data
 
 	let breakdown = toolkit.replace(sd.breakdown(), ".", "_")
-	let total = toolkit.sum(data, (d) => d.PL8A)
+	let total = toolkit.sum(data, (d) => d[sd.selectedPL()])
 
 	sd.data(data)
 
@@ -516,8 +524,8 @@ sd.render = (res) => {
 		let row = {}
 		row[breakdown] = d._id[`_id_${breakdown}`]
 		row.group = d._id[`_id_${toolkit.replace(sd.breakdownSub(), '.', '_')}`]
-		row.percentage = toolkit.number(d.PL8A / total) * 100
-		row.value = d.PL8A
+		row.percentage = toolkit.number(d[sd.selectedPL()] / total) * 100
+		row.value = d[sd.selectedPL()]
 		return row
 	})
 
@@ -696,7 +704,7 @@ sd.sortData = () => {
 sd.oldData = ko.observable({})
 sd.refresh = () => {
 	let param = {}
-	param.pls = ["PL8A"]
+	param.pls = [sd.selectedPL()]
 	param.groups = rpt.parseGroups([sd.breakdown(), sd.breakdownSub()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear)
@@ -746,4 +754,5 @@ $(() => {
 	rank.refresh()
 	sd.refresh()
 	sd.initSort()
+	sd.getPLModels()
 })

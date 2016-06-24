@@ -507,6 +507,16 @@ sd.breakdown = ko.observable('customer.reportchannel');
 sd.breakdownSub = ko.observable('customer.reportsubchannel');
 sd.data = ko.observableArray([]);
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear());
+sd.selectedPL = ko.observable('PL8A');
+sd.getPLModels = function () {
+	app.ajaxPost("/report/getplmodel", {}, function (res) {
+		sd.selectedPL('');
+		rpt.plmodels(_.orderBy(res, function (d) {
+			return d.OrderIndex;
+		}));
+		sd.selectedPL('PL8A');
+	});
+};
 sd.render = function (res) {
 	var isFirstTime = sd.isFirstTime();
 	sd.isFirstTime(false);
@@ -515,7 +525,7 @@ sd.render = function (res) {
 
 	var breakdown = toolkit.replace(sd.breakdown(), ".", "_");
 	var total = toolkit.sum(data, function (d) {
-		return d.PL8A;
+		return d[sd.selectedPL()];
 	});
 
 	sd.data(data);
@@ -524,8 +534,8 @@ sd.render = function (res) {
 		var row = {};
 		row[breakdown] = d._id['_id_' + breakdown];
 		row.group = d._id['_id_' + toolkit.replace(sd.breakdownSub(), '.', '_')];
-		row.percentage = toolkit.number(d.PL8A / total) * 100;
-		row.value = d.PL8A;
+		row.percentage = toolkit.number(d[sd.selectedPL()] / total) * 100;
+		row.value = d[sd.selectedPL()];
 		return row;
 	});
 
@@ -712,7 +722,7 @@ sd.sortData = function () {
 sd.oldData = ko.observable({});
 sd.refresh = function () {
 	var param = {};
-	param.pls = ["PL8A"];
+	param.pls = [sd.selectedPL()];
 	param.groups = rpt.parseGroups([sd.breakdown(), sd.breakdownSub()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear);
@@ -761,4 +771,5 @@ $(function () {
 	rank.refresh();
 	sd.refresh();
 	sd.initSort();
+	sd.getPLModels();
 });
