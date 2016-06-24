@@ -620,11 +620,11 @@ func (pl *SalesPL) CalcCOGSRev(masters toolkit.M) {
 	otheramount := totamount - rmamount - lcamount - energyamount - depreamount
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL9", rmamount, plmodels)
-	pl.AddData("PL14", lcamount, plmodels)
-	pl.AddData("Pl20", otheramount, plmodels)
-	pl.AddData("PL21", depreamount, plmodels)
-	pl.AddData("PL74", energyamount, plmodels)
+	pl.AddData("PL9", -rmamount, plmodels)
+	pl.AddData("PL14", -lcamount, plmodels)
+	pl.AddData("Pl20", -otheramount, plmodels)
+	pl.AddData("PL21", -depreamount, plmodels)
+	pl.AddData("PL74", -energyamount, plmodels)
 
 }
 
@@ -678,8 +678,8 @@ func (pl *SalesPL) CalcDepre(masters toolkit.M) {
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 
-	pl.AddData("PL43", -findirect*pl.RatioToMonthSales, plmodels)
-	pl.AddData("PL42", -fdirect*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL43", findirect*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL42", fdirect*pl.RatioToMonthSales, plmodels)
 }
 
 func (pl *SalesPL) CalcDamage(masters toolkit.M) {
@@ -704,7 +704,7 @@ func (pl *SalesPL) CalcDamage(masters toolkit.M) {
 	}
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL44", d*pl.RatioToGlobalSales, plmodels)
+	pl.AddData("PL44", -d*pl.RatioToGlobalSales, plmodels)
 }
 
 func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
@@ -754,7 +754,7 @@ func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
 	amount := (pl.RatioToMonthChannelBrandSales * discounts.GetFloat64(key02)) + (pl.RatioToMonthChannelSales * discounts.GetFloat64(key01))
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL7A", amount, plmodels)
+	pl.AddData("PL7A", -amount, plmodels)
 }
 
 func (pl *SalesPL) CalcPromo(masters toolkit.M) {
