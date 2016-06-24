@@ -106,7 +106,8 @@ rpt.modecustom = ko.observable(false);
 rpt.idanalysisreport = ko.observable();
 rpt.valueMasterData = {};
 rpt.masterData = {
-	geographi: ko.observableArray([])
+	geographi: ko.observableArray([]),
+	subchannel: ko.observableArray([])
 };
 rpt.enableHolder = {};
 rpt.eventChange = {};
@@ -173,6 +174,16 @@ rpt.filter.forEach(function (d) {
 		};
 	});
 });
+
+rpt.getOtherMasterData = function () {
+	toolkit.ajaxPost('/report/getdatasubchannel', {}, function (res) {
+		if (!res.success) {
+			return;
+		}
+
+		rpt.masterData.subchannel(res.data);
+	});
+};
 
 rpt.groupGeoBy = function (raw, category) {
 	var groupKey = category == 'Area' ? '_id' : category;
@@ -703,4 +714,5 @@ $(function () {
 	$(window).scroll(rpt.panel_relocated);
 	rpt.panel_relocated();
 	rpt.getIdeas();
+	rpt.getOtherMasterData();
 });
