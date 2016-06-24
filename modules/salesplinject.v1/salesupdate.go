@@ -249,10 +249,10 @@ func prepmaster() {
 	toolkit.Printfn("Depreciation : %v", subtot)
 
 	subtot = float64(0)
-	for k, v := range advertisements {
-		toolkit.Printfn("KEY : %v", k)
-		for xk, xv := range v {
-			toolkit.Printfn("KEY : %v", xk)
+	for _, v := range advertisements {
+		// toolkit.Printfn("KEY : %v", k)
+		for _, xv := range v {
+			// toolkit.Printfn("KEY : %v", xk)
 			subtot += toolkit.ToFloat64(xv, 6, toolkit.RoundingAuto)
 		}
 	}

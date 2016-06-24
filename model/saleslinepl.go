@@ -769,13 +769,15 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	fspg := find("spg")
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL28A", -fpromo.AmountinIDR*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL29A", -fpromo.AmountinIDR*pl.RatioToMonthSales, plmodels)
 	// pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToMonthSales, plmodels)
 	pl.AddData("PL32", -fspg.AmountinIDR*pl.RatioToMonthSales, plmodels)
 
 	advertisement, exist := advertisements[toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)]
 	if exist {
+		toolkit.Printfn("\nFound :")
 		for k, v := range advertisement {
+			toolkit.Printf("[%v:%v]", k, v)
 			fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
 			pl.AddData(k, -fv*pl.RatioToMonthSales, plmodels)
 		}
