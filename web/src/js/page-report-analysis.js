@@ -1106,7 +1106,6 @@ rs.refresh = (useCache = false) => {
 			if ((['date.fiscal', ''].indexOf(rs.breakdownTimeBy()) == -1) && rs.breakdownTimeValue().length > 0) {
 				let field = `_id_${toolkit.replace(rs.breakdownTimeBy(), '.', '_')}`
 				raw = raw.filter((d) => {
-					console.log("========", field, d._id[field])
 					for (let i = 0; i < rs.breakdownTimeValue().length; i++) {
 						let each = rs.breakdownTimeValue()[i]
 
@@ -1205,7 +1204,7 @@ rs.generateReport = (title, raw) => {
 	if (breakdown == 'date.month') {
 		data = _.orderBy(data, (d) => parseInt(d.order, 10), 'asc')
 	} else {
-		data = _.orderBy(data, (d) => d.valueNetSales, 'desc')
+		data = _.orderBy(data, (d) => d.valuePNLPercentage, 'desc')
 	}
 
 	let max = _.max(_.map(data, (d) => d.avgNetSalesPercentage)
@@ -1219,6 +1218,8 @@ rs.generateReport = (title, raw) => {
 		.height(350)
 		.css('float', 'left')
 		.appendTo(scatterViewWrapper)
+
+	console.log('----', data)
 
 	let config = {
 		dataSource: { data: data },

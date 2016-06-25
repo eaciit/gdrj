@@ -1054,7 +1054,6 @@ rs.refresh = function () {
 				(function () {
 					var field = '_id_' + toolkit.replace(rs.breakdownTimeBy(), '.', '_');
 					raw = raw.filter(function (d) {
-						console.log("========", field, d._id[field]);
 						for (var i = 0; i < rs.breakdownTimeValue().length; i++) {
 							var each = rs.breakdownTimeValue()[i];
 
@@ -1165,7 +1164,7 @@ rs.generateReport = function (title, raw) {
 		}, 'asc');
 	} else {
 		data = _.orderBy(data, function (d) {
-			return d.valueNetSales;
+			return d.valuePNLPercentage;
 		}, 'desc');
 	}
 
@@ -1184,6 +1183,8 @@ rs.generateReport = function (title, raw) {
 
 	var scatterViewWrapper = $('.scatter-view-wrapper');
 	var scatterView = $('<div class="scatter-view"></div>').height(350).css('float', 'left').appendTo(scatterViewWrapper);
+
+	console.log('----', data);
 
 	var config = {
 		dataSource: { data: data },
