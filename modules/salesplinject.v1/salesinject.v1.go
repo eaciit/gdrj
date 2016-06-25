@@ -36,12 +36,11 @@ func setinitialconnection() {
 }
 
 var (
-	masters     = toolkit.M{}
-	t0          time.Time
-	fiscalyear  int
-	subchannels = toolkit.M{}
-	customers   = toolkit.M{}
-	branchs     = toolkit.M{}
+	masters    = toolkit.M{}
+	t0         time.Time
+	fiscalyear int
+	customers  = toolkit.M{}
+	branchs    = toolkit.M{}
 )
 
 func buildmap(holder interface{},
@@ -303,7 +302,7 @@ func prepmastercalc() {
 	for _, v := range promos {
 		subtot += v
 	}
-	toolkit.Printfn("Promos : %v", subtot)
+	toolkit.Printfn("Promos and spg : %v", subtot)
 
 	subtot = float64(0)
 	for _, v := range advertisements {
@@ -365,6 +364,7 @@ func prepmasterclean() {
 
 	toolkit.Println("--> Sub Channel")
 	csr, _ := conn.NewQuery().From("subchannels").Cursor(nil)
+	subchannels := toolkit.M{}
 	defer csr.Close()
 	for {
 		m := toolkit.M{}
