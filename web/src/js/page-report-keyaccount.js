@@ -78,6 +78,11 @@ kac.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
 	let down = $(e).find('i.fa-chevron-down').length
 	if (right > 0){
+		if ($(e).hasClass('headerPL28')) {
+			$('.pivot-pnl .table-header').css('width', '530px')
+			$('.pivot-pnl .table-content').css('margin-left', '530px')
+		}
+		
 		$(e).find('i').removeClass('fa-chevron-right')
 		$(e).find('i').addClass('fa-chevron-down')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
@@ -85,6 +90,11 @@ kac.clickExpand = (e) => {
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
 	}
 	if (down > 0) {
+		if ($(e).hasClass('headerPL28')) {
+			$('.pivot-pnl .table-header').css('width', '')
+			$('.pivot-pnl .table-content').css('margin-left', '')
+		}
+		
 		$(e).find('i').removeClass('fa-chevron-down')
 		$(e).find('i').addClass('fa-chevron-right')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
