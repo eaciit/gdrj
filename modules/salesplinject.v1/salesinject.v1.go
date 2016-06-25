@@ -72,7 +72,6 @@ func getCursor(obj orm.IModel) dbox.ICursor {
 
 func prepmastercalc() {
 
-	masters = toolkit.M{}
 	toolkit.Println("--> PL MODEL")
 	masters.Set("plmodel", buildmap(map[string]*gdrj.PLModel{},
 		func() orm.IModel {
