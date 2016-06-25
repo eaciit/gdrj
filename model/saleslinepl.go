@@ -163,16 +163,6 @@ func (spl *SalesPL) CleanAndClasify(masters toolkit.M) {
 		spl.Customer = c
 	}
 
-	inexclude := func(f string, list []string) bool {
-		for _, v := range list {
-			if v == f {
-				return true
-			}
-		}
-
-		return false
-	}
-
 	subchannels := masters.Get("subchannels").(toolkit.M)
 	subchannel := subchannels.GetString(spl.Customer.CustType)
 	switch spl.Customer.ChannelID {
@@ -185,7 +175,8 @@ func (spl *SalesPL) CleanAndClasify(masters toolkit.M) {
 		I3list := []string{"M1", "M2", "M3"}
 		spl.Customer.ChannelName = "MT"
 		spl.Customer.ReportChannel = "MT"
-		if inexclude(spl.Customer.CustType, I3list) {
+
+		if !toolkit.HasMember(I3list, spl.Customer.CustType) {
 			subchannel = ""
 		}
 
