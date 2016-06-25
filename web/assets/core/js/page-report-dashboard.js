@@ -748,6 +748,7 @@ sd.initSort = function () {
 };
 
 $(function () {
+	rpt.tabbedContent();
 	rpt.refreshView('dashboard');
 
 	dsbrd.changeBreakdown();

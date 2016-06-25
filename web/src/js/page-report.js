@@ -17,8 +17,8 @@ rpt.filter = [
 		{ _id: 'Brand', from: 'Brand', title: 'Brand' },
 		{ _id: 'Channel', from: 'Channel', title: 'Channel' },
 		{ _id: 'RegionC', from: 'Region', title: 'Region' },
-		{ _id: 'From', from: 'From' },
-		{ _id: 'To', from: 'To' },
+		// { _id: 'From', from: 'From' },
+		// { _id: 'To', from: 'To' },
 	] },
 	{ _id: 'geo', group: 'Geographical', sub: [
 		{ _id: 'Zone', from: 'Zone', title: 'Zone' },
@@ -131,8 +131,8 @@ rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYea
 		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) },
 		{ 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) },
 		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) },
-		{ 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
-		{ 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
+		// { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
+		// { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
 		
 		{ 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
 		// ---> Region OK
@@ -536,6 +536,20 @@ rpt.panel_relocated = () => {
         $('.panel-fix').removeClass('contentfilter')
         $('.panel-yo').height(0)
     }
+}
+
+rpt.tabbedContent = () => {
+	
+	$('.app-title h2').html('&nbsp;')
+	$('.tab-content a[data-toggle="tab"]').on('shown.bs.tab', (e) => {
+	    var $tabContent = $(".tab-content " + $(e.target).attr("href"))
+	    $tabContent.find('.k-chart').each((i, e) => {
+	    	$(e).data('.k-chart').redraw()
+	    })
+	    $tabContent.find('.k-grid').each((i, e) => {
+	    	$(e).data('.k-grid').redraw()
+	    })
+	});
 }
 
 

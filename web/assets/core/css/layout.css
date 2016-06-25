@@ -645,3 +645,8 @@ body {
 .title-user {
   font-size: 15px;
 }
+.nav-replace-title {
+  position: absolute;
+  left: 10px;
+  top: -42px;
+}

@@ -10,7 +10,10 @@ vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Report', href: '/web/re
 viewModel.report = new Object();
 var rpt = viewModel.report;
 
-rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', from: 'Branch', title: 'Branch' }, { _id: 'Brand', from: 'Brand', title: 'Brand' }, { _id: 'Channel', from: 'Channel', title: 'Channel' }, { _id: 'RegionC', from: 'Region', title: 'Region' }, { _id: 'From', from: 'From' }, { _id: 'To', from: 'To' }] }, { _id: 'geo', group: 'Geographical', sub: [{ _id: 'Zone', from: 'Zone', title: 'Zone' }, { _id: 'Region', from: 'Region', title: 'Region' }, { _id: 'Area', from: 'Area', title: 'Area' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'ChannelC', from: 'Channel', title: 'Channel' }, { _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' }, { _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' }, { _id: 'Customer', from: 'Customer', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' }, { _id: 'BrandP', from: 'Brand', title: 'Brand' }, { _id: 'Product', from: 'Product', title: 'SKU' }] }];
+rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', from: 'Branch', title: 'Branch' }, { _id: 'Brand', from: 'Brand', title: 'Brand' }, { _id: 'Channel', from: 'Channel', title: 'Channel' }, { _id: 'RegionC', from: 'Region', title: 'Region' }] },
+// { _id: 'From', from: 'From' },
+// { _id: 'To', from: 'To' },
+{ _id: 'geo', group: 'Geographical', sub: [{ _id: 'Zone', from: 'Zone', title: 'Zone' }, { _id: 'Region', from: 'Region', title: 'Region' }, { _id: 'Area', from: 'Area', title: 'Area' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'ChannelC', from: 'Channel', title: 'Channel' }, { _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' }, { _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' }, { _id: 'Customer', from: 'Customer', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' }, { _id: 'BrandP', from: 'Brand', title: 'Brand' }, { _id: 'Product', from: 'Product', title: 'SKU' }] }];
 
 // { _id: 'profit_center', group: 'Profit Center', sub: [
 // 	{ _id: 'Entity', from: 'Entity', title: 'Entity' },
@@ -32,7 +35,11 @@ rpt.getFilterValue = function () {
 	var multiFiscalYear = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 	var fiscalField = arguments.length <= 1 || arguments[1] === undefined ? rpt.value.FiscalYear : arguments[1];
 
-	var res = [{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) }, { 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) }, { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() }, { 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
+	var res = [{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) }, { 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) },
+	// { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
+	// { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
+
+	{ 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
 	// ---> Region OK
 	{ 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() },
 
@@ -430,6 +437,20 @@ rpt.panel_relocated = function () {
 		$('.panel-fix').removeClass('contentfilter');
 		$('.panel-yo').height(0);
 	}
+};
+
+rpt.tabbedContent = function () {
+
+	$('.app-title h2').html('&nbsp;');
+	$('.tab-content a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+		var $tabContent = $(".tab-content " + $(e.target).attr("href"));
+		$tabContent.find('.k-chart').each(function (i, e) {
+			$(e).data('.k-chart').redraw();
+		});
+		$tabContent.find('.k-grid').each(function (i, e) {
+			$(e).data('.k-grid').redraw();
+		});
+	});
 };
 
 rpt.plmodels = ko.observableArray([]);

@@ -726,6 +726,7 @@ sd.initSort = () => {
 }
 
 $(() => {
+	rpt.tabbedContent()
 	rpt.refreshView('dashboard')
 
 	dsbrd.changeBreakdown()
