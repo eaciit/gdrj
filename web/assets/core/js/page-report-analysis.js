@@ -947,7 +947,7 @@ var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 rs.contentIsLoading = ko.observable(false);
 rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
-rs.breakdownSubBy = ko.observable('');
+rs.breakdownTimeBy = ko.observable('');
 rs.selectedPNLNetSales = ko.observable("PL8A"); // PL1
 rs.selectedPNL = ko.observable("PL44B");
 rs.chartComparisonNote = ko.observable('');
@@ -955,6 +955,31 @@ rs.optionDimensionSelect = ko.observableArray([]);
 rs.optionTimeBreakdowns = ko.observableArray([{ field: 'date.fiscal', name: 'Fiscal Year' }, { field: 'date.quartertxt', name: 'Quarter' }, { field: 'date.month', name: 'Month' }]);
 rs.fiscalYear = ko.observable(rpt.value.FiscalYear());
 rs.columnWidth = ko.observable(130);
+rs.breakdownTimeValue = ko.observableArray([]);
+rs.optionTimeSubBreakdowns = ko.computed(function () {
+	switch (rs.breakdownTimeBy()) {
+		case 'date.fiscal':
+			return rpt.optionFiscalYears().slice(0).map(function (d) {
+				return { field: d, name: d };
+			});
+			break;
+		case 'date.quartertxt':
+			return ['Q1', 'Q2', 'Q3', 'Q4'].map(function (d) {
+				return { field: d, name: d };
+			});
+			break;
+		case 'date.month':
+			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (d) {
+				return { field: d, name: moment(new Date(2015, d, 0)).format('MMMM') };
+			});
+			break;
+		default:
+			return [];break;
+	}
+}, rs.breakdownTimeBy);
+rs.changeBreakdownTimeBy = function () {
+	rs.breakdownTimeValue([]);
+};
 
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/getplmodel", {}, function (res) {
@@ -983,8 +1008,8 @@ rs.refresh = function () {
 	rs.contentIsLoading(true);
 
 	var groups = [rs.breakdownBy()];
-	if (rs.breakdownSubBy() != '') {
-		groups.push(rs.breakdownSubBy());
+	if (rs.breakdownTimeBy() != '') {
+		groups.push(rs.breakdownTimeBy());
 	}
 
 	var param = {};
@@ -992,6 +1017,20 @@ rs.refresh = function () {
 	param.groups = rpt.parseGroups(groups);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear);
+
+	if (rs.breakdownTimeBy() == 'date.fiscal') {
+		var fiscal = param.filters.find(function (d) {
+			return d.Field == rs.breakdownTimeBy();
+		});
+		fiscal.Op = "$in";
+		fiscal.Value = [];
+
+		if (rs.breakdownTimeValue().length > 0) {
+			fiscal.Value = rs.breakdownTimeValue();
+		} else {
+			fiscal.Value = rpt.optionFiscalYears();
+		}
+	}
 
 	var fetch = function fetch() {
 		app.ajaxPost("/report/getpnldatanew", param, function (res) {
@@ -1007,20 +1046,64 @@ rs.refresh = function () {
 
 			rs.contentIsLoading(false);
 
-			var scatterViewWrapper = $('.scatter-view-wrapper').empty().width(rs.columnWidth() * res.Data.Data.length);
+			var scatterViewWrapper = $('.scatter-view-wrapper').empty();
+			var width = 0;
+			var raw = res.Data.Data;
 
-			if (rs.breakdownSubBy() != '') {
-				var op1 = _.groupBy(res.Data.Data, function (d) {
+			if (['date.fiscal', ''].indexOf(rs.breakdownTimeBy()) == -1 && rs.breakdownTimeValue().length > 0) {
+				(function () {
+					var field = '_id_' + toolkit.replace(rs.breakdownTimeBy(), '.', '_');
+					raw = raw.filter(function (d) {
+						console.log("========", field, d._id[field]);
+						for (var i = 0; i < rs.breakdownTimeValue().length; i++) {
+							var each = rs.breakdownTimeValue()[i];
+
+							switch (rs.breakdownTimeBy()) {
+								case 'date.fiscal':
+									if (each == d._id[field]) {
+										return true;
+									}
+									break;
+								case 'date.quartertxt':
+									if (d._id[field].indexOf(each) > -1) {
+										return true;
+									}
+									break;
+								case 'date.month':
+									if (each == d._id[field]) {
+										return true;
+									}
+									break;
+							}
+						}
+
+						return false;
+					});
+				})();
+			}
+
+			if (rs.breakdownTimeBy() != '') {
+				var op1 = _.groupBy(raw, function (d) {
 					return d._id['_id_' + app.idAble(rs.breakdownBy())];
 				});
 				_.map(op1, function (v, k) {
-					rs.generateReport(k, v);
+					var eachWidth = rs.generateReport(k, v);
+					width += eachWidth;
 				});
 			} else {
-				rs.generateReport('', res.Data.Data);
+				width = rs.generateReport('', raw);
+
+				if (width < scatterViewWrapper.parent().width()) {
+					width = '100%';
+					scatterViewWrapper.find('.scatter-view').width(width);
+
+					setTimeout(function () {
+						scatterViewWrapper.find('.scatter-view').data('kendoChart').redraw();
+					}, 100);
+				}
 			}
 
-			scatterViewWrapper.append('<div class="clearfix" style="clear: both;"></div>');
+			scatterViewWrapper.width(width).append('<div class="clearfix" style="clear: both;"></div>');
 		}, function () {
 			rs.contentIsLoading(false);
 		}, {
@@ -1032,7 +1115,7 @@ rs.refresh = function () {
 };
 
 rs.generateReport = function (title, raw) {
-	var breakdown = rs.breakdownSubBy() == '' ? rs.breakdownBy() : rs.breakdownSubBy();
+	var breakdown = rs.breakdownTimeBy() == '' ? rs.breakdownBy() : rs.breakdownTimeBy();
 
 	var dataAllPNL = raw.filter(function (d) {
 		return d.hasOwnProperty(rs.selectedPNL());
@@ -1099,11 +1182,8 @@ rs.generateReport = function (title, raw) {
 		return d.field == rs.selectedPNL();
 	}).name;
 
-	var width = data.length * rs.columnWidth();
-	width = width < 300 ? 300 : width;
-
 	var scatterViewWrapper = $('.scatter-view-wrapper');
-	var scatterView = $('<div id="scatter-view"></div>').height(350).css('float', 'left').appendTo(scatterViewWrapper);
+	var scatterView = $('<div class="scatter-view"></div>').height(350).css('float', 'left').appendTo(scatterViewWrapper);
 
 	var config = {
 		dataSource: { data: data },
@@ -1157,7 +1237,7 @@ rs.generateReport = function (title, raw) {
 			majorGridLines: { color: '#fafafa' },
 			label: { format: "{0}%" },
 			axisCrossingValue: [0, -10],
-			max: max < 100 ? max + 20 : 100
+			max: max + 20
 		},
 		categoryAxis: [{
 			field: 'category',
@@ -1168,24 +1248,19 @@ rs.generateReport = function (title, raw) {
 		}]
 	};
 
-	if (rs.breakdownSubBy() != '') {
+	if (rs.breakdownTimeBy() != '') {
 		config.categoryAxis.push({
 			categories: [title],
 			labels: {
 				font: '"Source Sans Pro" 18px bold'
 			}
 		});
-	} else {
-		if (width < scatterViewWrapper.parent().width()) {
-			width = '100%';
-		}
 	}
 
-	if (scatterViewWrapper.width() < scatterViewWrapper.parent().width()) {
-		scatterViewWrapper.width('100%');
-	}
-
+	var width = data.length * rs.columnWidth();
+	if (width < 300) width = 300;
 	scatterView.width(width).kendoChart(config);
+	return width;
 };
 
 viewModel.chartCompare = {};

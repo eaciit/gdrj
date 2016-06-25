@@ -1004,7 +1004,7 @@ let dataPoints = [
 rs.contentIsLoading = ko.observable(false)
 rs.title = ko.observable('P&L Analytic')
 rs.breakdownBy = ko.observable('customer.channelname')
-rs.breakdownSubBy = ko.observable('')
+rs.breakdownTimeBy = ko.observable('')
 rs.selectedPNLNetSales = ko.observable("PL8A") // PL1
 rs.selectedPNL = ko.observable("PL44B")
 rs.chartComparisonNote = ko.observable('')
@@ -1016,6 +1016,30 @@ rs.optionTimeBreakdowns = ko.observableArray([
 ])
 rs.fiscalYear = ko.observable(rpt.value.FiscalYear())
 rs.columnWidth = ko.observable(130)
+rs.breakdownTimeValue = ko.observableArray([])
+rs.optionTimeSubBreakdowns = ko.computed(() => {
+	switch (rs.breakdownTimeBy()) {
+		case 'date.fiscal': 
+			return rpt.optionFiscalYears().slice(0).map((d) => {
+				return { field: d, name: d }
+			})
+		break;
+		case 'date.quartertxt': 
+			return ['Q1', 'Q2', 'Q3', 'Q4'].map((d) => {
+				return { field: d, name: d }
+			})
+		break;
+		case 'date.month': 
+			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((d) => {
+				return { field: d, name: moment(new Date(2015, d, 0)).format('MMMM') }
+			})
+		break;
+		default: return []; break;
+	}
+}, rs.breakdownTimeBy)
+rs.changeBreakdownTimeBy = () => {
+	rs.breakdownTimeValue([])
+}
 
 rs.getSalesHeaderList = () => {
 	app.ajaxPost("/report/getplmodel", {}, (res) => {
@@ -1039,8 +1063,8 @@ rs.refresh = (useCache = false) => {
 	rs.contentIsLoading(true)
 
 	let groups = [rs.breakdownBy()]
-	if (rs.breakdownSubBy() != '') {
-		groups.push(rs.breakdownSubBy())
+	if (rs.breakdownTimeBy() != '') {
+		groups.push(rs.breakdownTimeBy())
 	}
 
 	let param = {}
@@ -1048,6 +1072,18 @@ rs.refresh = (useCache = false) => {
 	param.groups = rpt.parseGroups(groups)
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear)
+
+	if (rs.breakdownTimeBy() == 'date.fiscal') {
+		let fiscal = param.filters.find((d) => d.Field == rs.breakdownTimeBy())
+		fiscal.Op = "$in"
+		fiscal.Value = []
+
+		if (rs.breakdownTimeValue().length > 0) {
+			fiscal.Value = rs.breakdownTimeValue()
+		} else {
+			fiscal.Value = rpt.optionFiscalYears()
+		}
+	}
 
 	let fetch = () => {
 		app.ajaxPost("/report/getpnldatanew", param, (res) => {
@@ -1063,19 +1099,62 @@ rs.refresh = (useCache = false) => {
 
 			rs.contentIsLoading(false)
 
-			let scatterViewWrapper = $('.scatter-view-wrapper')
-				.empty().width(rs.columnWidth() * res.Data.Data.length)
+			let scatterViewWrapper = $('.scatter-view-wrapper').empty()
+			let width = 0
+			let raw = res.Data.Data
 
-			if (rs.breakdownSubBy() != '') {
-				let op1 = _.groupBy(res.Data.Data, (d) => d._id[`_id_${app.idAble(rs.breakdownBy())}`])
-				_.map(op1, (v, k) => { 
-					rs.generateReport(k, v)
+			if ((['date.fiscal', ''].indexOf(rs.breakdownTimeBy()) == -1) && rs.breakdownTimeValue().length > 0) {
+				let field = `_id_${toolkit.replace(rs.breakdownTimeBy(), '.', '_')}`
+				raw = raw.filter((d) => {
+					console.log("========", field, d._id[field])
+					for (let i = 0; i < rs.breakdownTimeValue().length; i++) {
+						let each = rs.breakdownTimeValue()[i]
+
+						switch (rs.breakdownTimeBy()) {
+							case 'date.fiscal':
+								if (each == d._id[field]) {
+									return true
+								}
+							break;
+							case 'date.quartertxt':
+								if (d._id[field].indexOf(each) > -1) {
+									return true
+								}
+							break;
+							case 'date.month': 
+								if (each == d._id[field]) {
+									return true
+								}
+							break;
+						}
+					}
+
+					return false
 				})
-			} else {
-				rs.generateReport('', res.Data.Data)
 			}
 
-			scatterViewWrapper.append('<div class="clearfix" style="clear: both;"></div>')
+			if (rs.breakdownTimeBy() != '') {
+				let op1 = _.groupBy(raw, (d) => d._id[`_id_${app.idAble(rs.breakdownBy())}`])
+				_.map(op1, (v, k) => { 
+					let eachWidth = rs.generateReport(k, v)
+					width += eachWidth
+				})
+			} else {
+				width = rs.generateReport('', raw)
+
+				if (width < scatterViewWrapper.parent().width()) {
+					width = '100%'
+					scatterViewWrapper.find('.scatter-view').width(width)
+
+					setTimeout(() => {
+						scatterViewWrapper.find('.scatter-view').data('kendoChart').redraw()
+					}, 100)
+				}
+			}
+
+		    scatterViewWrapper
+		    	.width(width)
+				.append('<div class="clearfix" style="clear: both;"></div>')
 		}, () => {
 			rs.contentIsLoading(false)
 		}, {
@@ -1087,7 +1166,7 @@ rs.refresh = (useCache = false) => {
 }
 
 rs.generateReport = (title, raw) => {
-	let breakdown = rs.breakdownSubBy() == '' ? rs.breakdownBy() : rs.breakdownSubBy()
+	let breakdown = rs.breakdownTimeBy() == '' ? rs.breakdownBy() : rs.breakdownTimeBy()
 
 	let dataAllPNL = raw
 		.filter((d) => d.hasOwnProperty(rs.selectedPNL()))
@@ -1135,11 +1214,8 @@ rs.generateReport = (title, raw) => {
 	let netSalesTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNLNetSales()).name
 	let breakdownTitle = rs.optionDimensionSelect().find((d) => d.field == rs.selectedPNL()).name
 
-	let width = (data.length * rs.columnWidth())
-	width = width < 300 ? 300 : width
-
 	let scatterViewWrapper = $('.scatter-view-wrapper')
-	let scatterView = $('<div id="scatter-view"></div>')
+	let scatterView = $('<div class="scatter-view"></div>')
 		.height(350)
 		.css('float', 'left')
 		.appendTo(scatterViewWrapper)
@@ -1196,7 +1272,7 @@ rs.generateReport = (title, raw) => {
 			majorGridLines: { color: '#fafafa' },
             label: { format: "{0}%" },
             axisCrossingValue: [0, -10],
-        	max: (max < 100 ? (max + 20) : 100),
+        	max: (max + 20),
         },
         categoryAxis: [{
             field: 'category',
@@ -1207,24 +1283,19 @@ rs.generateReport = (title, raw) => {
 		}],
     }
 
-    if (rs.breakdownSubBy() != '') {
+    if (rs.breakdownTimeBy() != '') {
     	config.categoryAxis.push({
 			categories: [title],
             labels: {
 				font: '"Source Sans Pro" 18px bold',
             },
 		})
-    } else {
-		if (width < scatterViewWrapper.parent().width()) {
-			width = '100%'
-		}
     }
 
-    if (scatterViewWrapper.width() < scatterViewWrapper.parent().width()) {
-    	scatterViewWrapper.width('100%')
-    }
-
+	let width = (data.length * rs.columnWidth())
+	if (width < 300) width = 300
 	scatterView.width(width).kendoChart(config)
+	return width
 }
 
 

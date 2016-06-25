@@ -124,7 +124,7 @@
 		<div class="panel-body">
 			<div class="filter pull-right" data-bind="visible: !rs.contentIsLoading()">
 				<div class="form-inline">
-					<div  class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+					<div  class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (rs.breakdownTimeBy() != 'date.fiscal')">
 						<span class="input-group-addon width-100 align-right">Fiscal Year</span>
 							<div class="width-full">
 								<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: rs.fiscalYear }"></select>
@@ -134,15 +134,7 @@
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon width-100 align-right">Select</span>
 						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rs.optionDimensionSelect, dataValueField: 'field', dataTextField: 'name', value: rs.selectedPNL, optionLabel: 'Select one', filter: 'contains' }"></select>
-						</div>
-						<div class="clearfix"></div>
-					</div>
-
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon width-100 align-right">Time breakdown</span>
-						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rs.optionTimeBreakdowns, dataValueField: 'field', dataTextField: 'name', value: rs.breakdownSubBy, optionLabel: 'Select one' }"></select>
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rs.optionDimensionSelect, dataValueField: 'field', dataTextField: 'name', value: rs.selectedPNL, filter: 'contains' }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
@@ -151,6 +143,28 @@
 						<span class="input-group-addon width-100 align-right">Breakdown by</span>
 						<div class="width-full">
 							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: rs.breakdownBy, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+			<div class="clearfix"></div>
+
+			<div class="filter pull-right" data-bind="visible: !rs.contentIsLoading()">
+				<div class="form-inline">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Time breakdown by</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rs.optionTimeBreakdowns, dataValueField: 'field', dataTextField: 'name', value: rs.breakdownTimeBy, optionLabel: 'No time breakdown', change: rs.changeBreakdownTimeBy }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (rs.breakdownTimeBy() != '')">
+						<span class="input-group-addon width-100 align-right">Time breakdown value</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rs.optionTimeSubBreakdowns, dataValueField: 'field', dataTextField: 'name', value: rs.breakdownTimeValue, placeholder: 'Choose breakdown valu' }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>

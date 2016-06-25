@@ -17,8 +17,8 @@ rpt.filter = [
 		{ _id: 'Brand', from: 'Brand', title: 'Brand' },
 		{ _id: 'Channel', from: 'Channel', title: 'Channel' },
 		{ _id: 'RegionC', from: 'Region', title: 'Region' },
-		{ _id: 'From', from: 'From' },
-		{ _id: 'To', from: 'To' },
+		// { _id: 'From', from: 'From' },
+		// { _id: 'To', from: 'To' },
 	] },
 	{ _id: 'geo', group: 'Geographical', sub: [
 		{ _id: 'Zone', from: 'Zone', title: 'Zone' },
@@ -131,8 +131,8 @@ rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYea
 		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) },
 		{ 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) },
 		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) },
-		{ 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
-		{ 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
+		// { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
+		// { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
 		
 		{ 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
 		// ---> Region OK
