@@ -135,7 +135,7 @@ func prepmastercalc() {
 	}
 
 	cogsmaps := make(map[string]*gdrj.COGSConsolidate, 0)
-	ccogs, _ := gdrj.Find(new(gdrj.RawDataPL), f, nil)
+	ccogs, _ := gdrj.Find(new(gdrj.RawDataPL), nil, nil)
 	defer ccogs.Close()
 
 	for {
@@ -326,9 +326,18 @@ func prepmastercalc() {
 	toolkit.Println("--> DISCOUNT ACTIVITY")
 	//discounts_all discounts
 	//can be by brach,brand,channelid,month
-	cda, _ := conn.NewQuery().From("rawdatadiscountactivity_rev").Cursor(nil)
+	cda, _ := conn.NewQuery().From("rawdatadiscountactivity_rev").Where(f).Cursor(nil)
 	defer cda.Close()
 	chlist := []string{"I1", "I2", "I3", "I4", "I6", "EXP"}
+	inarrstr := func(arrstr []string, str string) bool {
+		for _, v := range arrstr {
+			if v == str {
+				return true
+			}
+		}
+		return false
+	}
+
 	tkmdiscount := toolkit.M{}
 	for {
 		m := toolkit.M{}
@@ -338,7 +347,7 @@ func prepmastercalc() {
 		}
 		date := time.Date(m.GetInt("year"), time.Month(m.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		ch := strings.ToUpper(m.GetString("channel"))
-		if !toolkit.HasMember(chlist, ch) {
+		if !inarrstr(chlist, ch) {
 			ch = "I2"
 		}
 
@@ -357,6 +366,12 @@ func prepmastercalc() {
 		tkmdiscount.Set(key, tamount)
 	}
 	masters.Set("discounts", tkmdiscount)
+
+	subtot = 0
+	for _, v := range tkmdiscount {
+		subtot += toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+	}
+	toolkit.Printfn("Discount Activity : %v", subtot)
 }
 
 func prepmasterclean() {
@@ -600,7 +615,7 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 		pl.RatioCalc(masters)
 
 		//calculate process -- better not re-run
-		pl.CalcCOGSRev(masters)
+		pl.CalcCOGSRev(masters) //check	0 value
 
 		pl.CalcSGARev(masters)
 
@@ -610,7 +625,7 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 		pl.CalcDamage(masters)
 		pl.CalcDepre(masters)
 		pl.CalcRoyalties(masters)
-		pl.CalcDiscountActivity(masters)
+		pl.CalcDiscountActivity(masters) //check 0 value
 		pl.CalcPromo(masters)
 		pl.CalcSum(masters)
 

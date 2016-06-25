@@ -731,6 +731,7 @@ func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	pl.AddData("PL7A", -amount, plmodels)
+
 }
 
 func (pl *SalesPL) CalcPromo(masters toolkit.M) {
