@@ -172,19 +172,14 @@ func (spl *SalesPL) CleanAndClasify(masters toolkit.M) {
 		spl.Customer.ReportChannel = "RD"
 		spl.Customer.ReportSubChannel = spl.Customer.Name
 	case "I3": //MT
-		I3list := []string{"M1", "M2", "M3"}
+		subchannel = subchannels.GetString("M3")
 		spl.Customer.ChannelName = "MT"
 		spl.Customer.ReportChannel = "MT"
 
-		if !toolkit.HasMember(I3list, spl.Customer.CustType) {
-			subchannel = ""
+		if spl.Customer.CustType == "M1" || spl.Customer.CustType == "M2" {
+			subchannel = subchannels.GetString(spl.Customer.CustType)
 		}
-
-		if subchannel == "" {
-			spl.Customer.ReportSubChannel = subchannels.GetString("M3")
-		} else {
-			spl.Customer.ReportSubChannel = subchannel
-		}
+		spl.Customer.ReportSubChannel = subchannel
 	case "I4":
 		spl.Customer.ChannelName = "INDUSTRIAL"
 		spl.Customer.ReportChannel = "IT"
@@ -566,27 +561,37 @@ func (pl *SalesPL) CalcCOGSRev(masters toolkit.M) {
 	pl.PLDatas = aplmodel
 
 	cogsid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, strings.ToUpper(pl.SKUID))
+	cogsidmonth := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
 	if pl.Date.Year == 2014 && pl.Date.Month <= 9 {
 		cogsid = toolkit.Sprintf("%d_%d_%s", 2014, 9, strings.ToUpper(pl.SKUID))
 	}
 
 	cogsdatas := masters.Get("cogs").(map[string]*COGSConsolidate)
 	cogsdata, exist := cogsdatas[cogsid]
-	if !exist {
+	cogsdatamonth, existmonth := cogsdatas[cogsidmonth]
+
+	if !exist && !existmonth {
 		return
 	}
 
-	//rm_amount	lc_amount	pf_amount	other_amount	fixed_amount	depre_amount
-	totamount := cogsdata.COGS_Amount * pl.RatioToMonthSKUSales
-	if totamount == 0 {
-		return
+	rmamount, lcamount, energyamount, depreamount, otheramount := float64(0), float64(0), float64(0), float64(0), float64(0)
+	if exist {
+		totamount := cogsdata.COGS_Amount * pl.RatioToMonthSKUSales
+		rmamount = cogsdata.RM_Amount * pl.RatioToMonthSKUSales
+		lcamount = cogsdata.LC_Amount * pl.RatioToMonthSKUSales
+		energyamount = cogsdata.PF_Amount * pl.RatioToMonthSKUSales
+		depreamount = cogsdata.Depre_Amount * pl.RatioToMonthSKUSales
+		otheramount = totamount - rmamount - lcamount - energyamount - depreamount
 	}
 
-	rmamount := cogsdata.RM_Amount * pl.RatioToMonthSKUSales
-	lcamount := cogsdata.LC_Amount * pl.RatioToMonthSKUSales
-	energyamount := cogsdata.PF_Amount * pl.RatioToMonthSKUSales
-	depreamount := cogsdata.Depre_Amount * pl.RatioToMonthSKUSales
-	otheramount := totamount - rmamount - lcamount - energyamount - depreamount
+	if existmonth {
+		othermonth := cogsdatamonth.COGS_Amount - cogsdatamonth.RM_Amount - cogsdatamonth.LC_Amount - cogsdatamonth.PF_Amount - cogsdatamonth.Depre_Amount
+		rmamount += cogsdatamonth.RM_Amount * pl.RatioToMonthSales
+		lcamount += cogsdatamonth.LC_Amount * pl.RatioToMonthSales
+		energyamount += cogsdatamonth.PF_Amount * pl.RatioToMonthSales
+		depreamount += cogsdatamonth.Depre_Amount * pl.RatioToMonthSales
+		otheramount += othermonth * pl.RatioToMonthSales
+	}
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	pl.AddData("PL9", -rmamount, plmodels)
@@ -733,6 +738,7 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	if !masters.Has("promos") && !masters.Has("advertisements") {
 		return
 	}
+	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 
 	aplmodel := pl.PLDatas
 	for k, _ := range aplmodel {
@@ -754,9 +760,8 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	advertisement, exist := advertisements[toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)]
 	if exist {
 		for key, v := range advertisement {
-			tplmodels := masters.Get("plmodel").(map[string]*PLModel)
 			fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-			pl.AddData(key, -pl.RatioToMonthSales*fv, tplmodels)
+			pl.AddData(key, -pl.RatioToMonthSales*fv, plmodels)
 		}
 	}
 
@@ -764,11 +769,36 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 	// fadv := find("adv")
 	fspg := find("spg")
 
-	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	pl.AddData("PL29A", -fpromo*pl.RatioToMonthSales, plmodels)
 	// pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToMonthSales, plmodels)
 	pl.AddData("PL32", -fspg*pl.RatioToMonthSales, plmodels)
 
+}
+
+//sgapls
+func (pl *SalesPL) CalcSGARev(masters toolkit.M) {
+	if !masters.Has("sgapls") {
+		return
+	}
+	plmodels := masters.Get("plmodel").(map[string]*PLModel)
+
+	aplmodel := pl.PLDatas
+	for k, _ := range aplmodel {
+		if strings.Contains(k, "PL33") || strings.Contains(k, "PL34") || strings.Contains(k, "PL35") {
+			delete(aplmodel, k)
+		}
+	}
+	pl.PLDatas = aplmodel
+
+	sgadatas := masters.Get("sgapls").(map[string]toolkit.M)
+	sgadata, exist := sgadatas[toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)]
+	if exist {
+		for k, v := range sgadata {
+			arstr := strings.Split(k, "_")
+			fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+			pl.AddDataCC(arstr[0], -pl.RatioToMonthSalesVdist*fv, arstr[1], plmodels)
+		}
+	}
 }
 
 //Handle by other
