@@ -471,7 +471,7 @@ func (pl *SalesPL) CalcSales(masters toolkit.M) {
 
 	aplmodel := pl.PLDatas
 	for k, _ := range aplmodel {
-		if k == "PL2" || k == "PL8" || k == "PL6" || k == "PL7A" || k == "PL1" || k == "PL7" {
+		if k == "PL2" || k == "PL8" || k == "PL6" || k == "PL1" || k == "PL7" {
 			delete(aplmodel, k)
 		}
 	}
@@ -728,7 +728,7 @@ func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
 	key02 := toolkit.Sprintf("%s_%s", key01, strings.ToUpper(pl.Product.Brand))
 
 	amount := (pl.RatioToMonthChannelBrandSales * discounts.GetFloat64(key02)) + (pl.RatioToMonthChannelSales * discounts.GetFloat64(key01))
-	toolkit.Printfn("%v : %v : %v", key01, key02, amount)
+	// toolkit.Printfn("%v : %v : %v", key01, key02, amount)
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	pl.AddData("PL7A", -amount, plmodels)
 
