@@ -1583,7 +1583,7 @@ rpt.toggleFilterCallback = () => {
 }
 
 vm.currentMenu('Analysis')
-vm.currentTitle('PNL Analysis')
+vm.currentTitle('P&L Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
 	{ title: 'PNL Analysis', href: '/web/report/dashboard' }
@@ -1594,6 +1594,7 @@ rs.title('P&L Comparison to Net Sales')
 ccr.title('Quantity, Price & Outlet')
 
 rpt.refresh = () => {
+	rpt.tabbedContent()
 	rpt.refreshView('analysis')
 
 	rs.getSalesHeaderList()

@@ -1551,7 +1551,7 @@ rpt.toggleFilterCallback = function () {
 };
 
 vm.currentMenu('Analysis');
-vm.currentTitle('PNL Analysis');
+vm.currentTitle('P&L Analysis');
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'PNL Analysis', href: '/web/report/dashboard' }]);
 
 bkd.title('P&L Analysis');
@@ -1559,6 +1559,7 @@ rs.title('P&L Comparison to Net Sales');
 ccr.title('Quantity, Price & Outlet');
 
 rpt.refresh = function () {
+	rpt.tabbedContent();
 	rpt.refreshView('analysis');
 
 	rs.getSalesHeaderList();

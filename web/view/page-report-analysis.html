@@ -1,5 +1,23 @@
 <script src="/res/core/js/page-report-analysis.js"></script>
 
+<div>
+
+	<!-- Nav tabs -->
+	<ul class="nav nav-pills nav-replace-title" role="tablist">
+		<li role="presentation" class="active">
+			<a href="#tab1" role="tab" data-toggle="tab" data-bind="text: bkd.title"></a>
+		</li>
+		<li role="presentation">
+			<a href="#tab2" role="tab" data-toggle="tab" data-bind="text: rs.title"></a>
+		</li>
+		<li role="presentation">
+			<a href="#tab3" role="tab" data-toggle="tab" data-bind="text: ccr.title"></a>
+		</li>
+	</ul>
+
+	<!-- Tab panes -->
+	<div class="tab-content">
+		<div role="tabpanel" class="tab-pane active" id="tab1">
 <div class="col-md-12 col-sm-12 no-padding hardcore">
 	<div class="panel ez no-padding hardcore">
 		<div class="panel-heading">
@@ -104,7 +122,8 @@
 	    </div>
 	</div>
 </div>
-
+		</div>
+		<div role="tabpanel" class="tab-pane" id="tab2">
 <div class="col-md-12 col-sm-12 no-padding hardcore">
 	<div class="panel ez no-padding hardcore">
 		<div class="panel-heading">
@@ -183,6 +202,8 @@
 		</div>
 	</div>
 </div>
+		</div>
+		<div role="tabpanel" class="tab-pane" id="tab3">
 <div class="col-md-12 col-sm-12 no-padding hardcore">
 	<div class="panel ez no-padding hardcore">
 		<div class="panel-heading">
@@ -243,6 +264,9 @@
 				<div class="chart-comparison"></div>
 				<div class="clearfix"></div>
 			</div>
+		</div>
+	</div>
+</div>
 		</div>
 	</div>
 </div>

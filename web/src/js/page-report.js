@@ -538,6 +538,20 @@ rpt.panel_relocated = () => {
     }
 }
 
+rpt.tabbedContent = () => {
+	
+	$('.app-title h2').html('&nbsp;')
+	$('.tab-content a[data-toggle="tab"]').on('shown.bs.tab', (e) => {
+	    var $tabContent = $(".tab-content " + $(e.target).attr("href"))
+	    $tabContent.find('.k-chart').each((i, e) => {
+	    	$(e).data('.k-chart').redraw()
+	    })
+	    $tabContent.find('.k-grid').each((i, e) => {
+	    	$(e).data('.k-grid').redraw()
+	    })
+	});
+}
+
 
 
 
