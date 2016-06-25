@@ -726,7 +726,7 @@ func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
 
 	key01 := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, strings.ToUpper(pl.Customer.ChannelID))
 	key02 := toolkit.Sprintf("%s_%s", key01, strings.ToUpper(pl.Product.Brand))
-
+	toolkit.Printfn("%v : %v", key01, key02)
 	amount := (pl.RatioToMonthChannelBrandSales * discounts.GetFloat64(key02)) + (pl.RatioToMonthChannelSales * discounts.GetFloat64(key01))
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)

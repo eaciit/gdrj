@@ -368,8 +368,7 @@ func prepmastercalc() {
 	masters.Set("discounts", tkmdiscount)
 
 	subtot = 0
-	for k, v := range tkmdiscount {
-		toolkit.Printfn("%v : %v", k, v)
+	for _, v := range tkmdiscount {
 		subtot += toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
 	}
 	toolkit.Printfn("Discount Activity : %v", subtot)
