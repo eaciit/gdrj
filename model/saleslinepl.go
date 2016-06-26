@@ -592,7 +592,7 @@ func (pl *SalesPL) CalcCOGSRev(masters toolkit.M) {
 		depreamount += cogsdatamonth.Depre_Amount * pl.RatioToMonthSales
 		otheramount += othermonth * pl.RatioToMonthSales
 	}
-	toolkit.Printfn("%v [%v,%v,%v,%v,%v]", cogsid, rmamount, lcamount, otheramount, depreamount, energyamount)
+	// toolkit.Printfn("%v [%v,%v,%v,%v,%v]", cogsid, rmamount, lcamount, otheramount, depreamount, energyamount)
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	pl.AddData("PL9", -rmamount, plmodels)
 	pl.AddData("PL14", -lcamount, plmodels)
