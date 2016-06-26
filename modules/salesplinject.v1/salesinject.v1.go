@@ -145,8 +145,8 @@ func prepmastercalc() {
 			break
 		}
 
-		// key := toolkit.Sprintf("%d_%d_%s", o.Year, int(o.Month), o.SAPCode)
-		key := toolkit.Sprintf("%d_%d", o.Year, int(o.Month), o.SAPCode)
+		key := toolkit.Sprintf("%d_%d_%s", o.Year, int(o.Month), o.SAPCode)
+		// key := toolkit.Sprintf("%d_%d", o.Year, int(o.Month), o.SAPCode)
 		_, exist := cogskeys[key]
 		if !exist {
 			key = toolkit.Sprintf("%d_%d", o.Year, int(o.Month))
@@ -157,6 +157,8 @@ func prepmastercalc() {
 			cog = new(gdrj.COGSConsolidate)
 		}
 
+		cog.Year = o.Year
+		cog.Month = o.Month
 		cog.COGS_Amount += o.COGS_Amount
 		cog.RM_Amount += o.RM_Amount
 		cog.LC_Amount += o.LC_Amount
@@ -169,7 +171,10 @@ func prepmastercalc() {
 
 	subtot := float64(0)
 	for _, v := range cogsmaps {
-		subtot += v.COGS_Amount
+		date := time.Date(v.Year, time.Month(v.Month), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -3, 0)
+		if date.Year() == fiscalyear-1 {
+			subtot += v.COGS_Amount
+		}
 	}
 	toolkit.Printfn("COGS 2thn : %v", subtot)
 
