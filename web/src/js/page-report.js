@@ -730,7 +730,6 @@ rpt.buildGridLevels = (rows) => {
 					if (child > 1){
 						let $parenttr = $(`tr[idheaderpl=${PLyo.PLCode}]`)
 						let $parenttrcontent = $(`tr[idpl=${PLyo.PLCode}]`)
-						console.log($parenttr)
 						// $trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
 						// $columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
 						$trElem.insertAfter($parenttr)
@@ -819,10 +818,25 @@ rpt.buildGridLevels = (rows) => {
 	rpt.refreshHeight()
 }
 
-rpt.refreshHeight = () => {
-	$(".table-header tbody>tr").each(function( i ) {
+rpt.hideAllChild = (PLCode) => {
+	$(`.table-header tbody>tr[idparent=${PLCode}]`).each(function( i ) {
 		let $trElem = $(this)
-		$(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('height', $trElem.length)
+		let child = $(`tr[idparent=${$trElem.attr('idheaderpl')}]`).length
+		if (child > 0) {
+			let $c = $(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`)
+			$($c).find('i').removeClass('fa-chevron-down')
+			$($c).find('i').addClass('fa-chevron-right')
+			$(`tr[idparent=${$c.attr('idheaderpl')}]`).css('display', 'none')
+			$(`tr[idcontparent=${$c.attr('idheaderpl')}]`).css('display', 'none')
+			rpt.hideAllChild($c.attr('idheaderpl'));
+		}
+	})
+}
+
+rpt.refreshHeight = (PLCode) => {
+	$(`.table-header tbody>tr[idparent=${PLCode}]`).each(function( i ) {
+		let $trElem = $(this)
+		$(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('height', $trElem.height())
 	})
 }
 
