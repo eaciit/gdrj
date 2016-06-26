@@ -135,7 +135,7 @@ func prepmastercalc() {
 	}
 
 	cogsmaps := make(map[string]*gdrj.COGSConsolidate, 0)
-	ccogs, _ := gdrj.Find(new(gdrj.RawDataPL), nil, nil)
+	ccogs, _ := gdrj.Find(new(gdrj.COGSConsolidate), nil, nil)
 	defer ccogs.Close()
 
 	for {
