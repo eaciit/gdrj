@@ -154,8 +154,11 @@ cst.build = (plmodel) => {
 			col.rows.push(row)
 		})
 
+		col.rows = _.orderBy(col.rows, (d) => d.value, 'desc')
 		all.push(col)
 	})
+
+	all = _.orderBy(all, (d) => toolkit.sum(d.rows, (e) => e.value), 'desc')
 
 	console.log("all", all)
 
@@ -191,12 +194,10 @@ cst.build = (plmodel) => {
 	let groupThenLoop = (data, groups, callbackStart = app.noop, callbackEach = app.noop, callbackLast = app.noop) => {
 		let what = callbackStart(groups)
 		let counter = 0
-		let op0 = _.orderBy(data, (e) => toolkit.sum(e.rows, (f) => toolkit.number(f[keys[0]]), 'desc'))
 		let op1 = _.groupBy(data, (e) => e[groups[0]])
 		let op2 = _.map(op1, (v, k) => toolkit.return({ key: k, val: v }))
 
-		let op3 = _.sortBy(op2, (h) => toolkit.sum(h.rows, (e) => e.value), 'desc')
-		let op4 = op3.forEach((g) => {
+		let op3 = op2.forEach((g) => {
 			let k = g.key, v = g.val
 			callbackEach(groups, counter, what, k, v)
 

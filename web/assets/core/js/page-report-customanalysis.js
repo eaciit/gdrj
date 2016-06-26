@@ -170,8 +170,17 @@ cst.build = function (plmodel) {
 			col.rows.push(row);
 		});
 
+		col.rows = _.orderBy(col.rows, function (d) {
+			return d.value;
+		}, 'desc');
 		all.push(col);
 	});
+
+	all = _.orderBy(all, function (d) {
+		return toolkit.sum(d.rows, function (e) {
+			return e.value;
+		});
+	}, 'desc');
 
 	console.log("all", all);
 
@@ -198,11 +207,6 @@ cst.build = function (plmodel) {
 
 		var what = callbackStart(groups);
 		var counter = 0;
-		var op0 = _.orderBy(data, function (e) {
-			return toolkit.sum(e.rows, function (f) {
-				return toolkit.number(f[keys[0]]);
-			}, 'desc');
-		});
 		var op1 = _.groupBy(data, function (e) {
 			return e[groups[0]];
 		});
@@ -210,12 +214,7 @@ cst.build = function (plmodel) {
 			return toolkit.return({ key: k, val: v });
 		});
 
-		var op3 = _.sortBy(op2, function (h) {
-			return toolkit.sum(h.rows, function (e) {
-				return e.value;
-			});
-		}, 'desc');
-		var op4 = op3.forEach(function (g) {
+		var op3 = op2.forEach(function (g) {
 			var k = g.key,
 			    v = g.val;
 			callbackEach(groups, counter, what, k, v);
