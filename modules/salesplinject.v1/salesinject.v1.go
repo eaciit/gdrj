@@ -145,7 +145,8 @@ func prepmastercalc() {
 			break
 		}
 
-		key := toolkit.Sprintf("%d_%d_%s", o.Year, int(o.Month), o.SAPCode)
+		// key := toolkit.Sprintf("%d_%d_%s", o.Year, int(o.Month), o.SAPCode)
+		key := toolkit.Sprintf("%d_%d", o.Year, int(o.Month), o.SAPCode)
 		_, exist := cogskeys[key]
 		if !exist {
 			key = toolkit.Sprintf("%d_%d", o.Year, int(o.Month))
