@@ -104,7 +104,7 @@ bkd.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
 	let down = $(e).find('i.fa-chevron-down').length
 	if (right > 0){
-		if ($(e).hasClass('headerPL28')) {
+		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 			$('.pivot-pnl .table-header').css('width', '530px')
 			$('.pivot-pnl .table-content').css('margin-left', '530px')
 		}
@@ -116,7 +116,7 @@ bkd.clickExpand = (e) => {
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
 	}
 	if (down > 0) {
-		if ($(e).hasClass('headerPL28')) {
+		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 			$('.pivot-pnl .table-header').css('width', '')
 			$('.pivot-pnl .table-content').css('margin-left', '')
 		}
