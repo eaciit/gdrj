@@ -651,7 +651,6 @@ rpt.buildGridLevels = function (rows) {
 					if (child > 1) {
 						var $parenttr = $('tr[idheaderpl=' + PLyo.PLCode + ']');
 						var $parenttrcontent = $('tr[idpl=' + PLyo.PLCode + ']');
-						console.log($parenttr);
 						// $trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
 						// $columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
 						$trElem.insertAfter($parenttr);
@@ -741,10 +740,25 @@ rpt.buildGridLevels = function (rows) {
 	rpt.refreshHeight();
 };
 
-rpt.refreshHeight = function () {
-	$(".table-header tbody>tr").each(function (i) {
+rpt.hideAllChild = function (PLCode) {
+	$('.table-header tbody>tr[idparent=' + PLCode + ']').each(function (i) {
 		var $trElem = $(this);
-		$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('height', $trElem.length);
+		var child = $('tr[idparent=' + $trElem.attr('idheaderpl') + ']').length;
+		if (child > 0) {
+			var $c = $('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']');
+			$($c).find('i').removeClass('fa-chevron-down');
+			$($c).find('i').addClass('fa-chevron-right');
+			$('tr[idparent=' + $c.attr('idheaderpl') + ']').css('display', 'none');
+			$('tr[idcontparent=' + $c.attr('idheaderpl') + ']').css('display', 'none');
+			rpt.hideAllChild($c.attr('idheaderpl'));
+		}
+	});
+};
+
+rpt.refreshHeight = function (PLCode) {
+	$('.table-header tbody>tr[idparent=' + PLCode + ']').each(function (i) {
+		var $trElem = $(this);
+		$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('height', $trElem.height());
 	});
 };
 

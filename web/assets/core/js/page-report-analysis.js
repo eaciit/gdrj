@@ -111,6 +111,7 @@ bkd.clickExpand = function (e) {
 		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[statusvaltemp=hide]').css('display', 'none');
+		rpt.refreshHeight(e.attr('idheaderpl'));
 	}
 	if (down > 0) {
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
@@ -122,8 +123,8 @@ bkd.clickExpand = function (e) {
 		$(e).find('i').addClass('fa-chevron-right');
 		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
+		rpt.hideAllChild(e.attr('idheaderpl'));
 	}
-	rpt.refreshHeight();
 };
 
 bkd.emptyGrid = function () {
