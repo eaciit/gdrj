@@ -728,8 +728,13 @@ rpt.buildGridLevels = (rows) => {
 					if (PLCodeChange != "")
 						PLyo.PLCode = PLCodeChange
 					if (child > 1){
-						$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-						$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+						let $parenttr = $(`tr[idheaderpl=${PLyo.PLCode}]`)
+						let $parenttrcontent = $(`tr[idpl=${PLyo.PLCode}]`)
+						console.log($parenttr)
+						// $trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+						// $columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+						$trElem.insertAfter($parenttr)
+						$columnElem.insertAfter($parenttrcontent)
 					}
 					else{
 						$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
@@ -753,8 +758,12 @@ rpt.buildGridLevels = (rows) => {
 						if (PLCodeChange != "")
 							PLyo.PLCode = PLCodeChange
 						if (child > 1){
-							$trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-							$columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+							let $parenttr = $(`tr[idheaderpl=${PLyo.PLCode}]`)
+							let $parenttrcontent = $(`tr[idpl=${PLyo.PLCode}]`)
+							// $trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+							// $columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+							$trElem.insertAfter($parenttr)
+							$columnElem.insertAfter($parenttrcontent)
 						}
 						else{
 							$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
@@ -807,6 +816,14 @@ rpt.buildGridLevels = (rows) => {
 
 	rpt.showZeroValue(false)
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
+	rpt.refreshHeight()
+}
+
+rpt.refreshHeight = () => {
+	$(".table-header tbody>tr").each(function( i ) {
+		let $trElem = $(this)
+		$(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('height', $trElem.length)
+	})
 }
 
 

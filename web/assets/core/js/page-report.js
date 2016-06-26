@@ -649,8 +649,13 @@ rpt.buildGridLevels = function (rows) {
 					var PLCodeChange = rpt.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
 					if (PLCodeChange != "") PLyo.PLCode = PLCodeChange;
 					if (child > 1) {
-						$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-						$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
+						var $parenttr = $('tr[idheaderpl=' + PLyo.PLCode + ']');
+						var $parenttrcontent = $('tr[idpl=' + PLyo.PLCode + ']');
+						console.log($parenttr);
+						// $trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+						// $columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+						$trElem.insertAfter($parenttr);
+						$columnElem.insertAfter($parenttrcontent);
 					} else {
 						$trElem.insertAfter($('tr.header' + PLyo.PLCode));
 						$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
@@ -677,8 +682,12 @@ rpt.buildGridLevels = function (rows) {
 						var _PLCodeChange = rpt.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
 						if (_PLCodeChange != "") PLyo.PLCode = _PLCodeChange;
 						if (child > 1) {
-							$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-							$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
+							var _$parenttr = $('tr[idheaderpl=' + PLyo.PLCode + ']');
+							var _$parenttrcontent = $('tr[idpl=' + PLyo.PLCode + ']');
+							// $trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+							// $columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+							$trElem.insertAfter(_$parenttr);
+							$columnElem.insertAfter(_$parenttrcontent);
 						} else {
 							$trElem.insertAfter($('tr.header' + PLyo.PLCode));
 							$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
@@ -729,6 +738,14 @@ rpt.buildGridLevels = function (rows) {
 
 	rpt.showZeroValue(false);
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
+	rpt.refreshHeight();
+};
+
+rpt.refreshHeight = function () {
+	$(".table-header tbody>tr").each(function (i) {
+		var $trElem = $(this);
+		$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('height', $trElem.length);
+	});
 };
 
 $(function () {
