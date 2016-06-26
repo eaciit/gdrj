@@ -105,7 +105,7 @@ cst.refresh = function () {
 			});
 			cst.optionDimensionSelect(opl2);
 			if (cst.breakdownvalue().length == 0) {
-				cst.breakdownvalue(['PL8A', "PL7", "PL74B", "PL74C", "PL94A", "PL26", "PL44B", "PL44C"]);
+				cst.breakdownvalue(['PL8A', "PL7", "PL74B", "PL74C", "PL94A", "PL44B", "PL44C"]);
 			}
 
 			cst.build();
