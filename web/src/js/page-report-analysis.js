@@ -126,6 +126,7 @@ bkd.clickExpand = (e) => {
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 	}
+	rpt.refreshHeight()
 }
 
 bkd.emptyGrid = () => {
