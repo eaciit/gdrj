@@ -100,7 +100,7 @@ cst.refresh = () => {
 			let opl2 = _.map(opl1, (d) => ({ field: d._id, name: d.PLHeader3 }))
 			cst.optionDimensionSelect(opl2)
 			if (cst.breakdownvalue().length == 0) {
-				cst.breakdownvalue(['PL8A', "PL44B"])
+				cst.breakdownvalue(['PL8A', "PL7", "PL74B", "PL74C", "PL94A", "PL26", "PL44B", "PL44C"])
 			}
 
 			cst.build()
