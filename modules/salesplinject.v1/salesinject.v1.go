@@ -491,7 +491,8 @@ func prepmastergrossproc() {
 
 	toolkit.Println("--> Trx Gross Proc")
 	csr01, _ := conn.NewQuery().From("salestrxs-grossproc").
-		Where(dbox.And(dbox.Eq("custcheck", true), dbox.Ne("src", "DISCOUNT"))).
+		Where(dbox.Ne("src", "DISCOUNT")).
+		// Where(dbox.And(dbox.Eq("custcheck", true), dbox.Ne("src", "DISCOUNT"))).
 		Cursor(nil)
 	defer csr01.Close()
 	for {
@@ -571,7 +572,8 @@ func main() {
 	defer gdrj.CloseDb()
 
 	var f *dbox.Filter
-	f = dbox.And(dbox.Gte("date", speriode), dbox.Lt("date", eperiode), dbox.Eq("customervalid", true), dbox.Ne("src", "DISCOUNT"))
+	// f = dbox.And(dbox.Gte("date", speriode), dbox.Lt("date", eperiode), dbox.Eq("customervalid", true), dbox.Ne("src", "DISCOUNT"))
+	f = dbox.And(dbox.Gte("date", speriode), dbox.Lt("date", eperiode), dbox.Ne("src", "DISCOUNT"))
 	// f = dbox.And(dbox.Gte("date", speriode), dbox.Lt("date", eperiode))
 	// f = dbox.Or(dbox.Eq("_id", "RD_2014_4_40007354_24260"),dbox.Eq("_id", "EXPORT_2014_4_40007767_13"),dbox.Eq("_id", "VDIST/2015-2014/FK/IPR/14003129_CD04_2"))
 
