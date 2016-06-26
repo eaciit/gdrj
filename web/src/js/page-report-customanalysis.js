@@ -4,7 +4,7 @@ let cst = viewModel.customtable
 cst.contentIsLoading = ko.observable(false)
 cst.title = ko.observable('Custom Analysis')
 cst.row = ko.observableArray(['pnl'])
-cst.column = ko.observableArray(['product.brand'])
+cst.column = ko.observableArray(['product.brand', 'customer.channelname'])
 cst.breakdownvalue = ko.observable([])
 cst.fiscalYear = ko.observable(rpt.value.FiscalYear())
 cst.data = ko.observableArray([])
@@ -100,12 +100,212 @@ cst.refresh = () => {
 
 			cst.data(res.Data.Data)
 			cst.contentIsLoading(false)
-			cst.getpnl(res.Data.PLModels)
+
+			cst.build(res.Data.PLModels)
+			// cst.getpnl(res.Data.PLModels)
 		}, () => {
 			pvt.contentIsLoading(false)
 		})
 	}
 	fetch()
+}
+
+cst.build = (plmodel) => {
+	let keys = ["PL8A", "PL94A", "PL1"]
+	let all = []
+	let columns = cst.column().map((d) => toolkit.replace(d, '.', '_'))
+	let rows = cst.row().map((d) => toolkit.replace(d, '.', '_'))
+
+	// BUILD WELL STRUCTURED DATA
+
+	let allRaw = []
+	cst.data().forEach((d) => {
+		let o = {}
+		let isPnlOnRow = (rows.find((e) => e == 'pnl') != undefined)
+
+		for (let key in d._id) if (d._id.hasOwnProperty(key)) {
+			o[toolkit.replace(key, '_id_', '')] = d._id[key]
+		}
+
+		keys.map((e) => {
+			let pl = plmodel.find((g) => g._id == e)
+			let p = toolkit.clone(o)
+			p.pnl = pl.PLHeader3
+			p.value = d[e]
+
+			allRaw.push(p)
+		})
+	})
+
+	let op1 = _.groupBy(allRaw, (d) => columns.map((e) => d[e]).join('_'))
+	let op2 = _.map(op1, (v, k) => {
+		let col = {}
+		col.rows = []
+		columns.forEach((e) => {
+			col[e] = v[0][e]
+		})
+
+		v.forEach((w) => {
+			let row = {}
+			row.value = w.value
+			rows.forEach((e) => {
+				row[e] = w[e]
+			})
+			col.rows.push(row)
+		})
+
+		all.push(col)
+	})
+
+	console.log("all", all)
+
+	// PREPARE TEMPLATE
+
+	let container = $('.pivot-ez').empty()
+	let columnWidth = 100
+	let columnHeight = 30
+	let tableHeaderWidth = (120 * rows.length)
+	let totalWidth = 0
+
+	let tableHeaderWrapper = toolkit.newEl('div')
+		.addClass('table-header')
+		.appendTo(container)
+	let tableHeader = toolkit.newEl('table')
+		.appendTo(tableHeaderWrapper)
+		.width(tableHeaderWidth)
+	let trHeaderTableHeader = toolkit.newEl('tr')
+		.appendTo(tableHeader)
+	let tdHeaderTableHeader = toolkit.newEl('td')
+		.html('&nbsp;')
+		.attr('colspan', rows.length)
+		.height(columnHeight * columns.length)
+		.appendTo(trHeaderTableHeader)
+
+	let tableContentWrapper = toolkit.newEl('div')
+		.addClass('table-content')
+		.appendTo(container)
+		.css('left', `${tableHeaderWidth}px`)
+	let tableContent = toolkit.newEl('table')
+		.appendTo(tableContentWrapper)
+
+	let groupThenLoop = (data, groups, callbackStart = app.noop, callbackEach = app.noop, callbackLast = app.noop) => {
+		let what = callbackStart(groups)
+		let counter = 0
+		let op0 = _.orderBy(data, (e) => toolkit.sum(e.rows, (f) => toolkit.number(f[keys[0]]), 'desc'))
+		let op1 = _.groupBy(data, (e) => e[groups[0]])
+		let op2 = _.map(op1, (v, k) => toolkit.return({ key: k, val: v }))
+
+		let op3 = _.sortBy(op2, (h) => toolkit.sum(h.rows, (e) => e.value), 'desc')
+		let op4 = op3.forEach((g) => {
+			let k = g.key, v = g.val
+			callbackEach(groups, counter, what, k, v)
+
+			let groupsLeft = _.filter(groups, (d, i) => i != 0)
+			if (groupsLeft.length > 0) {
+				groupThenLoop(v, groupsLeft, callbackStart, callbackEach, callbackLast)
+			} else {
+				callbackLast(groups, counter, what, k, v)
+			}
+
+			counter++
+		})
+	}
+
+	// GENERATE TABLE CONTENT HEADER
+
+	columns.forEach((d) => {
+		groupThenLoop(all, columns, (groups) => {
+			let rowHeader = tableContent.find(`tr[data-key=${groups.length}]`)
+			if (rowHeader.size() == 0) {
+				rowHeader = toolkit.newEl('tr')
+					.appendTo(tableContent)
+					.attr('data-key', groups.length)
+			}
+
+			return rowHeader
+		}, (groups, counter, what, k, v) => {
+			let tdHeaderTableContent = toolkit.newEl('td')
+				.addClass('align-center title')
+				.html(k)
+				.width(tableHeaderWidth)
+				.appendTo(what)
+
+			if (v.length > 1) {
+				tdHeaderTableContent.attr('colspan', v.length)
+			}
+
+			if (k.length > 15) {
+				tdHeaderTableContent.width(columnWidth + 50)
+				totalWidth += 50
+			}
+
+			totalWidth += columnWidth
+		}, (groups, counter, what, k, v) => {
+			// GENERATE CONTENT OF TABLE HEADER & TABLE CONTENT
+
+			groupThenLoop(v[0].rows, rows, app.noop, app.noop /* {
+				w.forEach((x) => {
+					let key = [k, String(counter)].join('_')
+					console.log(k, counter, x, x, key)
+
+					let rowTrContentHeader = tableHeader.find(`tr[data-key=${key}]`)
+					if (rowTrContentHeader.size() == 0) {
+						rowTrContentHeader = toolkit.newEl('tr')
+							.appendTo(tableHeader)
+							.attr('data-key', key)
+					}
+
+					let rowTdContentHeader = tableHeader.find(`tr[data-key=${key}]`)
+					if (rowTdContentHeader.size() == 0) {
+						rowTdContentHeader = toolkit.newEl('tr')
+							.appendTo(rowTrContentHeader)
+							.attr('data-key', key)
+					}
+				})
+			} */, (groups, counter, what, k, v) => {
+				let key = rows.map((d) => v[0][d]).join("_")
+
+				let rowTrHeader = tableHeader.find(`tr[data-key="${key}"]`)
+				if (rowTrHeader.size() == 0) {
+					rowTrHeader = toolkit.newEl('tr')
+						.appendTo(tableHeader)
+						.attr('data-key', key)
+				}
+
+				rows.forEach((e) => {
+					let tdKey = [e, key].join('_')
+					let rowTdHeader = rowTrHeader.find(`td[data-key="${tdKey}"]`)
+					if (rowTdHeader.size() == 0) {
+						toolkit.newEl('td')
+							.addClass('title')
+							.appendTo(rowTrHeader)
+							.attr('data-key', tdKey)
+							.html(v[0][e])
+					}
+				})
+
+				let rowTrContent = tableContent.find(`tr[data-key="${key}"]`)
+				if (rowTrContent.size() == 0) {
+					rowTrContent = toolkit.newEl('tr')
+						.appendTo(tableContent)
+						.attr('data-key', key)
+				}
+
+				let rowTdContent = toolkit.newEl('td')
+					.addClass('align-right')
+					.html(kendo.toString(v[0].value, 'n0'))
+					.appendTo(rowTrContent)
+			})
+		})
+
+		tableContent.width(totalWidth)
+	})
+
+	let tableClear = toolkit.newEl('div')
+		.addClass('clearfix')
+		.appendTo(container)
+
+	container.height(tableContent.height())
 }
 
 cst.getpnl = (datapl) => {
