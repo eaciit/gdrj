@@ -73,23 +73,16 @@ cst.selectfield = () => {
 }
 
 cst.refresh = () => {
-	let param = {}, groups = []
-	let pnl = _.find(cst.row(), (e) => { return e == 'pnl' })
-	if (pnl == undefined)
-		groups = groups.concat(cst.row())
-	pnl = _.find(cst.column(), (e) => { return e == 'pnl' })
-	if (pnl == undefined)
-		groups = groups.concat(cst.column())
-	groups.push("date.fiscal")
-	param.pls = []
-	param.flag = ""
+	let param = {}
+	let groups = ['date.fiscal'].concat(cst.row()
+		.concat(cst.column())
+		.filter((d) => d != 'pnl'))
+
+	param.pls = cst.breakdownvalue()
+	param.flag = ''
 	param.groups = groups
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, cst.fiscalYear)
-
-	// cst.contentIsLoading(true)
-
-	console.log(param)
 
 	let fetch = () => {
 		app.ajaxPost("/report/getpnldatanew", param, (res) => {
@@ -98,20 +91,30 @@ cst.refresh = () => {
 				return
 			}
 
-			cst.data(res.Data.Data)
 			cst.contentIsLoading(false)
 
-			cst.build(res.Data.PLModels)
-			// cst.getpnl(res.Data.PLModels)
+			rpt.plmodels(res.Data.PLModels)
+			cst.data(res.Data.Data)
+
+			let opl1 = _.orderBy(rpt.plmodels(), (d) => d.OrderIndex)
+			let opl2 = _.map(opl1, (d) => ({ field: d._id, name: d.PLHeader3 }))
+			cst.optionDimensionSelect(opl2)
+			if (cst.breakdownvalue().length == 0) {
+				cst.breakdownvalue(['PL8A', "PL44B"])
+			}
+
+			cst.build()
 		}, () => {
 			pvt.contentIsLoading(false)
 		})
 	}
+	
+	cst.contentIsLoading(true)
 	fetch()
 }
 
-cst.build = (plmodel) => {
-	let keys = ["PL8A", "PL94A", "PL1"]
+cst.build = () => {
+	let keys = cst.breakdownvalue()
 	let all = []
 	let columns = cst.column().map((d) => toolkit.replace(d, '.', '_'))
 	let rows = cst.row().map((d) => toolkit.replace(d, '.', '_'))
@@ -128,7 +131,7 @@ cst.build = (plmodel) => {
 		}
 
 		keys.map((e) => {
-			let pl = plmodel.find((g) => g._id == e)
+			let pl = rpt.plmodels().find((g) => g._id == e)
 			let p = toolkit.clone(o)
 			p.pnl = pl.PLHeader3
 			p.value = d[e]
@@ -478,5 +481,5 @@ cst.render = (resdata) => {
 
 $(() => {
 	cst.refresh()
-	cst.selectfield()
+	// cst.selectfield()
 })

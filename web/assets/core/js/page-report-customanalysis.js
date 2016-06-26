@@ -72,26 +72,16 @@ cst.selectfield = function () {
 };
 
 cst.refresh = function () {
-	var param = {},
-	    groups = [];
-	var pnl = _.find(cst.row(), function (e) {
-		return e == 'pnl';
-	});
-	if (pnl == undefined) groups = groups.concat(cst.row());
-	pnl = _.find(cst.column(), function (e) {
-		return e == 'pnl';
-	});
-	if (pnl == undefined) groups = groups.concat(cst.column());
-	groups.push("date.fiscal");
-	param.pls = [];
-	param.flag = "";
+	var param = {};
+	var groups = ['date.fiscal'].concat(cst.row().concat(cst.column()).filter(function (d) {
+		return d != 'pnl';
+	}));
+
+	param.pls = cst.breakdownvalue();
+	param.flag = '';
 	param.groups = groups;
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, cst.fiscalYear);
-
-	// cst.contentIsLoading(true)
-
-	console.log(param);
 
 	var fetch = function fetch() {
 		app.ajaxPost("/report/getpnldatanew", param, function (res) {
@@ -102,20 +92,34 @@ cst.refresh = function () {
 				return;
 			}
 
-			cst.data(res.Data.Data);
 			cst.contentIsLoading(false);
 
-			cst.build(res.Data.PLModels);
-			// cst.getpnl(res.Data.PLModels)
+			rpt.plmodels(res.Data.PLModels);
+			cst.data(res.Data.Data);
+
+			var opl1 = _.orderBy(rpt.plmodels(), function (d) {
+				return d.OrderIndex;
+			});
+			var opl2 = _.map(opl1, function (d) {
+				return { field: d._id, name: d.PLHeader3 };
+			});
+			cst.optionDimensionSelect(opl2);
+			if (cst.breakdownvalue().length == 0) {
+				cst.breakdownvalue(['PL8A', "PL44B"]);
+			}
+
+			cst.build();
 		}, function () {
 			pvt.contentIsLoading(false);
 		});
 	};
+
+	cst.contentIsLoading(true);
 	fetch();
 };
 
-cst.build = function (plmodel) {
-	var keys = ["PL8A", "PL94A", "PL1"];
+cst.build = function () {
+	var keys = cst.breakdownvalue();
 	var all = [];
 	var columns = cst.column().map(function (d) {
 		return toolkit.replace(d, '.', '_');
@@ -138,7 +142,7 @@ cst.build = function (plmodel) {
 				o[toolkit.replace(key, '_id_', '')] = d._id[key];
 			}
 		}keys.map(function (e) {
-			var pl = plmodel.find(function (g) {
+			var pl = rpt.plmodels().find(function (g) {
 				return g._id == e;
 			});
 			var p = toolkit.clone(o);
@@ -504,5 +508,5 @@ cst.render = function (resdata) {
 
 $(function () {
 	cst.refresh();
-	cst.selectfield();
+	// cst.selectfield()
 });
