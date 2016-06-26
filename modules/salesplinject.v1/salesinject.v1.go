@@ -166,6 +166,12 @@ func prepmastercalc() {
 	}
 	masters.Set("cogs", cogsmaps)
 
+	subtot := float64(0)
+	for _, v := range cogsmaps {
+		subtot += v.COGS_Amount
+	}
+	toolkit.Printfn("COGS 2thn : %v", subtot)
+
 	toolkit.Println("--> RAW DATA PL")
 	promos, freight, depreciation := map[string]float64{}, map[string]*gdrj.RawDataPL{}, map[string]float64{}
 	royalties, damages, advertisements := map[string]float64{}, map[string]float64{}, map[string]toolkit.M{}
@@ -279,7 +285,7 @@ func prepmastercalc() {
 		}
 	}
 
-	subtot := float64(0)
+	subtot = float64(0)
 	for _, v := range royalties {
 		subtot += v
 	}
@@ -562,7 +568,7 @@ func main() {
 			continue
 		}
 
-		if i == 20 {
+		if i == 2 {
 			break
 		}
 
