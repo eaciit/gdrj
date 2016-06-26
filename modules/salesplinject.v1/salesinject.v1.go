@@ -146,7 +146,6 @@ func prepmastercalc() {
 		}
 
 		key := toolkit.Sprintf("%d_%d_%s", o.Year, int(o.Month), o.SAPCode)
-		// key := toolkit.Sprintf("%d_%d", o.Year, int(o.Month), o.SAPCode)
 		_, exist := cogskeys[key]
 		if !exist {
 			key = toolkit.Sprintf("%d_%d", o.Year, int(o.Month))
@@ -176,11 +175,11 @@ func prepmastercalc() {
 			subtot += v.COGS_Amount
 		}
 	}
-	toolkit.Printfn("COGS 2thn : %v", subtot)
+	toolkit.Printfn("COGS : %v", subtot)
 
 	toolkit.Println("--> RAW DATA PL")
-	promos, freight, depreciation := map[string]float64{}, map[string]*gdrj.RawDataPL{}, map[string]float64{}
-	royalties, damages, advertisements := map[string]float64{}, map[string]float64{}, map[string]toolkit.M{}
+	promos, freight, depreciation := map[string]toolkit.M{}, map[string]*gdrj.RawDataPL{}, map[string]float64{}
+	royalties, damages := map[string]float64{}, map[string]float64{}
 	sgapls := map[string]toolkit.M{}
 
 	csrpromo, _ := gdrj.Find(new(gdrj.RawDataPL), f, nil)
@@ -205,10 +204,11 @@ func prepmastercalc() {
 				agroup = "spg"
 			}
 
+			key = toolkit.Sprintf("%s_%s", key, agroup)
 			if agroup == "adv" {
-				tspg, exist := advertisements[key]
+				tadv, exist := promos[key]
 				if !exist {
-					tspg = toolkit.M{}
+					tadv = toolkit.M{}
 				}
 				skey := "PL28I"
 				tstr := strings.TrimSpace(o.AccountDescription)
@@ -231,12 +231,49 @@ func prepmastercalc() {
 					skey = "PL28H"
 				}
 
+				v := tadv.GetFloat64(skey) + o.AmountinIDR
+				tadv.Set(skey, v)
+				promos[key] = tadv
+			} else if agroup == "spg" {
+				tspg, exist := promos[key]
+				if !exist {
+					tspg = toolkit.M{}
+				}
+
+				skey := "PL31E"
+				tstr := strings.ToUpper(strings.TrimSpace(o.AccountDescription))
+				switch tstr {
+				case "SPG EXPENSES - MANUAL":
+					skey = "PL31D"
+				case "SPG EXPENSES":
+					skey = "PL31C"
+				case "SPG ALLOCATION":
+					skey = "PL31B"
+				case "COORDINATION FEE":
+					skey = "PL31A"
+				}
+
 				v := tspg.GetFloat64(skey) + o.AmountinIDR
 				tspg.Set(skey, v)
-				advertisements[key] = tspg
+				promos[key] = tspg
 			} else {
-				key = toolkit.Sprintf("%s_%s", key, agroup)
-				promos[key] += o.AmountinIDR
+				tpromo, exist := promos[key]
+				if !exist {
+					tpromo = toolkit.M{}
+				}
+
+				tstr := strings.TrimSpace(o.AccountDescription)
+				plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
+				skey := "PL29A32"
+				for _, v := range plmodels {
+					if v.PLHeader2 == "Promotions Expenses" && v.PLHeader3 == tstr {
+						skey = v.ID
+					}
+				}
+
+				v := tpromo.GetFloat64(skey) + o.AmountinIDR
+				tpromo.Set(skey, v)
+				promos[key] = tpromo
 			}
 		case "FREIGHT":
 			frg, exist := freight[key]
@@ -309,19 +346,19 @@ func prepmastercalc() {
 	}
 	toolkit.Printfn("Depreciation : %v", subtot)
 
-	subtot = float64(0)
-	for _, v := range promos {
-		subtot += v
-	}
-	toolkit.Printfn("Promos and spg : %v", subtot)
+	// subtot = float64(0)
+	// for _, v := range promos {
+	// 	subtot += v
+	// }
+	// toolkit.Printfn("Adv, Promos and spg : %v", subtot)
 
 	subtot = float64(0)
-	for _, v := range advertisements {
+	for _, v := range promos {
 		for _, xv := range v {
 			subtot += toolkit.ToFloat64(xv, 6, toolkit.RoundingAuto)
 		}
 	}
-	toolkit.Printfn("Advertisement : %v", subtot)
+	toolkit.Printfn("Adv, Promos and spg : %v", subtot)
 
 	subtot = float64(0)
 	for _, v := range sgapls {
@@ -332,8 +369,7 @@ func prepmastercalc() {
 	toolkit.Printfn("SGA : %v", subtot)
 
 	masters.Set("promos", promos).Set("freight", freight).Set("depreciation", depreciation).
-		Set("royalties", royalties).Set("damages", damages).Set("advertisements", advertisements).
-		Set("sgapls", sgapls)
+		Set("royalties", royalties).Set("damages", damages).Set("sgapls", sgapls)
 
 	toolkit.Println("--> DISCOUNT ACTIVITY")
 	//discounts_all discounts

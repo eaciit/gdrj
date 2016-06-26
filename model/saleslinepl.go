@@ -361,13 +361,13 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 		royaltiestrademark, advtpromoexpense, operatingexpense,
 		freightexpense, nonoprincome, ebt, taxexpense,
 		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga,
-		grosssales, discount, advexp float64
+		grosssales, discount, advexp, promoexp, spgexp float64
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 
 	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL94A", "PL39A", "PL41A", "PL44A",
 		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
-		"PL44F", "PL6A", "PL0", "PL28"}
+		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31"}
 	inexclude := func(f string) bool {
 		for _, v := range exclude {
 			if v == f {
@@ -419,6 +419,10 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 			discount += v.Amount
 		case "Advertising Expenses":
 			advexp += v.Amount
+		case "Promotions Expenses":
+			promoexp += v.Amount
+		case "SPG Exp / Export Cost":
+			spgexp += v.Amount
 		}
 	}
 
@@ -451,6 +455,8 @@ func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	pl.AddData("PL44A", totdepreexp, plmodels)
 
 	pl.AddData("PL28", advexp, plmodels)
+	pl.AddData("PL29A", promoexp, plmodels)
+	pl.AddData("PL31", spgexp, plmodels)
 	pl.AddData("PL74B", cogs, plmodels)
 	pl.AddData("PL74C", grossmargin, plmodels)
 	pl.AddData("PL32B", sellingexpense, plmodels)
@@ -740,39 +746,60 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 		return
 	}
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
+	PLList := []string{"PL28", "PL28A", "PL28B", "PL28C", "PL28D", "PL28E", "PL28F", "PL28G", "PL28H", "PL28I", "PL29A", "PL29A1",
+		"PL29A2", "PL29A3", "PL29A4", "PL29A5", "PL29A6", "PL29A7", "PL29A8", "PL29A9", "PL29A10", "PL29A11", "PL29A12", "PL29A13", "PL29A14",
+		"PL29A15", "PL29A16", "PL29A17", "PL29A18", "PL29A19", "PL29A20", "PL29A21", "PL29A22", "PL29A23", "PL29A24", "PL29A25", "PL29A26", "PL29A27", "PL29A28",
+		"PL29A29", "PL29A30", "PL29A31", "PL29A32", "PL29", "PL30", "PL31", "PL31A", "PL31B", "PL31C", "PL31D", "PL31E", "PL32A"}
+	inlist := func(str string) bool {
+		for _, k := range PLList {
+			if str == k {
+				return true
+			}
+		}
+		return false
+	}
 
 	aplmodel := pl.PLDatas
 	for k, _ := range aplmodel {
-		if k == "PL28" || k == "PL29A" || k == "PL29" || k == "PL30" || k == "PL31" || k == "PL32" || k == "PL32A" ||
-			k == "PL28A" || k == "PL28B" || k == "PL28C" || k == "PL28D" || k == "PL28E" || k == "PL28F" || k == "PL28G" || k == "PL28H" || k == "PL28I" {
+		if inlist(k) {
 			delete(aplmodel, k)
 		}
 	}
 	pl.PLDatas = aplmodel
 
-	promos := masters.Get("promos").(map[string]float64)
-	advertisements := masters.Get("advertisements").(map[string]toolkit.M)
+	promos := masters.Get("promos").(map[string]toolkit.M)
 
-	find := func(x string) float64 {
-		freightid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, x)
-		return promos[freightid]
-	}
-
-	advertisement, exist := advertisements[toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)]
-	if exist {
-		for key, v := range advertisement {
-			fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-			pl.AddData(key, -pl.RatioToMonthSales*fv, plmodels)
+	find := func(x string) toolkit.M {
+		id := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, x)
+		tkm, exist := promos[id]
+		if exist {
+			return tkm
 		}
+		return toolkit.M{}
 	}
 
 	fpromo := find("promo")
-	// fadv := find("adv")
+	fadv := find("adv")
 	fspg := find("spg")
 
-	pl.AddData("PL29A", -fpromo*pl.RatioToMonthSales, plmodels)
-	// pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToMonthSales, plmodels)
-	pl.AddData("PL32", -fspg*pl.RatioToMonthSales, plmodels)
+	for key, v := range fadv {
+		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+		pl.AddData(key, -pl.RatioToMonthSales*fv, plmodels)
+	}
+
+	for key, v := range fpromo {
+		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+		pl.AddData(key, -pl.RatioToMonthSales*fv, plmodels)
+	}
+
+	for key, v := range fspg {
+		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+		pl.AddData(key, -pl.RatioToMonthSales*fv, plmodels)
+	}
+
+	// pl.AddData("PL29A", -fpromo*pl.RatioToMonthSales, plmodels)
+	// // pl.AddData("PL28", -fadv.AmountinIDR*pl.RatioToMonthSales, plmodels)
+	// pl.AddData("PL32", -fspg*pl.RatioToMonthSales, plmodels)
 
 }
 
