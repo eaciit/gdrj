@@ -650,3 +650,50 @@ body {
   left: 10px;
   top: -42px;
 }
+.pivot-ez {
+  position: relative;
+  margin-bottom: 20px;
+}
+.pivot-ez .table-header,
+.pivot-ez .table-content {
+  top: 0px;
+  position: absolute;
+  overflow: auto;
+  overflow-x: scroll;
+}
+.pivot-ez .table-header.table-header,
+.pivot-ez .table-content.table-header {
+  left: 0px;
+}
+.pivot-ez .table-header.table-content,
+.pivot-ez .table-content.table-content {
+  right: 0px;
+}
+.pivot-ez table tr:first-child td {
+  border-top: 1px solid #F0F3F4;
+}
+.pivot-ez table tr:last-child td {
+  border-bottom-color: #F0F3F4;
+}
+.pivot-ez table tr td {
+  border-right: 1px solid #F0F3F4;
+  border-bottom: 1px solid #F0F3F4;
+  height: 30px;
+  padding: 0 6px;
+  vertical-align: middle;
+}
+.pivot-ez table tr td.title {
+  font-weight: bold;
+  background-color: #F0F3F4;
+  border-right-color: white;
+  border-bottom-color: white;
+}
+.pivot-ez table tr td:first-child {
+  border-left: 1px solid #F0F3F4;
+}
+.pivot-ez table tr td:last-child {
+  border-right-color: #F0F3F4;
+}
+.pivot-ez .table-clear {
+  clear: both;
+}
