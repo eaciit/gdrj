@@ -588,7 +588,7 @@ func main() {
 	count := c.Count()
 	jobs := make(chan *gdrj.SalesTrx, count)
 	result := make(chan string, count)
-	for wi := 0; wi < 10; wi++ {
+	for wi := 0; wi < 25; wi++ {
 		go workerproc(wi, jobs, result)
 	}
 
@@ -610,7 +610,7 @@ func main() {
 			continue
 		}
 
-		if i == 2 {
+		if i == 10 {
 			break
 		}
 

@@ -15,6 +15,12 @@ type PLData struct {
 	Amount                 float64
 }
 
+type SalesLineRatio struct {
+	Global, GlobalVdist, Branch, Brand, SKUID, ChannelID                       float64
+	Month, MonthVdist, MonthSKUID, MonthChannel, MonthBranch, MonthVdistBranch float64
+	MonthChannelBrand                                                          float64
+}
+
 type SalesPL struct {
 	orm.ModelBase `bson:"-" json:"-"`
 	ID            string `bson:"_id" json:"_id"`
@@ -34,18 +40,19 @@ type SalesPL struct {
 	Product  *Product
 	PC       *ProfitCenter
 	CC       *CostCenter
+	Ratio    *SalesLineRatio
 
-	RatioToGlobalSales            float64
-	RatioToGlobalSalesVdist       float64
-	RatioToBranchSales            float64
-	RatioToBrandSales             float64
-	RatioToSKUSales               float64
-	RatioToChannelSales           float64
-	RatioToMonthSales             float64 //APROMO
-	RatioToMonthSKUSales          float64
-	RatioToMonthChannelSales      float64 //DISCOUNT_ALL
-	RatioToMonthChannelBrandSales float64 //DISCOUNT
-	RatioToMonthSalesVdist        float64 //FREIGHT
+	// RatioToGlobalSales            float64
+	// RatioToGlobalSalesVdist       float64
+	// RatioToBranchSales            float64
+	// RatioToBrandSales             float64
+	// RatioToSKUSales               float64
+	// RatioToChannelSales           float64
+	// RatioToMonthSales             float64 //APROMO
+	// RatioToMonthSKUSales          float64
+	// RatioToMonthChannelSales      float64 //DISCOUNT_ALL
+	// RatioToMonthChannelBrandSales float64 //DISCOUNT
+	// RatioToMonthSalesVdist        float64 //FREIGHT
 
 	PLDatas map[string]*PLData
 
@@ -82,7 +89,7 @@ func TrxToSalesPL(conn dbox.IConnection,
 	pl.Customer = trx.Customer
 	pl.Product = trx.Product
 
-	pl.Calc(conn, masters, config)
+	// pl.Calc(conn, masters, config)
 
 	return pl
 }
@@ -97,58 +104,64 @@ func SaveDiv(a float64, b float64) float64 {
 
 func (pl *SalesPL) RatioCalc(masters toolkit.M) {
 
-	pl.RatioToGlobalSales = SaveDiv(pl.GrossAmount, masters.GetFloat64("globalgross"))
-	pl.RatioToGlobalSalesVdist = SaveDiv(pl.GrossAmount, masters.GetFloat64("globalgrossvdist"))
+	tratio := new(SalesLineRatio)
+	tratio.Global = SaveDiv(pl.GrossAmount, masters.GetFloat64("globalgross"))
+	tratio.GlobalVdist = SaveDiv(pl.GrossAmount, masters.GetFloat64("globalgrossvdist"))
 
 	tgrossbybrand := masters.Get("grossbybrand", toolkit.M{}).(toolkit.M)
-	if pl.Product.Brand != "" && pl.Product.Brand != "Other" && masters.Has("grossbybrand") {
-		pl.RatioToBrandSales = SaveDiv(pl.GrossAmount, tgrossbybrand.GetFloat64(pl.Product.Brand))
+	// if pl.Product.Brand != "" && pl.Product.Brand != "Other" && masters.Has("grossbybrand") {
+	if masters.Has("grossbybrand") {
+		tratio.Brand = SaveDiv(pl.GrossAmount, tgrossbybrand.GetFloat64(pl.Product.Brand))
 	}
 
-	if pl.SKUID != "" && masters.Has("grossbysku") {
+	if masters.Has("grossbysku") {
 		tmp := masters["grossbysku"].(toolkit.M)
-		pl.RatioToSKUSales = SaveDiv(pl.GrossAmount, tmp.GetFloat64(pl.SKUID))
+		tratio.SKUID = SaveDiv(pl.GrossAmount, tmp.GetFloat64(pl.SKUID))
 	}
 
-	if pl.Customer.BranchID != "" && masters.Has("grossbybranch") {
+	if masters.Has("grossbybranch") {
 		tmp := masters["grossbybranch"].(toolkit.M)
-		pl.RatioToBranchSales = SaveDiv(pl.GrossAmount, tmp.GetFloat64(pl.Customer.BranchID))
+		tratio.Branch = SaveDiv(pl.GrossAmount, tmp.GetFloat64(pl.Customer.BranchID))
 	}
 
 	if masters.Has("grossbychannel") {
 		gbychannel := masters["grossbychannel"].(toolkit.M)
-		pl.RatioToChannelSales = SaveDiv(pl.GrossAmount, gbychannel.GetFloat64(pl.Customer.ChannelID))
+		tratio.ChannelID = SaveDiv(pl.GrossAmount, gbychannel.GetFloat64(pl.Customer.ChannelID))
 	}
 
 	if masters.Has("grossbymonth") {
 		gdt := masters["grossbymonth"].(toolkit.M)
 		key := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
-		pl.RatioToMonthSales = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
+		tratio.Month = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
 	}
 
 	if masters.Has("grossbymonthvdist") && strings.ToUpper(pl.TrxSrc) == "VDIST" {
 		gdt := masters["grossbymonthvdist"].(toolkit.M)
 		key := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
-		pl.RatioToMonthSalesVdist = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
+		tratio.MonthVdist = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
 	}
 
 	if masters.Has("grossbymonthsku") && pl.SKUID != "" {
 		gdt := masters["grossbymonthsku"].(toolkit.M)
 		key := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.SKUID)
-		pl.RatioToMonthSKUSales = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
+		tratio.MonthSKUID = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
 	}
 
 	if masters.Has("grossbymonthchannel") {
 		gdt := masters["grossbymonthchannel"].(toolkit.M)
 		key := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Customer.ChannelID)
-		pl.RatioToMonthChannelSales = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
+		tratio.MonthChannel = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
 	}
-
+	//MonthBranch, MonthVdistBranch float64
+	//=================================
+	//
 	if masters.Has("grossbymonthbrandchannel") {
 		gdt := masters["grossbymonthbrandchannel"].(toolkit.M)
 		key := toolkit.Sprintf("%d_%d_%s_%s", pl.Date.Year, pl.Date.Month, pl.Product.Brand, pl.Customer.ChannelID)
-		pl.RatioToMonthChannelBrandSales = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
+		tratio.MonthChannelBrand = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
 	}
+
+	pl.Ratio = tratio
 
 	return
 }
@@ -254,6 +267,7 @@ func (spl *SalesPL) CleanAndClasify(masters toolkit.M) {
 	}
 }
 
+/*
 func (pl *SalesPL) Calc(conn dbox.IConnection,
 	masters toolkit.M,
 	config toolkit.M) *SalesPL {
@@ -354,7 +368,7 @@ func (pl *SalesPL) Calc(conn dbox.IConnection,
 	pl.CalcSum(masters)
 	return pl
 }
-
+*/
 func (pl *SalesPL) CalcSum(masters toolkit.M) {
 	var netsales, cogs, grossmargin, sellingexpense,
 		sga, opincome, directexpense, indirectexpense,
@@ -498,7 +512,7 @@ func (pl *SalesPL) CalcSales(masters toolkit.M) {
 	}
 }
 
-func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
+/*func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 	//-- cogs
 	cogsid := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.SKUID)
 	if pl.Date.Year == 2014 && pl.Date.Month <= 9 {
@@ -510,7 +524,6 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 	cogsTable := masters.Get("cogs").(map[string]*COGSConsolidate)
 	cogsSchema, exist := cogsTable[cogsid]
 	if !exist {
-		// toolkit.Printfn("COGS error: no keys for ID %s", cogsid)
 		return
 	}
 
@@ -549,10 +562,9 @@ func (pl *SalesPL) CalcCOGS(masters toolkit.M) {
 	pl.AddData("Pl20", otherAmount, plmodels)
 	pl.AddData("PL21", energyAmount, plmodels)
 	//pl.AddData("PL74B", cogsAmount, plmodels)
-}
+}*/
 
 func (pl *SalesPL) CalcCOGSRev(masters toolkit.M) {
-	// PL9 PL14 Pl20 PL21 PL74
 	if !masters.Has("cogs") {
 		return
 	}
@@ -582,21 +594,21 @@ func (pl *SalesPL) CalcCOGSRev(masters toolkit.M) {
 
 	rmamount, lcamount, energyamount, depreamount, otheramount := float64(0), float64(0), float64(0), float64(0), float64(0)
 	if exist {
-		totamount := cogsdata.COGS_Amount * pl.RatioToMonthSKUSales
-		rmamount = cogsdata.RM_Amount * pl.RatioToMonthSKUSales
-		lcamount = cogsdata.LC_Amount * pl.RatioToMonthSKUSales
-		energyamount = cogsdata.PF_Amount * pl.RatioToMonthSKUSales
-		depreamount = cogsdata.Depre_Amount * pl.RatioToMonthSKUSales
+		totamount := cogsdata.COGS_Amount * pl.Ratio.MonthSKUID
+		rmamount = cogsdata.RM_Amount * pl.Ratio.MonthSKUID
+		lcamount = cogsdata.LC_Amount * pl.Ratio.MonthSKUID
+		energyamount = cogsdata.PF_Amount * pl.Ratio.MonthSKUID
+		depreamount = cogsdata.Depre_Amount * pl.Ratio.MonthSKUID
 		otheramount = totamount - rmamount - lcamount - energyamount - depreamount
 	}
 
 	if existmonth {
 		othermonth := cogsdatamonth.COGS_Amount - cogsdatamonth.RM_Amount - cogsdatamonth.LC_Amount - cogsdatamonth.PF_Amount - cogsdatamonth.Depre_Amount
-		rmamount += cogsdatamonth.RM_Amount * pl.RatioToMonthSales
-		lcamount += cogsdatamonth.LC_Amount * pl.RatioToMonthSales
-		energyamount += cogsdatamonth.PF_Amount * pl.RatioToMonthSales
-		depreamount += cogsdatamonth.Depre_Amount * pl.RatioToMonthSales
-		otheramount += othermonth * pl.RatioToMonthSales
+		rmamount += cogsdatamonth.RM_Amount * pl.Ratio.Month
+		lcamount += cogsdatamonth.LC_Amount * pl.Ratio.Month
+		energyamount += cogsdatamonth.PF_Amount * pl.Ratio.Month
+		depreamount += cogsdatamonth.Depre_Amount * pl.Ratio.Month
+		otheramount += othermonth * pl.Ratio.Month
 	}
 	// toolkit.Printfn("%v [%v,%v,%v,%v,%v]", cogsid, rmamount, lcamount, otheramount, depreamount, energyamount)
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
@@ -630,7 +642,7 @@ func (pl *SalesPL) CalcFreight(masters toolkit.M) {
 	}
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL23", -f.AmountinIDR*pl.RatioToMonthSalesVdist, plmodels)
+	pl.AddData("PL23", -f.AmountinIDR*pl.Ratio.Month, plmodels)
 }
 
 func (pl *SalesPL) CalcDepre(masters toolkit.M) {
@@ -658,8 +670,8 @@ func (pl *SalesPL) CalcDepre(masters toolkit.M) {
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 
-	pl.AddData("PL43", findirect*pl.RatioToMonthSales, plmodels)
-	pl.AddData("PL42", fdirect*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL43", findirect*pl.Ratio.Month, plmodels)
+	pl.AddData("PL42", fdirect*pl.Ratio.Month, plmodels)
 }
 
 func (pl *SalesPL) CalcDamage(masters toolkit.M) {
@@ -686,7 +698,7 @@ func (pl *SalesPL) CalcDamage(masters toolkit.M) {
 	d = d / 12
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL44", -d*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL44", -d*pl.Ratio.Month, plmodels)
 }
 
 func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
@@ -711,7 +723,7 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	}
 	// toolkit.Println(royalid, ":", r)
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL25", -r*pl.RatioToMonthSales, plmodels)
+	pl.AddData("PL25", -r*pl.Ratio.Month, plmodels)
 }
 
 func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
@@ -733,7 +745,7 @@ func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
 	key01 := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, strings.ToUpper(pl.Customer.ChannelID))
 	key02 := toolkit.Sprintf("%s_%s", key01, strings.ToUpper(pl.Product.Brand))
 
-	amount := (pl.RatioToMonthChannelBrandSales * discounts.GetFloat64(key02)) + (pl.RatioToMonthChannelSales * discounts.GetFloat64(key01))
+	amount := (pl.Ratio.MonthChannelBrand * discounts.GetFloat64(key02)) + (pl.Ratio.MonthChannel * discounts.GetFloat64(key01))
 	// toolkit.Printfn("%v : %v : %v", key01, key02, amount)
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	pl.AddData("PL7A", -amount, plmodels)
@@ -784,17 +796,17 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 
 	for key, v := range fadv {
 		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-		pl.AddData(key, -pl.RatioToMonthSales*fv, plmodels)
+		pl.AddData(key, -pl.Ratio.Month*fv, plmodels)
 	}
 
 	for key, v := range fpromo {
 		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-		pl.AddData(key, -pl.RatioToMonthSales*fv, plmodels)
+		pl.AddData(key, -pl.Ratio.Month*fv, plmodels)
 	}
 
 	for key, v := range fspg {
 		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-		pl.AddData(key, -pl.RatioToMonthSales*fv, plmodels)
+		pl.AddData(key, -pl.Ratio.Month*fv, plmodels)
 	}
 
 	// pl.AddData("PL29A", -fpromo*pl.RatioToMonthSales, plmodels)
@@ -824,13 +836,13 @@ func (pl *SalesPL) CalcSGARev(masters toolkit.M) {
 		for k, v := range sgadata {
 			arstr := strings.Split(k, "_")
 			fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-			pl.AddDataCC(arstr[0], -pl.RatioToMonthSalesVdist*fv, arstr[1], plmodels)
+			pl.AddDataCC(arstr[0], -pl.Ratio.MonthVdist*fv, arstr[1], plmodels)
 		}
 	}
 }
 
 //Handle by other
-func (pl *SalesPL) CalcSGA(masters toolkit.M) {
+/*func (pl *SalesPL) CalcSGA(masters toolkit.M) {
 	if masters.Has("sga") == false || masters.Has("ledger") == false {
 		return
 	}
@@ -873,7 +885,7 @@ func (pl *SalesPL) CalcSGA(masters toolkit.M) {
 		}
 		pl.AddDataCC(plcode, -pl.RatioToGlobalSales*raw.AmountinIDR, ccgroup, plmodels)
 	}
-}
+}*/
 
 func (pl *SalesPL) AddData(plcode string, amount float64, models map[string]*PLModel) {
 	pl.AddDataCC(plcode, amount, "", models)
