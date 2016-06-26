@@ -132,7 +132,7 @@ func (pl *SalesPL) RatioCalc(masters toolkit.M) {
 		pl.RatioToMonthSalesVdist = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
 	}
 
-	if masters.Has("grossbymonthsku") {
+	if masters.Has("grossbymonthsku") && pl.SKUID != "" {
 		gdt := masters["grossbymonthsku"].(toolkit.M)
 		key := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.SKUID)
 		pl.RatioToMonthSKUSales = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
