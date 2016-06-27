@@ -225,10 +225,10 @@ func GenerateDummySalesLinePL() {
 			l.SKUID_VDIST = l.Product.ID
 			l.OutletID = l.Customer.ID
 
-			l.RatioToGlobalSales = toolkit.RandFloat(10, 2)
-			l.RatioToBranchSales = toolkit.RandFloat(10, 2)
-			l.RatioToBrandSales = toolkit.RandFloat(10, 2)
-			l.RatioToSKUSales = toolkit.RandFloat(10, 2)
+			l.Ratio.Global = toolkit.RandFloat(10, 2)
+			l.Ratio.Branch = toolkit.RandFloat(10, 2)
+			l.Ratio.Brand = toolkit.RandFloat(10, 2)
+			l.Ratio.SKUID = toolkit.RandFloat(10, 2)
 
 			l.PLDatas = map[string]*gdrj.PLData{}
 
