@@ -48,29 +48,33 @@ func main() {
 	toolkit.Println("Start data query...")
 
 	// filter := dbox.Eq("date.fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
-	speriode := eperiode.AddDate(-1, 0, 0)
+	// eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
+	// speriode := eperiode.AddDate(-1, 0, 0)
 
-	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode))
+	// filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode))
 
-	c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
-	defer c.Close()
+	// c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
+	// defer c.Close()
+	csr, _ := conn.NewQuery().From("salespls-1").Cursor(nil)
+	defer csr.Close()
 
-	scount = c.Count()
+	scount = csr.Count()
 	iscount = 0
 	step := scount / 100
 
 	for {
 		iscount++
 		spl := new(gdrj.SalesPL)
-		e := c.Fetch(spl, 1, false)
+		e := csr.Fetch(spl, 1, false)
 		if e != nil {
 			toolkit.Println("EOF")
 			break
 		}
 
+		fiscal := spl.Date.Fiscal
 		for k, v := range spl.PLDatas {
-			data[k] += v.Amount
+			key := toolkit.Sprintf("%s_%s", fiscal, k)
+			data[key] += v.Amount
 		}
 
 		if iscount > step {

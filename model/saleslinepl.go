@@ -239,6 +239,10 @@ func (spl *SalesPL) CleanAndClasify(masters toolkit.M) {
 	cust, iscust := mcustomers[spl.Customer.ID].(*Customer)
 	branch, isbranch := mbranchs[spl.Customer.BranchID].(toolkit.M)
 
+	if isbranch {
+		spl.Customer.BranchName = branch.GetString("name")
+	}
+
 	if iscust {
 		spl.Customer.National = cust.National
 		spl.Customer.Zone = cust.Zone
@@ -265,6 +269,7 @@ func (spl *SalesPL) CleanAndClasify(masters toolkit.M) {
 			spl.Customer.AreaName = tkm.GetString("area")
 		}
 	}
+
 }
 
 /*
