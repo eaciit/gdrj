@@ -283,9 +283,9 @@ func main() {
 		if custs.Has(st.OutletID) {
 			st.CustomerValid = true
 			st.Customer = custs.Get(st.OutletID).(*gdrj.Customer)
-			if st.Customer.ChannelID == "I1" {
-				st.CustomerValid = false
-			}
+			// if st.Customer.ChannelID == "I1" {
+			// 	st.CustomerValid = false
+			// }
 		} else {
 			st.CustomerValid = false
 		}
