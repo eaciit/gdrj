@@ -55,7 +55,7 @@ func main() {
 
 	// c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
 	// defer c.Close()
-	csr, _ := conn.NewQuery().From("salespls-1").Where(filter).Cursor(nil)
+	csr, _ := conn.NewQuery().Select("date.fiscal", "pldatas").From("salespls-1").Where(filter).Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -81,6 +81,10 @@ func main() {
 			step += scount / 100
 			toolkit.Printfn("Processing %d of %d in %s", iscount, scount,
 				time.Since(t0).String())
+		}
+
+		if iscount == 20 {
+			break
 		}
 
 	}
