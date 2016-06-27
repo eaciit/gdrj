@@ -536,7 +536,7 @@ ba.clickExpand = (e) => {
 }
 
 ba.emptyGrid = () => {
-	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
+	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"  id="branch-analysis"></div>`)
 }
 
 ba.idarrayhide = ko.observableArray(['PL44A'])
@@ -577,6 +577,7 @@ ba.render = () => {
 	toolkit.newEl('th')
 		.html('P&L')
 		.css('height', `${34 * ba.level()}px`)
+		.attr('data-rowspan', ba.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
 		.appendTo(trHeader)
@@ -584,6 +585,7 @@ ba.render = () => {
 	toolkit.newEl('th')
 		.html('Total')
 		.css('height', `${34 * ba.level()}px`)
+		.attr('data-rowspan', ba.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
 		.appendTo(trHeader)
@@ -591,6 +593,7 @@ ba.render = () => {
 	toolkit.newEl('th')
 		.html('%')
 		.css('height', `${34 * ba.level()}px`)
+		.attr('data-rowspan', ba.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
 		.appendTo(trHeader)

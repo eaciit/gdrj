@@ -545,10 +545,18 @@ rpt.tabbedContent = () => {
 
 	    setTimeout(() => {
 		    $tabContent.find('.k-chart').each((i, e) => {
-		    	$(e).data('kendoChart').redraw()
+		    	try {
+		    		$(e).data('kendoChart').redraw()
+		    	} catch (err) {
+		    		console.log(err)
+		    	}
 		    })
 		    $tabContent.find('.k-grid').each((i, e) => {
-		    	$(e).data('kendoGrid').redraw()
+		    	try {
+		    		$(e).data('kendoGrid').refresh()
+		    	} catch (err) {
+		    		console.log(err)
+		    	}
 		    })
 	    }, 200)
 	});
@@ -842,6 +850,141 @@ rpt.refreshHeight = (PLCode) => {
 	})
 }
 
+rpt.showExport = ko.observable(true)
+rpt.export = (target, title, mode) => {
+	target = toolkit.$(target)
+
+	if (mode == 'kendo') {
+		// var workbook = new kendo.ooxml.Workbook({
+		//   sheets: [
+		//     {
+		//       // Column settings (width)
+		//       columns: [
+		//         { autoWidth: true },
+		//         { autoWidth: true }
+		//       ],
+		//       // Title of the sheet
+		//       title: "Customers",
+		//       // Rows of the sheet
+		//       rows: [
+		//         // First row (header)
+		//         {
+		//           cells: [
+		//             // First cell
+		//             { value: "Company Name" },
+		//             // Second cell
+		//             { value: "Contact" }
+		//           ]
+		//         },
+		//         // Second row (data)
+		//         {
+		//           cells: [
+		//             { value: "Around the Horn" },
+		//             { value: "Thomas Hardy" }
+		//           ]
+		//         },
+		//         // Third row (data)
+		//         {
+		//           cells: [
+		//             { value: "B's Beverages" },
+		//             { value: "Victoria Ashworth" }
+		//           ]
+		//         }
+		//       ]
+		//     }
+		//   ]
+		// });
+		// kendo.saveAs({
+		//     dataURI: workbook.toDataURL(),
+		//     fileName: "Test.xlsx"
+		// });
+
+
+		return
+	} else if (mode == 'normal') {
+		$('#fake-table').remove()
+
+		let body = $('body')
+		let fakeTable = $('<table />')
+			.attr('id', 'fake-table')
+			.appendTo(body)
+
+		if (target.attr('name') != 'table') {
+			target = target.find('table:eq(0)')
+		}
+
+		target.clone(true).appendTo(fakeTable)
+
+		let downloader = $('<a />').attr('href', '#')
+			.attr('download', `${title}.xls`)
+			.attr('onclick', `return ExcellentExport.excel(this, 'fake-table', 'sheet1')`)
+			.html('export')
+			.appendTo(body)
+		
+		fakeTable.find('td').css('height', 'inherit')
+		downloader[0].click()
+		
+		setTimeout(() => { 
+			fakeTable.remove()
+			downloader.remove()
+		}, 400)
+	} else if (mode == 'header-content') {
+		$('#fake-table').remove()
+
+		let body = $('body')
+		let fakeTable = $('<table />')
+			.attr('id', 'fake-table')
+			.appendTo(body)
+
+		let tableHeader = target.find('.table-header')
+		if (tableHeader.attr('name') != 'table') {
+			tableHeader = tableHeader.find('table')
+		}
+
+		let tableContent = target.find('.table-content')
+		if (tableContent.attr('name') != 'table') {
+			tableContent = tableContent.find('table')
+		}
+
+		tableHeader.find('tr').each((i, e) => {
+			if (i == 0) {
+				let rowspan = parseInt($(e).find('td,th').attr('data-rowspan'), 10)
+				if (isNaN(rowspan)) rowspan = 1
+
+				for (let j = 0; j < rowspan; j++) {
+					$(e).clone(true).appendTo(fakeTable)
+				}
+				return
+			}
+
+			$(e).clone(true).appendTo(fakeTable)
+		})
+
+		tableContent.find('tr').each((i, e) => {
+			let rowTarget = fakeTable.find(`tr:eq(${i})`)
+			$(e).find('td,th').each((j, f) => {
+				$(f).clone(true).appendTo(rowTarget)
+			})
+		})
+
+		let downloader = $('<a />').attr('href', '#')
+			.attr('download', `${title}.xls`)
+			.attr('onclick', `return ExcellentExport.excel(this, 'fake-table', 'sheet1')`)
+			.html('export')
+			.appendTo(body)
+		
+		fakeTable.find('tr:hidden').show()
+		fakeTable.find('td,th').css('height', 'inherit')
+		fakeTable.find('td .fa-chevron-right').remove()
+
+		downloader[0].click()
+		
+		// setTimeout(() => { 
+		// 	fakeTable.remove()
+		// 	downloader.remove()
+		// }, 400)
+	}
+}
 
 $(() => {
 	$(window).scroll(rpt.panel_relocated);

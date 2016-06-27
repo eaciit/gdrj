@@ -131,7 +131,7 @@ bkd.clickExpand = (e) => {
 }
 
 bkd.emptyGrid = () => {
-	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
+	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez" id="pnl-analysis"></div>`)
 }
 
 bkd.renderDetailSalesTrans = (breakdown) => {
@@ -430,6 +430,7 @@ bkd.render = () => {
 	toolkit.newEl('th')
 		.html('P&L')
 		.css('height', `${34 * bkd.level()}px`)
+		.attr('data-rowspan', bkd.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
 		.appendTo(trHeader)
@@ -437,6 +438,7 @@ bkd.render = () => {
 	toolkit.newEl('th')
 		.html('Total')
 		.css('height', `${34 * bkd.level()}px`)
+		.attr('data-rowspan', bkd.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
 		.appendTo(trHeader)
@@ -444,6 +446,7 @@ bkd.render = () => {
 	toolkit.newEl('th')
 		.html('%')
 		.css('height', `${34 * bkd.level()}px`)
+		.attr('data-rowspan', bkd.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
 		.appendTo(trHeader)
@@ -542,7 +545,7 @@ bkd.render = () => {
 	console.log("dataFlat", dataFlat)
 
 	dataFlat.forEach((e) => {
-		let breakdown = e._id
+		let breakdown = e.key
 		netSalesRow[breakdown] = e[netSalesPLCode]
 	})
 
@@ -560,9 +563,8 @@ bkd.render = () => {
 			row.PNLTotal += value
 		})
 		dataFlat.forEach((e) => {
-			dataFlat.find((f) => f.key == '')
 			let breakdown = e.key
-			let percentage = toolkit.number(e[`${d._id}`] / row.PNLTotal) * 100; 
+			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 			percentage = toolkit.number(percentage)
 
 			if (d._id != netSalesPLCode) {

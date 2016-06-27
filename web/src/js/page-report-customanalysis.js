@@ -184,6 +184,7 @@ cst.build = () => {
 	let tdHeaderTableHeader = toolkit.newEl('td')
 		.html('&nbsp;')
 		.attr('colspan', rows.length)
+		.attr('data-rowspan', columns.length)
 		.height(columnHeight * columns.length)
 		.appendTo(trHeaderTableHeader)
 
@@ -478,6 +479,16 @@ cst.render = (resdata) => {
 	$('.pivot').replaceWith('<div class="pivot ez"></div>')
 	$('.pivot').kendoPivotGrid(config)
 }
+
+vm.currentMenu('Analysis')
+vm.currentTitle('Custom Analysis')
+vm.breadcrumb([
+	{ title: 'Godrej', href: '#' },
+	{ title: 'Custom Analysis', href: '/web/report/dashboard' }
+])
+
+cst.title('Custom Analysis')
+
 
 $(() => {
 	cst.refresh()

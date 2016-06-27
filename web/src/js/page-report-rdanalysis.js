@@ -103,7 +103,7 @@ rd.clickExpand = (e) => {
 	}
 }
 rd.emptyGrid = () => {
-	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
+	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez" id="rd-analysis"></div>`)
 }
 
 rd.renderDetailSalesTrans = (breakdown) => {

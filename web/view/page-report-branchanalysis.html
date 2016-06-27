@@ -6,12 +6,14 @@
 			<h3 class="no-margin" data-bind="text: ba.title"></h3>
 			<div class="panel-nav-button" data-bind="visible: !ba.contentIsLoading()">
 				<div class="form-inline">
-
 					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: ba.refresh" title="Refresh P&L Analysis">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 						<i class="fa fa-server"></i> Show Filter
+					</button>
+					<button class="btn btn-sm btn-info tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#branch-analysis', 'Branch Analysis', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
 					</button>
 				</div>
 			</div>
@@ -60,7 +62,7 @@
 			</div>
 
 			<div data-bind="visible: !ba.contentIsLoading()">
-				<div class="breakdown-view ez"></div>
+				<div class="breakdown-view ez" id="branch-analysis"></div>
 			</div>
 		</div>
 	</div>
