@@ -47,7 +47,12 @@ func main() {
 
 	toolkit.Println("Start data query...")
 
-	filter := dbox.Eq("date.fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	// filter := dbox.Eq("date.fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
+	speriode := eperiode.AddDate(-1, 0, 0)
+
+	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode))
+
 	c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
 	defer c.Close()
 
