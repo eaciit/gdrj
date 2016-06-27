@@ -12,6 +12,9 @@
 					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 						<i class="fa fa-server"></i> Show Filter
 					</button>
+					<button class="btn btn-sm btn-info tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#key-account-analysis', 'Key Account Analysis', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
 				</div>
 			</div>
 		</div>
@@ -42,11 +45,7 @@
 			</div>
 
 			<div data-bind="visible: !kac.contentIsLoading()">
-				<div class="breakdown-view ez"></div>
-				<!-- <div class="scroll">
-					<div class="scroll-content"></div>
-				</div> -->
-	        	<!-- <div class="small-note" data-bind="text: kac.breakdownNote"></div> -->
+				<div class="breakdown-view ez" id="key-account-analysis"></div>
 			</div>
 		</div>
 	</div>

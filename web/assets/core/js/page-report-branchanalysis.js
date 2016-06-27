@@ -635,7 +635,7 @@ ba.clickExpand = function (e) {
 };
 
 ba.emptyGrid = function () {
-	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
+	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"  id="branch-analysis"></div>');
 };
 
 ba.idarrayhide = ko.observableArray(['PL44A']);
@@ -663,11 +663,11 @@ ba.render = function () {
 
 	var trHeader = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('P&L').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
+	toolkit.newEl('th').html('P&L').css('height', 34 * ba.level() + 'px').attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
 
-	toolkit.newEl('th').html('Total').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('Total').css('height', 34 * ba.level() + 'px').attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('%').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('%').css('height', 34 * ba.level() + 'px').attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < ba.level(); i++) {

@@ -11,6 +11,9 @@
 				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 					<i class="fa fa-server"></i> Show Filter
 				</button>
+				<button class="btn btn-sm btn-info tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#custom-analysis', 'Custom Analysis', 'header-content')">
+					<i class="fa fa-download"></i> Export as Excel
+				</button>
 			</div>
 		</div>
 	</div>
@@ -57,7 +60,7 @@
 		</div>
 
 		<div data-bind="visible: !cst.contentIsLoading()">
-			<div class="pivot-ez ez"></div>
+			<div class="pivot-ez ez" id="custom-analysis"></div>
 			<div class="clearfix"></div>
 		</div>
 	</div>

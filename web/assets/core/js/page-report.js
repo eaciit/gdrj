@@ -446,10 +446,18 @@ rpt.tabbedContent = function () {
 
 		setTimeout(function () {
 			$tabContent.find('.k-chart').each(function (i, e) {
-				$(e).data('kendoChart').redraw();
+				try {
+					$(e).data('kendoChart').redraw();
+				} catch (err) {
+					console.log(err);
+				}
 			});
 			$tabContent.find('.k-grid').each(function (i, e) {
-				$(e).data('kendoGrid').redraw();
+				try {
+					$(e).data('kendoGrid').refresh();
+				} catch (err) {
+					console.log(err);
+				}
 			});
 		}, 200);
 	});
@@ -762,6 +770,133 @@ rpt.refreshHeight = function (PLCode) {
 		var $trElem = $(this);
 		$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('height', $trElem.height());
 	});
+};
+
+rpt.showExport = ko.observable(true);
+rpt.export = function (target, title, mode) {
+	target = toolkit.$(target);
+
+	if (mode == 'kendo') {
+		// var workbook = new kendo.ooxml.Workbook({
+		//   sheets: [
+		//     {
+		//       // Column settings (width)
+		//       columns: [
+		//         { autoWidth: true },
+		//         { autoWidth: true }
+		//       ],
+		//       // Title of the sheet
+		//       title: "Customers",
+		//       // Rows of the sheet
+		//       rows: [
+		//         // First row (header)
+		//         {
+		//           cells: [
+		//             // First cell
+		//             { value: "Company Name" },
+		//             // Second cell
+		//             { value: "Contact" }
+		//           ]
+		//         },
+		//         // Second row (data)
+		//         {
+		//           cells: [
+		//             { value: "Around the Horn" },
+		//             { value: "Thomas Hardy" }
+		//           ]
+		//         },
+		//         // Third row (data)
+		//         {
+		//           cells: [
+		//             { value: "B's Beverages" },
+		//             { value: "Victoria Ashworth" }
+		//           ]
+		//         }
+		//       ]
+		//     }
+		//   ]
+		// });
+		// kendo.saveAs({
+		//     dataURI: workbook.toDataURL(),
+		//     fileName: "Test.xlsx"
+		// });
+
+		return;
+	} else if (mode == 'normal') {
+		(function () {
+			$('#fake-table').remove();
+
+			var body = $('body');
+			var fakeTable = $('<table />').attr('id', 'fake-table').appendTo(body);
+
+			if (target.attr('name') != 'table') {
+				target = target.find('table:eq(0)');
+			}
+
+			target.clone(true).appendTo(fakeTable);
+
+			var downloader = $('<a />').attr('href', '#').attr('download', title + '.xls').attr('onclick', 'return ExcellentExport.excel(this, \'fake-table\', \'sheet1\')').html('export').appendTo(body);
+
+			fakeTable.find('td').css('height', 'inherit');
+			downloader[0].click();
+
+			setTimeout(function () {
+				fakeTable.remove();
+				downloader.remove();
+			}, 400);
+		})();
+	} else if (mode == 'header-content') {
+		(function () {
+			$('#fake-table').remove();
+
+			var body = $('body');
+			var fakeTable = $('<table />').attr('id', 'fake-table').appendTo(body);
+
+			var tableHeader = target.find('.table-header');
+			if (tableHeader.attr('name') != 'table') {
+				tableHeader = tableHeader.find('table');
+			}
+
+			var tableContent = target.find('.table-content');
+			if (tableContent.attr('name') != 'table') {
+				tableContent = tableContent.find('table');
+			}
+
+			tableHeader.find('tr').each(function (i, e) {
+				if (i == 0) {
+					var rowspan = parseInt($(e).find('td,th').attr('data-rowspan'), 10);
+					if (isNaN(rowspan)) rowspan = 1;
+
+					for (var j = 0; j < rowspan; j++) {
+						$(e).clone(true).appendTo(fakeTable);
+					}
+					return;
+				}
+
+				$(e).clone(true).appendTo(fakeTable);
+			});
+
+			tableContent.find('tr').each(function (i, e) {
+				var rowTarget = fakeTable.find('tr:eq(' + i + ')');
+				$(e).find('td,th').each(function (j, f) {
+					$(f).clone(true).appendTo(rowTarget);
+				});
+			});
+
+			var downloader = $('<a />').attr('href', '#').attr('download', title + '.xls').attr('onclick', 'return ExcellentExport.excel(this, \'fake-table\', \'sheet1\')').html('export').appendTo(body);
+
+			fakeTable.find('tr:hidden').show();
+			fakeTable.find('td,th').css('height', 'inherit');
+			fakeTable.find('td .fa-chevron-right').remove();
+
+			downloader[0].click();
+
+			// setTimeout(() => {
+			// 	fakeTable.remove()
+			// 	downloader.remove()
+			// }, 400)
+		})();
+	}
 };
 
 $(function () {

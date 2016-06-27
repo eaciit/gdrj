@@ -199,7 +199,7 @@ cst.build = function () {
 	var tableHeaderWrapper = toolkit.newEl('div').addClass('table-header').appendTo(container);
 	var tableHeader = toolkit.newEl('table').appendTo(tableHeaderWrapper).width(tableHeaderWidth);
 	var trHeaderTableHeader = toolkit.newEl('tr').appendTo(tableHeader);
-	var tdHeaderTableHeader = toolkit.newEl('td').html('&nbsp;').attr('colspan', rows.length).height(columnHeight * columns.length).appendTo(trHeaderTableHeader);
+	var tdHeaderTableHeader = toolkit.newEl('td').html('&nbsp;').attr('colspan', rows.length).attr('data-rowspan', columns.length).height(columnHeight * columns.length).appendTo(trHeaderTableHeader);
 
 	var tableContentWrapper = toolkit.newEl('div').addClass('table-content').appendTo(container).css('left', tableHeaderWidth + 'px');
 	var tableContent = toolkit.newEl('table').appendTo(tableContentWrapper);
@@ -505,6 +505,12 @@ cst.render = function (resdata) {
 	$('.pivot').replaceWith('<div class="pivot ez"></div>');
 	$('.pivot').kendoPivotGrid(config);
 };
+
+vm.currentMenu('Analysis');
+vm.currentTitle('Custom Analysis');
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Custom Analysis', href: '/web/report/dashboard' }]);
+
+cst.title('Custom Analysis');
 
 $(function () {
 	cst.refresh();
