@@ -311,8 +311,14 @@ dsbrd.render = (res) => {
 	}
 
 	columnGrouped = _.orderBy(columnGrouped, (d) => {
-		let dataColumn = rowsAfter[0].columnData.find((e) => e.breakdownTitle == d.title)
-		return dataColumn.value
+		let value = 0
+		let dataColumn = rowsAfter[0].columnData
+			.find((e) => $.trim(e.breakdownTitle) == $.trim(d.title))
+		if (typeof dataColumn != 'undefined') {
+			value = dataColumn.value
+		}
+
+		return value
 	}, 'desc')
 
 	dsbrd.data(rowsAfter)

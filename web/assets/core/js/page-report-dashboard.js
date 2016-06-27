@@ -322,10 +322,15 @@ dsbrd.render = function (res) {
 	}
 
 	columnGrouped = _.orderBy(columnGrouped, function (d) {
+		var value = 0;
 		var dataColumn = rowsAfter[0].columnData.find(function (e) {
-			return e.breakdownTitle == d.title;
+			return $.trim(e.breakdownTitle) == $.trim(d.title);
 		});
-		return dataColumn.value;
+		if (typeof dataColumn != 'undefined') {
+			value = dataColumn.value;
+		}
+
+		return value;
 	}, 'desc');
 
 	dsbrd.data(rowsAfter);
