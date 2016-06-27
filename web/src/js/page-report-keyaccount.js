@@ -99,6 +99,7 @@ kac.clickExpand = (e) => {
 		$(e).find('i').addClass('fa-chevron-right')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
+		rpt.hideAllChild(e.attr('idheaderpl'))
 	}
 }
 kac.emptyGrid = () => {
