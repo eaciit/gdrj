@@ -612,7 +612,7 @@ func main() {
 			continue
 		}
 
-		if i == 10 {
+		if i == 25 {
 			break
 		}
 
