@@ -596,6 +596,9 @@ body {
   border: 1px solid #F0F3F4;
   text-align: center;
 }
+.grid-sales-dist > table > tbody > tr > td .fa:not(.fa-chevron-down):not(.fa-chevron-up) {
+  display: none;
+}
 .grid-sales-dist > table > tbody > tr > td table {
   width: 100%;
 }
