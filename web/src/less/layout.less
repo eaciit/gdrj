@@ -745,6 +745,10 @@ html, body{
 
 .scatter-view-container {
 	overflow-x: scroll; 
+
+	.scatter-view-wrapper {
+		margin: 0px auto;
+	}
 }
 
 .scroll{
@@ -802,6 +806,10 @@ html, body{
 					padding: 2px 6px;
 					border: 1px solid @color-base-grey;
 					text-align: center;
+
+					.fa:not(.fa-chevron-down):not(.fa-chevron-up) {
+						display: none;
+					}
 
 					table {
 					    width: 100%;
