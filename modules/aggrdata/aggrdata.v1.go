@@ -60,7 +60,7 @@ func main() {
 	for i := 1; i <= 12; i++ {
 		tstart := eperiode.AddDate(0, -i, 0)
 		tend := tstart.AddDate(0, 1, 0)
-		toolkit.Sprintf("From : %v, To : %v", tstart, tend)
+		toolkit.Printfn("From : %v, To : %v", tstart, tend)
 
 		filter := dbox.And(dbox.Gte("date.date", tstart), dbox.Lt("date.date", tend))
 		go workerproc(i, filter, result)
@@ -68,7 +68,7 @@ func main() {
 
 	for i := 1; i <= 12; i++ {
 		a := <-result
-		toolkit.Sprintf("Worker-%d Done in %s", a, time.Since(t0).String())
+		toolkit.Printfn("Worker-%d Done in %s", a, time.Since(t0).String())
 	}
 
 	for k, v := range data {
