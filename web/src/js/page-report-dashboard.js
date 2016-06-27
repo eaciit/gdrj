@@ -564,7 +564,7 @@ sd.render = (res) => {
 	// 	return [group, subGroup].join(' ')
 	// }))
 
-	let op0 = _.filter(sd.data(), (d) => d.percentage > 0 || d.value > 0)
+	let op0 = _.filter(sd.data(), (d) => d.percentage != 0 || d.value != 0)
 	let op1 = _.groupBy(op0, (d) => d[breakdown])
 	let op2 = _.map(op1, (v, k) => { return { key: k, values: v } })
 	let op3 = _.orderBy(op2, (d) => toolkit.sum(d.values, (e) => e.percentage), 'desc')
@@ -611,7 +611,10 @@ sd.render = (res) => {
 
 		let sumPercentage = _.sumBy(d.values, (e) => e.percentage)
 		let sumColumn = _.sumBy(d.values, (e) => e.value)
-		td1st.html(`<i class="fa"></i>${d.key}<br />${kendo.toString(sumPercentage, 'n2')} %`)
+		td1st.html(`<i class="fa"></i>
+			${d.key}<br />
+			${kendo.toString(sumPercentage, 'n2')} %<br />
+			${kendo.toString(sumColumn, 'n2')}`)
 
 		let td2nd = toolkit.newEl('td')
 			.appendTo(tr2nd)
