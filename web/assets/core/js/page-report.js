@@ -440,16 +440,18 @@ rpt.panel_relocated = function () {
 };
 
 rpt.tabbedContent = function () {
-
 	$('.app-title h2').html('&nbsp;');
-	$('.tab-content a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+	$('.tab-content').parent().find('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 		var $tabContent = $(".tab-content " + $(e.target).attr("href"));
-		$tabContent.find('.k-chart').each(function (i, e) {
-			$(e).data('.k-chart').redraw();
-		});
-		$tabContent.find('.k-grid').each(function (i, e) {
-			$(e).data('.k-grid').redraw();
-		});
+
+		setTimeout(function () {
+			$tabContent.find('.k-chart').each(function (i, e) {
+				$(e).data('kendoChart').redraw();
+			});
+			$tabContent.find('.k-grid').each(function (i, e) {
+				$(e).data('kendoGrid').redraw();
+			});
+		}, 200);
 	});
 };
 
