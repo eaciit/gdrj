@@ -643,7 +643,8 @@ sd.render = function (res) {
 			var tr = toolkit.newEl('tr').appendTo(innerTbody);
 			toolkit.newEl('td').appendTo(tr).html(kendo.toString(d.values[0].value, 'n0')).addClass('single');
 
-			return;
+			// index++
+			// return
 		}
 
 		var op1 = _.groupBy(d.values, function (o) {
@@ -666,7 +667,6 @@ sd.render = function (res) {
 			channelgroup[indexyo]['percentageyo'] = percentageyo;
 			indexyo++;
 		});
-
 		if (sd.sortVal[index] == '') {
 			channelgroup = _.orderBy(channelgroup, ['key'], ['asc']);
 			$('.sortsales:eq(' + index + ')>i').removeClass('fa-chevron-up');
@@ -681,15 +681,15 @@ sd.render = function (res) {
 			$('.sortsales:eq(' + index + ')>i').removeClass('fa-chevron-down');
 		}
 
-		var op2 = _.orderBy(channelgroup, function (e) {
-			return e.totalyo;
-		}, 'desc');
-		op2.forEach(function (e) {
-			var tr = toolkit.newEl('tr').appendTo(innerTable);
-			toolkit.newEl('td').css('width', '150px').appendTo(tr).html(e.key);
-			toolkit.newEl('td').css('width', '40px').appendTo(tr).html(kendo.toString(e.percentageyo, 'n2') + '&nbsp;%');
-			toolkit.newEl('td').css('width', '120px').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'));
-		});
+		// let op2 = _.orderBy(channelgroup, (e) => e.totalyo, 'desc')
+		if (d.values.length > 1) {
+			channelgroup.forEach(function (e) {
+				var tr = toolkit.newEl('tr').appendTo(innerTable);
+				toolkit.newEl('td').css('width', '150px').appendTo(tr).html(e.key);
+				toolkit.newEl('td').css('width', '40px').appendTo(tr).html(kendo.toString(e.percentageyo, 'n2') + '&nbsp;%');
+				toolkit.newEl('td').css('width', '120px').appendTo(tr).html(kendo.toString(e.totalyo, 'n0'));
+			});
+		}
 
 		index++;
 	});
@@ -703,7 +703,7 @@ sd.render = function (res) {
 		// $(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height())
 	});
 };
-sd.sortVal = ['', '', ''];
+sd.sortVal = ['', '', '', '', '', ''];
 sd.sortData = function () {
 	sd.render(sd.oldData());
 };
