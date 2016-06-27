@@ -517,7 +517,7 @@ bkd.render = function () {
 	console.log("dataFlat", dataFlat);
 
 	dataFlat.forEach(function (e) {
-		var breakdown = e._id;
+		var breakdown = e.key;
 		netSalesRow[breakdown] = e[netSalesPLCode];
 	});
 
@@ -535,11 +535,8 @@ bkd.render = function () {
 			row.PNLTotal += value;
 		});
 		dataFlat.forEach(function (e) {
-			dataFlat.find(function (f) {
-				return f.key == '';
-			});
 			var breakdown = e.key;
-			var percentage = toolkit.number(e['' + d._id] / row.PNLTotal) * 100;
+			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
 			if (d._id != netSalesPLCode) {
