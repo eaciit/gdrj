@@ -109,7 +109,7 @@ kac.clickExpand = function (e) {
 	}
 };
 kac.emptyGrid = function () {
-	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
+	$('.breakdown-view').replaceWith('<div class="breakdown-view ez" id="key-account-analysis"></div>');
 };
 
 kac.renderDetailSalesTrans = function (breakdown) {

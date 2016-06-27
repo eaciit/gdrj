@@ -109,7 +109,7 @@ rd.clickExpand = function (e) {
 	}
 };
 rd.emptyGrid = function () {
-	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
+	$('.breakdown-view').replaceWith('<div class="breakdown-view ez" id="rd-analysis"></div>');
 };
 
 rd.renderDetailSalesTrans = function (breakdown) {
