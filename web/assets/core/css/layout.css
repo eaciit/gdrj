@@ -552,6 +552,9 @@ body {
 .scatter-view-container {
   overflow-x: scroll;
 }
+.scatter-view-container .scatter-view-wrapper {
+  margin: 0px auto;
+}
 .scroll {
   margin-left: 300px;
   width: calc(100% - 300px);

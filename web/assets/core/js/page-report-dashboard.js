@@ -322,10 +322,15 @@ dsbrd.render = function (res) {
 	}
 
 	columnGrouped = _.orderBy(columnGrouped, function (d) {
+		var value = 0;
 		var dataColumn = rowsAfter[0].columnData.find(function (e) {
-			return e.breakdownTitle == d.title;
+			return $.trim(e.breakdownTitle) == $.trim(d.title);
 		});
-		return dataColumn.value;
+		if (typeof dataColumn != 'undefined') {
+			value = dataColumn.value;
+		}
+
+		return value;
 	}, 'desc');
 
 	dsbrd.data(rowsAfter);
@@ -578,7 +583,7 @@ sd.render = function (res) {
 	// }))
 
 	var op0 = _.filter(sd.data(), function (d) {
-		return d.percentage > 0 || d.value > 0;
+		return d.percentage != 0 || d.value != 0;
 	});
 	var op1 = _.groupBy(op0, function (d) {
 		return d[breakdown];
@@ -632,7 +637,7 @@ sd.render = function (res) {
 		var sumColumn = _.sumBy(d.values, function (e) {
 			return e.value;
 		});
-		td1st.html('<i class="fa"></i>' + d.key + '<br />' + kendo.toString(sumPercentage, 'n2') + ' %');
+		td1st.html('<i class="fa"></i>\n\t\t\t' + d.key + '<br />\n\t\t\t' + kendo.toString(sumPercentage, 'n2') + ' %<br />\n\t\t\t' + kendo.toString(sumColumn, 'n2'));
 
 		var td2nd = toolkit.newEl('td').appendTo(tr2nd).css('vertical-align', 'top');
 
