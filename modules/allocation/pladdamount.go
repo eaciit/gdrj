@@ -207,7 +207,7 @@ func main() {
 			spl.CalcSum(masters)
 
 			// gdrj.Save(spl)
-			conn.NewQuery().From("salespls-2").
+			conn.NewQuery().From("salespls").
 				Save().Exec(toolkit.M{}.Set("data", spl))
 		}
 
