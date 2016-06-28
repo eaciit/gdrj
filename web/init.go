@@ -23,7 +23,7 @@ var (
 
 func init() {
 	app := knot.NewApp(AppName)
-	app.ViewsPath = filepath.Join(basePath, AppName, "view")
+	app.ViewsPath = filepath.Join(basePath, AppName, "view") + toolkit.PathSeparator
 
 	runtime.GOMAXPROCS(4)
 	gocore.ConfigPath = controller.GDRJ_CONFIG_PATH
