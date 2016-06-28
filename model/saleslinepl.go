@@ -506,14 +506,14 @@ func (pl *SalesPL) CalcSales(masters toolkit.M) {
 	switch {
 	case pl.Customer.IsRD:
 		pl.AddData("PL2", pl.GrossAmount, plmodels)
-		pl.AddData("PL8", pl.DiscountAmount, plmodels)
+		pl.AddData("PL8", -pl.DiscountAmount, plmodels)
 	case strings.Contains(pl.ID, "EXPORT"):
 		pl.AddData("PL6", pl.GrossAmount, plmodels)
 	// case strings.Contains(pl.ID, "DISCOUNT"):
 	// 	pl.AddData("PL7A", pl.GrossAmount, plmodels)
 	default:
 		pl.AddData("PL1", pl.GrossAmount, plmodels)
-		pl.AddData("PL7", pl.DiscountAmount, plmodels)
+		pl.AddData("PL7", -pl.DiscountAmount, plmodels)
 	}
 }
 
@@ -703,7 +703,7 @@ func (pl *SalesPL) CalcDamage(masters toolkit.M) {
 	d = d / 12
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL44", -d*pl.Ratio.Month, plmodels)
+	pl.AddData("PL44", d*pl.Ratio.Month, plmodels)
 }
 
 func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
@@ -711,7 +711,13 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 		return
 	}
 
-	royals := masters.Get("royalties").(map[string]float64)
+	plbrand := strings.ToUpper(strings.TrimSpace(pl.Product.Brand))
+	if plbrand == "3PRO" || plbrand == "AUTOSOL" || plbrand == "SIMBA" {
+		return
+	}
+	//Autosol, 3PRO and Simba
+	/*	royals := masters.Get("royalties").(map[string]float64)*/
+	royalsamount := masters.GetFloat64("royaltiesamount")
 
 	aplmodel := pl.PLDatas
 	for k, _ := range aplmodel {
@@ -721,15 +727,42 @@ func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 	}
 	pl.PLDatas = aplmodel
 
-	royalid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
-	r, exist := royals[royalid]
-	if !exist {
-		return
-	}
+	/*	royalid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
+		r, exist := royals[royalid]
+		if !exist {
+			return
+		}*/
 	// toolkit.Println(royalid, ":", r)
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL25", -r*pl.Ratio.Month, plmodels)
+	// pl.AddData("PL25", -r*pl.Ratio.Month, plmodels)
+	pl.AddData("PL25", -royalsamount*2.85900895*pl.Ratio.Global, plmodels)
 }
+
+//== OLD Fix Calculate Royalties
+// func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
+// 	if !masters.Has("royalties") {
+// 		return
+// 	}
+
+// 	royals := masters.Get("royalties").(map[string]float64)
+
+// 	aplmodel := pl.PLDatas
+// 	for k, _ := range aplmodel {
+// 		if k == "PL25" {
+// 			delete(aplmodel, k)
+// 		}
+// 	}
+// 	pl.PLDatas = aplmodel
+
+// 	royalid := toolkit.Sprintf("%d_%d", pl.Date.Year, pl.Date.Month)
+// 	r, exist := royals[royalid]
+// 	if !exist {
+// 		return
+// 	}
+// 	// toolkit.Println(royalid, ":", r)
+// 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
+// 	pl.AddData("PL25", -r*pl.Ratio.Month, plmodels)
+// }
 
 func (pl *SalesPL) CalcDiscountActivity(masters toolkit.M) {
 

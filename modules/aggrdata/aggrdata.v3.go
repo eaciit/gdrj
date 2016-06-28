@@ -301,9 +301,9 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 			a, _ := toolkit.ToM(v)
 			id := toolkit.M{}
 			arrk := strings.Split(k, "|")
-			for i, sv := range payload.Breakdowns {
+			for ix, sv := range payload.Breakdowns {
 				tsv := strings.Replace(sv, ".", "_", -1)
-				id.Set(tsv, arrk[i])
+				id.Set(tsv, arrk[ix])
 			}
 
 			a.Set("_id", k)
