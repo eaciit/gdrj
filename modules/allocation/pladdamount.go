@@ -198,6 +198,8 @@ func main() {
 			spl.PC = tpc
 			spl.CC = tcc
 
+			spl.ID = toolkit.Sprintf("COGS-MANUAL/2014-2015/%v/%v", skuid, i)
+
 			plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
 			spl.AddData("PL9", amount, plmodels)
 			spl.CleanAndClasify(masters)
