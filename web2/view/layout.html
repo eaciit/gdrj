@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{{template "_head.html"}}
+	</head>
+	<!-- <body class="is-loading"> -->
+	<body>
+		<div class="app" data-bind="with: vm">
+			<header class="navbar navbar-fixed-top app-top">
+				{{template "_menu.html"}}
+			</header>
+
+			<div class="app-container">
+				<div class="app-wrapper">
+					<div class="app-title">
+						<ol class="breadcrumb pull-right" data-bind="template:{name:'breadcrumbTemplate', foreach:vm.breadcrumb}"></ol>
+						<h2 class="no-margin" data-bind="text: currentTitle">Dashboard</h2>
+					</div>
+
+					<div class="app-content">{{.Content}}</div>
+				</div>
+			</div>
+		</div>
+
+		{{template "_script_template.html"}}
+		<script>
+			ko.applyBindings(viewModel)
+			toolkit.fixKendoMultiSelect()
+		</script>
+	</body>
+</html>

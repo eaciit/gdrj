@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "eaciit/gdrj/web"
+	_ "eaciit/gdrj/web2"
 
 	"eaciit/gdrj/web/installation"
 	"eaciit/gdrj/web/model"
