@@ -212,7 +212,7 @@ func workerproc(wi int, filter *dbox.Filter, result chan<- toolkit.M) {
 
 		tkm.Set(key, dtkm)
 
-		if iscount == 3 {
+		if iscount == 10 {
 			break
 		}
 
@@ -278,6 +278,7 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 				id.Set(tsv, arrk[i])
 			}
 			a.Set("_id", id)
+			a.Set("keyid", id)
 
 			detaildata <- toolkit.M{}.Set(tablename, a)
 		}
