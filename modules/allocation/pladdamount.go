@@ -190,6 +190,7 @@ func main() {
 
 			spl := new(gdrj.SalesPL)
 			spl.Date = gdrj.SetDate(Date)
+			spl.SKUID = skuid
 
 			spl.Customer = tcustomer
 			spl.Product = tproduct
