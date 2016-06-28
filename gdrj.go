@@ -26,34 +26,6 @@ func main() {
 	}
 
 	flagAddress := toolkit.Sprintf("localhost:%v", toolkit.ToString(port.Port))
-	// otherRoutes := map[string]knot.FnContent{
-	// 	"/": func(r *knot.WebContext) interface{} {
-	// 		prefix := web1.AppName
-
-	// 		regex := regexp.MustCompile("/" + prefix + "/web/report/[a-zA-Z0-9_]+(/.*)?$")
-	// 		rURL := r.Request.URL.String()
-
-	// 		if regex.MatchString(rURL) {
-	// 			args := strings.Split(strings.Replace(rURL, "/"+prefix+"/web/report/", "", -1), "/")
-
-	// 			toolkit.Println("------", args)
-	// 			r.Config.OutputType = web1.WebController.
-	// 			// return "ASdf"
-
-	// 			return web1.WebController.PageReport(r, args)
-	// 			// return nil
-	// 		}
-
-	// 		sessionid := r.Session("sessionid", "")
-	// 		if sessionid == "" {
-	// 			http.Redirect(r.Writer, r.Request, "/"+prefix+"/web/login", 301)
-	// 		} else {
-	// 			http.Redirect(r.Writer, r.Request, "/"+prefix+"/web/report/dashboard", 301)
-	// 		}
-
-	// 		return true
-	// 	},
-	// }
 
 	knot.DefaultOutputType = knot.OutputTemplate
 	knot.StartContainer(&knot.AppContainerConfig{
