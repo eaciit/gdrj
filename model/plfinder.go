@@ -253,24 +253,24 @@ func (s *PLFinderParam) GetTableName() string {
 		}
 	}
 
-	// cols, _ := s.GetPLCollections()
-	// for _, col := range cols {
-	// 	dimensions := col.Get("dimensions").([]string)
-	// 	ok := true
+	cols, _ := s.GetPLCollections()
+	for _, col := range cols {
+		dimensions := col.Get("dimensions").([]string)
+		ok := true
 
-	// loopFilter:
-	// 	for _, filterKey := range filterKeys {
-	// 		filter := strings.Replace(filterKey, ".", "_", -1)
-	// 		if !toolkit.HasMember(dimensions, filter) {
-	// 			ok = false
-	// 			break loopFilter
-	// 		}
-	// 	}
+	loopFilter:
+		for _, filterKey := range filterKeys {
+			filter := strings.Replace(filterKey, ".", "_", -1)
+			if !toolkit.HasMember(dimensions, filter) {
+				ok = false
+				break loopFilter
+			}
+		}
 
-	// 	if ok {
-	// 		return col.GetString("table")
-	// 	}
-	// }
+		if ok {
+			return col.GetString("table")
+		}
+	}
 
 	sort.Strings(filterKeys)
 	key := strings.Replace(strings.Join(filterKeys, "_"), ".", "_", -1)
