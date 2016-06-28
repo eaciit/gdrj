@@ -745,7 +745,7 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 			"ratiotoskusales",
 			"taxamount",
 			"netamount",
-			"totaloutlet",
+			// "totaloutlet",
 		}
 
 		for _, other := range fields {
@@ -820,16 +820,16 @@ func (s *PLFinderParam) GeneratePLData() error {
 	}
 
 	group["outlets"] = bson.M{"$addToSet": "$customer._id"}
-	project := bson.M{"totaloutlet": bson.M{"$size": "$outlets"}}
-	for key := range group {
-		if key == "_id" {
-			continue
-		}
+	// project := bson.M{"totaloutlet": bson.M{"$size": "$outlets"}}
+	// for key := range group {
+	// 	if key == "_id" {
+	// 		continue
+	// 	}
 
-		project[key] = 1
-	}
+	// 	project[key] = 1
+	// }
 
-	pipes := []bson.M{{"$group": group}, {"$project": project}, {"$out": tableName}}
+	pipes := []bson.M{{"$group": group} /**{"$project": project}, */, {"$out": tableName}}
 	pipe := col.Pipe(pipes)
 
 	res := []*toolkit.M{}
