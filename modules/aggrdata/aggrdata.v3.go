@@ -52,7 +52,8 @@ func main() {
 	toolkit.Println("Preparing data query...")
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
-	speriode := eperiode.AddDate(-1, 0, 0)
+	// speriode := eperiode.AddDate(-1, 0, 0)
+	speriode := eperiode.AddDate(0, 0, -1)
 
 	seeds := make([]time.Time, 0, 0)
 	seeds = append(seeds, speriode)
@@ -123,6 +124,7 @@ func main() {
 	toolkit.Printfn("Prepare saving collection, Create dimension")
 	for _, str := range listdimension {
 		dimension <- str
+		toolkit.Printfn("SEND : %v", str)
 	}
 	close(dimension)
 
