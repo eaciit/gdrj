@@ -278,14 +278,16 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 				id.Set(tsv, arrk[i])
 			}
 
-			keys := strings.Split(k, "|")
-			toolkit.Printfn("Key is: %s, Keys are: %v", k, keys)
-			values := []string{}
-			for _, key := range keys {
-				values = append(values, id.GetString(key))
-			}
-			idStr := strings.Join(values, "_")
-			a.Set("_id", idStr)
+			/*
+				keys := strings.Split(k, "|")
+				toolkit.Printfn("Key is: %s, Keys are: %v", k, keys)
+				values := []string{}
+				for _, key := range keys {
+					values = append(values, id.GetString(key))
+				}
+				idStr := strings.Join(values, "_")
+			*/
+			a.Set("_id", k)
 			a.Set("key", id)
 
 			detaildata <- toolkit.M{}.Set(tablename, a)
