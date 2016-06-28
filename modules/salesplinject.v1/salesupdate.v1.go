@@ -717,7 +717,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		workerconn.NewQuery().From(tablename).
 			Save().Exec(toolkit.M{}.Set("data", spl))
 
-		if i == 2 {
+		if i == 5 {
 			break
 		}
 	}
