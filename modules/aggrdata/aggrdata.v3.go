@@ -124,7 +124,7 @@ func main() {
 	for _, str := range listdimension {
 		dimension <- str
 	}
-	// close(dimension)
+	close(dimension)
 
 	alldatarows := 0
 	toolkit.Printfn("Waiting dimension result")
@@ -203,7 +203,7 @@ func workerproc(wi int, filter *dbox.Filter, result chan<- toolkit.M) {
 		dtkm.Set("salesqty", tv)
 
 		for k, v := range spl.PLDatas {
-			tv := v.Amount + tkm.GetFloat64(k)
+			tv := v.Amount + dtkm.GetFloat64(k)
 			dtkm.Set(k, tv)
 		}
 
