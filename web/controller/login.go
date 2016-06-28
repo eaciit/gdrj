@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"eaciit/gdrj/web/helper"
-	"eaciit/gdrj/web/model"
+	"eaciit/gdrjprod/web/helper"
+	"eaciit/gdrjprod/web/model"
 	"errors"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"

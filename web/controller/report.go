@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"eaciit/gdrj/model"
-	"eaciit/gdrj/web/helper"
-	"eaciit/gdrj/web/model"
+	"eaciit/gdrjprod/model"
+	"eaciit/gdrjprod/web/helper"
+	"eaciit/gdrjprod/web/model"
 	"errors"
 	"fmt"
 	"github.com/eaciit/dbox"

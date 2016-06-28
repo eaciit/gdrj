@@ -1,7 +1,7 @@
 package gocore
 
 import (
-	"eaciit/gdrj/model"
+	"eaciit/gdrjprod/model"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/jsons"
 	"github.com/eaciit/orm/v1"
