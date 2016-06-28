@@ -234,9 +234,9 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 
 		tkm := toolkit.M{}
 		for key, val := range alldata {
-			toolkit.Printfn("%s", key)
+			// toolkit.Printfn("%s", key)
 			arrkey := strings.Split(key, "|")
-			toolkit.Printfn("%d - %d", len(sortkeys), len(arrkey))
+			// toolkit.Printfn("%d - %d", len(sortkeys), len(arrkey))
 			dkey := ""
 			for i, v := range sortkeys {
 				for _, vx := range payload.Breakdowns {
@@ -263,7 +263,7 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 
 			tkm.Set(dkey, dtkm)
 		}
-
+		toolkit.Println("SUM Data : ", len(tkm))
 		for k, v := range tkm {
 			a, _ := toolkit.ToM(v)
 			id := toolkit.M{}
