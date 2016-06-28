@@ -230,7 +230,7 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 	for str = range dimension {
 		payload := new(gdrj.PLFinderParam)
 		payload.Breakdowns = strings.Split(str, ",")
-		tablename := payload.GetTableName()
+		tablename := toolkit.Sprintf("1-%v", payload.GetTableName())
 
 		tkm := toolkit.M{}
 		for key, val := range alldata {
