@@ -120,13 +120,14 @@ func main() {
 		go workersavedata(i, detaildata, ressavedata)
 	}
 
-	toolkit.Printfn("Prepare saving collection")
+	toolkit.Printfn("Prepare saving collection, Create dimension")
 	for _, str := range listdimension {
 		dimension <- str
 	}
 	close(dimension)
 
 	alldatarows := 0
+	toolkit.Printfn("Waiting dimension result")
 	for i := 0; i < len(listdimension); i++ {
 		alldatarows += <-resdimension
 	}
@@ -136,6 +137,7 @@ func main() {
 	if step == 0 {
 		step = 1
 	}
+	toolkit.Printfn("Saving dimension result")
 	for i := 0; i < alldatarows; i++ {
 		<-ressavedata
 		if i%step == 0 {
