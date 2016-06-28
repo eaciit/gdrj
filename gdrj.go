@@ -6,7 +6,6 @@ import (
 
 	"eaciit/gdrj/web/installation"
 	"eaciit/gdrj/web/model"
-	"github.com/eaciit/kingpin"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	// "net/http"
@@ -15,8 +14,6 @@ import (
 )
 
 func main() {
-	kingpin.Parse()
-
 	port := new(gocore.Ports)
 	port.ID = "port"
 	if err := port.GetPort(); err != nil {

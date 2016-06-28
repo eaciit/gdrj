@@ -1,4 +1,4 @@
-package web1
+package web
 
 import (
 	"eaciit/gdrj/web/controller"
@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	AppName  string = "web1"
+	AppName  string = "web"
 	basePath string = (func(dir string, err error) string { return dir }(os.Getwd()))
 
 // 	server *knot.Server
@@ -23,7 +23,7 @@ var (
 
 func init() {
 	app := knot.NewApp(AppName)
-	app.ViewsPath = filepath.Join(basePath, "web", "view")
+	app.ViewsPath = filepath.Join(basePath, AppName, "view")
 
 	runtime.GOMAXPROCS(4)
 	gocore.ConfigPath = controller.GDRJ_CONFIG_PATH
