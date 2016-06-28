@@ -279,6 +279,7 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 			}
 
 			keys := strings.Split(k, "|")
+			toolkit.Printfn("Key is: %s, Keys are: %v", k, keys)
 			values := []string{}
 			for _, key := range keys {
 				values = append(values, id.GetString(key))
