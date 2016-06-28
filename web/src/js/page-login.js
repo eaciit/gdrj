@@ -46,7 +46,7 @@ lg.getLogin = () => {
 		lg.ErrorMessage(res.message);
 		
 		if(res.message == "Login Success"){
-			window.location = viewModel.appName + "page/home";
+			window.location = viewModel.appName + "page/dashboard";
 			
 		}
 

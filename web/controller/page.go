@@ -192,6 +192,15 @@ func (w *PageController) Landing(r *knot.WebContext) interface{} {
 	return w.Params
 }
 
+func (w *PageController) Summary(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.ViewName = "page-report-summary.html"
+
+	return w.Params
+}
+
 // func (w *PageController) PageReport(r *knot.WebContext, args []string) interface{} {
 // 	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 // 	r.Config.OutputType = knot.OutputTemplate

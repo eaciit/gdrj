@@ -161,7 +161,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		return op2
 	}
 
-	if (expand && breakdownRD == 'NonRD') {
+	if (expand && (breakdownRD == 'NonRD' || breakdownRD.search('Only') > -1)) {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
@@ -171,7 +171,20 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 				let subs = groupThenMap(e.subs, (f) => {
 					return f._id._id_customer_channelname
 				}).map((f) => {
-					f.count = 1
+					if (ba.subBreakdownValue().length == 0) {
+						f.count = 1
+						return f
+					}
+
+					let subs = groupThenMap(f.subs, (g) => {
+						return g._id._id_customer_reportsubchannel
+					}).map((g) => {
+						g.count = 1
+						return g
+					})
+
+					f.subs = _.orderBy(subs, (g) => g.PL8A, 'desc')
+					f.count = f.subs.length
 					return f
 				})
 
@@ -182,37 +195,6 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 
 			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 			d.subs = fixEmptySubs(d) // INJECT THE EMPTY RD / NON RD
-			d.count = toolkit.sum(d.subs, (e) => e.count)
-			return d
-		})
-
-		ba.level(3)
-		showAsBreakdown(parsed)
-		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
-		return parsed
-	} else
-
-	if (expand && breakdownRD.search('Only') > -1) {
-		let parsed = groupThenMap(data, (d) => {
-			return d._id._id_customer_branchname
-		}).map((d) => {
-			let subs = groupThenMap(d.subs, (e) => {
-				return e._id._id_customer_channelname
-			}).map((e) => {
-				let subs = groupThenMap(d.subs, (f) => {
-					return f._id._id_customer_reportsubchannel
-				}).map((f) => {
-					f.subs = []
-					f.count = 1
-					return f
-				})
-				
-				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
-				e.count = e.subs.length
-				return e
-			})
-
-			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 			d.count = toolkit.sum(d.subs, (e) => e.count)
 			return d
 		})
@@ -332,9 +314,9 @@ ba.refresh = (useCache = false) => {
 				Value: rpt.masterData.Channel().map((d) => d._id).filter((d) => d != 'I1')
 			})
 		} else if (breakdownRD.search('Only') > -1) {
-			if (expand) {
-				param.groups.push('customer.reportsubchannel')
-			}
+			// if (expand) {
+			// 	param.groups.push('customer.reportsubchannel')
+			// }
 
 			param.filters.push({
 				Field: 'customer.channelname',
@@ -343,6 +325,31 @@ ba.refresh = (useCache = false) => {
 			})
 		} else if (breakdownRD.search('ByLocation') > -1) {
 			param.groups.push(`customer.${opt.field}`)
+		}
+
+		if (ba.subBreakdownValue().length > 0 && ba.expand()) {
+			param.groups.push('customer.reportsubchannel')
+
+			let breakdownValue = ba.subBreakdownValue()
+
+			if (breakdownRD == 'NonRD') {
+				breakdownValue = ba.subBreakdownValue().filter((d) => d != 'I1')
+			} else {
+				breakdownValue = ba.subBreakdownValue().filter((d) => d == 'I1')
+			}
+
+			if (breakdownValue.length > 0) {
+				let filterChannel = param.filters.find((d) => d.Field == 'customer.channelname')
+				if (typeof filterChannel != 'undefined') {
+					filterChannel.Value = _.uniq(filterChannel.Value.concat(breakdownValue))
+				} else {
+					param.filters.push({
+						Field: 'customer.channelname',
+						Op: '$in',
+						Value: breakdownValue
+					})
+				}
+			}
 		}
 
 		let fetch = () => {
@@ -864,6 +871,24 @@ ba.optionBreakdownValues = ko.computed(() => {
 		.map((d) => { return { _id: d.Name, Name: d.Name }})
 	return [ba.breakdownValueAll].concat(branches)
 }, rpt.masterData.Branch)
+
+ba.subBreakdownValue = ko.observableArray([])
+ba.optionSubBreakdownValues = ko.computed(() => {
+	switch (ba.breakdownRD()) {
+		case 'All': 
+			return rpt.optionsChannels()
+		break;
+		case 'OnlyRD':
+			return rpt.optionsChannels().filter((d) => d._id == 'I1')
+		break;
+		case 'NonRD':
+			return rpt.optionsChannels().filter((d) => d._id != 'I1')
+		break;
+	}
+
+	return []
+}, ba.breakdownRD)
+
 ba.changeBreakdownValue = () => {
 	let all = ba.breakdownValueAll
 	setTimeout(() => {
@@ -904,4 +929,9 @@ rpt.refresh = () => {
 
 $(() => {
 	rpt.refresh()
+
+	setTimeout(() => {
+		ba.breakdownValue(['All'])
+		ba.refresh(false)
+	}, 200)
 })

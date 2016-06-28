@@ -62,15 +62,6 @@ bkd.isBreakdownBranchSubEnabled = (d) => ko.computed(() => {
 	return true
 }, bkd)
 
-rpt.optionsChannels = ko.observableArray([
-	{ _id: 'EXP', Name: 'Export' },
-	{ _id: 'I2', Name: 'General Trade (GT)' },
-	{ _id: 'I4', Name: 'Industrial Trade (IT)' },
-	{ _id: 'I3', Name: 'Modern Trade (MT)' },
-	{ _id: 'I6', Name: 'Motorist' },
-	{ _id: 'I1', Name: 'Regional Distributor (RD)' },
-])
-
 bkd.breakdownChannel = ko.observable('')
 bkd.breakdownChannels = ko.observableArray([])
 
@@ -911,8 +902,8 @@ bkd.changeBreakdown = () => {
 		bkd.breakdownBranch_SubChannel('')
 
 		bkd.isBreakdownChannel(false)
-		bkd.breakdownChannels([])
-		bkd.breakdownChannelLocation([])
+		// bkd.breakdownChannels([])
+		// bkd.breakdownChannelLocation([])
 
 		switch (bkd.breakdownBy()) {
 			case "customer.areaname":
@@ -935,14 +926,14 @@ bkd.changeBreakdown = () => {
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
 				bkd.breakdownValue([all._id])
 
-				bkd.isBreakdownBranch(true)
+				// bkd.isBreakdownBranch(true)
 			break;
 			case "customer.channelname":
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
 				bkd.breakdownValue([all._id])
 
-				// bkd.isBreakdownChannel(true)
-				// bkd.breakdownChannels([])
+				bkd.isBreakdownChannel(true)
+				bkd.breakdownChannels([])
 			break;
 			case "customer.keyaccount":
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))

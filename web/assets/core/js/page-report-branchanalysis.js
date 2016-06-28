@@ -186,7 +186,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		return op2;
 	};
 
-	if (expand && breakdownRD == 'NonRD') {
+	if (expand && (breakdownRD == 'NonRD' || breakdownRD.search('Only') > -1)) {
 		var _parsed = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
@@ -196,7 +196,22 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 				var subs = groupThenMap(e.subs, function (f) {
 					return f._id._id_customer_channelname;
 				}).map(function (f) {
-					f.count = 1;
+					if (ba.subBreakdownValue().length == 0) {
+						f.count = 1;
+						return f;
+					}
+
+					var subs = groupThenMap(f.subs, function (g) {
+						return g._id._id_customer_reportsubchannel;
+					}).map(function (g) {
+						g.count = 1;
+						return g;
+					});
+
+					f.subs = _.orderBy(subs, function (g) {
+						return g.PL8A;
+					}, 'desc');
+					f.count = f.subs.length;
 					return f;
 				});
 
@@ -223,43 +238,6 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 			return d.total;
 		}, 'desc');
 		return _parsed;
-	} else if (expand && breakdownRD.search('Only') > -1) {
-		var _parsed2 = groupThenMap(data, function (d) {
-			return d._id._id_customer_branchname;
-		}).map(function (d) {
-			var subs = groupThenMap(d.subs, function (e) {
-				return e._id._id_customer_channelname;
-			}).map(function (e) {
-				var subs = groupThenMap(d.subs, function (f) {
-					return f._id._id_customer_reportsubchannel;
-				}).map(function (f) {
-					f.subs = [];
-					f.count = 1;
-					return f;
-				});
-
-				e.subs = _.orderBy(subs, function (f) {
-					return f.PL8A;
-				}, 'desc');
-				e.count = e.subs.length;
-				return e;
-			});
-
-			d.subs = _.orderBy(subs, function (e) {
-				return e.PL8A;
-			}, 'desc');
-			d.count = toolkit.sum(d.subs, function (e) {
-				return e.count;
-			});
-			return d;
-		});
-
-		ba.level(3);
-		showAsBreakdown(_parsed2);
-		_parsed2 = _.orderBy(_parsed2, function (d) {
-			return d.total;
-		}, 'desc');
-		return _parsed2;
 	} else if (expand && breakdownRD.search('ByLocation') > -1) {
 		var _ret3 = function () {
 			var opt = ba.optionBreakdownRD().find(function (d) {
@@ -308,7 +286,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 
 		if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
 	} else if (breakdownRD == "All") {
-		var _parsed3 = groupThenMap(data, function (d) {
+		var _parsed2 = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
 			var subs = groupThenMap(d.subs, function (e) {
@@ -330,11 +308,11 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		});
 
 		ba.level(2);
-		showAsBreakdown(_parsed3);
-		_parsed3 = _.orderBy(_parsed3, function (d) {
+		showAsBreakdown(_parsed2);
+		_parsed2 = _.orderBy(_parsed2, function (d) {
 			return d.total;
 		}, 'desc');
-		return _parsed3;
+		return _parsed2;
 	}
 
 	var parsed = groupThenMap(data, function (d) {
@@ -405,9 +383,9 @@ ba.refresh = function () {
 				})
 			});
 		} else if (breakdownRD.search('Only') > -1) {
-			if (expand) {
-				param.groups.push('customer.reportsubchannel');
-			}
+			// if (expand) {
+			// 	param.groups.push('customer.reportsubchannel')
+			// }
 
 			param.filters.push({
 				Field: 'customer.channelname',
@@ -416,6 +394,37 @@ ba.refresh = function () {
 			});
 		} else if (breakdownRD.search('ByLocation') > -1) {
 			param.groups.push('customer.' + opt.field);
+		}
+
+		if (ba.subBreakdownValue().length > 0 && ba.expand()) {
+			param.groups.push('customer.reportsubchannel');
+
+			var _breakdownValue = ba.subBreakdownValue();
+
+			if (breakdownRD == 'NonRD') {
+				_breakdownValue = ba.subBreakdownValue().filter(function (d) {
+					return d != 'I1';
+				});
+			} else {
+				_breakdownValue = ba.subBreakdownValue().filter(function (d) {
+					return d == 'I1';
+				});
+			}
+
+			if (_breakdownValue.length > 0) {
+				var filterChannel = param.filters.find(function (d) {
+					return d.Field == 'customer.channelname';
+				});
+				if (typeof filterChannel != 'undefined') {
+					filterChannel.Value = _.uniq(filterChannel.Value.concat(_breakdownValue));
+				} else {
+					param.filters.push({
+						Field: 'customer.channelname',
+						Op: '$in',
+						Value: _breakdownValue
+					});
+				}
+			}
 		}
 
 		var fetch = function fetch() {
@@ -910,6 +919,28 @@ ba.optionBreakdownValues = ko.computed(function () {
 	});
 	return [ba.breakdownValueAll].concat(branches);
 }, rpt.masterData.Branch);
+
+ba.subBreakdownValue = ko.observableArray([]);
+ba.optionSubBreakdownValues = ko.computed(function () {
+	switch (ba.breakdownRD()) {
+		case 'All':
+			return rpt.optionsChannels();
+			break;
+		case 'OnlyRD':
+			return rpt.optionsChannels().filter(function (d) {
+				return d._id == 'I1';
+			});
+			break;
+		case 'NonRD':
+			return rpt.optionsChannels().filter(function (d) {
+				return d._id != 'I1';
+			});
+			break;
+	}
+
+	return [];
+}, ba.breakdownRD);
+
 ba.changeBreakdownValue = function () {
 	var all = ba.breakdownValueAll;
 	setTimeout(function () {
@@ -947,4 +978,9 @@ rpt.refresh = function () {
 
 $(function () {
 	rpt.refresh();
+
+	setTimeout(function () {
+		ba.breakdownValue(['All']);
+		ba.refresh(false);
+	}, 200);
 });
