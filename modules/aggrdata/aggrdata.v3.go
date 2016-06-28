@@ -123,7 +123,7 @@ func main() {
 	toolkit.Printfn("Prepare saving collection, Create dimension")
 	for _, str := range listdimension {
 		dimension <- str
-		toolkit.Printfn("SEND : %v", str)
+		// toolkit.Printfn("SEND : %v", str)
 	}
 	close(dimension)
 
@@ -234,7 +234,7 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 
 	str := ""
 	for str = range dimension {
-		toolkit.Println(str)
+		// toolkit.Println(str)
 		payload := new(gdrj.PLFinderParam)
 		payload.Breakdowns = strings.Split(str, ",")
 		tablename := toolkit.Sprintf("1-%v", payload.GetTableName())
@@ -287,7 +287,7 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 			a.Set("_id", k)
 			a.Set("key", id)
 
-			workerconn.NewQuery().
+			_ = workerconn.NewQuery().
 				From(tablename).
 				SetConfig("multiexec", true).
 				Save().Exec(toolkit.M{}.Set("data", a))
