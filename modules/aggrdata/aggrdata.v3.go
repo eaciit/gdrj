@@ -277,8 +277,15 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 				tsv := strings.Replace(sv, ".", "_", -1)
 				id.Set(tsv, arrk[i])
 			}
-			a.Set("_id", id)
-			a.Set("keyid", id)
+
+			keys := strings.Split(k, "|")
+			values := []string{}
+			for _, key := range keys {
+				values = append(values, id.GetString(key))
+			}
+			idStr := strings.Join(values, "_")
+			a.Set("_id", idStr)
+			a.Set("key", id)
 
 			detaildata <- toolkit.M{}.Set(tablename, a)
 		}
