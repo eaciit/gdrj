@@ -78,8 +78,7 @@ func main() {
 	for i := 1; i <= len(seeds); i++ {
 		a := <-result
 		for k, v := range a {
-			tv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto) + data.GetFloat64(k)
-			data.Set(k, tv)
+			data[k] += toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
 		}
 
 		if i%step == 0 {
