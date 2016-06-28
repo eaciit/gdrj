@@ -112,15 +112,15 @@ func main() {
 	resdimension := make(chan int)
 	dimension := make(chan string, 5)
 	detaildata := make(chan toolkit.M)
-	// ressavedata := make(chan int)
+	ressavedata := make(chan int)
 
 	for i := 0; i < 3; i++ {
 		go workerbuilddimension(i, dimension, detaildata, resdimension)
 	}
 
-	// for i := 0; i < 10; i++ {
-	// 	go workersavedata(i, detaildata, ressavedata)
-	// }
+	for i := 0; i < 10; i++ {
+		go workersavedata(i, detaildata, ressavedata)
+	}
 
 	toolkit.Printfn("Prepare saving collection, Create dimension")
 	for _, str := range listdimension {
@@ -136,18 +136,18 @@ func main() {
 	}
 	close(detaildata)
 
-	// step = alldatarows / 100
-	// if step == 0 {
-	// 	step = 1
-	// }
-	// toolkit.Printfn("Saving dimension result")
-	// for i := 0; i < alldatarows; i++ {
-	// 	<-ressavedata
-	// 	if i%step == 0 {
-	// 		toolkit.Printfn("Data saved %d of %d (%d), Done in %s",
-	// 			i, alldatarows, (i / step), time.Since(t0).String())
-	// 	}
-	// }
+	step = alldatarows / 100
+	if step == 0 {
+		step = 1
+	}
+	toolkit.Printfn("Saving dimension result")
+	for i := 0; i < alldatarows; i++ {
+		<-ressavedata
+		if i%step == 0 {
+			toolkit.Printfn("Data saved %d of %d (%d), Done in %s",
+				i, alldatarows, (i / step), time.Since(t0).String())
+		}
+	}
 
 	toolkit.Printfn("Processing done in %s",
 		time.Since(t0).String())
@@ -236,7 +236,7 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 		toolkit.Println(str)
 		payload := new(gdrj.PLFinderParam)
 		payload.Breakdowns = strings.Split(str, ",")
-		// tablename := toolkit.Sprintf("1-%v", payload.GetTableName())
+		tablename := toolkit.Sprintf("1-%v", payload.GetTableName())
 
 		tkm := toolkit.M{}
 		for key, val := range alldata {
@@ -279,7 +279,7 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 			}
 			a.Set("_id", id)
 
-			// detaildata <- toolkit.M{}.Set(tablename, a)
+			detaildata <- toolkit.M{}.Set(tablename, a)
 		}
 
 		resdimension <- len(tkm)
@@ -294,10 +294,12 @@ func workersavedata(wi int, detaildata <-chan toolkit.M, ressavedata chan<- int)
 	tkm := toolkit.M{}
 	for tkm = range detaildata {
 		for tbl, dt := range tkm {
-			workerconn.NewQuery().From(tbl).
-				Save().
-				Exec(toolkit.M{}.
-				Set("data", dt))
+			_ = tbl
+			_ = dt
+			/*				workerconn.NewQuery().From(tbl).
+							Save().
+							Exec(toolkit.M{}.
+							Set("data", dt))*/
 			ressavedata <- 1
 		}
 	}
