@@ -111,16 +111,14 @@ func main() {
 
 	resdimension := make(chan int)
 	dimension := make(chan string, 5)
-	detaildata := make(chan toolkit.M)
-	ressavedata := make(chan int)
 
-	for i := 0; i < 3; i++ {
-		go workerbuilddimension(i, dimension, detaildata, resdimension)
+	for i := 0; i < 5; i++ {
+		go workerbuilddimension(i, dimension, resdimension)
 	}
 
-	for i := 0; i < 10; i++ {
-		go workersavedata(i, detaildata, ressavedata)
-	}
+	// for i := 0; i < 10; i++ {
+	// 	go workersavedata(i, detaildata, ressavedata)
+	// }
 
 	toolkit.Printfn("Prepare saving collection, Create dimension")
 	for _, str := range listdimension {
@@ -129,25 +127,26 @@ func main() {
 	}
 	close(dimension)
 
-	alldatarows := 0
+	// alldatarows := 0
 	toolkit.Printfn("Waiting dimension result")
 	for i := 0; i < len(listdimension); i++ {
-		alldatarows += <-resdimension
+		<-resdimension
+		toolkit.Printfn("%v Dimension created", i)
 	}
-	close(detaildata)
+	// close(detaildata)
 
-	step = alldatarows / 100
-	if step == 0 {
-		step = 1
-	}
-	toolkit.Printfn("Saving dimension result")
-	for i := 0; i < alldatarows; i++ {
-		<-ressavedata
-		if i%step == 0 {
-			toolkit.Printfn("Data saved %d of %d (%d), Done in %s",
-				i, alldatarows, (i / step), time.Since(t0).String())
-		}
-	}
+	// step = alldatarows / 100
+	// if step == 0 {
+	// 	step = 1
+	// }
+	// toolkit.Printfn("Saving dimension result")
+	// for i := 0; i < alldatarows; i++ {
+	// 	<-ressavedata
+	// 	if i%step == 0 {
+	// 		toolkit.Printfn("Data saved %d of %d (%d), Done in %s",
+	// 			i, alldatarows, (i / step), time.Since(t0).String())
+	// 	}
+	// }
 
 	toolkit.Printfn("Processing done in %s",
 		time.Since(t0).String())
@@ -225,7 +224,9 @@ func workerproc(wi int, filter *dbox.Filter, result chan<- toolkit.M) {
 		time.Since(t0).String())
 }
 
-func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- toolkit.M, resdimension chan<- int) {
+func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- int) {
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
 	//"date.fiscal", "customer.channelid", "customer.channelname"
 	sortkeys := []string{"date.fiscal", "date.quartertxt", "date.month",
 		"customer.branchname", "customer.keyaccount", "customer.channelid", "customer.channelname", "customer.reportchannel",
@@ -278,19 +279,14 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 				id.Set(tsv, arrk[i])
 			}
 
-			/*
-				keys := strings.Split(k, "|")
-				toolkit.Printfn("Key is: %s, Keys are: %v", k, keys)
-				values := []string{}
-				for _, key := range keys {
-					values = append(values, id.GetString(key))
-				}
-				idStr := strings.Join(values, "_")
-			*/
 			a.Set("_id", k)
 			a.Set("key", id)
 
-			detaildata <- toolkit.M{}.Set(tablename, a)
+			workerconn.NewQuery().
+				From(tablename).
+				SetConfig("multiexec", true).
+				Save().Exec(toolkit.M{}.Set("data", a))
+			// detaildata <- toolkit.M{}.Set(tablename, a)
 		}
 
 		resdimension <- len(tkm)
@@ -298,7 +294,7 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 	}
 }
 
-func workersavedata(wi int, detaildata <-chan toolkit.M, ressavedata chan<- int) {
+/*func workersavedata(wi int, detaildata <-chan toolkit.M, ressavedata chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
@@ -321,4 +317,4 @@ func workersavedata(wi int, detaildata <-chan toolkit.M, ressavedata chan<- int)
 			ressavedata <- 1
 		}
 	}
-}
+}*/
