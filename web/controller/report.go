@@ -238,7 +238,6 @@ func (m *ReportController) GetDecreasedQty(r *knot.WebContext) interface{} {
 	}
 
 	fmt.Println("-=== HERE")
-	res.SetError(errors.New(""))
 	res.SetData(toolkit.M{
 		"Data": []toolkit.M{},
 	})
@@ -378,7 +377,6 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 	}
 
 	fmt.Println("-=== HERE")
-	res.SetError(errors.New(""))
 	res.SetData(toolkit.M{
 		"Data":     []toolkit.M{},
 		"PLModels": plmodels,
