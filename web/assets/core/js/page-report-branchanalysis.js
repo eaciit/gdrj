@@ -186,7 +186,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		return op2;
 	};
 
-	if (expand && breakdownRD == 'NonRD') {
+	if (expand && (breakdownRD == 'NonRD' || breakdownRD.search('Only') > -1) && ba.subBreakdownValue().length == 0) {
 		var _parsed = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
@@ -223,17 +223,16 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 			return d.total;
 		}, 'desc');
 		return _parsed;
-	} else if (expand && breakdownRD.search('Only') > -1) {
+	} else if (expand && ba.subBreakdownValue().length > 0) {
 		var _parsed2 = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
 			var subs = groupThenMap(d.subs, function (e) {
 				return e._id._id_customer_channelname;
 			}).map(function (e) {
-				var subs = groupThenMap(d.subs, function (f) {
+				var subs = groupThenMap(e.subs, function (f) {
 					return f._id._id_customer_reportsubchannel;
 				}).map(function (f) {
-					f.subs = [];
 					f.count = 1;
 					return f;
 				});
@@ -254,11 +253,15 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 			return d;
 		});
 
+		console.log('PPPP', _parsed2.slice(0));
+
 		ba.level(3);
 		showAsBreakdown(_parsed2);
 		_parsed2 = _.orderBy(_parsed2, function (d) {
 			return d.total;
 		}, 'desc');
+
+		console.log('PPPP', _parsed2.slice(0));
 		return _parsed2;
 	} else if (expand && breakdownRD.search('ByLocation') > -1) {
 		var _ret3 = function () {
@@ -405,9 +408,9 @@ ba.refresh = function () {
 				})
 			});
 		} else if (breakdownRD.search('Only') > -1) {
-			if (expand) {
-				param.groups.push('customer.reportsubchannel');
-			}
+			// if (expand) {
+			// 	param.groups.push('customer.reportsubchannel')
+			// }
 
 			param.filters.push({
 				Field: 'customer.channelname',
@@ -416,6 +419,37 @@ ba.refresh = function () {
 			});
 		} else if (breakdownRD.search('ByLocation') > -1) {
 			param.groups.push('customer.' + opt.field);
+		}
+
+		if (ba.subBreakdownValue().length > 0 && ba.expand()) {
+			param.groups.push('customer.reportsubchannel');
+
+			var _breakdownValue = ba.subBreakdownValue();
+
+			if (breakdownRD == 'NonRD') {
+				_breakdownValue = ba.subBreakdownValue().filter(function (d) {
+					return d != 'I1';
+				});
+			} else if (breakdownRD == 'OnlyRD') {
+				_breakdownValue = ba.subBreakdownValue().filter(function (d) {
+					return d == 'I1';
+				});
+			}
+
+			if (_breakdownValue.length > 0) {
+				var filterChannel = param.filters.find(function (d) {
+					return d.Field == 'customer.channelname';
+				});
+				if (typeof filterChannel != 'undefined') {
+					filterChannel.Value = _.uniq(filterChannel.Value.concat(_breakdownValue));
+				} else {
+					param.filters.push({
+						Field: 'customer.channelname',
+						Op: '$in',
+						Value: _breakdownValue
+					});
+				}
+			}
 		}
 
 		var fetch = function fetch() {
@@ -441,7 +475,7 @@ ba.refresh = function () {
 		fetch();
 	};
 
-	if (ba.breakdownRD() == "All" && ba.expand()) {
+	if (ba.breakdownRD() == "All" && ba.expand() && ba.subBreakdownValue().length == 0) {
 		var _ret4 = function () {
 			var mergeData = function mergeData(dataNonRD, dataRD) {
 				var data = [];
@@ -589,6 +623,30 @@ ba.refresh = function () {
 		}();
 
 		if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
+	}
+
+	if (ba.expand() && ba.subBreakdownValue().length > 0) {
+		var _ret6 = function () {
+			var bkrd = 'tralala';
+
+			request(bkrd, ba.expand(), function (res) {
+				var data = ba.buildStructure(bkrd, ba.expand(), res.Data.Data);
+
+				ba.data(data);
+				var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+				ba.breakdownNote('Last refreshed on: ' + date);
+
+				rpt.plmodels(res.Data.PLModels);
+				ba.emptyGrid();
+				ba.contentIsLoading(false);
+				ba.render();
+			});
+			return {
+				v: void 0
+			};
+		}();
+
+		if ((typeof _ret6 === 'undefined' ? 'undefined' : _typeof(_ret6)) === "object") return _ret6.v;
 	}
 
 	request(ba.breakdownRD(), ba.expand(), function (res) {
@@ -910,6 +968,28 @@ ba.optionBreakdownValues = ko.computed(function () {
 	});
 	return [ba.breakdownValueAll].concat(branches);
 }, rpt.masterData.Branch);
+
+ba.subBreakdownValue = ko.observableArray([]);
+ba.optionSubBreakdownValues = ko.computed(function () {
+	switch (ba.breakdownRD()) {
+		case 'All':
+			return rpt.optionsChannels();
+			break;
+		case 'OnlyRD':
+			return rpt.optionsChannels().filter(function (d) {
+				return d._id == 'I1';
+			});
+			break;
+		case 'NonRD':
+			return rpt.optionsChannels().filter(function (d) {
+				return d._id != 'I1';
+			});
+			break;
+	}
+
+	return [];
+}, ba.breakdownRD);
+
 ba.changeBreakdownValue = function () {
 	var all = ba.breakdownValueAll;
 	setTimeout(function () {
@@ -947,4 +1027,9 @@ rpt.refresh = function () {
 
 $(function () {
 	rpt.refresh();
+
+	setTimeout(function () {
+		ba.breakdownValue(['All']);
+		ba.refresh(false);
+	}, 200);
 });

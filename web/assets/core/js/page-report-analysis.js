@@ -864,8 +864,8 @@ bkd.changeBreakdown = function () {
 		bkd.breakdownBranch_SubChannel('');
 
 		bkd.isBreakdownChannel(false);
-		bkd.breakdownChannels([]);
-		bkd.breakdownChannelLocation([]);
+		// bkd.breakdownChannels([])
+		// bkd.breakdownChannelLocation([])
 
 		switch (bkd.breakdownBy()) {
 			case "customer.areaname":
@@ -888,14 +888,14 @@ bkd.changeBreakdown = function () {
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())));
 				bkd.breakdownValue([all._id]);
 
-				bkd.isBreakdownBranch(true);
+				// bkd.isBreakdownBranch(true)
 				break;
 			case "customer.channelname":
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())));
 				bkd.breakdownValue([all._id]);
 
-				// bkd.isBreakdownChannel(true)
-				// bkd.breakdownChannels([])
+				bkd.isBreakdownChannel(true);
+				bkd.breakdownChannels([]);
 				break;
 			case "customer.keyaccount":
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())));
