@@ -21,7 +21,7 @@ var (
 	t0         time.Time
 	fiscalyear int
 	data       map[string]float64
-	tablename  = "salespls-1"
+	tablename  = "salespls"
 	alldata    = toolkit.M{}
 )
 
@@ -53,8 +53,8 @@ func main() {
 	toolkit.Println("Preparing data query...")
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
-	// speriode := eperiode.AddDate(-1, 0, 0)
-	speriode := eperiode.AddDate(0, -1, 0)
+	speriode := eperiode.AddDate(-1, 0, 0)
+	// speriode := eperiode.AddDate(0, -1, 0)
 
 	seeds := make([]time.Time, 0, 0)
 	seeds = append(seeds, speriode)
@@ -107,12 +107,34 @@ func main() {
 		"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel",
 		"date.fiscal,customer.channelid,customer.channelname,customer.zone",
 		"date.fiscal,customer.channelid,customer.channelname,customer.areaname",
-		"date.fiscal,customer.channelid,customer.channelname,customer.region"}
+		"date.fiscal,customer.channelid,customer.channelname,customer.region",
+		"date.fiscal,customer.branchname",
+		"date.fiscal,product.brand",
+		"date.fiscal,customer.zone",
+		"date.fiscal,customer.areaname",
+		"date.fiscal,customer.region",
+		"date.fiscal,customer.keyaccount",
+		"date.fiscal,date.month,customer.channelid,customer.channelname",
+		"date.fiscal,date.month,customer.branchname",
+		"date.fiscal,date.month,customer.brand",
+		"date.fiscal,date.month,customer.areaname",
+		"date.fiscal,date.month,customer.region",
+		"date.fiscal,date.month,customer.keyaccount",
+		"date.fiscal,date.quartertxt,customer.channelid,customer.channelname",
+		"date.fiscal,date.quartertxt,customer.branchname",
+		"date.fiscal,date.quartertxt,product.brand",
+		"date.fiscal,date.quartertxt,customer.areaname",
+		"date.fiscal,date.quartertxt,customer.region",
+		"date.fiscal,date.quartertxt,customer.keyaccount",
+		"date.fiscal,customer.reportchannel,customer.reportsubchannel",
+		"date.fiscal,customer.customergroupname",
+		"date.fiscal,customer.channelid,customer.channelname,customer.branchname",
+		"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel"}
 
-	resdimension := make(chan int)
-	dimension := make(chan string, 5)
+	resdimension := make(chan int, len(listdimension))
+	dimension := make(chan string, len(listdimension))
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 15; i++ {
 		go workerbuilddimension(i, dimension, resdimension)
 	}
 
