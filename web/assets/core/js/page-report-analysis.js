@@ -1581,7 +1581,7 @@ rpt.refresh = function () {
 
 	rpt.prepareEvents();
 
-	ccr.getDecreasedQty(false);
+	// ccr.getDecreasedQty(false)
 };
 
 $(function () {
