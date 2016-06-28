@@ -78,9 +78,10 @@ func main() {
 	for i := 1; i <= len(seeds); i++ {
 		a := <-result
 		for k, v := range a {
-			tv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto) + a.GetFloat64(k)
-			a.Set(k, tv)
+			tv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto) + data.GetFloat64(k)
+			data.Set(k, tv)
 		}
+
 		if i%step == 0 {
 			toolkit.Printfn("Worker %d of %d (%d), Done in %s",
 				i,
