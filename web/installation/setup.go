@@ -1,7 +1,7 @@
 package setup
 
 import (
-	"eaciit/gdrj/web/model"
+	"eaciit/gdrjprod/web/model"
 	"fmt"
 	"github.com/eaciit/toolkit"
 )
