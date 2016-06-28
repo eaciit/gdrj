@@ -21,8 +21,8 @@ ba.breakdownValue = ko.observableArray([])
 ba.breakdownRD = ko.observable("All")
 ba.optionBreakdownRD = ko.observableArray([
 	{ id: "All", title: "RD & Non RD" },
-	{ id: "NonRD", title: "Non RD Sales" },
 	{ id: "OnlyRD", title: "Only RD Sales", label: "RD", channelid: "I1" },
+	{ id: "NonRD", title: "Non RD Sales" },
 ])
 
 ba.expand = ko.observable(false)
