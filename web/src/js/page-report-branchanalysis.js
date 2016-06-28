@@ -161,7 +161,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		return op2
 	}
 
-	if (expand && (breakdownRD == 'NonRD' || breakdownRD.search('Only') > -1)) {
+	if (expand && (breakdownRD == 'NonRD' || breakdownRD.search('Only') > -1) && (ba.subBreakdownValue().length == 0)) {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
@@ -171,20 +171,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 				let subs = groupThenMap(e.subs, (f) => {
 					return f._id._id_customer_channelname
 				}).map((f) => {
-					if (ba.subBreakdownValue().length == 0) {
-						f.count = 1
-						return f
-					}
-
-					let subs = groupThenMap(f.subs, (g) => {
-						return g._id._id_customer_reportsubchannel
-					}).map((g) => {
-						g.count = 1
-						return g
-					})
-
-					f.subs = _.orderBy(subs, (g) => g.PL8A, 'desc')
-					f.count = f.subs.length
+					f.count = 1
 					return f
 				})
 
@@ -202,6 +189,40 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		ba.level(3)
 		showAsBreakdown(parsed)
 		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
+		return parsed
+	} else
+
+	if (expand && (ba.subBreakdownValue().length > 0)) {
+		let parsed = groupThenMap(data, (d) => {
+			return d._id._id_customer_branchname
+		}).map((d) => {
+			let subs = groupThenMap(d.subs, (e) => {
+				return e._id._id_customer_channelname
+			}).map((e) => {
+				let subs = groupThenMap(e.subs, (f) => {
+					return f._id._id_customer_reportsubchannel
+				}).map((f) => {
+					f.count = 1
+					return f
+				})
+
+				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
+				e.count = e.subs.length
+				return e
+			})
+
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+			d.count = toolkit.sum(d.subs, (e) => e.count)
+			return d
+		})
+
+		console.log('PPPP', parsed.slice(0))
+
+		ba.level(3)
+		showAsBreakdown(parsed)
+		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
+
+		console.log('PPPP', parsed.slice(0))
 		return parsed
 	} else
 
@@ -334,7 +355,7 @@ ba.refresh = (useCache = false) => {
 
 			if (breakdownRD == 'NonRD') {
 				breakdownValue = ba.subBreakdownValue().filter((d) => d != 'I1')
-			} else {
+			} else if (breakdownRD == 'OnlyRD') {
 				breakdownValue = ba.subBreakdownValue().filter((d) => d == 'I1')
 			}
 
@@ -375,7 +396,7 @@ ba.refresh = (useCache = false) => {
 		fetch()
 	}
 
-	if (ba.breakdownRD() == "All" && ba.expand()) {
+	if (ba.breakdownRD() == "All" && ba.expand() && ba.subBreakdownValue().length == 0) {
 		let mergeData = (dataNonRD, dataRD) => {
 			let data = []
 			let ids = _.uniq(dataNonRD.map((d) => d._id).concat(dataRD.map((d) => d._id)))
@@ -496,6 +517,24 @@ ba.refresh = (useCache = false) => {
 			})
 		})
 
+		return
+	}
+
+	if (ba.expand() && ba.subBreakdownValue().length > 0) {
+		let bkrd = 'tralala'
+
+		request(bkrd, ba.expand(), (res) => {
+			let data = ba.buildStructure(bkrd, ba.expand(), res.Data.Data)
+
+			ba.data(data)
+			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+			ba.breakdownNote(`Last refreshed on: ${date}`)
+
+			rpt.plmodels(res.Data.PLModels)
+			ba.emptyGrid()
+			ba.contentIsLoading(false)
+			ba.render()
+		})
 		return
 	}
 
