@@ -107,8 +107,8 @@ func main() {
 		"date.fiscal,customer.channelid,customer.channelname,customer.areaname",
 		"date.fiscal,customer.channelid,customer.channelname,customer.region"}
 
-	resdimension := make(chan int, len(listdimension))
-	dimension := make(chan string, len(listdimension))
+	resdimension := make(chan int)
+	dimension := make(chan string)
 	detaildata := make(chan toolkit.M)
 	ressavedata := make(chan int)
 
