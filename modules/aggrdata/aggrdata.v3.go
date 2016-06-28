@@ -297,7 +297,7 @@ func workersavedata(wi int, detaildata <-chan toolkit.M, ressavedata chan<- int)
 		for tbl, dt := range tkm {
 			//q, exist := qs[tbl]
 			//if !exist {
-			q = workerconn.NewQuery().From(tbl).
+			q := workerconn.NewQuery().From(tbl).
 				SetConfig("multiexec", true).
 				Save()
 			//	qs[tbl] = q
