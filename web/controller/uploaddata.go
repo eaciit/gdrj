@@ -15,9 +15,8 @@ type UploadDataController struct {
 	App
 }
 
-func CreateUploadDataController(s *knot.Server) *UploadDataController {
+func CreateUploadDataController() *UploadDataController {
 	var controller = new(UploadDataController)
-	controller.Server = s
 	return controller
 }
 func (d *UploadDataController) UploadFile(r *knot.WebContext) interface{} {

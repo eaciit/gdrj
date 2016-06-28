@@ -1,0 +1,24 @@
+<div class="col-md-12 no-padding hardcore">
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-chart.html"}}
+	</div>
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-pivot.html"}}
+	</div>
+</div>
+
+<script>
+	$(document).ready(function(){
+		pvt.row('customer.channelname')
+		pvt.column('customer.branchname')
+		pvt.dataPoints = ko.observableArray([
+			{ field: 'outlet', title: 'Outlet', name: 'Outlet' }
+		])
+		pvt.refresh()
+
+		crt.categoryAxisField('customer.branchname')
+		crt.sortField('outlet')
+		crt.series(pvt.dataPoints())
+		crt.refresh()
+	})
+</script>

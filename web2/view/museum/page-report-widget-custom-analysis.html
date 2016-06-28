@@ -1,0 +1,23 @@
+<div class="col-md-12 no-padding hardcore">
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-chart.html"}}
+	</div>
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-pivot.html"}}
+	</div>
+</div>
+
+<script>
+	$(document).ready(function(){
+		rpt.modecustom(true)
+		pvt.row('customer.channelname')
+		pvt.column('customer.branchname')
+		// pvt.refresh()
+
+		crt.categoryAxisField('customer.branchname')
+		crt.refresh()
+		pvt.refresh()
+
+		pvt.valueplmodel(["PL8A", "PL94C"])
+	})
+</script>

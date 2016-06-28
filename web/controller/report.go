@@ -16,9 +16,8 @@ type ReportController struct {
 	App
 }
 
-func CreateReportController(s *knot.Server) *ReportController {
+func CreateReportController() *ReportController {
 	var controller = new(ReportController)
-	controller.Server = s
 	return controller
 }
 

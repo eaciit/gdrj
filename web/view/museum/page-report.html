@@ -1,0 +1,110 @@
+<script>
+var o = {
+	ID: "{{.id}}",
+	Name: "{{.name}}",
+	value1: "{{.value1}}",
+	value2: "{{.value2}}",
+	value3: "{{.value3}}"
+}
+</script>
+<script src="{{BaseUrl}}res/core/js/page-report.js"></script>
+<script src="{{BaseUrl}}res/core/js/page-widget-dummy-data.js"></script>
+
+<div>
+{{if eq .id "list"}}
+	{{template "page-report-list.html"}}
+{{else}}
+	<div class="col-md-12 col-sm-12 ez panel-content">
+	{{if eq .id "dashboard"}}
+		{{template "page-report-dashboard.html"}}
+	{{else if eq .id "analysis"}}
+		{{template "page-report-analysis.html"}}
+	{{else if eq .id "keyaccount"}}
+		{{template "page-report-keyaccount.html"}}
+	{{else if eq .id "rdanalysis"}}
+		{{template "page-report-rdanalysis.html"}}
+	{{else if eq .id "example"}}
+		{{template "page-report-example.html"}}
+	{{else if eq .id "branchanalysis"}}
+		{{template "page-report-branchanalysis.html"}}
+	{{else if eq .id "gross_sales_discount_and_net_sales"}}
+		{{template "page-report-widget-gross-sales-discount-and-net-sales.html"}}
+	{{else if eq .id "sales_by_outlet"}}
+		{{template "page-report-widget-sales-by-outlet.html"}}
+	{{else if eq .id "sales_by_gdp"}}
+		{{template "page-report-widget-sales-by-gdp.html"}}
+	{{else if eq .id "number_of_invoice_headcount"}}
+		{{template "page-report-widget-numberinvoice-headcount.html"}}
+	{{else if eq .id "sales_invoice"}}
+		{{template "page-report-widget-sales-invoice.html"}}
+	{{else if eq .id "gross_sales_qty"}}
+		{{template "page-report-widget-gross-sales-qty.html"}}
+	{{else if eq .id "discount_qty"}}
+		{{template "page-report-widget-discount-qty.html"}}
+	{{else if eq .id "net_price_qty"}}
+		{{template "page-report-widget-netprice-qty.html"}}
+	{{else if eq .id "btl_qty"}}
+		{{template "page-report-widget-btl-qty.html"}}
+	{{else if eq .id "net_price_after_btl_qty"}}
+		{{template "page-report-widget-net-price-btl-qty.html"}}
+	{{else if eq .id "freight_cost_by_sales"}}
+		{{template "page-report-widget-freight-costby-sales.html"}}
+	{{else if eq .id "sga_by_sales"}}
+		{{template "page-report-widget-sga-by-sales.html"}}
+	{{else if eq .id "cost_by_sales"}}
+		{{template "page-report-widget-cost-by-sales.html"}}
+	{{else if eq .id "sales_return_rate"}}
+		{{template "page-report-widget-sales-return-rate.html"}}
+	{{else if eq .id "sales_discount_by_gross_sales"}}
+		{{template "page-report-widget-sales-discount-by-gross-sales.html"}}
+	{{else if eq .id "direct_labour_index"}}
+		{{template "page-report-widget-direct-labour-index.html"}}
+	{{else if eq .id "material_type_index"}}
+		{{template "page-report-widget-material-expense-index.html"}}
+	{{else if eq .id "indirect_expense_index"}}
+		{{template "page-report-widget-indirect-expense-index.html"}}
+	{{else if eq .id "number_of_outlets"}}
+		{{template "page-report-widget-number-of-outlets.html"}}
+	{{else if eq .id "marketing_expense_index"}}
+		{{template "page-report-widget-marketing-expense-index.html"}}
+	{{else if eq .id "sga_cost_ratio"}}
+		{{template "page-report-widget-sga-cost-ratio.html"}}
+	{{else if eq .id "custom_analysis"}}
+		{{template "page-report-widget-custom-analysis.html"}}
+	{{else if eq .id "non_sales_pnl_items"}}
+		{{template "page-report-widget-nonsales-pnl-items.html"}}
+	{{else if eq .id "customanalysis"}}
+		{{template "page-report-customanalysis.html"}}
+	{{end}}
+	</div>
+
+	<div class="col-md-3 col-sm-3 ez panel-filter" style="display: none;">
+		<div class="panel-yo"></div>
+		<div class="panel ez no-padding hardcore panel-fix">
+			<div class="panel-heading">
+				<h3 class="no-margin">Filter</h3>
+				<div class="panel-nav-button">
+					<div class="form-group relative align-right no-margin no-padding hardcore" data-bind="visible: true">
+						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refreshAll" title="Refresh All">
+							<i class="fa fa-refresh"></i> Refresh All
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="panel-body">
+				<div id="from-filter">
+					<p>Click each section below to show respective filter.</p>
+					<div class="wrapper">
+						<div class="panel-group ez-collapse" role="tablist" aria-multiselectable="true" data-bind="template: { name: 'template-report-filter', foreach: rpt.filter }"></div>
+					</div>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
+{{end}}
+
+	
+	<div class="clearfix"></div>
+</div>

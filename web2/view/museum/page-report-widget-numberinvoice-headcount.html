@@ -1,0 +1,46 @@
+<div class="col-md-12 no-padding hardcore">
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-chart.html"}}
+	</div>
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-pivot.html"}}
+	</div>
+</div>
+
+<script>
+	$(document).ready(function(){
+		pvt.row('customer.channelname')
+		pvt.column('customer.branchname')
+		pvt.dataPoints = ko.observableArray([
+			{ field: 'numberinvoice', title: 'Number Invoice', name: 'Number Invoice' },
+			{ field: 'invoice', title: 'Invoice', name: 'Invoice' },
+			{ field: 'numberinvoicebyinvoice', title: 'Number Invoice / Invoice', name: 'Number Invoice / Invoice' }
+		])
+		
+		pvt.data([{
+			customer_channelname: 'GT', customer_branchname: 'Surabaya',
+			numberinvoice: 20000,
+			invoice: 2000,
+			numberinvoicebyinvoice: 10
+		}, {
+			customer_channelname: 'MT', customer_branchname: 'Surabaya',
+			numberinvoice: 22000,
+			invoice: 1000,
+			numberinvoicebyinvoice: 22
+		}, {
+			customer_channelname: 'GT', customer_branchname: 'Malang',
+			numberinvoice: 23000,
+			invoice: 3000,
+			numberinvoicebyinvoice: 23
+		}, {
+			customer_channelname: 'GT', customer_branchname: 'Malang',
+			numberinvoice: 22000,
+			invoice: 2000,
+			numberinvoicebyinvoice: 11
+		}])
+		crt.data(pvt.data())
+		crt.series(pvt.dataPoints())
+		pvt.refresh()
+		crt.refresh()
+	})
+</script>

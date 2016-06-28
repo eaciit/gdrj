@@ -12,9 +12,8 @@ type OrganizationController struct {
 	App
 }
 
-func CreateOrganizationController(s *knot.Server) *OrganizationController {
+func CreateOrganizationController() *OrganizationController {
 	var controller = new(OrganizationController)
-	controller.Server = s
 	return controller
 }
 func (o *OrganizationController) GetDiagramConfig(r *knot.WebContext) interface{} {
