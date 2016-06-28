@@ -21,7 +21,7 @@ var (
 	value, fiscalyear                 int
 	globalval                         float64
 	mapkeysvalue                      map[string]float64
-	masters                           toolkit.M
+	masters                           = toolkit.M{}
 )
 
 func setinitialconnection() {
