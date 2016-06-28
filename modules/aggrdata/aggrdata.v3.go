@@ -101,7 +101,12 @@ func main() {
 		}
 	}
 
-	listdimension := []string{}
+	listdimension := []string{"date.fiscal,customer.channelid,customer.channelname",
+		"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel",
+		"date.fiscal,customer.channelid,customer.channelname,customer.zone",
+		"date.fiscal,customer.channelid,customer.channelname,customer.areaname",
+		"date.fiscal,customer.channelid,customer.channelname,customer.region"}
+
 	resdimension := make(chan int, len(listdimension))
 	dimension := make(chan string, len(listdimension))
 	detaildata := make(chan toolkit.M)
