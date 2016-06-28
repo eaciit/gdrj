@@ -237,6 +237,11 @@ func (m *ReportController) GetDecreasedQty(r *knot.WebContext) interface{} {
 		return res
 	}
 
+	res.SetData(toolkit.M{
+		"Data": []toolkit.M{},
+	})
+	return res
+
 	if gocore.GetConfig(tableName) == "otw" {
 		res.SetError(errors.New("still processing, might take a while"))
 		fmt.Println("on progress")
@@ -348,16 +353,16 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 	tableName := payload.GetTableName()
 	fmt.Println("______ TABLENAME TABLENAME TABLENAME", tableName)
 
+	plmodels, err := gdrj.PLModelGetAll()
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
 	if ok {
 		data, err := payload.GetPLData()
 		fmt.Println("no error trying to get the data")
 
-		if err != nil {
-			res.SetError(err)
-			return res
-		}
-
-		plmodels, err := gdrj.PLModelGetAll()
 		if err != nil {
 			res.SetError(err)
 			return res
@@ -369,6 +374,12 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 		})
 		return res
 	}
+
+	res.SetData(toolkit.M{
+		"Data":     []toolkit.M{},
+		"PLModels": plmodels,
+	})
+	return res
 
 	if gocore.GetConfig(tableName) == "otw" {
 		res.SetError(errors.New("still processing, might take a while"))
