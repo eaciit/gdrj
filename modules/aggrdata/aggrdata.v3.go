@@ -305,7 +305,7 @@ func workersavedata(wi int, detaildata <-chan toolkit.M, ressavedata chan<- int)
 			esave := q.Exec(toolkit.M{}.Set("data", dt))
 			if esave != nil {
 				toolkit.Printfn("Can't save %s - %s : %v", tbl, esave.Error(), dt)
-				os.Exit(100)
+				//os.Exit(100)
 			}
 			ressavedata <- 1
 		}
