@@ -112,8 +112,6 @@ dsbrd.changeBreakdown = () => {
 dsbrd.changeBreakdownValue = () => {
 	let all = dsbrd.breakdownValueAll
 	setTimeout(() => {
-		console.log("-----", dsbrd.breakdownValue())
-
 		let condA1 = dsbrd.breakdownValue().length == 2
 		let condA2 = dsbrd.breakdownValue().indexOf(all._id) == 0
 		if (condA1 && condA2) {
@@ -213,7 +211,7 @@ dsbrd.render = (res) => {
 
 		rowsAfter.push(row)
 	})
-	console.log(rowsAfter)
+
 	if (rowsAfter.length > 0) {
 		let grossSales = rowsAfter.find((d) => d.pnl == 'Net Sales')
 		let ebit = rowsAfter.find((d) => d.pnl == 'EBIT')
@@ -287,6 +285,7 @@ dsbrd.render = (res) => {
 			}
 		}
 	})
+
 	let columnGrouped = _.sortBy(op2, (d) => d.title)
 
 	op2.forEach((d) => {
@@ -310,6 +309,17 @@ dsbrd.render = (res) => {
 		columnsPlaceholder[0].locked = true
 		columnsPlaceholder[1].locked = true
 	}
+
+	columnGrouped = _.orderBy(columnGrouped, (d) => {
+		let value = 0
+		let dataColumn = rowsAfter[0].columnData
+			.find((e) => $.trim(e.breakdownTitle) == $.trim(d.title))
+		if (typeof dataColumn != 'undefined') {
+			value = dataColumn.value
+		}
+
+		return value
+	}, 'desc')
 
 	dsbrd.data(rowsAfter)
 	dsbrd.columns(columnsPlaceholder.concat(columnGrouped))
@@ -380,6 +390,11 @@ dsbrd.render = (res) => {
 viewModel.dashboardRanking = {}
 let rank = viewModel.dashboardRanking
 
+rank.optionDimensions = ko.observableArray([
+	{ field: 'NonRD', name: 'Non RD Sales' },
+	{ field: 'OnlyRD', name: 'Only RD Sales' },
+	{ field: 'customer.keyaccount', name: 'Key Account' },
+].concat(rpt.optionDimensions().slice(0)))
 rank.breakdown = ko.observable('customer.channelname')
 rank.columns = ko.observableArray([
 	{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
@@ -395,11 +410,29 @@ rank.data = ko.observableArray([])
 rank.fiscalYear = ko.observable(rpt.value.FiscalYear())
 
 rank.refresh = () => {
+	let breakdown = rank.breakdown()
+	let isRDNonRD = (['OnlyRD', 'NonRD'].indexOf(rank.breakdown()) > -1)
+
+	if (isRDNonRD) {
+		breakdown = 'customer.channelname'
+	}
+
 	let param = {}
 	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
-	param.groups = rpt.parseGroups([rank.breakdown()])
+	param.groups = rpt.parseGroups([breakdown])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, rank.fiscalYear)
+
+	if (isRDNonRD) {
+		let values = ('OnlyRD' == rank.breakdown()) ? 
+			['I1'] : ["EXP", "I2", "I4", "I6", "I3"]
+
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: values
+		})
+	}
 
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
@@ -409,7 +442,7 @@ rank.refresh = () => {
 			}
 
 			rank.contentIsLoading(false)
-			rank.render(res)
+			rank.render(breakdown, res)
 		}, () => {
 			rank.contentIsLoading(false)
 		})
@@ -419,19 +452,19 @@ rank.refresh = () => {
 	fetch()
 }
 
-rank.render = (res) => {
-	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`], ''))
+rank.render = (breakdown, res) => {
+	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`], ''))
 
 	let rows = []
 	data.forEach((d) => {
 		let row = {}
-		row.original = d._id[`_id_${toolkit.replace(rank.breakdown(), '.', '_')}`]
-		row.pnl = d._id[`_id_${toolkit.replace(rank.breakdown(), '.', '_')}`]
+		row.original = d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`]
+		row.pnl = d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`]
 		if ($.trim(row.pnl) == '') {
 			row.original = ''
 			row.pnl = ''
 		}
-		if (rank.breakdown() == 'date.month') {
+		if (breakdown == 'date.month') {
 			row.original = (parseInt(row.pnl, 10) - 1)
 			row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM')
 		}
@@ -446,8 +479,7 @@ rank.render = (res) => {
 		rows.push(row)
 	})
 
-	console.log("---", rows)
-	rank.data(_.sortBy(rows, (d) => d.original))
+	rank.data(_.orderBy(rows, (d) => d.netSales, 'desc'))
 
 	let config = {
 		dataSource: {
@@ -478,6 +510,14 @@ sd.breakdown = ko.observable('customer.reportchannel')
 sd.breakdownSub = ko.observable('customer.reportsubchannel')
 sd.data = ko.observableArray([])
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear())
+sd.selectedPL = ko.observable('PL8A')
+sd.getPLModels = () => {
+	app.ajaxPost("/report/getplmodel", {}, (res) => {
+		sd.selectedPL('')
+		rpt.plmodels(_.orderBy(res, (d) => d.OrderIndex))
+		sd.selectedPL('PL8A')
+	})
+}
 sd.render = (res) => {
 	let isFirstTime = sd.isFirstTime()
 	sd.isFirstTime(false)
@@ -485,61 +525,65 @@ sd.render = (res) => {
 	let data = res.Data.Data
 
 	let breakdown = toolkit.replace(sd.breakdown(), ".", "_")
-	let total = toolkit.sum(data, (d) => d.PL8A)
+	let total = toolkit.sum(data, (d) => d[sd.selectedPL()])
 
 	sd.data(data)
 
 	let rows = data.map((d) => {
 		let row = {}
-		row[breakdown] = d._id[`_id_${breakdown}`]
+
+		let breakdownAbbr = d._id[`_id_${breakdown}`]
+		row[breakdown] = breakdownAbbr
+		switch (breakdownAbbr) {
+			case "MT": row[breakdown] = "Modern Trade"; break
+			case "GT": row[breakdown] = "General Trade"; break
+			case "IT": row[breakdown] = "Industrial"; break
+			case "RD": row[breakdown] = "Regional Distributor"; break
+			case "EXPORT": row[breakdown] = "Export"; break
+			case "Motoris": row[breakdown] = "Motorist"; break
+			default: row[breakdown] = breakdownAbbr
+		}
+
 		row.group = d._id[`_id_${toolkit.replace(sd.breakdownSub(), '.', '_')}`]
-		row.percentage = toolkit.number(d.PL8A / total) * 100
-		row.value = d.PL8A
+		row.percentage = toolkit.number(d[sd.selectedPL()] / total) * 100
+		row.value = d[sd.selectedPL()]
 		return row
 	})
 
-	sd.data(_.sortBy(rows, (d) => {
-		let subGroup = `00${toolkit.number(toolkit.getNumberFromString(d.group))}`.split('').reverse().splice(0, 2).reverse().join('')
-		let group = d[breakdown]
+	sd.data(rows)
+	// sd.data(_.sortBy(rows, (d) => {
+	// 	let subGroup = `00${toolkit.number(toolkit.getNumberFromString(d.group))}`.split('').reverse().splice(0, 2).reverse().join('')
+	// 	let group = d[breakdown]
 
-		switch (d[breakdown]) {
-			case "MT": group = "A"; break
-			case "GT": group = "B"; break
-			case "IT": group = "C"; break
-		}
+	// 	switch (d[breakdown]) {
+	// 		case "MT": group = "A"; break
+	// 		case "GT": group = "B"; break
+	// 		case "IT": group = "C"; break
+	// 	}
 
-		return [group, subGroup].join(' ')
-	}))
+	// 	return [group, subGroup].join(' ')
+	// }))
 
-	let op0 = _.filter(sd.data(), (d) => d.percentage > 0 || d.value > 0)
+	let op0 = _.filter(sd.data(), (d) => d.percentage != 0 || d.value != 0)
 	let op1 = _.groupBy(op0, (d) => d[breakdown])
 	let op2 = _.map(op1, (v, k) => { return { key: k, values: v } })
-	let op3 = _.orderBy(op2, (d) => {
-		return {
-			'MT': 0,
-			'GT': 1,
-			'RD': 2,
-			'IT': 3,
-			'MOTORIST': 4,
-			'EXPORT': 5
-		}[d.key]
-	}, 'asc')
+	let op3 = _.orderBy(op2, (d) => toolkit.sum(d.values, (e) => e.percentage), 'desc')
 
-	// hack IT, too much data
-	let it = op3.find((d) => d.key == "IT")
-	if (it != undefined) {
-		if (it.values.length > 0) {
-			let totalIT = toolkit.sum(it.values, (e) => e.value)
-			let fake = {}
-			fake.customer_reportchannel = it.values[0].customer_reportchannel
-			fake.group = it.group
-			fake.percentage = toolkit.number(totalIT / total) * 100
-			fake.value = totalIT
+	// // hack IT, too much data
+	// let it = op3.find((d) => d.key == "IT")
+	// if (it != undefined) {
+	// 	if (it.values.length > 0) {
+	// 		let totalIT = toolkit.sum(it.values, (e) => e.value)
+	// 		let fake = {}
+	// 		fake.customer_reportchannel = it.values[0].customer_reportchannel
+	// 		fake.group = it.group
+	// 		fake.percentage = toolkit.number(totalIT / total) * 100
+	// 		fake.value = totalIT
 
-			it.valuesBackup = it.values.slice(0)
-			it.values = [fake]
-		}
-	}
+	// 		it.valuesBackup = it.values.slice(0)
+	// 		it.values = [fake]
+	// 	}
+	// }
 
 	let maxRow = _.maxBy(op3, (d) => d.values.length)
 	let maxRowIndex = op3.indexOf(maxRow)
@@ -567,7 +611,10 @@ sd.render = (res) => {
 
 		let sumPercentage = _.sumBy(d.values, (e) => e.percentage)
 		let sumColumn = _.sumBy(d.values, (e) => e.value)
-		td1st.html(`<i class="fa"></i>${d.key}<br />${kendo.toString(sumPercentage, 'n2')} %`)
+		td1st.html(`<i class="fa"></i>
+			${d.key}<br />
+			${kendo.toString(sumPercentage, 'n2')} %<br />
+			${kendo.toString(sumColumn, 'n2')}`)
 
 		let td2nd = toolkit.newEl('td')
 			.appendTo(tr2nd)
@@ -576,25 +623,24 @@ sd.render = (res) => {
 		let innerTable = toolkit.newEl('table').appendTo(td2nd)
 		let innerTbody = toolkit.newEl('tbody')
 			.appendTo(innerTable)
-			// .css('display', 'block')
-			// .css('overflow-y', 'auto')
-			// .height(800)
 
 		if (d.values.length == 1) {
 			let tr = toolkit.newEl('tr').appendTo(innerTbody)
 			toolkit.newEl('td')
 				.appendTo(tr)
 				.html(kendo.toString(d.values[0].value, 'n0'))
-				// .height(height)
 				.addClass('single')
-			return
+
+			// index++
+			// return
 		}
 
-		let channelgroup = _.map(_.groupBy(d.values, (o) => { return o.group }), (v, k) => {
-			if (k == '')
-				k = '' 
+		let op1 = _.groupBy(d.values, (o) => { return o.group })
+		let channelgroup = _.map(op1, (v, k) => {
+			if (k == '') k = '' 
 			return { key: k, values: v } 
 		})
+
 		let totalyo = 0, percentageyo = 0, indexyo = 0
 		channelgroup.forEach((e) => {
 			totalyo = toolkit.sum(e.values, (b) => b.value)
@@ -617,44 +663,23 @@ sd.render = (res) => {
 			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-down')
 		}
 
-		if (isFirstTime) {
-			if (d.key == "MT") {
-				channelgroup = _.orderBy(channelgroup, (e) => {
-					switch (e.key) {
-						case 'Hyper': return 'A'; break
-						case 'Super': return 'B'; break
-						case 'Mini': return 'C'; break
-					}
-
-					return e.key
-				}, 'asc')
-			} else if (d.key == 'GT') {
-				channelgroup = _.orderBy(channelgroup, (e) => {
-					return toolkit.getNumberFromString(e.key)
-				}, 'asc')
-			}
+		// let op2 = _.orderBy(channelgroup, (e) => e.totalyo, 'desc')
+		if (d.values.length > 1) {
+			channelgroup.forEach((e) => {
+				let tr = toolkit.newEl('tr').appendTo(innerTable)
+				toolkit.newEl('td').css('width', '150px')
+					.appendTo(tr)
+					.html(e.key)
+				toolkit.newEl('td').css('width', '40px')
+					.appendTo(tr)
+					.html(`${kendo.toString(e.percentageyo, 'n2')}&nbsp;%`)
+				toolkit.newEl('td').css('width', '120px')
+					.appendTo(tr)
+					.html(kendo.toString(e.totalyo, 'n0'))
+			})
 		}
 
-		channelgroup.forEach((e) => {
-			let tr = toolkit.newEl('tr').appendTo(innerTable)
-			toolkit.newEl('td').css('width', '150px')
-				.appendTo(tr)
-				.html(e.key)
-				// .height(height / channelgroup.length)
-			toolkit.newEl('td').css('width', '40px')
-				.appendTo(tr)
-				.html(`${kendo.toString(e.percentageyo, 'n2')}&nbsp;%`)
-			toolkit.newEl('td').css('width', '120px')
-				.appendTo(tr)
-				.html(kendo.toString(e.totalyo, 'n0'))
-		})
 		index++
-		// d.values.forEach((e) => {
-		// 	let tr = toolkit.newEl('tr').appendTo(innerTable)
-		// 	toolkit.newEl('td').appendTo(tr).html(e[breakdown]).height(height / d.values.length)
-		// 	toolkit.newEl('td').appendTo(tr).html(`${kendo.toString(e.percentage, 'n2')} %`)
-		// 	toolkit.newEl('td').appendTo(tr).html(kendo.toString(e.value, 'n0'))
-		// })
 	})
 
 	let trTotalTop = toolkit.newEl('tr').prependTo(table)
@@ -666,14 +691,14 @@ sd.render = (res) => {
 		// $(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height())
 	})
 }
-sd.sortVal = ['','','']
+sd.sortVal = ['','','', '', '', '']
 sd.sortData = () => {
 	sd.render(sd.oldData())
 }
 sd.oldData = ko.observable({})
 sd.refresh = () => {
 	let param = {}
-	param.pls = ["PL8A"]
+	param.pls = [sd.selectedPL()]
 	param.groups = rpt.parseGroups([sd.breakdown(), sd.breakdownSub()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear)
@@ -712,6 +737,7 @@ sd.initSort = () => {
 }
 
 $(() => {
+	rpt.tabbedContent()
 	rpt.refreshView('dashboard')
 
 	dsbrd.changeBreakdown()
@@ -723,4 +749,5 @@ $(() => {
 	rank.refresh()
 	sd.refresh()
 	sd.initSort()
+	sd.getPLModels()
 })

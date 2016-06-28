@@ -1,56 +1,56 @@
 'use strict';
 
-viewModel.breakdown = new Object();
-var kac = viewModel.breakdown;
+viewModel.regionalDistributor = new Object();
+var rd = viewModel.regionalDistributor;
 
-kac.contentIsLoading = ko.observable(false);
-kac.popupIsLoading = ko.observable(false);
-kac.title = ko.observable('Key Account Analysis');
-kac.detail = ko.observableArray([]);
-kac.limit = ko.observable(10);
-kac.breakdownNote = ko.observable('');
+rd.contentIsLoading = ko.observable(false);
+rd.popupIsLoading = ko.observable(false);
+rd.title = ko.observable('RD Analysis');
+rd.detail = ko.observableArray([]);
+rd.limit = ko.observable(10);
+rd.breakdownNote = ko.observable('');
 
-kac.breakdownBy = ko.observable('customer.customergroupname');
-kac.breakdownByFiscalYear = ko.observable('date.fiscal');
-kac.oldBreakdownBy = ko.observable(kac.breakdownBy());
+rd.breakdownBy = ko.observable('customer.areaname');
+rd.breakdownByFiscalYear = ko.observable('date.fiscal');
+rd.oldBreakdownBy = ko.observable(rd.breakdownBy());
 
-kac.data = ko.observableArray([]);
-kac.fiscalYear = ko.observable(rpt.value.FiscalYear());
-kac.breakdownValue = ko.observableArray([]);
+rd.data = ko.observableArray([]);
+rd.fiscalYear = ko.observable(rpt.value.FiscalYear());
+rd.breakdownValue = ko.observableArray([]);
 
-kac.refresh = function () {
+rd.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
-	if (kac.breakdownValue().length == 0) {
+	if (rd.breakdownValue().length == 0) {
 		toolkit.showError('Please choose at least breakdown value');
 		return;
 	}
 
 	var param = {};
 	param.pls = [];
-	param.groups = rpt.parseGroups([kac.breakdownBy()]);
+	param.groups = rpt.parseGroups([rd.breakdownBy()]);
 	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue(false, kac.fiscalYear);
+	param.filters = rpt.getFilterValue(false, rd.fiscalYear);
 	param.filters.push({
-		Field: 'customer.keyaccount',
-		Op: '$eq',
-		Value: 'KEY'
+		Field: 'customer.channelname',
+		Op: '$in',
+		Value: ['I1']
 	});
 
-	var breakdownValue = kac.breakdownValue().filter(function (d) {
+	var breakdownValue = rd.breakdownValue().filter(function (d) {
 		return d != 'All';
 	});
 	if (breakdownValue.length > 0) {
 		param.filters.push({
-			Field: kac.breakdownBy(),
+			Field: rd.breakdownBy(),
 			Op: '$in',
-			Value: kac.breakdownValue()
+			Value: rd.breakdownValue()
 		});
 	}
 	console.log("bdk", param.filters);
 
-	kac.oldBreakdownBy(kac.breakdownBy());
-	kac.contentIsLoading(true);
+	rd.oldBreakdownBy(rd.breakdownBy());
+	rd.contentIsLoading(true);
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
@@ -62,16 +62,16 @@ kac.refresh = function () {
 			}
 
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
-			kac.breakdownNote('Last refreshed on: ' + date);
+			rd.breakdownNote('Last refreshed on: ' + date);
 
-			kac.data(res.Data.Data);
+			rd.data(res.Data.Data);
 			rpt.plmodels(res.Data.PLModels);
-			kac.emptyGrid();
-			kac.contentIsLoading(false);
-			kac.render();
+			rd.emptyGrid();
+			rd.contentIsLoading(false);
+			rd.render();
 		}, function () {
-			kac.emptyGrid();
-			kac.contentIsLoading(false);
+			rd.emptyGrid();
+			rd.contentIsLoading(false);
 		}, {
 			cache: useCache == true ? 'breakdown chart' : false
 		});
@@ -80,7 +80,7 @@ kac.refresh = function () {
 	fetch();
 };
 
-kac.clickExpand = function (e) {
+rd.clickExpand = function (e) {
 	var right = $(e).find('i.fa-chevron-right').length;
 	var down = $(e).find('i.fa-chevron-down').length;
 	if (right > 0) {
@@ -108,12 +108,12 @@ kac.clickExpand = function (e) {
 		rpt.hideAllChild(e.attr('idheaderpl'));
 	}
 };
-kac.emptyGrid = function () {
-	$('.breakdown-view').replaceWith('<div class="breakdown-view ez" id="key-account-analysis"></div>');
+rd.emptyGrid = function () {
+	$('.breakdown-view').replaceWith('<div class="breakdown-view ez" id="rd-analysis"></div>');
 };
 
-kac.renderDetailSalesTrans = function (breakdown) {
-	kac.popupIsLoading(true);
+rd.renderDetailSalesTrans = function (breakdown) {
+	rd.popupIsLoading(true);
 	$('#modal-detail-ledger-summary').appendTo($('body'));
 	$('#modal-detail-ledger-summary').modal('show');
 
@@ -129,7 +129,7 @@ kac.renderDetailSalesTrans = function (breakdown) {
 				read: function read(options) {
 					var param = options.data;
 					param.tablename = "browsesalestrxs";
-					param[kac.breakdownBy()] = [breakdown];
+					param[rd.breakdownBy()] = [breakdown];
 
 					if (toolkit.isUndefined(param.page)) {
 						param = $.extend(true, param, {
@@ -147,13 +147,13 @@ kac.renderDetailSalesTrans = function (breakdown) {
 						dataType: 'json',
 						data: JSON.stringify(param),
 						success: function success(res) {
-							kac.popupIsLoading(false);
+							rd.popupIsLoading(false);
 							setTimeout(function () {
 								options.success(res.data);
 							}, 200);
 						},
 						error: function error() {
-							kac.popupIsLoading(false);
+							rd.popupIsLoading(false);
 						}
 					});
 				},
@@ -180,8 +180,8 @@ kac.renderDetailSalesTrans = function (breakdown) {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
 	$('.grid-detail').kendoGrid(config);
 };
-kac.renderDetail = function (plcode, breakdowns) {
-	kac.popupIsLoading(true);
+rd.renderDetail = function (plcode, breakdowns) {
+	rd.popupIsLoading(true);
 	$('#modal-detail-ledger-summary .modal-title').html('Detail');
 	$('#modal-detail-ledger-summary').appendTo($('body'));
 	$('#modal-detail-ledger-summary').modal('show');
@@ -246,14 +246,14 @@ kac.renderDetail = function (plcode, breakdowns) {
 						dataType: 'json',
 						data: JSON.stringify(param),
 						success: function success(res) {
-							kac.popupIsLoading(false);
+							rd.popupIsLoading(false);
 							setTimeout(function () {
 								console.log("++++", res);
 								options.success(res.Data);
 							}, 200);
 						},
 						error: function error() {
-							kac.popupIsLoading(false);
+							rd.popupIsLoading(false);
 						}
 					});
 				},
@@ -297,16 +297,16 @@ kac.renderDetail = function (plcode, breakdowns) {
 	$('.grid-detail').kendoGrid(config);
 };
 
-kac.render = function () {
-	if (kac.data().length == 0) {
+rd.render = function () {
+	if (rd.data().length == 0) {
 		$('.breakdown-view').html('No data found.');
 		return;
 	}
 
-	var breakdowns = [kac.breakdownBy() /** , 'date.year' */];
+	var breakdowns = [rd.breakdownBy() /** , 'date.year' */];
 	var rows = [];
 
-	var data = _.map(kac.data(), function (d) {
+	var data = _.map(rd.data(), function (d) {
 		d.breakdowns = {};
 		var titleParts = [];
 
@@ -410,11 +410,11 @@ kac.render = function () {
 	var totalWidth = 0;
 	var pnlTotalSum = 0;
 
-	if (kac.breakdownBy() == "customer.branchname") {
+	if (rd.breakdownBy() == "customer.branchname") {
 		colWidth = 200;
 	}
 
-	if (kac.breakdownBy() == "customer.region") {
+	if (rd.breakdownBy() == "customer.region") {
 		colWidth = 230;
 	}
 
@@ -439,7 +439,7 @@ kac.render = function () {
 		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).appendTo(tableHeader);
 
 		trHeader.on('click', function () {
-			kac.clickExpand(trHeader);
+			rd.clickExpand(trHeader);
 		});
 
 		toolkit.newEl('td').html('<i></i>' + d.PNL).appendTo(trHeader);
@@ -464,7 +464,7 @@ kac.render = function () {
 			var cell = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trContent);
 
 			cell.on('click', function () {
-				kac.renderDetail(d.PLCode, e.breakdowns);
+				rd.renderDetail(d.PLCode, e.breakdowns);
 			});
 
 			toolkit.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
@@ -489,52 +489,52 @@ kac.render = function () {
 	rpt.buildGridLevels(rows);
 };
 
-kac.optionBreakdownValues = ko.observableArray([]);
-kac.breakdownValueAll = { _id: 'All', Name: 'All' };
-kac.changeBreakdown = function () {
-	var all = kac.breakdownValueAll;
+rd.optionBreakdownValues = ko.observableArray([]);
+rd.breakdownValueAll = { _id: 'All', Name: 'All' };
+rd.changeBreakdown = function () {
+	var all = rd.breakdownValueAll;
 	setTimeout(function () {
-		kac.optionBreakdownValues([all].concat(rpt.masterData.CustomerGroup().map(function (d) {
+		rd.optionBreakdownValues([all].concat(rpt.masterData.Area().map(function (d) {
 			return { _id: d.Name, Name: d.Name };
 		})));
-		kac.breakdownValue([all._id]);
+		rd.breakdownValue([all._id]);
 	}, 100);
 };
-kac.changeBreakdownValue = function () {
-	var all = kac.breakdownValueAll;
+rd.changeBreakdownValue = function () {
+	var all = rd.breakdownValueAll;
 	setTimeout(function () {
-		var condA1 = kac.breakdownValue().length == 2;
-		var condA2 = kac.breakdownValue().indexOf(all._id) == 0;
+		var condA1 = rd.breakdownValue().length == 2;
+		var condA2 = rd.breakdownValue().indexOf(all._id) == 0;
 		if (condA1 && condA2) {
-			kac.breakdownValue.remove(all._id);
+			rd.breakdownValue.remove(all._id);
 			return;
 		}
 
-		var condB1 = kac.breakdownValue().length > 1;
-		var condB2 = kac.breakdownValue().reverse()[0] == all._id;
+		var condB1 = rd.breakdownValue().length > 1;
+		var condB2 = rd.breakdownValue().reverse()[0] == all._id;
 		if (condB1 && condB2) {
-			kac.breakdownValue([all._id]);
+			rd.breakdownValue([all._id]);
 			return;
 		}
 
-		var condC1 = kac.breakdownValue().length == 0;
+		var condC1 = rd.breakdownValue().length == 0;
 		if (condC1) {
-			kac.breakdownValue([all._id]);
+			rd.breakdownValue([all._id]);
 		}
 	}, 100);
 };
 
 vm.currentMenu('Analysis');
-vm.currentTitle('Key Account Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Key Account Analysis', href: '/web/report/dashboard' }]);
+vm.currentTitle('RD Analysis');
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'RD Analysis', href: '/web/report/dashboard' }]);
 
-kac.title('Key Account Analysis');
+rd.title('RD Analysis');
 
 rpt.refresh = function () {
-	kac.changeBreakdown();
+	rd.changeBreakdown();
 	setTimeout(function () {
-		kac.breakdownValue(['All']);
-		kac.refresh(false);
+		rd.breakdownValue(['All']);
+		rd.refresh(false);
 	}, 200);
 
 	rpt.prepareEvents();

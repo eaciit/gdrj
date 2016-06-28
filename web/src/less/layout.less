@@ -745,6 +745,10 @@ html, body{
 
 .scatter-view-container {
 	overflow-x: scroll; 
+
+	.scatter-view-wrapper {
+		margin: 0px auto;
+	}
 }
 
 .scroll{
@@ -802,6 +806,10 @@ html, body{
 					padding: 2px 6px;
 					border: 1px solid @color-base-grey;
 					text-align: center;
+
+					.fa:not(.fa-chevron-down):not(.fa-chevron-up) {
+						display: none;
+					}
 
 					table {
 					    width: 100%;
@@ -875,4 +883,74 @@ html, body{
 
 .title-user {
 	font-size: 15px;
+}
+
+.nav-replace-title {
+	position: absolute;
+	left: 10px;
+	top: -42px;
+}
+
+
+.pivot-ez {
+	position: relative;
+    margin-bottom: 20px;
+
+	.table-header,
+	.table-content {
+		top: 0px;
+		position: absolute;
+		overflow: auto;
+		overflow-x: scroll;
+
+		&.table-header {
+			left: 0px;
+		}
+
+		&.table-content {
+			right: 0px;
+		}
+	}
+
+	table {
+		tr {
+			&:first-child {
+				td {
+					border-top: 1px solid @color-base-grey;
+				}
+			}
+
+			&:last-child {
+				td {
+					border-bottom-color: @color-base-grey;
+				}
+			}
+
+			td {
+				border-right: 1px solid @color-base-grey;
+				border-bottom: 1px solid @color-base-grey;
+				height: 30px;
+				padding: 0 6px;
+				vertical-align: middle;
+
+				&.title {
+					font-weight: bold;
+					background-color: @color-base-grey;
+					border-right-color: white;
+					border-bottom-color: white;
+				}
+
+				&:first-child {
+					border-left: 1px solid @color-base-grey;
+				}
+
+				&:last-child {
+					border-right-color: @color-base-grey;
+				}
+			}
+		}
+	}
+	.table-clear {
+		clear: both;
+	}
 }

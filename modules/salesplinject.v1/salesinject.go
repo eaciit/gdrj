@@ -36,16 +36,12 @@ func setinitialconnection() {
 }
 
 var (
-	masters                                                 = toolkit.M{}
-	t0                                                      time.Time
-	fiscalyear                                              int
-	subchannels                                             = toolkit.M{}
-	customers                                               = toolkit.M{}
-	branchs                                                 = toolkit.M{}
-	globalgross, globalgrossvdist                           = float64(0), float64(0)
-	grossbybranch, grossbybrand, grossbysku, grossbychannel = toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}
-	grossbymonthvdist, grossbymonth, grossbymonthsku        = toolkit.M{}, toolkit.M{}, toolkit.M{}
-	grossbymonthchannel, grossbymonthbrandchannel           = toolkit.M{}, toolkit.M{}
+	masters     = toolkit.M{}
+	t0          time.Time
+	fiscalyear  int
+	subchannels = toolkit.M{}
+	customers   = toolkit.M{}
+	branchs     = toolkit.M{}
 )
 
 func buildmap(holder interface{},
@@ -128,6 +124,15 @@ func prepmaster() {
 	}
 	masters.Set("branchs", branchs)
 
+}
+
+func prepmastergrossproc() {
+
+	globalgross, globalgrossvdist := float64(0), float64(0)
+	grossbybranch, grossbybrand, grossbysku, grossbychannel := toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}
+	grossbymonthvdist, grossbymonth, grossbymonthsku := toolkit.M{}, toolkit.M{}, toolkit.M{}
+	grossbymonthchannel, grossbymonthbrandchannel := toolkit.M{}, toolkit.M{}
+
 	toolkit.Println("--> Trx Gross Proc")
 	csr01, _ := conn.NewQuery().From("salestrxs-grossproc").Cursor(nil)
 	defer csr01.Close()
@@ -136,6 +141,10 @@ func prepmaster() {
 		e := csr01.Fetch(&m, 1, false)
 		if e != nil {
 			break
+		}
+
+		if strings.ToUpper(m.GetString("src")) == "DISCOUNT" {
+			continue
 		}
 
 		agross := m.GetFloat64("gross")
@@ -236,6 +245,10 @@ func main() {
 			break
 		}
 
+		if strings.ToUpper(stx.Src) == "DISCOUNT" {
+			continue
+		}
+
 		i++
 		jobs <- stx
 		if i%step == 0 {
@@ -279,6 +292,7 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 
 		pl.Customer = trx.Customer
 		pl.Product = trx.Product
+		pl.TrxSrc = trx.Src
 
 		pl.CleanAndClasify(masters)
 		pl.RatioCalc(masters)

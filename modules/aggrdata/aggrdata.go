@@ -47,31 +47,44 @@ func main() {
 
 	toolkit.Println("Start data query...")
 
-	filter := dbox.Eq("date.fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
-	defer c.Close()
+	// filter := dbox.Eq("date.fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
+	speriode := eperiode.AddDate(-1, 0, 0)
 
-	scount = c.Count()
+	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode))
+
+	// c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
+	// defer c.Close()
+	csr, _ := conn.NewQuery().Select("date.fiscal", "pldatas").From("salespls-1").Where(filter).Cursor(nil)
+	defer csr.Close()
+
+	scount = csr.Count()
 	iscount = 0
 	step := scount / 100
 
 	for {
 		iscount++
 		spl := new(gdrj.SalesPL)
-		e := c.Fetch(spl, 1, false)
+		e := csr.Fetch(spl, 1, false)
 		if e != nil {
 			toolkit.Println("EOF")
 			break
 		}
 
+		fiscal := spl.Date.Fiscal
 		for k, v := range spl.PLDatas {
-			data[k] += v.Amount
+			key := toolkit.Sprintf("%s_%s", fiscal, k)
+			data[key] += v.Amount
 		}
 
 		if iscount > step {
 			step += scount / 100
 			toolkit.Printfn("Processing %d of %d in %s", iscount, scount,
 				time.Since(t0).String())
+		}
+
+		if iscount == 20 {
+			break
 		}
 
 	}

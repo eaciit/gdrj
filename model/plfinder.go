@@ -253,24 +253,24 @@ func (s *PLFinderParam) GetTableName() string {
 		}
 	}
 
-	cols, _ := s.GetPLCollections()
-	for _, col := range cols {
-		dimensions := col.Get("dimensions").([]string)
-		ok := true
+	// cols, _ := s.GetPLCollections()
+	// for _, col := range cols {
+	// 	dimensions := col.Get("dimensions").([]string)
+	// 	ok := true
 
-	loopFilter:
-		for _, filterKey := range filterKeys {
-			filter := strings.Replace(filterKey, ".", "_", -1)
-			if !toolkit.HasMember(dimensions, filter) {
-				ok = false
-				break loopFilter
-			}
-		}
+	// loopFilter:
+	// 	for _, filterKey := range filterKeys {
+	// 		filter := strings.Replace(filterKey, ".", "_", -1)
+	// 		if !toolkit.HasMember(dimensions, filter) {
+	// 			ok = false
+	// 			break loopFilter
+	// 		}
+	// 	}
 
-		if ok {
-			return col.GetString("table")
-		}
-	}
+	// 	if ok {
+	// 		return col.GetString("table")
+	// 	}
+	// }
 
 	sort.Strings(filterKeys)
 	key := strings.Replace(strings.Join(filterKeys, "_"), ".", "_", -1)
@@ -379,32 +379,32 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 		for key, val := range _id {
 			if val == nil {
 				_id.Set(key, "Other")
-			} else if val.(string) == "" {
+			} else if fmt.Sprintf("%v", val) == "" {
 				_id.Set(key, "Other")
 			}
 
-			if _, ok := otherData[i]; strings.ToLower(_id.GetString(key)) == "other" && !ok {
+			if _, ok := otherData[i]; strings.ToLower(fmt.Sprintf("%v", _id[key])) == "other" && !ok {
 				otherData[i] = each
 			}
 		}
 
 		if _id.Has(channelid) {
 			// hasChannel = true
-			channelid := strings.ToUpper(_id.GetString(channelid))
+			channelid := strings.ToUpper(fmt.Sprintf("%v", _id[channelid]))
 
 			switch channelid {
 			case "I6":
-				_id.Set(channelname, "MOTORIST")
+				_id.Set(channelname, "Motorist")
 			case "I4":
-				_id.Set(channelname, "IT")
+				_id.Set(channelname, "Industrial")
 			case "I1":
-				_id.Set(channelname, "RD")
+				_id.Set(channelname, "Regional Distributor")
 			case "I3":
-				_id.Set(channelname, "MT")
+				_id.Set(channelname, "Modern Trade")
 			case "I2":
-				_id.Set(channelname, "GT")
+				_id.Set(channelname, "General Trade")
 			case "EXP":
-				_id.Set(channelname, "EXP")
+				_id.Set(channelname, "Export")
 				// case "DISCOUNT":
 				// 	_id.Set(channelname, "DISCOUNT")
 				// case "":

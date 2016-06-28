@@ -17,6 +17,12 @@ bkd.oldBreakdownBy = ko.observable(bkd.breakdownBy());
 bkd.data = ko.observableArray([]);
 bkd.fiscalYear = ko.observable(rpt.value.FiscalYear());
 bkd.breakdownValue = ko.observableArray([]);
+bkd.level = ko.observable(1);
+bkd.isBreakdownChannel = ko.observable(false);
+bkd.breakdownChannels = ko.observableArray([]);
+bkd.optionBreakdownChannels = ko.observableArray([{ _id: "I1", Name: "RD" }, { _id: "I2", Name: "GT" }, { _id: "I3", Name: "MT" }, { _id: "I4", Name: "IT" }]);
+bkd.breakdownChannelLocation = ko.observable('');
+bkd.optionBreakdownChannelLocations = ko.observableArray([{ _id: "zone", Name: "Zone" }, { _id: "region", Name: "Region" }, { _id: "areaname", Name: "City" }]);
 
 bkd.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
@@ -42,7 +48,22 @@ bkd.refresh = function () {
 			Value: bkd.breakdownValue()
 		});
 	}
-	console.log("bdk", param.filters);
+
+	if (bkd.breakdownChannels().length > 0) {
+		param.groups.push('customer.reportsubchannel');
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: bkd.breakdownChannels()
+		});
+
+		bkd.level(2);
+	}
+
+	if (bkd.breakdownChannelLocation() != '') {
+		param.groups.push('customer.' + bkd.breakdownChannelLocation());
+		bkd.level(2);
+	}
 
 	bkd.oldBreakdownBy(bkd.breakdownBy());
 	bkd.contentIsLoading(true);
@@ -59,7 +80,8 @@ bkd.refresh = function () {
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			bkd.breakdownNote('Last refreshed on: ' + date);
 
-			bkd.data(res.Data.Data);
+			var data = bkd.buildStructure(res.Data.Data);
+			bkd.data(data);
 			rpt.plmodels(res.Data.PLModels);
 			bkd.emptyGrid();
 			bkd.contentIsLoading(false);
@@ -79,21 +101,34 @@ bkd.clickExpand = function (e) {
 	var right = $(e).find('i.fa-chevron-right').length;
 	var down = $(e).find('i.fa-chevron-down').length;
 	if (right > 0) {
+		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
+			$('.pivot-pnl .table-header').css('width', '530px');
+			$('.pivot-pnl .table-content').css('margin-left', '530px');
+		}
+
 		$(e).find('i').removeClass('fa-chevron-right');
 		$(e).find('i').addClass('fa-chevron-down');
 		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[statusvaltemp=hide]').css('display', 'none');
+		rpt.refreshHeight(e.attr('idheaderpl'));
 	}
 	if (down > 0) {
+		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
+			$('.pivot-pnl .table-header').css('width', '');
+			$('.pivot-pnl .table-content').css('margin-left', '');
+		}
+
 		$(e).find('i').removeClass('fa-chevron-down');
 		$(e).find('i').addClass('fa-chevron-right');
 		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
+		rpt.hideAllChild(e.attr('idheaderpl'));
 	}
 };
+
 bkd.emptyGrid = function () {
-	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"></div>');
+	$('.breakdown-view').replaceWith('<div class="breakdown-view ez" id="pnl-analysis"></div>');
 };
 
 bkd.renderDetailSalesTrans = function (breakdown) {
@@ -164,6 +199,7 @@ bkd.renderDetailSalesTrans = function (breakdown) {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
 	$('.grid-detail').kendoGrid(config);
 };
+
 bkd.renderDetail = function (plcode, breakdowns) {
 	bkd.popupIsLoading(true);
 	$('#modal-detail-ledger-summary .modal-title').html('Detail');
@@ -207,7 +243,7 @@ bkd.renderDetail = function (plcode, breakdowns) {
 					for (var _p in breakdowns) {
 						if (breakdowns.hasOwnProperty(_p)) {
 							param.filters.push({
-								field: _p,
+								field: _p.replace(/_id_/g, '').replace(/_/g, '.'),
 								op: "$eq",
 								value: breakdowns[_p]
 							});
@@ -281,70 +317,226 @@ bkd.renderDetail = function (plcode, breakdowns) {
 	$('.grid-detail').kendoGrid(config);
 };
 
+bkd.buildStructure = function (data) {
+	var groupThenMap = function groupThenMap(data, group) {
+		var op1 = _.groupBy(data, function (d) {
+			return group(d);
+		});
+		var op2 = _.map(op1, function (v, k) {
+			var key = { _id: k, subs: v };
+			var sample = v[0];
+
+			var _loop = function _loop(prop) {
+				if (sample.hasOwnProperty(prop) && prop != '_id') {
+					key[prop] = toolkit.sum(v, function (d) {
+						return d[prop];
+					});
+				}
+			};
+
+			for (var prop in sample) {
+				_loop(prop);
+			}
+
+			return key;
+		});
+
+		return op2;
+	};
+
+	if (bkd.breakdownChannels().length > 0) {
+		var _parsed = groupThenMap(data, function (d) {
+			return d._id['_id_' + toolkit.replace(bkd.breakdownBy(), '.', '_')];
+		}).map(function (d) {
+			var subs = groupThenMap(d.subs, function (e) {
+				return e._id._id_customer_reportsubchannel;
+			}).map(function (e) {
+				e.breakdowns = e.subs[0]._id;
+				d.count = 1;
+				return e;
+			});
+
+			d.subs = _.orderBy(subs, function (e) {
+				return e.PL8A;
+			}, 'desc');
+			d.breakdowns = d.subs[0]._id;
+			d.count = d.subs.length;
+			return d;
+		});
+
+		bkd.level(2);
+		var _newParsed = _.orderBy(_parsed, function (d) {
+			return d.PL8A;
+		}, 'desc');
+		return _newParsed;
+	}
+
+	if (bkd.breakdownChannelLocation() != '') {
+		var _parsed2 = groupThenMap(data, function (d) {
+			return d._id['_id_' + toolkit.replace(bkd.breakdownBy(), '.', '_')];
+		}).map(function (d) {
+			var subs = groupThenMap(d.subs, function (e) {
+				return e._id['_id_customer_' + bkd.breakdownChannelLocation()];
+			}).map(function (e) {
+				e.breakdowns = e.subs[0]._id;
+				d.count = 1;
+				return e;
+			});
+
+			d.subs = _.orderBy(subs, function (e) {
+				return e.PL8A;
+			}, 'desc');
+			d.breakdowns = d.subs[0]._id;
+			d.count = d.subs.length;
+			return d;
+		});
+
+		bkd.level(2);
+		var _newParsed2 = _.orderBy(_parsed2, function (d) {
+			return d.PL8A;
+		}, 'desc');
+		return _newParsed2;
+	}
+
+	var parsed = groupThenMap(data, function (d) {
+		return d._id['_id_' + toolkit.replace(bkd.breakdownBy(), '.', '_')];
+	}).map(function (d) {
+		d.breakdowns = d.subs[0]._id;
+		d.count = 1;
+
+		return d;
+	});
+
+	bkd.level(1);
+	var newParsed = _.orderBy(parsed, function (d) {
+		return d.PL8A;
+	}, 'desc');
+	return newParsed;
+};
+
 bkd.render = function () {
 	if (bkd.data().length == 0) {
 		$('.breakdown-view').html('No data found.');
 		return;
 	}
 
-	var breakdowns = [bkd.breakdownBy() /** , 'date.year' */];
-	var rows = [];
+	// ========================= TABLE STRUCTURE
 
-	var data = _.map(bkd.data(), function (d) {
-		d.breakdowns = {};
-		var titleParts = [];
+	var wrapper = toolkit.newEl('div').addClass('pivot-pnl-branch pivot-pnl').appendTo($('.breakdown-view'));
 
-		breakdowns.forEach(function (e) {
-			var title = d._id['_id_' + toolkit.replace(e, '.', '_')];
-			title = toolkit.whenEmptyString(title, '');
-			d.breakdowns[e] = title;
-			titleParts.push(title);
+	var tableHeaderWrap = toolkit.newEl('div').addClass('table-header').appendTo(wrapper);
+
+	var tableHeader = toolkit.newEl('table').addClass('table').appendTo(tableHeaderWrap);
+
+	var tableContentWrap = toolkit.newEl('div').appendTo(wrapper).addClass('table-content');
+
+	var tableContent = toolkit.newEl('table').addClass('table').appendTo(tableContentWrap);
+
+	var trHeader = toolkit.newEl('tr').appendTo(tableHeader);
+
+	toolkit.newEl('th').html('P&L').css('height', 34 * bkd.level() + 'px').attr('data-rowspan', bkd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
+
+	toolkit.newEl('th').html('Total').css('height', 34 * bkd.level() + 'px').attr('data-rowspan', bkd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+
+	toolkit.newEl('th').html('%').css('height', 34 * bkd.level() + 'px').attr('data-rowspan', bkd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+
+	var trContents = [];
+	for (var i = 0; i < bkd.level(); i++) {
+		trContents.push(toolkit.newEl('tr').appendTo(tableContent));
+	}
+
+	// ========================= BUILD HEADER
+
+	var data = bkd.data();
+
+	var columnWidth = 130;
+	var totalColumnWidth = 0;
+	var pnlTotalSum = 0;
+	var dataFlat = [];
+	var percentageWidth = 80;
+
+	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
+		var currentColumnWidth = each._id.length * (bkd.isBreakdownChannel() ? 10 : 6);
+		if (currentColumnWidth < columnWidth) {
+			currentColumnWidth = columnWidth;
+		}
+
+		if (each.hasOwnProperty('width')) {
+			currentColumnWidth = each.width;
+		}
+
+		each.key = key.join('_');
+		dataFlat.push(each);
+
+		totalColumnWidth += currentColumnWidth;
+		thheader.width(currentColumnWidth);
+	};
+
+	data.forEach(function (lvl1, i) {
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]);
+
+		if (bkd.level() == 1) {
+			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
+
+			totalColumnWidth += percentageWidth;
+			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-center').appendTo(trContents[0]);
+
+			return;
+		}
+		thheader1.attr('colspan', lvl1.count * 2);
+
+		lvl1.subs.forEach(function (lvl2, j) {
+			var thheader2 = toolkit.newEl('th').html(lvl2._id).addClass('align-center').appendTo(trContents[1]);
+
+			if (bkd.level() == 2) {
+				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
+
+				totalColumnWidth += percentageWidth;
+				var _thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+
+				return;
+			}
+			thheader2.attr('colspan', lvl2.count);
 		});
-
-		d._id = titleParts.join(' ');
-		return d;
 	});
+
+	tableContent.css('min-width', totalColumnWidth);
+
+	// ========================= CONSTRUCT DATA
 
 	var plmodels = _.sortBy(rpt.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
 	});
-	var exceptions = ["PL94C" /* "Operating Income" */
-	, "PL39B" /* "Earning Before Tax" */
-	, "PL41C" /* "Earning After Tax" */
-	];
+	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */];
 	var netSalesPLCode = 'PL8A';
-	var netSalesPlModel = rpt.plmodels().find(function (d) {
-		return d._id == netSalesPLCode;
+	var netSalesRow = {};
+	var rows = [];
+
+	rpt.fixRowValue(dataFlat);
+
+	console.log("dataFlat", dataFlat);
+
+	dataFlat.forEach(function (e) {
+		var breakdown = e.key;
+		netSalesRow[breakdown] = e[netSalesPLCode];
 	});
-	var netSalesRow = {},
-	    changeformula = void 0,
-	    formulayo = void 0;
-
-	rpt.fixRowValue(data);
-
-	data.forEach(function (e) {
-		var breakdown = e._id;
-		var value = e['' + netSalesPlModel._id];
-		value = toolkit.number(value);
-		netSalesRow[breakdown] = value;
-	});
-
-	data = _.orderBy(data, function (d) {
-		return netSalesRow[d._id];
-	}, 'desc');
 
 	plmodels.forEach(function (d) {
 		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 };
-		data.forEach(function (e) {
-			var breakdown = e._id;
+		dataFlat.forEach(function (e) {
+			var breakdown = e.key;
 			var value = e['' + d._id];
-			value = toolkit.number(value);
 			row[breakdown] = value;
+
+			if (toolkit.isDefined(e.excludeFromTotal)) {
+				return;
+			}
+
 			row.PNLTotal += value;
 		});
-		data.forEach(function (e) {
-			var breakdown = e._id;
-			var percentage = toolkit.number(e['' + d._id] / row.PNLTotal) * 100;
+		dataFlat.forEach(function (e) {
+			var breakdown = e.key;
+			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
 			if (d._id != netSalesPLCode) {
@@ -363,6 +555,8 @@ bkd.render = function () {
 		rows.push(row);
 	});
 
+	console.log("rows", rows);
+
 	var TotalNetSales = _.find(rows, function (r) {
 		return r.PLCode == "PL8A";
 	}).PNLTotal;
@@ -372,58 +566,14 @@ bkd.render = function () {
 		rows[e].Percentage = TotalPercentage;
 	});
 
-	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
+	// ========================= PLOT DATA
 
-	var tableHeaderWrap = toolkit.newEl('div').addClass('table-header').appendTo(wrapper);
-
-	var tableHeader = toolkit.newEl('table').addClass('table').appendTo(tableHeaderWrap);
-
-	var tableContentWrap = toolkit.newEl('div').appendTo(wrapper).addClass('table-content');
-
-	var tableContent = toolkit.newEl('table').addClass('table').appendTo(tableContentWrap);
-
-	var trHeader1 = toolkit.newEl('tr').appendTo(tableHeader);
-
-	toolkit.newEl('th').html('P&L').appendTo(trHeader1);
-
-	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader1);
-
-	toolkit.newEl('th').html('%').addClass('align-right').appendTo(trHeader1);
-
-	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
-
-	var colWidth = 160;
-	var colPercentWidth = 60;
-	var totalWidth = 0;
-	var pnlTotalSum = 0;
-
-	if (bkd.breakdownBy() == "customer.branchname") {
-		colWidth = 200;
-	}
-
-	if (bkd.breakdownBy() == "customer.region") {
-		colWidth = 230;
-	}
-
-	data.forEach(function (d, i) {
-		if (d._id.length > 22) colWidth += 30;
-		toolkit.newEl('th').html(d._id).addClass('align-right').appendTo(trContent1).width(colWidth);
-
-		toolkit.newEl('th').html('%').addClass('align-right cell-percentage').appendTo(trContent1).width(colPercentWidth);
-
-		totalWidth += colWidth + colPercentWidth;
-	});
-	// console.log('data ', data)
-
-	tableContent.css('min-width', totalWidth);
-
-	// console.log('row ', rows)
 	rows.forEach(function (d, i) {
 		pnlTotalSum += d.PNLTotal;
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader);
 
 		trHeader.on('click', function () {
 			bkd.clickExpand(trHeader);
@@ -434,15 +584,14 @@ bkd.render = function () {
 		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
 		toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
 
-		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + '%').addClass('align-right').appendTo(trHeader);
+		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + ' %').addClass('align-right').appendTo(trHeader);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).appendTo(tableContent);
 
-		data.forEach(function (e, f) {
-			var key = e._id;
+		dataFlat.forEach(function (e, f) {
+			var key = e.key;
 			var value = kendo.toString(d[key], 'n0');
-
-			var percentage = kendo.toString(d[key + ' %'], 'n2');
+			var percentage = kendo.toString(d[key + ' %'], 'n2') + ' %';
 
 			if ($.trim(value) == '') {
 				value = 0;
@@ -450,20 +599,20 @@ bkd.render = function () {
 
 			var cell = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trContent);
 
-			cell.on('click', function () {
+			var cellPercentage = toolkit.newEl('td').html(percentage).addClass('align-right').appendTo(trContent);
+
+			$([cell, cellPercentage]).on('click', function () {
 				bkd.renderDetail(d.PLCode, e.breakdowns);
 			});
-
-			toolkit.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
 		});
 
 		var boolStatus = false;
 		trContent.find('td').each(function (a, e) {
-			// console.log(trHeader.find('td:eq(0)').text(),$(e).text())
 			if ($(e).text() != '0' && $(e).text() != '0.00 %') {
 				boolStatus = true;
 			}
 		});
+
 		if (boolStatus) {
 			trContent.attr('statusval', 'show');
 			trHeader.attr('statusval', 'show');
@@ -473,22 +622,251 @@ bkd.render = function () {
 		}
 	});
 
+	// ========================= CONFIGURE THE HIRARCHY
 	rpt.buildGridLevels(rows);
 
-	setTimeout(function () {
-		var newdata = [],
-		    finddata = void 0;
-		$('.table-header tr.bold').each(function (a, e) {
-			finddata = _.find(rs.optionDimensionSelect(), function (a) {
-				return a.field == $(e).attr('idheaderpl');
-			});
-			if (finddata != undefined) newdata.push(finddata);
-		});
-		newdata = _.sortBy(newdata, function (item) {
-			return [item.name];
-		});
-		rs.optionDimensionSelect(newdata);
-	});
+	return;
+
+	// let breakdowns = [bkd.breakdownBy()]
+	// let rows = []
+
+	// let data = _.map(bkd.data(), (d) => {
+	// 	d.breakdowns = {}
+	// 	let titleParts = []
+
+	// 	breakdowns.forEach((e) => {
+	// 		let title = d._id[`_id_${toolkit.replace(e, '.', '_')}`]
+	// 		title = toolkit.whenEmptyString(title, '')
+	// 		d.breakdowns[e] = title
+	// 		titleParts.push(title)
+	// 	})
+
+	// 	d._id = titleParts.join(' ')
+	// 	return d
+	// })
+
+	// let plmodels = _.sortBy(rpt.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
+	// let exceptions = [
+	// 	"PL94C" /* "Operating Income" */,
+	// 	"PL39B" /* "Earning Before Tax" */,
+	// 	"PL41C" /* "Earning After Tax" */,
+	// ]
+	// let netSalesPLCode = 'PL8A'
+	// let netSalesPlModel = rpt.plmodels().find((d) => d._id == netSalesPLCode)
+	// let netSalesRow = {}, changeformula, formulayo
+
+	// rpt.fixRowValue(data)
+
+	// data.forEach((e) => {
+	// 	let breakdown = e._id
+	// 	let value = e[`${netSalesPlModel._id}`];
+	// 	value = toolkit.number(value)
+	// 	netSalesRow[breakdown] = value
+	// })
+
+	// data = _.orderBy(data, (d) => netSalesRow[d._id], 'desc')
+
+	// plmodels.forEach((d) => {
+	// 	let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
+	// 	data.forEach((e) => {
+	// 		let breakdown = e._id
+	// 		let value = e[`${d._id}`];
+	// 		value = toolkit.number(value)
+	// 		row[breakdown] = value
+	// 		row.PNLTotal += value
+	// 	})
+	// 	data.forEach((e) => {
+	// 		let breakdown = e._id
+	// 		let percentage = toolkit.number(e[`${d._id}`] / row.PNLTotal) * 100;
+	// 		percentage = toolkit.number(percentage)
+
+	// 		if (d._id != netSalesPLCode) {
+	// 			percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
+	// 		}
+
+	// 		if (percentage < 0)
+	// 			percentage = percentage * -1
+
+	// 		row[`${breakdown} %`] = percentage
+	// 	})
+
+	// 	if (exceptions.indexOf(row.PLCode) > -1) {
+	// 		return
+	// 	}
+
+	// 	rows.push(row)
+	// })
+
+	// let TotalNetSales = _.find(rows, (r) => { return r.PLCode == "PL8A" }).PNLTotal
+	// rows.forEach((d, e) => {
+	// 	let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100;
+	// 	if (TotalPercentage < 0)
+	// 		TotalPercentage = TotalPercentage * -1
+	// 	rows[e].Percentage = TotalPercentage
+	// })
+
+	// let wrapper = toolkit.newEl('div')
+	// 	.addClass('pivot-pnl')
+	// 	.appendTo($('.breakdown-view'))
+
+	// let tableHeaderWrap = toolkit.newEl('div')
+	// 	.addClass('table-header')
+	// 	.appendTo(wrapper)
+
+	// let tableHeader = toolkit.newEl('table')
+	// 	.addClass('table')
+	// 	.appendTo(tableHeaderWrap)
+
+	// let tableContentWrap = toolkit.newEl('div')
+	// 	.appendTo(wrapper)
+	// 	.addClass('table-content')
+
+	// let tableContent = toolkit.newEl('table')
+	// 	.addClass('table')
+	// 	.appendTo(tableContentWrap)
+
+	// let trHeader1 = toolkit.newEl('tr')
+	// 	.appendTo(tableHeader)
+
+	// toolkit.newEl('th')
+	// 	.html('P&L')
+	// 	.appendTo(trHeader1)
+
+	// toolkit.newEl('th')
+	// 	.html('Total')
+	// 	.addClass('align-right')
+	// 	.appendTo(trHeader1)
+
+	// toolkit.newEl('th')
+	// 	.html('%')
+	// 	.addClass('align-right')
+	// 	.appendTo(trHeader1)
+
+	// let trContent1 = toolkit.newEl('tr')
+	// 	.appendTo(tableContent)
+
+	// let colWidth = 160
+	// let colPercentWidth = 60
+	// let totalWidth = 0
+	// let pnlTotalSum = 0
+
+	// if (bkd.breakdownBy() == "customer.branchname") {
+	// 	colWidth = 200
+	// }
+
+	// if (bkd.breakdownBy() == "customer.region") {
+	// 	colWidth = 230
+	// }
+
+	// data.forEach((d, i) => {
+	// 	if (d._id.length > 22)
+	// 		colWidth += 30
+	// 	toolkit.newEl('th')
+	// 		.html(d._id)
+	// 		.addClass('align-right')
+	// 		.appendTo(trContent1)
+	// 		.width(colWidth)
+
+	// 	toolkit.newEl('th')
+	// 		.html('%')
+	// 		.addClass('align-right cell-percentage')
+	// 		.appendTo(trContent1)
+	// 		.width(colPercentWidth)
+
+	// 	totalWidth += colWidth + colPercentWidth
+	// })
+	// // console.log('data ', data)
+
+	// tableContent.css('min-width', totalWidth)
+
+	// // console.log('row ', rows)
+	// rows.forEach((d, i) => {
+	// 	pnlTotalSum += d.PNLTotal
+
+	// 	let PL = d.PLCode
+	// 	PL = PL.replace(/\s+/g, '')
+	// 	let trHeader = toolkit.newEl('tr')
+	// 		.addClass(`header${PL}`)
+	// 		.attr(`idheaderpl`, PL)
+	// 		.appendTo(tableHeader)
+
+	// 	trHeader.on('click', () => {
+	// 		bkd.clickExpand(trHeader)
+	// 	})
+
+	// 	toolkit.newEl('td')
+	// 		.html('<i></i>' + d.PNL)
+	// 		.appendTo(trHeader)
+
+	// 	let pnlTotal = kendo.toString(d.PNLTotal, 'n0')
+	// 	toolkit.newEl('td')
+	// 		.html(pnlTotal)
+	// 		.addClass('align-right')
+	// 		.appendTo(trHeader)
+
+	// 	toolkit.newEl('td')
+	// 		.html(kendo.toString(d.Percentage, 'n2') + '%')
+	// 		.addClass('align-right')
+	// 		.appendTo(trHeader)
+
+	// 	let trContent = toolkit.newEl('tr')
+	// 		.addClass(`column${PL}`)
+	// 		.attr(`idpl`, PL)
+	// 		.appendTo(tableContent)
+
+	// 	data.forEach((e, f) => {
+	// 		let key = e._id
+	// 		let value = kendo.toString(d[key], 'n0')
+
+	// 		let percentage = kendo.toString(d[`${key} %`], 'n2')
+
+	// 		if ($.trim(value) == '') {
+	// 			value = 0
+	// 		}
+
+	// 		let cell = toolkit.newEl('td')
+	// 			.html(value)
+	// 			.addClass('align-right')
+	// 			.appendTo(trContent)
+
+	// 		cell.on('click', () => {
+	// 			bkd.renderDetail(d.PLCode, e.breakdowns)
+	// 		})
+
+	// 		toolkit.newEl('td')
+	// 			.html(`${percentage} %`)
+	// 			.addClass('align-right cell-percentage')
+	// 			.appendTo(trContent)
+	// 	})
+
+	// 	let boolStatus = false
+	// 	trContent.find('td').each((a,e) => {
+	// 		// console.log(trHeader.find('td:eq(0)').text(),$(e).text())
+	// 		if ($(e).text() != '0' && $(e).text() != '0.00 %') {
+	// 			boolStatus = true
+	// 		}
+	// 	})
+	// 	if (boolStatus) {
+	// 		trContent.attr('statusval', 'show')
+	// 		trHeader.attr('statusval', 'show')
+	// 	} else {
+	// 		trContent.attr('statusval', 'hide')
+	// 		trHeader.attr('statusval', 'hide')
+	// 	}
+	// })
+
+	// rpt.buildGridLevels(rows)
+
+	// setTimeout(() => {
+	// 	let newdata  = [], finddata
+	// 	$('.table-header tr.bold').each((a, e) => {
+	// 		finddata = _.find(rs.optionDimensionSelect(), (a) => { return a.field == $(e).attr('idheaderpl') })
+	// 		if (finddata != undefined)
+	// 			newdata.push(finddata)
+	// 	})
+	// 	newdata = _.sortBy(newdata, function(item) { return [item.name] })
+	// 	rs.optionDimensionSelect(newdata)
+	// })
 };
 
 bkd.optionBreakdownValues = ko.observableArray([]);
@@ -508,6 +886,10 @@ bkd.changeBreakdown = function () {
 		});
 	};
 	setTimeout(function () {
+		bkd.isBreakdownChannel(false);
+		bkd.breakdownChannels([]);
+		bkd.breakdownChannelLocation([]);
+
 		switch (bkd.breakdownBy()) {
 			case "customer.areaname":
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Area())));
@@ -532,6 +914,9 @@ bkd.changeBreakdown = function () {
 			case "customer.channelname":
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())));
 				bkd.breakdownValue([all._id]);
+
+				bkd.isBreakdownChannel(true);
+				bkd.breakdownChannels([]);
 				break;
 			case "customer.keyaccount":
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())));
@@ -571,11 +956,39 @@ var dataPoints = [{ field: "value1", name: "value1", aggr: "sum" }];
 rs.contentIsLoading = ko.observable(false);
 rs.title = ko.observable('P&L Analytic');
 rs.breakdownBy = ko.observable('customer.channelname');
+rs.breakdownTimeBy = ko.observable('');
 rs.selectedPNLNetSales = ko.observable("PL8A"); // PL1
 rs.selectedPNL = ko.observable("PL44B");
 rs.chartComparisonNote = ko.observable('');
 rs.optionDimensionSelect = ko.observableArray([]);
+rs.optionTimeBreakdowns = ko.observableArray([{ field: 'date.fiscal', name: 'Fiscal Year' }, { field: 'date.quartertxt', name: 'Quarter' }, { field: 'date.month', name: 'Month' }]);
 rs.fiscalYear = ko.observable(rpt.value.FiscalYear());
+rs.columnWidth = ko.observable(130);
+rs.breakdownTimeValue = ko.observableArray([]);
+rs.optionTimeSubBreakdowns = ko.computed(function () {
+	switch (rs.breakdownTimeBy()) {
+		case 'date.fiscal':
+			return rpt.optionFiscalYears().slice(0).map(function (d) {
+				return { field: d, name: d };
+			});
+			break;
+		case 'date.quartertxt':
+			return ['Q1', 'Q2', 'Q3', 'Q4'].map(function (d) {
+				return { field: d, name: d };
+			});
+			break;
+		case 'date.month':
+			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (d) {
+				return { field: d, name: moment(new Date(2015, d, 0)).format('MMMM') };
+			});
+			break;
+		default:
+			return [];break;
+	}
+}, rs.breakdownTimeBy);
+rs.changeBreakdownTimeBy = function () {
+	rs.breakdownTimeValue([]);
+};
 
 rs.getSalesHeaderList = function () {
 	app.ajaxPost("/report/getplmodel", {}, function (res) {
@@ -603,73 +1016,102 @@ rs.refresh = function () {
 
 	rs.contentIsLoading(true);
 
+	var groups = [rs.breakdownBy()];
+	if (rs.breakdownTimeBy() != '') {
+		groups.push(rs.breakdownTimeBy());
+	}
+
 	var param = {};
 	param.pls = [rs.selectedPNL(), rs.selectedPNLNetSales()];
-	param.groups = rpt.parseGroups([rs.breakdownBy()]);
+	param.groups = rpt.parseGroups(groups);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, rs.fiscalYear);
 
+	if (rs.breakdownTimeBy() == 'date.fiscal') {
+		var fiscal = param.filters.find(function (d) {
+			return d.Field == rs.breakdownTimeBy();
+		});
+		fiscal.Op = "$in";
+		fiscal.Value = [];
+
+		if (rs.breakdownTimeValue().length > 0) {
+			fiscal.Value = rs.breakdownTimeValue();
+		} else {
+			fiscal.Value = rpt.optionFiscalYears();
+		}
+	}
+
 	var fetch = function fetch() {
-		app.ajaxPost("/report/getpnldatanew", param, function (res1) {
-			if (res1.Status == "NOK") {
+		app.ajaxPost("/report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
 				}, 1000 * 5);
 				return;
 			}
 
-			var date = moment(res1.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			rs.chartComparisonNote('Last refreshed on: ' + date);
 
-			var dataAllPNL = res1.Data.Data.filter(function (d) {
-				return d.hasOwnProperty(rs.selectedPNL());
-			}).map(function (d) {
-				return { _id: d._id, value: d[rs.selectedPNL()] };
-			});
-			var dataAllPNLNetSales = res1.Data.Data.filter(function (d) {
-				return d.hasOwnProperty(rs.selectedPNLNetSales());
-			}).map(function (d) {
-				return { _id: d._id, value: d[rs.selectedPNLNetSales()] };
-			});
-
-			var years = _.map(_.groupBy(dataAllPNL, function (d) {
-				return d._id._id_date_year;
-			}), function (v, k) {
-				return k;
-			});
-
-			var sumNetSales = _.reduce(dataAllPNLNetSales, function (m, x) {
-				return m + x.value;
-			}, 0);
-			var sumPNL = _.reduce(dataAllPNL, function (m, x) {
-				return m + x.value;
-			}, 0);
-			var countPNL = dataAllPNL.length;
-			var avgPNL = sumPNL;
-
-			var dataScatter = [];
-			var multiplier = sumNetSales == 0 ? 1 : sumNetSales;
-
-			dataAllPNL.forEach(function (d, i) {
-				dataScatter.push({
-					valueNetSales: dataAllPNLNetSales[i].value,
-					// category: app.nbspAble(`${d._id["_id_" + app.idAble(rs.breakdownBy())]} ${d._id._id_date_year}`, ''),
-					category: d._id['_id_' + app.idAble(rs.breakdownBy())],
-					year: d._id._id_date_year,
-					valuePNL: Math.abs(d.value),
-					valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
-					avgPNL: Math.abs(avgPNL),
-					avgPNLPercentage: Math.abs(avgPNL / multiplier * 100)
-				});
-			});
-
-			// sumPNL: Math.abs(sumPNL),
-			// sumPNLPercentage: Math.abs(sumPNL / multiplier * 100)
-			console.log("dataScatter", dataScatter);
-			console.log("dataAllPNL", dataAllPNL);
-
 			rs.contentIsLoading(false);
-			rs.generateReport(dataScatter, years);
+
+			var scatterViewWrapper = $('.scatter-view-wrapper').empty();
+			var width = 0;
+			var raw = res.Data.Data;
+
+			if (['date.fiscal', ''].indexOf(rs.breakdownTimeBy()) == -1 && rs.breakdownTimeValue().length > 0) {
+				(function () {
+					var field = '_id_' + toolkit.replace(rs.breakdownTimeBy(), '.', '_');
+					raw = raw.filter(function (d) {
+						for (var i = 0; i < rs.breakdownTimeValue().length; i++) {
+							var each = rs.breakdownTimeValue()[i];
+
+							switch (rs.breakdownTimeBy()) {
+								case 'date.fiscal':
+									if (each == d._id[field]) {
+										return true;
+									}
+									break;
+								case 'date.quartertxt':
+									if (d._id[field].indexOf(each) > -1) {
+										return true;
+									}
+									break;
+								case 'date.month':
+									if (each == d._id[field]) {
+										return true;
+									}
+									break;
+							}
+						}
+
+						return false;
+					});
+				})();
+			}
+
+			if (rs.breakdownTimeBy() != '') {
+				var op1 = _.groupBy(raw, function (d) {
+					return d._id['_id_' + app.idAble(rs.breakdownBy())];
+				});
+				_.map(op1, function (v, k) {
+					var eachWidth = rs.generateReport(k, v);
+					width += eachWidth;
+				});
+			} else {
+				width = rs.generateReport('', raw);
+
+				if (width < scatterViewWrapper.parent().width()) {
+					width = '100%';
+					scatterViewWrapper.find('.scatter-view').width(width);
+
+					setTimeout(function () {
+						scatterViewWrapper.find('.scatter-view').data('kendoChart').redraw();
+					}, 100);
+				}
+			}
+
+			scatterViewWrapper.width(width).append('<div class="clearfix" style="clear: both;"></div>');
 		}, function () {
 			rs.contentIsLoading(false);
 		}, {
@@ -680,10 +1122,60 @@ rs.refresh = function () {
 	fetch();
 };
 
-rs.generateReport = function (data, years) {
-	data = _.orderBy(data, function (d) {
-		return d.valueNetSales;
-	}, 'desc');
+rs.generateReport = function (title, raw) {
+	var breakdown = rs.breakdownTimeBy() == '' ? rs.breakdownBy() : rs.breakdownTimeBy();
+
+	var dataAllPNL = raw.filter(function (d) {
+		return d.hasOwnProperty(rs.selectedPNL());
+	}).map(function (d) {
+		return { _id: d._id, value: d[rs.selectedPNL()] };
+	});
+	var dataAllPNLNetSales = raw.filter(function (d) {
+		return d.hasOwnProperty(rs.selectedPNLNetSales());
+	}).map(function (d) {
+		return { _id: d._id, value: d[rs.selectedPNLNetSales()] };
+	});
+
+	var sumNetSales = _.reduce(dataAllPNLNetSales, function (m, x) {
+		return m + x.value;
+	}, 0);
+	var sumPNL = _.reduce(dataAllPNL, function (m, x) {
+		return m + x.value;
+	}, 0);
+	var countPNL = dataAllPNL.length;
+	var avgPNL = sumPNL;
+
+	var data = [];
+	var multiplier = sumNetSales == 0 ? 1 : sumNetSales;
+
+	dataAllPNL.forEach(function (d, i) {
+		var category = d._id['_id_' + app.idAble(breakdown)];
+		var order = category;
+
+		if (breakdown == 'date.month') {
+			category = moment(new Date(2015, category - 1, 1)).format('MMMM');
+		}
+
+		data.push({
+			valueNetSales: dataAllPNLNetSales[i].value,
+			category: category,
+			order: order,
+			valuePNL: Math.abs(d.value),
+			valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
+			avgPNL: Math.abs(avgPNL),
+			avgPNLPercentage: Math.abs(avgPNL / multiplier * 100)
+		});
+	});
+
+	if (breakdown == 'date.month') {
+		data = _.orderBy(data, function (d) {
+			return parseInt(d.order, 10);
+		}, 'asc');
+	} else {
+		data = _.orderBy(data, function (d) {
+			return d.valuePNLPercentage;
+		}, 'desc');
+	}
 
 	var max = _.max(_.map(data, function (d) {
 		return d.avgNetSalesPercentage;
@@ -698,15 +1190,14 @@ rs.generateReport = function (data, years) {
 		return d.field == rs.selectedPNL();
 	}).name;
 
-	$('#scatter-view').replaceWith('<div id="scatter-view" style="height: 350px;"></div>');
-	if (data.length * 100 > $('#scatter-view').parent().width()) $('#scatter-view').width(data.length * 120);else $('#scatter-view').css('width', '100%');
-	$("#scatter-view").kendoChart({
-		dataSource: {
-			data: data
-		},
-		title: {
-			text: ""
-		},
+	var scatterViewWrapper = $('.scatter-view-wrapper');
+	var scatterView = $('<div class="scatter-view"></div>').height(350).css('float', 'left').appendTo(scatterViewWrapper);
+
+	console.log('----', data);
+
+	var config = {
+		dataSource: { data: data },
+		// title: title,
 		legend: {
 			visible: true,
 			position: "bottom"
@@ -730,9 +1221,7 @@ rs.generateReport = function (data, years) {
 				visible: true,
 				template: 'Average ' + breakdownTitle + ' to ' + netSalesTitle + ': #: kendo.toString(dataItem.avgPNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.avgPNL, \'n2\') #)'
 			},
-			markers: {
-				visible: false
-			}
+			markers: { visible: false }
 		}, {
 			type: 'column',
 			name: breakdownTitle + ' to ' + netSalesTitle,
@@ -740,9 +1229,7 @@ rs.generateReport = function (data, years) {
 			overlay: {
 				gradient: 'none'
 			},
-			border: {
-				width: 0
-			},
+			border: { width: 0 },
 			tooltip: {
 				visible: true,
 				template: breakdownTitle + ' #: dataItem.category # to ' + netSalesTitle + ': #: kendo.toString(dataItem.valuePNLPercentage, \'n2\') # % (#: kendo.toString(dataItem.valuePNL, \'n2\') #)'
@@ -757,24 +1244,33 @@ rs.generateReport = function (data, years) {
 			}
 		}],
 		valueAxis: {
-			majorGridLines: {
-				color: '#fafafa'
-			},
-			label: {
-				format: "{0}%"
-			}
+			majorGridLines: { color: '#fafafa' },
+			label: { format: "{0}%" },
+			axisCrossingValue: [0, -10],
+			max: max + 20
 		},
 		categoryAxis: [{
 			field: 'category',
 			labels: {
-				rotation: 20,
 				font: '"Source Sans Pro" 11px'
 			},
-			majorGridLines: {
-				color: '#fafafa'
-			}
+			majorGridLines: { color: '#fafafa' }
 		}]
-	});
+	};
+
+	if (rs.breakdownTimeBy() != '') {
+		config.categoryAxis.push({
+			categories: [title],
+			labels: {
+				font: '"Source Sans Pro" 18px bold'
+			}
+		});
+	}
+
+	var width = data.length * rs.columnWidth();
+	if (width < 300) width = 300;
+	scatterView.width(width).kendoChart(config);
+	return width;
 };
 
 viewModel.chartCompare = {};
@@ -1064,7 +1560,7 @@ rpt.toggleFilterCallback = function () {
 };
 
 vm.currentMenu('Analysis');
-vm.currentTitle('PNL Analysis');
+vm.currentTitle('P&L Analysis');
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'PNL Analysis', href: '/web/report/dashboard' }]);
 
 bkd.title('P&L Analysis');
@@ -1072,6 +1568,7 @@ rs.title('P&L Comparison to Net Sales');
 ccr.title('Quantity, Price & Outlet');
 
 rpt.refresh = function () {
+	rpt.tabbedContent();
 	rpt.refreshView('analysis');
 
 	rs.getSalesHeaderList();

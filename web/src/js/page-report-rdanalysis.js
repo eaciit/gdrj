@@ -1,50 +1,50 @@
-viewModel.breakdown = new Object()
-let kac = viewModel.breakdown
+viewModel.regionalDistributor = new Object()
+let rd = viewModel.regionalDistributor
 
-kac.contentIsLoading = ko.observable(false)
-kac.popupIsLoading = ko.observable(false)
-kac.title = ko.observable('Key Account Analysis')
-kac.detail = ko.observableArray([])
-kac.limit = ko.observable(10)
-kac.breakdownNote = ko.observable('')
+rd.contentIsLoading = ko.observable(false)
+rd.popupIsLoading = ko.observable(false)
+rd.title = ko.observable('RD Analysis')
+rd.detail = ko.observableArray([])
+rd.limit = ko.observable(10)
+rd.breakdownNote = ko.observable('')
 
-kac.breakdownBy = ko.observable('customer.customergroupname')
-kac.breakdownByFiscalYear = ko.observable('date.fiscal')
-kac.oldBreakdownBy = ko.observable(kac.breakdownBy())
+rd.breakdownBy = ko.observable('customer.areaname')
+rd.breakdownByFiscalYear = ko.observable('date.fiscal')
+rd.oldBreakdownBy = ko.observable(rd.breakdownBy())
 
-kac.data = ko.observableArray([])
-kac.fiscalYear = ko.observable(rpt.value.FiscalYear())
-kac.breakdownValue = ko.observableArray([])
+rd.data = ko.observableArray([])
+rd.fiscalYear = ko.observable(rpt.value.FiscalYear())
+rd.breakdownValue = ko.observableArray([])
 
-kac.refresh = (useCache = false) => {
-	if (kac.breakdownValue().length == 0) {
+rd.refresh = (useCache = false) => {
+	if (rd.breakdownValue().length == 0) {
 		toolkit.showError('Please choose at least breakdown value')
 		return
 	}
 
 	let param = {}
 	param.pls = []
-	param.groups = rpt.parseGroups([kac.breakdownBy()])
+	param.groups = rpt.parseGroups([rd.breakdownBy()])
 	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue(false, kac.fiscalYear)
+	param.filters = rpt.getFilterValue(false, rd.fiscalYear)
 	param.filters.push({
-		Field: 'customer.keyaccount',
-		Op: '$eq',
-		Value: 'KEY'
+		Field: 'customer.channelname',
+		Op: '$in',
+		Value: ['I1']
 	})
 
-	let breakdownValue = kac.breakdownValue().filter((d) => d != 'All')
+	let breakdownValue = rd.breakdownValue().filter((d) => d != 'All')
 	if (breakdownValue.length > 0) {
 		param.filters.push({
-			Field: kac.breakdownBy(),
+			Field: rd.breakdownBy(),
 			Op: '$in',
-			Value: kac.breakdownValue()
+			Value: rd.breakdownValue()
 		})
 	}
 	console.log("bdk", param.filters)
 	
-	kac.oldBreakdownBy(kac.breakdownBy())
-	kac.contentIsLoading(true)
+	rd.oldBreakdownBy(rd.breakdownBy())
+	rd.contentIsLoading(true)
 
 	let fetch = () => {
 		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
@@ -56,16 +56,16 @@ kac.refresh = (useCache = false) => {
 			}
 
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-			kac.breakdownNote(`Last refreshed on: ${date}`)
+			rd.breakdownNote(`Last refreshed on: ${date}`)
 
-			kac.data(res.Data.Data)
+			rd.data(res.Data.Data)
 			rpt.plmodels(res.Data.PLModels)
-			kac.emptyGrid()
-			kac.contentIsLoading(false)
-			kac.render()
+			rd.emptyGrid()
+			rd.contentIsLoading(false)
+			rd.render()
 		}, () => {
-			kac.emptyGrid()
-			kac.contentIsLoading(false)
+			rd.emptyGrid()
+			rd.contentIsLoading(false)
 		}, {
 			cache: (useCache == true) ? 'breakdown chart' : false
 		})
@@ -74,7 +74,7 @@ kac.refresh = (useCache = false) => {
 	fetch()
 }
 
-kac.clickExpand = (e) => {
+rd.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
 	let down = $(e).find('i.fa-chevron-down').length
 	if (right > 0){
@@ -102,12 +102,12 @@ kac.clickExpand = (e) => {
 		rpt.hideAllChild(e.attr('idheaderpl'))
 	}
 }
-kac.emptyGrid = () => {
-	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez" id="key-account-analysis"></div>`)
+rd.emptyGrid = () => {
+	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez" id="rd-analysis"></div>`)
 }
 
-kac.renderDetailSalesTrans = (breakdown) => {
-	kac.popupIsLoading(true)
+rd.renderDetailSalesTrans = (breakdown) => {
+	rd.popupIsLoading(true)
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
 
@@ -131,7 +131,7 @@ kac.renderDetailSalesTrans = (breakdown) => {
 			    read: (options) => {
 			    	let param = options.data
 			    	param.tablename = "browsesalestrxs"
-			    	param[kac.breakdownBy()] = [breakdown]
+			    	param[rd.breakdownBy()] = [breakdown]
 
 			    	if (toolkit.isUndefined(param.page)) {
 			    		param = $.extend(true, param, {
@@ -149,13 +149,13 @@ kac.renderDetailSalesTrans = (breakdown) => {
 		                dataType: 'json',
 		                data: JSON.stringify(param),
 		                success: (res) => {
-							kac.popupIsLoading(false)
+							rd.popupIsLoading(false)
 							setTimeout(() => {
 								options.success(res.data)
 							}, 200)
 		                },
 		                error: () => {
-							kac.popupIsLoading(false)
+							rd.popupIsLoading(false)
 		                }
 		            });
 		        },
@@ -178,8 +178,8 @@ kac.renderDetailSalesTrans = (breakdown) => {
 	$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
 	$('.grid-detail').kendoGrid(config)
 }
-kac.renderDetail = (plcode, breakdowns) => {
-	kac.popupIsLoading(true)
+rd.renderDetail = (plcode, breakdowns) => {
+	rd.popupIsLoading(true)
 	$('#modal-detail-ledger-summary .modal-title').html('Detail')
 	$('#modal-detail-ledger-summary').appendTo($('body'))
 	$('#modal-detail-ledger-summary').modal('show')
@@ -240,14 +240,14 @@ kac.renderDetail = (plcode, breakdowns) => {
 		                dataType: 'json',
 		                data: JSON.stringify(param),
 		                success: (res) => {
-							kac.popupIsLoading(false)
+							rd.popupIsLoading(false)
 							setTimeout(() => {
 								console.log("++++", res)
 								options.success(res.Data)
 							}, 200)
 		                },
 		                error: () => {
-							kac.popupIsLoading(false)
+							rd.popupIsLoading(false)
 		                }
 		            });
 		        },
@@ -287,16 +287,16 @@ kac.renderDetail = (plcode, breakdowns) => {
 	$('.grid-detail').kendoGrid(config)
 }
 
-kac.render = () => {
-	if (kac.data().length == 0) {
+rd.render = () => {
+	if (rd.data().length == 0) {
 		$('.breakdown-view').html('No data found.')
 		return
 	}
 	
-	let breakdowns = [kac.breakdownBy() /** , 'date.year' */]
+	let breakdowns = [rd.breakdownBy() /** , 'date.year' */]
 	let rows = []
 	
-	let data = _.map(kac.data(), (d) => {
+	let data = _.map(rd.data(), (d) => {
 		d.breakdowns = {}
 		let titleParts = []
 
@@ -415,11 +415,11 @@ kac.render = () => {
 	let totalWidth = 0
 	let pnlTotalSum = 0
 
-	if (kac.breakdownBy() == "customer.branchname") {
+	if (rd.breakdownBy() == "customer.branchname") {
 		colWidth = 200
 	}
 
-	if (kac.breakdownBy() == "customer.region") {
+	if (rd.breakdownBy() == "customer.region") {
 		colWidth = 230
 	}
 
@@ -456,7 +456,7 @@ kac.render = () => {
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
-			kac.clickExpand(trHeader)
+			rd.clickExpand(trHeader)
 		})
 
 		toolkit.newEl('td')
@@ -495,7 +495,7 @@ kac.render = () => {
 				.appendTo(trContent)
 
 			cell.on('click', () => {
-				kac.renderDetail(d.PLCode, e.breakdowns)
+				rd.renderDetail(d.PLCode, e.breakdowns)
 			})
 
 			toolkit.newEl('td')
@@ -523,57 +523,57 @@ kac.render = () => {
 	rpt.buildGridLevels(rows)
 }
 
-kac.optionBreakdownValues = ko.observableArray([])
-kac.breakdownValueAll = { _id: 'All', Name: 'All' }
-kac.changeBreakdown = () => {
-	let all = kac.breakdownValueAll
+rd.optionBreakdownValues = ko.observableArray([])
+rd.breakdownValueAll = { _id: 'All', Name: 'All' }
+rd.changeBreakdown = () => {
+	let all = rd.breakdownValueAll
 	setTimeout(() => {
-		kac.optionBreakdownValues([all].concat(
-			rpt.masterData.CustomerGroup().map((d) => { 
+		rd.optionBreakdownValues([all].concat(
+			rpt.masterData.Area().map((d) => { 
 				return { _id: d.Name, Name: d.Name } })
 			)
 		)
-		kac.breakdownValue([all._id])
+		rd.breakdownValue([all._id])
 	}, 100)
 }
-kac.changeBreakdownValue = () => {
-	let all = kac.breakdownValueAll
+rd.changeBreakdownValue = () => {
+	let all = rd.breakdownValueAll
 	setTimeout(() => {
-		let condA1 = kac.breakdownValue().length == 2
-		let condA2 = kac.breakdownValue().indexOf(all._id) == 0
+		let condA1 = rd.breakdownValue().length == 2
+		let condA2 = rd.breakdownValue().indexOf(all._id) == 0
 		if (condA1 && condA2) {
-			kac.breakdownValue.remove(all._id)
+			rd.breakdownValue.remove(all._id)
 			return
 		}
 
-		let condB1 = kac.breakdownValue().length > 1
-		let condB2 = kac.breakdownValue().reverse()[0] == all._id
+		let condB1 = rd.breakdownValue().length > 1
+		let condB2 = rd.breakdownValue().reverse()[0] == all._id
 		if (condB1 && condB2) {
-			kac.breakdownValue([all._id])
+			rd.breakdownValue([all._id])
 			return
 		}
 
-		let condC1 = kac.breakdownValue().length == 0
+		let condC1 = rd.breakdownValue().length == 0
 		if (condC1) {
-			kac.breakdownValue([all._id])
+			rd.breakdownValue([all._id])
 		}
 	}, 100)
 }
 
 vm.currentMenu('Analysis')
-vm.currentTitle('Key Account Analysis')
+vm.currentTitle('RD Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'Key Account Analysis', href: '/web/report/dashboard' }
+	{ title: 'RD Analysis', href: '/web/report/dashboard' }
 ])
 
-kac.title('Key Account Analysis')
+rd.title('RD Analysis')
 
 rpt.refresh = () => {
-	kac.changeBreakdown()
+	rd.changeBreakdown()
 	setTimeout(() => {
-		kac.breakdownValue(['All'])
-		kac.refresh(false)
+		rd.breakdownValue(['All'])
+		rd.refresh(false)
 	}, 200)
 
 	rpt.prepareEvents()

@@ -14,23 +14,30 @@ ba.breakdownByFiscalYear = ko.observable('date.fiscal')
 ba.oldBreakdownBy = ko.observable(ba.breakdownBy())
 ba.optionDimensions = ko.observableArray(rpt.optionDimensions().filter((d) => d.field != 'customer.channelname'))
 
-ba.expand = ko.observable(false)
 ba.data = ko.observableArray([])
 ba.zeroValue = ko.observable(false)
 ba.fiscalYear = ko.observable(rpt.value.FiscalYear())
 ba.breakdownValue = ko.observableArray([])
 ba.breakdownRD = ko.observable("All")
-ba.optionBranch = ko.observableArray([{
-		id: "All",
-		title: "RD & Non RD",
-	}, {
-		id: "OnlyRD",
-		title: "Only RD Sales"
-	}, {
-		id: "NonRD",
-		title: "Non RD Sales"
-	}
-]) //rpt.masterData.Channel()
+ba.optionBreakdownRD = ko.observableArray([
+	{ id: "All", title: "RD & Non RD" },
+	{ id: "NonRD", title: "Non RD Sales" },
+	{ id: "OnlyRD", title: "Only RD Sales", label: "RD", channelid: "I1" },
+])
+
+ba.expand = ko.observable(false)
+ba.enableExpand = ko.observable(true)
+ba.changeBreakdownRD = () => {
+	setTimeout(() => {
+		if (ba.breakdownRD().search('ByLocation') > -1) {
+			ba.expand(true)
+			ba.enableExpand(false)
+			return
+		}
+
+		ba.enableExpand(true)
+	}, 100)
+}
 
 ba.level = ko.observable(2)
 
@@ -103,9 +110,13 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 					d.count = toolkit.sum(d.subs, (e) => e.count)
 				})
 			} break;
-			case 'OnlyRD': {
+			case 'OnlyMT':
+			case 'OnlyGT':
+			case 'OnlyRD':
+			case 'OnlyIT': {
+				// let opt = ba.optionBreakdownRD().find((d) => d.id == ba.breakdownRD())
 				data.forEach((d) => {
-					d.subs = d.subs.filter((e) => e._id == 'RD')
+					// d.subs = d.subs.filter((e) => e._id == opt.label)
 
 					if (ba.expand()) {
 						let totalColumn = renderTotalColumn(d)
@@ -117,7 +128,9 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 			} break;
 			case 'NonRD': {
 				data.forEach((d) => {
-					d.subs = d.subs.filter((e) => e._id != 'RD')
+					d.subs = d.subs.filter((e) => 
+						(['regional distributor', 'rd'].indexOf(e._id.toLowerCase()) == -1)
+					)
 
 					if (ba.expand()) {
 						let totalColumn = renderTotalColumn(d)
@@ -152,42 +165,41 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
-			d.subs = groupThenMap(d.subs, (e) => {
+			let subs = groupThenMap(d.subs, (e) => {
 				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1]
 			}).map((e) => {
-				e.subs = groupThenMap(e.subs, (f) => {
+				let subs = groupThenMap(e.subs, (f) => {
 					return f._id._id_customer_channelname
 				}).map((f) => {
 					f.count = 1
 					return f
 				})
 
+				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
 				e.count = e.subs.length
 				return e
 			})
 
-			// INJECT THE EMPTY RD / NON RD
-			d.subs = fixEmptySubs(d)
-
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+			d.subs = fixEmptySubs(d) // INJECT THE EMPTY RD / NON RD
 			d.count = toolkit.sum(d.subs, (e) => e.count)
 			return d
 		})
 
 		ba.level(3)
 		showAsBreakdown(parsed)
+		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
 		return parsed
-	}
+	} else
 
-	if (expand && breakdownRD == 'OnlyRD') {
+	if (expand && breakdownRD.search('Only') > -1) {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
-
-			d.subs = groupThenMap(d.subs, (e) => {
+			let subs = groupThenMap(d.subs, (e) => {
 				return e._id._id_customer_channelname
 			}).map((e) => {
-
-				e.subs = groupThenMap(d.subs, (f) => {
+				let subs = groupThenMap(d.subs, (f) => {
 					return f._id._id_customer_reportsubchannel
 				}).map((f) => {
 					f.subs = []
@@ -195,42 +207,101 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 					return f
 				})
 				
+				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
 				e.count = e.subs.length
 				return e
 			})
 
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 			d.count = toolkit.sum(d.subs, (e) => e.count)
 			return d
 		})
 
 		ba.level(3)
 		showAsBreakdown(parsed)
+		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
+		return parsed
+	} else
+
+	if (expand && breakdownRD.search('ByLocation') > -1) {
+		let opt = ba.optionBreakdownRD().find((d) => d.id == ba.breakdownRD())
+
+		let parsed = groupThenMap(data, (d) => {
+			return d._id._id_customer_branchname
+		}).map((d) => {
+			let subs = groupThenMap(d.subs, (e) => {
+				return e._id._id_customer_channelname
+			}).map((e) => {
+				let subs = groupThenMap(d.subs, (f) => {
+					return f._id[`_id_customer_${opt.field}`]
+				}).map((f) => {
+					f.subs = []
+					f.count = 1
+					return f
+				})
+				
+				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
+				e.count = e.subs.length
+				return e
+			})
+
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+			d.count = toolkit.sum(d.subs, (e) => e.count)
+			return d
+		})
+
+		ba.level(3)
+		showAsBreakdown(parsed)
+		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
+		return parsed
+	} else 
+
+	if (breakdownRD == "All") {
+		let parsed = groupThenMap(data, (d) => {
+			return d._id._id_customer_branchname
+		}).map((d) => {
+			let subs = groupThenMap(d.subs, (e) => {
+				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1]
+			}).map((e) => {
+				e.subs = []
+				e.count = 1
+				return e
+			})
+
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+			d.subs = fixEmptySubs(d) // INJECT THE EMPTY RD / NON RD
+			d.count = toolkit.sum(d.subs, (e) => e.count)
+			return d
+		})
+
+		ba.level(2)
+		showAsBreakdown(parsed)
+		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
 		return parsed
 	}
 
 	let parsed = groupThenMap(data, (d) => {
 		return d._id._id_customer_branchname
 	}).map((d) => {
-
-		d.subs = groupThenMap(d.subs, (e) => {
-			return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1]
+		let subs = groupThenMap(d.subs, (e) => {
+			return e._id._id_customer_channelname
 		}).map((e) => {
 			e.subs = []
 			e.count = 1
 			return e
 		})
 
-		// INJECT THE EMPTY RD / NON RD
-		d.subs = fixEmptySubs(d)
-
+		d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 		d.count = toolkit.sum(d.subs, (e) => e.count)
 		return d
 	})
 
 	ba.level(2)
 	showAsBreakdown(parsed)
+	parsed = _.orderBy(parsed, (d) => d.total, 'desc')
 	return parsed
 }
+
 ba.refresh = (useCache = false) => {
 	// if (ba.breakdownRD() == "All") {
 	// 	ba.expand(false)
@@ -252,17 +323,7 @@ ba.refresh = (useCache = false) => {
 			})
 		}
 
-		if (breakdownRD == 'OnlyRD') {
-			if (expand) {
-				param.groups.push('customer.reportsubchannel')
-			}
-			
-			param.filters.push({
-				Field: 'customer.channelname',
-				Op: '$in',
-				Value: ["I1"]
-			})
-		}
+		let opt = ba.optionBreakdownRD().find((d) => d.id == breakdownRD)
 
 		if (breakdownRD == 'NonRD') {
 			param.filters.push({
@@ -270,6 +331,18 @@ ba.refresh = (useCache = false) => {
 				Op: '$in',
 				Value: rpt.masterData.Channel().map((d) => d._id).filter((d) => d != 'I1')
 			})
+		} else if (breakdownRD.search('Only') > -1) {
+			if (expand) {
+				param.groups.push('customer.reportsubchannel')
+			}
+
+			param.filters.push({
+				Field: 'customer.channelname',
+				Op: '$in',
+				Value: [opt.channelid]
+			})
+		} else if (breakdownRD.search('ByLocation') > -1) {
+			param.groups.push(`customer.${opt.field}`)
 		}
 
 		let fetch = () => {
@@ -337,7 +410,7 @@ ba.refresh = (useCache = false) => {
 				}
 
 				if (rd != undefined) {
-					let rdSub = rd.subs.find((d) => d._id == 'RD')
+					let rdSub = rd.subs.find((d) => (['regional distributor', 'rd'].indexOf(d._id.toLowerCase()) > -1))
 
 					mergedData.count += rdSub.subs.length
 					mergedData.subs.push(rdSub)
@@ -362,10 +435,6 @@ ba.refresh = (useCache = false) => {
 					mergedData.count++
 					mergedData.subs.push(fake)
 				}
-
-				console.log("---tokl", toolkit.clone(mergedData))
-				console.log("---", toolkit.clone(nonrd))
-				console.log("---", toolkit.clone(rd))
 
 				// Inject and recalculate TOTAL
 
@@ -393,6 +462,7 @@ ba.refresh = (useCache = false) => {
 				data.push(mergedData)
 			})
 
+			data = _.orderBy(data, (d) => d.total, 'desc')
 			return data
 		}
 
@@ -440,6 +510,11 @@ ba.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
 	let down = $(e).find('i.fa-chevron-down').length
 	if (right > 0){
+		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
+			$('.pivot-pnl .table-header').css('width', '530px')
+			$('.pivot-pnl .table-content').css('margin-left', '530px')
+		}
+
 		$(e).find('i').removeClass('fa-chevron-right')
 		$(e).find('i').addClass('fa-chevron-down')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
@@ -447,14 +522,21 @@ ba.clickExpand = (e) => {
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
 	}
 	if (down > 0) {
+		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
+			$('.pivot-pnl .table-header').css('width', '')
+			$('.pivot-pnl .table-content').css('margin-left', '')
+		}
+		
 		$(e).find('i').removeClass('fa-chevron-down')
 		$(e).find('i').addClass('fa-chevron-right')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
+		rpt.hideAllChild(e.attr('idheaderpl'))
 	}
 }
+
 ba.emptyGrid = () => {
-	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"></div>`)
+	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez"  id="branch-analysis"></div>`)
 }
 
 ba.idarrayhide = ko.observableArray(['PL44A'])
@@ -495,6 +577,7 @@ ba.render = () => {
 	toolkit.newEl('th')
 		.html('P&L')
 		.css('height', `${34 * ba.level()}px`)
+		.attr('data-rowspan', ba.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
 		.appendTo(trHeader)
@@ -502,6 +585,7 @@ ba.render = () => {
 	toolkit.newEl('th')
 		.html('Total')
 		.css('height', `${34 * ba.level()}px`)
+		.attr('data-rowspan', ba.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
 		.appendTo(trHeader)
@@ -509,6 +593,7 @@ ba.render = () => {
 	toolkit.newEl('th')
 		.html('%')
 		.css('height', `${34 * ba.level()}px`)
+		.attr('data-rowspan', ba.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
 		.appendTo(trHeader)
@@ -526,7 +611,7 @@ ba.render = () => {
 	let dataFlat = []
 
 	let countWidthThenPush = (thheader, each, key) => {
-		let currentColumnWidth = each._id.length * 8
+		let currentColumnWidth = each._id.length * 10
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth
 		}
@@ -773,53 +858,12 @@ ba.showZeroValue = (a) => {
 	ba.showExpandAll(false)
 }
 
-ba.optionBreakdownValues = ko.observableArray([])
 ba.breakdownValueAll = { _id: 'All', Name: 'All' }
-ba.changeBreakdown = () => {
-	let all = ba.breakdownValueAll
-	let map = (arr) => arr.map((d) => {
-		if ("customer.channelname" == ba.breakdownBy()) {
-			return d
-		}
-		if ("customer.keyaccount" == ba.breakdownBy()) {
-			return { _id: d._id, Name: d._id }
-		}
-
-		return { _id: d.Name, Name: d.Name }
-	})
-	setTimeout(() => {
-		switch (ba.breakdownBy()) {
-			case "customer.areaname":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Area())))
-				ba.breakdownValue([all._id])
-			break;
-			case "customer.region":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Region())))
-				ba.breakdownValue([all._id])
-			break;
-			case "customer.zone":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())))
-				ba.breakdownValue([all._id])
-			break;
-			case "product.brand":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())))
-				ba.breakdownValue([all._id])
-			break;
-			case "customer.branchname":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
-				ba.breakdownValue([all._id])
-			break;
-			case "customer.channelname":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
-				ba.breakdownValue([all._id])
-			break;
-			case "customer.keyaccount":
-				ba.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))
-				ba.breakdownValue([all._id])
-			break;
-		}
-	}, 100)
-}
+ba.optionBreakdownValues = ko.computed(() => {
+	let branches = rpt.masterData.Branch()
+		.map((d) => { return { _id: d.Name, Name: d.Name }})
+	return [ba.breakdownValueAll].concat(branches)
+}, rpt.masterData.Branch)
 ba.changeBreakdownValue = () => {
 	let all = ba.breakdownValueAll
 	setTimeout(() => {
@@ -854,12 +898,7 @@ vm.breadcrumb([
 ba.title('Branch Analysis')
 
 rpt.refresh = () => {
-	ba.changeBreakdown()
-	setTimeout(() => {
-		ba.breakdownValue(['All'])
-		ba.refresh(false)
-	}, 200)
-
+	ba.refresh(false)
 	ba.prepareEvents()
 }
 

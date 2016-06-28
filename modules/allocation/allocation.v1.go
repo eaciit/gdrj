@@ -10,13 +10,12 @@ import (
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 	"strings"
+	"sync"
 	"time"
 )
 
 var conn dbox.IConnection
 var count int
-
-// var mwg sync.WaitGroup
 
 var (
 	t0                                time.Time
@@ -25,6 +24,7 @@ var (
 	globalval                         float64
 	mapkeysvalue                      map[string]float64
 	masters                           toolkit.M
+	mutex                             = &sync.Mutex{}
 )
 
 func setinitialconnection() {
@@ -46,7 +46,6 @@ func setinitialconnection() {
 func getCursor(obj orm.IModel) dbox.ICursor {
 	c, e := gdrj.Find(obj,
 		nil, nil)
-	//toolkit.M{}.Set("take", 10))
 	if e != nil {
 		return nil
 	}
@@ -85,9 +84,10 @@ func prepmaster() {
 }
 
 func prepmasterclean() {
-	subchannels := toolkit.M{}
+
 	toolkit.Println("--> Sub Channel")
 	csr, _ := conn.NewQuery().From("subchannels").Cursor(nil)
+	subchannels := toolkit.M{}
 	defer csr.Close()
 	for {
 		m := toolkit.M{}
@@ -138,7 +138,7 @@ func prepmasterclean() {
 			break
 		}
 
-		branchs.Set(stx.GetString("_id"), stx)
+		rdlocations.Set(stx.GetString("_id"), stx)
 	}
 	masters.Set("rdlocations", rdlocations)
 }
@@ -158,9 +158,6 @@ func main() {
 	flag.Parse()
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
-	speriode := eperiode.AddDate(-1, 0, 0)
-
-	filter := dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode))
 
 	if plcode == "" || value == 0 {
 		toolkit.Println("PLCode and Value are mandatory to fill")
@@ -169,79 +166,36 @@ func main() {
 
 	setinitialconnection()
 	defer gdrj.CloseDb()
+	defer conn.Close()
 
 	toolkit.Println("Get Data Master...")
 	prepmaster()
 	prepmasterclean()
 
 	toolkit.Println("Start Data Process...")
-	c, _ := gdrj.Find(new(gdrj.SalesPL), filter, nil)
-	defer c.Close()
+	result := make(chan int, 12)
+	for i := 1; i <= 12; i++ {
+		tstart := eperiode.AddDate(0, -i, 0)
+		tend := tstart.AddDate(0, 1, 0)
+		toolkit.Printfn("From : %v, To : %v", tstart, tend)
 
-	splcount := c.Count()
-	step := splcount / 100
-	i := 0
+		filter := dbox.And(dbox.Gte("date.date", tstart), dbox.Lt("date.date", tend))
+		go workerproc(i, filter, result)
+	}
 
-	for {
-		i++
-
-		spl := new(gdrj.SalesPL)
-		e := c.Fetch(spl, 1, false)
-		if e != nil {
-			break
-		}
-		key := toolkit.Sprintf("%d_%d", spl.Date.Month, spl.Date.Year)
-		k := ""
-
-		if spl.Customer != nil {
-			switch custgroup {
-			case "branch":
-				key = toolkit.Sprintf("%v_%v", key, spl.Customer.BranchID)
-			case "channel":
-				k = toolkit.Sprintf("%v|%v", spl.Customer.BranchID, spl.Customer.ChannelID)
-				key = toolkit.Sprintf("%v_%v", key, k)
-			case "group":
-				k = toolkit.Sprintf("%v|%v", spl.Customer.BranchID, spl.Customer.CustomerGroup)
-				key = toolkit.Sprintf("%v_%v", key, k)
-			default:
-				key = toolkit.Sprintf("%v_", key)
-			}
-		}
-
-		if prodgroup == "skuid" && (spl.Product.ID == "" || len(spl.Product.ID) < 3) {
-			continue
-		}
-
-		if spl.Product != nil {
-			switch prodgroup {
-			case "brand":
-				key = toolkit.Sprintf("%v_%v", key, spl.Product.Brand)
-			case "group":
-				k = toolkit.Sprintf("%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID)
-				key = toolkit.Sprintf("%v_%v", key, k)
-			case "skuid":
-				k = toolkit.Sprintf("%v|%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID, spl.Product.ID)
-				key = toolkit.Sprintf("%v_%v", key, k)
-			default:
-				key = toolkit.Sprintf("%v_", key)
-			}
-
-		}
-
-		mapkeysvalue[key] += spl.GrossAmount
-		globalval += spl.GrossAmount
-
-		if i > step {
-			step += splcount / 100
-			toolkit.Printfn("Processing %d of %d in %s", i, splcount,
-				time.Since(t0).String())
-		}
-
+	for i := 1; i <= 12; i++ {
+		a := <-result
+		toolkit.Printfn("Worker-%d Done Get Data in %s", a, time.Since(t0).String())
 	}
 
 	toolkit.Printfn("Preparing the data")
 	mcount := len(mapkeysvalue)
-	i = 0
+	step := mcount / 100
+	if step == 0 {
+		step = 1
+	}
+
+	i := 0
 	for k, v := range mapkeysvalue {
 		i++
 
@@ -311,12 +265,104 @@ func main() {
 		spl.AddData(plcode, amount, plmodels)
 		spl.CalcSum(masters)
 
-		gdrj.Save(spl)
+		// gdrj.Save(spl)
+		conn.NewQuery().From("salespls-1").
+			Save().Exec(toolkit.M{}.Set("data", spl))
 
-		toolkit.Printfn("Saving %d of %d in %s", i, mcount,
-			time.Since(t0).String())
+		if i%step == 0 {
+			toolkit.Printfn("Saving %d of %d (%d) in %s", i, mcount, i/step,
+				time.Since(t0).String())
+		}
 	}
 
 	toolkit.Printfn("Processing done in %s",
 		time.Since(t0).String())
 }
+
+func workerproc(wi int, filter *dbox.Filter, result chan<- int) {
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
+
+	csr, _ := workerconn.NewQuery().Select("date.month", "date.year", "customer", "product", "grossamount").
+		From("salespls-1").
+		Where(filter).
+		Cursor(nil)
+
+	defer csr.Close()
+
+	scount := csr.Count()
+	iscount := 0
+	step := scount / 100
+
+	if step == 0 {
+		step = 1
+	}
+
+	for {
+		iscount++
+		spl := new(gdrj.SalesPL)
+		e := csr.Fetch(spl, 1, false)
+		if e != nil {
+			toolkit.Println("EOF")
+			break
+		}
+
+		key := toolkit.Sprintf("%d_%d", spl.Date.Month, spl.Date.Year)
+		k := ""
+
+		if spl.Customer != nil {
+			switch custgroup {
+			case "branch":
+				key = toolkit.Sprintf("%v_%v", key, spl.Customer.BranchID)
+			case "channel":
+				k = toolkit.Sprintf("%v|%v", spl.Customer.BranchID, spl.Customer.ChannelID)
+				key = toolkit.Sprintf("%v_%v", key, k)
+			case "group":
+				k = toolkit.Sprintf("%v|%v", spl.Customer.BranchID, spl.Customer.CustomerGroup)
+				key = toolkit.Sprintf("%v_%v", key, k)
+			default:
+				key = toolkit.Sprintf("%v_", key)
+			}
+		}
+
+		if prodgroup == "skuid" && (spl.Product.ID == "" || len(spl.Product.ID) < 3) {
+			continue
+		}
+
+		if spl.Product != nil {
+			switch prodgroup {
+			case "brand":
+				key = toolkit.Sprintf("%v_%v", key, spl.Product.Brand)
+			case "group":
+				k = toolkit.Sprintf("%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID)
+				key = toolkit.Sprintf("%v_%v", key, k)
+			case "skuid":
+				k = toolkit.Sprintf("%v|%v|%v", spl.Product.Brand, spl.Product.BrandCategoryID, spl.Product.ID)
+				key = toolkit.Sprintf("%v_%v", key, k)
+			default:
+				key = toolkit.Sprintf("%v_", key)
+			}
+		}
+
+		mutex.Lock()
+		mapkeysvalue[key] += spl.GrossAmount
+		globalval += spl.GrossAmount
+		mutex.Unlock()
+
+		if iscount%step == 0 {
+			toolkit.Printfn("Go %d. Processing %d of %d (%d) in %s", wi, iscount, scount, iscount/step,
+				time.Since(t0).String())
+		}
+
+		if iscount == 20 {
+			break
+		}
+
+	}
+
+	result <- wi
+}
+
+// -value=-73075766282 -custgroup="channel" -prodgroup="skuid" -year=2016 -plcode="PL9" -ref="COGSMATERIALADJUST"
+// -value=-66909788405 -custgroup="channel" -prodgroup="skuid" -year=2015 -plcode="PL9" -ref="COGSMATERIALADJUST"
+//(66,900,693,607)(66,909,788,405)

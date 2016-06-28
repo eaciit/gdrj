@@ -10,7 +10,10 @@ vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Report', href: '/web/re
 viewModel.report = new Object();
 var rpt = viewModel.report;
 
-rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', from: 'Branch', title: 'Branch' }, { _id: 'Brand', from: 'Brand', title: 'Brand' }, { _id: 'Channel', from: 'Channel', title: 'Channel' }, { _id: 'RegionC', from: 'Region', title: 'Region' }, { _id: 'From', from: 'From' }, { _id: 'To', from: 'To' }] }, { _id: 'geo', group: 'Geographical', sub: [{ _id: 'Zone', from: 'Zone', title: 'Zone' }, { _id: 'Region', from: 'Region', title: 'Region' }, { _id: 'Area', from: 'Area', title: 'Area' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'ChannelC', from: 'Channel', title: 'Channel' }, { _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' }, { _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' }, { _id: 'Customer', from: 'Customer', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' }, { _id: 'BrandP', from: 'Brand', title: 'Brand' }, { _id: 'Product', from: 'Product', title: 'SKU' }] }];
+rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', from: 'Branch', title: 'Branch' }, { _id: 'Brand', from: 'Brand', title: 'Brand' }, { _id: 'Channel', from: 'Channel', title: 'Channel' }, { _id: 'RegionC', from: 'Region', title: 'Region' }] },
+// { _id: 'From', from: 'From' },
+// { _id: 'To', from: 'To' },
+{ _id: 'geo', group: 'Geographical', sub: [{ _id: 'Zone', from: 'Zone', title: 'Zone' }, { _id: 'Region', from: 'Region', title: 'Region' }, { _id: 'Area', from: 'Area', title: 'Area' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'ChannelC', from: 'Channel', title: 'Channel' }, { _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' }, { _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' }, { _id: 'Customer', from: 'Customer', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' }, { _id: 'BrandP', from: 'Brand', title: 'Brand' }, { _id: 'Product', from: 'Product', title: 'SKU' }] }];
 
 // { _id: 'profit_center', group: 'Profit Center', sub: [
 // 	{ _id: 'Entity', from: 'Entity', title: 'Entity' },
@@ -32,7 +35,11 @@ rpt.getFilterValue = function () {
 	var multiFiscalYear = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 	var fiscalField = arguments.length <= 1 || arguments[1] === undefined ? rpt.value.FiscalYear : arguments[1];
 
-	var res = [{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) }, { 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) }, { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() }, { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() }, { 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
+	var res = [{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() }, { 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) }, { 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) }, { 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) },
+	// { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
+	// { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
+
+	{ 'Field': 'customer.zone', 'Op': '$in', 'Value': rpt.value.Zone() },
 	// ---> Region OK
 	{ 'Field': 'customer.areaname', 'Op': '$in', 'Value': rpt.value.Area() },
 
@@ -106,7 +113,8 @@ rpt.modecustom = ko.observable(false);
 rpt.idanalysisreport = ko.observable();
 rpt.valueMasterData = {};
 rpt.masterData = {
-	geographi: ko.observableArray([])
+	geographi: ko.observableArray([]),
+	subchannel: ko.observableArray([])
 };
 rpt.enableHolder = {};
 rpt.eventChange = {};
@@ -173,6 +181,16 @@ rpt.filter.forEach(function (d) {
 		};
 	});
 });
+
+rpt.getOtherMasterData = function () {
+	toolkit.ajaxPost('/report/getdatasubchannel', {}, function (res) {
+		if (!res.success) {
+			return;
+		}
+
+		rpt.masterData.subchannel(res.data);
+	});
+};
 
 rpt.groupGeoBy = function (raw, category) {
 	var groupKey = category == 'Area' ? '_id' : category;
@@ -421,14 +439,39 @@ rpt.panel_relocated = function () {
 	}
 };
 
+rpt.tabbedContent = function () {
+	$('.app-title h2').html('&nbsp;');
+	$('.tab-content').parent().find('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+		var $tabContent = $(".tab-content " + $(e.target).attr("href"));
+
+		setTimeout(function () {
+			$tabContent.find('.k-chart').each(function (i, e) {
+				try {
+					$(e).data('kendoChart').redraw();
+				} catch (err) {
+					console.log(err);
+				}
+			});
+			$tabContent.find('.k-grid').each(function (i, e) {
+				try {
+					$(e).data('kendoGrid').refresh();
+				} catch (err) {
+					console.log(err);
+				}
+			});
+		}, 200);
+	});
+};
+
 rpt.plmodels = ko.observableArray([]);
 rpt.idarrayhide = ko.observableArray(['PL44A']);
 
 rpt.prepareEvents = function () {
 	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
-		var index = $(this).index();
-		var elh = $('.breakdown-view .table-header tr:eq(' + index + ')').addClass('hover');
-		var elc = $('.breakdown-view .table-content tr:eq(' + index + ')').addClass('hover');
+		var rowID = $(this).attr('data-row');
+
+		var elh = $('.breakdown-view .table-header tr[data-row="' + rowID + '"]').addClass('hover');
+		var elc = $('.breakdown-view .table-content tr[data-row="' + rowID + '"]').addClass('hover');
 	});
 	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover');
@@ -616,8 +659,12 @@ rpt.buildGridLevels = function (rows) {
 					var PLCodeChange = rpt.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
 					if (PLCodeChange != "") PLyo.PLCode = PLCodeChange;
 					if (child > 1) {
-						$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-						$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
+						var $parenttr = $('tr[idheaderpl=' + PLyo.PLCode + ']');
+						var $parenttrcontent = $('tr[idpl=' + PLyo.PLCode + ']');
+						// $trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+						// $columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+						$trElem.insertAfter($parenttr);
+						$columnElem.insertAfter($parenttrcontent);
 					} else {
 						$trElem.insertAfter($('tr.header' + PLyo.PLCode));
 						$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
@@ -644,8 +691,12 @@ rpt.buildGridLevels = function (rows) {
 						var _PLCodeChange = rpt.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
 						if (_PLCodeChange != "") PLyo.PLCode = _PLCodeChange;
 						if (child > 1) {
-							$trElem.insertAfter($('tr[idparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
-							$columnElem.insertAfter($('tr[idcontparent=' + PLyo.PLCode + ']:eq(' + (child - 1) + ')'));
+							var _$parenttr = $('tr[idheaderpl=' + PLyo.PLCode + ']');
+							var _$parenttrcontent = $('tr[idpl=' + PLyo.PLCode + ']');
+							// $trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+							// $columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+							$trElem.insertAfter(_$parenttr);
+							$columnElem.insertAfter(_$parenttrcontent);
 						} else {
 							$trElem.insertAfter($('tr.header' + PLyo.PLCode));
 							$columnElem.insertAfter($('tr.column' + PLyo.PLCode));
@@ -696,10 +747,161 @@ rpt.buildGridLevels = function (rows) {
 
 	rpt.showZeroValue(false);
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
+	rpt.refreshHeight();
+};
+
+rpt.hideAllChild = function (PLCode) {
+	$('.table-header tbody>tr[idparent=' + PLCode + ']').each(function (i) {
+		var $trElem = $(this);
+		var child = $('tr[idparent=' + $trElem.attr('idheaderpl') + ']').length;
+		if (child > 0) {
+			var $c = $('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']');
+			$($c).find('i').removeClass('fa-chevron-down');
+			$($c).find('i').addClass('fa-chevron-right');
+			$('tr[idparent=' + $c.attr('idheaderpl') + ']').css('display', 'none');
+			$('tr[idcontparent=' + $c.attr('idheaderpl') + ']').css('display', 'none');
+			rpt.hideAllChild($c.attr('idheaderpl'));
+		}
+	});
+};
+
+rpt.refreshHeight = function (PLCode) {
+	$('.table-header tbody>tr[idparent=' + PLCode + ']').each(function (i) {
+		var $trElem = $(this);
+		$('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('height', $trElem.height());
+	});
+};
+
+rpt.showExport = ko.observable(true);
+rpt.export = function (target, title, mode) {
+	target = toolkit.$(target);
+
+	if (mode == 'kendo') {
+		// var workbook = new kendo.ooxml.Workbook({
+		//   sheets: [
+		//     {
+		//       // Column settings (width)
+		//       columns: [
+		//         { autoWidth: true },
+		//         { autoWidth: true }
+		//       ],
+		//       // Title of the sheet
+		//       title: "Customers",
+		//       // Rows of the sheet
+		//       rows: [
+		//         // First row (header)
+		//         {
+		//           cells: [
+		//             // First cell
+		//             { value: "Company Name" },
+		//             // Second cell
+		//             { value: "Contact" }
+		//           ]
+		//         },
+		//         // Second row (data)
+		//         {
+		//           cells: [
+		//             { value: "Around the Horn" },
+		//             { value: "Thomas Hardy" }
+		//           ]
+		//         },
+		//         // Third row (data)
+		//         {
+		//           cells: [
+		//             { value: "B's Beverages" },
+		//             { value: "Victoria Ashworth" }
+		//           ]
+		//         }
+		//       ]
+		//     }
+		//   ]
+		// });
+		// kendo.saveAs({
+		//     dataURI: workbook.toDataURL(),
+		//     fileName: "Test.xlsx"
+		// });
+
+		return;
+	} else if (mode == 'normal') {
+		(function () {
+			$('#fake-table').remove();
+
+			var body = $('body');
+			var fakeTable = $('<table />').attr('id', 'fake-table').appendTo(body);
+
+			if (target.attr('name') != 'table') {
+				target = target.find('table:eq(0)');
+			}
+
+			target.clone(true).appendTo(fakeTable);
+
+			var downloader = $('<a />').attr('href', '#').attr('download', title + '.xls').attr('onclick', 'return ExcellentExport.excel(this, \'fake-table\', \'sheet1\')').html('export').appendTo(body);
+
+			fakeTable.find('td').css('height', 'inherit');
+			downloader[0].click();
+
+			setTimeout(function () {
+				fakeTable.remove();
+				downloader.remove();
+			}, 400);
+		})();
+	} else if (mode == 'header-content') {
+		(function () {
+			$('#fake-table').remove();
+
+			var body = $('body');
+			var fakeTable = $('<table />').attr('id', 'fake-table').appendTo(body);
+
+			var tableHeader = target.find('.table-header');
+			if (tableHeader.attr('name') != 'table') {
+				tableHeader = tableHeader.find('table');
+			}
+
+			var tableContent = target.find('.table-content');
+			if (tableContent.attr('name') != 'table') {
+				tableContent = tableContent.find('table');
+			}
+
+			tableHeader.find('tr').each(function (i, e) {
+				if (i == 0) {
+					var rowspan = parseInt($(e).find('td,th').attr('data-rowspan'), 10);
+					if (isNaN(rowspan)) rowspan = 1;
+
+					for (var j = 0; j < rowspan; j++) {
+						$(e).clone(true).appendTo(fakeTable);
+					}
+					return;
+				}
+
+				$(e).clone(true).appendTo(fakeTable);
+			});
+
+			tableContent.find('tr').each(function (i, e) {
+				var rowTarget = fakeTable.find('tr:eq(' + i + ')');
+				$(e).find('td,th').each(function (j, f) {
+					$(f).clone(true).appendTo(rowTarget);
+				});
+			});
+
+			var downloader = $('<a />').attr('href', '#').attr('download', title + '.xls').attr('onclick', 'return ExcellentExport.excel(this, \'fake-table\', \'sheet1\')').html('export').appendTo(body);
+
+			fakeTable.find('tr:hidden').show();
+			fakeTable.find('td,th').css('height', 'inherit');
+			fakeTable.find('td .fa-chevron-right').remove();
+
+			downloader[0].click();
+
+			// setTimeout(() => {
+			// 	fakeTable.remove()
+			// 	downloader.remove()
+			// }, 400)
+		})();
+	}
 };
 
 $(function () {
 	$(window).scroll(rpt.panel_relocated);
 	rpt.panel_relocated();
 	rpt.getIdeas();
+	rpt.getOtherMasterData();
 });
