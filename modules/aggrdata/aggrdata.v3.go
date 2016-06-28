@@ -292,7 +292,7 @@ func workersavedata(wi int, detaildata <-chan toolkit.M, ressavedata chan<- int)
 	defer workerconn.Close()
 
 	tkm := toolkit.M{}
-	qs := map[string]*dbox.Query{}
+	qs := map[string]dbox.Query{}
 	for tkm = range detaildata {
 		for tbl, dt := range tkm {
 			q, exist := qs[tbl]
