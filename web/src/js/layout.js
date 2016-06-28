@@ -11,7 +11,7 @@ vm.menu = ko.observableArray([
 		{ title: 'RD Analysis', icon: 'bar-chart-o', href: '/web/report/rdanalysis', submenu: [] },
 		{ title: 'Custom Analysis', icon: 'bar-chart-o', href: '/web/report/customanalysis', submenu: [] },
 	] },
-	{ title: 'Report', icon: 'file-text-o', href: '/web/report/list', submenu: [] },
+	// { title: 'Report', icon: 'file-text-o', href: '/web/report/list', submenu: [] },
 	{ title: 'Data Manager', icon: 'database', href: '#', submenu: [
 		{ title: 'Data Browser', icon: 'list', href: '/web/databrowser', submenu: [] },
 		{ title: 'Upload Data', icon: 'upload', href: '/web/uploaddata', submenu: [] }
