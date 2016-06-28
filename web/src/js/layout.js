@@ -3,6 +3,7 @@ let vm = viewModel
 vm.currentMenu = ko.observable('Dashboard')
 vm.currentTitle = ko.observable('Dashboard')
 vm.menu = ko.observableArray([
+	{ title: 'Home', icon: 'home', href: viewModel.appName + 'page/home', submenu: [] },
 	{ title: 'Dashboard', icon: 'home', href: viewModel.appName + 'page/dashboard', submenu: [] },
 	{ title: 'Analysis', icon: 'bar-chart-o', href: '#', submenu: [
 		{ title: 'P&L Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/pnlanalysis', submenu: [] },
