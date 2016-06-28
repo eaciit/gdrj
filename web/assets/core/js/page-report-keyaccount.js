@@ -53,7 +53,7 @@ kac.refresh = function () {
 	kac.contentIsLoading(true);
 
 	var fetch = function fetch() {
-		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
@@ -526,7 +526,7 @@ kac.changeBreakdownValue = function () {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('Key Account Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Key Account Analysis', href: '/web/report/dashboard' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Key Account Analysis', href: '#' }]);
 
 kac.title('Key Account Analysis');
 

@@ -5,30 +5,13 @@
 
 vm.currentMenu('Report');
 vm.currentTitle('Report');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Report', href: '/web/report/all' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Report', href: '#' }]);
 
 viewModel.report = new Object();
 var rpt = viewModel.report;
 
-rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', from: 'Branch', title: 'Branch' }, { _id: 'Brand', from: 'Brand', title: 'Brand' }, { _id: 'Channel', from: 'Channel', title: 'Channel' }, { _id: 'RegionC', from: 'Region', title: 'Region' }] },
-// { _id: 'From', from: 'From' },
-// { _id: 'To', from: 'To' },
-{ _id: 'geo', group: 'Geographical', sub: [{ _id: 'Zone', from: 'Zone', title: 'Zone' }, { _id: 'Region', from: 'Region', title: 'Region' }, { _id: 'Area', from: 'Area', title: 'Area' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'ChannelC', from: 'Channel', title: 'Channel' }, { _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' }, { _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' }, { _id: 'Customer', from: 'Customer', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' }, { _id: 'BrandP', from: 'Brand', title: 'Brand' }, { _id: 'Product', from: 'Product', title: 'SKU' }] }];
+rpt.filter = [{ _id: 'common', group: 'Base Filter', sub: [{ _id: 'Branch', from: 'Branch', title: 'Branch' }, { _id: 'Brand', from: 'Brand', title: 'Brand' }, { _id: 'Channel', from: 'Channel', title: 'Channel' }, { _id: 'RegionC', from: 'Region', title: 'Region' }] }, { _id: 'geo', group: 'Geographical', sub: [{ _id: 'Zone', from: 'Zone', title: 'Zone' }, { _id: 'Region', from: 'Region', title: 'Region' }, { _id: 'Area', from: 'Area', title: 'Area' }] }, { _id: 'customer', group: 'Customer', sub: [{ _id: 'ChannelC', from: 'Channel', title: 'Channel' }, { _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' }, { _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' }, { _id: 'Customer', from: 'Customer', title: 'Outlet' }] }, { _id: 'product', group: 'Product', sub: [{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' }, { _id: 'BrandP', from: 'Brand', title: 'Brand' }, { _id: 'Product', from: 'Product', title: 'SKU' }] }];
 
-// { _id: 'profit_center', group: 'Profit Center', sub: [
-// 	{ _id: 'Entity', from: 'Entity', title: 'Entity' },
-// 	{ _id: 'Type', from: 'Type', title: 'Type' },
-// 	{ _id: 'BranchPC', from: 'Branch', title: 'Branch' },
-// 	{ _id: 'HQ', from: 'HQ', title: 'HQ' }
-// ] },
-// { _id: 'cost_center', group: 'Cost Center', sub: [
-// 	{ _id: 'Group1', from: 'Group1', title: 'Group 1' },
-// 	{ _id: 'Group2', from: 'Group2', title: 'Group 2' },
-// 	{ _id: 'HCostCenterGroup', from: 'HCostCenterGroup', title: 'Function' }
-// ] },
-// { _id: 'ledger', group: 'Ledger', sub: [
-// 	{ _id: 'LedgerAccount', from: 'LedgerAccount', title: 'GL Code' }
-// ] },
 rpt.pivotModel = [{ field: '_id', type: 'string', name: 'ID' }, { field: 'PC._id', type: 'string', name: 'Profit Center - ID' }, { field: 'PC.EntityID', type: 'string', name: 'Profit Center - Entity ID' }, { field: 'PC.Name', type: 'string', name: 'Profit Center - Name' }, { field: 'PC.BrandID', type: 'string', name: 'Profit Center - Brand ID' }, { field: 'PC.BrandCategoryID', type: 'string', name: 'Profit Center - Brand Category ID' }, { field: 'PC.BranchID', type: 'string', name: 'Profit Center - Branch ID' }, { field: 'PC.BranchType', type: 'int', name: 'Profit Center - Branch Type' }, { field: 'CC._id', type: 'string', name: 'Cost Center - ID' }, { field: 'CC.EntityID', type: 'string', name: 'Cost Center - Entity ID' }, { field: 'CC.Name', type: 'string', name: 'Cost Center - Name' }, { field: 'CC.CostGroup01', type: 'string', name: 'Cost Center - Cost Group 01' }, { field: 'CC.CostGroup02', type: 'string', name: 'Cost Center - Cost Group 02' }, { field: 'CC.CostGroup03', type: 'string', name: 'Cost Center - Cost Group 03' }, { field: 'CC.BranchID', type: 'string', name: 'Cost Center - Branch ID' }, { field: 'CC.BranchType', type: 'string', name: 'Cost Center - Branch Type' }, { field: 'CC.CCTypeID', type: 'string', name: 'Cost Center - Type' }, { field: 'CC.HCCGroupID', type: 'string', name: 'Cost Center - HCC Group ID' }, { field: 'CompanyCode', type: 'string', name: 'Company Code' }, { field: 'LedgerAccount', type: 'string', name: 'Ledger Account' }, { field: 'Customer._id', type: 'string', name: 'Customer - ID' }, { field: 'Customer.BranchID', type: 'string', name: 'Customer - Branch ID' }, { field: 'Customer.BranchName', type: 'string', name: 'Customer - branch Name' }, { field: 'Customer.Name', type: 'string', name: 'Customer - Name' }, { field: 'Customer.KeyAccount', type: 'string', name: 'Customer - Key Account' }, { field: 'Customer.ChannelID', type: 'string', name: 'Customer - Channel ID' }, { field: 'Customer.ChannelName', type: 'string', name: 'Customer - Channel Name' }, { field: 'Customer.CustomerGroup', type: 'string', name: 'Customer - Customer Group' }, { field: 'Customer.CustomerGroupName', type: 'string', name: 'Customer - Customer Group Name' }, { field: 'Customer.National', type: 'string', name: 'Customer - National' }, { field: 'Customer.Zone', type: 'string', name: 'Customer - Zone' }, { field: 'Customer.Region', type: 'string', name: 'Customer - Region' }, { field: 'Customer.Area', type: 'string', name: 'Customer - Area' }, { field: 'Product._id', type: 'string', name: 'Product - ID' }, { field: 'Product.Name', type: 'string', name: 'Product - Name' }, { field: 'Product.ProdCategory', type: 'string', name: 'Product - Category' }, { field: 'Product.Brand', type: 'string', name: 'Product - Brand' }, { field: 'Product.BrandCategoryID', type: 'string', name: 'Product - Brand Category ID' }, { field: 'Product.PCID', type: 'string', name: 'Product - PCID' }, { field: 'Product.ProdSubCategory', type: 'string', name: 'Product - Sub Category' }, { field: 'Product.ProdSubBrand', type: 'string', name: 'Product - Sub Brand' }, { field: 'Product.ProdVariant', type: 'string', name: 'Product - Variant' }, { field: 'Product.ProdDesignType', type: 'string', name: 'Product - Design Type' }, { field: 'Date.ID', type: 'string', name: 'Date - ID' }, { field: 'Date.Date', type: 'string', name: 'Date - Date' }, { field: 'Date.Month', type: 'string', name: 'Date - Month' }, { field: 'Date.Quarter', type: 'int', name: 'Date - Quarter' }, { field: 'Date.YearTxt', type: 'string', name: 'Date - YearTxt' }, { field: 'Date.QuarterTxt', type: 'string', name: 'Date - QuarterTxt' }, { field: 'Date.Year', type: 'int', name: 'Date - Year' }, { field: 'PLGroup1', type: 'string', name: 'PL Group 1' }, { field: 'PLGroup2', type: 'string', name: 'PL Group 2' }, { field: 'PLGroup3', type: 'string', name: 'PL Group 3' }, { field: 'PLGroup4', type: 'string', name: 'PL Group 4' }, { field: 'Value1', type: 'double', name: 'Value 1', as: 'dataPoints' }, { field: 'Value2', type: 'double', name: 'Value 2', as: 'dataPoints' }, { field: 'Value3', type: 'double', name: 'Value 3', as: 'dataPoints' }, { field: 'PCID', type: 'string', name: 'Profit Center ID' }, { field: 'CCID', type: 'string', name: 'Cost Center ID' }, { field: 'SKUID', type: 'string', name: 'SKU ID' }, { field: 'PLCode', type: 'string', name: 'PL Code' }, { field: 'Month', type: 'string', name: 'Month' }, { field: 'Year', type: 'string', name: 'Year' }];
 
 rpt.getFilterValue = function () {
@@ -87,10 +70,11 @@ rpt.optionDimensions = ko.observableArray([
 { field: "customer.areaname", name: "City", title: "customer_areaname" }, { field: 'customer.region', name: 'Region', title: 'customer_region' }, { field: "customer.zone", name: "Zone", title: "customer_zone" },
 // { field: 'date.fiscal', name: 'Fiscal Year', title: 'date_fiscal' },
 { field: 'customer.keyaccount', name: 'Customer Group', title: 'customer_keyaccount' }]);
-
-// { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
-// { field: 'date.month', name: 'Month', title: 'date_month' },
-rpt.optionDataPoints = ko.observableArray([{ field: 'value1', name: o['value1'] }, { field: 'value2', name: o['value2'] }, { field: 'value3', name: o['value3'] }]);
+// rpt.optionDataPoints = ko.observableArray([
+//     { field: 'value1', name: o['value1'] },
+//     { field: 'value2', name: o['value2'] },
+//     { field: 'value3', name: o['value3'] }
+// ])
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
 rpt.parseGroups = function (what) {
 	return what;
@@ -183,7 +167,7 @@ rpt.filter.forEach(function (d) {
 });
 
 rpt.getOtherMasterData = function () {
-	toolkit.ajaxPost('/report/getdatasubchannel', {}, function (res) {
+	toolkit.ajaxPost(viewModel.appName + 'report/getdatasubchannel', {}, function (res) {
 		if (!res.success) {
 			return;
 		}
@@ -267,7 +251,7 @@ rpt.filterMultiSelect = function (d) {
 			config.dataValueField = '_id';
 		}
 
-		toolkit.ajaxPost('/report/getdata' + d.from.toLowerCase(), {}, function (res) {
+		toolkit.ajaxPost(viewModel.appName + ('report/getdata' + d.from.toLowerCase()), {}, function (res) {
 			if (!res.success) {
 				return;
 			}
@@ -290,7 +274,7 @@ rpt.filterMultiSelect = function (d) {
 		});
 
 		if (d.from == 'Region') {
-			toolkit.ajaxPost('/report/getdatahgeographi', {}, function (res) {
+			toolkit.ajaxPost(viewModel.appName + 'report/getdatahgeographi', {}, function (res) {
 				if (!res.success) {
 					return;
 				}
@@ -348,25 +332,22 @@ rpt.toggleFilter = function () {
 	rpt.panel_relocated();
 };
 
-rpt.getIdeas = function () {
-	toolkit.ajaxPost('/report/getdataanalysisidea', {}, function (res) {
-		if (!toolkit.isFine(res)) {
-			return;
-		}
+// rpt.getIdeas = () => {
+// 	toolkit.ajaxPost(viewModel.appName + 'report/getdataanalysisidea', { }, (res) => {
+// 		if (!toolkit.isFine(res)) {
+// 			return
+// 		}
 
-		rpt.idanalysisreport('');
-		rpt.analysisIdeas(_.sortBy(res.data, function (d) {
-			return d.order;
-		}));
-		var idreport = _.find(rpt.analysisIdeas(), function (a) {
-			return a._id == o.ID;
-		});
-		if (idreport != undefined) {
-			rpt.idanalysisreport(idreport.name);
-			vm.currentTitle("Report " + rpt.idanalysisreport());
-		}
-	});
-};
+// 		rpt.idanalysisreport('')
+// 		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.order))
+// 		let idreport = _.find(rpt.analysisIdeas(), function(a) { return a._id == o.ID })
+// 		if (idreport != undefined) {
+// 			rpt.idanalysisreport(idreport.name)
+// 			vm.currentTitle("Report " + rpt.idanalysisreport())
+// 		}
+// 	})
+// }
+
 rpt.wrapParam = function () {
 	var dimensions = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
 	var dataPoints = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
@@ -772,7 +753,7 @@ rpt.refreshHeight = function (PLCode) {
 	});
 };
 
-rpt.showExport = ko.observable(true);
+rpt.showExport = ko.observable(false);
 rpt.export = function (target, title, mode) {
 	target = toolkit.$(target);
 
@@ -902,6 +883,6 @@ rpt.export = function (target, title, mode) {
 $(function () {
 	$(window).scroll(rpt.panel_relocated);
 	rpt.panel_relocated();
-	rpt.getIdeas();
+	// rpt.getIdeas()
 	rpt.getOtherMasterData();
 });

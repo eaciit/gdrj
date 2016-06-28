@@ -56,12 +56,10 @@ sct.configure = function () {
 		}, 'labels', {
 			font: 'Source Sans Pro 11'
 		}),
-		// template: (d) => app.capitalize(d.value)
 		yAxis: {
 			majorGridLines: { color: '#fafafa' },
 			labels: { format: '{0}%' }
 		},
-		// title: { text: yAxisText }
 		tooltip: {
 			visible: true,
 			template: "#= kendo.format(value.x, 'n2') #, #= kendo.format(value.y, 'n2') #"
@@ -86,7 +84,7 @@ sct.getParam = function () {
 
 sct.refresh = function () {
 	// pvt.data(DATATEMP_SCATTER)
-	app.ajaxPost("/report/summarycalculatedatapivot", sct.getParam(), function (res) {
+	app.ajaxPost(viewModel.appName + "report/summarycalculatedatapivot", sct.getParam(), function (res) {
 		sct.data(res.Data);
 		sct.render();
 	});

@@ -346,7 +346,7 @@ ba.refresh = (useCache = false) => {
 		}
 
 		let fetch = () => {
-			toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
+			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
 						fetch()
@@ -892,7 +892,7 @@ vm.currentMenu('Analysis')
 vm.currentTitle('Branch Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'Branch Analysis', href: '/web/report/dashboard' }
+	{ title: 'Branch Analysis', href: '#' }
 ])
 
 ba.title('Branch Analysis')

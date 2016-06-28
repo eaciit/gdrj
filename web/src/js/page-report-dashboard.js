@@ -159,7 +159,7 @@ dsbrd.refresh = () => {
 	}
 
 	let fetch = () => {
-		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => { fetch() }, 1000 * 5)
 				return
@@ -435,7 +435,7 @@ rank.refresh = () => {
 	}
 
 	let fetch = () => {
-		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => { fetch() }, 1000 * 5)
 				return
@@ -512,7 +512,7 @@ sd.data = ko.observableArray([])
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 sd.selectedPL = ko.observable('PL8A')
 sd.getPLModels = () => {
-	app.ajaxPost("/report/getplmodel", {}, (res) => {
+	app.ajaxPost(viewModel.appName + "report/getplmodel", {}, (res) => {
 		sd.selectedPL('')
 		rpt.plmodels(_.orderBy(res, (d) => d.OrderIndex))
 		sd.selectedPL('PL8A')
@@ -704,7 +704,7 @@ sd.refresh = () => {
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear)
 
 	let fetch = () => {
-		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => { fetch() }, 1000 * 5)
 				return

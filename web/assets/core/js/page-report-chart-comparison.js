@@ -11,7 +11,7 @@ cc.dataTemp = [{ "activity": "drilling", "actual": 100, "plan": 80 }, { "activit
 cc.data = {};
 cc.analysisIdeas = ko.observableArray([]);
 cc.getIdeas = function () {
-	toolkit.ajaxPost('/report/getdataanalysisidea', {}, function (res) {
+	toolkit.ajaxPost(viewModel.appName + 'report/getdataanalysisidea', {}, function (res) {
 		if (!toolkit.isFine(res)) {
 			return;
 		}

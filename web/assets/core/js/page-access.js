@@ -58,9 +58,7 @@ ac.AccessColumns = ko.observableArray([{ headerTemplate: "<center><input type='c
 }, {
     headerTemplate: "<center>Action</center>", width: 100,
     template: function template(d) {
-        return ["<button class='btn btn-sm btn-warning' onclick='ac.editData(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>"].
-        // "<div onclick='ed.showFormulaEditor("+d.Index+", "+d+")'>"+d.FormulaText.join('')+"</div>",
-        join(" ");
+        return ["<button class='btn btn-sm btn-warning' onclick='ac.editData(\"" + d._id + "\")'><span class='fa fa-pencil'></span></button>"].join(" ");
     }
 }]);
 
@@ -105,7 +103,7 @@ ac.newData = function () {
 
 ac.editData = function (id) {
     ac.isNew(false);
-    toolkit.ajaxPost('/administration/editaccess', { _id: id }, function (res) {
+    toolkit.ajaxPost(viewModel.appName + 'administration/editaccess', { _id: id }, function (res) {
         if (!toolkit.isFine(res)) {
             return;
         }
@@ -123,7 +121,7 @@ ac.saveChanges = function () {
     if (!toolkit.isFormValid(".form-access")) {
         return;
     }
-    toolkit.ajaxPost('/administration/saveaccess', ko.mapping.toJS(ac.config), function (res) {
+    toolkit.ajaxPost(viewModel.appName + 'administration/saveaccess', ko.mapping.toJS(ac.config), function (res) {
         if (!toolkit.isFine(res)) {
             return;
         }
@@ -165,7 +163,7 @@ ac.deleteaccess = function () {
             closeOnConfirm: true
         }, function () {
             setTimeout(function () {
-                toolkit.ajaxPost("/administration/deleteaccess", { _id: ac.tempCheckIdDelete() }, function (res) {
+                toolkit.ajaxPost(viewModel.appName + "/administration/deleteaccess", { _id: ac.tempCheckIdDelete() }, function (res) {
                     if (!toolkit.isFine(res)) {
                         return;
                     }

@@ -96,7 +96,7 @@ us.selectGrant = ko.observableArray([])
 
 us.getGrant = () => {
     let data = []
-    toolkit.ajaxPost("/group/getgroup", {}, function(res) {
+    toolkit.ajaxPost(viewModel.appName + "group/getgroup", {}, function(res) {
         if (!toolkit.isFine(res)) {
             return;
         }
@@ -119,7 +119,7 @@ us.selectlistGridGroups = (e) => {
 }
 
 us.findGrant = (e) => {
-    toolkit.ajaxPost("/group/getaccessgroup", {
+    toolkit.ajaxPost(viewModel.appName + "group/getaccessgroup", {
         _id: e
     }, function(res) {
         if (!toolkit.isFine(res)) {
@@ -238,7 +238,7 @@ us.removeGrant = (data) => {
 
 us.editData = (id) => {
 	us.isNew(false)
-    toolkit.ajaxPost('/user/edituser', {_id: id}, (res) => {
+    toolkit.ajaxPost(viewModel.appName + '/user/edituser', {_id: id}, (res) => {
         if (!toolkit.isFine(res)) {
             return
         }
@@ -286,7 +286,7 @@ us.saveChanges = () => {
 			Groups: parm.Groups
         },
     }
-	toolkit.ajaxPost('/user/saveuser', postparm, (res) => {
+	toolkit.ajaxPost(viewModel.appName + '/user/saveuser', postparm, (res) => {
 		if (!toolkit.isFine(res)) {
 			return
 		}
@@ -327,7 +327,7 @@ us.deleteuser = () => {
             closeOnConfirm: true
         }, function() {
             setTimeout(function () {
-                toolkit.ajaxPost("/user/deleteuser", { _id: us.tempCheckIdDelete() }, function (res) {
+                toolkit.ajaxPost(viewModel.appName + "user/deleteuser", { _id: us.tempCheckIdDelete() }, function (res) {
                     if (!toolkit.isFine(res)) {
                         return;
                     }

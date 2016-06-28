@@ -57,7 +57,7 @@ af.getFormPayload = function () {
 	return param;
 };
 af.getModules = function () {
-	toolkit.ajaxPost('/allocationflow/getmodules', {}, function (res) {
+	toolkit.ajaxPost(viewModel.appName + 'allocationflow/getmodules', {}, function (res) {
 		if (!toolkit.isFine(res)) {
 			return;
 		}
@@ -67,7 +67,7 @@ af.getModules = function () {
 	});
 };
 af.getAppliedModules = function () {
-	toolkit.ajaxPost('/allocationflow/getappliedmodules', {}, function (res) {
+	toolkit.ajaxPost(viewModel.appName + 'allocationflow/getappliedmodules', {}, function (res) {
 		if (!toolkit.isFine(res)) {
 			return;
 		}
@@ -82,7 +82,7 @@ af.doUpload = function () {
 	}
 
 	var param = af.getFormPayload();
-	toolkit.ajaxPost('/allocationflow/uploadnewmodule', param, function (res) {
+	toolkit.ajaxPost(viewModel.appName + 'allocationflow/uploadnewmodule', param, function (res) {
 		if (!toolkit.isFine(res)) {
 			return;
 		}

@@ -88,7 +88,7 @@ us.selectGrant = ko.observableArray([]);
 
 us.getGrant = function () {
     var data = [];
-    toolkit.ajaxPost("/group/getgroup", {}, function (res) {
+    toolkit.ajaxPost(viewModel.appName + "group/getgroup", {}, function (res) {
         if (!toolkit.isFine(res)) {
             return;
         }
@@ -113,7 +113,7 @@ us.selectlistGridGroups = function (e) {
 };
 
 us.findGrant = function (e) {
-    toolkit.ajaxPost("/group/getaccessgroup", {
+    toolkit.ajaxPost(viewModel.appName + "group/getaccessgroup", {
         _id: e
     }, function (res) {
         if (!toolkit.isFine(res)) {
@@ -233,7 +233,7 @@ us.removeGrant = function (data) {
 
 us.editData = function (id) {
     us.isNew(false);
-    toolkit.ajaxPost('/user/edituser', { _id: id }, function (res) {
+    toolkit.ajaxPost(viewModel.appName + '/user/edituser', { _id: id }, function (res) {
         if (!toolkit.isFine(res)) {
             return;
         }
@@ -283,7 +283,7 @@ us.saveChanges = function () {
             Groups: parm.Groups
         }
     };
-    toolkit.ajaxPost('/user/saveuser', postparm, function (res) {
+    toolkit.ajaxPost(viewModel.appName + '/user/saveuser', postparm, function (res) {
         if (!toolkit.isFine(res)) {
             return;
         }
@@ -324,7 +324,7 @@ us.deleteuser = function () {
             closeOnConfirm: true
         }, function () {
             setTimeout(function () {
-                toolkit.ajaxPost("/user/deleteuser", { _id: us.tempCheckIdDelete() }, function (res) {
+                toolkit.ajaxPost(viewModel.appName + "user/deleteuser", { _id: us.tempCheckIdDelete() }, function (res) {
                     if (!toolkit.isFine(res)) {
                         return;
                     }

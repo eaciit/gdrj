@@ -85,7 +85,7 @@ cst.refresh = () => {
 	param.filters = rpt.getFilterValue(false, cst.fiscalYear)
 
 	let fetch = () => {
-		app.ajaxPost("/report/getpnldatanew", param, (res) => {
+		app.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => { fetch() }, 1000 * 5)
 				return
@@ -484,7 +484,7 @@ vm.currentMenu('Analysis')
 vm.currentTitle('Custom Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'Custom Analysis', href: '/web/report/dashboard' }
+	{ title: 'Custom Analysis', href: '#' }
 ])
 
 cst.title('Custom Analysis')

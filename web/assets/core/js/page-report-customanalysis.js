@@ -84,7 +84,7 @@ cst.refresh = function () {
 	param.filters = rpt.getFilterValue(false, cst.fiscalYear);
 
 	var fetch = function fetch() {
-		app.ajaxPost("/report/getpnldatanew", param, function (res) {
+		app.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
@@ -508,7 +508,7 @@ cst.render = function (resdata) {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('Custom Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Custom Analysis', href: '/web/report/dashboard' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Custom Analysis', href: '#' }]);
 
 cst.title('Custom Analysis');
 

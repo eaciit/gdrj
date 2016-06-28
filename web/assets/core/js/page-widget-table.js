@@ -59,7 +59,7 @@ tbl.getParam = function () {
 };
 tbl.refresh = function () {
 	// pvt.data(DATATEMP_TABLE)
-	app.ajaxPost("/report/summarycalculatedatapivot", tbl.getParam(), function (res) {
+	app.ajaxPost(viewModel.appName + "report/summarycalculatedatapivot", tbl.getParam(), function (res) {
 		tbl.data(res.Data);
 		tbl.render();
 	});

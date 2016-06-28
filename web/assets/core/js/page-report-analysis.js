@@ -69,7 +69,7 @@ bkd.refresh = function () {
 	bkd.contentIsLoading(true);
 
 	var fetch = function fetch() {
-		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
@@ -991,7 +991,7 @@ rs.changeBreakdownTimeBy = function () {
 };
 
 rs.getSalesHeaderList = function () {
-	app.ajaxPost("/report/getplmodel", {}, function (res) {
+	app.ajaxPost(viewModel.appName + "report/getplmodel", {}, function (res) {
 		var data = res.map(function (d) {
 			return app.o({ field: d._id, name: d.PLHeader3 });
 		}).filter(function (d) {
@@ -1042,7 +1042,7 @@ rs.refresh = function () {
 	}
 
 	var fetch = function fetch() {
-		app.ajaxPost("/report/getpnldatanew", param, function (res) {
+		app.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
@@ -1296,7 +1296,7 @@ ccr.getDecreasedQty = function () {
 	param.groups = ["skuid", "date.quartertxt"];
 
 	var fetch = function fetch() {
-		toolkit.ajaxPost('/report/GetDecreasedQty', param, function (res) {
+		toolkit.ajaxPost(viewModel.appName + 'report/GetDecreasedQty', param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
@@ -1561,7 +1561,7 @@ rpt.toggleFilterCallback = function () {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('P&L Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'PNL Analysis', href: '/web/report/dashboard' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'PNL Analysis', href: '#' }]);
 
 bkd.title('P&L Analysis');
 rs.title('P&L Comparison to Net Sales');

@@ -46,7 +46,7 @@ tbl.getParam = () => {
 }
 tbl.refresh = () => {
 	// pvt.data(DATATEMP_TABLE)
-	app.ajaxPost("/report/summarycalculatedatapivot", tbl.getParam(), (res) => {
+	app.ajaxPost(viewModel.appName + "report/summarycalculatedatapivot", tbl.getParam(), (res) => {
 		tbl.data(res.Data)
 		tbl.render()
 	})

@@ -16,7 +16,7 @@ cc.dataTemp = [
 cc.data = {}
 cc.analysisIdeas = ko.observableArray([])
 cc.getIdeas = () => {
-	toolkit.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
+	toolkit.ajaxPost(viewModel.appName + 'report/getdataanalysisidea', { }, (res) => {
 		if (!toolkit.isFine(res)) {
 			return;
 		}

@@ -148,7 +148,7 @@ dsbrd.refresh = function () {
 	}
 
 	var fetch = function fetch() {
-		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
@@ -441,7 +441,7 @@ rank.refresh = function () {
 	}
 
 	var fetch = function fetch() {
-		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
@@ -519,7 +519,7 @@ sd.data = ko.observableArray([]);
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear());
 sd.selectedPL = ko.observable('PL8A');
 sd.getPLModels = function () {
-	app.ajaxPost("/report/getplmodel", {}, function (res) {
+	app.ajaxPost(viewModel.appName + "report/getplmodel", {}, function (res) {
 		sd.selectedPL('');
 		rpt.plmodels(_.orderBy(res, function (d) {
 			return d.OrderIndex;
@@ -721,7 +721,7 @@ sd.refresh = function () {
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear);
 
 	var fetch = function fetch() {
-		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();

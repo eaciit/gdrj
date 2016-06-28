@@ -55,7 +55,7 @@ pvt.refresh = () => {
 	pvt.contentIsLoading(true)
 
 	let fetch = () => {
-		app.ajaxPost("/report/getpnldatanew", param, (res) => {
+		app.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => { fetch() }, 1000 * 5)
 				return

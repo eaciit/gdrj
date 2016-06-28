@@ -110,7 +110,7 @@ ac.newData = () => {
 
 ac.editData = (id) => {
 	ac.isNew(false)
-    toolkit.ajaxPost('/administration/editaccess', {_id: id}, (res) => {
+    toolkit.ajaxPost(viewModel.appName + 'administration/editaccess', {_id: id}, (res) => {
         if (!toolkit.isFine(res)) {
             return
         }
@@ -128,7 +128,7 @@ ac.saveChanges = () => {
 	if (!toolkit.isFormValid(".form-access")) {
 		return
 	}
-	toolkit.ajaxPost('/administration/saveaccess', ko.mapping.toJS(ac.config), (res) => {
+	toolkit.ajaxPost(viewModel.appName + 'administration/saveaccess', ko.mapping.toJS(ac.config), (res) => {
 		if (!toolkit.isFine(res)) {
 			return
 		}
@@ -170,7 +170,7 @@ ac.deleteaccess = () => {
             closeOnConfirm: true
         }, function() {
             setTimeout(function () {
-                toolkit.ajaxPost("/administration/deleteaccess", { _id: ac.tempCheckIdDelete() }, function (res) {
+                toolkit.ajaxPost(viewModel.appName + "/administration/deleteaccess", { _id: ac.tempCheckIdDelete() }, function (res) {
                     if (!toolkit.isFine(res)) {
                         return;
                     }

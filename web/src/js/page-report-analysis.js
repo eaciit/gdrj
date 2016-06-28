@@ -72,7 +72,7 @@ bkd.refresh = (useCache = false) => {
 	bkd.contentIsLoading(true)
 
 	let fetch = () => {
-		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {
 					fetch()
@@ -1056,7 +1056,7 @@ rs.changeBreakdownTimeBy = () => {
 }
 
 rs.getSalesHeaderList = () => {
-	app.ajaxPost("/report/getplmodel", {}, (res) => {
+	app.ajaxPost(viewModel.appName + "report/getplmodel", {}, (res) => {
 		let data = res.map((d) => app.o({ field: d._id, name: d.PLHeader3 }))
 			.filter((d) => d.PLHeader3 !== rs.selectedPNLNetSales())
 		data = _.sortBy(data, function(item) {
@@ -1100,7 +1100,7 @@ rs.refresh = (useCache = false) => {
 	}
 
 	let fetch = () => {
-		app.ajaxPost("/report/getpnldatanew", param, (res) => {
+		app.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {
 					fetch()
@@ -1339,7 +1339,7 @@ ccr.getDecreasedQty = (useCache = false) => {
 	param.groups = ["skuid", "date.quartertxt"]
 
 	let fetch = () => {
-		toolkit.ajaxPost(`/report/GetDecreasedQty`, param, (res) => {
+		toolkit.ajaxPost(viewModel.appName + `report/GetDecreasedQty`, param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {
 					fetch()
@@ -1600,7 +1600,7 @@ vm.currentMenu('Analysis')
 vm.currentTitle('P&L Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'PNL Analysis', href: '/web/report/dashboard' }
+	{ title: 'PNL Analysis', href: '#' }
 ])
 
 bkd.title('P&L Analysis')

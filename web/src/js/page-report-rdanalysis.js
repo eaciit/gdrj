@@ -47,7 +47,7 @@ rd.refresh = (useCache = false) => {
 	rd.contentIsLoading(true)
 
 	let fetch = () => {
-		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {
 					fetch()
@@ -564,7 +564,7 @@ vm.currentMenu('Analysis')
 vm.currentTitle('RD Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'RD Analysis', href: '/web/report/dashboard' }
+	{ title: 'RD Analysis', href: '#' }
 ])
 
 rd.title('RD Analysis')

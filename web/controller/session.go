@@ -11,9 +11,8 @@ type SessionController struct {
 	App
 }
 
-func CreateSessionController(s *knot.Server) *SessionController {
+func CreateSessionController() *SessionController {
 	var controller = new(SessionController)
-	controller.Server = s
 	return controller
 }
 

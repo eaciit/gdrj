@@ -81,7 +81,7 @@ sct.getParam = () => {
 
 sct.refresh = () => {
 	// pvt.data(DATATEMP_SCATTER)
-	app.ajaxPost("/report/summarycalculatedatapivot", sct.getParam(), (res) => {
+	app.ajaxPost(viewModel.appName + "report/summarycalculatedatapivot", sct.getParam(), (res) => {
 		sct.data(res.Data)
 		sct.render()
 	})

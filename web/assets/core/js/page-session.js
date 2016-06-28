@@ -25,7 +25,7 @@ ss.refreshData = function () {
 ss.setexpired = function (_id, username) {
     var param = { _id: _id,
         username: username };
-    toolkit.ajaxPost("/session/setexpired", param, function (res) {
+    toolkit.ajaxPost(viewModel.appName + "session/setexpired", param, function (res) {
         if (!toolkit.isFine(res)) {
             return;
         }
@@ -41,7 +41,7 @@ ss.generateGrid = function () {
         dataSource: {
             transport: {
                 read: {
-                    url: "/session/getsession",
+                    url: viewModel.appName + "session/getsession",
                     dataType: "json",
                     data: ko.mapping.toJS(ss.filter),
                     type: "POST",

@@ -38,7 +38,7 @@ lg.getLogin = () => {
 	}
 	
 	var param = ko.mapping.toJS(lg.configLogin);
-	toolkit.ajaxPost("/login/processlogin", param, function(res){
+	toolkit.ajaxPost(viewModel.appName + "login/processlogin", param, function(res){
 		if(!toolkit.isFine(res)){
 			return;
 		}
@@ -46,7 +46,7 @@ lg.getLogin = () => {
 		lg.ErrorMessage(res.message);
 		
 		if(res.message == "Login Success"){
-			window.location = "/web/report/dashboard";
+			window.location = viewModel.appName + "page/dashboard";
 			
 		}
 
@@ -70,7 +70,7 @@ lg.getForgetLogin = () => {
 	var url = lg.forgetLogin.baseurl(location.origin)
 	var param = ko.mapping.toJS(lg.forgetLogin)
 	
-	toolkit.ajaxPost("/login/resetpassword", param, function(res){
+	toolkit.ajaxPost(viewModel.appName + "login/resetpassword", param, function(res){
 		if(!toolkit.isFine(res)){
 			return;
 		}
@@ -100,12 +100,12 @@ lg.getConfirmReset = () => {
 		lg.getConfirReset.tokenid(lg.getUrlParam('2'))
 		lg.getConfirReset.newpassword(lg.confirmReset.confirm_pass())
 		var param = ko.mapping.toJS(lg.getConfirReset)
-		toolkit.ajaxPost("/login/savepassword", param, function(res){
+		toolkit.ajaxPost(viewModel.appName + "login/savepassword", param, function(res){
 			if(!toolkit.isFine(res)){
 				return;
 			}
 
-			window.location = "/web/login"
+			window.location = viewModel.appName + "page/login"
 
 		})
 	}

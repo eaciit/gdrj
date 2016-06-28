@@ -419,7 +419,7 @@ ba.refresh = function () {
 		}
 
 		var fetch = function fetch() {
-			toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
+			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 				if (res.Status == "NOK") {
 					setTimeout(function () {
 						fetch();
@@ -936,7 +936,7 @@ ba.changeBreakdownValue = function () {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('Branch Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Branch Analysis', href: '/web/report/dashboard' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Branch Analysis', href: '#' }]);
 
 ba.title('Branch Analysis');
 

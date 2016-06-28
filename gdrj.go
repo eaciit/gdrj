@@ -1,28 +1,20 @@
 package main
 
 import (
-	"eaciit/gdrj/web/controller"
+	_ "eaciit/gdrj/web"
+
 	"eaciit/gdrj/web/installation"
 	"eaciit/gdrj/web/model"
+	"github.com/eaciit/kingpin"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
-	"net/http"
-	"path/filepath"
-	"regexp"
-	"runtime"
-	"strings"
-)
-
-var (
-	server *knot.Server
+	// "net/http"
+	// "regexp"
+	// "strings"
 )
 
 func main() {
-	runtime.GOMAXPROCS(4)
-	gocore.ConfigPath = controller.GDRJ_CONFIG_PATH
-	gocore.ClearPLCache()
-
-	server = new(knot.Server)
+	kingpin.Parse()
 
 	port := new(gocore.Ports)
 	port.ID = "port"
@@ -35,62 +27,38 @@ func main() {
 		}
 	}
 
-	webController := controller.CreateWebController(server)
+	flagAddress := toolkit.Sprintf("localhost:%v", toolkit.ToString(port.Port))
+	// otherRoutes := map[string]knot.FnContent{
+	// 	"/": func(r *knot.WebContext) interface{} {
+	// 		prefix := web1.AppName
 
-	server.Address = toolkit.Sprintf("localhost:%v", toolkit.ToString(port.Port))
-	server.RouteStatic("res", filepath.Join(controller.AppBasePath, "web", "assets"))
-	server.RouteStatic("image", filepath.Join(controller.AppBasePath, "web", "assets", "img"))
-	server.Register(webController, "")
-	server.Register(controller.CreateLoginController(server), "")
-	server.Register(controller.CreateDataBrowserController(server), "")
-	server.Register(controller.CreateUploadDataController(server), "")
-	server.Register(controller.CreateReportController(server), "")
-	server.Register(controller.CreateAllocationFlowController(server), "")
-	server.Register(controller.CreateAdminisrationController(server), "")
-	server.Register(controller.CreateSessionController(server), "")
-	server.Register(controller.CreateUserController(server), "")
-	server.Register(controller.CreateGroupController(server), "")
-	server.Register(controller.CreateOrganizationController(server), "")
-	server.Register(controller.CreateLogController(server), "")
+	// 		regex := regexp.MustCompile("/" + prefix + "/web/report/[a-zA-Z0-9_]+(/.*)?$")
+	// 		rURL := r.Request.URL.String()
 
-	server.Route("/", func(r *knot.WebContext) interface{} {
-		regex := regexp.MustCompile("/web/report/[a-zA-Z0-9_]+(/.*)?$")
-		rURL := r.Request.URL.String()
+	// 		if regex.MatchString(rURL) {
+	// 			args := strings.Split(strings.Replace(rURL, "/"+prefix+"/web/report/", "", -1), "/")
 
-		if regex.MatchString(rURL) {
-			args := strings.Split(strings.Replace(rURL, "/web/report/", "", -1), "/")
-			return webController.PageReport(r, args)
-		}
+	// 			toolkit.Println("------", args)
+	// 			r.Config.OutputType = web1.WebController.
+	// 			// return "ASdf"
 
-		sessionid := r.Session("sessionid", "")
-		if sessionid == "" {
-			http.Redirect(r.Writer, r.Request, "/web/login", 301)
-		} else {
-			http.Redirect(r.Writer, r.Request, "/web/report/dashboard", 301)
-		}
+	// 			return web1.WebController.PageReport(r, args)
+	// 			// return nil
+	// 		}
 
-		return true
+	// 		sessionid := r.Session("sessionid", "")
+	// 		if sessionid == "" {
+	// 			http.Redirect(r.Writer, r.Request, "/"+prefix+"/web/login", 301)
+	// 		} else {
+	// 			http.Redirect(r.Writer, r.Request, "/"+prefix+"/web/report/dashboard", 301)
+	// 		}
+
+	// 		return true
+	// 	},
+	// }
+
+	knot.DefaultOutputType = knot.OutputTemplate
+	knot.StartContainer(&knot.AppContainerConfig{
+		Address: flagAddress,
 	})
-
-	if err := setAclDatabase(); err != nil {
-		toolkit.Printf("Error set acl database : %s \n", err.Error())
-	}
-
-	server.Listen()
-}
-
-func setAclDatabase() error {
-	if err := gocore.InitialSetDatabase(); err != nil {
-		return err
-	}
-
-	if gocore.GetConfig("default_username") == nil {
-		gocore.SetConfig("default_username", "eaciit")
-		gocore.SetConfig("default_password", "Password.1")
-	}
-
-	if err := gocore.PrepareDefaultUser(); err != nil {
-		return err
-	}
-	return nil
 }

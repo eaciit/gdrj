@@ -59,7 +59,7 @@ ud.gridUploadedFiles = {
 	dataBound: toolkit.gridBoundTooltipster('.grid-uploadData')
 };
 ud.processData = function (data) {
-	toolkit.ajaxPost('/uploaddata/processdata', { _id: data }, function (res) {
+	toolkit.ajaxPost(viewModel.appName + 'uploaddata/processdata', { _id: data }, function (res) {
 		if (!toolkit.isFine(res)) {
 			return;
 		}
@@ -75,7 +75,7 @@ ud.processData = function (data) {
 ud.getMasterDataBrowser = function () {
 	ud.masterDataBrowser([]);
 
-	toolkit.ajaxPost('/databrowser/getdatabrowsers', {}, function (res) {
+	toolkit.ajaxPost(viewModel.appName + 'databrowser/getdatabrowsers', {}, function (res) {
 		if (!toolkit.isFine(res)) {
 			return;
 		}
@@ -90,7 +90,7 @@ ud.getMasterDataBrowser = function () {
 ud.getUploadedFiles = function () {
 	ud.dataUploadedFiles([]);
 
-	toolkit.ajaxPost('/uploaddata/getuploadedfiles', {}, function (res) {
+	toolkit.ajaxPost(viewModel.appName + 'uploaddata/getuploadedfiles', {}, function (res) {
 		if (!toolkit.isFine(res)) {
 			return;
 		}
@@ -110,7 +110,7 @@ ud.doUpload = function () {
 	payload.append('desc', ud.inputDescription());
 	payload.append('userfile', $('[name=file]')[0].files[0]);
 
-	toolkit.ajaxPost('/uploaddata/uploadfile', payload, function (res) {
+	toolkit.ajaxPost(viewModel.appName + 'uploaddata/uploadfile', payload, function (res) {
 		if (!toolkit.isFine(res)) {
 			return;
 		}

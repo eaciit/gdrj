@@ -65,7 +65,7 @@ pvt.refresh = function () {
 	pvt.contentIsLoading(true);
 
 	var fetch = function fetch() {
-		app.ajaxPost("/report/getpnldatanew", param, function (res) {
+		app.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();

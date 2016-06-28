@@ -48,7 +48,7 @@ at.gridConfig = {
 
 at.refreshData = () => {
     at.contentIsLoading(true)
-    toolkit.ajaxPost("/report/getplcollections", {}, (res) => {
+    toolkit.ajaxPost(viewModel.appName + "report/getplcollections", {}, (res) => {
         at.gridData(res.Data)
         at.contentIsLoading(false)
     })
@@ -67,7 +67,7 @@ at.clearcollection = () => {
         closeOnConfirm: true
     }, function() {
         setTimeout(function () {
-            toolkit.ajaxPost("/report/deleteplcollection", { _id: allTables }, function (res) {
+            toolkit.ajaxPost(viewModel.appName + "report/deleteplcollection", { _id: allTables }, function (res) {
                 at.refreshData()
             })
         }, 1000)
@@ -85,7 +85,7 @@ at.deletecollection = (idtable) => {
         closeOnConfirm: true
     }, function() {
         setTimeout(function () {
-            toolkit.ajaxPost("/report/deleteplcollection", { _id: [idtable] }, function (res) {
+            toolkit.ajaxPost(viewModel.appName + "report/deleteplcollection", { _id: [idtable] }, function (res) {
                 at.refreshData()
             })
         }, 1000)

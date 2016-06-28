@@ -20,7 +20,7 @@ db.isLoading = ko.observable(false)
 db.getMasterDataBrowser = () => {
 	db.masterDataBrowser([])
 
-	toolkit.ajaxPost('/databrowser/getdatabrowsers', {}, (res) => {
+	toolkit.ajaxPost(viewModel.appName + 'databrowser/getdatabrowsers', {}, (res) => {
 		if (!toolkit.isFine(res)) {
 			return
 		}
@@ -33,7 +33,7 @@ db.getMasterDataBrowser = () => {
 	})
 }
 db.createDataBrowser = (dataItem) => {
-	toolkit.ajaxPost("/databrowser/getdatabrowsermetadata", { tablename: dataItem }, (res) => {
+	toolkit.ajaxPost(viewModel.appName + "databrowser/getdatabrowsermetadata", { tablename: dataItem }, (res) => {
 		if (!toolkit.isFine(res)) {
 			return
 		}
@@ -109,7 +109,7 @@ db.editDataBrowser = () => {
 	for (var a in db.metaData()){
 		postdata[db.metaData()[a].Field()] = db.metaData()[a].value()
 	}
-	toolkit.ajaxPost("upload/savedata", postdata, (res) => {
+	toolkit.ajaxPost(viewModel.appName + "upload/savedata", postdata, (res) => {
 		if (!toolkit.isFine(res)) {
 			return
 		}
@@ -178,7 +178,7 @@ db.saveChanges = () => {
 		data: data
 	}
 
-	toolkit.ajaxPost('/databrowser/savedata', param, (res) => {
+	toolkit.ajaxPost(viewModel.appName + 'databrowser/savedata', param, (res) => {
 		if (!toolkit.isFine(res)) {
 			return
 		}

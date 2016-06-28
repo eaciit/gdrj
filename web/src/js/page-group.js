@@ -105,7 +105,7 @@ gr.removeGrant = (data) => {
 
 gr.editData = (id) => {
 	gr.isNew(false)
-    toolkit.ajaxPost('/group/editgroup', {_id: id}, (res) => {
+    toolkit.ajaxPost(viewModel.appName + 'group/editgroup', {_id: id}, (res) => {
         if (!toolkit.isFine(res)) {
             return
         }
@@ -122,7 +122,7 @@ gr.editData = (id) => {
 }
 
 gr.displayAccess = (e) => {
-    toolkit.ajaxPost("/group/getaccessgroup", {
+    toolkit.ajaxPost(viewModel.appName + "group/getaccessgroup", {
         _id: e
     }, function(res) {
         if (!toolkit.isFine(res)) {
@@ -174,7 +174,7 @@ gr.saveChanges = () => {
             GroupType: parm.GroupType
         },
     }
-	toolkit.ajaxPost('/group/savegroup', postparm, (res) => {
+	toolkit.ajaxPost(viewModel.appName + 'group/savegroup', postparm, (res) => {
 		if (!toolkit.isFine(res)) {
 			return
 		}
@@ -216,7 +216,7 @@ gr.deletegroup = () => {
             closeOnConfirm: true
         }, function() {
             setTimeout(function () {
-                toolkit.ajaxPost("/group/deletegroup", { _id: gr.tempCheckIdDelete() }, function (res) {
+                toolkit.ajaxPost(viewModel.appName + "group/deletegroup", { _id: gr.tempCheckIdDelete() }, function (res) {
                     if (!toolkit.isFine(res)) {
                         return;
                     }

@@ -47,7 +47,7 @@ kac.refresh = (useCache = false) => {
 	kac.contentIsLoading(true)
 
 	let fetch = () => {
-		toolkit.ajaxPost("/report/getpnldatanew", param, (res) => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {
 					fetch()
@@ -564,7 +564,7 @@ vm.currentMenu('Analysis')
 vm.currentTitle('Key Account Analysis')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'Key Account Analysis', href: '/web/report/dashboard' }
+	{ title: 'Key Account Analysis', href: '#' }
 ])
 
 kac.title('Key Account Analysis')

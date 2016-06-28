@@ -57,7 +57,7 @@ af.getFormPayload = () => {
 	return param
 }
 af.getModules = () => {
-	toolkit.ajaxPost('/allocationflow/getmodules', {}, (res) => {
+	toolkit.ajaxPost(viewModel.appName + 'allocationflow/getmodules', {}, (res) => {
 		if (!toolkit.isFine(res)) {
 			return
 		}
@@ -67,7 +67,7 @@ af.getModules = () => {
 	})
 }
 af.getAppliedModules = () => {
-	toolkit.ajaxPost('/allocationflow/getappliedmodules', {}, (res) => {
+	toolkit.ajaxPost(viewModel.appName + 'allocationflow/getappliedmodules', {}, (res) => {
 		if (!toolkit.isFine(res)) {
 			return
 		}
@@ -82,7 +82,7 @@ af.doUpload = () => {
 	}
 
 	let param = af.getFormPayload()
-	toolkit.ajaxPost('/allocationflow/uploadnewmodule', param, (res) => {
+	toolkit.ajaxPost(viewModel.appName + 'allocationflow/uploadnewmodule', param, (res) => {
 		if (!toolkit.isFine(res)) {
 			return;
 		}

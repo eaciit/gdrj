@@ -53,7 +53,7 @@ rd.refresh = function () {
 	rd.contentIsLoading(true);
 
 	var fetch = function fetch() {
-		toolkit.ajaxPost("/report/getpnldatanew", param, function (res) {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
@@ -526,7 +526,7 @@ rd.changeBreakdownValue = function () {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('RD Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'RD Analysis', href: '/web/report/dashboard' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'RD Analysis', href: '#' }]);
 
 rd.title('RD Analysis');
 

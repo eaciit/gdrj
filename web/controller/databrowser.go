@@ -13,9 +13,8 @@ type DataBrowserController struct {
 	App
 }
 
-func CreateDataBrowserController(s *knot.Server) *DataBrowserController {
+func CreateDataBrowserController() *DataBrowserController {
 	var controller = new(DataBrowserController)
-	controller.Server = s
 	return controller
 }
 

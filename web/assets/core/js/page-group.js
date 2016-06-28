@@ -99,7 +99,7 @@ gr.removeGrant = function (data) {
 
 gr.editData = function (id) {
     gr.isNew(false);
-    toolkit.ajaxPost('/group/editgroup', { _id: id }, function (res) {
+    toolkit.ajaxPost(viewModel.appName + 'group/editgroup', { _id: id }, function (res) {
         if (!toolkit.isFine(res)) {
             return;
         }
@@ -116,7 +116,7 @@ gr.editData = function (id) {
 };
 
 gr.displayAccess = function (e) {
-    toolkit.ajaxPost("/group/getaccessgroup", {
+    toolkit.ajaxPost(viewModel.appName + "group/getaccessgroup", {
         _id: e
     }, function (res) {
         if (!toolkit.isFine(res)) {
@@ -158,7 +158,7 @@ gr.saveChanges = function () {
             GroupType: parm.GroupType
         }
     };
-    toolkit.ajaxPost('/group/savegroup', postparm, function (res) {
+    toolkit.ajaxPost(viewModel.appName + 'group/savegroup', postparm, function (res) {
         if (!toolkit.isFine(res)) {
             return;
         }
@@ -200,7 +200,7 @@ gr.deletegroup = function () {
             closeOnConfirm: true
         }, function () {
             setTimeout(function () {
-                toolkit.ajaxPost("/group/deletegroup", { _id: gr.tempCheckIdDelete() }, function (res) {
+                toolkit.ajaxPost(viewModel.appName + "group/deletegroup", { _id: gr.tempCheckIdDelete() }, function (res) {
                     if (!toolkit.isFine(res)) {
                         return;
                     }
