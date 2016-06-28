@@ -1,0 +1,46 @@
+<div class="col-md-12 no-padding hardcore">
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-chart.html"}}
+	</div>
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-pivot.html"}}
+	</div>
+</div>
+
+<script>
+	$(document).ready(function(){
+		pvt.row('customer.channelname')
+		pvt.column('customer.branchname')
+		pvt.dataPoints = ko.observableArray([
+			{ field: 'sales', title: 'Sales', name: 'Sales' },
+			{ field: 'gdp', title: 'GDP', name: 'GDP' },
+			{ field: 'salesbygdp', title: 'Sales by GDP', name: 'Sales by GDP' }
+		])
+		
+		pvt.data([{
+			customer_channelname: 'GT', customer_branchname: 'Surabaya',
+			sales: 20000,
+			gdp: 2000,
+			salesbygdp: 10
+		}, {
+			customer_channelname: 'MT', customer_branchname: 'Surabaya',
+			sales: 22000,
+			gdp: 1000,
+			salesbygdp: 22
+		}, {
+			customer_channelname: 'GT', customer_branchname: 'Malang',
+			sales: 23000,
+			gdp: 3000,
+			salesbygdp: 23
+		}, {
+			customer_channelname: 'GT', customer_branchname: 'Malang',
+			sales: 22000,
+			gdp: 2000,
+			salesbygdp: 11
+		}])
+		crt.data(pvt.data())
+		crt.series(pvt.dataPoints())
+		pvt.refresh()
+		crt.refresh()
+	})
+</script>

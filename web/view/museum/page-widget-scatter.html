@@ -1,0 +1,31 @@
+<script src="{{BaseUrl}}res/core/js/page-widget-scatter.js"></script>
+
+<div class="panel ez no-padding hardcore">
+	<div class="panel-heading">
+		<h3 class="no-margin">
+			Scatter Chart
+		</h3>
+		<div class="panel-nav-button">
+			<div class="form-group relative align-right no-margin no-padding hardcore">
+				<button class="btn btn-sm btn-primary" data-bind="click: sct.refresh, visible: (sct.mode() == 'render')">
+					<i class="fa fa-refresh"></i>
+				</button>
+				<button class="btn btn-sm btn-primary" data-bind="click: sct.setMode(''), visible: (sct.mode() == 'render')">
+					<i class="fa fa-gear"></i>
+				</button>
+				<button class="btn btn-sm btn-warning" data-bind="click: sct.setMode('render'), visible: (sct.mode() == '')">
+					<i class="fa fa-arrow-left"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="panel-body" data-bind="visible: sct.mode() == 'render'">
+		<!-- {{template "_loader.html"}} -->
+		<!-- <div data-bind="visible: !app.loader()"> -->
+		<div>
+			<div id="scatter" style="height: 300px;"></div>
+		</div>
+		<!-- </div> -->
+	</div>
+	<div class="panel-body" data-bind="visible: sct.mode() == ''"></div>
+</div>

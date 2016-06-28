@@ -1,0 +1,34 @@
+<div class="col-md-12 no-padding hardcore">
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-chart.html"}}
+	</div>
+	<div class="col-md-12 col-sm-12 no-padding hardcore panel-content-expandable">
+		{{template "page-widget-pivot.html"}}
+	</div>
+</div>
+
+<script>
+	$(document).ready(function(){
+		pvt.row('customer.channelname')
+		pvt.column('customer.branchname')
+		pvt.dataPoints = ko.observableArray([
+			{ field: 'personnel', stack: "indirect", title: 'Indirect Personnel Expenses', name: 'Indirect Personnel Expenses' },
+			{ field: 'services', stack: "indirect", title: 'Indirect Services', name: 'Indirect Services' },
+			{ field: 'rent', stack: "indirect", title: 'Indirect Rent', name: 'Indirect Rent' },
+			{ field: 'transportation', stack: "indirect", title: 'Indirect Transportation', name: 'Indirect Transportation' },
+			{ field: 'maintenance', stack: "indirect", title: 'Indirect Repair & Maintenance', name: 'Indirect Repair & Maintenance' },
+			{ field: 'amort', stack: "indirect", title: 'Indirect Depr & Amort', name: 'Indirect Depr & Amort' },
+			{ field: 'energy', stack: "indirect", title: 'Indirect Energy Cost Factory', name: 'Indirect Energy Cost Factory' },
+			{ field: 'other', stack: "indirect", title: 'Indirect Energy Other', name: 'Indirect Energy Other' },
+			{ field: 'cogs', stack: "cogs", title: 'COGS', name: 'COGS' },
+			{ field: 'indirect_cogs', stack: "indirect_cogs", title: 'Indirect Expense Index', name: 'Indirect Expense Index' }
+		])
+		pvt.refresh()
+
+		crt.typeChart('stack')
+		crt.categoryAxisField('customer.branchname')
+		crt.sortField('indirect_cogs')
+		crt.series(pvt.dataPoints())
+		crt.refresh()
+	})
+</script>
