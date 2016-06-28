@@ -124,7 +124,7 @@ func main() {
 	for _, str := range listdimension {
 		dimension <- str
 	}
-	close(dimension)
+	// close(dimension)
 
 	alldatarows := 0
 	toolkit.Printfn("Waiting dimension result")
