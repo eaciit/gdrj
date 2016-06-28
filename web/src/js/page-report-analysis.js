@@ -16,14 +16,62 @@ bkd.data = ko.observableArray([])
 bkd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 bkd.breakdownValue = ko.observableArray([])
 bkd.level = ko.observable(1)
-bkd.isBreakdownChannel = ko.observable(false)
+bkd.isBreakdownBranch = ko.observable(false)
+
+bkd.breakdownBranch_Channels = ko.observableArray([])
+bkd.breakdownBranch_ChannelRDNonRD = ko.observable('')
+bkd.breakdownBranch_SubChannel = ko.observable('')
+
+bkd.isBreakdownBranchSubEnabled = (d) => ko.computed(() => {
+	if (d == 'channel') {
+		if (bkd.breakdownBranch_ChannelRDNonRD() != '') {
+			return false
+		} else
+
+		if (bkd.breakdownBranch_SubChannel() != '') {
+			return false
+		}
+
+		return true
+	} else
+
+	if (d == 'rd-non-rd') {
+		if (bkd.breakdownBranch_Channels().length > 0) {
+			return false
+		} else
+
+		if (bkd.breakdownBranch_SubChannel() != '') {
+			return false
+		}
+
+		return true
+	} else
+
+	if (d == 'sub-channel') {
+		if (bkd.breakdownBranch_Channels() != '') {
+			return false
+		} else
+
+		if (bkd.breakdownBranch_ChannelRDNonRD() != '') {
+			return false
+		}
+
+		return true
+	}
+
+	return true
+}, bkd)
+
+bkd.breakdownChannel = ko.observable('')
 bkd.breakdownChannels = ko.observableArray([])
-bkd.optionBreakdownChannels = ko.observableArray([
-	{ _id: "I1", Name: "RD" },
-	{ _id: "I2", Name: "GT" },
-	{ _id: "I3", Name: "MT" },
-	{ _id: "I4", Name: "IT" },
+
+bkd.optionBreakdownRDNonRD = ko.observableArray([
+	{ _id: "All", Name: "RD & Non RD" },
+	{ _id: "RD", Name: "Only RD Sales" },
+	{ _id: "NonRD", Name: "Non RD Sales" },
 ])
+
+bkd.isBreakdownChannel = ko.observable(false)
 bkd.breakdownChannelLocation = ko.observable('')
 bkd.optionBreakdownChannelLocations = ko.observableArray([
 	{ _id: "zone", Name: "Zone" },
@@ -67,7 +115,53 @@ bkd.refresh = (useCache = false) => {
 		param.groups.push(`customer.${bkd.breakdownChannelLocation()}`)
 		bkd.level(2)
 	}
-	
+
+	// ====== BREAKDOWN BY BRANCH - CHANNEL
+
+	if (bkd.breakdownBy() == 'customer.branchname') {
+		if (bkd.breakdownBranch_Channels().length > 0) {
+			param.groups.push('customer.channelname')
+			param.filters.push({
+				Field: 'customer.channelname',
+				Op: '$in',
+				Value: bkd.breakdownBranch_Channels()
+			})
+		} else
+
+		if (bkd.breakdownBranch_ChannelRDNonRD() != '') {
+			let values = []
+
+			switch (bkd.breakdownBranch_ChannelRDNonRD()) {
+				case 'All':
+					values = rpt.masterData.Channel().map((d) => d._id)
+				break;
+				case 'RD':
+					values = ['I1']
+				break;
+				case 'NonRD':
+					values = rpt.masterData.Channel().map((d) => d._id)
+						.filter((d) => d != 'I1')
+				break;
+			}
+
+			param.groups.push('customer.channelname')
+			param.filters.push({
+				Field: 'customer.channelname',
+				Op: '$in',
+				Value: values
+			})
+		} else 
+
+		if (bkd.breakdownBranch_SubChannel() != '') {
+			param.groups.push('customer.reportsubchannel')
+			param.filters.push({
+				Field: 'customer.channelname',
+				Op: '$in',
+				Value: [bkd.breakdownBranch_SubChannel()]
+			})
+		}
+	}
+
 	bkd.oldBreakdownBy(bkd.breakdownBy())
 	bkd.contentIsLoading(true)
 
@@ -379,6 +473,77 @@ bkd.buildStructure = (data) => {
 		bkd.level(2)
 		let newParsed = _.orderBy(parsed, (d) => d.PL8A, 'desc')
 		return newParsed
+	}
+
+	if (bkd.breakdownBy() == 'customer.branchname') {
+		if (bkd.breakdownBranch_Channels().length > 0) {
+			let parsed = groupThenMap(data, (d) => {
+				return d._id[`_id_customer_branchname`]
+			}).map((d) => {
+				let subs = groupThenMap(d.subs, (e) => {
+					return e._id[`_id_customer_channelname`]
+				}).map((e) => {
+					e.breakdowns = e.subs[0]._id
+					d.count = 1
+					return e
+				})
+
+				d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+				d.breakdowns = d.subs[0]._id
+				d.count = d.subs.length
+				return d
+			})
+		
+			bkd.level(2)
+			let newParsed = _.orderBy(parsed, (d) => d.PL8A, 'desc')
+			return newParsed
+		}
+
+		if (bkd.breakdownBranch_ChannelRDNonRD() != '') {
+			let parsed = groupThenMap(data, (d) => {
+				return d._id[`_id_customer_branchname`]
+			}).map((d) => {
+				let subs = groupThenMap(d.subs, (e) => {
+					return (e._id._id_customer_channelid == 'I1') ? 'RD' : 'Non RD'
+				}).map((e) => {
+					e.breakdowns = e.subs[0]._id
+					d.count = 1
+					return e
+				})
+
+				d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+				d.breakdowns = d.subs[0]._id
+				d.count = d.subs.length
+				return d
+			})
+		
+			bkd.level(2)
+			let newParsed = _.orderBy(parsed, (d) => d.PL8A, 'desc')
+			return newParsed
+		}
+
+		if (bkd.breakdownBranch_SubChannel() != '') {
+			let parsed = groupThenMap(data, (d) => {
+				return d._id[`_id_customer_branchname`]
+			}).map((d) => {
+				let subs = groupThenMap(d.subs, (e) => {
+					return e._id._id_customer_reportsubchannel
+				}).map((e) => {
+					e.breakdowns = e.subs[0]._id
+					d.count = 1
+					return e
+				})
+
+				d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+				d.breakdowns = d.subs[0]._id
+				d.count = d.subs.length
+				return d
+			})
+		
+			bkd.level(2)
+			let newParsed = _.orderBy(parsed, (d) => d.PL8A, 'desc')
+			return newParsed
+		}
 	}
 
 	let parsed = groupThenMap(data, (d) => {
@@ -944,6 +1109,11 @@ bkd.changeBreakdown = () => {
 		return { _id: d.Name, Name: d.Name }
 	})
 	setTimeout(() => {
+		bkd.isBreakdownBranch(false)
+		bkd.breakdownBranch_Channels([])
+		bkd.breakdownBranch_ChannelRDNonRD('')
+		bkd.breakdownBranch_SubChannel('')
+
 		bkd.isBreakdownChannel(false)
 		bkd.breakdownChannels([])
 		bkd.breakdownChannelLocation([])
@@ -968,13 +1138,15 @@ bkd.changeBreakdown = () => {
 			case "customer.branchname":
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
 				bkd.breakdownValue([all._id])
+
+				bkd.isBreakdownBranch(true)
 			break;
 			case "customer.channelname":
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
 				bkd.breakdownValue([all._id])
 
-				bkd.isBreakdownChannel(true)
-				bkd.breakdownChannels([])
+				// bkd.isBreakdownChannel(true)
+				// bkd.breakdownChannels([])
 			break;
 			case "customer.keyaccount":
 				bkd.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))
