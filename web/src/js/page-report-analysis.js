@@ -1621,7 +1621,9 @@ rpt.refresh = () => {
 
 	rpt.prepareEvents()
 
-	ccr.getDecreasedQty(false)
+	// ccr.getDecreasedQty(false)
+	$('[href="#tab3"]').parent().remove()
+	$('#tab3').parent().remove()
 }
 
 $(() => {
