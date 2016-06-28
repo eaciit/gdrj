@@ -6,9 +6,10 @@ import (
 	"os"
 
 	"flag"
+	"strings"
+
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
-	"strings"
 	// "sync"
 	"time"
 )
@@ -268,7 +269,6 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 
 			tkm.Set(dkey, dtkm)
 		}
-		toolkit.Println("SUM Data : ", len(tkm))
 		for k, v := range tkm {
 			a, _ := toolkit.ToM(v)
 			id := toolkit.M{}
@@ -283,6 +283,7 @@ func workerbuilddimension(wi int, dimension <-chan string, detaildata chan<- too
 		}
 
 		resdimension <- len(tkm)
+		toolkit.Println("SUM Data : ", len(tkm))
 	}
 }
 
