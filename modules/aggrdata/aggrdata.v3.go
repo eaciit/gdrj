@@ -270,7 +270,12 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 
 			tkm.Set(dkey, dtkm)
 		}
+
+		i := 0
+		count := len(tkm)
+
 		for k, v := range tkm {
+			i++
 			a, _ := toolkit.ToM(v)
 			id := toolkit.M{}
 			arrk := strings.Split(k, "|")
@@ -286,6 +291,8 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 				From(tablename).
 				SetConfig("multiexec", true).
 				Save().Exec(toolkit.M{}.Set("data", a))
+
+			toolkit.Printfn("Saving dimension %v, %d of %d", str, i, count)
 			// detaildata <- toolkit.M{}.Set(tablename, a)
 		}
 
