@@ -56,6 +56,8 @@ bkd.isBreakdownBranchSubEnabled = function (d) {
 	}, bkd);
 };
 
+rpt.optionsChannels = ko.observableArray([{ _id: 'EXP', Name: 'Export' }, { _id: 'I2', Name: 'General Trade' }, { _id: 'I4', Name: 'Industrial Trade' }, { _id: 'I3', Name: 'Modern Trade' }, { _id: 'I6', Name: 'Motorist' }, { _id: 'I1', Name: 'Regional Distributor' }]);
+
 bkd.breakdownChannel = ko.observable('');
 bkd.breakdownChannels = ko.observableArray([]);
 
