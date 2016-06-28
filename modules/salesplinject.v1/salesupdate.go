@@ -585,7 +585,7 @@ func main() {
 
 	prepmasterclean()
 	prepmastercalc()
-	// prepmastergrossproc()
+	prepmastergrossproc()
 
 	c, _ := gdrj.Find(new(gdrj.SalesPL), f, nil)
 	defer c.Close()
@@ -642,10 +642,10 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 	for spl = range jobs {
 
 		spl.CleanAndClasify(masters)
-		spl.CalcSales(masters)
-		// === For ratio update and calc
-		// spl.RatioCalc(masters)
 
+		// === For ratio update and calc
+		spl.RatioCalc(masters)
+		spl.CalcSales(masters)
 		//calculate process -- better not re-run
 		// spl.CalcCOGSRev(masters)
 
