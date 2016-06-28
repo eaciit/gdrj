@@ -47,7 +47,7 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 
-	toolkit.Println("Start data query...")
+	toolkit.Println("Preparing data query...")
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
 	speriode := eperiode.AddDate(-1, 0, 0)
@@ -62,6 +62,7 @@ func main() {
 		seeds = append(seeds, speriode)
 	}
 
+	toolkit.Println("Starting worker query...")
 	result := make(chan toolkit.M, len(seeds))
 	for i, v := range seeds {
 		filter := dbox.Eq("date.date", v)
@@ -73,6 +74,7 @@ func main() {
 		step = 1
 	}
 
+	toolkit.Println("Waiting result query...")
 	for i := 1; i <= len(seeds); i++ {
 		a := <-result
 		for k, v := range a {
