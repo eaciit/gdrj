@@ -41,8 +41,8 @@ func init() {
 	// }
 
 	// server.Address = toolkit.Sprintf("localhost:%v", toolkit.ToString(port.Port))
-	app.Static("res", filepath.Join(controller.AppBasePath, "web", "assets"))
-	app.Static("image", filepath.Join(controller.AppBasePath, "web", "assets", "img"))
+	app.Static("res", filepath.Join(controller.AppBasePath, AppName, "assets"))
+	app.Static("image", filepath.Join(controller.AppBasePath, AppName, "assets", "img"))
 	app.Register(controller.CreatePageController(AppName))
 	app.Register(controller.CreateLoginController())
 	app.Register(controller.CreateDataBrowserController())
