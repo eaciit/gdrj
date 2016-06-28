@@ -295,13 +295,13 @@ func workersavedata(wi int, detaildata <-chan toolkit.M, ressavedata chan<- int)
 	qs := map[string]dbox.IQuery{}
 	for tkm = range detaildata {
 		for tbl, dt := range tkm {
-			q, exist := qs[tbl]
-			if !exist {
-				q = workerconn.NewQuery().From(tbl).
-					SetConfig("multiexec", true).
-					Save()
-				qs[tbl] = q
-			}
+			//q, exist := qs[tbl]
+			//if !exist {
+			q = workerconn.NewQuery().From(tbl).
+				SetConfig("multiexec", true).
+				Save()
+			//	qs[tbl] = q
+			//}
 			esave := q.Exec(toolkit.M{}.Set("data", dt))
 			if esave != nil {
 				toolkit.Printfn("Can't save %s - %s : %v", tbl, esave.Error(), dt)
