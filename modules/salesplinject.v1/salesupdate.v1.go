@@ -697,7 +697,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		spl.CleanAndClasify(masters)
 
 		// 		// === For ratio update and calc
-		// 		spl.RatioCalc(masters)
+		spl.RatioCalc(masters)
 
 		// 		//calculate process -- better not re-run
 		// 		// spl.CalcCOGSRev(masters)
@@ -705,12 +705,12 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		// 		//calculate process
 		// 		// spl.CalcFreight(masters)
 		// 		// spl.CalcDepre(masters)
-		// 		// spl.CalcDamage(masters)
-		// 		// spl.CalcDepre(masters)
+		spl.CalcDamage(masters)
+		// spl.CalcDepre(masters)
 		// 		// spl.CalcRoyalties(masters)
 		// 		// spl.CalcDiscountActivity(masters)
 		// 		// spl.CalcPromo(masters)
-		// 		// spl.CalcSum(masters)
+		spl.CalcSum(masters)
 
 		tablename := toolkit.Sprintf("%v-2", spl.TableName())
 
