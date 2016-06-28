@@ -55,7 +55,7 @@ func main() {
 	seeds := make([]time.Time, 0, 0)
 	seeds = append(seeds, speriode)
 	for {
-		speriode.AddDate(0, 0, 1)
+		speriode = speriode.AddDate(0, 0, 1)
 		if !speriode.Before(eperiode) {
 			break
 		}
@@ -103,7 +103,11 @@ func workerproc(wi int, filter *dbox.Filter, result chan<- toolkit.M) {
 	defer workerconn.Close()
 	tkm := toolkit.M{}
 
-	csr, _ := workerconn.NewQuery().Select("date.fiscal", "pldatas").From("salespls-1").Where(filter).Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select("date.fiscal", "pldatas").
+		From("salespls-1").
+		Where(filter).
+		Cursor(nil)
+
 	defer csr.Close()
 
 	scount := csr.Count()
