@@ -161,7 +161,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		return op2
 	}
 
-	if (expand && breakdownRD == 'NonRD') {
+	if (expand && (breakdownRD == 'NonRD' || breakdownRD.search('Only') > -1) && (ba.subBreakdownValue().length == 0)) {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
@@ -192,21 +192,20 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		return parsed
 	} else
 
-	if (expand && breakdownRD.search('Only') > -1) {
+	if (expand && (ba.subBreakdownValue().length > 0)) {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
 			let subs = groupThenMap(d.subs, (e) => {
 				return e._id._id_customer_channelname
 			}).map((e) => {
-				let subs = groupThenMap(d.subs, (f) => {
+				let subs = groupThenMap(e.subs, (f) => {
 					return f._id._id_customer_reportsubchannel
 				}).map((f) => {
-					f.subs = []
 					f.count = 1
 					return f
 				})
-				
+
 				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
 				e.count = e.subs.length
 				return e
@@ -217,9 +216,13 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 			return d
 		})
 
+		console.log('PPPP', parsed.slice(0))
+
 		ba.level(3)
 		showAsBreakdown(parsed)
 		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
+
+		console.log('PPPP', parsed.slice(0))
 		return parsed
 	} else
 
@@ -332,9 +335,9 @@ ba.refresh = (useCache = false) => {
 				Value: rpt.masterData.Channel().map((d) => d._id).filter((d) => d != 'I1')
 			})
 		} else if (breakdownRD.search('Only') > -1) {
-			if (expand) {
-				param.groups.push('customer.reportsubchannel')
-			}
+			// if (expand) {
+			// 	param.groups.push('customer.reportsubchannel')
+			// }
 
 			param.filters.push({
 				Field: 'customer.channelname',
@@ -343,6 +346,31 @@ ba.refresh = (useCache = false) => {
 			})
 		} else if (breakdownRD.search('ByLocation') > -1) {
 			param.groups.push(`customer.${opt.field}`)
+		}
+
+		if (ba.subBreakdownValue().length > 0 && ba.expand()) {
+			param.groups.push('customer.reportsubchannel')
+
+			let breakdownValue = ba.subBreakdownValue()
+
+			if (breakdownRD == 'NonRD') {
+				breakdownValue = ba.subBreakdownValue().filter((d) => d != 'I1')
+			} else if (breakdownRD == 'OnlyRD') {
+				breakdownValue = ba.subBreakdownValue().filter((d) => d == 'I1')
+			}
+
+			if (breakdownValue.length > 0) {
+				let filterChannel = param.filters.find((d) => d.Field == 'customer.channelname')
+				if (typeof filterChannel != 'undefined') {
+					filterChannel.Value = _.uniq(filterChannel.Value.concat(breakdownValue))
+				} else {
+					param.filters.push({
+						Field: 'customer.channelname',
+						Op: '$in',
+						Value: breakdownValue
+					})
+				}
+			}
 		}
 
 		let fetch = () => {
@@ -368,7 +396,7 @@ ba.refresh = (useCache = false) => {
 		fetch()
 	}
 
-	if (ba.breakdownRD() == "All" && ba.expand()) {
+	if (ba.breakdownRD() == "All" && ba.expand() && ba.subBreakdownValue().length == 0) {
 		let mergeData = (dataNonRD, dataRD) => {
 			let data = []
 			let ids = _.uniq(dataNonRD.map((d) => d._id).concat(dataRD.map((d) => d._id)))
@@ -489,6 +517,24 @@ ba.refresh = (useCache = false) => {
 			})
 		})
 
+		return
+	}
+
+	if (ba.expand() && ba.subBreakdownValue().length > 0) {
+		let bkrd = 'tralala'
+
+		request(bkrd, ba.expand(), (res) => {
+			let data = ba.buildStructure(bkrd, ba.expand(), res.Data.Data)
+
+			ba.data(data)
+			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+			ba.breakdownNote(`Last refreshed on: ${date}`)
+
+			rpt.plmodels(res.Data.PLModels)
+			ba.emptyGrid()
+			ba.contentIsLoading(false)
+			ba.render()
+		})
 		return
 	}
 
@@ -864,6 +910,24 @@ ba.optionBreakdownValues = ko.computed(() => {
 		.map((d) => { return { _id: d.Name, Name: d.Name }})
 	return [ba.breakdownValueAll].concat(branches)
 }, rpt.masterData.Branch)
+
+ba.subBreakdownValue = ko.observableArray([])
+ba.optionSubBreakdownValues = ko.computed(() => {
+	switch (ba.breakdownRD()) {
+		case 'All': 
+			return rpt.optionsChannels()
+		break;
+		case 'OnlyRD':
+			return rpt.optionsChannels().filter((d) => d._id == 'I1')
+		break;
+		case 'NonRD':
+			return rpt.optionsChannels().filter((d) => d._id != 'I1')
+		break;
+	}
+
+	return []
+}, ba.breakdownRD)
+
 ba.changeBreakdownValue = () => {
 	let all = ba.breakdownValueAll
 	setTimeout(() => {
@@ -904,4 +968,9 @@ rpt.refresh = () => {
 
 $(() => {
 	rpt.refresh()
+
+	setTimeout(() => {
+		ba.breakdownValue(['All'])
+		ba.refresh(false)
+	}, 200)
 })

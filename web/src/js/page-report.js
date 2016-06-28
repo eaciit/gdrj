@@ -205,6 +205,15 @@ rpt.optionAggregates = ko.observableArray([
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
+rpt.optionsChannels = ko.observableArray([
+	{ _id: 'EXP', Name: 'Export' },
+	{ _id: 'I2', Name: 'General Trade (GT)' },
+	{ _id: 'I4', Name: 'Industrial Trade (IT)' },
+	{ _id: 'I3', Name: 'Modern Trade (MT)' },
+	{ _id: 'I6', Name: 'Motorist' },
+	{ _id: 'I1', Name: 'Regional Distributor (RD)' },
+])
+
 rpt.parseGroups = (what) => {
 	return what
 
