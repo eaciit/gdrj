@@ -202,7 +202,7 @@ func workerproc(wi int, filter *dbox.Filter, result chan<- toolkit.M) {
 
 		for k, v := range spl.PLDatas {
 			tv := v.Amount + tkm.GetFloat64(k)
-			tkm.Set(k, tv)
+			dtkm.Set(k, tv)
 		}
 
 		tkm.Set(key, dtkm)
