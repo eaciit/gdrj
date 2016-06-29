@@ -352,7 +352,7 @@ rpt.toggleFilter = function () {
 
 rpt.isDataEmpty = function (res) {
 	if (res.Data.Data.length == 0) {
-		toolkit.showError('Data is not yet ready, aggregate process is running.');
+		toolkit.showError('Data is not yet ready, aggregate process is on progress.');
 		return true;
 	}
 
