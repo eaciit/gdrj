@@ -116,6 +116,8 @@ func main() {
 
 			v = tkm.GetFloat64("PL8")
 			tkm.Set("PL8", -v)
+
+			CalcSum(tkm)
 		}
 
 		_ = workerconn.NewQuery().
@@ -127,10 +129,6 @@ func main() {
 			step += scount / 100
 			toolkit.Printfn("Processing %d of %d in %s", iscount, scount,
 				time.Since(t0).String())
-		}
-
-		if iscount == 20 {
-			break
 		}
 
 	}
