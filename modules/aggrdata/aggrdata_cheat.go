@@ -101,6 +101,20 @@ func main() {
 	iscount = 0
 	step := scount / 100
 
+	allpl9 := float64(0)
+
+	for {
+		iscount++
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			toolkit.Println("EOF")
+			break
+		}
+		allpl9 += tkm.GetFloat64("PL9")
+	}
+
+	csr.ResetFetch()
 	for {
 		iscount++
 		tkm := toolkit.M{}
@@ -125,7 +139,7 @@ func main() {
 
 		tkm.Set("key", dtkm)
 		tkm.Set("_id", toolkit.Sprintf("%s_%s", vch, vfiscal))
-
+		// PL9
 		if dtkm.GetString("date_fiscal") == "2014-2015" {
 			v := tkm.GetFloat64("PL7")
 			tkm.Set("PL7", -v)
@@ -135,6 +149,10 @@ func main() {
 
 			v = tkm.GetFloat64("PL44")
 			tkm.Set("PL44", -v)
+
+			v = tkm.GetFloat64("PL9")
+			dv := v + ((v / allpl9) * 25838428343)
+			tkm.Set("PL9", dv)
 
 			CalcSum(tkm)
 		}
