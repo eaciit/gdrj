@@ -1761,25 +1761,10 @@ vm.currentMenu('P&L Performance');
 vm.currentTitle('&nbsp;');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'P&L Performance', href: '#' }]);
 
-bkd.title('P&L Summary');
+bkd.title('P&L by Channels');
 rs.title('P&L Comparison to Net Sales');
 
 rpt.refresh = function () {
-	rpt.tabbedContent();
-	rpt.refreshView('analysis');
-
-	rs.getSalesHeaderList();
-
-	bkd.changeBreakdown();
-	setTimeout(function () {
-		bkd.breakdownValue(['All']);
-		bkd.refresh(false);
-	}, 200);
-
-	rpt.prepareEvents();
-};
-
-$(function () {
 	bkd.changeBreakdown();
 	setTimeout(function () {
 		bkd.breakdownValue(['All']);
@@ -1794,4 +1779,8 @@ $(function () {
 
 	rs.getSalesHeaderList();
 	rank.refresh();
+};
+
+$(function () {
+	rpt.refresh();
 });
