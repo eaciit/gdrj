@@ -571,8 +571,8 @@ func main() {
 	flag.Parse()
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
-	// speriode := eperiode.AddDate(-1, 0, 0)
-	speriode := eperiode.AddDate(0, 0, -1)
+	speriode := eperiode.AddDate(-1, 0, 0)
+	speriode = eperiode.AddDate(0, 0, -1)
 
 	setinitialconnection()
 	defer gdrj.CloseDb()
