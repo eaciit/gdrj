@@ -645,7 +645,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		// 		// spl.CalcPromo(masters)
 		spl.CalcSum(masters)
 
-		tablename := toolkit.Sprintf("%v-1", spl.TableName())
+		tablename := toolkit.Sprintf("%v-2015", spl.TableName())
 
 		workerconn.NewQuery().From(tablename).
 			Save().Exec(toolkit.M{}.Set("data", spl))
