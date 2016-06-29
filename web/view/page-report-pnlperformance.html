@@ -36,6 +36,17 @@
 		<div class="panel-heading">
 			<h3 class="no-margin">Summary</h3>
 
+			<div class="panel-nav-button" data-bind="visible: !dsbrd.contentIsLoading() && (smry.summaryMode() == 'overview')">
+				<div class="form-inline">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rs.refresh" title="Refresh">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+
 			<div class="panel-nav-button" data-bind="visible: !rs.contentIsLoading() && (smry.summaryMode() == 'pnl-comparison')">
 				<div class="form-inline">
 					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rs.refresh" title="Refresh Chart Comparison">
@@ -63,7 +74,7 @@
 						</div>
 					</div>
 
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rank.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rank.refresh" title="Refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
@@ -88,8 +99,51 @@
 
 			<div class="tab-content">
 				<div role="tabpanel" class="tab-pane active" id="overview">
-					&nbsp;
-		<!-- <div data-bind="visible: !bkd.contentIsLoading()"></div> -->
+					<div class="filter" data-bind="visible: !dsbrd.contentIsLoading()">
+						<div class="form-inline pull-right breakdown-filter">
+							<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+								<span class="input-group-addon align-right">Fiscal Year</span>
+								<div class="width-full">
+									<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.optionFiscalYears, value: dsbrd.fiscalYears }"></select>
+								</div>
+							</div>
+							
+							<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+								<span class="input-group-addon align-right">Structure</span>
+									<div class="width-full">
+										<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: dsbrd.optionStructures, dataValueField: 'field', dataTextField: 'name', value: dsbrd.structure }"></select>
+									</div>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+						<div class="clearfix"></div>
+
+						<div class="form-inline pull-right breakdown-filter">
+							<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+								<span class="input-group-addon align-right">Breakdown by</span>
+								<div class="width-full">
+									<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: dsbrd.breakdown, select: dsbrd.changeBreakdown, filter: 'contains' }"></select>
+								</div>
+								<div class="clearfix"></div>
+							</div>
+
+							<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+								<span class="input-group-addon align-right">Breakdown Value</span>
+								<div class="width-full">
+									<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: dsbrd.optionBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: dsbrd.breakdownValue, placeholder: 'Choose value', change: dsbrd.changeBreakdownValue }"></select>
+								</div>
+								<div class="clearfix"></div>
+							</div>
+
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					<div class="clearfix"></div>
+
+					<div data-bind="visible: !dsbrd.contentIsLoading()">
+						<div class="grid-dashboard"></div>
+						<div class="clearfix"></div>
+					</div>
 				</div>
 				<div role="tabpanel" class="tab-pane" id="pnl-comparison">
 					<div class="filter pull-right" data-bind="visible: !rs.contentIsLoading()">

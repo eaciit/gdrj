@@ -989,6 +989,363 @@ smry.summaryMode = ko.observable('overview')
 
 
 
+viewModel.dashboard = {}
+let dsbrd = viewModel.dashboard
+
+dsbrd.rows = ko.observableArray([
+	// { pnl: 'Gross Sales', plcodes: ["PL1", "PL2", "PL3", "PL4", "PL5", "PL6"] },
+	{ pnl: "Net Sales", plcodes: ["PL8A"] },
+	{ pnl: 'Growth', plcodes: [] }, // NOT YET
+	{ pnl: 'Sales Discount', plcodes: ["PL7", "PL8"] },
+	// { pnl: 'ATL', plcodes: ["PL28"] },
+	// { pnl: 'BTL', plcodes: ["PL29", "PL30", "PL31", "PL32"] },
+	{ pnl: "COGS", plcodes: ["PL74B"] },
+	{ pnl: "Gross Margin", plcodes: ["PL74C"] },
+	{ pnl: "SGA", plcodes: ["PL94A"] },
+	{ pnl: "Royalties", plcodes: ["PL26A"] },
+	{ pnl: "EBITDA", plcodes: ["PL44C"] },
+	{ pnl: "EBIT %", plcodes: [] },
+	{ pnl: "EBIT", plcodes: ["PL44B"] },
+])
+
+dsbrd.data = ko.observableArray([])
+dsbrd.columns = ko.observableArray([])
+dsbrd.breakdown = ko.observable('customer.channelname')
+dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears())
+dsbrd.contentIsLoading = ko.observable(false)
+dsbrd.optionStructures = ko.observableArray([
+	{ field: "date.fiscal", name: "Fiscal Year" },
+	{ field: "date.quartertxt", name: "Quarter" },
+	{ field: "date.month", name: "Month" }
+])
+dsbrd.structure = ko.observable(dsbrd.optionStructures()[0].field)
+dsbrd.structureYear = ko.observable('date.year')
+dsbrd.optionBreakdownValues = ko.observableArray([])
+dsbrd.breakdownValue = ko.observableArray([])
+dsbrd.breakdownValueAll = { _id: 'All', Name: 'All' }
+dsbrd.changeBreakdown = () => {
+	let all = dsbrd.breakdownValueAll
+	let map = (arr) => arr.map((d) => {
+		if (dsbrd.breakdown() == "customer.channelname") {
+			return d
+		}
+
+		return { _id: d.Name, Name: d.Name }
+	})
+	setTimeout(() => {
+		switch (dsbrd.breakdown()) {
+			case "customer.branchname":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
+				dsbrd.breakdownValue([all._id])
+			break;
+			case "product.brand":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())))
+				dsbrd.breakdownValue([all._id])
+			break;
+			case "customer.channelname":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
+				dsbrd.breakdownValue([all._id])
+			break;
+			case "customer.zone":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())))
+				dsbrd.breakdownValue([all._id])
+			break;
+			case "customer.areaname":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Area())))
+				dsbrd.breakdownValue([all._id])
+			break;
+			case "customer.region":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.Region())))
+				dsbrd.breakdownValue([all._id])
+			break;
+			case "customer.keyaccount":
+				dsbrd.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))
+				dsbrd.breakdownValue([all._id])
+			break;
+		}
+	}, 100)
+}
+
+dsbrd.changeBreakdownValue = () => {
+	let all = dsbrd.breakdownValueAll
+	setTimeout(() => {
+		let condA1 = dsbrd.breakdownValue().length == 2
+		let condA2 = dsbrd.breakdownValue().indexOf(all._id) == 0
+		if (condA1 && condA2) {
+			dsbrd.breakdownValue.remove(all._id)
+			return
+		}
+
+		let condB1 = dsbrd.breakdownValue().length > 1
+		let condB2 = dsbrd.breakdownValue().reverse()[0] == all._id
+		if (condB1 && condB2) {
+			dsbrd.breakdownValue([all._id])
+			return
+		}
+
+		let condC1 = dsbrd.breakdownValue().length == 0
+		if (condC1) {
+			dsbrd.breakdownValue([all._id])
+		}
+	}, 100)
+}
+
+dsbrd.refresh = () => {
+	if (dsbrd.breakdownValue().length == 0) {
+		toolkit.showError('Please choose at least breakdown value')
+		return
+	}
+
+	let param = {}
+	param.pls = _.flatten(dsbrd.rows().map((d) => d.plcodes))
+	param.groups = rpt.parseGroups([dsbrd.breakdown(), dsbrd.structure()])
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue(true, dsbrd.fiscalYears)
+
+	let breakdownValue = dsbrd.breakdownValue().filter((d) => d != 'All')
+	if (breakdownValue.length > 0) {
+		param.filters.push({
+			Field: dsbrd.breakdown(),
+			Op: '$in',
+			Value: dsbrd.breakdownValue()
+		})
+	}
+
+	if (dsbrd.structure() == 'date.month') {
+		param.groups.push(dsbrd.structureYear())
+	}
+
+	let fetch = () => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => { fetch() }, 1000 * 5)
+				return
+			}
+			console.log(res)
+			dsbrd.contentIsLoading(false)
+			dsbrd.render(res)
+		}, () => {
+			dsbrd.contentIsLoading(false)
+		})
+	}
+
+	dsbrd.contentIsLoading(true)
+	fetch()
+}
+
+dsbrd.render = (res) => {
+	let rows = []
+	let rowsAfter = []
+	let columnsPlaceholder = [{ 
+		field: 'pnl', 
+		title: 'PNL', 
+		attributes: { class: 'bold' }, 
+		headerAttributes: { style: 'font-weight: bold; vertical-align: middle;' }, 
+		width: 120
+	}, { 
+		field: 'total', 
+		title: 'Total', 
+		attributes: { class: 'bold align-right bold' }, 
+		headerAttributes: { style: 'font-weight: bold; vertical-align: middle; text-align: right;' }, 
+		width: 150
+	}]
+
+	let data = res.Data.Data
+
+	dsbrd.rows().forEach((row, rowIndex) => {
+		row.columnData = []
+		data.forEach((column, columnIndex) => {
+			let columnAfter = {
+				breakdownTitle: toolkit.redefine(column._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`]), 
+				structureTitle: toolkit.redefine(column._id[`_id_${toolkit.replace(dsbrd.structure(), '.', '_')}`]), 
+				structureYearTitle: toolkit.redefine(column._id[`_id_${toolkit.replace(dsbrd.structureYear(), '.', '_')}`]), 
+				original: toolkit.sum(row.plcodes, (plcode) => toolkit.number(column[plcode])),
+				value: toolkit.sum(row.plcodes, (plcode) => toolkit.number(column[plcode])),
+			}
+
+			row.columnData.push(columnAfter)
+		})
+
+		rowsAfter.push(row)
+	})
+
+	if (rowsAfter.length > 0) {
+		let grossSales = rowsAfter.find((d) => d.pnl == 'Net Sales')
+		let ebit = rowsAfter.find((d) => d.pnl == 'EBIT')
+		let columns = rowsAfter[0].columnData
+
+		rowsAfter.forEach((row, rowIndex) => {
+			row.columnData.forEach((column, columnIndex) => {
+				if (row.pnl == 'EBIT %') {
+					let percentage = kendo.toString(toolkit.number(ebit.columnData[columnIndex].original / grossSales.columnData[columnIndex].original) * 100, 'n2')
+					column.value = `${percentage} %`;
+				} else if (row.pnl != 'Net Sales' && row.pnl != 'EBIT') {
+					let percentage = kendo.toString(toolkit.number(column.original / grossSales.columnData[columnIndex].original) * 100, 'n2')
+					column.value = `${percentage} %`;
+				}
+			})
+
+			let total = toolkit.sum(row.columnData, (d) => d.original)
+			row.total = kendo.toString(total, 'n0')
+			if (row.pnl == 'EBIT %') {
+				let totalGrossSales = toolkit.sum(grossSales.columnData, (d) => d.original)
+				let totalEbit = toolkit.sum(ebit.columnData, (d) => d.original)
+				let percentage = toolkit.number(totalEbit / totalGrossSales) * 100
+				row.total = `${kendo.toString(percentage, 'n2')} %`
+			}
+		})
+	}
+
+	let columnData = []
+	data.forEach((d, i) => {
+		let columnInfo = rowsAfter[0].columnData[i]
+
+		let column = {}
+		column.field = `columnData[${i}].value`
+		column.breakdown = $.trim(toolkit.redefine(columnInfo.breakdownTitle, ''))
+		column.title = $.trim(columnInfo.structureTitle)
+		column.width = 150
+		column.format = '{0:n0}'
+		column.attributes = { class: 'align-right' }
+		column.headerAttributes = { 
+			style: 'text-align: center !important; font-weight: bold; border-right: 1px solid white; ',
+		}
+
+		if (dsbrd.structure() == 'date.month') {
+			column.titleYear = $.trim(columnInfo.structureYearTitle)
+		}
+
+		columnData.push(column)
+	})
+
+	let op1 = _.groupBy(columnData, (d) => d.breakdown)
+	let op2 = _.map(op1, (v, k) => { 
+		v.forEach((h) => {
+			h.month = h.title
+			h.year = h.titleYear
+
+			if (dsbrd.structure() == 'date.month') {
+				let month = moment(new Date(2015, parseInt(h.title, 10) - 1, 1)).format('MMMM')
+				h.title = month
+
+				if (rpt.value.FiscalYears().length > 1) {
+					h.title = `${month} ${h.titleYear}`
+				}
+			}
+		})
+
+		return { 
+			title: ($.trim(k) == '' ? '' : k), 
+			columns: v,
+			headerAttributes: { 
+				style: 'text-align: center !important; font-weight: bold; border: 1px solid white; border-top: none; border-left: none; box-sizing: border-box; background-color: #e9eced;',
+			}
+		}
+	})
+
+	let columnGrouped = _.sortBy(op2, (d) => d.title)
+
+	op2.forEach((d) => {
+		d.columns = _.sortBy(d.columns, (e) => {
+			if (dsbrd.structure() == 'date.month') {
+				let monthString = `0${e.month}`.split('').reverse().slice(0, 2).reverse().join('')
+				
+				if (rpt.value.FiscalYears().length > 1) {
+					let yearMonthString = `${e.year}${monthString}`
+					return yearMonthString
+				}
+
+				return monthString
+			}
+
+			return e.title
+		})
+	})
+
+	if (columnGrouped.length > 0) {
+		columnsPlaceholder[0].locked = true
+		columnsPlaceholder[1].locked = true
+	}
+
+	columnGrouped = _.orderBy(columnGrouped, (d) => {
+		let value = 0
+		let dataColumn = rowsAfter[0].columnData
+			.find((e) => $.trim(e.breakdownTitle) == $.trim(d.title))
+		if (typeof dataColumn != 'undefined') {
+			value = dataColumn.value
+		}
+
+		return value
+	}, 'desc')
+
+	dsbrd.data(rowsAfter)
+	dsbrd.columns(columnsPlaceholder.concat(columnGrouped))
+
+	let grossSales = dsbrd.data().find((d) => d.pnl == "Net Sales")
+	let growth = dsbrd.data().find((d) => d.pnl == "Growth")
+
+	let counter = 0
+	let prevIndex = 0
+	columnGrouped.forEach((d) => {
+		d.columns.forEach((e, i) => {
+			let index = toolkit.getNumberFromString(e.field)
+
+			if ((i + 1) == d.columns.length) {
+				e.attributes.style = `${e.attributes.style}; border-right: 1px solid rgb(240, 243, 244);`
+			}
+
+			if (i == 0) {
+				prevIndex = index
+				counter++
+				return
+			}
+
+			let gs = grossSales.columnData[index]
+			let gsPrev = grossSales.columnData[prevIndex]
+			let g = growth.columnData[index]
+			let value = toolkit.number((gs.value - gsPrev.value) / gsPrev.value) * 100
+			g.value = `${kendo.toString(value, 'n2')} %`
+
+			counter++
+			prevIndex = index
+		})
+	})
+
+	let config = {
+		dataSource: {
+			data: dsbrd.data()
+		},
+		columns: dsbrd.columns(),
+		resizable: false,
+		sortable: false, 
+		pageable: false,
+		filterable: false,
+		dataBound: () => {
+			let sel = '.grid-dashboard .k-grid-content-locked tr, .grid-dashboard .k-grid-content tr'
+
+			$(sel).on('mouseenter', function () {
+				let index = $(this).index()
+				console.log(this, index)
+		        let elh = $(`.grid-dashboard .k-grid-content-locked tr:eq(${index})`).addClass('hover')
+		        let elc = $(`.grid-dashboard .k-grid-content tr:eq(${index})`).addClass('hover')
+			})
+			$(sel).on('mouseleave', function () {
+				$('.grid-dashboard tr.hover').removeClass('hover')
+			})
+		}
+	}
+
+	$('.grid-dashboard').replaceWith('<div class="grid-dashboard"></div>')
+	$('.grid-dashboard').kendoGrid(config)
+}
+
+
+
+
+
+
+
+
 viewModel.scatter = new Object()
 let rs = viewModel.scatter
 let dataPoints = [
@@ -1451,6 +1808,12 @@ $(() => {
 		bkd.refresh(false)
 	}, 200)
 
+	dsbrd.changeBreakdown()
+	setTimeout(() => {
+		dsbrd.breakdownValue(['All'])
+		dsbrd.refresh()
+	}, 200)
+	
 	rs.getSalesHeaderList()
 	rank.refresh()
 })
