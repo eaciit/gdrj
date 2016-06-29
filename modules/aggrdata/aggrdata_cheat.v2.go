@@ -125,30 +125,48 @@ func main() {
 
 		// 101,461,675
 
-		if dtkm.GetString("date_fiscal") == "2015-2016" && dtkm.GetString("customer_channelid") == "I1" {
-			v := tkm.GetFloat64("PL2") + 101461675
-			tkm.Set("PL2", v)
+		// if dtkm.GetString("date_fiscal") == "2015-2016" && dtkm.GetString("customer_channelid") == "I1" {
+		// 	v := tkm.GetFloat64("PL2") + 101461675
+		// 	tkm.Set("PL2", v)
 
-			v = -101461675
-			tkm.Set("PL8", v)
+		// 	v = -101461675
+		// 	tkm.Set("PL8", v)
 
-			CalcSum(tkm)
-		}
+		// 	CalcSum(tkm)
+		// }
 
-		//2016
-		//pl.AddData("PL25", -netsalesamount*2.85900895/100, plmodels)
-
-		//2015
-		//pl.AddData("PL25", -netsalesamount*2.82683/100, plmodels)
+		// if dtkm.GetString("date_fiscal") == "2015-2016" {
+		// 	// 2016
+		// 	pl.AddData("PL25", -netsalesamount*2.85900895/100, plmodels)
+		// } else {
+		// 	// 2015
+		// 	pl.AddData("PL25", -netsalesamount*2.82683/100, plmodels)
+		// }
 
 		// PL9
 
-		//vNetSales := tkm.GetFloat64("PL8A")
-		// if dtkm.GetString("date_fiscal") == "2014-2015" {
-		// 	tkm.Set("PL25", -vNetSales*2.82683/100)
-		// } else {
-		// 	tkm.Set("PL25", -vNetSales*2.85900895/100)
-		// }
+		vNetSales := tkm.GetFloat64("PL8A")
+		if dtkm.GetString("date_fiscal") == "2014-2015" {
+			tkm.Set("PL25", -vNetSales*2.82683/100)
+		} else {
+			tkm.Set("PL25", -vNetSales*0.0285214595423635)
+
+			if dtkm.GetString("customer_channelid") == "I2" { //GT
+				tkm.Set("PL7A", float64(18590524688))
+			} else if dtkm.GetString("customer_channelid") == "I4" { //Industrial
+				tkm.Set("PL7A", float64(655115931))
+			} else if dtkm.GetString("customer_channelid") == "I3" { //MT
+				tkm.Set("PL7A", float64(157323938368))
+			} else if dtkm.GetString("customer_channelid") == "I6" { //Motorist
+				tkm.Set("PL7A", float64(57345916))
+			}
+
+			// General Trade  18,590,524,688.00
+			// Industrial Trade  655,115,931.00
+			// Modern Trade  157,323,938,368.00
+			// Motorists  57,345,916.00
+		}
+		CalcSum(tkm)
 
 		// 	v := tkm.GetFloat64("PL7")
 		// 	tkm.Set("PL7", -v)
