@@ -25,6 +25,18 @@ bkd.breakdownBranch_ChannelRDNonRD = ko.observable('');
 bkd.breakdownBranch_SubChannel = ko.observable('');
 
 bkd.changeTo = function (d, title) {
+	if (d == 'summary') {
+		setTimeout(function () {
+			$('#summary').find('.k-grid').each(function (i, e) {
+				$(e).data('kendoGrid').refresh();
+			});
+			$('#summary').find('.k-chart').each(function (i, e) {
+				$(e).data('kendoChart').redraw();
+			});
+		}, 300);
+		return;
+	}
+
 	bkd.breakdownBy(d);
 	bkd.title(title);
 	bkd.refresh();
