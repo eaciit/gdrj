@@ -196,7 +196,7 @@ v1.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
 
 			return;
 		}
@@ -863,7 +863,7 @@ v3.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
 
 			return;
 		}

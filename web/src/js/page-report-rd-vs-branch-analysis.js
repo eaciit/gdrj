@@ -1,5 +1,5 @@
 let colors = ['rgb(17, 134, 212)', 'rgb(32, 162, 87)', 'rgb(234, 144, 0)']
-
+	
 viewModel.RDvsBranchView1 = {}
 let v1 = viewModel.RDvsBranchView1
 
@@ -223,6 +223,8 @@ v1.render = () => {
 				.width(percentageWidth)
 				.addClass('align-right')
 				.appendTo(trContents[0])
+				.css('background-color', colors[i])
+				.css('color', 'white')
 
 			return
 		}
@@ -1031,6 +1033,8 @@ v3.render = () => {
 				.width(percentageWidth)
 				.addClass('align-right')
 				.appendTo(trContents[0])
+				.css('background-color', colors[i])
+				.css('color', 'white')
 
 			return
 		}
