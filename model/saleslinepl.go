@@ -704,6 +704,7 @@ func (pl *SalesPL) CalcDamage(masters toolkit.M) {
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 	pl.AddData("PL44", d*pl.Ratio.Month, plmodels)
+	// pl.AddData("PL44", -d*pl.Ratio.Month, plmodels)
 }
 
 func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {

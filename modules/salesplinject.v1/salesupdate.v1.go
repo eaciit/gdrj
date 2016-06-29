@@ -571,7 +571,8 @@ func main() {
 	flag.Parse()
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
-	speriode := eperiode.AddDate(-1, 0, 0)
+	// speriode := eperiode.AddDate(-1, 0, 0)
+	speriode := eperiode.AddDate(0, 0, -1)
 
 	setinitialconnection()
 	defer gdrj.CloseDb()
@@ -593,19 +594,6 @@ func main() {
 	prepmasterclean()
 	prepmastercalc()
 
-	// jobs := make(chan *gdrj.SalesPL)
-	// result := make(chan string)
-
-	// chdates := make(chan time.Time, len(seeds))
-
-	// for wi := 0; wi < 10; wi++ {
-	// 	go workergetproc(wi, chdates, jobs, getresult)
-	// }
-
-	// for wi := 0; wi < 10; wi++ {
-	// 	go workersaveproc(wi, jobs, result)
-	// }
-
 	getresult := make(chan int, len(seeds))
 	toolkit.Println("Starting worker query...")
 	for i, v := range seeds {
@@ -619,72 +607,17 @@ func main() {
 		toolkit.Printfn("Saving %d of %d (%d pct) in %s",
 			i, len(seeds), i/len(seeds), time.Since(t0).String())
 	}
-
-	// rows := 0
-	// for i := 0; i < len(chdates); i++ {
-	// 	rows += <-getresult
-	// }
-	// close(jobs)
-
-	// step := rows / 100
-	// if step == 0 {
-	// 	step = 1
-	// }
-
-	// for ri := 0; ri < rows; ri++ {
-	// 	<-result
-
-	// 	if ri%step == 0 {
-	// 		toolkit.Printfn("Saving %d of %d (%d pct) in %s",
-	// 			ri, rows, ri/step, time.Since(t0).String())
-	// 	}
-	// }
 }
-
-// func workersaveproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
-// 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
-// 	defer workerconn.Close()
-
-// 	var spl *gdrj.SalesPL
-// 	for spl = range jobs {
-
-// 		spl.CleanAndClasify(masters)
-
-// 		// === For ratio update and calc
-// 		spl.RatioCalc(masters)
-
-// 		//calculate process -- better not re-run
-// 		// spl.CalcCOGSRev(masters)
-
-// 		//calculate process
-// 		// spl.CalcFreight(masters)
-// 		// spl.CalcDepre(masters)
-// 		// spl.CalcDamage(masters)
-// 		// spl.CalcDepre(masters)
-// 		// spl.CalcRoyalties(masters)
-// 		// spl.CalcDiscountActivity(masters)
-// 		// spl.CalcPromo(masters)
-// 		// spl.CalcSum(masters)
-
-// 		// tablename := toolkit.Sprintf("%v-1", spl.TableName())
-// 		workerconn.NewQuery().From(toolkit.Sprintf("%v-2", tablename)).
-// 			Save().Exec(toolkit.M{}.Set("data", spl))
-
-// 		result <- spl.ID
-// 	}
-// }
 
 func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
-	// t01 := time.Now()
 	csr, _ := workerconn.NewQuery().Select().
 		From(tablename).
 		Where(filter).
 		Cursor(nil)
 
-	// countall := csr.Count()
 	i := 0
 	for {
 		i++
@@ -712,23 +645,12 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		// 		// spl.CalcPromo(masters)
 		spl.CalcSum(masters)
 
-		tablename := toolkit.Sprintf("%v-2", spl.TableName())
+		tablename := toolkit.Sprintf("%v-1", spl.TableName())
 
 		workerconn.NewQuery().From(tablename).
 			Save().Exec(toolkit.M{}.Set("data", spl))
-
-		if i == 5 {
-			break
-		}
 	}
 
 	getresult <- csr.Count()
 
-	// toolkit.Printfn("Process data %v done in %s with %d row",
-	// 	chdate, time.Since(t01).String(), csr.Count())
-	// csr.Close()
-
-	// toolkit.Printfn("Go %d. Processing done in %s",
-	// 	wi,
-	// 	time.Since(t0).String())
 }
