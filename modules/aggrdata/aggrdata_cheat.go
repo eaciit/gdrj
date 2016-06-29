@@ -9,7 +9,7 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	"strings"
+
 	"time"
 )
 
@@ -171,11 +171,10 @@ func CalcSum(tkm toolkit.M) {
 			continue
 		}
 
-		arkey := strings.Split(k, "_")
-
-		toolkit.Println(arkey[0])
-
-		plmodel := plmodels[arkey[0]]
+		plmodel, exist := plmodels[k]
+		if !exist {
+			continue
+		}
 		Amount := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
 
 		toolkit.Println(plmodel.PLHeader1)
