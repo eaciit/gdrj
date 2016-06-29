@@ -75,7 +75,6 @@ func main() {
 		}
 
 		dtkm, _ := toolkit.ToM(tkm.Get("_id"))
-
 		if dtkm.GetString("date_fiscal") == "2014-2015" {
 			v := tkm.GetFloat64("PL7")
 			tkm.Set("PL7", -v)
