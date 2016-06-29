@@ -20,7 +20,7 @@ var (
 	fiscalyear int
 	data       map[string]float64
 	mutex      = &sync.Mutex{}
-	tablename  = "salespls"
+	tablename  string
 )
 
 func setinitialconnection() {
@@ -43,6 +43,7 @@ func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
 	flag.IntVar(&fiscalyear, "year", 2015, "YYYY representation of godrej fiscal year. Default is 2015")
+	flag.StringVar(&tablename, "table", "salespls", "Source Table")
 	flag.Parse()
 
 	setinitialconnection()
