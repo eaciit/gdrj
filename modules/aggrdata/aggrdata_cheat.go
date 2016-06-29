@@ -74,11 +74,15 @@ func main() {
 			break
 		}
 
-		v := tkm.GetFloat64("PL7")
-		tkm.Set("PL7", -v)
+		dtkm, _ := toolkit.ToM(tkm.Get("_id"))
 
-		v = tkm.GetFloat64("PL8")
-		tkm.Set("PL8", -v)
+		if dtkm.GetString("date_fiscal") == "2014-2015" {
+			v := tkm.GetFloat64("PL7")
+			tkm.Set("PL7", -v)
+
+			v = tkm.GetFloat64("PL8")
+			tkm.Set("PL8", -v)
+		}
 
 		_ = workerconn.NewQuery().
 			From("pl_customer_channelid_date_fiscal-test").
