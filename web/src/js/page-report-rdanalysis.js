@@ -453,6 +453,7 @@ rd.render = () => {
 		let trHeader = toolkit.newEl('tr')
 			.addClass(`header${PL}`)
 			.attr(`idheaderpl`, PL)
+			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
@@ -477,6 +478,7 @@ rd.render = () => {
 		let trContent = toolkit.newEl('tr')
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
+			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableContent)
 
 		data.forEach((e, f) => {

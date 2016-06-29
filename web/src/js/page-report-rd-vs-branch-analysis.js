@@ -1357,4 +1357,6 @@ $(() => {
 	v3.refresh()
 	v1.refresh()
 	v2.refresh()
+
+	rpt.prepareEvents()
 })

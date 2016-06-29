@@ -453,6 +453,7 @@ kac.render = () => {
 		let trHeader = toolkit.newEl('tr')
 			.addClass(`header${PL}`)
 			.attr(`idheaderpl`, PL)
+			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
@@ -476,6 +477,7 @@ kac.render = () => {
 
 		let trContent = toolkit.newEl('tr')
 			.addClass(`column${PL}`)
+			.attr(`data-row`, `row-${i}`)
 			.attr(`idpl`, PL)
 			.appendTo(tableContent)
 
