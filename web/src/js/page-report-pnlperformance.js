@@ -1795,25 +1795,10 @@ vm.breadcrumb([
 	{ title: 'P&L Performance', href: '#' }
 ])
 
-bkd.title('P&L Summary')
+bkd.title('P&L by Channels')
 rs.title('P&L Comparison to Net Sales')
 
 rpt.refresh = () => {
-	rpt.tabbedContent()
-	rpt.refreshView('analysis')
-
-	rs.getSalesHeaderList()
-
-	bkd.changeBreakdown()
-	setTimeout(() => {
-		bkd.breakdownValue(['All'])
-		bkd.refresh(false)
-	}, 200)
-
-	rpt.prepareEvents()
-}
-
-$(() => {
 	bkd.changeBreakdown()
 	setTimeout(() => {
 		bkd.breakdownValue(['All'])
@@ -1828,4 +1813,8 @@ $(() => {
 	
 	rs.getSalesHeaderList()
 	rank.refresh()
+}
+
+$(() => {
+	rpt.refresh()
 })
