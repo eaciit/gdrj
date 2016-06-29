@@ -1,11 +1,11 @@
 package main
 
 import (
-	web "eaciit/gdrj/web"
-	web2 "eaciit/gdrj/web2"
+	web "eaciit/gdrjprod/web"
+	web2 "eaciit/gdrjprod/web2"
 
-	"eaciit/gdrj/web/installation"
-	"eaciit/gdrj/web/model"
+	"eaciit/gdrjprod/web/installation"
+	"eaciit/gdrjprod/web/model"
 	"fmt"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"

@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"eaciit/gdrj/web/model"
+	"eaciit/gdrjprod/web/model"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 )
