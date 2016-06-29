@@ -92,6 +92,7 @@ cst.refresh = () => {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				cst.contentIsLoading(false)
 				return
 			}
 

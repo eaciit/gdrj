@@ -178,6 +178,7 @@ bkd.refresh = (useCache = false) => {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				bkd.contentIsLoading(false)
 				return
 			}
 
@@ -1072,6 +1073,7 @@ rs.refresh = (useCache = false) => {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				rs.contentIsLoading(false)
 				return
 			}
 

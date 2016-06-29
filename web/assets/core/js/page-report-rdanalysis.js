@@ -62,6 +62,7 @@ rd.refresh = function () {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				rd.contentIsLoading(false);
 				return;
 			}
 

@@ -56,6 +56,7 @@ rd.refresh = (useCache = false) => {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				rd.contentIsLoading(false)
 				return
 			}
 

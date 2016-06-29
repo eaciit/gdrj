@@ -167,6 +167,7 @@ bkd.refresh = function () {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				bkd.contentIsLoading(false);
 				return;
 			}
 
@@ -1034,6 +1035,7 @@ rs.refresh = function () {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				rs.contentIsLoading(false);
 				return;
 			}
 

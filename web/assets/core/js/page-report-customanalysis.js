@@ -93,6 +93,7 @@ cst.refresh = function () {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				cst.contentIsLoading(false);
 				return;
 			}
 

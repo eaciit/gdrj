@@ -56,6 +56,7 @@ kac.refresh = (useCache = false) => {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				kac.contentIsLoading(false)
 				return
 			}
 

@@ -157,6 +157,7 @@ dsbrd.refresh = function () {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				dsbrd.contentIsLoading(false);
 				return;
 			}
 
@@ -454,6 +455,7 @@ rank.refresh = function () {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				rank.contentIsLoading(false);
 				return;
 			}
 
@@ -738,6 +740,7 @@ sd.refresh = function () {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				sd.contentIsLoading(false);
 				return;
 			}
 

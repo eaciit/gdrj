@@ -364,6 +364,7 @@ ba.refresh = function () {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				ba.contentIsLoading(false);
 				return;
 			}
 

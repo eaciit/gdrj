@@ -311,6 +311,7 @@ ba.refresh = (useCache = false) => {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				ba.contentIsLoading(false)
 				return
 			}
 

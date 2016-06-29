@@ -62,6 +62,7 @@ kac.refresh = function () {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				kac.contentIsLoading(false);
 				return;
 			}
 

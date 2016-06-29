@@ -166,6 +166,7 @@ dsbrd.refresh = () => {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				dsbrd.contentIsLoading(false)
 				return
 			}
 			
@@ -446,6 +447,7 @@ rank.refresh = () => {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				rank.contentIsLoading(false)
 				return
 			}
 
@@ -719,6 +721,7 @@ sd.refresh = () => {
 			}
 
 			if (rpt.isDataEmpty(res)) {
+				sd.contentIsLoading(false)
 				return
 			}
 	
