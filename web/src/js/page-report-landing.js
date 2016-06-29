@@ -3,10 +3,10 @@ let lgd = viewModel.landing
 
 lgd.menu = ko.observableArray([
 	{ to: 'pnlperformance', title: 'P&L Performance', icon: 'fa-bar-chart', color: 'rgb(10, 114, 183)' },
-	{ to: 'distribution-analysis', title: 'Distribution Analysis', icon: 'fa-bus', color: 'rgb(17, 134, 212)' },
-	{ to: 'contribution-analysis', title: 'Contribution Analysis', icon: 'fa-plus', color: '#3498DB' },
+	{ to: 'distribution-analysis', title: 'Distribution Analysis', icon: 'fa-bus', nope: true, color: 'rgb(17, 134, 212)' },
+	{ to: 'contribution-analysis', title: 'Contribution Analysis', icon: 'fa-plus', nope: true, color: '#3498DB' },
 
-	{ to: 'growthanalysis', title: 'Growth Analysis', icon: 'fa-area-chart', color: 'rgb(23, 142, 73)' },
+	{ to: 'growthanalysis', title: 'Growth Analysis', icon: 'fa-area-chart', nope: true, color: 'rgb(23, 142, 73)' },
 	{ to: 'keyaccountanalysis', title: 'Key Account Analysis', icon: 'fa-key', color: 'rgb(32, 162, 87)' },
 	{ to: 'sales-return-analysis', title: 'Sales Return Analysis', nope: true, icon: 'fa-refresh', color: '#28B463' },
 
