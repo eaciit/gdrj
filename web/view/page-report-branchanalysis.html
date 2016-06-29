@@ -51,7 +51,7 @@
 					</div>
 					
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right">Breakdown Value</span>
+						<span class="input-group-addon align-right">Branch</span>
 						<div class="width-full">
 							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: ba.optionBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: ba.breakdownValue, placeholder: 'Choose value', change: ba.changeBreakdownValue }"></select>
 						</div>
@@ -64,7 +64,7 @@
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right">Breakdown by sub channels</span>
 						<div class="width-full">
-							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: ba.optionSubBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: ba.subBreakdownValue, placeholder: 'Choose value', enabled: ba.expand }"></select>
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: ba.optionSubBreakdown, dataValueField: '_id', dataTextField: 'Name', value: ba.subBreakdownValue, placeholder: 'Choose value', enabled: ba.expand }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>

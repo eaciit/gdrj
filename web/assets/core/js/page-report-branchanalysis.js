@@ -1,7 +1,5 @@
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
-
 viewModel.breakdown = new Object();
 var ba = viewModel.breakdown;
 
@@ -186,8 +184,45 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		return op2;
 	};
 
-	if (expand && (breakdownRD == 'NonRD' || breakdownRD.search('Only') > -1) && ba.subBreakdownValue().length == 0) {
+	if (expand && ba.subBreakdownValue().length > 0) {
 		var _parsed = groupThenMap(data, function (d) {
+			return d._id._id_customer_branchname;
+		}).map(function (d) {
+			var subs = groupThenMap(d.subs, function (e) {
+				return e._id._id_customer_channelname;
+			}).map(function (e) {
+				var subs = groupThenMap(e.subs, function (f) {
+					return f._id._id_customer_reportsubchannel;
+				}).map(function (f) {
+					f.count = 1;
+					return f;
+				});
+
+				e.subs = _.orderBy(subs, function (f) {
+					return f.PL8A;
+				}, 'desc');
+				e.count = e.subs.length;
+				return e;
+			});
+
+			d.subs = _.orderBy(subs, function (e) {
+				return e.PL8A;
+			}, 'desc');
+			d.count = toolkit.sum(d.subs, function (e) {
+				return e.count;
+			});
+			return d;
+		});
+
+		ba.level(3);
+		showAsBreakdown(_parsed);
+		_parsed = _.orderBy(_parsed, function (d) {
+			return d.total;
+		}, 'desc');
+
+		return _parsed;
+	} else if (expand && ba.subBreakdownValue().length == 0) {
+		var _parsed2 = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
 			var subs = groupThenMap(d.subs, function (e) {
@@ -218,99 +253,12 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		});
 
 		ba.level(3);
-		showAsBreakdown(_parsed);
-		_parsed = _.orderBy(_parsed, function (d) {
-			return d.total;
-		}, 'desc');
-		return _parsed;
-	} else if (expand && ba.subBreakdownValue().length > 0) {
-		var _parsed2 = groupThenMap(data, function (d) {
-			return d._id._id_customer_branchname;
-		}).map(function (d) {
-			var subs = groupThenMap(d.subs, function (e) {
-				return e._id._id_customer_channelname;
-			}).map(function (e) {
-				var subs = groupThenMap(e.subs, function (f) {
-					return f._id._id_customer_reportsubchannel;
-				}).map(function (f) {
-					f.count = 1;
-					return f;
-				});
-
-				e.subs = _.orderBy(subs, function (f) {
-					return f.PL8A;
-				}, 'desc');
-				e.count = e.subs.length;
-				return e;
-			});
-
-			d.subs = _.orderBy(subs, function (e) {
-				return e.PL8A;
-			}, 'desc');
-			d.count = toolkit.sum(d.subs, function (e) {
-				return e.count;
-			});
-			return d;
-		});
-
-		console.log('PPPP', _parsed2.slice(0));
-
-		ba.level(3);
 		showAsBreakdown(_parsed2);
 		_parsed2 = _.orderBy(_parsed2, function (d) {
 			return d.total;
 		}, 'desc');
-
-		console.log('PPPP', _parsed2.slice(0));
 		return _parsed2;
-	} else if (expand && breakdownRD.search('ByLocation') > -1) {
-		var _ret3 = function () {
-			var opt = ba.optionBreakdownRD().find(function (d) {
-				return d.id == ba.breakdownRD();
-			});
-
-			var parsed = groupThenMap(data, function (d) {
-				return d._id._id_customer_branchname;
-			}).map(function (d) {
-				var subs = groupThenMap(d.subs, function (e) {
-					return e._id._id_customer_channelname;
-				}).map(function (e) {
-					var subs = groupThenMap(d.subs, function (f) {
-						return f._id['_id_customer_' + opt.field];
-					}).map(function (f) {
-						f.subs = [];
-						f.count = 1;
-						return f;
-					});
-
-					e.subs = _.orderBy(subs, function (f) {
-						return f.PL8A;
-					}, 'desc');
-					e.count = e.subs.length;
-					return e;
-				});
-
-				d.subs = _.orderBy(subs, function (e) {
-					return e.PL8A;
-				}, 'desc');
-				d.count = toolkit.sum(d.subs, function (e) {
-					return e.count;
-				});
-				return d;
-			});
-
-			ba.level(3);
-			showAsBreakdown(parsed);
-			parsed = _.orderBy(parsed, function (d) {
-				return d.total;
-			}, 'desc');
-			return {
-				v: parsed
-			};
-		}();
-
-		if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
-	} else if (breakdownRD == "All") {
+	} else if (!expand && ba.breakdownRD() == 'All') {
 		var _parsed3 = groupThenMap(data, function (d) {
 			return d._id._id_customer_branchname;
 		}).map(function (d) {
@@ -371,296 +319,71 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 ba.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
-	// if (ba.breakdownRD() == "All") {
-	// 	ba.expand(false)
-	// }
+	var param = {};
+	param.pls = [];
+	param.groups = [ba.breakdownByChannel(), ba.breakdownBy()];
+	param.aggr = 'sum';
+	param.filters = rpt.getFilterValue(false, ba.fiscalYear);
 
-	var request = function request(breakdownRD, expand, callback) {
-		var param = {};
-		param.pls = [];
-		param.groups = [ba.breakdownByChannel(), ba.breakdownBy()];
-		param.aggr = 'sum';
-		param.filters = rpt.getFilterValue(false, ba.fiscalYear);
-
-		var breakdownValue = ba.breakdownValue().filter(function (d) {
-			return d != 'All';
+	var breakdownValue = ba.breakdownValue().filter(function (d) {
+		return d != 'All';
+	});
+	if (breakdownValue.length > 0) {
+		param.filters.push({
+			Field: ba.breakdownBy(),
+			Op: '$in',
+			Value: ba.breakdownValue()
 		});
-		if (breakdownValue.length > 0) {
-			param.filters.push({
-				Field: ba.breakdownBy(),
-				Op: '$in',
-				Value: ba.breakdownValue()
-			});
-		}
+	}
 
-		var opt = ba.optionBreakdownRD().find(function (d) {
-			return d.id == breakdownRD;
+	if (ba.subBreakdownValue().length > 0) {
+		param.groups.push('customer.reportsubchannel');
+
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: ba.subBreakdownValue()
 		});
+	} else {
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: ba.optionSubBreakdown().map(function (d) {
+				return d._id;
+			})
+		});
+	}
 
-		if (breakdownRD == 'NonRD') {
-			param.filters.push({
-				Field: 'customer.channelname',
-				Op: '$in',
-				Value: rpt.masterData.Channel().map(function (d) {
-					return d._id;
-				}).filter(function (d) {
-					return d != 'I1';
-				})
-			});
-		} else if (breakdownRD.search('Only') > -1) {
-			// if (expand) {
-			// 	param.groups.push('customer.reportsubchannel')
-			// }
-
-			param.filters.push({
-				Field: 'customer.channelname',
-				Op: '$in',
-				Value: [opt.channelid]
-			});
-		} else if (breakdownRD.search('ByLocation') > -1) {
-			param.groups.push('customer.' + opt.field);
-		}
-
-		if (ba.subBreakdownValue().length > 0 && ba.expand()) {
-			param.groups.push('customer.reportsubchannel');
-
-			var _breakdownValue = ba.subBreakdownValue();
-
-			if (breakdownRD == 'NonRD') {
-				_breakdownValue = ba.subBreakdownValue().filter(function (d) {
-					return d != 'I1';
-				});
-			} else if (breakdownRD == 'OnlyRD') {
-				_breakdownValue = ba.subBreakdownValue().filter(function (d) {
-					return d == 'I1';
-				});
+	var fetch = function fetch() {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
 			}
 
-			if (_breakdownValue.length > 0) {
-				var filterChannel = param.filters.find(function (d) {
-					return d.Field == 'customer.channelname';
-				});
-				if (typeof filterChannel != 'undefined') {
-					filterChannel.Value = _.uniq(filterChannel.Value.concat(_breakdownValue));
-				} else {
-					param.filters.push({
-						Field: 'customer.channelname',
-						Op: '$in',
-						Value: _breakdownValue
-					});
-				}
-			}
-		}
+			var data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data);
 
-		var fetch = function fetch() {
-			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
-				if (res.Status == "NOK") {
-					setTimeout(function () {
-						fetch();
-					}, 1000 * 5);
-					return;
-				}
+			ba.data(data);
+			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
+			ba.breakdownNote('Last refreshed on: ' + date);
 
-				callback(res);
-			}, function () {
-				ba.emptyGrid();
-				ba.contentIsLoading(false);
-			}, {
-				cache: useCache == true ? 'breakdown chart' : false
-			});
-		};
-
-		ba.oldBreakdownBy(ba.breakdownBy());
-		ba.contentIsLoading(true);
-		fetch();
+			rpt.plmodels(res.Data.PLModels);
+			ba.emptyGrid();
+			ba.contentIsLoading(false);
+			ba.render();
+		}, function () {
+			ba.emptyGrid();
+			ba.contentIsLoading(false);
+		}, {
+			cache: useCache == true ? 'breakdown chart' : false
+		});
 	};
 
-	if (ba.breakdownRD() == "All" && ba.expand() && ba.subBreakdownValue().length == 0) {
-		var _ret4 = function () {
-			var mergeData = function mergeData(dataNonRD, dataRD) {
-				var data = [];
-				var ids = _.uniq(dataNonRD.map(function (d) {
-					return d._id;
-				}).concat(dataRD.map(function (d) {
-					return d._id;
-				})));
-
-				ids.forEach(function (id) {
-					var nonrd = dataNonRD.find(function (d) {
-						return d._id == id;
-					});
-					var rd = dataRD.find(function (d) {
-						return d._id == id;
-					});
-					var sampleData = nonrd == undefined ? rd : nonrd;
-					var mergedData = {};
-					mergedData._id = id;
-					mergedData.count = 0;
-					mergedData.subs = [];
-
-					if (nonrd != undefined) {
-						var nonrdSub = nonrd.subs.find(function (d) {
-							return d._id == 'Non RD';
-						});
-
-						mergedData.count += nonrdSub.subs.length;
-						mergedData.subs.push(nonrdSub);
-					} else {
-						var fake = {};
-						fake._id = 'Non RD';
-						fake.count = 0;
-						fake.subs = [];
-
-						for (var prop in sampleData) {
-							if (sampleData.hasOwnProperty(prop) && prop.search("PL") > -1) {
-								fake[prop] = 0;
-							}
-						}
-
-						var fakseSub = toolkit.clone(fake);
-						fakseSub._id = 'Total';
-
-						fake.subs = [fakseSub];
-						fake.count++;
-
-						mergedData.count++;
-						mergedData.subs.push(fake);
-					}
-
-					if (rd != undefined) {
-						var rdSub = rd.subs.find(function (d) {
-							return ['regional distributor', 'rd'].indexOf(d._id.toLowerCase()) > -1;
-						});
-
-						mergedData.count += rdSub.subs.length;
-						mergedData.subs.push(rdSub);
-					} else {
-						var _fake = {};
-						_fake._id = 'RD';
-						_fake.count = 0;
-						_fake.subs = [];
-
-						for (var _prop in sampleData) {
-							if (sampleData.hasOwnProperty(_prop) && _prop.search("PL") > -1) {
-								_fake[_prop] = 0;
-							}
-						}
-
-						var _fakseSub = toolkit.clone(_fake);
-						_fakseSub._id = 'Total';
-
-						_fake.subs = [_fakseSub];
-						_fake.count++;
-
-						mergedData.count++;
-						mergedData.subs.push(_fake);
-					}
-
-					// Inject and recalculate TOTAL
-
-					var totalAll = {};
-					totalAll._id = 'Total';
-					totalAll.count = 0;
-					totalAll.excludeFromTotal = true;
-					totalAll.subs = [];
-
-					var _loop3 = function _loop3(_prop2) {
-						if (sampleData.hasOwnProperty(_prop2) && _prop2.search("PL") > -1) {
-							totalAll[_prop2] = toolkit.sum(mergedData.subs, function (e) {
-								return e[_prop2];
-							});
-						}
-					};
-
-					for (var _prop2 in sampleData) {
-						_loop3(_prop2);
-					}
-
-					var totalAllSub = toolkit.clone(totalAll);
-					totalAllSub.subs = [];
-
-					totalAll.count++;
-					totalAll.subs.push(totalAllSub);
-
-					mergedData.subs = [totalAll].concat(mergedData.subs);
-					mergedData.count++;
-
-					data.push(mergedData);
-				});
-
-				data = _.orderBy(data, function (d) {
-					return d.total;
-				}, 'desc');
-				return data;
-			};
-
-			console.log("fetching non rd");
-			request("NonRD", ba.expand(), function (res1) {
-				var dataNonRD = ba.buildStructure("NonRD", ba.expand(), res1.Data.Data);
-
-				console.log("fetching rd");
-				request("OnlyRD", ba.expand(), function (res2) {
-					var dataRD = ba.buildStructure("OnlyRD", ba.expand(), res2.Data.Data);
-
-					console.log("non rd", dataNonRD.slice(0));
-					console.log("rd", dataRD.slice(0));
-					console.log("merging data");
-					var data = mergeData(dataNonRD, dataRD);
-					ba.data(data);
-					var date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss");
-					ba.breakdownNote('Last refreshed on: ' + date);
-
-					rpt.plmodels(res2.Data.PLModels);
-					ba.emptyGrid();
-					ba.contentIsLoading(false);
-					ba.render();
-				});
-			});
-
-			return {
-				v: void 0
-			};
-		}();
-
-		if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
-	}
-
-	if (ba.expand() && ba.subBreakdownValue().length > 0) {
-		var _ret6 = function () {
-			var bkrd = 'tralala';
-
-			request(bkrd, ba.expand(), function (res) {
-				var data = ba.buildStructure(bkrd, ba.expand(), res.Data.Data);
-
-				ba.data(data);
-				var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
-				ba.breakdownNote('Last refreshed on: ' + date);
-
-				rpt.plmodels(res.Data.PLModels);
-				ba.emptyGrid();
-				ba.contentIsLoading(false);
-				ba.render();
-			});
-			return {
-				v: void 0
-			};
-		}();
-
-		if ((typeof _ret6 === 'undefined' ? 'undefined' : _typeof(_ret6)) === "object") return _ret6.v;
-	}
-
-	request(ba.breakdownRD(), ba.expand(), function (res) {
-		var data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data);
-
-		ba.data(data);
-		var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
-		ba.breakdownNote('Last refreshed on: ' + date);
-
-		rpt.plmodels(res.Data.PLModels);
-		ba.emptyGrid();
-		ba.contentIsLoading(false);
-		ba.render();
-	});
+	ba.oldBreakdownBy(ba.breakdownBy());
+	ba.contentIsLoading(true);
+	fetch();
 };
 
 ba.clickExpand = function (e) {
@@ -970,7 +693,7 @@ ba.optionBreakdownValues = ko.computed(function () {
 }, rpt.masterData.Branch);
 
 ba.subBreakdownValue = ko.observableArray([]);
-ba.optionSubBreakdownValues = ko.computed(function () {
+ba.optionSubBreakdown = ko.computed(function () {
 	switch (ba.breakdownRD()) {
 		case 'All':
 			return rpt.optionsChannels();
