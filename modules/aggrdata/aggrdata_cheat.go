@@ -173,8 +173,12 @@ func CalcSum(tkm toolkit.M) {
 
 		arkey := strings.Split(k, "_")
 
+		toolkit.Println(arkey[0])
+
 		plmodel := plmodels[arkey[0]]
 		Amount := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+
+		toolkit.Println(plmodel.PLHeader1)
 		// PLHeader1
 		// PLHeader2
 		// PLHeader3
