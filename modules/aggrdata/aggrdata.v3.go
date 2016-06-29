@@ -302,11 +302,10 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 				From(tablename01).
 				SetConfig("multiexec", true).
 				Save().Exec(toolkit.M{}.Set("data", a))
-
-			toolkit.Printfn("Saving dimension %v, %d of %d", str, i, count)
 		}
 
+		toolkit.Printfn("Saved dimension %v, %d rows", str, len(tkm))
+
 		resdimension <- len(tkm)
-		toolkit.Println("SUM Data : ", len(tkm))
 	}
 }
