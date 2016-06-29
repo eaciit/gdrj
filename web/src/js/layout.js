@@ -3,10 +3,9 @@ let vm = viewModel
 vm.currentMenu = ko.observable('Dashboard')
 vm.currentTitle = ko.observable('Dashboard')
 vm.menu = ko.observableArray([
-	// { title: 'Home', icon: 'home', href: viewModel.appName + 'page/home', submenu: [] },
-	{ title: 'Dashboard', icon: 'home', href: viewModel.appName + 'page/dashboard', submenu: [] },
+	{ title: 'Home', icon: 'home', href: viewModel.appName + 'page/home', submenu: [] },
+	{ title: 'P&L Performance', icon: 'tachometer', href: viewModel.appName + 'page/pnlperformance', submenu: [] },
 	{ title: 'Analysis', icon: 'bar-chart-o', href: '#', submenu: [
-		{ title: 'P&L Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/pnlanalysis', submenu: [] },
 		{ title: 'Key Account Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/keyaccountanalysis', submenu: [] },
 		{ title: 'Branch Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/branchanalysis', submenu: [] },
 		{ title: 'RD Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/rdanalysis', submenu: [] },
@@ -15,7 +14,7 @@ vm.menu = ko.observableArray([
 	// { title: 'Report', icon: 'file-text-o', href: viewModel.appName + 'page/report/list', submenu: [] },
 	{ title: 'Data Manager', icon: 'database', href: '#', submenu: [
 		{ title: 'Data Browser', icon: 'list', href: viewModel.appName + 'page/databrowser', submenu: [] },
-		{ title: 'Upload Data', icon: 'upload', href: viewModel.appName + 'page/uploaddata', submenu: [] }
+		// { title: 'Upload Data', icon: 'upload', href: viewModel.appName + 'page/uploaddata', submenu: [] }
 	] },
 	{ title: 'Organization', icon: 'sitemap', href: viewModel.appName + 'page/organization', submenu: [] },
 	{ title: 'Administration', icon: 'gear', href: '#', submenu: [
