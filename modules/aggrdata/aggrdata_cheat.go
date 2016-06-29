@@ -173,11 +173,10 @@ func CalcSum(tkm toolkit.M) {
 
 		plmodel, exist := plmodels[k]
 		if !exist {
+			toolkit.Println(k)
 			continue
 		}
 		Amount := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-
-		toolkit.Println(plmodel.PLHeader1)
 		// PLHeader1
 		// PLHeader2
 		// PLHeader3
