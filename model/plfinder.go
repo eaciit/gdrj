@@ -716,6 +716,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 
 						newEach.Get("_id").(toolkit.M).Set("_id_branchrd", "Regional Distributor")
 						newEach.Get("_id").(toolkit.M).Set("_id_customer_channelname", channelname)
+						res = append(res, &newEach)
 					}
 				}
 			}
