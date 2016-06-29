@@ -720,7 +720,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 							}
 						}
 
-						eachID := toolkit.M{"_id_branchrd": "RD"}
+						eachID := toolkit.M{"_id_branchrd": "Regional Distributor"}
 
 						for k, v := range newEach.Get("_id").(toolkit.M) {
 							eachID.Set(k, v)
@@ -731,10 +731,6 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 						res = append(res, &newEach)
 					}
 				}
-			}
-
-			for _, each := range res {
-				fmt.Println(each.Get("_id"))
 			}
 
 			return &res
@@ -773,7 +769,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 							}
 						}
 
-						eachID := toolkit.M{"_id_branchrd": "RD"}
+						eachID := toolkit.M{"_id_branchrd": "Regional Distributor"}
 
 						for k, v := range newEach.Get("_id").(toolkit.M) {
 							eachID.Set(k, v)
@@ -786,41 +782,37 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 				}
 			}
 
-			(func() {
-				breakdowns := map[string][]string{
-					"Branch": {"I6", "I4", "I3", "I2"},
-					"RD":     {"I1"},
-				}
-				for breakdown, chIDs := range breakdowns {
-					newEach := toolkit.M{}
+			// (func() {
+			// 	breakdowns := map[string][]string{
+			// 		"Branch":               {"I6", "I4", "I3", "I2"},
+			// 		"Regional Distributor": {"I1"},
+			// 	}
+			// 	for breakdown, chIDs := range breakdowns {
+			// 		newEach := toolkit.M{}
 
-					eachID := toolkit.M{}
-					eachID.Set("_id_branchrd", breakdown)
-					eachID.Set("_id_customer_channelname", "Total")
-					newEach.Set("_id", eachID)
+			// 		eachID := toolkit.M{}
+			// 		eachID.Set("_id_branchrd", breakdown)
+			// 		eachID.Set("_id_customer_channelname", "Total")
+			// 		newEach.Set("_id", eachID)
 
-					for _, each := range *data {
-						eachID := each.Get("_id").(toolkit.M)
-						if toolkit.HasMember(chIDs, eachID.GetString("_id_customer_channelid")) {
-							for k := range *each {
-								if strings.HasPrefix(k, "PL") {
-									if _, ok := newEach[k]; !ok {
-										newEach[k] = (*each).GetFloat64(k)
-									} else {
-										newEach[k] = newEach.GetFloat64(k) + (*each).GetFloat64(k)
-									}
-								}
-							}
-						}
-					}
+			// 		for _, each := range *data {
+			// 			eachID := each.Get("_id").(toolkit.M)
+			// 			if toolkit.HasMember(chIDs, eachID.GetString("_id_customer_channelid")) {
+			// 				for k := range *each {
+			// 					if strings.HasPrefix(k, "PL") {
+			// 						if _, ok := newEach[k]; !ok {
+			// 							newEach[k] = (*each).GetFloat64(k)
+			// 						} else {
+			// 							newEach[k] = newEach.GetFloat64(k) + (*each).GetFloat64(k)
+			// 						}
+			// 					}
+			// 				}
+			// 			}
+			// 		}
 
-					res = append(res, &newEach)
-				}
-			}())
-
-			for _, each := range res {
-				fmt.Println(each.Get("_id"))
-			}
+			// 		res = append(res, &newEach)
+			// 	}
+			// }())
 
 			return &res
 		}

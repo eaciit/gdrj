@@ -453,7 +453,7 @@ v2.buildStructure = function (data) {
 		var subs = groupThenMap(d.subs, function (e) {
 			return e._id._id_branchrd;
 		}).map(function (e) {
-			if (d._id != 'Total') {
+			if (d._id == 'Total') {
 				e.excludeFromTotal = true;
 			}
 
@@ -559,7 +559,7 @@ v2.render = function () {
 		});
 	});
 
-	tableContent.css('min-width', totalColumnWidth);
+	tableContent.css('width', totalColumnWidth);
 
 	// ========================= CONSTRUCT DATA
 
