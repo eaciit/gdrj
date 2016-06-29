@@ -1,9 +1,9 @@
 package web2
 
 import (
-	"eaciit/gdrjprod/web/controller"
-	// "eaciit/gdrjprod/web/installation"
-	"eaciit/gdrjprod/web/model"
+	"eaciit/gdrj/web/controller"
+	// "eaciit/gdrj/web/installation"
+	"eaciit/gdrj/web/model"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
 	// "net/http"
