@@ -504,8 +504,12 @@ v2.buildStructure = (data) => {
 		let subs = groupThenMap(d.subs, (e) => {
 			return e._id._id_branchrd
 		}).map((e) => {
+			if (d._id != 'Total') {
+				e.excludeFromTotal = true
+			}
+
 			e.breakdowns = e.subs[0]._id
-			d.count = 1
+			e.count = 1
 			return e
 		})
 
@@ -514,6 +518,8 @@ v2.buildStructure = (data) => {
 		d.count = d.subs.length
 		return d
 	})
+
+	console.log('------>>>>-------', parsed)
 
 	v2.level(2)
 	let newParsed = _.orderBy(parsed, (d) => d.PL8A, 'desc')
@@ -1067,7 +1073,6 @@ v3.render = () => {
 	})
 
 	plmodels.forEach((d, i) => {
-		console.log('-------', i)
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
 		dataFlat.forEach((e) => {
 			let breakdown = e.key

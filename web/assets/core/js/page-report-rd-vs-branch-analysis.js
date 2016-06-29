@@ -451,8 +451,12 @@ v2.buildStructure = function (data) {
 		var subs = groupThenMap(d.subs, function (e) {
 			return e._id._id_branchrd;
 		}).map(function (e) {
+			if (d._id != 'Total') {
+				e.excludeFromTotal = true;
+			}
+
 			e.breakdowns = e.subs[0]._id;
-			d.count = 1;
+			e.count = 1;
 			return e;
 		});
 
@@ -463,6 +467,8 @@ v2.buildStructure = function (data) {
 		d.count = d.subs.length;
 		return d;
 	});
+
+	console.log('------>>>>-------', parsed);
 
 	v2.level(2);
 	var newParsed = _.orderBy(parsed, function (d) {
@@ -898,7 +904,6 @@ v3.render = function () {
 	});
 
 	plmodels.forEach(function (d, i) {
-		console.log('-------', i);
 		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 };
 		dataFlat.forEach(function (e) {
 			var breakdown = e.key;
