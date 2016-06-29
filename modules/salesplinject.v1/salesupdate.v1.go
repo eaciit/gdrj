@@ -640,8 +640,8 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		// 		// spl.CalcDepre(masters)
 		spl.CalcDamage(masters)
 		// spl.CalcDepre(masters)
-		// 		// spl.CalcRoyalties(masters)
-		// 		// spl.CalcDiscountActivity(masters)
+		spl.CalcDiscountActivity(masters)
+		spl.CalcRoyalties2015(masters)
 		// 		// spl.CalcPromo(masters)
 		spl.CalcSum(masters)
 

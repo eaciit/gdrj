@@ -772,6 +772,39 @@ func (pl *SalesPL) CalcRoyalties2016(masters toolkit.M) {
 	pl.AddData("PL25", -netsalesamount*2.85900895/100, plmodels)
 }
 
+func (pl *SalesPL) CalcRoyalties2015(masters toolkit.M) {
+	if !masters.Has("royalties") {
+		return
+	}
+
+	netsalesamount := float64(0)
+	arrnetsales := []string{"PL1", "PL2", "PL3", "PL4", "PL5", "PL6", "PL7", "PL8", "PL7A"}
+	found := func(str string) bool {
+		for _, v := range arrnetsales {
+			if v == str {
+				return true
+			}
+		}
+		return false
+	}
+
+	aplmodel := pl.PLDatas
+	for k, v := range aplmodel {
+		if k == "PL25" {
+			delete(aplmodel, k)
+		}
+
+		if found(k) {
+			netsalesamount += v.Amount
+		}
+	}
+
+	pl.PLDatas = aplmodel
+
+	plmodels := masters.Get("plmodel").(map[string]*PLModel)
+	pl.AddData("PL25", -netsalesamount*2.82683/100, plmodels)
+}
+
 //== OLD Fix Calculate Royalties
 // func (pl *SalesPL) CalcRoyalties(masters toolkit.M) {
 // 	if !masters.Has("royalties") {
