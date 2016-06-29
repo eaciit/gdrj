@@ -110,13 +110,28 @@ func main() {
 			break
 		}
 
+		vch := ""
+		vfiscal := ""
+		// "customer_channelid" : "I3",
+		//       "date_fiscal" : "2014-2015"
 		dtkm, _ := toolkit.ToM(tkm.Get("_id"))
+		for k, v := range dtkm {
+			if k == "customer_channelid" {
+				vch = toolkit.ToString(v)
+			} else {
+				vfiscal = toolkit.ToString(v)
+			}
+		}
+
+		tkm.Set("key", dtkm)
+		tkm.Set("_id", toolkit.Sprintf("%s_%s", vch, vfiscal))
+
 		if dtkm.GetString("date_fiscal") == "2014-2015" {
 			v := tkm.GetFloat64("PL7")
-			tkm.Set("PL7_OLD", -v)
+			tkm.Set("PL7", -v)
 
 			v = tkm.GetFloat64("PL8")
-			tkm.Set("PL8_OLD", -v)
+			tkm.Set("PL8", -v)
 
 			// v = tkm.GetFloat64("PL44")
 			// tkm.Set("PL44", -v)
