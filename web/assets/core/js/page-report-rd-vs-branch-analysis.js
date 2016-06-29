@@ -127,6 +127,26 @@ v1.buildStructure = function (data) {
 		}, 'desc');
 		d.breakdowns = d.subs[0]._id;
 		d.count = d.subs.length;
+
+		var total = {};
+		total._id = 'Total';
+		total.key = 'Total';
+		total.excludeFromTotal = true;
+
+		var _loop2 = function _loop2(prop) {
+			if (subs[0].hasOwnProperty(prop) && prop.search('PL') > -1) {
+				var val = subs[0][prop];
+				total[prop] = toolkit.sum(subs, function (f) {
+					return f[prop];
+				});
+			}
+		};
+
+		for (var prop in subs[0]) {
+			_loop2(prop);
+		}d.subs = [total].concat(d.subs);
+		d.count++;
+
 		return d;
 	});
 
@@ -205,11 +225,21 @@ v1.render = function () {
 		lvl1.subs.forEach(function (lvl2, j) {
 			var thheader2 = toolkit.newEl('th').html(lvl2._id).addClass('align-center').appendTo(trContents[1]);
 
+			if (lvl2._id == 'Total') {
+				thheader2.css('background-color', 'rgb(116, 149, 160)');
+				thheader2.css('color', 'white');
+			}
+
 			if (v1.level() == 2) {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
 				var _thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[1]);
+
+				if (lvl2._id == 'Total') {
+					_thheader1p.css('background-color', 'rgb(116, 149, 160)');
+					_thheader1p.css('color', 'white');
+				}
 
 				return;
 			}
@@ -429,7 +459,7 @@ v2.buildStructure = function (data) {
 			var key = { _id: k, subs: v };
 			var sample = v[0];
 
-			var _loop2 = function _loop2(prop) {
+			var _loop3 = function _loop3(prop) {
 				if (sample.hasOwnProperty(prop) && prop != '_id') {
 					key[prop] = toolkit.sum(v, function (d) {
 						return d[prop];
@@ -438,7 +468,7 @@ v2.buildStructure = function (data) {
 			};
 
 			for (var prop in sample) {
-				_loop2(prop);
+				_loop3(prop);
 			}
 
 			return key;
@@ -467,6 +497,26 @@ v2.buildStructure = function (data) {
 		}, 'asc');
 		d.breakdowns = d.subs[0]._id;
 		d.count = d.subs.length;
+
+		var total = {};
+		total._id = 'Total';
+		total.key = 'Total';
+		total.excludeFromTotal = true;
+
+		var _loop4 = function _loop4(prop) {
+			if (subs[0].hasOwnProperty(prop) && prop.search('PL') > -1) {
+				var val = subs[0][prop];
+				total[prop] = toolkit.sum(subs, function (f) {
+					return f[prop];
+				});
+			}
+		};
+
+		for (var prop in subs[0]) {
+			_loop4(prop);
+		}d.subs = [total].concat(d.subs);
+		d.count++;
+
 		return d;
 	});
 
@@ -547,11 +597,21 @@ v2.render = function () {
 		lvl1.subs.forEach(function (lvl2, j) {
 			var thheader2 = toolkit.newEl('th').html(lvl2._id).addClass('align-center').appendTo(trContents[1]);
 
+			if (lvl2._id == 'Total') {
+				thheader2.css('background-color', 'rgb(116, 149, 160)');
+				thheader2.css('color', 'white');
+			}
+
 			if (v2.level() == 2) {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
 				var _thheader1p2 = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[1]);
+
+				if (lvl2._id == 'Total') {
+					_thheader1p2.css('background-color', 'rgb(116, 149, 160)');
+					_thheader1p2.css('color', 'white');
+				}
 
 				return;
 			}
@@ -771,7 +831,7 @@ v3.buildStructure = function (data) {
 			var key = { _id: k, subs: v };
 			var sample = v[0];
 
-			var _loop3 = function _loop3(prop) {
+			var _loop5 = function _loop5(prop) {
 				if (sample.hasOwnProperty(prop) && prop != '_id') {
 					key[prop] = toolkit.sum(v, function (d) {
 						return d[prop];
@@ -780,7 +840,7 @@ v3.buildStructure = function (data) {
 			};
 
 			for (var prop in sample) {
-				_loop3(prop);
+				_loop5(prop);
 			}
 
 			return key;

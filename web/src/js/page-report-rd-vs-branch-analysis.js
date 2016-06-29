@@ -113,6 +113,20 @@ v1.buildStructure = (data) => {
 		d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
 		d.breakdowns = d.subs[0]._id
 		d.count = d.subs.length
+
+		let total = {}
+		total._id = 'Total'
+		total.key = 'Total'
+		total.excludeFromTotal = true
+
+		for (let prop in subs[0]) if (subs[0].hasOwnProperty(prop) && (prop.search('PL') > -1)) {
+			let val = subs[0][prop]
+			total[prop] = toolkit.sum(subs, (f) => f[prop])
+		}
+
+		d.subs = [total].concat(d.subs)
+		d.count++
+
 		return d
 	})
 
@@ -236,6 +250,11 @@ v1.render = () => {
 				.addClass('align-center')
 				.appendTo(trContents[1])
 
+			if (lvl2._id == 'Total') {
+				thheader2.css('background-color', 'rgb(116, 149, 160)')
+				thheader2.css('color', 'white')
+			}
+
 			if (v1.level() == 2) {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id])
 
@@ -245,6 +264,11 @@ v1.render = () => {
 					.width(percentageWidth)
 					.addClass('align-right')
 					.appendTo(trContents[1])
+
+				if (lvl2._id == 'Total') {
+					thheader1p.css('background-color', 'rgb(116, 149, 160)')
+					thheader1p.css('color', 'white')
+				}
 
 				return
 			}
@@ -521,6 +545,20 @@ v2.buildStructure = (data) => {
 		d.subs = _.orderBy(subs, (e) => e._id, 'asc')
 		d.breakdowns = d.subs[0]._id
 		d.count = d.subs.length
+
+		let total = {}
+		total._id = 'Total'
+		total.key = 'Total'
+		total.excludeFromTotal = true
+
+		for (let prop in subs[0]) if (subs[0].hasOwnProperty(prop) && (prop.search('PL') > -1)) {
+			let val = subs[0][prop]
+			total[prop] = toolkit.sum(subs, (f) => f[prop])
+		}
+
+		d.subs = [total].concat(d.subs)
+		d.count++
+
 		return d
 	})
 
@@ -644,6 +682,11 @@ v2.render = () => {
 				.addClass('align-center')
 				.appendTo(trContents[1])
 
+			if (lvl2._id == 'Total') {
+				thheader2.css('background-color', 'rgb(116, 149, 160)')
+				thheader2.css('color', 'white')
+			}
+
 			if (v2.level() == 2) {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id])
 
@@ -653,6 +696,11 @@ v2.render = () => {
 					.width(percentageWidth)
 					.addClass('align-right')
 					.appendTo(trContents[1])
+
+				if (lvl2._id == 'Total') {
+					thheader1p.css('background-color', 'rgb(116, 149, 160)')
+					thheader1p.css('color', 'white')
+				}
 
 				return
 			}
