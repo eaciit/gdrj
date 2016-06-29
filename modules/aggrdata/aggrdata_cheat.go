@@ -170,7 +170,7 @@ func CalcSum(tkm toolkit.M) {
 
 	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL94A", "PL39A", "PL41A", "PL44A",
 		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
-		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31", "PL7", "PL8"}
+		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31"}
 
 	plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
 
