@@ -9,7 +9,7 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-
+	"strings"
 	"time"
 )
 
@@ -168,10 +168,10 @@ func CalcSum(tkm toolkit.M) {
 		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga,
 		grosssales, discount, advexp, promoexp, spgexp float64
 
-	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL94A", "PL39A", "PL41A", "PL44A",
+	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL39A", "PL41A", "PL44A",
 		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
 		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31"}
-
+	//"PL94A",
 	plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
 
 	inexclude := func(f string) bool {
@@ -192,6 +192,8 @@ func CalcSum(tkm toolkit.M) {
 		if inexclude(k) {
 			continue
 		}
+
+		arrk := strings.Split(k, "_")
 
 		plmodel, exist := plmodels[k]
 		if !exist {
@@ -268,7 +270,7 @@ func CalcSum(tkm toolkit.M) {
 	tkm.Set("PL74A", indirectexpense)
 	tkm.Set("PL26A", royaltiestrademark)
 	tkm.Set("PL32A", advtpromoexpense)
-	tkm.Set("PL94A", sga)
+	// tkm.Set("PL94A", sga)
 	tkm.Set("PL39A", nonoprincome)
 	tkm.Set("PL41A", taxexpense)
 	tkm.Set("PL44A", totdepreexp)
