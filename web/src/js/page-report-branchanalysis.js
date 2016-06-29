@@ -311,7 +311,6 @@ ba.refresh = (useCache = false) => {
 			}
 
 			let data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data)
-
 			ba.data(data)
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			ba.breakdownNote(`Last refreshed on: ${date}`)
@@ -441,6 +440,10 @@ ba.render = () => {
 		let currentColumnWidth = each._id.length * 10
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth
+		}
+
+		if (ba.expand() && ba.subBreakdownValue().length > 0) {
+			currentColumnWidth = 150
 		}
 
 		each.key = key.join('_')
