@@ -1,5 +1,5 @@
 let colors = ['rgb(17, 134, 212)', 'rgb(32, 162, 87)', 'rgb(234, 144, 0)']
-	
+
 viewModel.RDvsBranchView1 = {}
 let v1 = viewModel.RDvsBranchView1
 
@@ -509,7 +509,7 @@ v2.buildStructure = (data) => {
 		let subs = groupThenMap(d.subs, (e) => {
 			return e._id._id_branchrd
 		}).map((e) => {
-			if (d._id != 'Total') {
+			if (d._id == 'Total') {
 				e.excludeFromTotal = true
 			}
 
@@ -660,7 +660,7 @@ v2.render = () => {
 		})
 	})
 
-	tableContent.css('min-width', totalColumnWidth)
+	tableContent.css('width', totalColumnWidth)
 
 
 
@@ -1357,4 +1357,6 @@ $(() => {
 	v3.refresh()
 	v1.refresh()
 	v2.refresh()
+
+	rpt.prepareEvents()
 })
