@@ -20,6 +20,7 @@ var (
 	fiscalyear int
 	data       map[string]float64
 	mutex      = &sync.Mutex{}
+	tablename  = "salespls"
 )
 
 func setinitialconnection() {
@@ -104,7 +105,7 @@ func workerproc(wi int, filter *dbox.Filter, result chan<- toolkit.M) {
 	tkm := toolkit.M{}
 
 	csr, _ := workerconn.NewQuery().Select("date.fiscal", "pldatas").
-		From("salespls-1").
+		From(tablename).
 		Where(filter).
 		Cursor(nil)
 
@@ -123,7 +124,6 @@ func workerproc(wi int, filter *dbox.Filter, result chan<- toolkit.M) {
 		spl := new(gdrj.SalesPL)
 		e := csr.Fetch(spl, 1, false)
 		if e != nil {
-			toolkit.Println("EOF")
 			break
 		}
 
