@@ -351,6 +351,8 @@ rpt.toggleFilter = function () {
 // }
 
 rpt.isDataEmpty = function (res) {
+	sd.contentIsLoading(false);
+
 	if (res.Data.Data.length == 0) {
 		toolkit.showError('Data is not yet ready, aggregate process is running.');
 		return true;
