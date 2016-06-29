@@ -111,7 +111,11 @@ func main() {
 			toolkit.Println("EOF")
 			break
 		}
-		allpl9 += tkm.GetFloat64("PL9")
+
+		dtkm, _ := toolkit.ToM(tkm.Get("_id"))
+		if dtkm.GetString("date_fiscal") == "2014-2015" {
+			allpl9 += tkm.GetFloat64("PL9")
+		}
 	}
 
 	csr.ResetFetch()
