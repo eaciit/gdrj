@@ -453,6 +453,7 @@ kac.render = () => {
 		let trHeader = toolkit.newEl('tr')
 			.addClass(`header${PL}`)
 			.attr(`idheaderpl`, PL)
+			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
@@ -476,6 +477,7 @@ kac.render = () => {
 
 		let trContent = toolkit.newEl('tr')
 			.addClass(`column${PL}`)
+			.attr(`data-row`, `row-${i}`)
 			.attr(`idpl`, PL)
 			.appendTo(tableContent)
 
@@ -563,11 +565,12 @@ kac.changeBreakdownValue = () => {
 vm.currentMenu('Analysis')
 vm.currentTitle('Key Account Analysis')
 vm.breadcrumb([
-	{ title: 'Godrej', href: '#' },
+	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
+	{ title: 'Home', href: viewModel.appName + 'page/landing' },
 	{ title: 'Key Account Analysis', href: '#' }
 ])
 
-kac.title('Key Account Analysis')
+kac.title('&nbsp;')
 
 rpt.refresh = () => {
 	kac.changeBreakdown()
