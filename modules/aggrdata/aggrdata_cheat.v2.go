@@ -123,7 +123,17 @@ func main() {
 		// tkm.Set("key", dtkm)
 		// tkm.Set("_id", toolkit.Sprintf("%s_%s", vch, vfiscal))
 
-		vNetSales := tkm.GetFloat64("PL8A")
+		// 101,461,675
+
+		if dtkm.GetString("date_fiscal") == "2015-2016" && dtkm.GetString("customer_channelid") == "I1" {
+			v := tkm.GetFloat64("PL2") + 101461675
+			tkm.Set("PL2", v)
+
+			v = -101461675
+			tkm.Set("PL8", v)
+
+			CalcSum(tkm)
+		}
 
 		//2016
 		//pl.AddData("PL25", -netsalesamount*2.85900895/100, plmodels)
@@ -133,11 +143,12 @@ func main() {
 
 		// PL9
 
-		if dtkm.GetString("date_fiscal") == "2014-2015" {
-			tkm.Set("PL25", -vNetSales*2.82683/100)
-		} else {
-			tkm.Set("PL25", -vNetSales*2.85900895/100)
-		}
+		//vNetSales := tkm.GetFloat64("PL8A")
+		// if dtkm.GetString("date_fiscal") == "2014-2015" {
+		// 	tkm.Set("PL25", -vNetSales*2.82683/100)
+		// } else {
+		// 	tkm.Set("PL25", -vNetSales*2.85900895/100)
+		// }
 
 		// 	v := tkm.GetFloat64("PL7")
 		// 	tkm.Set("PL7", -v)
@@ -152,7 +163,6 @@ func main() {
 		// 	dv := v + ((v / allpl9) * 25838428343)
 		// 	tkm.Set("PL9", dv)
 
-		CalcSum(tkm)
 		// }
 
 		err := workerconn.NewQuery().
