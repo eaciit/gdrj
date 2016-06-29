@@ -38,7 +38,7 @@
 
 			<div class="panel-nav-button" data-bind="visible: !dsbrd.contentIsLoading() && (smry.summaryMode() == 'overview')">
 				<div class="form-inline">
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rs.refresh" title="Refresh">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: dsbrd.refresh" title="Refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
@@ -84,7 +84,7 @@
 			</div>
 		</div>
 
-		<div class="panel-body">
+		<div class="panel-body" style="min-height: 100px;">
 			<ul class="nav nav-pills nav-subs" role="tablist">
 				<li role="presentation" class="active">
 					<a href="#overview" role="tab" data-toggle="tab" onclick="smry.summaryMode('overview')">Overview</a>
@@ -107,7 +107,7 @@
 									<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.optionFiscalYears, value: dsbrd.fiscalYears }"></select>
 								</div>
 							</div>
-							
+
 							<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 								<span class="input-group-addon align-right">Structure</span>
 									<div class="width-full">
