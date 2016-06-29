@@ -310,6 +310,10 @@ ba.refresh = (useCache = false) => {
 				return
 			}
 
+			if (rpt.isDataEmpty(res)) {
+				return
+			}
+
 			let data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data)
 			ba.data(data)
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")

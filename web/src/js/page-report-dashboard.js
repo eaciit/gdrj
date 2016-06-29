@@ -164,7 +164,11 @@ dsbrd.refresh = () => {
 				setTimeout(() => { fetch() }, 1000 * 5)
 				return
 			}
-			console.log(res)
+
+			if (rpt.isDataEmpty(res)) {
+				return
+			}
+			
 			dsbrd.contentIsLoading(false)
 			dsbrd.render(res)
 		}, () => {
@@ -441,6 +445,10 @@ rank.refresh = () => {
 				return
 			}
 
+			if (rpt.isDataEmpty(res)) {
+				return
+			}
+
 			rank.contentIsLoading(false)
 			rank.render(breakdown, res)
 		}, () => {
@@ -707,6 +715,10 @@ sd.refresh = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => { fetch() }, 1000 * 5)
+				return
+			}
+
+			if (rpt.isDataEmpty(res)) {
 				return
 			}
 	
