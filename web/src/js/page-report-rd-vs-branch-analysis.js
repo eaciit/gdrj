@@ -509,14 +509,14 @@ v2.buildStructure = (data) => {
 			return e
 		})
 
-		d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+		d.subs = _.orderBy(subs, (e) => e._id, 'asc')
 		d.breakdowns = d.subs[0]._id
 		d.count = d.subs.length
 		return d
 	})
 
 	v2.level(2)
-	let newParsed = _.orderBy(parsed, (d) => d.PL8A, 'desc')
+	let newParsed = _.orderBy(parsed, (d) => d._id, 'asc')
 	return newParsed
 }
 

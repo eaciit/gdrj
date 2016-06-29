@@ -457,8 +457,8 @@ v2.buildStructure = function (data) {
 		});
 
 		d.subs = _.orderBy(subs, function (e) {
-			return e.PL8A;
-		}, 'desc');
+			return e._id;
+		}, 'asc');
 		d.breakdowns = d.subs[0]._id;
 		d.count = d.subs.length;
 		return d;
@@ -466,8 +466,8 @@ v2.buildStructure = function (data) {
 
 	v2.level(2);
 	var newParsed = _.orderBy(parsed, function (d) {
-		return d.PL8A;
-	}, 'desc');
+		return d._id;
+	}, 'asc');
 	return newParsed;
 };
 
