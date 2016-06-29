@@ -53,8 +53,8 @@ func main() {
 	toolkit.Println("Preparing data query...")
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
-	speriode := eperiode.AddDate(-1, 0, 0)
-	// speriode := eperiode.AddDate(0, -1, 0)
+	// speriode := eperiode.AddDate(-1, 0, 0)
+	speriode := eperiode.AddDate(0, 0, -7)
 
 	seeds := make([]time.Time, 0, 0)
 	seeds = append(seeds, speriode)
@@ -234,7 +234,7 @@ func workerproc(wi int, filter *dbox.Filter, result chan<- toolkit.M) {
 		tkm.Set(key, dtkm)
 
 		if iscount == 10 {
-			break
+			//			break
 		}
 
 	}
@@ -259,7 +259,7 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 		// toolkit.Println(str)
 		payload := new(gdrj.PLFinderParam)
 		payload.Breakdowns = strings.Split(str, ",")
-		tablename := toolkit.Sprintf("1-%v", payload.GetTableName())
+		tablename01 := toolkit.Sprintf("1-%v", payload.GetTableName())
 
 		tkm := toolkit.M{}
 		for key, val := range alldata {
@@ -310,7 +310,7 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 			a.Set("key", id)
 
 			_ = workerconn.NewQuery().
-				From(tablename).
+				From(tablename01).
 				SetConfig("multiexec", true).
 				Save().Exec(toolkit.M{}.Set("data", a))
 
