@@ -769,7 +769,7 @@ func (pl *SalesPL) CalcRoyalties2016(masters toolkit.M) {
 	pl.PLDatas = aplmodel
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL25", -netsalesamount*2.85900895, plmodels)
+	pl.AddData("PL25", -netsalesamount*2.85900895/100, plmodels)
 }
 
 //== OLD Fix Calculate Royalties
