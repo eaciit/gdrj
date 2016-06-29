@@ -280,7 +280,6 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 		}
 
 		i := 0
-		count := len(tkm)
 
 		for k, v := range tkm {
 			i++
