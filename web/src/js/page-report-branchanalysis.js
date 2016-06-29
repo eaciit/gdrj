@@ -640,18 +640,6 @@ ba.render = () => {
 	rpt.buildGridLevels(rows)
 }
 
-ba.prepareEvents = () => {
-	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
-		let rowID = $(this).attr('data-row')
-
-        let elh = $(`.breakdown-view .table-header tr[data-row="${rowID}"]`).addClass('hover')
-        let elc = $(`.breakdown-view .table-content tr[data-row="${rowID}"]`).addClass('hover')
-	})
-	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
-		$('.breakdown-view tr.hover').removeClass('hover')
-	})
-}
-
 ba.showExpandAll = (a) => {
 	if (a == true) {
 		$(`tr.dd`).find('i').removeClass('fa-chevron-right')
@@ -744,15 +732,16 @@ ba.changeBreakdownValue = () => {
 vm.currentMenu('Analysis')
 vm.currentTitle('Branch Analysis')
 vm.breadcrumb([
-	{ title: 'Godrej', href: '#' },
+	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
+	{ title: 'Home', href: viewModel.appName + 'page/landing' },
 	{ title: 'Branch Analysis', href: '#' }
 ])
 
-ba.title('Branch Analysis')
+ba.title('&nbsp;')
 
 rpt.refresh = () => {
 	ba.refresh(false)
-	ba.prepareEvents()
+	rpt.prepareEvents()
 }
 
 $(() => {

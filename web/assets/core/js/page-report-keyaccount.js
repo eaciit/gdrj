@@ -441,7 +441,7 @@ kac.render = function () {
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader);
 
 		trHeader.on('click', function () {
 			kac.clickExpand(trHeader);
@@ -454,7 +454,7 @@ kac.render = function () {
 
 		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + '%').addClass('align-right').appendTo(trHeader);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('data-row', 'row-' + i).attr('idpl', PL).appendTo(tableContent);
 
 		data.forEach(function (e, f) {
 			var key = e._id;
@@ -531,9 +531,9 @@ kac.changeBreakdownValue = function () {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('Key Account Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Key Account Analysis', href: '#' }]);
+vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Key Account Analysis', href: '#' }]);
 
-kac.title('Key Account Analysis');
+kac.title('&nbsp;');
 
 rpt.refresh = function () {
 	kac.changeBreakdown();

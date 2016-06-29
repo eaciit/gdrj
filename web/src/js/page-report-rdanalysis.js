@@ -458,6 +458,7 @@ rd.render = () => {
 		let trHeader = toolkit.newEl('tr')
 			.addClass(`header${PL}`)
 			.attr(`idheaderpl`, PL)
+			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
@@ -482,6 +483,7 @@ rd.render = () => {
 		let trContent = toolkit.newEl('tr')
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
+			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableContent)
 
 		data.forEach((e, f) => {
@@ -568,11 +570,12 @@ rd.changeBreakdownValue = () => {
 vm.currentMenu('Analysis')
 vm.currentTitle('RD Analysis')
 vm.breadcrumb([
-	{ title: 'Godrej', href: '#' },
+	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
+	{ title: 'Home', href: viewModel.appName + 'page/landing' },
 	{ title: 'RD Analysis', href: '#' }
 ])
 
-rd.title('RD Analysis')
+rd.title('&nbsp;')
 
 rpt.refresh = () => {
 	rd.changeBreakdown()

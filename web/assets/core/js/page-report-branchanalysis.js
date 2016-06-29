@@ -639,18 +639,6 @@ ba.render = function () {
 	rpt.buildGridLevels(rows);
 };
 
-ba.prepareEvents = function () {
-	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
-		var rowID = $(this).attr('data-row');
-
-		var elh = $('.breakdown-view .table-header tr[data-row="' + rowID + '"]').addClass('hover');
-		var elc = $('.breakdown-view .table-content tr[data-row="' + rowID + '"]').addClass('hover');
-	});
-	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
-		$('.breakdown-view tr.hover').removeClass('hover');
-	});
-};
-
 ba.showExpandAll = function (a) {
 	if (a == true) {
 		$('tr.dd').find('i').removeClass('fa-chevron-right');
@@ -747,13 +735,13 @@ ba.changeBreakdownValue = function () {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('Branch Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Branch Analysis', href: '#' }]);
+vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Branch Analysis', href: '#' }]);
 
-ba.title('Branch Analysis');
+ba.title('&nbsp;');
 
 rpt.refresh = function () {
 	ba.refresh(false);
-	ba.prepareEvents();
+	rpt.prepareEvents();
 };
 
 $(function () {
