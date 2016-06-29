@@ -589,9 +589,9 @@ func main() {
 	toolkit.Println("Reading Master")
 
 	// prepmaster()
+	prepmastergrossproc()
 	prepmasterclean()
-	// prepmastercalc()
-	// prepmastergrossproc()
+	prepmastercalc()
 
 	// jobs := make(chan *gdrj.SalesPL)
 	// result := make(chan string)
@@ -695,7 +695,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		}
 
 		spl.CleanAndClasify(masters)
-
+		spl.CalcSales(masters)
 		// 		// === For ratio update and calc
 		spl.RatioCalc(masters)
 
