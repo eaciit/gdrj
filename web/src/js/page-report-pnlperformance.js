@@ -1775,7 +1775,7 @@ rank.render = (breakdown, res) => {
 
 
 
-vm.currentMenu('Analysis')
+vm.currentMenu('P&L Performance')
 vm.currentTitle('&nbsp;')
 vm.breadcrumb([
 	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },

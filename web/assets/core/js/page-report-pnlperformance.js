@@ -1745,7 +1745,7 @@ rank.render = function (breakdown, res) {
 	$('.grid-ranking').kendoGrid(config);
 };
 
-vm.currentMenu('Analysis');
+vm.currentMenu('P&L Performance');
 vm.currentTitle('&nbsp;');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'P&L Performance', href: '#' }]);
 
