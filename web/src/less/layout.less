@@ -954,3 +954,59 @@ html, body{
 		clear: both;
 	}
 }
+
+.landing {
+	.box {
+	    padding: 10px;
+	    cursor: pointer;
+
+	    &:not(.disabled):hover {
+	    	.wrapper {
+    	    	opacity: 0.8;
+	    		background-color: lighten(@color-base-blue, 4%);
+    	    	box-shadow: 0 0px 4px 0 rgba(0, 0, 0, 0.25),
+    	    				0 1px 0px 0 rgba(0, 0, 0, 0.25);
+    	    }
+	    }
+
+	    &.disabled {
+	    	.wrapper {
+	    		a {
+	    			cursor: not-allowed;
+	    		}
+	    	}
+	    }
+
+	    .wrapper {
+	    	transition: 100ms ease-in-out background-color;
+		    background-color: @color-base-blue;
+		    border-radius: 4px;
+	    	position: relative;
+		    text-align: center;
+		    overflow: hidden;
+
+		    .fa {
+		    	margin-right: 5px;
+		    	font-size: 21px;
+			   //  color: rgba(0, 0, 0, 0.1);
+			   //  position: absolute;
+			   //  left: 5px;
+			   //  bottom: 5px;
+			   //  font-size: 100px;
+			   //  border: 0px;
+		    }
+
+		    a {
+		    	text-decoration: none;
+		    	margin: 0px;
+		    	color: white;
+		    	border: none;
+		    	font-size: 24px;
+			    padding: 10px;
+			    height: 150px;
+			    padding-top: 60px;
+			    display: block;
+		    }
+	    }
+	}
+}

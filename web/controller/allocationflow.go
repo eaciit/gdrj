@@ -16,9 +16,8 @@ type AllocationFlowController struct {
 	App
 }
 
-func CreateAllocationFlowController(s *knot.Server) *AllocationFlowController {
+func CreateAllocationFlowController() *AllocationFlowController {
 	var controller = new(AllocationFlowController)
-	controller.Server = s
 	return controller
 }
 

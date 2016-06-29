@@ -11,9 +11,8 @@ type AdministrationController struct {
 	App
 }
 
-func CreateAdminisrationController(s *knot.Server) *AdministrationController {
+func CreateAdminisrationController() *AdministrationController {
 	var controller = new(AdministrationController)
-	controller.Server = s
 	return controller
 }
 

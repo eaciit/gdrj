@@ -4,9 +4,14 @@ var vm = viewModel;
 
 vm.currentMenu = ko.observable('Dashboard');
 vm.currentTitle = ko.observable('Dashboard');
-vm.menu = ko.observableArray([{ title: 'Dashboard', icon: 'home', href: '/web/report/dashboard', submenu: [] }, { title: 'Analysis', icon: 'bar-chart-o', href: '#', submenu: [{ title: 'P&L Analysis', icon: 'bar-chart-o', href: '/web/report/analysis', submenu: [] }, { title: 'Key Account Analysis', icon: 'bar-chart-o', href: '/web/report/keyaccount', submenu: [] }, { title: 'Branch Analysis', icon: 'bar-chart-o', href: '/web/report/branchanalysis', submenu: [] }, { title: 'RD Analysis', icon: 'bar-chart-o', href: '/web/report/rdanalysis', submenu: [] }, { title: 'Custom Analysis', icon: 'bar-chart-o', href: '/web/report/customanalysis', submenu: [] }] },
-// { title: 'Report', icon: 'file-text-o', href: '/web/report/list', submenu: [] },
-{ title: 'Data Manager', icon: 'database', href: '#', submenu: [{ title: 'Data Browser', icon: 'list', href: '/web/databrowser', submenu: [] }, { title: 'Upload Data', icon: 'upload', href: '/web/uploaddata', submenu: [] }] }, { title: 'Organization', icon: 'sitemap', href: '/web/organization', submenu: [] }, { title: 'Administration', icon: 'gear', href: '#', submenu: [{ title: 'Allocation Flow', icon: 'arrows', href: '/web/allocationflow', submenu: [] }, { title: 'Access', icon: 'unlock-alt', href: '/web/access', submenu: [] }, { title: 'Group', icon: 'users', href: '/web/group', submenu: [] }, { title: 'User', icon: 'user', href: '/web/user', submenu: [] }, { title: 'Session', icon: 'clock-o', href: '/web/session', submenu: [] }, { title: 'Log', icon: 'book', href: '/web/log', submenu: [] }, { title: 'Admin Collection', icon: 'table', href: '/web/admintable', submenu: [] }] }]);
+vm.menu = ko.observableArray([
+// { title: 'Home', icon: 'home', href: viewModel.appName + 'page/home', submenu: [] },
+{ title: 'Dashboard', icon: 'home', href: viewModel.appName + 'page/dashboard', submenu: [] }, { title: 'Analysis', icon: 'bar-chart-o', href: '#', submenu: [{ title: 'P&L Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/pnlanalysis', submenu: [] }, { title: 'Key Account Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/keyaccountanalysis', submenu: [] }, { title: 'Branch Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/branchanalysis', submenu: [] }, { title: 'RD Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/rdanalysis', submenu: [] }, { title: 'Custom Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/customanalysis', submenu: [] }] },
+// { title: 'Report', icon: 'file-text-o', href: viewModel.appName + 'page/report/list', submenu: [] },
+{ title: 'Data Manager', icon: 'database', href: '#', submenu: [{ title: 'Data Browser', icon: 'list', href: viewModel.appName + 'page/databrowser', submenu: [] }, { title: 'Upload Data', icon: 'upload', href: viewModel.appName + 'page/uploaddata', submenu: [] }] }, { title: 'Organization', icon: 'sitemap', href: viewModel.appName + 'page/organization', submenu: [] }, { title: 'Administration', icon: 'gear', href: '#', submenu: [
+	// { title: 'Allocation Flow', icon: 'arrows', href: viewModel.appName + 'page/allocationflow', submenu: [] },
+	{ title: 'Access', icon: 'unlock-alt', href: viewModel.appName + 'page/access', submenu: [] }, { title: 'Group', icon: 'users', href: viewModel.appName + 'page/group', submenu: [] }, { title: 'User', icon: 'user', href: viewModel.appName + 'page/user', submenu: [] }, { title: 'Session', icon: 'clock-o', href: viewModel.appName + 'page/session', submenu: [] }, { title: 'Log', icon: 'book', href: viewModel.appName + 'page/log', submenu: [] }, { title: 'Admin Collection', icon: 'table', href: viewModel.appName + 'page/admintable', submenu: [] }] }]);
+
 vm.breadcrumb = ko.observableArray([{ title: 'Godrej', href: '#' }, { title: 'Dashboard', href: '#' }]);
 
 vm.menuIcon = function (data) {
@@ -107,7 +112,7 @@ vm.prepareLoader = function () {
 	});
 };
 vm.logout = function () {
-	toolkit.ajaxPost('/login/logout', {}, function (res) {
+	toolkit.ajaxPost(viewModel.appName + 'login/logout', {}, function (res) {
 		if (!toolkit.isFine(res)) {
 			return;
 		}
@@ -118,7 +123,7 @@ vm.logout = function () {
 			timer: 3000,
 			showConfirmButton: false
 		}, function () {
-			location.href = '/web/login';
+			location.href = viewModel.appName + 'page/login';
 		});
 	});
 };

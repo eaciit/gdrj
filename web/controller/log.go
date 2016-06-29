@@ -11,9 +11,8 @@ type LogController struct {
 	App
 }
 
-func CreateLogController(s *knot.Server) *LogController {
+func CreateLogController() *LogController {
 	var controller = new(LogController)
-	controller.Server = s
 	return controller
 }
 

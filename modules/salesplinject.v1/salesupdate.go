@@ -70,21 +70,8 @@ func buildmap(holder interface{},
 	return holder
 }
 
-func prepmaster() {
-	// toolkit.Println("--> SUBCHANNEL")
-	// c, _ := conn.NewQuery().From("subchannels").Cursor(nil)
-	// defer c.Close()
+func prepmastercalc() {
 
-	// for {
-	// 	m := toolkit.M{}
-	// 	e := c.Fetch(&m, 1, false)
-	// 	if e != nil {
-	// 		break
-	// 	}
-	// 	subchannels.Set(m.GetString("_id"), m.GetString("title"))
-	// }
-
-	masters = toolkit.M{}
 	toolkit.Println("--> PL MODEL")
 	masters.Set("plmodel", buildmap(map[string]*gdrj.PLModel{},
 		func() orm.IModel {
@@ -115,35 +102,86 @@ func prepmaster() {
 		tkmbrandcategory.Set(hbc.ID, hbc.BrandID)
 	}
 
-	toolkit.Println("--> COGS")
-	masters.Set("cogs", buildmap(map[string]*gdrj.COGSConsolidate{},
+	//Cost Center Data
+	ccs := buildmap(map[string]*gdrj.CostCenter{},
 		func() orm.IModel {
-			return new(gdrj.COGSConsolidate)
+			return new(gdrj.CostCenter)
 		},
 		nil,
 		func(holder, obj interface{}) {
-			h := holder.(map[string]*gdrj.COGSConsolidate)
-			o := obj.(*gdrj.COGSConsolidate)
-			cogsid := toolkit.Sprintf("%d_%d_%s", o.Year, int(o.Month), o.SAPCode)
+			h := holder.(map[string]*gdrj.CostCenter)
+			o := obj.(*gdrj.CostCenter)
+			h[o.ID] = o
+		}).(map[string]*gdrj.CostCenter)
+	masters.Set("costcenter", ccs)
 
-			cog, exist := h[cogsid]
-			if !exist {
-				cog = new(gdrj.COGSConsolidate)
-			}
+	f := dbox.Eq("year", fiscalyear-1)
+	toolkit.Println("--> COGS")
+	//maps for key
+	cogskeys := make(map[string]int, 0)
+	csr01, _ := conn.NewQuery().From("salestrxs-grossproc").Cursor(nil)
+	defer csr01.Close()
+	for {
+		m := toolkit.M{}
+		e := csr01.Fetch(&m, 1, false)
+		if e != nil {
+			break
+		}
 
-			cog.COGS_Amount += o.COGS_Amount
-			cog.RM_Amount += o.RM_Amount
-			cog.LC_Amount += o.LC_Amount
-			cog.PF_Amount += o.PF_Amount
-			cog.Depre_Amount += o.Depre_Amount
+		if len(m.GetString("skuid")) > 2 {
+			key := toolkit.Sprintf("%d_%d_%s", m.GetInt("year"), m.GetInt("month"), m.GetString("skuid"))
+			cogskeys[key] = 1
+		}
+	}
 
-			h[cogsid] = cog
-		}).(map[string]*gdrj.COGSConsolidate))
+	cogsmaps := make(map[string]*gdrj.COGSConsolidate, 0)
+	ccogs, _ := gdrj.Find(new(gdrj.COGSConsolidate), nil, nil)
+	defer ccogs.Close()
+
+	for {
+		o := new(gdrj.COGSConsolidate)
+		e := ccogs.Fetch(o, 1, false)
+		if e != nil {
+			break
+		}
+
+		key := toolkit.Sprintf("%d_%d_%s", o.Year, int(o.Month), o.SAPCode)
+		_, exist := cogskeys[key]
+		if !exist {
+			key = toolkit.Sprintf("%d_%d", o.Year, int(o.Month))
+		}
+
+		cog, exist := cogsmaps[key]
+		if !exist {
+			cog = new(gdrj.COGSConsolidate)
+		}
+
+		cog.Year = o.Year
+		cog.Month = o.Month
+		cog.COGS_Amount += o.COGS_Amount
+		cog.RM_Amount += o.RM_Amount
+		cog.LC_Amount += o.LC_Amount
+		cog.PF_Amount += o.PF_Amount
+		cog.Depre_Amount += o.Depre_Amount
+
+		cogsmaps[key] = cog
+	}
+	masters.Set("cogs", cogsmaps)
+
+	subtot := float64(0)
+	for _, v := range cogsmaps {
+		date := time.Date(v.Year, time.Month(v.Month), 1, 0, 0, 0, 0, time.UTC).AddDate(0, -3, 0)
+		if date.Year() == fiscalyear-1 {
+			subtot += v.COGS_Amount
+		}
+	}
+	toolkit.Printfn("COGS : %v", subtot)
 
 	toolkit.Println("--> RAW DATA PL")
-	promos, freight, depreciation := map[string]float64{}, map[string]*gdrj.RawDataPL{}, map[string]float64{}
-	royalties, damages, advertisements := map[string]float64{}, map[string]float64{}, map[string]toolkit.M{}
-	f := dbox.Eq("year", fiscalyear-1)
+	promos, freight, depreciation := map[string]toolkit.M{}, map[string]*gdrj.RawDataPL{}, map[string]float64{}
+	royalties, royaltiesamount, damages := map[string]float64{}, float64(0), map[string]float64{}
+	sgapls := map[string]toolkit.M{}
+
 	csrpromo, _ := gdrj.Find(new(gdrj.RawDataPL), f, nil)
 	defer csrpromo.Close()
 
@@ -166,10 +204,11 @@ func prepmaster() {
 				agroup = "spg"
 			}
 
+			key = toolkit.Sprintf("%s_%s", key, agroup)
 			if agroup == "adv" {
-				tspg, exist := advertisements[key]
+				tadv, exist := promos[key]
 				if !exist {
-					tspg = toolkit.M{}
+					tadv = toolkit.M{}
 				}
 				skey := "PL28I"
 				tstr := strings.TrimSpace(o.AccountDescription)
@@ -192,12 +231,49 @@ func prepmaster() {
 					skey = "PL28H"
 				}
 
+				v := tadv.GetFloat64(skey) + o.AmountinIDR
+				tadv.Set(skey, v)
+				promos[key] = tadv
+			} else if agroup == "spg" {
+				tspg, exist := promos[key]
+				if !exist {
+					tspg = toolkit.M{}
+				}
+
+				skey := "PL31E"
+				tstr := strings.ToUpper(strings.TrimSpace(o.AccountDescription))
+				switch tstr {
+				case "SPG EXPENSES - MANUAL":
+					skey = "PL31D"
+				case "SPG EXPENSES":
+					skey = "PL31C"
+				case "SPG ALLOCATION":
+					skey = "PL31B"
+				case "COORDINATION FEE":
+					skey = "PL31A"
+				}
+
 				v := tspg.GetFloat64(skey) + o.AmountinIDR
 				tspg.Set(skey, v)
-				advertisements[key] = tspg
+				promos[key] = tspg
 			} else {
-				key = toolkit.Sprintf("%s_%s", key, agroup)
-				promos[key] += o.AmountinIDR
+				tpromo, exist := promos[key]
+				if !exist {
+					tpromo = toolkit.M{}
+				}
+
+				tstr := strings.TrimSpace(o.AccountDescription)
+				plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
+				skey := "PL29A32"
+				for _, v := range plmodels {
+					if v.PLHeader2 == "Promotions Expenses" && v.PLHeader3 == tstr {
+						skey = v.ID
+					}
+				}
+
+				v := tpromo.GetFloat64(skey) + o.AmountinIDR
+				tpromo.Set(skey, v)
+				promos[key] = tpromo
 			}
 		case "FREIGHT":
 			frg, exist := freight[key]
@@ -208,6 +284,7 @@ func prepmaster() {
 			freight[key] = frg
 		case "ROYALTY":
 			royalties[key] += o.AmountinIDR
+			royaltiesamount += o.AmountinIDR
 		case "DEPRECIATION":
 			dgroup := "indirect"
 			if strings.Contains(o.Grouping, "Factory") {
@@ -218,22 +295,51 @@ func prepmaster() {
 		case "DAMAGEGOODS": //2015-2016
 			key = toolkit.Sprintf("%s", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 			damages[key] += o.AmountinIDR
+		case "SGAPL":
+			tsga, exist := sgapls[key]
+			if !exist {
+				tsga = toolkit.M{}
+			}
+
+			subkey := "PL33"
+			if strings.Contains(o.Grouping, "administrative") || strings.Contains(o.Grouping, "General") {
+				subkey = "PL34"
+			} else if strings.Contains(o.Grouping, "Depr") {
+				subkey = "PL35"
+			}
+
+			group := ""
+			cc, exist := ccs[o.CCID]
+			if exist {
+				group = cc.CostGroup01
+			}
+
+			if group == "" {
+				group = "Other"
+			}
+
+			subkey = toolkit.Sprintf("%s_%s", subkey, group)
+
+			val := tsga.GetFloat64(subkey) + o.AmountinIDR
+			tsga.Set(subkey, val)
+			sgapls[key] = tsga
+			//Personnel  Expense - Office	PL33
+			//General and administrative expenses	PL34
+			// & Amort. Exp. -  Office	PL35
 		}
 	}
 
-	subtot := float64(0)
+	subtot = float64(0)
 	for _, v := range royalties {
 		subtot += v
 	}
 	toolkit.Printfn("Royaties : %v", subtot)
-	// toolkit.Printfn("Royaties : %v", royalties)
 
 	subtot = float64(0)
 	for _, v := range damages {
 		subtot += v
 	}
 	toolkit.Printfn("Damages : %v", subtot)
-	// toolkit.Printfn("Damages : %v", damages)
 
 	subtot = float64(0)
 	for _, v := range depreciation {
@@ -241,29 +347,46 @@ func prepmaster() {
 	}
 	toolkit.Printfn("Depreciation : %v", subtot)
 
-	subtot = float64(0)
-	for _, v := range promos {
-		subtot += v
-	}
-	toolkit.Printfn("Promos : %v", subtot)
+	// subtot = float64(0)
+	// for _, v := range promos {
+	// 	subtot += v
+	// }
+	// toolkit.Printfn("Adv, Promos and spg : %v", subtot)
 
 	subtot = float64(0)
-	for _, v := range advertisements {
+	for _, v := range promos {
 		for _, xv := range v {
 			subtot += toolkit.ToFloat64(xv, 6, toolkit.RoundingAuto)
 		}
 	}
-	toolkit.Printfn("Advertisement : %v", subtot)
+	toolkit.Printfn("Adv, Promos and spg : %v", subtot)
+
+	subtot = float64(0)
+	for _, v := range sgapls {
+		for _, xv := range v {
+			subtot += toolkit.ToFloat64(xv, 6, toolkit.RoundingAuto)
+		}
+	}
+	toolkit.Printfn("SGA : %v", subtot)
 
 	masters.Set("promos", promos).Set("freight", freight).Set("depreciation", depreciation).
-		Set("royalties", royalties).Set("damages", damages).Set("advertisements", advertisements)
+		Set("royalties", royalties).Set("damages", damages).Set("sgapls", sgapls).Set("royaltiesamount", royaltiesamount)
 
 	toolkit.Println("--> DISCOUNT ACTIVITY")
 	//discounts_all discounts
 	//can be by brach,brand,channelid,month
-	cda, _ := conn.NewQuery().From("rawdatadiscountactivity_rev").Cursor(nil)
+	cda, _ := conn.NewQuery().From("rawdatadiscountactivity_rev").Where(f).Cursor(nil)
 	defer cda.Close()
 	chlist := []string{"I1", "I2", "I3", "I4", "I6", "EXP"}
+	inarrstr := func(arrstr []string, str string) bool {
+		for _, v := range arrstr {
+			if v == str {
+				return true
+			}
+		}
+		return false
+	}
+
 	tkmdiscount := toolkit.M{}
 	for {
 		m := toolkit.M{}
@@ -273,7 +396,7 @@ func prepmaster() {
 		}
 		date := time.Date(m.GetInt("year"), time.Month(m.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		ch := strings.ToUpper(m.GetString("channel"))
-		if !toolkit.HasMember(chlist, ch) {
+		if !inarrstr(chlist, ch) {
 			ch = "I2"
 		}
 
@@ -292,12 +415,19 @@ func prepmaster() {
 		tkmdiscount.Set(key, tamount)
 	}
 	masters.Set("discounts", tkmdiscount)
+
+	subtot = 0
+	for _, v := range tkmdiscount {
+		subtot += toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+	}
+	toolkit.Printfn("Discount Activity : %v", subtot)
 }
 
 func prepmasterclean() {
 
 	toolkit.Println("--> Sub Channel")
 	csr, _ := conn.NewQuery().From("subchannels").Cursor(nil)
+	subchannels := toolkit.M{}
 	defer csr.Close()
 	for {
 		m := toolkit.M{}
@@ -361,7 +491,10 @@ func prepmastergrossproc() {
 	grossbymonthchannel, grossbymonthbrandchannel := toolkit.M{}, toolkit.M{}
 
 	toolkit.Println("--> Trx Gross Proc")
-	csr01, _ := conn.NewQuery().From("salestrxs-grossproc").Cursor(nil)
+	csr01, _ := conn.NewQuery().From("salestrxs-grossproc").
+		Where(dbox.Ne("src", "DISCOUNT")).
+		// Where(dbox.And(dbox.Eq("custcheck", true), dbox.Ne("src", "DISCOUNT"))).
+		Cursor(nil)
 	defer csr01.Close()
 	for {
 		m := toolkit.M{}
@@ -444,14 +577,15 @@ func main() {
 
 	var f *dbox.Filter
 	f = dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode))
-	f = dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Eq("customer.channelid", "I1"))
-	f = dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Eq("customer.channelid", "I3"))
+	// f = dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Eq("customer.channelid", "I1"))
+	// f = dbox.And(dbox.Gte("date.date", speriode), dbox.Lt("date.date", eperiode), dbox.Eq("customer.channelid", "I3"))
 	// f = dbox.Or(dbox.Eq("_id", "RD_2015_10_20010074_639316"), dbox.Eq("_id", "CN/GBS/15000021_1"))
 
 	toolkit.Println("Reading Master")
-	prepmaster()
+
 	prepmasterclean()
-	// prepmastergrossproc()
+	prepmastercalc()
+	prepmastergrossproc()
 
 	c, _ := gdrj.Find(new(gdrj.SalesPL), f, nil)
 	defer c.Close()
@@ -510,22 +644,22 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 		spl.CleanAndClasify(masters)
 
 		// === For ratio update and calc
-		// spl.RatioCalc(masters)
-
+		spl.RatioCalc(masters)
+		spl.CalcSales(masters)
 		//calculate process -- better not re-run
 		// spl.CalcCOGSRev(masters)
 
 		//calculate process
 		// spl.CalcFreight(masters)
 		// spl.CalcDepre(masters)
-		// spl.CalcDamage(masters)
+		spl.CalcDamage(masters)
 		// spl.CalcDepre(masters)
 		// spl.CalcRoyalties(masters)
 		// spl.CalcDiscountActivity(masters)
 		// spl.CalcPromo(masters)
-		// spl.CalcSum(masters)
+		spl.CalcSum(masters)
 
-		tablename := toolkit.Sprintf("%v-1", spl.TableName())
+		tablename := toolkit.Sprintf("%v-2", spl.TableName())
 		workerconn.NewQuery().From(tablename).
 			Save().Exec(toolkit.M{}.Set("data", spl))
 

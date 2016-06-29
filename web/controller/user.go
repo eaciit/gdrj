@@ -11,9 +11,8 @@ type UserController struct {
 	App
 }
 
-func CreateUserController(s *knot.Server) *UserController {
+func CreateUserController() *UserController {
 	var controller = new(UserController)
-	controller.Server = s
 	return controller
 }
 

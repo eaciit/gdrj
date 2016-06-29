@@ -12,9 +12,8 @@ type LoginController struct {
 	App
 }
 
-func CreateLoginController(s *knot.Server) *LoginController {
+func CreateLoginController() *LoginController {
 	var controller = new(LoginController)
-	controller.Server = s
 	return controller
 }
 

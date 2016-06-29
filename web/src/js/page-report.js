@@ -5,7 +5,7 @@ vm.currentMenu('Report')
 vm.currentTitle('Report')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
-	{ title: 'Report', href: '/web/report/all' }
+	{ title: 'Report', href: '#' }
 ])
 
 viewModel.report = new Object()
@@ -194,17 +194,26 @@ rpt.optionDimensions = ko.observableArray([
     // { field: 'date.quartertxt', name: 'Quarter', title: 'date_quartertxt' },
     // { field: 'date.month', name: 'Month', title: 'date_month' },
 ])
-rpt.optionDataPoints = ko.observableArray([
-    { field: 'value1', name: o['value1'] },
-    { field: 'value2', name: o['value2'] },
-    { field: 'value3', name: o['value3'] }
-])
+// rpt.optionDataPoints = ko.observableArray([
+//     { field: 'value1', name: o['value1'] },
+//     { field: 'value2', name: o['value2'] },
+//     { field: 'value3', name: o['value3'] }
+// ])
 rpt.optionAggregates = ko.observableArray([
 	{ aggr: 'sum', name: 'Sum' },
 	{ aggr: 'avg', name: 'Avg' },
 	{ aggr: 'max', name: 'Max' },
 	{ aggr: 'min', name: 'Min' }
 ])
+rpt.optionsChannels = ko.observableArray([
+	{ _id: 'EXP', Name: 'Export' },
+	{ _id: 'I2', Name: 'General Trade (GT)' },
+	{ _id: 'I4', Name: 'Industrial Trade (IT)' },
+	{ _id: 'I3', Name: 'Modern Trade (MT)' },
+	{ _id: 'I6', Name: 'Motorist' },
+	{ _id: 'I1', Name: 'Regional Distributor (RD)' },
+])
+
 rpt.parseGroups = (what) => {
 	return what
 
@@ -300,7 +309,7 @@ rpt.filter.forEach((d) => {
 })
 
 rpt.getOtherMasterData = () => {
-	toolkit.ajaxPost(`/report/getdatasubchannel`, {}, (res) => {
+	toolkit.ajaxPost(viewModel.appName + `report/getdatasubchannel`, {}, (res) => {
 		if (!res.success) {
 			return
 		}
@@ -381,7 +390,7 @@ rpt.filterMultiSelect = (d) => {
 			config.dataValueField = '_id'
 		}
 
-		toolkit.ajaxPost(`/report/getdata${d.from.toLowerCase()}`, {}, (res) => {
+		toolkit.ajaxPost(viewModel.appName + `report/getdata${d.from.toLowerCase()}`, {}, (res) => {
 			if (!res.success) {
 				return
 			}
@@ -402,7 +411,7 @@ rpt.filterMultiSelect = (d) => {
 		})
 
 		if (d.from == 'Region') {
-			toolkit.ajaxPost(`/report/getdatahgeographi`, {}, (res) => {
+			toolkit.ajaxPost(viewModel.appName + `report/getdatahgeographi`, {}, (res) => {
 				if (!res.success) {
 					return
 				}
@@ -454,21 +463,22 @@ rpt.toggleFilter = () => {
 	rpt.panel_relocated()
 }
 
-rpt.getIdeas = () => {
-	toolkit.ajaxPost('/report/getdataanalysisidea', { }, (res) => {
-		if (!toolkit.isFine(res)) {
-			return
-		}
+// rpt.getIdeas = () => {
+// 	toolkit.ajaxPost(viewModel.appName + 'report/getdataanalysisidea', { }, (res) => {
+// 		if (!toolkit.isFine(res)) {
+// 			return
+// 		}
 		
-		rpt.idanalysisreport('')
-		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.order))
-		let idreport = _.find(rpt.analysisIdeas(), function(a) { return a._id == o.ID })
-		if (idreport != undefined) {
-			rpt.idanalysisreport(idreport.name)
-			vm.currentTitle("Report " + rpt.idanalysisreport())
-		}
-	})
-}
+// 		rpt.idanalysisreport('')
+// 		rpt.analysisIdeas(_.sortBy(res.data, (d) => d.order))
+// 		let idreport = _.find(rpt.analysisIdeas(), function(a) { return a._id == o.ID })
+// 		if (idreport != undefined) {
+// 			rpt.idanalysisreport(idreport.name)
+// 			vm.currentTitle("Report " + rpt.idanalysisreport())
+// 		}
+// 	})
+// }
+
 rpt.wrapParam = (dimensions = [], dataPoints = []) => {
     return {
         dimensions: dimensions,
@@ -850,7 +860,7 @@ rpt.refreshHeight = (PLCode) => {
 	})
 }
 
-rpt.showExport = ko.observable(true)
+rpt.showExport = ko.observable(false)
 rpt.export = (target, title, mode) => {
 	target = toolkit.$(target)
 
@@ -989,6 +999,6 @@ rpt.export = (target, title, mode) => {
 $(() => {
 	$(window).scroll(rpt.panel_relocated);
     rpt.panel_relocated()
-	rpt.getIdeas()
+	// rpt.getIdeas()
 	rpt.getOtherMasterData()
 })

@@ -1,0 +1,40 @@
+<script src="{{BaseUrl}}res/core/js/page-widget-map.js"></script>
+
+<div class="panel ez no-padding hardcore">
+	<div class="panel-heading">
+		<h3 class="no-margin">
+			Branch Location
+		</h3>
+		<div class="panel-nav-button">
+			<div class="form-group relative align-right no-margin no-padding hardcore">
+				<button class="btn btn-sm btn-info" data-bind="click: vm.expandToggleContent">
+					<i class="fa fa-expand"></i>
+				</button>
+				<!-- <button class="btn btn-sm btn-primary" data-bind="click: () => { rpt.mode('') }, visible: rpt.mode() == 'render'">
+					<i class="fa fa-gear"></i> Show Configuration
+				</button> -->
+			</div>
+		</div>
+	</div>
+	<div class="panel-body">
+		<div class="form-group">
+			<div class="input-group input-group-sm ez width-full">
+				<span class="input-group-addon width-80 align-right">Show by</span>
+				<div class="radio ez">
+					<label class="checkbox-inline">
+						<input type="radio" name="map-show-by" value="Branch" data-bind="checked: ol.showBy, click: ol.changeVal('Branch')"> Branch
+					</label>
+					<label class="checkbox-inline">
+						<input type="radio" name="map-show-by" value="geographi" data-bind="checked: ol.showBy, click: ol.changeVal('geographi')"> City
+					</label>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+
+		<p>Show godrej outlets location of Indonesia.</p>
+
+		<div id="outlet-location"></div>
+	</div>
+</div>
+

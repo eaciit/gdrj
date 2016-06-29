@@ -11,9 +11,8 @@ type GroupController struct {
 	App
 }
 
-func CreateGroupController(s *knot.Server) *GroupController {
+func CreateGroupController() *GroupController {
 	var controller = new(GroupController)
-	controller.Server = s
 	return controller
 }
 

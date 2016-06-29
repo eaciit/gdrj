@@ -1,4 +1,8 @@
-<script src="/res/core/js/page-report-analysis.js"></script>
+<div>
+	<div class="col-md-12 col-sm-12 ez panel-content">
+
+<script src="{{BaseUrl}}res/core/js/page-report.js"></script>
+<script src="{{BaseUrl}}res/core/js/page-report-analysis.js"></script>
 
 <div>
 
@@ -64,11 +68,36 @@
 				</div>
 				<div class="clearfix"></div>
 
-				<div class="form-inline pull-right" data-bind="visible: bkd.isBreakdownChannel">
+				<div class="form-inline pull-right" data-bind="visible: bkd.isBreakdownBranch">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">By channels</span>
+						<div class="width-full">
+							<select type="text" style="width: 170px;" data-bind="kendoMultiSelect: { data: rpt.optionsChannels, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownBranch_Channels, placeholder: 'Not used', enabled: bkd.isBreakdownBranchSubEnabled('channel') }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Or by RD / non RD</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: bkd.optionBreakdownRDNonRD, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownBranch_ChannelRDNonRD, optionLabel: 'Not used', enabled: bkd.isBreakdownBranchSubEnabled('rd-non-rd') }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					<div class="input-group input-group-sm ez margin-bottom-10">
+						<span class="input-group-addon align-right">Or by sub channel of</span>
+						<div class="width-full">
+							<select type="text" style="width: 170px;" data-bind="kendoDropDownList: { data: rpt.optionsChannels, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownBranch_SubChannel, optionLabel: 'Not used', enabled: bkd.isBreakdownBranchSubEnabled('sub-channel') }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+
+				<!-- <div class="form-inline pull-right" data-bind="visible: bkd.isBreakdownChannel"> -->
+				<div class="form-inline pull-right">
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right">Breakdown by sub channels</span>
 						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: bkd.optionBreakdownChannels, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownChannels, placeholder: 'Choose channels', enabled: ko.computed(function () { return bkd.breakdownChannelLocation() == '' }, bkd) }"></select>
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.optionsChannels, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownChannels, placeholder: 'Choose channels', enabled: ko.computed(function () { return bkd.breakdownChannelLocation() == '' }, bkd) }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
@@ -202,8 +231,8 @@
 	</div>
 </div>
 		</div>
-		<div role="tabpanel" class="tab-pane" id="tab3">
-<!-- <div class="col-md-12 col-sm-12 no-padding hardcore">
+		<!-- <div role="tabpanel" class="tab-pane" id="tab3">
+<div class="col-md-12 col-sm-12 no-padding hardcore">
 	<div class="panel ez no-padding hardcore">
 		<div class="panel-heading">
 			<h3 class="no-margin" data-bind="text: ccr.title"></h3>
@@ -265,7 +294,12 @@
 			</div>
 		</div>
 	</div>
-</div> -->
-		</div>
+</div>
+		</div> -->
 	</div>
+</div>
+
+	</div>
+
+	{{template "_filter.html"}}
 </div>
