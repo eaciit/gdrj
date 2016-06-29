@@ -466,8 +466,8 @@ v2.buildStructure = function (data) {
 
 	v2.level(2);
 	var newParsed = _.orderBy(parsed, function (d) {
-		return d._id;
-	}, 'asc');
+		return d.PL8A;
+	}, 'desc');
 	return newParsed;
 };
 

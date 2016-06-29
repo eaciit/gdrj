@@ -762,7 +762,6 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 
 				if toolkit.HasMember([]string{"I1"}, channelID) {
 					breakdowns := map[string]float64{"General Trade": 0.38, "Modern Trade": 0.62}
-
 					for channelname, percentage := range breakdowns {
 						newEach := toolkit.M{}
 
@@ -786,6 +785,38 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 					}
 				}
 			}
+
+			(func() {
+				breakdowns := map[string][]string{
+					"Branch": {"I6", "I4", "I3", "I2"},
+					"RD":     {"I1"},
+				}
+				for breakdown, chIDs := range breakdowns {
+					newEach := toolkit.M{}
+
+					eachID := toolkit.M{}
+					eachID.Set("_id_branchrd", breakdown)
+					eachID.Set("_id_customer_channelname", "Total")
+					newEach.Set("_id", eachID)
+
+					for _, each := range *data {
+						eachID := each.Get("_id").(toolkit.M)
+						if toolkit.HasMember(chIDs, eachID.GetString("_id_customer_channelid")) {
+							for k := range *each {
+								if strings.HasPrefix(k, "PL") {
+									if _, ok := newEach[k]; !ok {
+										newEach[k] = (*each).GetFloat64(k)
+									} else {
+										newEach[k] = newEach.GetFloat64(k) + (*each).GetFloat64(k)
+									}
+								}
+							}
+						}
+					}
+
+					res = append(res, &newEach)
+				}
+			}())
 
 			for _, each := range res {
 				fmt.Println(each.Get("_id"))

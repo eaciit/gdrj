@@ -516,7 +516,7 @@ v2.buildStructure = (data) => {
 	})
 
 	v2.level(2)
-	let newParsed = _.orderBy(parsed, (d) => d._id, 'asc')
+	let newParsed = _.orderBy(parsed, (d) => d.PL8A, 'desc')
 	return newParsed
 }
 
