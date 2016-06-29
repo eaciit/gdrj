@@ -735,3 +735,14 @@ body {
   padding-top: 60px;
   display: block;
 }
+.nav-subs {
+  position: absolute;
+  margin-top: 0px;
+  margin-left: 0px;
+  background-color: #edf1f2;
+  padding: 0px;
+  border-radius: 4px;
+}
+.nav-subs li a {
+  padding: 6px 10px;
+}

@@ -974,6 +974,21 @@ bkd.changeBreakdownValue = () => {
 
 
 
+
+
+
+viewModel.summary = {}
+let smry = viewModel.summary
+
+smry.summaryMode = ko.observable('overview')
+
+
+
+
+
+
+
+
 viewModel.scatter = new Object()
 let rs = viewModel.scatter
 let dataPoints = [
@@ -1279,287 +1294,129 @@ rs.generateReport = (title, raw) => {
 }
 
 
-viewModel.chartCompare = {}
-let ccr = viewModel.chartCompare
 
-ccr.data = ko.observableArray([])
-ccr.dataComparison = ko.observableArray([])
-ccr.title = ko.observable('Chart Comparison')
-ccr.contentIsLoading = ko.observable(false)
-ccr.categoryAxisField = ko.observable('category')
-ccr.breakdownBy = ko.observable('')
-ccr.limitchart = ko.observable(6)
-ccr.optionComparison = ko.observableArray([
-	{ field: 'outlet', name: 'Outlet' },
-	{ field: 'price', name: 'Price' },
-	{ field: 'qty', name: 'Quantity' },
+
+
+
+
+
+viewModel.dashboardRanking = {}
+let rank = viewModel.dashboardRanking
+
+rank.optionDimensions = ko.observableArray([
+	{ field: 'NonRD', name: 'Non RD Sales' },
+	{ field: 'OnlyRD', name: 'Only RD Sales' },
+	{ field: 'customer.keyaccount', name: 'Key Account' },
+].concat(rpt.optionDimensions().slice(0)))
+rank.breakdown = ko.observable('customer.channelname')
+rank.columns = ko.observableArray([
+	{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
+	{ field: 'gmPercentage', template: (d) => `${kendo.toString(d.gmPercentage, 'n2')} %`, title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+	{ field: 'cogsPercentage', template: (d) => `${kendo.toString(d.cogsPercentage, 'n2')} %`, title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+	{ field: 'ebitPercentage', template: (d) => `${kendo.toString(d.ebitPercentage, 'n2')} %`, title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+	{ field: 'ebitdaPercentage', template: (d) => `${kendo.toString(d.ebitdaPercentage, 'n2')} %`, title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+	{ field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' },
+	{ field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' },
 ])
-ccr.comparison = ko.observableArray(['price', 'qty'])
-ccr.fiscalYear = ko.observable(rpt.value.FiscalYear())
-ccr.order = ko.observable(ccr.optionComparison()[2].field)
+rank.contentIsLoading = ko.observable(false)
+rank.data = ko.observableArray([])
+rank.fiscalYear = ko.observable(rpt.value.FiscalYear())
 
-ccr.getDecreasedQty = (useCache = false) => {
+rank.refresh = () => {
+	let breakdown = rank.breakdown()
+	let isRDNonRD = (['OnlyRD', 'NonRD'].indexOf(rank.breakdown()) > -1)
+
+	if (isRDNonRD) {
+		breakdown = 'customer.channelname'
+	}
+
 	let param = {}
-	param.filters = rpt.getFilterValue(false, ccr.fiscalYear)
-	param.groups = ["skuid", "date.quartertxt"]
+	param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
+	param.groups = rpt.parseGroups([breakdown])
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue(false, rank.fiscalYear)
+
+	if (isRDNonRD) {
+		let values = ('OnlyRD' == rank.breakdown()) ? 
+			['I1'] : ["EXP", "I2", "I4", "I6", "I3"]
+
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: values
+		})
+	}
 
 	let fetch = () => {
-		toolkit.ajaxPost(viewModel.appName + `report/GetDecreasedQty`, param, (res) => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
-				setTimeout(() => {
-					fetch()
-				}, 1000 * 5)
+				setTimeout(() => { fetch() }, 1000 * 5)
 				return
 			}
 
-			ccr.contentIsLoading(false)
-			ccr.dataComparison(res.Data.Data)
-			ccr.plot()
+			rank.contentIsLoading(false)
+			rank.render(breakdown, res)
 		}, () => {
-			ccr.contentIsLoading(false)
-		}, {
-			cache: (useCache == true) ? 'chart comparison' : false
+			rank.contentIsLoading(false)
 		})
 	}
 
-	ccr.contentIsLoading(true)
+	rank.contentIsLoading(true)
 	fetch()
 }
-ccr.refresh = () => {
-	// if (ccr.dataComparison().length > 0) {
-	// 	ccr.plot()
-	// } else {
-		ccr.getDecreasedQty()
-	// }
-}
-ccr.plot = () => {
-	let orderedData = _.orderBy(ccr.dataComparison(), (d) => {
-		if (ccr.order() == 'outlet') {
-			return d.outletList
+
+rank.render = (breakdown, res) => {
+	let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`], ''))
+
+	let rows = []
+	data.forEach((d) => {
+		let row = {}
+		row.original = d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`]
+		row.pnl = d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`]
+		if ($.trim(row.pnl) == '') {
+			row.original = ''
+			row.pnl = ''
+		}
+		if (breakdown == 'date.month') {
+			row.original = (parseInt(row.pnl, 10) - 1)
+			row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM')
 		}
 
-		return d[ccr.order()]
-	}, 'desc')
-	ccr.dataComparison(orderedData)
 
-	// ccr.dataComparison(ccr.dummyJson)
-	let tempdata = []
-	// let qty = 0
-	// let price = 0
-	let outlet = 0, maxline = 0, maxprice = 0, maxqty = 0, quarter = []
-	for (var i in ccr.dataComparison()){
-		if (ccr.dataComparison()[i].productName != undefined){
-			// qty = _.filter(ccr.dataComparison()[i].qty, function(resqty){ return resqty == 0}).length
-			// price = _.filter(ccr.dataComparison()[i].price, function(resprice){ return resprice == 0}).length
-			maxprice = _.max(ccr.dataComparison()[i].price)
-			maxqty = _.max(ccr.dataComparison()[i].qty)
-			outlet = _.max(ccr.dataComparison()[i].outletList)
-			// if (maxprice > maxqty)
-			// 	maxline = maxprice
-			// else
-			// 	maxline = maxqty
-			quarter = []
-			for (var a in ccr.dataComparison()[i].qty){
-				quarter.push(`Quarter ${parseInt(a)+1}`)
-			}
-			tempdata.push({
-				qty: ccr.dataComparison()[i].qtyCount,
-				price: ccr.dataComparison()[i].priceCount,
-				quarter: quarter,
-				maxoutlet: outlet + (outlet/2),
-				maxprice: maxprice + (maxprice/4),
-				maxqty: maxqty + (maxqty/4),
-				productName: ccr.dataComparison()[i].productName,
-				data: ccr.dataComparison()[i]
-			})
-		}
-	}
-	// let sortPriceQty = _.take(_.sortBy(tempdata, function(item) {
-	//    return [item.qty, item.price]
-	// }).reverse(), ccr.limitchart())
-	console.log("--------> TEMP DATA", tempdata)
-	let sortPriceQty = _.take(tempdata, ccr.limitchart())
-	ccr.data(sortPriceQty)
-	ccr.render()
-}
-ccr.render = () => {
-	let configure = (data, full) => {
-		let seriesLibs = {
-			price: { 
-				name: 'Price', 
-				// field: 'value1', 
-				data: data.price, 
-				width: 3, 
-				markers: {
-					visible: true,
-					size: 10,
-					border: {
-						width: 3
-					}
-				},
-				axis: "price",
-				color: '#5499C7',
-				labels: {
-					visible: false,
-					background: 'rgba(84,153,199,0.2)'
-				}
-			},
-			qty: { 
-				name: 'Qty', 
-				// field: 'value2', 
-				data: data.qty, 
-				width: 3, 
-				markers: {
-					visible: true,
-					size: 10,
-					border: {
-						width: 3
-					}
-				},
-				axis: "qty",
-				color: '#ff8d00',
-				labels: {
-					visible: false,
-					background: 'rgba(255,141,0,0.2)'
-				}
-			},
-			outlet: { 
-				name: 'Outlet', 
-				// field: 'value3', 
-				data: data.outletList,
-				type: 'column', 
-				width: 3, 
-				overlay: {
-					gradient: 'none'
-				},
-				border: {
-					width: 0
-				},
-				markers: {
-					visible: true,
-					style: 'smooth',
-					type: 'column',
-				},
-				axis: "outlet",
-				color: '#678900',
-				labels: {
-					visible: false,
-					background: 'rgba(103,137,0,0.2)'
-				}
-			}
-		}
-
-		let series = []
-		ccr.comparison().forEach((d) => {
-			series.push(seriesLibs[d])
-		})
-
-		let valueAxes = []
-		// , maxyo = 0, fieldmax = '', maxselect = 0
-		// if (ccr.comparison().indexOf('qty') > -1 || ccr.comparison().indexOf('price') > -1) {
-		// 	valueAxes.push({
-		// 		name: "priceqty",
-  //               title: { text: "Qty & Price" },
-		// 		majorGridLines: {
-		// 			color: '#fafafa'
-		// 		},
-		// 		max: full.maxline,
-		// 	})
-		// }
-		// if (ccr.comparison().indexOf('outlet') > -1) {
-		// 	valueAxes.push({
-		// 		name: "outlet",
-  //               title: { text: "Outlet" },
-  //               majorGridLines: {
-		// 			color: '#fafafa'
-		// 		},
-		// 		max: full.maxoutlet,
-		// 	})
-		// }
-		// if (ccr.comparison().length > 1) {
-		// 	if (ccr.comparison()[0] > ccr.comparison()[1]){
-		// 		maxyo = full["max"+ccr.comparison()[0]]
-		// 		fieldmax = ccr.comparison()[0]
-		// 	} else {
-		// 		maxyo = full["max"+ccr.comparison()[1]]
-		// 		fieldmax = ccr.comparison()[1]
-		// 	}
-		// } else if (ccr.comparison() > 0) {
-		// 	maxyo = full["max"+ccr.comparison()[0]]
-		// 	fieldmax = ccr.comparison()[0]
-		// }
-		// maxyo += maxyo / 4
-		for (let e in ccr.comparison()){
-			valueAxes.push({
-				name: ccr.comparison()[e],
-                title: { text: ccr.comparison()[e].charAt(0).toUpperCase() + ccr.comparison()[e].slice(1) },
-                majorGridLines: {
-					color: '#fafafa'
-				},
-				max: full["max"+ccr.comparison()[e]],
-			})
-		}
-
-		return {
-			// dataSource: {
-			// 	data: data
-			// },
-			series: series,
-			seriesDefaults: {
-	            type: "line",
-	            style: "smooth",
-				labels: {
-					font: '"Source Sans Pro" 11px',
-					visible: true,
-					position: 'top',
-					template: (d) => {
-						return `${d.series.name}: ${kendo.toString(d.value, 'n0')}`
-					}
-				}
-			},
-			categoryAxis: {
-				baseUnit: "month",
-				// field: ccr.categoryAxisField(),
-				categories: full.quarter,
-				majorGridLines: {
-					color: '#fafafa'
-				},
-				axisCrossingValue: [0, 8],
-				labels: {
-					font: '"Source Sans Pro" 11px',
-					rotation: 40
-					// template: (d) => `${toolkit.capitalize(d.value).slice(0, 3)}`
-				}
-			},
-			legend: {
-				position: 'bottom'
-			},
-			valueAxes: valueAxes,
-			tooltip: {
-				visible: true,
-				template: (d) => `${d.series.name} on : ${kendo.toString(d.value, 'n0')}`
-			}
-		}
-	}
-
-	let chartContainer = $('.chart-comparison')
-	chartContainer.empty()
-	for (var e in ccr.data()){
-		let html = $($('#template-chart-comparison').html())
-		let config = configure(ccr.data()[e].data, ccr.data()[e])
-
-		html.appendTo(chartContainer)
-		html.find('.title').html(ccr.data()[e].data.productName)
-		html.find('.chart').kendoChart(config)
-	}
-	chartContainer.append($('<div />').addClass('clearfix'))
-}
-
-rpt.toggleFilterCallback = () => {
-	$('.chart-comparison .k-chart').each((i, e) => {
-		$(e).data('kendoChart').redraw()
+		row.gmPercentage = toolkit.number(d.PL74C / d.PL8A) * 100
+		row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A) * 100
+		row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A) * 100
+		row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A) * 100
+		row.netSales = d.PL8A
+		row.ebit = d.PL44B
+		rows.push(row)
 	})
+
+	rank.data(_.orderBy(rows, (d) => d.netSales, 'desc'))
+
+	let config = {
+		dataSource: {
+			data: rank.data(),
+			pageSize: 10,
+		},
+		columns: rank.columns(),
+		resizabl: false,
+		sortable: true, 
+		pageable: true,
+		filterable: false,
+		dataBound: app.gridBoundTooltipster('.grid-ranking')
+	}
+
+	$('.grid-ranking').replaceWith('<div class="grid-ranking sortable"></div>')
+	$('.grid-ranking').kendoGrid(config)
 }
+
+
+
+
+
+
+
 
 vm.currentMenu('Analysis')
 vm.currentTitle('&nbsp;')
@@ -1571,7 +1428,6 @@ vm.breadcrumb([
 
 bkd.title('P&L Summary')
 rs.title('P&L Comparison to Net Sales')
-ccr.title('Quantity, Price & Outlet')
 
 rpt.refresh = () => {
 	rpt.tabbedContent()
@@ -1586,8 +1442,6 @@ rpt.refresh = () => {
 	}, 200)
 
 	rpt.prepareEvents()
-
-	// ccr.getDecreasedQty(false)
 }
 
 $(() => {
@@ -1596,4 +1450,7 @@ $(() => {
 		bkd.breakdownValue(['All'])
 		bkd.refresh(false)
 	}, 200)
+
+	rs.getSalesHeaderList()
+	rank.refresh()
 })
