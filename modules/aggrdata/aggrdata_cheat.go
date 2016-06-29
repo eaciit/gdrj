@@ -113,10 +113,10 @@ func main() {
 		dtkm, _ := toolkit.ToM(tkm.Get("_id"))
 		if dtkm.GetString("date_fiscal") == "2014-2015" {
 			v := tkm.GetFloat64("PL7")
-			tkm.Set("PL7", -v)
+			tkm.Set("PL7_OLD", -v)
 
 			v = tkm.GetFloat64("PL8")
-			tkm.Set("PL8", -v)
+			tkm.Set("PL8_OLD", -v)
 
 			// v = tkm.GetFloat64("PL44")
 			// tkm.Set("PL44", -v)
@@ -151,7 +151,7 @@ func CalcSum(tkm toolkit.M) {
 
 	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL94A", "PL39A", "PL41A", "PL44A",
 		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
-		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31"}
+		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31", "PL7", "PL8"}
 
 	plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
 
@@ -242,32 +242,43 @@ func CalcSum(tkm toolkit.M) {
 	ebitsga = opincome - sga
 	ebitsgaroyalty := ebitsga - royaltiestrademark
 
-	tkm.Set("PL0", grosssales)
-	tkm.Set("PL6A", discount)
-	tkm.Set("PL8A", netsales)
-	tkm.Set("PL14A", directexpense)
-	tkm.Set("PL74A", indirectexpense)
-	tkm.Set("PL26A", royaltiestrademark)
-	tkm.Set("PL32A", advtpromoexpense)
-	tkm.Set("PL94A", sga)
-	tkm.Set("PL39A", nonoprincome)
-	tkm.Set("PL41A", taxexpense)
-	tkm.Set("PL44A", totdepreexp)
+	// tkm.Set("PL0", grosssales)
+	// tkm.Set("PL6A", discount)
+	// tkm.Set("PL8A", netsales)
+	// tkm.Set("PL14A", directexpense)
+	// tkm.Set("PL74A", indirectexpense)
+	// tkm.Set("PL26A", royaltiestrademark)
+	// tkm.Set("PL32A", advtpromoexpense)
+	// tkm.Set("PL94A", sga)
+	// tkm.Set("PL39A", nonoprincome)
+	// tkm.Set("PL41A", taxexpense)
+	// tkm.Set("PL44A", totdepreexp)
+	tkm.Set("PL0_OLD", grosssales)
+	tkm.Set("PL6A_OLD", discount)
+	tkm.Set("PL8A_OLD", netsales)
+	tkm.Set("PL14A_OLD", directexpense)
+	tkm.Set("PL74A_OLD", indirectexpense)
+	tkm.Set("PL26A_OLD", royaltiestrademark)
+	tkm.Set("PL32A_OLD", advtpromoexpense)
+	tkm.Set("PL94A_OLD", sga)
+	tkm.Set("PL39A_OLD", nonoprincome)
+	tkm.Set("PL41A_OLD", taxexpense)
+	tkm.Set("PL44A_OLD", totdepreexp)
 
-	tkm.Set("PL28", advexp)
-	tkm.Set("PL29A", promoexp)
-	tkm.Set("PL31", spgexp)
-	tkm.Set("PL74B", cogs)
-	tkm.Set("PL74C", grossmargin)
-	tkm.Set("PL32B", sellingexpense)
-	tkm.Set("PL94B", operatingexpense)
-	tkm.Set("PL94C", opincome)
-	tkm.Set("PL39B", ebt)
-	tkm.Set("PL41B", percentpbt)
-	tkm.Set("PL41C", eat)
-	tkm.Set("PL44B", opincome)
-	tkm.Set("PL44C", ebitda)
-	tkm.Set("PL44D", ebitdaroyalties)
-	tkm.Set("PL44E", ebitsga)
-	tkm.Set("PL44F", ebitsgaroyalty)
+	tkm.Set("PL28_OLD", advexp)
+	tkm.Set("PL29A_OLD", promoexp)
+	tkm.Set("PL31_OLD", spgexp)
+	tkm.Set("PL74B_OLD", cogs)
+	tkm.Set("PL74C_OLD", grossmargin)
+	tkm.Set("PL32B_OLD", sellingexpense)
+	tkm.Set("PL94B_OLD", operatingexpense)
+	tkm.Set("PL94C_OLD", opincome)
+	tkm.Set("PL39B_OLD", ebt)
+	tkm.Set("PL41B_OLD", percentpbt)
+	tkm.Set("PL41C_OLD", eat)
+	tkm.Set("PL44B_OLD", opincome)
+	tkm.Set("PL44C_OLD", ebitda)
+	tkm.Set("PL44D_OLD", ebitdaroyalties)
+	tkm.Set("PL44E_OLD", ebitsga)
+	tkm.Set("PL44F_OLD", ebitsgaroyalty)
 }
