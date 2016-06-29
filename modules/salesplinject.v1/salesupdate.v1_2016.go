@@ -376,7 +376,7 @@ func prepmastercalc() {
 	toolkit.Println("--> DISCOUNT ACTIVITY")
 	//discounts_all discounts
 	//can be by brach,brand,channelid,month
-	cda, _ := conn.NewQuery().From("rawdatadiscountactivity_rev").Where(f).Cursor(nil)
+	cda, _ := conn.NewQuery().From("rawdiscountact_29062016").Where(f).Cursor(nil)
 	defer cda.Close()
 	chlist := []string{"I1", "I2", "I3", "I4", "I6", "EXP"}
 	inarrstr := func(arrstr []string, str string) bool {
@@ -567,7 +567,7 @@ var t0 time.Time
 func main() {
 
 	t0 = time.Now()
-	flag.IntVar(&fiscalyear, "year", 2015, "fiscal year to process. default is 2015")
+	flag.IntVar(&fiscalyear, "year", 2016, "fiscal year to process. default is 2015")
 	flag.Parse()
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
@@ -640,10 +640,12 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		// 		// spl.CalcDepre(masters)
 		// spl.CalcDamage(masters)
 		// spl.CalcDepre(masters)
-		// 		// spl.CalcRoyalties(masters)
-		// 		// spl.CalcDiscountActivity(masters)
+		spl.CalcDiscountActivity(masters)
 		// 		// spl.CalcPromo(masters)
-		// spl.CalcSum(masters)
+
+		spl.CalcRoyalties2016(masters)
+
+		spl.CalcSum(masters)
 
 		tablename := toolkit.Sprintf("%v-2016", spl.TableName())
 
