@@ -166,6 +166,10 @@ bkd.refresh = function () {
 				return;
 			}
 
+			if (rpt.isDataEmpty(res)) {
+				return;
+			}
+
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			bkd.breakdownNote('Last refreshed on: ' + date);
 
@@ -1026,6 +1030,10 @@ rs.refresh = function () {
 				setTimeout(function () {
 					fetch();
 				}, 1000 * 5);
+				return;
+			}
+
+			if (rpt.isDataEmpty(res)) {
 				return;
 			}
 

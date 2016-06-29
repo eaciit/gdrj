@@ -350,6 +350,15 @@ rpt.toggleFilter = function () {
 // 	})
 // }
 
+rpt.isDataEmpty = function (res) {
+	if (res.Data.Data.length == 0) {
+		toolkit.showError('Data is not yet ready, aggregate process is running.');
+		return true;
+	}
+
+	return false;
+};
+
 rpt.wrapParam = function () {
 	var dimensions = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
 	var dataPoints = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];

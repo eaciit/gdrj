@@ -155,7 +155,11 @@ dsbrd.refresh = function () {
 				}, 1000 * 5);
 				return;
 			}
-			console.log(res);
+
+			if (rpt.isDataEmpty(res)) {
+				return;
+			}
+
 			dsbrd.contentIsLoading(false);
 			dsbrd.render(res);
 		}, function () {
@@ -449,6 +453,10 @@ rank.refresh = function () {
 				return;
 			}
 
+			if (rpt.isDataEmpty(res)) {
+				return;
+			}
+
 			rank.contentIsLoading(false);
 			rank.render(breakdown, res);
 		}, function () {
@@ -726,6 +734,10 @@ sd.refresh = function () {
 				setTimeout(function () {
 					fetch();
 				}, 1000 * 5);
+				return;
+			}
+
+			if (rpt.isDataEmpty(res)) {
 				return;
 			}
 
