@@ -7,6 +7,7 @@ import (
 
 	"flag"
 	"github.com/eaciit/dbox"
+	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 	"time"
 )
@@ -18,7 +19,25 @@ var (
 	t0                          time.Time
 	fiscalyear, iscount, scount int
 	data                        map[string]float64
+	masters                     = toolkit.M{}
 )
+
+func buildmap(holder interface{},
+	fnModel func() orm.IModel,
+	filter *dbox.Filter,
+	fnIter func(holder interface{}, obj interface{})) interface{} {
+	crx, _ := gdrj.Find(fnModel(), filter, nil)
+	defer crx.Close()
+	for {
+		s := fnModel()
+		e := crx.Fetch(s, 1, false)
+		if e != nil {
+			break
+		}
+		fnIter(holder, s)
+	}
+	return holder
+}
 
 func setinitialconnection() {
 	var err error
@@ -36,6 +55,21 @@ func setinitialconnection() {
 	}
 }
 
+func prepmastercalc() {
+
+	toolkit.Println("--> PL MODEL")
+	masters.Set("plmodel", buildmap(map[string]*gdrj.PLModel{},
+		func() orm.IModel {
+			return new(gdrj.PLModel)
+		},
+		nil,
+		func(holder, obj interface{}) {
+			h := holder.(map[string]*gdrj.PLModel)
+			o := obj.(*gdrj.PLModel)
+			h[o.ID] = o
+		}).(map[string]*gdrj.PLModel))
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -47,6 +81,7 @@ func main() {
 
 	setinitialconnection()
 	defer gdrj.CloseDb()
+	prepmastercalc()
 
 	toolkit.Println("Start data query...")
 
@@ -102,4 +137,131 @@ func main() {
 
 	toolkit.Printfn("Processing done in %s",
 		time.Since(t0).String())
+}
+
+func CalcSum(tkm toolkit.M) {
+	var netsales, cogs, grossmargin, sellingexpense,
+		sga, opincome, directexpense, indirectexpense,
+		royaltiestrademark, advtpromoexpense, operatingexpense,
+		freightexpense, nonoprincome, ebt, taxexpense,
+		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga,
+		grosssales, discount, advexp, promoexp, spgexp float64
+
+	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL94A", "PL39A", "PL41A", "PL44A",
+		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
+		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31"}
+
+	plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
+
+	inexclude := func(f string) bool {
+		for _, v := range exclude {
+			if v == f {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	for k, v := range tkm {
+		if k == "_id" {
+			continue
+		}
+
+		if inexclude(k) {
+			continue
+		}
+
+		plmodel := plmodels[k]
+		Amount := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+		// PLHeader1
+		// PLHeader2
+		// PLHeader3
+		// switch v.Group1 {
+		switch plmodel.PLHeader1 {
+		case "Net Sales":
+			netsales += Amount
+		case "Direct Expense":
+			directexpense += Amount
+		case "Indirect Expense":
+			indirectexpense += Amount
+		case "Freight Expense":
+			freightexpense += Amount
+		case "Royalties & Trademark Exp":
+			royaltiestrademark += Amount
+		case "Advt & Promo Expenses":
+			advtpromoexpense += Amount
+		case "G&A Expenses":
+			sga += Amount
+		case "Non Operating (Income) / Exp":
+			nonoprincome += Amount
+		case "Tax Expense":
+			taxexpense += Amount
+		case "Total Depreciation Exp":
+			if plmodel.PLHeader2 == "Damaged Goods" {
+				damagegoods += Amount
+			} else {
+				totdepreexp += Amount
+			}
+		}
+
+		// switch v.Group2 {
+		switch plmodel.PLHeader2 {
+		case "Gross Sales":
+			grosssales += Amount
+		case "Discount":
+			discount += Amount
+		case "Advertising Expenses":
+			advexp += Amount
+		case "Promotions Expenses":
+			promoexp += Amount
+		case "SPG Exp / Export Cost":
+			spgexp += Amount
+		}
+	}
+
+	cogs = directexpense + indirectexpense
+	grossmargin = netsales + cogs
+	sellingexpense = freightexpense + royaltiestrademark + advtpromoexpense
+	operatingexpense = sellingexpense + sga
+	opincome = grossmargin + operatingexpense
+	ebt = opincome + nonoprincome //asume nonopriceincome already minus
+	percentpbt = 0
+	if ebt != 0 {
+		percentpbt = taxexpense / ebt * 100
+	}
+	eat = ebt + taxexpense
+	ebitda = totdepreexp + damagegoods + opincome
+	ebitdaroyalties = ebitda - royaltiestrademark
+	ebitsga = opincome - sga
+	ebitsgaroyalty := ebitsga - royaltiestrademark
+
+	tkm.Set("PL0", grosssales)
+	tkm.Set("PL6A", discount)
+	tkm.Set("PL8A", netsales)
+	tkm.Set("PL14A", directexpense)
+	tkm.Set("PL74A", indirectexpense)
+	tkm.Set("PL26A", royaltiestrademark)
+	tkm.Set("PL32A", advtpromoexpense)
+	tkm.Set("PL94A", sga)
+	tkm.Set("PL39A", nonoprincome)
+	tkm.Set("PL41A", taxexpense)
+	tkm.Set("PL44A", totdepreexp)
+
+	tkm.Set("PL28", advexp)
+	tkm.Set("PL29A", promoexp)
+	tkm.Set("PL31", spgexp)
+	tkm.Set("PL74B", cogs)
+	tkm.Set("PL74C", grossmargin)
+	tkm.Set("PL32B", sellingexpense)
+	tkm.Set("PL94B", operatingexpense)
+	tkm.Set("PL94C", opincome)
+	tkm.Set("PL39B", ebt)
+	tkm.Set("PL41B", percentpbt)
+	tkm.Set("PL41C", eat)
+	tkm.Set("PL44B", opincome)
+	tkm.Set("PL44C", ebitda)
+	tkm.Set("PL44D", ebitdaroyalties)
+	tkm.Set("PL44E", ebitsga)
+	tkm.Set("PL44F", ebitsgaroyalty)
 }
