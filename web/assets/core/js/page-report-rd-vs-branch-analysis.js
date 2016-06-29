@@ -1,25 +1,5 @@
 'use strict';
 
-var temp = [{
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'Branch', _id_customer_channelname: 'General Trade' },
-	PL8A: 10000000
-}, {
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'Branch', _id_customer_channelname: 'Modern Trade' },
-	PL8A: 20000000
-}, {
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'Branch', _id_customer_channelname: 'Motorist' },
-	PL8A: 30000000
-}, {
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'Branch', _id_customer_channelname: 'Industrial Trade' },
-	PL8A: 40000000
-}, {
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'RD', _id_customer_channelname: 'General Trade' },
-	PL8A: 50000000
-}, {
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'RD', _id_customer_channelname: 'Modern Trade' },
-	PL8A: 60000000
-}];
-
 viewModel.RDvsBranchView1 = {};
 var v1 = viewModel.RDvsBranchView1;
 
@@ -191,7 +171,7 @@ v1.render = function () {
 
 	var data = v1.data();
 
-	var columnWidth = 120;
+	var columnWidth = 140;
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
@@ -214,7 +194,7 @@ v1.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-center').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[0]);
 
 			return;
 		}
@@ -227,7 +207,7 @@ v1.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[1]);
 
 				return;
 			}
@@ -550,7 +530,7 @@ v2.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-center').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[0]);
 
 			return;
 		}
@@ -563,7 +543,7 @@ v2.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p2 = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p2 = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[1]);
 
 				return;
 			}
@@ -852,11 +832,11 @@ v3.render = function () {
 
 	var data = v3.data();
 
-	var columnWidth = 120;
+	var columnWidth = 180;
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
-	var percentageWidth = 80;
+	var percentageWidth = 70;
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
 		var currentColumnWidth = columnWidth;
@@ -869,13 +849,13 @@ v3.render = function () {
 	};
 
 	data.forEach(function (lvl1, i) {
-		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]);
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-right').appendTo(trContents[0]);
 
 		if (v3.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-center').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[0]);
 
 			return;
 		}
@@ -888,7 +868,7 @@ v3.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p3 = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p3 = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[1]);
 
 				return;
 			}
@@ -896,7 +876,7 @@ v3.render = function () {
 		});
 	});
 
-	tableContent.css('min-width', totalColumnWidth);
+	tableContent.css('width', totalColumnWidth);
 
 	// ========================= CONSTRUCT DATA
 

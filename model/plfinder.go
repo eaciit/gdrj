@@ -696,7 +696,13 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 						newEach[key] = value
 					}
 
-					newEach.Get("_id").(toolkit.M).Set("_id_branchrd", "Branch")
+					eachID := toolkit.M{"_id_branchrd": "Branch"}
+
+					for k, v := range newEach.Get("_id").(toolkit.M) {
+						eachID.Set(k, v)
+					}
+
+					newEach.Set("_id", eachID)
 					res = append(res, &newEach)
 				}
 
@@ -714,14 +720,24 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 							}
 						}
 
-						newEach.Get("_id").(toolkit.M).Set("_id_branchrd", "Regional Distributor")
-						newEach.Get("_id").(toolkit.M).Set("_id_customer_channelname", channelname)
+						eachID := toolkit.M{"_id_branchrd": "RD"}
+
+						for k, v := range newEach.Get("_id").(toolkit.M) {
+							eachID.Set(k, v)
+						}
+
+						eachID.Set("_id_customer_channelname", channelname)
+						newEach.Set("_id", eachID)
 						res = append(res, &newEach)
 					}
 				}
 			}
 
-			data = &res
+			for _, each := range res {
+				fmt.Println(each.Get("_id"))
+			}
+
+			return &res
 		} else if s.Flag == "branch-vs-rd-only-mt-gt" {
 			for _, each := range *data {
 				_id := (*each).Get("_id").(toolkit.M)
@@ -734,7 +750,13 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 						newEach[key] = value
 					}
 
-					newEach.Get("_id").(toolkit.M).Set("_id_branchrd", "Branch")
+					eachID := toolkit.M{"_id_branchrd": "Branch"}
+
+					for k, v := range newEach.Get("_id").(toolkit.M) {
+						eachID.Set(k, v)
+					}
+
+					newEach.Set("_id", eachID)
 					res = append(res, &newEach)
 				}
 
@@ -752,13 +774,24 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 							}
 						}
 
-						newEach.Get("_id").(toolkit.M).Set("_id_branchrd", "Regional Distributor")
-						newEach.Get("_id").(toolkit.M).Set("_id_customer_channelname", channelname)
+						eachID := toolkit.M{"_id_branchrd": "RD"}
+
+						for k, v := range newEach.Get("_id").(toolkit.M) {
+							eachID.Set(k, v)
+						}
+
+						eachID.Set("_id_customer_channelname", channelname)
+						newEach.Set("_id", eachID)
+						res = append(res, &newEach)
 					}
 				}
 			}
 
-			data = &res
+			for _, each := range res {
+				fmt.Println(each.Get("_id"))
+			}
+
+			return &res
 		}
 	} else {
 		for _, each := range *data {
