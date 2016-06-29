@@ -354,7 +354,7 @@ v1.render = function () {
 	});
 
 	// ========================= CONFIGURE THE HIRARCHY
-	rpt.buildGridLevels(rows);
+	v3.buildGridLevels(container, rows);
 };
 
 viewModel.RDvsBranchView2 = {};
@@ -690,7 +690,7 @@ v2.render = function () {
 	});
 
 	// ========================= CONFIGURE THE HIRARCHY
-	rpt.buildGridLevels(rows);
+	v3.buildGridLevels(container, rows);
 };
 
 viewModel.RDvsBranchView3 = {};
@@ -1016,7 +1016,164 @@ v3.render = function () {
 	});
 
 	// ========================= CONFIGURE THE HIRARCHY
-	rpt.buildGridLevels(rows);
+	v3.buildGridLevels(container, rows);
+};
+
+v3.buildGridLevels = function (container, rows) {
+	var grouppl1 = _.map(_.groupBy(rpt.plmodels(), function (d) {
+		return d.PLHeader1;
+	}), function (k, v) {
+		return { data: k, key: v };
+	});
+	var grouppl2 = _.map(_.groupBy(rpt.plmodels(), function (d) {
+		return d.PLHeader2;
+	}), function (k, v) {
+		return { data: k, key: v };
+	});
+	var grouppl3 = _.map(_.groupBy(rpt.plmodels(), function (d) {
+		return d.PLHeader3;
+	}), function (k, v) {
+		return { data: k, key: v };
+	});
+
+	var $trElem = void 0,
+	    $columnElem = void 0;
+	var resg1 = void 0,
+	    resg2 = void 0,
+	    resg3 = void 0,
+	    PLyo = void 0,
+	    PLyo2 = void 0,
+	    child = 0,
+	    parenttr = 0,
+	    textPL = void 0;
+	container.find(".table-header tbody>tr").each(function (i) {
+		if (i > 0) {
+			$trElem = $(this);
+			resg1 = _.find(grouppl1, function (o) {
+				return o.key == $trElem.find('td:eq(0)').text();
+			});
+			resg2 = _.find(grouppl2, function (o) {
+				return o.key == $trElem.find('td:eq(0)').text();
+			});
+			resg3 = _.find(grouppl3, function (o) {
+				return o.key == $trElem.find('td:eq(0)').text();
+			});
+
+			var idplyo = _.find(rpt.idarrayhide(), function (a) {
+				return a == $trElem.attr("idheaderpl");
+			});
+			if (idplyo != undefined) {
+				$trElem.remove();
+				container.find('.table-content tr.column' + $trElem.attr("idheaderpl")).remove();
+			}
+			if (resg1 == undefined && idplyo2 == undefined) {
+				if (resg2 != undefined) {
+					textPL = _.find(resg2.data, function (o) {
+						return o._id == $trElem.attr("idheaderpl");
+					});
+					PLyo = _.find(rows, function (o) {
+						return o.PNL == textPL.PLHeader1;
+					});
+					PLyo2 = _.find(rows, function (o) {
+						return o.PLCode == textPL._id;
+					});
+					$trElem.find('td:eq(0)').css('padding-left', '40px');
+					$trElem.attr('idparent', PLyo.PLCode);
+					child = container.find('tr[idparent=' + PLyo.PLCode + ']').length;
+					$columnElem = container.find('.table-content tr.column' + PLyo2.PLCode);
+					$columnElem.attr('idcontparent', PLyo.PLCode);
+					var PLCodeChange = rpt.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
+					if (PLCodeChange != "") PLyo.PLCode = PLCodeChange;
+					if (child > 1) {
+						var $parenttr = container.find('tr[idheaderpl=' + PLyo.PLCode + ']');
+						var $parenttrcontent = container.find('tr[idpl=' + PLyo.PLCode + ']');
+						// $trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+						// $columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+						$trElem.insertAfter($parenttr);
+						$columnElem.insertAfter($parenttrcontent);
+					} else {
+						$trElem.insertAfter(container.find('tr.header' + PLyo.PLCode));
+						$columnElem.insertAfter(container.find('tr.column' + PLyo.PLCode));
+					}
+				} else if (resg2 == undefined) {
+					if (resg3 != undefined) {
+						PLyo = _.find(rows, function (o) {
+							return o.PNL == resg3.data[0].PLHeader2;
+						});
+						PLyo2 = _.find(rows, function (o) {
+							return o.PNL == resg3.data[0].PLHeader3;
+						});
+						$trElem.find('td:eq(0)').css('padding-left', '70px');
+						if (PLyo == undefined) {
+							PLyo = _.find(rows, function (o) {
+								return o.PNL == resg3.data[0].PLHeader1;
+							});
+							if (PLyo != undefined) $trElem.find('td:eq(0)').css('padding-left', '40px');
+						}
+						$trElem.attr('idparent', PLyo.PLCode);
+						child = container.find('tr[idparent=' + PLyo.PLCode + ']').length;
+						$columnElem = container.find('.table-content tr.column' + PLyo2.PLCode);
+						$columnElem.attr('idcontparent', PLyo.PLCode);
+						var _PLCodeChange = rpt.changeParent($trElem, $columnElem, $columnElem.attr('idpl'));
+						if (_PLCodeChange != "") PLyo.PLCode = _PLCodeChange;
+						if (child > 1) {
+							var _$parenttr = container.find('tr[idheaderpl=' + PLyo.PLCode + ']');
+							var _$parenttrcontent = container.find('tr[idpl=' + PLyo.PLCode + ']');
+							// $trElem.insertAfter(container.find(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+							// $columnElem.insertAfter(container.find(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
+							$trElem.insertAfter(_$parenttr);
+							$columnElem.insertAfter(_$parenttrcontent);
+						} else {
+							$trElem.insertAfter(container.find('tr.header' + PLyo.PLCode));
+							$columnElem.insertAfter(container.find('tr.column' + PLyo.PLCode));
+						}
+					}
+				}
+			}
+
+			var idplyo2 = _.find(rpt.idarrayhide(), function (a) {
+				return a == $trElem.attr("idparent");
+			});
+			if (idplyo2 != undefined) {
+				$trElem.removeAttr('idparent');
+				$trElem.addClass('bold');
+				$trElem.css('display', 'inline-grid');
+				container.find('.table-content tr.column' + $trElem.attr("idheaderpl")).removeAttr("idcontparent");
+				container.find('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusval', 'show');
+				container.find('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusvaltemp', 'show');
+				container.find('.table-content tr.column' + $trElem.attr("idheaderpl")).css('display', 'inline-grid');
+			}
+		}
+	});
+
+	var countChild = '';
+	container.find(".table-header tbody>tr").each(function (i) {
+		$trElem = container.find(this);
+		parenttr = container.find('tr[idparent=' + $trElem.attr('idheaderpl') + ']').length;
+		if (parenttr > 0) {
+			$trElem.addClass('dd');
+			$trElem.find('td:eq(0)>i').addClass('fa fa-chevron-right').css('margin-right', '5px');
+			container.find('tr[idparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
+			container.find('tr[idcontparent=' + $trElem.attr('idheaderpl') + ']').css('display', 'none');
+			container.find('tr[idparent=' + $trElem.attr('idheaderpl') + ']').each(function (a, e) {
+				if (container.find(e).attr('statusval') == 'show') {
+					container.find('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').attr('statusval', 'show');
+					container.find('tr[idpl=' + $trElem.attr('idheaderpl') + ']').attr('statusval', 'show');
+					if (container.find('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').attr('idparent') == undefined) {
+						container.find('tr[idpl=' + $trElem.attr('idheaderpl') + ']').css('display', '');
+						container.find('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']').css('display', '');
+					}
+				}
+			});
+		} else {
+			countChild = $trElem.attr('idparent');
+			if (countChild == '' || countChild == undefined) $trElem.find('td:eq(0)').css('padding-left', '20px');
+		}
+	});
+
+	rpt.showZeroValue(false);
+	container.find(".table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
+	rpt.refreshHeight();
 };
 
 vm.currentMenu('Analysis');
@@ -1025,6 +1182,6 @@ vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { 
 
 $(function () {
 	v3.refresh();
-	// v1.refresh()
-	// v2.refresh()
+	v1.refresh();
+	v2.refresh();
 });
