@@ -118,6 +118,9 @@ func main() {
 			v = tkm.GetFloat64("PL8")
 			tkm.Set("PL8", -v)
 
+			v = tkm.GetFloat64("PL44")
+			tkm.Set("PL44", -v)
+
 			CalcSum(tkm)
 		}
 
