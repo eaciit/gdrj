@@ -22,6 +22,12 @@ bkd.breakdownBranch_Channels = ko.observableArray([])
 bkd.breakdownBranch_ChannelRDNonRD = ko.observable('')
 bkd.breakdownBranch_SubChannel = ko.observable('')
 
+bkd.changeTo = (d, title) => {
+	bkd.breakdownBy(d)
+	bkd.title(title)
+	bkd.refresh()
+}
+
 bkd.isBreakdownBranchSubEnabled = (d) => ko.computed(() => {
 	if (d == 'channel') {
 		if (bkd.breakdownBranch_ChannelRDNonRD() != '') {
@@ -1556,13 +1562,14 @@ rpt.toggleFilterCallback = () => {
 }
 
 vm.currentMenu('Analysis')
-vm.currentTitle('P&L Analysis')
+vm.currentTitle('&nbsp;')
 vm.breadcrumb([
-	{ title: 'Godrej', href: '#' },
-	{ title: 'PNL Analysis', href: '#' }
+	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
+	{ title: 'Home', href: viewModel.appName + 'page/landing' },
+	{ title: 'P&L Performance', href: '#' }
 ])
 
-bkd.title('P&L Analysis')
+bkd.title('P&L Summary')
 rs.title('P&L Comparison to Net Sales')
 ccr.title('Quantity, Price & Outlet')
 
@@ -1584,5 +1591,9 @@ rpt.refresh = () => {
 }
 
 $(() => {
-	rpt.refresh()
+	bkd.changeBreakdown()
+	setTimeout(() => {
+		bkd.breakdownValue(['All'])
+		bkd.refresh(false)
+	}, 200)
 })

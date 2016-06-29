@@ -24,6 +24,12 @@ bkd.breakdownBranch_Channels = ko.observableArray([]);
 bkd.breakdownBranch_ChannelRDNonRD = ko.observable('');
 bkd.breakdownBranch_SubChannel = ko.observable('');
 
+bkd.changeTo = function (d, title) {
+	bkd.breakdownBy(d);
+	bkd.title(title);
+	bkd.refresh();
+};
+
 bkd.isBreakdownBranchSubEnabled = function (d) {
 	return ko.computed(function () {
 		if (d == 'channel') {
@@ -1539,10 +1545,10 @@ rpt.toggleFilterCallback = function () {
 };
 
 vm.currentMenu('Analysis');
-vm.currentTitle('P&L Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'PNL Analysis', href: '#' }]);
+vm.currentTitle('&nbsp;');
+vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'P&L Performance', href: '#' }]);
 
-bkd.title('P&L Analysis');
+bkd.title('P&L Summary');
 rs.title('P&L Comparison to Net Sales');
 ccr.title('Quantity, Price & Outlet');
 
@@ -1564,5 +1570,9 @@ rpt.refresh = function () {
 };
 
 $(function () {
-	rpt.refresh();
+	bkd.changeBreakdown();
+	setTimeout(function () {
+		bkd.breakdownValue(['All']);
+		bkd.refresh(false);
+	}, 200);
 });
