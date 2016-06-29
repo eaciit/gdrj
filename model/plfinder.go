@@ -696,7 +696,13 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 						newEach[key] = value
 					}
 
-					newEach.Get("_id").(toolkit.M).Set("_id_branchrd", "Branch")
+					eachID := toolkit.M{"_id_branchrd": "Branch"}
+
+					for k, v := range newEach.Get("_id").(toolkit.M) {
+						eachID.Set(k, v)
+					}
+
+					newEach.Set("_id", eachID)
 					res = append(res, &newEach)
 				}
 
@@ -714,13 +720,24 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 							}
 						}
 
-						newEach.Get("_id").(toolkit.M).Set("_id_branchrd", "Regional Distributor")
-						newEach.Get("_id").(toolkit.M).Set("_id_customer_channelname", channelname)
+						eachID := toolkit.M{"_id_branchrd": "RD"}
+
+						for k, v := range newEach.Get("_id").(toolkit.M) {
+							eachID.Set(k, v)
+						}
+
+						eachID.Set("_id_customer_channelname", channelname)
+						newEach.Set("_id", eachID)
+						res = append(res, &newEach)
 					}
 				}
 			}
 
-			data = &res
+			for _, each := range res {
+				fmt.Println(each.Get("_id"))
+			}
+
+			return &res
 		} else if s.Flag == "branch-vs-rd-only-mt-gt" {
 			for _, each := range *data {
 				_id := (*each).Get("_id").(toolkit.M)
@@ -733,13 +750,18 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 						newEach[key] = value
 					}
 
-					newEach.Get("_id").(toolkit.M).Set("_id_branchrd", "Branch")
+					eachID := toolkit.M{"_id_branchrd": "Branch"}
+
+					for k, v := range newEach.Get("_id").(toolkit.M) {
+						eachID.Set(k, v)
+					}
+
+					newEach.Set("_id", eachID)
 					res = append(res, &newEach)
 				}
 
 				if toolkit.HasMember([]string{"I1"}, channelID) {
 					breakdowns := map[string]float64{"General Trade": 0.38, "Modern Trade": 0.62}
-
 					for channelname, percentage := range breakdowns {
 						newEach := toolkit.M{}
 
@@ -751,13 +773,56 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 							}
 						}
 
-						newEach.Get("_id").(toolkit.M).Set("_id_branchrd", "Regional Distributor")
-						newEach.Get("_id").(toolkit.M).Set("_id_customer_channelname", channelname)
+						eachID := toolkit.M{"_id_branchrd": "RD"}
+
+						for k, v := range newEach.Get("_id").(toolkit.M) {
+							eachID.Set(k, v)
+						}
+
+						eachID.Set("_id_customer_channelname", channelname)
+						newEach.Set("_id", eachID)
+						res = append(res, &newEach)
 					}
 				}
 			}
 
-			data = &res
+			(func() {
+				breakdowns := map[string][]string{
+					"Branch": {"I6", "I4", "I3", "I2"},
+					"RD":     {"I1"},
+				}
+				for breakdown, chIDs := range breakdowns {
+					newEach := toolkit.M{}
+
+					eachID := toolkit.M{}
+					eachID.Set("_id_branchrd", breakdown)
+					eachID.Set("_id_customer_channelname", "Total")
+					newEach.Set("_id", eachID)
+
+					for _, each := range *data {
+						eachID := each.Get("_id").(toolkit.M)
+						if toolkit.HasMember(chIDs, eachID.GetString("_id_customer_channelid")) {
+							for k := range *each {
+								if strings.HasPrefix(k, "PL") {
+									if _, ok := newEach[k]; !ok {
+										newEach[k] = (*each).GetFloat64(k)
+									} else {
+										newEach[k] = newEach.GetFloat64(k) + (*each).GetFloat64(k)
+									}
+								}
+							}
+						}
+					}
+
+					res = append(res, &newEach)
+				}
+			}())
+
+			for _, each := range res {
+				fmt.Println(each.Get("_id"))
+			}
+
+			return &res
 		}
 	} else {
 		for _, each := range *data {

@@ -1,27 +1,3 @@
-let temp = [{
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'Branch', _id_customer_channelname: 'General Trade' },
-	PL8A: 10000000
-}, {
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'Branch', _id_customer_channelname: 'Modern Trade' },
-	PL8A: 20000000
-}, {
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'Branch', _id_customer_channelname: 'Motorist' },
-	PL8A: 30000000
-}, {
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'Branch', _id_customer_channelname: 'Industrial Trade' },
-	PL8A: 40000000
-}, {
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'RD', _id_customer_channelname: 'General Trade' },
-	PL8A: 50000000
-}, {
-	_id: { _id_fiscal_year: '2015-2016', _id_branchrd: 'RD', _id_customer_channelname: 'Modern Trade' },
-	PL8A: 60000000
-}]
-
-
-
-
-
 
 viewModel.RDvsBranchView1 = {}
 let v1 = viewModel.RDvsBranchView1
@@ -212,7 +188,7 @@ v1.render = () => {
 
 	let data = v1.data()
 
-	let columnWidth = 120
+	let columnWidth = 140
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
@@ -242,7 +218,7 @@ v1.render = () => {
 			let thheader1p = toolkit.newEl('th')
 				.html('%')
 				.width(percentageWidth)
-				.addClass('align-center')
+				.addClass('align-right')
 				.appendTo(trContents[0])
 
 			return
@@ -262,7 +238,7 @@ v1.render = () => {
 				let thheader1p = toolkit.newEl('th')
 					.html('%')
 					.width(percentageWidth)
-					.addClass('align-center')
+					.addClass('align-right')
 					.appendTo(trContents[1])
 
 				return
@@ -533,7 +509,7 @@ v2.buildStructure = (data) => {
 			return e
 		})
 
-		d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+		d.subs = _.orderBy(subs, (e) => e._id, 'asc')
 		d.breakdowns = d.subs[0]._id
 		d.count = d.subs.length
 		return d
@@ -642,7 +618,7 @@ v2.render = () => {
 			let thheader1p = toolkit.newEl('th')
 				.html('%')
 				.width(percentageWidth)
-				.addClass('align-center')
+				.addClass('align-right')
 				.appendTo(trContents[0])
 
 			return
@@ -662,7 +638,7 @@ v2.render = () => {
 				let thheader1p = toolkit.newEl('th')
 					.html('%')
 					.width(percentageWidth)
-					.addClass('align-center')
+					.addClass('align-right')
 					.appendTo(trContents[1])
 
 				return
@@ -1010,11 +986,11 @@ v3.render = () => {
 
 	let data = v3.data()
 
-	let columnWidth = 120
+	let columnWidth = 180
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
-	let percentageWidth = 80
+	let percentageWidth = 70
 
 	let countWidthThenPush = (thheader, each, key) => {
 		let currentColumnWidth = columnWidth
@@ -1030,7 +1006,7 @@ v3.render = () => {
 		let thheader1 = toolkit.newEl('th')
 			.html(lvl1._id)
 			.attr('colspan', lvl1.count)
-			.addClass('align-center')
+			.addClass('align-right')
 			.appendTo(trContents[0])
 
 		if (v3.level() == 1) {
@@ -1040,7 +1016,7 @@ v3.render = () => {
 			let thheader1p = toolkit.newEl('th')
 				.html('%')
 				.width(percentageWidth)
-				.addClass('align-center')
+				.addClass('align-right')
 				.appendTo(trContents[0])
 
 			return
@@ -1060,7 +1036,7 @@ v3.render = () => {
 				let thheader1p = toolkit.newEl('th')
 					.html('%')
 					.width(percentageWidth)
-					.addClass('align-center')
+					.addClass('align-right')
 					.appendTo(trContents[1])
 
 				return
@@ -1069,7 +1045,7 @@ v3.render = () => {
 		})
 	})
 
-	tableContent.css('min-width', totalColumnWidth)
+	tableContent.css('width', totalColumnWidth)
 
 
 
