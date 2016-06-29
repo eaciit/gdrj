@@ -932,8 +932,7 @@ v3.buildStructure = (data) => {
 	let parsed = groupThenMap(data, (d) => {
 		return `Total ${d._id._id_branchrd}`
 	}).map((d) => {
-		d.subs = _.orderBy(d.subs, (e) => e.PL8A, 'desc')
-		d.breakdowns = d.subs[0]._id
+		d.subs = []
 		d.count = 1
 		return d
 	})
@@ -1091,7 +1090,8 @@ v3.render = () => {
 		netSalesRow[breakdown] = e[netSalesPLCode]
 	})
 
-	plmodels.forEach((d) => {
+	plmodels.forEach((d, i) => {
+		console.log('-------', i)
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
 		dataFlat.forEach((e) => {
 			let breakdown = e.key
@@ -1233,6 +1233,6 @@ vm.breadcrumb([
 
 $(() => {
 	v3.refresh()
-	v1.refresh()
-	v2.refresh()
+	// v1.refresh()
+	// v2.refresh()
 })

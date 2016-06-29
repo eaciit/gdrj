@@ -804,10 +804,7 @@ v3.buildStructure = function (data) {
 	var parsed = groupThenMap(data, function (d) {
 		return 'Total ' + d._id._id_branchrd;
 	}).map(function (d) {
-		d.subs = _.orderBy(d.subs, function (e) {
-			return e.PL8A;
-		}, 'desc');
-		d.breakdowns = d.subs[0]._id;
+		d.subs = [];
 		d.count = 1;
 		return d;
 	});
@@ -920,7 +917,8 @@ v3.render = function () {
 		netSalesRow[breakdown] = e[netSalesPLCode];
 	});
 
-	plmodels.forEach(function (d) {
+	plmodels.forEach(function (d, i) {
+		console.log('-------', i);
 		var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 };
 		dataFlat.forEach(function (e) {
 			var breakdown = e.key;
@@ -1027,6 +1025,6 @@ vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { 
 
 $(function () {
 	v3.refresh();
-	v1.refresh();
-	v2.refresh();
+	// v1.refresh()
+	// v2.refresh()
 });
