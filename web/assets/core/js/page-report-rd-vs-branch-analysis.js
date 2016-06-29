@@ -1,5 +1,7 @@
 'use strict';
 
+var colors = ['rgb(17, 134, 212)', 'rgb(32, 162, 87)', 'rgb(234, 144, 0)'];
+
 viewModel.RDvsBranchView1 = {};
 var v1 = viewModel.RDvsBranchView1;
 
@@ -188,7 +190,7 @@ v1.render = function () {
 	};
 
 	data.forEach(function (lvl1, i) {
-		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]);
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
 
 		if (v1.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
@@ -530,7 +532,7 @@ v2.render = function () {
 	};
 
 	data.forEach(function (lvl1, i) {
-		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]);
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
 
 		if (v2.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
@@ -855,7 +857,7 @@ v3.render = function () {
 	};
 
 	data.forEach(function (lvl1, i) {
-		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-right').appendTo(trContents[0]);
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-right').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
 
 		if (v3.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
