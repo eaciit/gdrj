@@ -161,7 +161,38 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		return op2
 	}
 
-	if (expand && (breakdownRD == 'NonRD' || breakdownRD.search('Only') > -1) && (ba.subBreakdownValue().length == 0)) {
+	if (expand && ba.subBreakdownValue().length > 0) {
+		let parsed = groupThenMap(data, (d) => {
+			return d._id._id_customer_branchname
+		}).map((d) => {
+			let subs = groupThenMap(d.subs, (e) => {
+				return e._id._id_customer_channelname
+			}).map((e) => {
+				let subs = groupThenMap(e.subs, (f) => {
+					return f._id._id_customer_reportsubchannel
+				}).map((f) => {
+					f.count = 1
+					return f
+				})
+
+				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
+				e.count = e.subs.length
+				return e
+			})
+
+			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
+			d.count = toolkit.sum(d.subs, (e) => e.count)
+			return d
+		})
+
+		ba.level(3)
+		showAsBreakdown(parsed)
+		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
+
+		return parsed
+	} else
+
+	if (expand && ba.subBreakdownValue().length == 0) {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
@@ -192,74 +223,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		return parsed
 	} else
 
-	if (expand && (ba.subBreakdownValue().length > 0)) {
-		let parsed = groupThenMap(data, (d) => {
-			return d._id._id_customer_branchname
-		}).map((d) => {
-			let subs = groupThenMap(d.subs, (e) => {
-				return e._id._id_customer_channelname
-			}).map((e) => {
-				let subs = groupThenMap(e.subs, (f) => {
-					return f._id._id_customer_reportsubchannel
-				}).map((f) => {
-					f.count = 1
-					return f
-				})
-
-				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
-				e.count = e.subs.length
-				return e
-			})
-
-			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
-			d.count = toolkit.sum(d.subs, (e) => e.count)
-			return d
-		})
-
-		console.log('PPPP', parsed.slice(0))
-
-		ba.level(3)
-		showAsBreakdown(parsed)
-		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
-
-		console.log('PPPP', parsed.slice(0))
-		return parsed
-	} else
-
-	if (expand && breakdownRD.search('ByLocation') > -1) {
-		let opt = ba.optionBreakdownRD().find((d) => d.id == ba.breakdownRD())
-
-		let parsed = groupThenMap(data, (d) => {
-			return d._id._id_customer_branchname
-		}).map((d) => {
-			let subs = groupThenMap(d.subs, (e) => {
-				return e._id._id_customer_channelname
-			}).map((e) => {
-				let subs = groupThenMap(d.subs, (f) => {
-					return f._id[`_id_customer_${opt.field}`]
-				}).map((f) => {
-					f.subs = []
-					f.count = 1
-					return f
-				})
-				
-				e.subs = _.orderBy(subs, (f) => f.PL8A, 'desc')
-				e.count = e.subs.length
-				return e
-			})
-
-			d.subs = _.orderBy(subs, (e) => e.PL8A, 'desc')
-			d.count = toolkit.sum(d.subs, (e) => e.count)
-			return d
-		})
-
-		ba.level(3)
-		showAsBreakdown(parsed)
-		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
-		return parsed
-	} else 
-
-	if (breakdownRD == "All") {
+	if (!expand && ba.breakdownRD() == 'All') {
 		let parsed = groupThenMap(data, (d) => {
 			return d._id._id_customer_branchname
 		}).map((d) => {
@@ -306,226 +270,47 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 }
 
 ba.refresh = (useCache = false) => {
-	// if (ba.breakdownRD() == "All") {
-	// 	ba.expand(false)
-	// }
+	let param = {}
+	param.pls = []
+	param.groups = [ba.breakdownByChannel(), ba.breakdownBy()]
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue(false, ba.fiscalYear)
 
-	let request = (breakdownRD, expand, callback) => {
-		let param = {}
-		param.pls = []
-		param.groups = [ba.breakdownByChannel(), ba.breakdownBy()]
-		param.aggr = 'sum'
-		param.filters = rpt.getFilterValue(false, ba.fiscalYear)
-
-		let breakdownValue = ba.breakdownValue().filter((d) => d != 'All')
-		if (breakdownValue.length > 0) {
-			param.filters.push({
-				Field: ba.breakdownBy(),
-				Op: '$in',
-				Value: ba.breakdownValue()
-			})
-		}
-
-		let opt = ba.optionBreakdownRD().find((d) => d.id == breakdownRD)
-
-		if (breakdownRD == 'NonRD') {
-			param.filters.push({
-				Field: 'customer.channelname',
-				Op: '$in',
-				Value: rpt.masterData.Channel().map((d) => d._id).filter((d) => d != 'I1')
-			})
-		} else if (breakdownRD.search('Only') > -1) {
-			// if (expand) {
-			// 	param.groups.push('customer.reportsubchannel')
-			// }
-
-			param.filters.push({
-				Field: 'customer.channelname',
-				Op: '$in',
-				Value: [opt.channelid]
-			})
-		} else if (breakdownRD.search('ByLocation') > -1) {
-			param.groups.push(`customer.${opt.field}`)
-		}
-
-		if (ba.subBreakdownValue().length > 0 && ba.expand()) {
-			param.groups.push('customer.reportsubchannel')
-
-			let breakdownValue = ba.subBreakdownValue()
-
-			if (breakdownRD == 'NonRD') {
-				breakdownValue = ba.subBreakdownValue().filter((d) => d != 'I1')
-			} else if (breakdownRD == 'OnlyRD') {
-				breakdownValue = ba.subBreakdownValue().filter((d) => d == 'I1')
-			}
-
-			if (breakdownValue.length > 0) {
-				let filterChannel = param.filters.find((d) => d.Field == 'customer.channelname')
-				if (typeof filterChannel != 'undefined') {
-					filterChannel.Value = _.uniq(filterChannel.Value.concat(breakdownValue))
-				} else {
-					param.filters.push({
-						Field: 'customer.channelname',
-						Op: '$in',
-						Value: breakdownValue
-					})
-				}
-			}
-		}
-
-		let fetch = () => {
-			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
-				if (res.Status == "NOK") {
-					setTimeout(() => {
-						fetch()
-					}, 1000 * 5)
-					return
-				}
-
-				callback(res)
-			}, () => {
-				ba.emptyGrid()
-				ba.contentIsLoading(false)
-			}, {
-				cache: (useCache == true) ? 'breakdown chart' : false
-			})
-		}
-
-		ba.oldBreakdownBy(ba.breakdownBy())
-		ba.contentIsLoading(true)
-		fetch()
-	}
-
-	if (ba.breakdownRD() == "All" && ba.expand() && ba.subBreakdownValue().length == 0) {
-		let mergeData = (dataNonRD, dataRD) => {
-			let data = []
-			let ids = _.uniq(dataNonRD.map((d) => d._id).concat(dataRD.map((d) => d._id)))
-
-			ids.forEach((id) => {
-				let nonrd = dataNonRD.find((d) => d._id == id)
-				let rd = dataRD.find((d) => d._id == id)
-				let sampleData = (nonrd == undefined) ? rd : nonrd
-				let mergedData = {}
-				mergedData._id = id
-				mergedData.count = 0
-				mergedData.subs = []
-
-				if (nonrd != undefined) {
-					let nonrdSub = nonrd.subs.find((d) => d._id == 'Non RD')
-
-					mergedData.count += nonrdSub.subs.length
-					mergedData.subs.push(nonrdSub)
-				} else {
-					let fake = {}
-					fake._id = 'Non RD'
-					fake.count = 0
-					fake.subs = []
-
-					for (let prop in sampleData) {
-						if (sampleData.hasOwnProperty(prop) && prop.search("PL") > -1) {
-							fake[prop] = 0
-						}
-					}
-
-					let fakseSub = toolkit.clone(fake)
-					fakseSub._id = 'Total'
-
-					fake.subs = [fakseSub]
-					fake.count++
-
-					mergedData.count++
-					mergedData.subs.push(fake)
-				}
-
-				if (rd != undefined) {
-					let rdSub = rd.subs.find((d) => (['regional distributor', 'rd'].indexOf(d._id.toLowerCase()) > -1))
-
-					mergedData.count += rdSub.subs.length
-					mergedData.subs.push(rdSub)
-				} else {
-					let fake = {}
-					fake._id = 'RD'
-					fake.count = 0
-					fake.subs = []
-
-					for (let prop in sampleData) {
-						if (sampleData.hasOwnProperty(prop) && prop.search("PL") > -1) {
-							fake[prop] = 0
-						}
-					}
-
-					let fakseSub = toolkit.clone(fake)
-					fakseSub._id = 'Total'
-
-					fake.subs = [fakseSub]
-					fake.count++
-
-					mergedData.count++
-					mergedData.subs.push(fake)
-				}
-
-				// Inject and recalculate TOTAL
-
-				let totalAll = {}
-				totalAll._id = 'Total'
-				totalAll.count = 0
-				totalAll.excludeFromTotal = true
-				totalAll.subs = []
-
-				for (let prop in sampleData) {
-					if (sampleData.hasOwnProperty(prop) && prop.search("PL") > -1) {
-						totalAll[prop] = toolkit.sum(mergedData.subs, (e) => e[prop])
-					}
-				}
-
-				let totalAllSub = toolkit.clone(totalAll)
-				totalAllSub.subs = []
-
-				totalAll.count++
-				totalAll.subs.push(totalAllSub)
-
-				mergedData.subs = [totalAll].concat(mergedData.subs)
-				mergedData.count++
-
-				data.push(mergedData)
-			})
-
-			data = _.orderBy(data, (d) => d.total, 'desc')
-			return data
-		}
-
-		console.log("fetching non rd")
-		request("NonRD", ba.expand(), (res1) => {
-			let dataNonRD = ba.buildStructure("NonRD", ba.expand(), res1.Data.Data)
-
-			console.log("fetching rd")
-			request("OnlyRD", ba.expand(), (res2) => {
-				let dataRD = ba.buildStructure("OnlyRD", ba.expand(), res2.Data.Data)
-
-				console.log("non rd", dataNonRD.slice(0))
-				console.log("rd", dataRD.slice(0))
-				console.log("merging data")
-				let data = mergeData(dataNonRD, dataRD)
-				ba.data(data)
-				let date = moment(res2.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-				ba.breakdownNote(`Last refreshed on: ${date}`)
-
-				rpt.plmodels(res2.Data.PLModels)
-				ba.emptyGrid()
-				ba.contentIsLoading(false)
-				ba.render()
-			})
+	let breakdownValue = ba.breakdownValue().filter((d) => d != 'All')
+	if (breakdownValue.length > 0) {
+		param.filters.push({
+			Field: ba.breakdownBy(),
+			Op: '$in',
+			Value: ba.breakdownValue()
 		})
-
-		return
 	}
 
-	if (ba.expand() && ba.subBreakdownValue().length > 0) {
-		let bkrd = 'tralala'
+	if (ba.subBreakdownValue().length > 0) {
+		param.groups.push('customer.reportsubchannel')
 
-		request(bkrd, ba.expand(), (res) => {
-			let data = ba.buildStructure(bkrd, ba.expand(), res.Data.Data)
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: ba.subBreakdownValue()
+		})
+	} else {
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: ba.optionSubBreakdown().map((d) => d._id)
+		})
+	}
 
+	let fetch = () => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
+			}
+
+			let data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data)
 			ba.data(data)
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			ba.breakdownNote(`Last refreshed on: ${date}`)
@@ -534,22 +319,17 @@ ba.refresh = (useCache = false) => {
 			ba.emptyGrid()
 			ba.contentIsLoading(false)
 			ba.render()
+		}, () => {
+			ba.emptyGrid()
+			ba.contentIsLoading(false)
+		}, {
+			cache: (useCache == true) ? 'breakdown chart' : false
 		})
-		return
 	}
 
-	request(ba.breakdownRD(), ba.expand(), (res) => {
-		let data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data)
-
-		ba.data(data)
-		let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
-		ba.breakdownNote(`Last refreshed on: ${date}`)
-
-		rpt.plmodels(res.Data.PLModels)
-		ba.emptyGrid()
-		ba.contentIsLoading(false)
-		ba.render()
-	})
+	ba.oldBreakdownBy(ba.breakdownBy())
+	ba.contentIsLoading(true)
+	fetch()
 }
 
 ba.clickExpand = (e) => {
@@ -660,6 +440,10 @@ ba.render = () => {
 		let currentColumnWidth = each._id.length * 10
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth
+		}
+
+		if (ba.expand() && ba.subBreakdownValue().length > 0) {
+			currentColumnWidth = 150
 		}
 
 		each.key = key.join('_')
@@ -912,7 +696,7 @@ ba.optionBreakdownValues = ko.computed(() => {
 }, rpt.masterData.Branch)
 
 ba.subBreakdownValue = ko.observableArray([])
-ba.optionSubBreakdownValues = ko.computed(() => {
+ba.optionSubBreakdown = ko.computed(() => {
 	switch (ba.breakdownRD()) {
 		case 'All': 
 			return rpt.optionsChannels()
