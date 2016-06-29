@@ -483,11 +483,12 @@ cst.render = (resdata) => {
 vm.currentMenu('Analysis')
 vm.currentTitle('Custom Analysis')
 vm.breadcrumb([
-	{ title: 'Godrej', href: '#' },
+	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
+	{ title: 'Home', href: viewModel.appName + 'page/landing' },
 	{ title: 'Custom Analysis', href: '#' }
 ])
 
-cst.title('Custom Analysis')
+cst.title('&nbsp;')
 
 
 $(() => {

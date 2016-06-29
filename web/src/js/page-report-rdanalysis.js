@@ -563,11 +563,12 @@ rd.changeBreakdownValue = () => {
 vm.currentMenu('Analysis')
 vm.currentTitle('RD Analysis')
 vm.breadcrumb([
-	{ title: 'Godrej', href: '#' },
+	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
+	{ title: 'Home', href: viewModel.appName + 'page/landing' },
 	{ title: 'RD Analysis', href: '#' }
 ])
 
-rd.title('RD Analysis')
+rd.title('&nbsp;')
 
 rpt.refresh = () => {
 	rd.changeBreakdown()

@@ -42,19 +42,19 @@
 					</div>
 					
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right">Branch</span>
-						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: ba.optionBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: ba.breakdownValue, placeholder: 'Choose value', change: ba.changeBreakdownValue }"></select>
-						</div>
-						<div class="clearfix"></div>
-					</div>
-					
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right">
 							Expand
 						</span>
 						<div class="width-50">
 							<input type="checkbox" class="form-control input-sm" data-bind="checked: ba.expand, enable: ba.enableExpand">
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Branch</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: ba.optionBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: ba.breakdownValue, placeholder: 'Choose value', change: ba.changeBreakdownValue }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
