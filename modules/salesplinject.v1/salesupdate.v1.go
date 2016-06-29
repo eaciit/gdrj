@@ -376,7 +376,7 @@ func prepmastercalc() {
 	toolkit.Println("--> DISCOUNT ACTIVITY")
 	//discounts_all discounts
 	//can be by brach,brand,channelid,month
-	cda, _ := conn.NewQuery().From("rawdatadiscountactivity_rev").Where(f).Cursor(nil)
+	cda, _ := conn.NewQuery().From("rawdiscountact_29062016").Where(f).Cursor(nil)
 	defer cda.Close()
 	chlist := []string{"I1", "I2", "I3", "I4", "I6", "EXP"}
 	inarrstr := func(arrstr []string, str string) bool {
