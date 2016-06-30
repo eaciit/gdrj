@@ -106,7 +106,7 @@ func main() {
 		}
 
 		if i%step == 0 {
-			toolkit.Printfn("Worker %d of %d (%d), Done in %s",
+			toolkit.Printfn("Day %d of %d (%d), Done in %s",
 				i, len(seeds), (i / step), time.Since(t0).String())
 		}
 	}
@@ -238,10 +238,6 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 		csr.Close()
 		toolkit.Printfn("Send %s", strmonthdate)
 	}
-
-	toolkit.Printfn("Go %d. Processing done in %s",
-		wi,
-		time.Since(t0).String())
 }
 
 func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- int) {
