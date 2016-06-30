@@ -45,8 +45,10 @@ func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
 	flag.IntVar(&fiscalyear, "year", 2015, "YYYY representation of godrej fiscal year. Default is 2015")
-	flag.StringVar(&tablename, "table", "salespls-2015", "representation of tablename we used")
+	// flag.StringVar(&tablename, "table", "salespls-2015", "representation of tablename we used")
 	flag.Parse()
+
+	tablename = toolkit.Sprintf("salespls-%d", fiscalyear)
 
 	setinitialconnection()
 	defer gdrj.CloseDb()
