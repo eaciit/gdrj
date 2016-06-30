@@ -151,15 +151,15 @@ func main() {
 		} else {
 			tkm.Set("PL25", -vNetSales*0.0285214595423635)
 
-			if dtkm.GetString("customer_channelid") == "I2" { //GT
-				tkm.Set("PL7A", float64(-18590524688))
-			} else if dtkm.GetString("customer_channelid") == "I4" { //Industrial
-				tkm.Set("PL7A", float64(-655115931))
-			} else if dtkm.GetString("customer_channelid") == "I3" { //MT
-				tkm.Set("PL7A", float64(-157323938368))
-			} else if dtkm.GetString("customer_channelid") == "I6" { //Motorist
-				tkm.Set("PL7A", float64(-57345916))
-			}
+			// if dtkm.GetString("customer_channelid") == "I2" { //GT
+			// 	tkm.Set("PL7A", float64(-18590524688))
+			// } else if dtkm.GetString("customer_channelid") == "I4" { //Industrial
+			// 	tkm.Set("PL7A", float64(-655115931))
+			// } else if dtkm.GetString("customer_channelid") == "I3" { //MT
+			// 	tkm.Set("PL7A", float64(-157323938368))
+			// } else if dtkm.GetString("customer_channelid") == "I6" { //Motorist
+			// 	tkm.Set("PL7A", float64(-57345916))
+			// }
 
 			// General Trade  18,590,524,688.00
 			// Industrial Trade  655,115,931.00
