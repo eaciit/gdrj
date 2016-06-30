@@ -105,4 +105,6 @@ lg.getConfirmReset = function () {
 	}
 };
 
-$(function () {});
+$(function () {
+	$('#loginForm').height($(window).height());
+});

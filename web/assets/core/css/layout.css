@@ -229,20 +229,20 @@ body {
   border-color: #74B841;
 }
 .login-bg {
-  background: #007dba url('/res/img/bg_city.JPG') no-repeat center top;
+  background: #007dba no-repeat center top;
   background-size: cover;
   height: 100vh;
   z-index: 99;
 }
 .login-logo {
-  background: url('/res/img/logo.png') no-repeat center top;
+  background: no-repeat center top;
   width: 150px;
   height: 90px;
   background-size: 145px 74px;
-  margin-bottom: 30px;
+  margin: 80px 0px 40px;
 }
 .login-logo-reset {
-  background: url('/res/img/logo.png') no-repeat center top;
+  background: no-repeat center top;
   width: 99px;
   height: 90px;
   background-size: 99px 90px;
@@ -260,6 +260,7 @@ body {
 .fh {
   margin: auto;
   padding: 15%;
+  padding-top: 0px;
 }
 .report-module-rsec > div {
   padding-left: 0px;
@@ -745,4 +746,32 @@ body {
 }
 .nav-subs li a {
   padding: 6px 10px;
+}
+#loginForm {
+  background: repeating-linear-gradient(45deg, white, white 10px, #fcfcfc 10px, #fcfcfc 20px);
+}
+#login-form .input-sm {
+  box-shadow: none;
+  border-color: #F0F3F4;
+  border-radius: 0px;
+  background-color: white;
+}
+#login-form #forgetPassword {
+  color: #3b79c2;
+  padding-top: 6px;
+  display: block;
+  border-bottom: 1px solid #3b79c2;
+  padding-bottom: 2px;
+  margin-left: 5px;
+}
+#login-form #forgetPassword:hover,
+#login-form #forgetPassword:active,
+#login-form #forgetPassword:focus {
+  text-decoration: none;
+}
+#login-form #btnLogin {
+  border-radius: 0px;
+}
+#login-form .footnote {
+  margin-top: 0px;
 }
