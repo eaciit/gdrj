@@ -178,6 +178,15 @@ rpt.getOtherMasterData = function () {
 	});
 };
 
+rpt.isEmptyData = function (res) {
+	if (res.Data.Data.length == 0) {
+		toolkit.showError('The UI data is not ready');
+		return true;
+	}
+
+	return false;
+};
+
 rpt.groupGeoBy = function (raw, category) {
 	var groupKey = category == 'Area' ? '_id' : category;
 	var data = Lazy(raw).groupBy(function (f) {

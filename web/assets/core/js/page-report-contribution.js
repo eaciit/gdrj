@@ -32,6 +32,11 @@ cbt.refresh = function () {
 				return;
 			}
 
+			if (rpt.isEmptyData(res)) {
+				cbt.contentIsLoading(false);
+				return;
+			}
+
 			cbt.data(cbt.buildStructure(res.Data.Data));
 			rpt.plmodels(res.Data.PLModels);
 			cbt.emptyGrid();

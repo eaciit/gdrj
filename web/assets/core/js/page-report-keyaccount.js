@@ -61,6 +61,11 @@ kac.refresh = function () {
 				return;
 			}
 
+			if (rpt.isEmptyData(res)) {
+				kac.contentIsLoading(false);
+				return;
+			}
+
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			kac.breakdownNote('Last refreshed on: ' + date);
 
