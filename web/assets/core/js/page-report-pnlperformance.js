@@ -1779,6 +1779,8 @@ rpt.refresh = function () {
 
 	rs.getSalesHeaderList();
 	rank.refresh();
+
+	rpt.prepareEvents();
 };
 
 $(function () {

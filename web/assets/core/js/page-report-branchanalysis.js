@@ -634,18 +634,6 @@ ba.render = function () {
 	rpt.buildGridLevels(rows);
 };
 
-ba.prepareEvents = function () {
-	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
-		var rowID = $(this).attr('data-row');
-
-		var elh = $('.breakdown-view .table-header tr[data-row="' + rowID + '"]').addClass('hover');
-		var elc = $('.breakdown-view .table-content tr[data-row="' + rowID + '"]').addClass('hover');
-	});
-	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
-		$('.breakdown-view tr.hover').removeClass('hover');
-	});
-};
-
 ba.showExpandAll = function (a) {
 	if (a == true) {
 		$('tr.dd').find('i').removeClass('fa-chevron-right');
@@ -748,7 +736,7 @@ ba.title('&nbsp;');
 
 rpt.refresh = function () {
 	ba.refresh(false);
-	ba.prepareEvents();
+	rpt.prepareEvents();
 };
 
 $(function () {

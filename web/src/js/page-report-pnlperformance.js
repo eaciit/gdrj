@@ -1813,6 +1813,8 @@ rpt.refresh = () => {
 	
 	rs.getSalesHeaderList()
 	rank.refresh()
+
+	rpt.prepareEvents()
 }
 
 $(() => {
