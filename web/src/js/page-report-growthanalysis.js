@@ -42,6 +42,11 @@ grw.refresh = (useCache = false) => {
 				return
 			}
 
+			if (rpt.isEmptyData(res)) {
+				grw.contentIsLoading(false)
+				return
+			}
+
 			// grw.data(grw.buildStructure(res.Data.Data))
 			// rpt.plmodels(res.Data.PLModels)
 			grw.emptyGrid()

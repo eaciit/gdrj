@@ -184,6 +184,11 @@ bkd.refresh = function () {
 				return;
 			}
 
+			if (rpt.isEmptyData(res)) {
+				bkd.contentIsLoading(false);
+				return;
+			}
+
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			bkd.breakdownNote('Last refreshed on: ' + date);
 
@@ -1079,7 +1084,12 @@ dsbrd.refresh = function () {
 				}, 1000 * 5);
 				return;
 			}
-			console.log(res);
+
+			if (rpt.isEmptyData(res)) {
+				dsbrd.contentIsLoading(false);
+				return;
+			}
+
 			dsbrd.contentIsLoading(false);
 			dsbrd.render(res);
 		}, function () {
@@ -1423,6 +1433,11 @@ rs.refresh = function () {
 				return;
 			}
 
+			if (rpt.isEmptyData(res)) {
+				rs.contentIsLoading(false);
+				return;
+			}
+
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			rs.chartComparisonNote('Last refreshed on: ' + date);
 
@@ -1694,6 +1709,11 @@ rank.refresh = function () {
 				setTimeout(function () {
 					fetch();
 				}, 1000 * 5);
+				return;
+			}
+
+			if (rpt.isEmptyData(res)) {
+				rank.contentIsLoading(false);
 				return;
 			}
 

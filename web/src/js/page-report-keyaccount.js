@@ -55,6 +55,11 @@ kac.refresh = (useCache = false) => {
 				return
 			}
 
+			if (rpt.isEmptyData(res)) {
+				kac.contentIsLoading(false)
+				return
+			}
+
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			kac.breakdownNote(`Last refreshed on: ${date}`)
 

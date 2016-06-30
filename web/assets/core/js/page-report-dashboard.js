@@ -155,7 +155,12 @@ dsbrd.refresh = function () {
 				}, 1000 * 5);
 				return;
 			}
-			console.log(res);
+
+			if (rpt.isEmptyData(res)) {
+				dsbrd.contentIsLoading(false);
+				return;
+			}
+
 			dsbrd.contentIsLoading(false);
 			dsbrd.render(res);
 		}, function () {
@@ -615,6 +620,11 @@ sd.refresh = function () {
 				setTimeout(function () {
 					fetch();
 				}, 1000 * 5);
+				return;
+			}
+
+			if (rpt.isEmptyData(res)) {
+				sd.contentIsLoading(false);
 				return;
 			}
 

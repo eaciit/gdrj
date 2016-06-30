@@ -61,6 +61,11 @@ rd.refresh = function () {
 				return;
 			}
 
+			if (rpt.isEmptyData(res)) {
+				rd.contentIsLoading(false);
+				return;
+			}
+
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			rd.breakdownNote('Last refreshed on: ' + date);
 

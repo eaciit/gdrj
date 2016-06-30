@@ -363,6 +363,11 @@ ba.refresh = function () {
 				return;
 			}
 
+			if (rpt.isEmptyData(res)) {
+				ba.contentIsLoading(false);
+				return;
+			}
+
 			var data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data);
 			ba.data(data);
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");

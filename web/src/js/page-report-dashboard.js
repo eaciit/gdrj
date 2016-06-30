@@ -164,7 +164,12 @@ dsbrd.refresh = () => {
 				setTimeout(() => { fetch() }, 1000 * 5)
 				return
 			}
-			console.log(res)
+
+			if (rpt.isEmptyData(res)) {
+				dsbrd.contentIsLoading(false)
+				return
+			}
+
 			dsbrd.contentIsLoading(false)
 			dsbrd.render(res)
 		}, () => {
@@ -597,6 +602,11 @@ sd.refresh = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => { fetch() }, 1000 * 5)
+				return
+			}
+
+			if (rpt.isEmptyData(res)) {
+				sd.contentIsLoading(false)
 				return
 			}
 	
