@@ -105,6 +105,10 @@ func SaveDiv(a float64, b float64) float64 {
 func (pl *SalesPL) RatioCalc(masters toolkit.M) {
 
 	tratio := new(SalesLineRatio)
+	if strings.Contains(pl.ID, "SALES-ADJUST") {
+		pl.Ratio = tratio
+		return
+	}
 	tratio.Global = SaveDiv(pl.GrossAmount, masters.GetFloat64("globalgross"))
 	tratio.GlobalVdist = SaveDiv(pl.GrossAmount, masters.GetFloat64("globalgrossvdist"))
 
@@ -505,8 +509,12 @@ func (pl *SalesPL) CalcSales(masters toolkit.M) {
 
 	switch {
 	case pl.Customer.IsRD:
-		pl.AddData("PL2", pl.GrossAmount, plmodels)
-		pl.AddData("PL8", -pl.DiscountAmount, plmodels)
+		if strings.Contains(pl.ID, "RD-DISC_") {
+			pl.AddData("PL8", pl.DiscountAmount, plmodels)
+		} else {
+			pl.AddData("PL2", pl.GrossAmount, plmodels)
+			pl.AddData("PL8", -pl.DiscountAmount, plmodels)
+		}
 	case strings.Contains(pl.ID, "EXPORT"):
 		pl.AddData("PL6", pl.GrossAmount, plmodels)
 	// case strings.Contains(pl.ID, "DISCOUNT"):
