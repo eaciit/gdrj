@@ -184,6 +184,7 @@ func main() {
 
 		// plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
 		spl.CleanAndClasify(masters)
+		spl.RatioCalc(masters)
 		spl.CalcSales(masters)
 		spl.CalcRoyalties2016(masters)
 		spl.CalcSum(masters)
