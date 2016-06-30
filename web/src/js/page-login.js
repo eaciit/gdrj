@@ -113,5 +113,5 @@ lg.getConfirmReset = () => {
 }
 
 $(() => {
-	
+	$('#loginForm').height($(window).height())
 })
