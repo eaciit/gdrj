@@ -69,6 +69,8 @@ func main() {
 		alldata = append(alldata, tkm)
 	}
 
+	toolkit.Println("Buffered alldata, %d rows in %s", len(alldata), time.Since(t0).String())
+
 	// listdimension := []string{"date.fiscal,customer.channelid,customer.channelname",
 	// 	"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel",
 	// 	"date.fiscal,customer.channelid,customer.channelname,customer.zone",
