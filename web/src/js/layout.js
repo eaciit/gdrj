@@ -6,11 +6,10 @@ vm.menu = ko.observableArray([
 	{ title: 'Home', icon: 'home', href: viewModel.appName + 'page/home', submenu: [] },
 	{ title: 'P&L Performance', icon: 'tachometer', href: viewModel.appName + 'page/pnlperformance', submenu: [] },
 	{ title: 'Analysis', icon: 'bar-chart-o', href: '#', submenu: [
+		{ title: 'Contribution Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/contributionanalysis', submenu: [] },
 		{ title: 'Key Account Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/keyaccountanalysis', submenu: [] },
 		{ title: 'Branch Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/branchanalysis', submenu: [] },
 		{ title: 'Branch vs RD Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/rdvsbranchanalysis', submenu: [] },
-		// { title: 'Growth', icon: 'bar-chart-o', href: viewModel.appName + 'page/growthanalysis', submenu: [] },
-		// { title: 'Contribution Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/contributionanalysis', submenu: [] },
 		{ title: 'Custom Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/customanalysis', submenu: [] },
 	] },
 	// { title: 'Report', icon: 'file-text-o', href: viewModel.appName + 'page/report/list', submenu: [] },
