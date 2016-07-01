@@ -33,8 +33,6 @@ lg.ErrorMessage = ko.observable('');
 lg.getConfirReset = ko.mapping.fromJS(lg.templateUrlParam);
 
 lg.getLogin = function () {
-	event.preventDefault();
-
 	if (!toolkit.isFormValid("#login-form")) {
 		return;
 	}

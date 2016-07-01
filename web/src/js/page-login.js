@@ -30,9 +30,7 @@ lg.dataMenu =ko.observableArray([])
 lg.ErrorMessage = ko.observable('')
 lg.getConfirReset = ko.mapping.fromJS(lg.templateUrlParam)
 
-lg.getLogin = () => {
-	event.preventDefault();
-
+lg.getLogin = function () {
 	if (!toolkit.isFormValid("#login-form")) {
 		return;
 	}
