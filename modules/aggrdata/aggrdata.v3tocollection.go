@@ -125,7 +125,7 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 
 	filter := new(dbox.Filter)
 	for filter = range filters {
-		csr, _ := workerconn.NewQuery().Select("date", "customer", "product.brand", "pldatas").
+		csr, _ := workerconn.NewQuery().Select("grossamount", "netamount", "discountamount", "salesqty", "date", "customer", "product.brand", "pldatas").
 			From(tablename).
 			Where(filter).
 			Cursor(nil)
