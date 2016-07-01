@@ -56,7 +56,7 @@ func main() {
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
 	speriode := eperiode.AddDate(-1, 0, 0)
-	speriode = eperiode.AddDate(0, 0, -10)
+	speriode = eperiode.AddDate(0, 0, -1)
 
 	seeds := make([]time.Time, 0, 0)
 	seeds = append(seeds, speriode)
@@ -90,6 +90,14 @@ func main() {
 	toolkit.Println("Waiting result query...")
 	for i := 1; i <= len(seeds); i++ {
 		a := <-result
+
+		if i%step == 0 {
+			toolkit.Printfn("Month %d of %d, Received in %s",
+				i, len(seeds), time.Since(t0).String())
+		}
+
+		t1 := time.Now()
+
 		for k, v := range a {
 			tkm, _ := toolkit.ToM(v)
 			toolkit.Println(k)
@@ -101,8 +109,8 @@ func main() {
 		}
 
 		if i%step == 0 {
-			toolkit.Printfn("Month %d of %d, Done in %s",
-				i, len(seeds), time.Since(t0).String())
+			toolkit.Printfn("Month %d of %d, Saved in %s",
+				i, len(seeds), time.Since(t1).String())
 		}
 	}
 
