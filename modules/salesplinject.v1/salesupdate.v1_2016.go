@@ -666,16 +666,18 @@ func main() {
 
 	getresult := make(chan int, len(seeds))
 	toolkit.Println("Starting worker query...")
-	for i, v := range seeds {
+	ix := 0
+	for _, v := range seeds {
+		ix++
 		filter := dbox.Eq("date.date", v)
-		go workerproc(i, filter, getresult)
+		go workerproc(ix, filter, getresult)
 	}
 
-	toolkit.Println("Waiting result query...")
-	for i := 1; i <= len(seeds); i++ {
-		<-getresult
-		toolkit.Printfn("Saving %d of %d (%d pct) in %s",
-			i, len(seeds), i*100/len(seeds), time.Since(t0).String())
+	toolkit.Println("Waiting result query... : ", ix)
+	for i := 1; i <= ix; i++ {
+		n := <-getresult
+		toolkit.Printfn("Saving %d of %d (%d pct) in %s : %d",
+			i, ix, i*100/ix, time.Since(t0).String(), n)
 	}
 
 	toolkit.Printfn("All done in %s", time.Since(t0).String())
