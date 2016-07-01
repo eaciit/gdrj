@@ -53,7 +53,7 @@ func main() {
 	toolkit.Println("Preparing data query...")
 	//key.date_fiscal
 	csr, _ := conn.NewQuery().Select().
-		From(tablename).
+		From("salespls-summary").
 		Where(dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))).
 		Cursor(nil)
 
@@ -61,7 +61,7 @@ func main() {
 	for {
 		tkm := toolkit.M{}
 
-		e := csr.Fetch(tkm, 1, false)
+		e := csr.Fetch(&tkm, 1, false)
 		if e != nil {
 			break
 		}
@@ -69,7 +69,7 @@ func main() {
 		alldata = append(alldata, tkm)
 	}
 
-	toolkit.Println("Buffered alldata, %d rows in %s", len(alldata), time.Since(t0).String())
+	toolkit.Printfn("Buffered alldata, %d rows in %s", len(alldata), time.Since(t0).String())
 
 	// listdimension := []string{"date.fiscal,customer.channelid,customer.channelname",
 	// 	"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel",
