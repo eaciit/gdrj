@@ -105,7 +105,7 @@ func main() {
 			_ = conn.NewQuery().
 				From("salespls-summary").
 				SetConfig("multiexec", true).
-				Save().Exec(toolkit.M{}.Set("data", a))
+				Save().Exec(toolkit.M{}.Set("data", tkm))
 		}
 
 		if i%step == 0 {
