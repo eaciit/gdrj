@@ -71,7 +71,7 @@ func main() {
 	toolkit.Println("Starting worker query...")
 	result := make(chan toolkit.M, len(seeds))
 	filterchan := make(chan *dbox.Filter, len(seeds))
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 12; i++ {
 		go workerproc(i, filterchan, result)
 	}
 
