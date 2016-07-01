@@ -259,7 +259,7 @@ body {
 }
 .fh {
   margin: auto;
-  padding: 15%;
+  width: 200px;
   padding-top: 0px;
 }
 .report-module-rsec > div {
