@@ -23,7 +23,8 @@ var (
 	periodFrom, periodTo int
 	dateFrom, dateTo     time.Time
 	fiscalyear           int
-	tablename            = "salespls-2016"
+	gtablename           = "salespls-2016"
+	stablename           = "salespls-2016"
 )
 var masters = toolkit.M{}
 
@@ -641,6 +642,7 @@ func main() {
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
 	speriode := eperiode.AddDate(-1, 0, 0)
 	speriode = eperiode.AddDate(0, 0, -1)
+	stablename = "salespls-1"
 
 	setinitialconnection()
 	defer gdrj.CloseDb()
@@ -673,7 +675,7 @@ func main() {
 	for i := 1; i <= len(seeds); i++ {
 		<-getresult
 		toolkit.Printfn("Saving %d of %d (%d pct) in %s",
-			i, len(seeds), i/len(seeds)*100, time.Since(t0).String())
+			i, len(seeds), i*100/len(seeds), time.Since(t0).String())
 	}
 
 	toolkit.Printfn("All done in %s", time.Since(t0).String())
@@ -684,17 +686,13 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 	defer workerconn.Close()
 
 	csr, _ := workerconn.NewQuery().Select().
-		From(tablename).
+		From(gtablename).
 		Where(filter).
 		Cursor(nil)
 
 	i := 0
-
-	// tablename := toolkit.Sprintf("%v-2016", "salespls")
-	// tablename = toolkit.Sprintf("%v-1", "salespls")
-
 	qSave := workerconn.NewQuery().
-		From(tablename).
+		From(stablename).
 		SetConfig("multiexec", true).
 		Save()
 
