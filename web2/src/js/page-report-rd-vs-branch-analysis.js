@@ -32,6 +32,11 @@ v1.refresh = (useCache = false) => {
 				return
 			}
 
+			if (rpt.isEmptyData(res)) {
+				v1.contentIsLoading(false)
+				return
+			}
+
 			v1.data(v1.buildStructure(res.Data.Data))
 			rpt.plmodels(res.Data.PLModels)
 			v1.emptyGrid()
@@ -457,6 +462,11 @@ v2.refresh = (useCache = false) => {
 				setTimeout(() => {
 					fetch()
 				}, 1000 * 5)
+				return
+			}
+
+			if (rpt.isEmptyData(res)) {
+				v2.contentIsLoading(false)
 				return
 			}
 
@@ -896,6 +906,11 @@ v3.refresh = (useCache = false) => {
 				setTimeout(() => {
 					fetch()
 				}, 1000 * 5)
+				return
+			}
+
+			if (rpt.isEmptyData(res)) {
+				v3.contentIsLoading(false)
 				return
 			}
 

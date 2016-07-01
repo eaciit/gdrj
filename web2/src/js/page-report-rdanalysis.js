@@ -55,6 +55,11 @@ rd.refresh = (useCache = false) => {
 				return
 			}
 
+			if (rpt.isEmptyData(res)) {
+				rd.contentIsLoading(false)
+				return
+			}
+
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			rd.breakdownNote(`Last refreshed on: ${date}`)
 
