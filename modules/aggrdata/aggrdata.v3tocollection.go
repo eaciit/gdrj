@@ -76,6 +76,7 @@ func main() {
 	}
 
 	for _, v := range seeds {
+		toolkit.Printfn("Send filter %v to %v", v, v.AddDate(0, 1, 0))
 		filterchan <- dbox.And(dbox.Gte("date.date", v), dbox.Lt("date.date", v.AddDate(0, 1, 0)))
 	}
 	close(filterchan)
