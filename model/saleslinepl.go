@@ -519,7 +519,11 @@ func (pl *SalesPL) CalcSales(masters toolkit.M) {
 			pl.AddData("PL8", pl.DiscountAmount, plmodels)
 		} else {
 			pl.AddData("PL2", pl.GrossAmount, plmodels)
-			pl.AddData("PL8", -pl.DiscountAmount, plmodels)
+			vdisc := pl.DiscountAmount
+			if vdisc > 0 {
+				vdisc = -vdisc
+			}
+			pl.AddData("PL8", vdisc, plmodels)
 		}
 	case strings.Contains(pl.ID, "EXPORT"):
 		pl.AddData("PL6", pl.GrossAmount, plmodels)
@@ -527,7 +531,11 @@ func (pl *SalesPL) CalcSales(masters toolkit.M) {
 	// 	pl.AddData("PL7A", pl.GrossAmount, plmodels)
 	default:
 		pl.AddData("PL1", pl.GrossAmount, plmodels)
-		pl.AddData("PL7", -pl.DiscountAmount, plmodels)
+		vdisc := pl.DiscountAmount
+		if vdisc > 0 {
+			vdisc = -vdisc
+		}
+		pl.AddData("PL7", vdisc, plmodels)
 	}
 }
 

@@ -660,9 +660,9 @@ func main() {
 	toolkit.Println("Reading Master")
 
 	prepmaster()
-	prepmastergrossproc()
-	prepmasterclean()
-	prepmastercalc()
+	// prepmastergrossproc()
+	// prepmasterclean()
+	// prepmastercalc()
 
 	getresult := make(chan int, len(seeds))
 	toolkit.Println("Starting worker query...")
@@ -710,7 +710,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		// spl.CleanAndClasify(masters)
 		spl.CalcSales(masters)
 		// 		// === For ratio update and calc
-		spl.RatioCalc(masters)
+		// spl.RatioCalc(masters)
 
 		// 		//calculate process -- better not re-run
 		// 		// spl.CalcCOGSRev(masters)
@@ -721,10 +721,10 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		// spl.CalcDamage(masters)
 		// spl.CalcDepre(masters)
 		// spl.CalcDiscountActivity(masters)
-		spl.CalcPromo(masters)
+		// spl.CalcPromo(masters)
 		spl.CalcRoyalties2016(masters)
-
 		spl.CalcSum(masters)
+
 		err := qSave.Exec(toolkit.M{}.Set("data", spl))
 		if err != nil {
 			toolkit.Printfn("Save data : %v", err)
