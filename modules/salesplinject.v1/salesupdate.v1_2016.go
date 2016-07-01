@@ -688,8 +688,8 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 
 	i := 0
 
-	tablename := toolkit.Sprintf("%v-2016", "salespls")
-	tablename = toolkit.Sprintf("%v-1", "salespls")
+	// tablename := toolkit.Sprintf("%v-2016", "salespls")
+	// tablename = toolkit.Sprintf("%v-1", "salespls")
 
 	qSave := workerconn.NewQuery().
 		From(tablename).
