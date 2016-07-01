@@ -72,7 +72,6 @@ func buildmap(holder interface{},
 }
 
 func prepmaster() {
-	masters := toolkit.M{}
 
 	toolkit.Println("--> PL MODEL")
 	masters.Set("plmodel", buildmap(map[string]*gdrj.PLModel{},
