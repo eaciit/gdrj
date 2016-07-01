@@ -18,7 +18,7 @@ type PLData struct {
 type SalesLineRatio struct {
 	Global, GlobalVdist, Branch, Brand, SKUID, ChannelID                       float64
 	Month, MonthVdist, MonthSKUID, MonthChannel, MonthBranch, MonthVdistBranch float64
-	MonthChannelBrand                                                          float64
+	MonthChannelBrand, MonthBrand                                              float64
 }
 
 type SalesPL struct {
@@ -163,6 +163,12 @@ func (pl *SalesPL) RatioCalc(masters toolkit.M) {
 		gdt := masters["grossbymonthbrandchannel"].(toolkit.M)
 		key := toolkit.Sprintf("%d_%d_%s_%s", pl.Date.Year, pl.Date.Month, pl.Product.Brand, pl.Customer.ChannelID)
 		tratio.MonthChannelBrand = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
+	}
+
+	if masters.Has("grossbymonthbrand") {
+		gdt := masters["grossbymonthbrand"].(toolkit.M)
+		key := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, pl.Product.Brand)
+		tratio.MonthBrand = SaveDiv(pl.GrossAmount, gdt.GetFloat64(key))
 	}
 
 	pl.Ratio = tratio
@@ -915,8 +921,7 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 
 	for key, v := range fadvbrand {
 		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-		//change to month brand
-		pl.AddData(key, -pl.Ratio.Brand*fv, plmodels)
+		pl.AddData(key, -pl.Ratio.MonthBrand*fv, plmodels)
 	}
 
 	for key, v := range fpromo {

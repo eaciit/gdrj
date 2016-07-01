@@ -87,7 +87,6 @@ func prepmaster() {
 }
 
 func prepmastercalc() {
-
 	//HBrandCategory
 	toolkit.Println("--> BRAND Category")
 	tkmbrandcategory := toolkit.M{}
@@ -204,42 +203,44 @@ func prepmastercalc() {
 		case "APROMO":
 			agroup := "promo"
 			if strings.Contains(o.Grouping, "Advertising") {
-				agroup = "adv"
+				continue
+				// agroup = "adv"
 			} else if strings.Contains(o.Grouping, "SPG") {
 				agroup = "spg"
 			}
 
 			key = toolkit.Sprintf("%s_%s", key, agroup)
-			if agroup == "adv" {
-				tadv, exist := promos[key]
-				if !exist {
-					tadv = toolkit.M{}
-				}
-				skey := "PL28I"
-				tstr := strings.TrimSpace(o.AccountDescription)
-				switch tstr {
-				case "ADVERTISEMENT - INTERNET":
-					skey = "PL28A"
-				case "ADVERTISEMENT - PRODN - DESIGN - DVLOPMNT":
-					skey = "PL28B"
-				case "ADVERTISEMENT - TV":
-					skey = "PL28C"
-				case "MARKET RESEARCH":
-					skey = "PL28D"
-				case "FAIRS & EVENTS":
-					skey = "PL28E"
-				case "AGENCY FEES":
-					skey = "PL28F"
-				case "ADVERTISEMENT - POP MATERIALS":
-					skey = "PL28G"
-				case "SPONSORSHIP":
-					skey = "PL28H"
-				}
+			// if agroup == "adv" {
+			// 	tadv, exist := promos[key]
+			// 	if !exist {
+			// 		tadv = toolkit.M{}
+			// 	}
+			// 	skey := "PL28I"
+			// 	tstr := strings.TrimSpace(o.AccountDescription)
+			// 	switch tstr {
+			// 	case "ADVERTISEMENT - INTERNET":
+			// 		skey = "PL28A"
+			// 	case "ADVERTISEMENT - PRODN - DESIGN - DVLOPMNT":
+			// 		skey = "PL28B"
+			// 	case "ADVERTISEMENT - TV":
+			// 		skey = "PL28C"
+			// 	case "MARKET RESEARCH":
+			// 		skey = "PL28D"
+			// 	case "FAIRS & EVENTS":
+			// 		skey = "PL28E"
+			// 	case "AGENCY FEES":
+			// 		skey = "PL28F"
+			// 	case "ADVERTISEMENT - POP MATERIALS":
+			// 		skey = "PL28G"
+			// 	case "SPONSORSHIP":
+			// 		skey = "PL28H"
+			// 	}
 
-				v := tadv.GetFloat64(skey) + o.AmountinIDR
-				tadv.Set(skey, v)
-				promos[key] = tadv
-			} else if agroup == "spg" {
+			// 	v := tadv.GetFloat64(skey) + o.AmountinIDR
+			// 	tadv.Set(skey, v)
+			// 	promos[key] = tadv
+			// } else
+			if agroup == "spg" {
 				tspg, exist := promos[key]
 				if !exist {
 					tspg = toolkit.M{}
@@ -332,6 +333,64 @@ func prepmastercalc() {
 			//General and administrative expenses	PL34
 			// & Amort. Exp. -  Office	PL35
 		}
+	}
+
+	toolkit.Println("--> Rev. Advertisement")
+	//maps for key
+	csradv, _ := conn.NewQuery().From("rawdatapl_ads30062016").
+		Where(dbox.Eq("year", fiscalyear-1)).
+		Cursor(nil)
+
+	defer csradv.Close()
+	for {
+		m := toolkit.M{}
+		e := csradv.Fetch(&m, 1, false)
+
+		if e != nil {
+			break
+		}
+		agroup := "adv"
+		// key := toolkit.Sprintf("%d_%d", Date.Year(), Date.Month())
+		key := toolkit.Sprintf("%d_%d_%s", m.GetInt("year"), m.GetInt("period"), "adv")
+		if len(m.GetString("brand")) > 2 {
+			key = toolkit.Sprintf("%d_%d_%s_%s",
+				m.GetInt("year"),
+				m.GetInt("period"),
+				strings.TrimSpace(strings.ToUpper(m.GetString("brand"))),
+				"adv")
+		}
+
+		if agroup == "adv" {
+			tadv, exist := promos[key]
+			if !exist {
+				tadv = toolkit.M{}
+			}
+			skey := "PL28I"
+			tstr := strings.TrimSpace(m.GetString("accountdescription"))
+			switch tstr {
+			case "ADVERTISEMENT - INTERNET":
+				skey = "PL28A"
+			case "ADVERTISEMENT - PRODN - DESIGN - DVLOPMNT":
+				skey = "PL28B"
+			case "ADVERTISEMENT - TV":
+				skey = "PL28C"
+			case "MARKET RESEARCH":
+				skey = "PL28D"
+			case "FAIRS & EVENTS":
+				skey = "PL28E"
+			case "AGENCY FEES":
+				skey = "PL28F"
+			case "ADVERTISEMENT - POP MATERIALS":
+				skey = "PL28G"
+			case "SPONSORSHIP":
+				skey = "PL28H"
+			}
+
+			v := tadv.GetFloat64(skey) + m.GetFloat64("amountinidr")
+			tadv.Set(skey, v)
+			promos[key] = tadv
+		}
+
 	}
 
 	subtot = float64(0)
@@ -493,7 +552,7 @@ func prepmastergrossproc() {
 	globalgross, globalgrossvdist := float64(0), float64(0)
 	grossbybranch, grossbybrand, grossbysku, grossbychannel := toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}
 	grossbymonthvdist, grossbymonth, grossbymonthsku := toolkit.M{}, toolkit.M{}, toolkit.M{}
-	grossbymonthchannel, grossbymonthbrandchannel := toolkit.M{}, toolkit.M{}
+	grossbymonthchannel, grossbymonthbrandchannel, grossbymonthbrand := toolkit.M{}, toolkit.M{}, toolkit.M{}
 
 	toolkit.Println("--> Trx Gross Proc")
 	csr01, _ := conn.NewQuery().From("salestrxs-grossproc").
@@ -556,13 +615,18 @@ func prepmastergrossproc() {
 		tempval = grossbymonthbrandchannel.GetFloat64(key) + agross
 		grossbymonthbrandchannel.Set(key, tempval)
 
+		key = toolkit.Sprintf("%d_%d_%s", m.GetInt("year"), m.GetInt("month"), m.GetString("brand"))
+		tempval = grossbymonthbrand.GetFloat64(key) + agross
+		grossbymonthbrand.Set(key, tempval)
+
 	}
 
 	masters.Set("globalgross", globalgross).Set("globalgrossvdist", globalgrossvdist)
 	// tkm
 	masters.Set("grossbybranch", grossbybranch).Set("grossbybrand", grossbybrand).Set("grossbysku", grossbysku).Set("grossbychannel", grossbychannel)
 	masters.Set("grossbymonth", grossbymonth).Set("grossbymonthvdist", grossbymonthvdist).Set("grossbymonthsku", grossbymonthsku).
-		Set("grossbymonthchannel", grossbymonthchannel).Set("grossbymonthbrandchannel", grossbymonthbrandchannel)
+		Set("grossbymonthchannel", grossbymonthchannel).Set("grossbymonthbrandchannel", grossbymonthbrandchannel).
+		Set("grossbymonthbrand", grossbymonthbrand)
 }
 
 var pldatas = map[string]*gdrj.PLDataModel{}
@@ -594,9 +658,9 @@ func main() {
 	toolkit.Println("Reading Master")
 
 	prepmaster()
-	// prepmastergrossproc()
-	// prepmasterclean()
-	// prepmastercalc()
+	prepmastergrossproc()
+	prepmasterclean()
+	prepmastercalc()
 
 	getresult := make(chan int, len(seeds))
 	toolkit.Println("Starting worker query...")
@@ -632,9 +696,9 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		}
 
 		// spl.CleanAndClasify(masters)
-		// spl.CalcSales(masters)
+		spl.CalcSales(masters)
 		// 		// === For ratio update and calc
-		// spl.RatioCalc(masters)
+		spl.RatioCalc(masters)
 
 		// 		//calculate process -- better not re-run
 		// 		// spl.CalcCOGSRev(masters)
@@ -645,8 +709,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		// spl.CalcDamage(masters)
 		// spl.CalcDepre(masters)
 		// spl.CalcDiscountActivity(masters)
-		// 		// spl.CalcPromo(masters)
-
+		spl.CalcPromo(masters)
 		spl.CalcRoyalties2016(masters)
 
 		spl.CalcSum(masters)
