@@ -687,11 +687,21 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		Cursor(nil)
 
 	i := 0
+
+	tablename := toolkit.Sprintf("%v-2016", "salespls")
+	tablename = toolkit.Sprintf("%v-1", "salespls")
+
+	qSave := workerconn.NewQuery().
+		From(tablename).
+		SetConfig("multiexec", true).
+		Save()
+
 	for {
 		i++
 		spl := new(gdrj.SalesPL)
 		e := csr.Fetch(spl, 1, false)
 		if e != nil {
+			toolkit.Println("FETCH : ", e)
 			break
 		}
 
@@ -713,12 +723,12 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		spl.CalcRoyalties2016(masters)
 
 		spl.CalcSum(masters)
-
-		tablename := toolkit.Sprintf("%v-2016", spl.TableName())
-		tablename = toolkit.Sprintf("%v-1", spl.TableName())
-
-		workerconn.NewQuery().From(tablename).
-			Save().Exec(toolkit.M{}.Set("data", spl))
+		err := qSave.Exec(toolkit.M{}.Set("data", spl))
+		if err != nil {
+			toolkit.Printfn("Save data : %v", err)
+		}
+		// workerconn.NewQuery().From(tablename).
+		// 	Save().Exec(toolkit.M{}.Set("data", spl))
 	}
 
 	getresult <- csr.Count()
