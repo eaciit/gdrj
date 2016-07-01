@@ -10,9 +10,11 @@ lgd.menu = ko.observableArray([
 	{ to: 'keyaccountanalysis', title: 'Key Account Analysis', icon: 'fa-key', color: 'rgb(32, 162, 87)' },
 	{ to: 'sales-return-analysis', title: 'Sales Return Analysis', nope: true, icon: 'fa-refresh', color: '#28B463' },
 
-	{ to: 'rdvsbranchanalysis', title: 'Branch vs RD Analysis', icon: 'fa-bar-chart', color: 'rgb(212, 130, 0)' },
-	{ to: 'branchanalysis', title: 'Branch Analysis', icon: 'fa-home', color: 'rgb(234, 144, 0)' },
-	{ to: 'customanalysis', title: 'Ad Hoc Analysis', icon: 'fa-gear', color: '#F39C12' },
+	{ to: 'branchanalysis', title: 'Branch Analysis', icon: 'fa-home', color: 'rgb(212, 130, 0)' },
+	{ to: 'rdanalysis', title: 'RD Analysis', icon: 'fa-bar-chart', color: 'rgb(234, 144, 0)' },
+	{ to: 'rdvsbranchanalysis', title: 'Branch vs RD Analysis', icon: 'fa-bar-chart', color: '#F39C12' },
+	
+	{ to: 'customanalysis', title: 'Ad Hoc Analysis', icon: 'fa-gear', color: '#b70f5d' },
 ])
 
 vm.currentMenu('Home')
