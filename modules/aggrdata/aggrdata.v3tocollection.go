@@ -92,6 +92,7 @@ func main() {
 		a := <-result
 		for k, v := range a {
 			tkm, _ := toolkit.ToM(v)
+			toolkit.Println(k)
 			tkm.Set("_id", k)
 			_ = conn.NewQuery().
 				From("salespls-summary").
