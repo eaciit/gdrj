@@ -100,7 +100,7 @@ func main() {
 
 		for k, v := range a {
 			tkm, _ := toolkit.ToM(v)
-			toolkit.Println(k)
+			// toolkit.Println(k)
 			tkm.Set("_id", k)
 			_ = conn.NewQuery().
 				From("salespls-summary").
@@ -138,6 +138,8 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 		}
 
 		for {
+			tv := float64(0)
+
 			spl := new(gdrj.SalesPL)
 			e := csr.Fetch(spl, 1, false)
 			if e != nil {
@@ -149,12 +151,31 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 				spl.Customer.ReportChannel, spl.Customer.ReportSubChannel, spl.Customer.Zone, spl.Customer.Region,
 				spl.Customer.AreaName, spl.Product.Brand)
 
+			ktkm := toolkit.M{}
+			ktkm.Set("date_fiscal", spl.Date.Fiscal)
+			ktkm.Set("date_quartertxt", spl.Date.QuarterTxt)
+			ktkm.Set("date_month", spl.Date.Month)
+
+			ktkm.Set("customer_branchname", spl.Customer.BranchName)
+			ktkm.Set("customer_keyaccount", spl.Customer.KeyAccount)
+			ktkm.Set("customer_channelid", spl.Customer.ChannelID)
+			ktkm.Set("customer_channelname", spl.Customer.ChannelName)
+			ktkm.Set("customer_reportchannel", spl.Customer.ReportChannel)
+			ktkm.Set("customer_reportsubchannel", spl.Customer.ReportSubChannel)
+			ktkm.Set("customer_zone", spl.Customer.Zone)
+			ktkm.Set("customer_region", spl.Customer.Region)
+			ktkm.Set("customer_areaname", spl.Customer.AreaName)
+
+			ktkm.Set("product_brand", spl.Product.Brand)
+
 			dtkm := toolkit.M{}
 			if tkm.Has(key) {
 				dtkm = tkm[key].(toolkit.M)
 			}
 
-			tv := spl.GrossAmount + dtkm.GetFloat64("grossamount")
+			dtkm.Set("key", ktkm)
+
+			tv = spl.GrossAmount + dtkm.GetFloat64("grossamount")
 			dtkm.Set("grossamount", tv)
 
 			tv = spl.NetAmount + dtkm.GetFloat64("netamount")
