@@ -195,6 +195,11 @@ bkd.refresh = (useCache = false) => {
 				return
 			}
 
+			if (rpt.isEmptyData(res)) {
+				bkd.contentIsLoading(false)
+				return
+			}
+
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			bkd.breakdownNote(`Last refreshed on: ${date}`)
 
@@ -1133,7 +1138,12 @@ dsbrd.refresh = () => {
 				setTimeout(() => { fetch() }, 1000 * 5)
 				return
 			}
-			console.log(res)
+
+			if (rpt.isEmptyData(res)) {
+				dsbrd.contentIsLoading(false)
+				return
+			}
+
 			dsbrd.contentIsLoading(false)
 			dsbrd.render(res)
 		}, () => {
@@ -1457,6 +1467,11 @@ rs.refresh = (useCache = false) => {
 				return
 			}
 
+			if (rpt.isEmptyData(res)) {
+				rs.contentIsLoading(false)
+				return
+			}
+
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			rs.chartComparisonNote(`Last refreshed on: ${date}`)
 
@@ -1720,6 +1735,11 @@ rank.refresh = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => { fetch() }, 1000 * 5)
+				return
+			}
+
+			if (rpt.isEmptyData(res)) {
+				rank.contentIsLoading(false)
 				return
 			}
 

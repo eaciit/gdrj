@@ -91,6 +91,11 @@ cst.refresh = () => {
 				return
 			}
 
+			if (rpt.isEmptyData(res)) {
+				cst.contentIsLoading(false)
+				return
+			}
+
 			cst.contentIsLoading(false)
 
 			rpt.plmodels(res.Data.PLModels)

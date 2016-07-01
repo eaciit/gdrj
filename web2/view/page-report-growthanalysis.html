@@ -1,96 +1,80 @@
 <div>
 	<div class="col-md-12 col-sm-12 ez panel-content">
 
+<style>
+	.grid th {
+		border-color: white;
+	}
+	.grid th[data-title="Total"] {
+		border-right: 1px solid white;
+	}
+	.align-center {
+		text-align: center !important;
+	}
+	.grid th.color-0 {
+		background-color: #3498DB;
+		color: white;
+	}
+	.grid th.color-1 {
+		background-color: #28B463;
+		color: white;
+	}
+</style>
+
 <script src="{{BaseUrl}}res/core/js/page-report.js"></script>
 <script src="{{BaseUrl}}res/core/js/page-report-growthanalysis.js"></script>
 
-<div>
-
-	<!-- Nav tabs -->
-	<ul class="nav nav-pills nav-replace-title" role="tablist">
-		<li role="presentation" class="active">
-			<a href="#tab1">Brands</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab2">Key Account</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab3">Channel</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab4">Branch</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab5">City</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab6">Region</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab7">Zone</a>
-		</li>
-	</ul>
-
-	<!-- Tab panes -->
-	<div class="panel ez no-padding hardcore">
-		<div class="panel-heading">
-			<h3 class="no-margin">Growth Analysis</h3>
-			<div class="panel-nav-button" data-bind="visible: !growth.contentIsLoading()">
-				<div class="form-inline">
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: growth.refresh" title="Growth Analysis">
-						<i class="fa fa-refresh"></i> Refresh
-					</button>
-					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
-						<i class="fa fa-server"></i> Show Filter
-					</button>
+<div class="panel ez no-padding hardcore">
+	<div class="panel-heading">
+		<h3 class="no-margin">&nbsp;</h3>
+		<div class="panel-nav-button" data-bind="visible: !grw.contentIsLoading()">
+			<div class="form-inline">
+				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+					<span class="input-group-addon width-100 align-right">Fiscal Year</span>
+					<div class="width-full">
+						<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: rpt.optionFiscalYears, value: grw.fiscalYears }"></select>
+					</div>
 				</div>
+
+				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+					<span class="input-group-addon width-100 align-right">Breakdown by</span>
+					<div class="width-full">
+						<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: grw.optionBreakdowns, dataValueField: 'field', dataTextField: 'name', value: grw.breakdownBy }"></select>
+					</div>
+				</div>
+
+				<button class="btn btn-sm btn-primary tooltipster" data-bind="click: grw.refresh" title="Refresh P&L Analysis">
+					<i class="fa fa-refresh"></i> Refresh
+				</button>
+				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+					<i class="fa fa-server"></i> Show Filter
+				</button>
 			</div>
 		</div>
+	</div>
 
-		<div class="panel-body">
-			<div data-bind="visible: growth.contentIsLoading">
-				{{template "_loader.html"}}
+	<div class="panel-body">
+		<div data-bind="visible: grw.contentIsLoading">
+			{{template "_loader.html"}}
+		</div>
+
+		<div data-bind="visible: !grw.contentIsLoading()">
+			<div class="margin-bottom-5">
+				<div class="grid"></div>
 			</div>
+		</div>
+	</div>
+</div>
 
-			<div class="filter" data-bind="visible: !growth.contentIsLoading()">
-				<div class="form-inline pull-right breakdown-filter">
-					<!-- <div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right">Structure</span>
-							<div class="width-full">
-								<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: dsbrd.optionStructures, dataValueField: 'field', dataTextField: 'name', value: dsbrd.structure }"></select>
-							</div>
-					</div> -->
+<div class="panel ez no-padding hardcore">
+	<div class="panel-body">
+		<div data-bind="visible: grw.contentIsLoading">
+			{{template "_loader.html"}}
+		</div>
 
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right">Fiscal Year</span>
-						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.optionFiscalYears, value: growth.fiscalYears }"></select>
-						</div>
-					</div>
-
-					<!-- <div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right">Breakdown by</span>
-						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: dsbrd.breakdown, select: dsbrd.changeBreakdown, filter: 'contains' }"></select>
-						</div>
-						<div class="clearfix"></div>
-					</div>
-
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right">Breakdown Value</span>
-						<div class="width-full">
-							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: dsbrd.optionBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: dsbrd.breakdownValue, placeholder: 'Choose value', change: dsbrd.changeBreakdownValue }"></select>
-						</div>
-						<div class="clearfix"></div>
-					</div> -->
-
-				</div>
-				<div class="clearfix"></div>
-			</div>
-
-			<div data-bind="visible: !growth.contentIsLoading()">
-				<div class="grid-growthanalysis"></div>
-				<div class="clearfix"></div>
+		<div data-bind="visible: !grw.contentIsLoading()">
+			<div class="margin-bottom-5">
+				<div class="chart"></div>
 			</div>
 		</div>
 	</div>

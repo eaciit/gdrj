@@ -1,317 +1,53 @@
-"use strict";
+viewModel.contribution = new Object()
+let cbt = viewModel.contribution
 
-viewModel.growth = new Object();
-var grw = viewModel.growth;
+cbt.contentIsLoading = ko.observable(false)
 
-grw.contentIsLoading = ko.observable(false);
+cbt.breakdownBy = ko.observable('product.brand')
+cbt.breakdownByFiscalYear = ko.observable('date.fiscal')
 
-grw.optionBreakdowns = ko.observableArray([{ field: "date.quartertxt", name: "Quarter" }, { field: "date.month", name: "Month" }]);
-grw.breakdownBy = ko.observable('date.quartertxt');
-grw.breakdownByFiscalYear = ko.observable('date.fiscal');
-grw.rows = ko.observableArray([{ pnl: "Net Sales", plcodes: ["PL9"] }, // ["PL8A"] },
-{ pnl: "EBIT", plcodes: ["PL9"] }]);
-grw.columns = ko.observableArray([]);
+cbt.data = ko.observableArray([])
+cbt.fiscalYear = ko.observable(rpt.value.FiscalYear())
+cbt.level = ko.observable(1)
 
-grw.data = ko.observableArray([]);
-grw.fiscalYears = ko.observableArray(rpt.optionFiscalYears());
-// grw.level = ko.observable(3)
+cbt.refresh = (useCache = false) => {
+	let param = {}
+	param.pls = []
+	param.groups = rpt.parseGroups([cbt.breakdownBy()])
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue(false, cbt.fiscalYear)
 
-grw.emptyGrid = function () {
-	$('.grid').replaceWith("<div class=\"grid\"></div>");
-	$('.chart').replaceWith("<div class=\"chart\"></div>");
-};
+	cbt.contentIsLoading(true)
 
-grw.refresh = function () {
-	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
-
-	var param = {};
-	param.pls = [];
-	param.groups = rpt.parseGroups([grw.breakdownByFiscalYear(), grw.breakdownBy()]);
-	param.aggr = 'sum';
-	param.filters = rpt.getFilterValue(true, grw.fiscalYears);
-
-	grw.contentIsLoading(true);
-
-	var fetch = function fetch() {
-		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
+	let fetch = () => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
-				setTimeout(function () {
-					fetch();
-				}, 1000 * 5);
-				return;
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
 			}
 
 			if (rpt.isEmptyData(res)) {
-				grw.contentIsLoading(false);
-				return;
+				cbt.contentIsLoading(false)
+				return
 			}
 
-			// grw.data(grw.buildStructure(res.Data.Data))
-			// rpt.plmodels(res.Data.PLModels)
-			grw.emptyGrid();
-			grw.contentIsLoading(false);
-			grw.renderGrid(res);
-			grw.renderChart(res);
-		}, function () {
-			grw.emptyGrid();
-			grw.contentIsLoading(false);
-		});
-	};
-
-	fetch();
-};
-
-grw.reloadLayout = function (d) {
-	toolkit.try(function () {
-		$(d).find('.k-chart').data('kendoChart').redraw();
-	});
-	toolkit.try(function () {
-		$(d).find('.k-grid').data('kendoGrid').refresh();
-	});
-};
-
-grw.renderChart = function (res) {
-	var data = res.Data.Data.map(function (d) {
-		return {
-			fiscal: d._id["_id_" + toolkit.replace(grw.breakdownByFiscalYear(), '.', '_')],
-			sub: d._id["_id_" + toolkit.replace(grw.breakdownBy(), '.', '_')],
-			net: Math.abs(toolkit.sum(grw.rows()[0].plcodes, function (plcode) {
-				return d[plcode];
-			})),
-			ebit: Math.abs(toolkit.sum(grw.rows()[1].plcodes, function (plcode) {
-				return d[plcode];
-			}))
-		};
-	});
-
-	var series = [{
-		field: 'net',
-		type: 'line',
-		name: grw.rows()[0].pnl
-	}, {
-		field: 'ebit',
-		type: 'line',
-		name: grw.rows()[1].pnl
-	}];
-
-	var config = {
-		dataSource: { data: data },
-		legend: {
-			visible: true,
-			position: "bottom"
-		},
-		seriesDefaults: {
-			type: "line",
-			missingValues: "gap"
-		},
-		seriesColors: toolkit.seriesColorsGodrej,
-		series: [{
-			field: 'net',
-			type: 'line',
-			name: grw.rows()[0].pnl,
-			line: {
-				border: {
-					width: 1,
-					color: 'white'
-				}
-			},
-			tooltip: { visible: true },
-			markers: { visible: false }
-		}, {
-			field: 'ebit',
-			type: 'line',
-			name: grw.rows()[0].pnl,
-			line: {
-				border: {
-					width: 1,
-					color: 'white'
-				}
-			},
-			tooltip: { visible: true },
-			markers: { visible: false }
-		}],
-		valueAxis: {
-			majorGridLines: { color: '#fafafa' },
-			label: { format: "{0:n2}" }
-		},
-		categoryAxis: {
-			field: 'sub',
-			labels: {
-				font: '"Source Sans Pro" 11px'
-			},
-			majorGridLines: { color: '#fafafa' }
-		}
-	};
-
-	$('.chart').kendoChart(config);
-};
-
-grw.renderGrid = function (res) {
-	var rows = [];
-	var rowsAfter = [];
-	var columnsPlaceholder = [{
-		field: 'pnl',
-		title: 'PNL',
-		attributes: { class: 'bold' },
-		headerAttributes: { style: 'font-weight: bold; vertical-align: middle;' },
-		width: 120
-	}, {
-		field: 'total',
-		title: 'Total',
-		format: '{0:n0}',
-		attributes: { class: 'bold align-right bold' },
-		headerAttributes: { style: 'font-weight: bold; vertical-align: middle; text-align: right;' },
-		width: 120
-	}];
-
-	var columnGrouped = [];
-	var data = res.Data.Data;
-
-	grw.rows().forEach(function (row, rowIndex) {
-		row.columnData = [];
-		row.total = toolkit.sum(data, function (each) {
-			return toolkit.number(toolkit.sum(row.plcodes, function (d) {
-				return each[d];
-			}));
-		});
-
-		var op1 = _.groupBy(data, function (d) {
-			return d._id["_id_" + toolkit.replace(grw.breakdownByFiscalYear(), '.', '_')];
-		});
-		var op9 = _.map(op1, function (v, k) {
-			return { key: k, values: v };
-		});
-		op9.forEach(function (r, j) {
-			var k = r.key;
-			var v = r.values;
-			var op2 = _.groupBy(v, function (d) {
-				return d._id["_id_" + toolkit.replace(grw.breakdownBy(), '.', '_')];
-			});
-			var op3 = _.map(op2, function (w, l) {
-				var o = {};
-
-				o.order = l;
-				o.key = l;
-				o.data = w;
-
-				if (grw.breakdownBy() == 'date.month') {
-					o.order = parseInt(d.key);
-					o.key = moment(d.key).format('MMMM');
-				}
-
-				return o;
-			});
-			var op4 = _.orderBy(op3, function (d) {
-				return d.order;
-			}, 'asc');
-
-			var columnGroup = {};
-			columnGroup.title = k;
-			columnGroup.headerAttributes = { class: "align-center color-" + j };
-			columnGroup.columns = [];
-
-			if (rowIndex == 0) {
-				columnGrouped.push(columnGroup);
-			}
-
-			op4.forEach(function (d, i) {
-				var value = toolkit.sum(row.plcodes, function (plcode) {
-					return toolkit.sum(d.data, function (d) {
-						return toolkit.number(d[plcode]);
-					});
-				});
-				var prev = 0;
-
-				if (i > 0) {
-					prev = toolkit.sum(row.plcodes, function (plcode) {
-						return toolkit.sum(op4[i - 1].data, function (d) {
-							return toolkit.number(d[plcode]);
-						});
-					});
-				}
-
-				var title = d.key;
-				if (grw.breakdownBy() == 'date.quartertxt') {
-					title = "Quarter " + toolkit.getNumberFromString(d.key.split(' ')[1]);
-				} else {
-					title = moment(d.key).format('MMMM');
-				}
-
-				row.columnData.push({
-					title: d.key,
-					value: value,
-					growth: toolkit.number((value - prev) / prev * 100)
-				});
-
-				var columnEach = {};
-				columnEach.title = title;
-				columnEach.headerAttributes = { class: 'align-center' };
-				columnEach.columns = [];
-
-				columnGroup.columns.push(columnEach);
-
-				var columnValue = {};
-				columnValue.title = 'Value';
-				columnValue.field = "columnData[" + i + "].value";
-				columnValue.width = 120;
-				columnValue.format = '{0:n0}';
-				columnValue.attributes = { class: 'align-right' };
-				columnValue.headerAttributes = { class: "align-center" }; // color-${j}` }
-				columnEach.columns.push(columnValue);
-
-				var columnGrowth = {};
-				columnGrowth.title = '%';
-				columnGrowth.width = 60;
-				columnGrowth.template = function (d) {
-					return kendo.toString(d.columnData[i].growth, 'n2') + " %";
-				};
-				columnGrowth.headerAttributes = { class: 'align-center' };
-				columnGrowth.attributes = { class: 'align-right' };
-				columnEach.columns.push(columnGrowth);
-			});
-		});
-
-		rowsAfter.push(row);
-	});
-
-	if (columnGrouped.length > 0) {
-		columnsPlaceholder[0].locked = true;
-		columnsPlaceholder[1].locked = true;
+			cbt.data(cbt.buildStructure(res.Data.Data))
+			rpt.plmodels(res.Data.PLModels)
+			cbt.emptyGrid()
+			cbt.contentIsLoading(false)
+			cbt.render()
+		}, () => {
+			cbt.emptyGrid()
+			cbt.contentIsLoading(false)
+		})
 	}
 
-	grw.data(rowsAfter);
-	grw.columns(columnsPlaceholder.concat(columnGrouped));
+	fetch()
+}
 
-	var config = {
-		dataSource: {
-			data: grw.data()
-		},
-		columns: grw.columns(),
-		resizable: false,
-		sortable: false,
-		pageable: false,
-		filterable: false,
-		dataBound: function dataBound() {
-			var sel = '.grid-dashboard .k-grid-content-locked tr, .grid-dashboard .k-grid-content tr';
-
-			$(sel).on('mouseenter', function () {
-				var index = $(this).index();
-				console.log(this, index);
-				var elh = $(".grid-dashboard .k-grid-content-locked tr:eq(" + index + ")").addClass('hover');
-				var elc = $(".grid-dashboard .k-grid-content tr:eq(" + index + ")").addClass('hover');
-			});
-			$(sel).on('mouseleave', function () {
-				$('.grid-dashboard tr.hover').removeClass('hover');
-			});
-		}
-	};
-
-	$('.grid').kendoGrid(config);
-};
-
-/*
-
-grw.clickExpand = (e) => {
+cbt.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
 	let down = $(e).find('i.fa-chevron-down').length
 	if (right > 0){
@@ -341,7 +77,11 @@ grw.clickExpand = (e) => {
 	}
 }
 
-grw.buildStructure = (data) => {
+cbt.emptyGrid = () => {
+	$('.grid').replaceWith(`<div class="breakdown-view ez grid"></div>`)
+}
+
+cbt.buildStructure = (data) => {
 	let groupThenMap = (data, group) => {
 		let op1 = _.groupBy(data, (d) => group(d))
 		let op2 = _.map(op1, (v, k) => {
@@ -361,43 +101,21 @@ grw.buildStructure = (data) => {
 	}
 
 	let parsed = groupThenMap(data, (d) => {
-		return d._id[`_id_${toolkit.replace(grw.breakdownByFiscalYear(), '.', '_')}`]
+		return d._id[`_id_${toolkit.replace(cbt.breakdownBy(), '.', '_')}`]
 	}).map((d) => {
-		let subs = groupThenMap(d.subs, (e) => {
-			return e._id[`_id_${toolkit.replace(grw.breakdownBy(), '.', '_')}`]
-		}).map((e) => {
-			let subs = groupThenMap(e.subs, (f) => {
-				return f._id[`_id_${toolkit.replace(grw.breakdownBy(), '.', '_')}`]
-			}).map((f) => {
-				f._id = 'Value'
-				f.count = 1
-				return f
-			})
-
-			e.subs = subs
-			e.count = e.subs.length
-			return e
-		})
-
-
-		if (grw.breakdownBy() == 'date.quartertxt') {
-			d.subs = _.orderBy(subs, (e) => e._id, 'asc')
-		} else {
-			d.subs = _.orderBy(subs, (e) => parseInt(e._id, 10), 'asc')
-		}
-
-		d.count = toolkit.sum(d.subs, (e) => e.count)
+		d.subs = []
+		d.count = 1
 		return d
 	})
 
-	grw.level(3)
-	parsed = _.orderBy(parsed, (d) => d._id, 'asc')
-	return parsed
+	cbt.level(1)
+	let newParsed = _.orderBy(parsed, (d) => d.PL8A, 'desc')
+	return newParsed
 }
 
-grw.render = () => {
+cbt.render = () => {
 	let container = $('.grid')
-	if (grw.data().length == 0) {
+	if (cbt.data().length == 0) {
 		container.html('No data found.')
 		return
 	}
@@ -430,22 +148,22 @@ grw.render = () => {
 
 	toolkit.newEl('th')
 		.html('P&L')
-		.css('height', `${34 * grw.level()}px`)
-		.attr('data-rowspan', grw.level())
+		.css('height', `${34 * cbt.level()}px`)
+		.attr('data-rowspan', cbt.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
 		.html('Total')
-		.css('height', `${34 * grw.level()}px`)
-		.attr('data-rowspan', grw.level())
+		.css('height', `${34 * cbt.level()}px`)
+		.attr('data-rowspan', cbt.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
 		.appendTo(trHeader)
 
 	let trContents = []
-	for (let i = 0; i < grw.level(); i++) {
+	for (let i = 0; i < cbt.level(); i++) {
 		trContents.push(toolkit.newEl('tr').appendTo(tableContent))
 	}
 
@@ -453,77 +171,68 @@ grw.render = () => {
 
 	// ========================= BUILD HEADER
 
-	let data = grw.data()
+	let data = cbt.data()
 
-	let columnWidth = 130
+	let columnWidth = 180
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
 	let percentageWidth = 70
 
-	let countWidthThenPush = (thheader, each, key, start) => {
+	let countWidthThenPush = (thheader, each, key) => {
 		let currentColumnWidth = columnWidth
 
 		each.key = key.join('_')
-		each.isStart = start
 		dataFlat.push(each)
 
-		totalColumnWidth += currentColumnWidth + percentageWidth
+		totalColumnWidth += currentColumnWidth
 		thheader.width(currentColumnWidth)
 	}
 
 	data.forEach((lvl1, i) => {
 		let thheader1 = toolkit.newEl('th')
 			.html(lvl1._id)
-			.attr('colspan', lvl1.count * 2)
-			.addClass('align-center')
+			.attr('colspan', lvl1.count)
+			.addClass('align-right')
 			.appendTo(trContents[0])
-			.css('background-color', toolkit.seriesColorsGodrej[i])
-			.css('color', 'white')
+			// .css('background-color', colors[i])
+			// .css('color', 'white')
 
-		if (grw.level() == 1) {
-			countWidthThenPush(thheader1, lvl1, [lvl1._id], false)
+		if (cbt.level() == 1) {
+			countWidthThenPush(thheader1, lvl1, [lvl1._id])
+
+			totalColumnWidth += percentageWidth
+			let thheader1p = toolkit.newEl('th')
+				.html('%')
+				.width(percentageWidth)
+				.addClass('align-right')
+				.appendTo(trContents[0])
+				// .css('background-color', colors[i])
+				// .css('color', 'white')
+
 			return
 		}
+		thheader1.attr('colspan', lvl1.count * 2)
 
 		lvl1.subs.forEach((lvl2, j) => {
-			let text = lvl2._id
-
-			if (grw.breakdownBy() == 'date.quartertxt') {
-				text = `Quarter ${toolkit.getNumberFromString(lvl2._id.split(' ')[1])}`
-			} else {
-				text = moment(lvl2._id).format('MMMM')
-			}
-
 			let thheader2 = toolkit.newEl('th')
-				.html(text)
+				.html(lvl2._id)
 				.addClass('align-center')
-				.attr('colspan', 2)
 				.appendTo(trContents[1])
 
-			if (grw.level() == 2) {
-				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id], false)
+			if (cbt.level() == 2) {
+				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id])
+
+				totalColumnWidth += percentageWidth
+				let thheader1p = toolkit.newEl('th')
+					.html('%')
+					.width(percentageWidth)
+					.addClass('align-right')
+					.appendTo(trContents[1])
+
 				return
 			}
-
-			lvl2.subs.forEach((lvl3, k) => {
-				let thheader3 = toolkit.newEl('th')
-					.html(lvl3._id)
-					.addClass('align-center')
-					.appendTo(trContents[2])
-					.css('background-color', toolkit.seriesColorsGodrej[i])
-					.css('color', 'white')
-
-				if (grw.level() == 3) {
-					countWidthThenPush(thheader3, lvl3, [lvl1._id, lvl2._id, lvl3._id], (j == 0))
-
-					let thheader3Percent = toolkit.newEl('th')
-						.html('%')
-						.width(percentageWidth)
-						.addClass('align-center')
-						.appendTo(trContents[2])
-				}
-			})
+			thheader2.attr('colspan', lvl2.count)
 		})
 	})
 
@@ -534,7 +243,7 @@ grw.render = () => {
 	// ========================= CONSTRUCT DATA
 	
 	let plmodels = _.sortBy(rpt.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
-	let exceptions = ["PL94C" , "PL39B", "PL41C"]
+	let exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */]
 	let netSalesPLCode = 'PL8A'
 	let netSalesRow = {}
 	let rows = []
@@ -561,22 +270,15 @@ grw.render = () => {
 
 			row.PNLTotal += value
 		})
-
-		let previousValue = 0;
 		dataFlat.forEach((e) => {
-			if (e.isStart) {
-				previousValue = 0;
-			}
-
 			let breakdown = e.key
-			let percentage = toolkit.number((row[breakdown] - previousValue) / previousValue) * 100;
+			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
+			percentage = toolkit.number(percentage)
 
 			if (percentage < 0)
 				percentage = percentage * -1
 
 			row[`${breakdown} %`] = percentage
-
-			previousValue = row[breakdown]
 		})
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -613,7 +315,7 @@ grw.render = () => {
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
-			grw.clickExpand(trHeader)
+			cbt.clickExpand(trHeader)
 		})
 
 		toolkit.newEl('td')
@@ -670,7 +372,7 @@ grw.render = () => {
 	
 
 	// ========================= CONFIGURE THE HIRARCHY
-	grw.buildGridLevels(container, rows)
+	cbt.buildGridLevels(container, rows)
 }
 
 
@@ -679,7 +381,7 @@ grw.render = () => {
 
 
 
-grw.buildGridLevels = (container, rows) => {
+cbt.buildGridLevels = (container, rows) => {
 	let grouppl1 = _.map(_.groupBy(rpt.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
 	let grouppl2 = _.map(_.groupBy(rpt.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
 	let grouppl3 = _.map(_.groupBy(rpt.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
@@ -802,12 +504,15 @@ grw.buildGridLevels = (container, rows) => {
 	rpt.refreshHeight()
 }
 
-*/
+vm.currentMenu('Analysis')
+vm.currentTitle('Contribution Analysis')
+vm.breadcrumb([
+	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
+	{ title: 'Home', href: viewModel.appName + 'page/landing' },
+	{ title: 'Contribution Analysis', href: '#' }
+])
 
-vm.currentMenu('Analysis');
-vm.currentTitle('&nbsp;');
-vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Growth Analysis', href: '#' }]);
 
-$(function () {
-	grw.refresh();
-});
+$(() => {
+	cbt.refresh()
+})

@@ -318,6 +318,15 @@ rpt.getOtherMasterData = () => {
 	})
 }
 
+rpt.isEmptyData = (res) => {
+	if (res.Data.Data.length == 0) {
+		toolkit.showError('The UI data is not ready')
+		return true
+	}
+
+	return false
+}
+
 rpt.groupGeoBy = (raw, category) => {
 	let groupKey = (category == 'Area') ? '_id' : category
 	let data = Lazy(raw)
