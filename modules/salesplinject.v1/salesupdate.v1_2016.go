@@ -675,6 +675,8 @@ func main() {
 		toolkit.Printfn("Saving %d of %d (%d pct) in %s",
 			i, len(seeds), i/len(seeds)*100, time.Since(t0).String())
 	}
+
+	toolkit.Printfn("All done in %s", time.Since(t0).String())
 }
 
 func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
@@ -701,7 +703,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		spl := new(gdrj.SalesPL)
 		e := csr.Fetch(spl, 1, false)
 		if e != nil {
-			toolkit.Println("FETCH : ", e)
+			// toolkit.Println("FETCH : ", e)
 			break
 		}
 
