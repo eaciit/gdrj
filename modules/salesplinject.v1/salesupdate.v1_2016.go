@@ -71,7 +71,8 @@ func buildmap(holder interface{},
 	return holder
 }
 
-func prepmastercalc() {
+func prepmaster() {
+	masters := toolkit.M{}
 
 	toolkit.Println("--> PL MODEL")
 	masters.Set("plmodel", buildmap(map[string]*gdrj.PLModel{},
@@ -84,6 +85,10 @@ func prepmastercalc() {
 			o := obj.(*gdrj.PLModel)
 			h[o.ID] = o
 		}).(map[string]*gdrj.PLModel))
+}
+
+func prepmastercalc() {
+
 	//HBrandCategory
 	toolkit.Println("--> BRAND Category")
 	tkmbrandcategory := toolkit.M{}
@@ -589,6 +594,7 @@ func main() {
 
 	toolkit.Println("Reading Master")
 
+	prepmaster()
 	// prepmastergrossproc()
 	// prepmasterclean()
 	// prepmastercalc()
