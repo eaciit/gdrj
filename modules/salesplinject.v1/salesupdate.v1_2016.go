@@ -23,7 +23,7 @@ var (
 	periodFrom, periodTo int
 	dateFrom, dateTo     time.Time
 	fiscalyear           int
-	tablename            = "salespls"
+	tablename            = "salespls-2016"
 )
 var masters = toolkit.M{}
 
@@ -589,10 +589,9 @@ func main() {
 
 	toolkit.Println("Reading Master")
 
-	// prepmaster()
-	prepmastergrossproc()
-	prepmasterclean()
-	prepmastercalc()
+	// prepmastergrossproc()
+	// prepmasterclean()
+	// prepmastercalc()
 
 	getresult := make(chan int, len(seeds))
 	toolkit.Println("Starting worker query...")
@@ -605,7 +604,7 @@ func main() {
 	for i := 1; i <= len(seeds); i++ {
 		<-getresult
 		toolkit.Printfn("Saving %d of %d (%d pct) in %s",
-			i, len(seeds), i/len(seeds), time.Since(t0).String())
+			i, len(seeds), i/len(seeds)*100, time.Since(t0).String())
 	}
 }
 
@@ -627,10 +626,10 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 			break
 		}
 
-		spl.CleanAndClasify(masters)
+		// spl.CleanAndClasify(masters)
 		// spl.CalcSales(masters)
 		// 		// === For ratio update and calc
-		spl.RatioCalc(masters)
+		// spl.RatioCalc(masters)
 
 		// 		//calculate process -- better not re-run
 		// 		// spl.CalcCOGSRev(masters)
@@ -640,7 +639,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		// 		// spl.CalcDepre(masters)
 		// spl.CalcDamage(masters)
 		// spl.CalcDepre(masters)
-		spl.CalcDiscountActivity(masters)
+		// spl.CalcDiscountActivity(masters)
 		// 		// spl.CalcPromo(masters)
 
 		spl.CalcRoyalties2016(masters)
@@ -648,6 +647,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		spl.CalcSum(masters)
 
 		tablename := toolkit.Sprintf("%v-2016", spl.TableName())
+		tablename = toolkit.Sprintf("%v-1", spl.TableName())
 
 		workerconn.NewQuery().From(tablename).
 			Save().Exec(toolkit.M{}.Set("data", spl))

@@ -894,8 +894,8 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 
 	promos := masters.Get("promos").(map[string]toolkit.M)
 
-	find := func(x string) toolkit.M {
-		id := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, x)
+	find := func(id string) toolkit.M {
+		// id := toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, x)
 		tkm, exist := promos[id]
 		if exist {
 			return tkm
@@ -903,13 +903,20 @@ func (pl *SalesPL) CalcPromo(masters toolkit.M) {
 		return toolkit.M{}
 	}
 
-	fpromo := find("promo")
-	fadv := find("adv")
-	fspg := find("spg")
+	fpromo := find(toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, "promo"))
+	fadv := find(toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, "adv"))
+	fadvbrand := find(toolkit.Sprintf("%d_%d_%s_%s", pl.Date.Year, pl.Date.Month, strings.TrimSpace(strings.ToUpper(pl.Product.Brand)), "adv"))
+	fspg := find(toolkit.Sprintf("%d_%d_%s", pl.Date.Year, pl.Date.Month, "spg"))
 
 	for key, v := range fadv {
 		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
 		pl.AddData(key, -pl.Ratio.Month*fv, plmodels)
+	}
+
+	for key, v := range fadvbrand {
+		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+		//change to month brand
+		pl.AddData(key, -pl.Ratio.Brand*fv, plmodels)
 	}
 
 	for key, v := range fpromo {
