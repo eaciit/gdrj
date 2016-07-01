@@ -10,8 +10,8 @@ grw.optionBreakdowns = ko.observableArray([
 grw.breakdownBy = ko.observable('date.quartertxt')
 grw.breakdownByFiscalYear = ko.observable('date.fiscal')
 grw.rows = ko.observableArray([
-	{ pnl: "Net Sales", plcodes: ["PL9"] }, // ["PL8A"] },
-	{ pnl: "EBIT", plcodes: ["PL9"] }, // ["PL44B"] },
+	{ pnl: "Net Sales", plcodes: ["PL8A"] }, //  ["PL9"] }, //
+	{ pnl: "EBIT", plcodes: ["PL44B"] }, // ["PL9"] }, // 
 ])
 grw.columns = ko.observableArray([])
 
@@ -73,12 +73,21 @@ grw.reloadLayout = (d) => {
 
 
 grw.renderChart = (res) => {
-	let data = res.Data.Data.map((d) => ({ 
-		fiscal: d._id[`_id_${toolkit.replace(grw.breakdownByFiscalYear(), '.', '_')}`], 
-		sub: d._id[`_id_${toolkit.replace(grw.breakdownBy(), '.', '_')}`], 
-		net: Math.abs(toolkit.sum(grw.rows()[0].plcodes, (plcode) => d[plcode])), 
-		ebit: Math.abs(toolkit.sum(grw.rows()[1].plcodes, (plcode) => d[plcode])), 
-	}))
+	let data = res.Data.Data.map((d) => {
+		let sub = d._id[`_id_${toolkit.replace(grw.breakdownBy(), '.', '_')}`]
+
+		if (grw.breakdownBy() == 'date.month') {
+			sub = moment(new Date(2015, parseInt(sub) - 1, 1)).format('MMMM')
+		}
+
+		return { 
+			fiscal: d._id[`_id_${toolkit.replace(grw.breakdownByFiscalYear(), '.', '_')}`], 
+			sub: sub, 
+			order: d._id[`_id_${toolkit.replace(grw.breakdownBy(), '.', '_')}`],
+			net: Math.abs(toolkit.sum(grw.rows()[0].plcodes, (plcode) => d[plcode])), 
+			ebit: Math.abs(toolkit.sum(grw.rows()[1].plcodes, (plcode) => d[plcode])), 
+		}
+	})
 
 	let series = [{
 		field: 'net',
@@ -90,6 +99,14 @@ grw.renderChart = (res) => {
 		name: grw.rows()[1].pnl
 	}]
 
+	data = _.orderBy(data, (d) => {
+		if (grw.breakdownBy() == 'date.quartertxt') {
+			return d.order
+		} else {
+			return `${d.fiscal} ${parseInt(d.order) + 10}`
+		}
+	}, 'asc')
+
 	let config = {
 		dataSource: { data: data },
         legend: {
@@ -98,47 +115,49 @@ grw.renderChart = (res) => {
         },
         seriesDefaults: {
             type: "line",
+            style: "smooth",
             missingValues: "gap",
+			labels: { 
+				visible: true,
+				position: 'top',
+				format: '{0:n0}'
+			},
+			line: {
+				border: {
+					width: 1,
+					color: 'white'
+				},
+			},
         },
 		seriesColors: toolkit.seriesColorsGodrej,
 		series: [{
 			field: 'net',
-			type: 'line',
 			name: grw.rows()[0].pnl,
-			line: {
-				border: {
-					width: 1,
-					color: 'white'
-				},
-			},
-			tooltip: { visible: true },
-			markers: { visible: false }
 		}, {
 			field: 'ebit',
-			type: 'line',
-			name: grw.rows()[0].pnl,
-			line: {
-				border: {
-					width: 1,
-					color: 'white'
-				},
-			},
-			tooltip: { visible: true },
-			markers: { visible: false }
+			name: grw.rows()[0].pnl
 		}],
         valueAxis: {
 			majorGridLines: { color: '#fafafa' },
-            label: { format: "{0:n2}" },
+            label: { 
+				font: '"Source Sans Pro" 11px',
+            	format: "{0:n2}"
+            },
         },
         categoryAxis: {
             field: 'sub',
             labels: {
 				font: '"Source Sans Pro" 11px',
+            	format: "{0:n2}"
             },
 			majorGridLines: { color: '#fafafa' }
 		}
     }
 
+    $('.chart').replaceWith(`<div class="chart"></div>`)
+    if (grw.breakdownBy() == 'date.month') {
+    	$('.chart').width(data.length * 100)
+    }
     $('.chart').kendoChart(config)
 }
 
@@ -169,6 +188,8 @@ grw.renderGrid = (res) => {
 			toolkit.sum(row.plcodes, (d) => each[d])
 		))
 
+		let prev = null
+
 		let op1 = _.groupBy(data, (d) => d._id[`_id_${toolkit.replace(grw.breakdownByFiscalYear(), '.', '_')}`])
 		let op9 = _.map(op1, (v, k) => ({ key: k, values: v }))
 		op9.forEach((r, j) => {
@@ -183,8 +204,7 @@ grw.renderGrid = (res) => {
 				o.data = w
 
 				if (grw.breakdownBy() == 'date.month') {
-					o.order = parseInt(d.key)
-					o.key = moment(d.key).format('MMMM')
+					o.order = parseInt(o.key)
 				}
 
 				return o
@@ -201,16 +221,19 @@ grw.renderGrid = (res) => {
 			}
 
 			op4.forEach((d, i) => {
+				let current = d.data
 				let value = toolkit.sum(row.plcodes, (plcode) => {
-					return toolkit.sum(d.data, (d) => toolkit.number(d[plcode]))
+					return toolkit.sum(current, (d) => toolkit.number(d[plcode]))
 				})
-				let prev = 0
 
-				if (i > 0) {
-					prev = toolkit.sum(row.plcodes, (plcode) => {
-						return toolkit.sum(op4[i - 1].data, (d) => toolkit.number(d[plcode]))
+				let prevValue = 0
+				if (!(j == 0 && i == 0)) {
+					prevValue = toolkit.sum(row.plcodes, (plcode) => {
+						return toolkit.sum(prev, (d) => toolkit.number(d[plcode]))
 					})
 				}
+
+				prev = current
 
 				let title = d.key
 				if (grw.breakdownBy() == 'date.quartertxt') {
@@ -222,8 +245,10 @@ grw.renderGrid = (res) => {
 				row.columnData.push({
 					title: d.key,
 					value: value,
-					growth: toolkit.number((value - prev) / prev * 100)
+					growth: toolkit.number((value - prevValue) / prevValue * 100)
 				})
+
+				let left = i + (op4.length * j)
 
 				let columnEach = {}
 				columnEach.title = title
@@ -234,7 +259,7 @@ grw.renderGrid = (res) => {
 
 				let columnValue = {}
 				columnValue.title = 'Value'
-				columnValue.field = `columnData[${i}].value`
+				columnValue.field = `columnData[${left}].value`
 				columnValue.width = 120
 				columnValue.format = '{0:n0}'
 				columnValue.attributes = { class: 'align-right' }
@@ -243,8 +268,10 @@ grw.renderGrid = (res) => {
 
 				let columnGrowth = {}
 				columnGrowth.title = '%'
-				columnGrowth.width = 60
-				columnGrowth.template = (d) => `${kendo.toString(d.columnData[i].growth, 'n2')} %`
+				columnGrowth.width = 70
+				columnGrowth.template = (d) => {
+					return `${kendo.toString(d.columnData[left].growth, 'n2')} %`
+				}
 				columnGrowth.headerAttributes = { class: 'align-center' }
 				columnGrowth.attributes = { class: 'align-right' }
 				columnEach.columns.push(columnGrowth)
