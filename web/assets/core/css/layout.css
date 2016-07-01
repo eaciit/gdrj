@@ -259,7 +259,7 @@ body {
 }
 .fh {
   margin: auto;
-  padding: 15%;
+  width: 200px;
   padding-top: 0px;
 }
 .report-module-rsec > div {
@@ -709,6 +709,9 @@ body {
   opacity: 0.8;
   background-color: #4a84c8;
   box-shadow: 0 0px 4px 0 rgba(0, 0, 0, 0.25), 0 1px 0px 0 rgba(0, 0, 0, 0.25);
+}
+.landing .box.disabled {
+  opacity: 0.2;
 }
 .landing .box.disabled .wrapper a {
   cursor: not-allowed;
