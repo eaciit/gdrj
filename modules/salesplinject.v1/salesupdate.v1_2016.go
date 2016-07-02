@@ -694,7 +694,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 
 	i := 0
 	qSave := workerconn.NewQuery().
-		From("salespls-1").
+		From(stablename).
 		SetConfig("multiexec", true).
 		Save()
 
