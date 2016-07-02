@@ -303,7 +303,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-test").
+		From("salespls-summary").
 		SetConfig("multiexec", true).
 		Save()
 
