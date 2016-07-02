@@ -1560,6 +1560,8 @@ rs.generateReport = (title, raw) => {
 	let data = []
 	let multiplier = (sumNetSales == 0 ? 1 : sumNetSales)
 
+	let safe = (d) => Math.abs(toolkit.number(d))
+
 	dataAllPNL.forEach((d, i) => {
 		let category = d._id[`_id_${app.idAble(breakdown)}`]
 		let order = category
@@ -1572,10 +1574,10 @@ rs.generateReport = (title, raw) => {
 			valueNetSales: dataAllPNLNetSales[i].value,
 			category: category,
 			order: order,
-			valuePNL: Math.abs(d.value),
-			valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
-			avgPNL: Math.abs(avgPNL),
-			avgPNLPercentage: Math.abs(avgPNL / multiplier * 100),
+			valuePNL: safe(d.value),
+			valuePNLPercentage: safe(d.value / dataAllPNLNetSales[i].value * 100),
+			avgPNL: safe(avgPNL),
+			avgPNLPercentage: safe(avgPNL / multiplier * 100),
 		})
 	})
 
