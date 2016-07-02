@@ -107,6 +107,12 @@ func main() {
 		}
 	}
 
+	toolkit.Printfn("All Dimension : %d", len(listdimension))
+	for _, v := range listdimension {
+		toolkit.Println(v)
+	}
+	toolkit.Println()
+
 	resdimension := make(chan int, len(listdimension))
 	dimension := make(chan string, len(listdimension))
 
@@ -123,7 +129,7 @@ func main() {
 	toolkit.Printfn("Waiting dimension result")
 	for i := 0; i < len(listdimension); i++ {
 		<-resdimension
-		toolkit.Printfn("%v Dimension created", i)
+		toolkit.Printfn("%d of %d Dimension created", i+1, len(listdimension))
 	}
 
 	toolkit.Printfn("Processing done in %s",
