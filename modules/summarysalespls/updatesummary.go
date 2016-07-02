@@ -128,6 +128,35 @@ func prepmasterrevadv() {
 	masters.Set("advertisements", advertisements)
 }
 
+func prepmasterratio() {
+	toolkit.Println("--> Master Ratio")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	defer csr.Close()
+	ratio := toolkit.M{}
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		key := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
+		keybrand := toolkit.Sprintf("%s_%s", key, dtkm.GetString("product_brand"))
+
+		v := ratio.GetFloat64(key) + tkm.GetFloat64("grossamount")
+		ratio.Set(key, v)
+
+		v = ratio.GetFloat64(keybrand) + tkm.GetFloat64("grossamount")
+		ratio.Set(keybrand, v)
+	}
+
+	masters.Set("ratio", ratio)
+}
+
 func getstep(count int) int {
 	v := count / 100
 	if v == 0 {
@@ -147,12 +176,14 @@ func main() {
 
 	setinitialconnection()
 	defer gdrj.CloseDb()
+
+	prepmasterratio()
 	prepmastercalc()
 	prepmasterrevadv()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -199,6 +230,24 @@ func main() {
 		time.Since(t0).String())
 }
 
+func CalcRatio(tkm toolkit.M) {
+	if !masters.Has("ratio") {
+		return
+	}
+
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	ratio := masters.Get("ratio").(toolkit.M)
+
+	keymonth := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
+	keymonthbrand := toolkit.Sprintf("%s_%s", keymonth, dtkm.GetString("product_brand"))
+
+	rtkm := toolkit.M{}
+	rtkm.Set("month", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(keymonth)))
+	rtkm.Set("monthbrand", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(keymonthbrand)))
+
+	tkm.Set("ratio", rtkm)
+}
+
 func CalcRoyalties(tkm toolkit.M) {
 	dtkm, _ := toolkit.ToM(tkm.Get("key"))
 	netsales := tkm.GetFloat64("PL8A")
@@ -218,7 +267,9 @@ func CalcAdvertisementsRev(tkm toolkit.M) {
 
 	tkm.Set("PL28", float64(0)).Set("PL28A", float64(0)).Set("PL28B", float64(0)).Set("PL28C", float64(0)).Set("PL28D", float64(0)).
 		Set("PL28E", float64(0)).Set("PL28F", float64(0)).Set("PL28G", float64(0)).Set("PL28H", float64(0)).Set("PL28I", float64(0))
+
 	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	dratio, _ := toolkit.ToM(tkm.Get("ratio"))
 
 	advertisements := masters.Get("advertisements").(toolkit.M)
 
@@ -238,12 +289,14 @@ func CalcAdvertisementsRev(tkm toolkit.M) {
 	}
 
 	for k, v := range tkm01 {
-		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto) + tkm.GetFloat64(k)
+		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto) * -dratio.GetFloat64("month")
+		fv += tkm.GetFloat64(k)
 		tkm.Set(k, fv)
 	}
 
 	for k, v := range tkm02 {
-		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto) + tkm.GetFloat64(k)
+		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto) * -dratio.GetFloat64("monthbrand")
+		fv += tkm.GetFloat64(k)
 		tkm.Set(k, fv)
 	}
 
@@ -405,7 +458,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 	trx := toolkit.M{}
 	for trx = range jobs {
-
+		CalcRatio(trx)
 		CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
 		// CalcSalesVDist20142015(trx)
