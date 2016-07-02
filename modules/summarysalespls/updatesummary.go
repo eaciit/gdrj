@@ -57,7 +57,6 @@ func setinitialconnection() {
 }
 
 func prepmastercalc() {
-
 	toolkit.Println("--> PL MODEL")
 	masters.Set("plmodel", buildmap(map[string]*gdrj.PLModel{},
 		func() orm.IModel {
@@ -69,6 +68,64 @@ func prepmastercalc() {
 			o := obj.(*gdrj.PLModel)
 			h[o.ID] = o
 		}).(map[string]*gdrj.PLModel))
+}
+
+func prepmasterrevadv() {
+	toolkit.Println("--> Advertisement Revision")
+	advertisements := toolkit.M{}
+
+	csradv, _ := conn.NewQuery().From("rawdatapl_ads30062016").
+		Where(dbox.Eq("year", fiscalyear-1)).
+		Cursor(nil)
+
+	defer csradv.Close()
+	for {
+		m := toolkit.M{}
+		e := csradv.Fetch(&m, 1, false)
+
+		if e != nil {
+			break
+		}
+
+		Date := time.Date(m.GetInt("year"), time.Month(m.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
+		key := toolkit.Sprintf("%d_%d", Date.Year(), Date.Month())
+
+		if len(m.GetString("brand")) > 2 {
+			key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("brand"))))
+		}
+
+		tadv := toolkit.M{}
+		if advertisements.Has(key) {
+			tadv = advertisements.Get(key).(toolkit.M)
+		}
+
+		skey := "PL28I"
+		tstr := strings.TrimSpace(strings.ToUpper(m.GetString("accountdescription")))
+		switch tstr {
+		case "ADVERTISEMENT - INTERNET":
+			skey = "PL28A"
+		case "ADVERTISEMENT - PRODN - DESIGN - DVLOPMNT":
+			skey = "PL28B"
+		case "ADVERTISEMENT - TV":
+			skey = "PL28C"
+		case "MARKET RESEARCH":
+			skey = "PL28D"
+		case "FAIRS & EVENTS":
+			skey = "PL28E"
+		case "AGENCY FEES":
+			skey = "PL28F"
+		case "ADVERTISEMENT - POP MATERIALS":
+			skey = "PL28G"
+		case "SPONSORSHIP":
+			skey = "PL28H"
+		}
+
+		v := tadv.GetFloat64(skey) + m.GetFloat64("amountinidr")
+		tadv.Set(skey, v)
+		advertisements[key] = tadv
+	}
+
+	masters.Set("advertisements", advertisements)
 }
 
 func getstep(count int) int {
@@ -91,6 +148,7 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
+	prepmasterrevadv()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
@@ -106,7 +164,7 @@ func main() {
 	}
 
 	iscount = 0
-	step := getstep(scount) * 2
+	step := getstep(scount) * 5
 
 	for {
 		iscount++
@@ -150,8 +208,46 @@ func CalcRoyalties(tkm toolkit.M) {
 	} else {
 		tkm.Set("PL25", -netsales*0.0282568801711491)
 	}
-	// 2016 pl.AddData("PL25", -netsalesamount*0.0285214610603953, plmodels)
-	// 2015 pl.AddData("PL25", -netsalesamount*0.0282568801711491, plmodels)
+
+}
+
+func CalcAdvertisementsRev(tkm toolkit.M) {
+	if !masters.Has("advertisements") {
+		return
+	}
+
+	tkm.Set("PL28", float64(0)).Set("PL28A", float64(0)).Set("PL28B", float64(0)).Set("PL28C", float64(0)).Set("PL28D", float64(0)).
+		Set("PL28E", float64(0)).Set("PL28F", float64(0)).Set("PL28G", float64(0)).Set("PL28H", float64(0)).Set("PL28I", float64(0))
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+
+	advertisements := masters.Get("advertisements").(toolkit.M)
+
+	tkm01 := toolkit.M{}
+	tkm02 := toolkit.M{}
+
+	key01 := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
+	if advertisements.Has(key01) {
+		tkm01 = advertisements.Get(key01).(toolkit.M)
+	}
+
+	if len(dtkm.GetString("product_brand")) > 2 {
+		key02 := toolkit.Sprintf("%s_%s", key01, dtkm.GetString("product_brand"))
+		if advertisements.Has(key02) {
+			tkm02 = advertisements.Get(key02).(toolkit.M)
+		}
+	}
+
+	for k, v := range tkm01 {
+		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto) + tkm.GetFloat64(k)
+		tkm.Set(k, fv)
+	}
+
+	for k, v := range tkm02 {
+		fv := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto) + tkm.GetFloat64(k)
+		tkm.Set(k, fv)
+	}
+
+	return
 }
 
 func CalcSalesVDist20142015(tkm toolkit.M) {
@@ -310,7 +406,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	trx := toolkit.M{}
 	for trx = range jobs {
 
-		CalcRoyalties(trx)
+		CalcAdvertisementsRev(trx)
+		// CalcRoyalties(trx)
 		// CalcSalesVDist20142015(trx)
 		CalcSum(trx)
 
