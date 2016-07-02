@@ -636,7 +636,7 @@ var t0 time.Time
 func main() {
 
 	t0 = time.Now()
-	flag.IntVar(&fiscalyear, "year", 2016, "fiscal year to process. default is 2015")
+	flag.IntVar(&fiscalyear, "year", 2015, "fiscal year to process. default is 2015")
 	flag.Parse()
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
@@ -660,9 +660,9 @@ func main() {
 	toolkit.Println("Reading Master")
 
 	prepmaster()
-	prepmastergrossproc()
+	// prepmastergrossproc()
 	// prepmasterclean()
-	prepmastercalc()
+	// prepmastercalc()
 
 	getresult := make(chan int, len(seeds))
 	toolkit.Println("Starting worker query...")
@@ -710,7 +710,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		// 		spl.CleanAndClasify(masters)
 		spl.CalcSales(masters)
 		// 		// 		// === For ratio update and calc
-		spl.RatioCalc(masters)
+		// spl.RatioCalc(masters)
 
 		// 		// 		//calculate process -- better not re-run
 		// 		// 		// spl.CalcCOGSRev(masters)
@@ -722,7 +722,7 @@ func workerproc(wi int, filter *dbox.Filter, getresult chan<- int) {
 		// 		// spl.CalcDepre(masters)
 		// 		spl.CalcDiscountActivity(masters)
 		spl.CalcRoyalties2015(masters)
-		spl.CalcPromo(masters)
+		// spl.CalcPromo(masters)
 		spl.CalcSum(masters)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", spl))
