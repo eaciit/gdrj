@@ -147,10 +147,11 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 				break
 			}
 
-			key := toolkit.Sprintf("%s|%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", spl.Date.Fiscal, spl.Date.QuarterTxt, spl.Date.Month,
-				spl.Customer.BranchID, spl.Customer.BranchName, spl.Customer.KeyAccount, spl.Customer.ChannelID, spl.Customer.ChannelName,
+			key := toolkit.Sprintf("%s|%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", spl.Date.Fiscal, spl.Date.QuarterTxt, spl.Date.Month,
+				spl.Date.Year, spl.Customer.BranchID, spl.Customer.BranchName, spl.Customer.KeyAccount, spl.Customer.ChannelID, spl.Customer.ChannelName,
 				spl.Customer.ReportChannel, spl.Customer.ReportSubChannel, spl.Customer.Zone, spl.Customer.Region,
-				spl.Customer.AreaName, spl.Customer.CustomerGroup, spl.Customer.CustomerGroupName, spl.Product.Brand)
+				spl.Customer.AreaName, spl.Customer.CustomerGroup, spl.Customer.CustomerGroupName, spl.Customer.CustType,
+				spl.Product.Brand)
 
 			ktkm := toolkit.M{}
 			ktkm.Set("date_fiscal", spl.Date.Fiscal)
@@ -170,6 +171,7 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 			ktkm.Set("customer_areaname", spl.Customer.AreaName)
 			ktkm.Set("customer_group", spl.Customer.CustomerGroup)
 			ktkm.Set("customer_groupname", spl.Customer.CustomerGroupName)
+			ktkm.Set("customer_custtype", spl.Customer.CustType)
 
 			ktkm.Set("product_brand", spl.Product.Brand)
 
