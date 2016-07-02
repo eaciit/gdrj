@@ -98,8 +98,15 @@ func main() {
 	defer csr.Close()
 
 	scount = csr.Count()
+
+	jobs := make(chan toolkit.M, scount)
+	result := make(chan int, scount)
+	for wi := 0; wi < 10; wi++ {
+		go workersave(wi, jobs, result)
+	}
+
 	iscount = 0
-	step := getstep(scount)
+	step := getstep(scount) * 2
 
 	for {
 		iscount++
@@ -110,24 +117,24 @@ func main() {
 			break
 		}
 
-		// dtkm, _ := toolkit.ToM(tkm.Get("key"))
-		CalcSalesVDist20142015(tkm)
-		CalcSum(tkm)
-
-		err := workerconn.NewQuery().
-			From("salespls-summary-test").
-			SetConfig("multiexec", true).
-			Save().Exec(toolkit.M{}.Set("data", tkm))
-
-		if err != nil {
-			toolkit.Println(err)
-		}
+		jobs <- tkm
 
 		if iscount%step == 0 {
-			toolkit.Printfn("Processing %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+			toolkit.Printfn("Sending %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
 				time.Since(t0).String())
 		}
 
+	}
+
+	close(jobs)
+
+	for ri := 0; ri < iscount; ri++ {
+		<-result
+
+		if ri%step == 0 {
+			toolkit.Printfn("Saving %d of %d (%d pct) in %s",
+				ri, scount, ri*100/scount, time.Since(t0).String())
+		}
 	}
 
 	toolkit.Printfn("Processing done in %s",
@@ -276,4 +283,28 @@ func CalcSum(tkm toolkit.M) {
 	tkm.Set("PL44D", ebitdaroyalties)
 	tkm.Set("PL44E", ebitsga)
 	tkm.Set("PL44F", ebitsgaroyalty)
+}
+
+func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
+
+	qSave := workerconn.NewQuery().
+		From("salespls-summary-test").
+		SetConfig("multiexec", true).
+		Save()
+
+	trx := toolkit.M{}
+	for trx = range jobs {
+
+		CalcSalesVDist20142015(trx)
+		CalcSum(trx)
+
+		err := qSave.Exec(toolkit.M{}.Set("data", trx))
+		if err != nil {
+			toolkit.Println(err)
+		}
+
+		result <- 1
+	}
 }
