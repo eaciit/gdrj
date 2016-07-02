@@ -128,7 +128,7 @@ func main() {
 
 	close(jobs)
 
-	for ri := 0; ri < iscount; ri++ {
+	for ri := 0; ri < scount; ri++ {
 		<-result
 
 		if ri%step == 0 {
