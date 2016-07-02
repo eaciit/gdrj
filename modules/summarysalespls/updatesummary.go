@@ -71,6 +71,14 @@ func prepmastercalc() {
 		}).(map[string]*gdrj.PLModel))
 }
 
+func getstep(count int) int {
+	v := count / 100
+	if v == 0 {
+		return 1
+	}
+	return v
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -91,6 +99,7 @@ func main() {
 
 	scount = csr.Count()
 	iscount = 0
+	step := getstep(scount)
 
 	for {
 		iscount++
@@ -114,8 +123,10 @@ func main() {
 			toolkit.Println(err)
 		}
 
-		toolkit.Printfn("Processing %d of %d in %s", iscount, scount,
-			time.Since(t0).String())
+		if iscount%step == 0 {
+			toolkit.Printfn("Processing %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t0).String())
+		}
 
 	}
 
@@ -175,7 +186,7 @@ func CalcSum(tkm toolkit.M) {
 
 		plmodel, exist := plmodels[ar01k[0]]
 		if !exist {
-			toolkit.Println(k)
+			// toolkit.Println(k)
 			continue
 		}
 		Amount := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
