@@ -139,7 +139,7 @@ grw.renderChart = (res) => {
 		}],
         valueAxis: {
 			majorGridLines: { color: '#fafafa' },
-            label: { 
+            labels: { 
 				font: '"Source Sans Pro" 11px',
             	format: "{0:n2}"
             },

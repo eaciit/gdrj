@@ -279,7 +279,25 @@ func (s *PLFinderParam) GetTableName() string {
 	tableName := fmt.Sprintf("pl_%s", key)
 
 	s.TableKey = "_id"
-	if tableName == "pl_customer_channelid_date_fiscal" {
+
+	// ========== get wheter use `key` or `_id`
+
+	csr, err := DB().Connection.NewQuery().From(tableName).Take(2).Cursor(nil)
+	if err != nil {
+		return tableName
+	}
+	defer csr.Close()
+
+	sample := []toolkit.M{}
+	if err := csr.Fetch(&sample, 0, false); err != nil {
+		return tableName
+	}
+
+	if len(sample) == 0 {
+		return tableName
+	}
+
+	if sample[0].Has("key") {
 		s.TableKey = "key"
 	}
 
