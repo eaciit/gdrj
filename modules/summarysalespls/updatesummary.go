@@ -141,6 +141,19 @@ func main() {
 		time.Since(t0).String())
 }
 
+func CalcRoyalties(tkm toolkit.M) {
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	netsales := tkm.GetFloat64("PL8A")
+
+	if dtkm.GetString("date_fiscal") == "2015-2016" {
+		tkm.Set("PL25", -netsales*0.0285214610603953)
+	} else {
+		tkm.Set("PL25", -netsales*0.0282568801711491)
+	}
+	// 2016 pl.AddData("PL25", -netsalesamount*0.0285214610603953, plmodels)
+	// 2015 pl.AddData("PL25", -netsalesamount*0.0282568801711491, plmodels)
+}
+
 func CalcSalesVDist20142015(tkm toolkit.M) {
 	dtkm, _ := toolkit.ToM(tkm.Get("key"))
 	if dtkm.GetString("trxsrc") != "VDIST" || dtkm.GetString("date_fiscal") != "2014-2015" {
@@ -297,7 +310,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	trx := toolkit.M{}
 	for trx = range jobs {
 
-		CalcSalesVDist20142015(trx)
+		CalcRoyalties(trx)
+		// CalcSalesVDist20142015(trx)
 		CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
