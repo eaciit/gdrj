@@ -514,16 +514,12 @@ func (pl *SalesPL) CalcSales(masters toolkit.M) {
 	pl.PLDatas = aplmodel
 
 	switch {
-	case pl.Customer.IsRD:
+	case pl.Customer.IsRD == true:
 		if strings.Contains(pl.ID, "RD-DISC_") {
-			pl.AddData("PL8", pl.DiscountAmount, plmodels)
+			pl.AddData("PL8", pl.GrossAmount, plmodels)
 		} else {
 			pl.AddData("PL2", pl.GrossAmount, plmodels)
-			vdisc := pl.DiscountAmount
-			if vdisc > 0 {
-				vdisc = -vdisc
-			}
-			pl.AddData("PL8", vdisc, plmodels)
+			pl.AddData("PL8", pl.DiscountAmount, plmodels)
 		}
 	case strings.Contains(pl.ID, "EXPORT"):
 		pl.AddData("PL6", pl.GrossAmount, plmodels)
@@ -531,11 +527,7 @@ func (pl *SalesPL) CalcSales(masters toolkit.M) {
 	// 	pl.AddData("PL7A", pl.GrossAmount, plmodels)
 	default:
 		pl.AddData("PL1", pl.GrossAmount, plmodels)
-		vdisc := pl.DiscountAmount
-		if vdisc > 0 {
-			vdisc = -vdisc
-		}
-		pl.AddData("PL7", vdisc, plmodels)
+		pl.AddData("PL7", pl.DiscountAmount, plmodels)
 	}
 }
 
@@ -791,7 +783,7 @@ func (pl *SalesPL) CalcRoyalties2016(masters toolkit.M) {
 	pl.PLDatas = aplmodel
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL25", -netsalesamount*2.85900895/100, plmodels)
+	pl.AddData("PL25", -netsalesamount*0.0285214610603953, plmodels)
 }
 
 func (pl *SalesPL) CalcRoyalties2015(masters toolkit.M) {
@@ -824,7 +816,7 @@ func (pl *SalesPL) CalcRoyalties2015(masters toolkit.M) {
 	pl.PLDatas = aplmodel
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
-	pl.AddData("PL25", -netsalesamount*2.82683/100, plmodels)
+	pl.AddData("PL25", -netsalesamount*0.0282568801711491, plmodels)
 }
 
 //== OLD Fix Calculate Royalties
