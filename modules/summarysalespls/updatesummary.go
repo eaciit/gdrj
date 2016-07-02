@@ -141,10 +141,10 @@ func CalcSalesVDist20142015(tkm toolkit.M) {
 	}
 
 	if dtkm.GetString("customer_channelid") == "I1" {
-		v := tkm.GetFloat64("PL8")
+		v := tkm.GetFloat64("discountamount")
 		tkm.Set("PL8", -v)
 	} else {
-		v := tkm.GetFloat64("PL7")
+		v := tkm.GetFloat64("discountamount")
 		tkm.Set("PL7", -v)
 	}
 }
