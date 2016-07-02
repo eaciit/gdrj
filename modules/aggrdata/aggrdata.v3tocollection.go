@@ -147,16 +147,18 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 				break
 			}
 
-			key := toolkit.Sprintf("%s|%s|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", spl.Date.Fiscal, spl.Date.QuarterTxt, spl.Date.Month,
-				spl.Customer.BranchName, spl.Customer.KeyAccount, spl.Customer.ChannelID, spl.Customer.ChannelName,
+			key := toolkit.Sprintf("%s|%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", spl.Date.Fiscal, spl.Date.QuarterTxt, spl.Date.Month,
+				spl.Customer.BranchID, spl.Customer.BranchName, spl.Customer.KeyAccount, spl.Customer.ChannelID, spl.Customer.ChannelName,
 				spl.Customer.ReportChannel, spl.Customer.ReportSubChannel, spl.Customer.Zone, spl.Customer.Region,
-				spl.Customer.AreaName, spl.Product.Brand)
+				spl.Customer.AreaName, spl.Customer.CustomerGroup, spl.Customer.CustomerGroupName, spl.Product.Brand)
 
 			ktkm := toolkit.M{}
 			ktkm.Set("date_fiscal", spl.Date.Fiscal)
 			ktkm.Set("date_quartertxt", spl.Date.QuarterTxt)
 			ktkm.Set("date_month", spl.Date.Month)
+			ktkm.Set("date_year", spl.Date.Year)
 
+			ktkm.Set("customer_branchid", spl.Customer.BranchID)
 			ktkm.Set("customer_branchname", spl.Customer.BranchName)
 			ktkm.Set("customer_keyaccount", spl.Customer.KeyAccount)
 			ktkm.Set("customer_channelid", spl.Customer.ChannelID)
@@ -166,6 +168,8 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 			ktkm.Set("customer_zone", spl.Customer.Zone)
 			ktkm.Set("customer_region", spl.Customer.Region)
 			ktkm.Set("customer_areaname", spl.Customer.AreaName)
+			ktkm.Set("customer_group", spl.Customer.CustomerGroup)
+			ktkm.Set("customer_groupname", spl.Customer.CustomerGroupName)
 
 			ktkm.Set("product_brand", spl.Product.Brand)
 
