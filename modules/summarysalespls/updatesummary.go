@@ -177,9 +177,9 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 
-	prepmasterratio()
-	prepmastercalc()
-	prepmasterrevadv()
+	// prepmasterratio()
+	// prepmastercalc()
+	// prepmasterrevadv()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
@@ -230,6 +230,12 @@ func main() {
 		time.Since(t0).String())
 }
 
+func CleanAddCustomerGroupName(tkm toolkit.M) {
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	dtkm.Set("customer_customergroupname", dtkm.GetString("customer_groupname"))
+	tkm.Set("key", dtkm)
+}
+
 func CalcRatio(tkm toolkit.M) {
 	if !masters.Has("ratio") {
 		return
@@ -257,7 +263,6 @@ func CalcRoyalties(tkm toolkit.M) {
 	} else {
 		tkm.Set("PL25", -netsales*0.0282568801711491)
 	}
-
 }
 
 func CalcAdvertisementsRev(tkm toolkit.M) {
@@ -458,11 +463,12 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 	trx := toolkit.M{}
 	for trx = range jobs {
-		CalcRatio(trx)
-		CalcAdvertisementsRev(trx)
+		CleanAddCustomerGroupName(trx)
+		// CalcRatio(trx)
+		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
 		// CalcSalesVDist20142015(trx)
-		CalcSum(trx)
+		// CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
