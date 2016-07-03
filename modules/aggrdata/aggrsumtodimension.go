@@ -92,23 +92,26 @@ func main() {
 		"date.fiscal,customer.channelid,customer.channelname,product.brand,customer.reportsubchannel",
 		"date.fiscal,customer.keyaccount,customer.customergroupname",
 		"date.fiscal,customer.channelid,customer.channelname,customer.areaname,customer.customergroupname",
-		"date.fiscal,date.month",
-		"date.fiscal,date.quartertxt",
-		"date.fiscal,date.month,customer.channelid,customer.channelname",
-		"date.fiscal,date.month,customer.branchname",
-		"date.fiscal,date.month,customer.brand",
-		"date.fiscal,date.month,customer.areaname",
-		"date.fiscal,date.month,customer.region",
-		"date.fiscal,date.month,customer.keyaccount",
-		"date.fiscal,date.quartertxt,customer.channelid,customer.channelname",
-		"date.fiscal,date.quartertxt,customer.branchname",
-		"date.fiscal,date.quartertxt,product.brand",
-		"date.fiscal,date.quartertxt,customer.areaname",
-		"date.fiscal,date.quartertxt,customer.region",
-		"date.fiscal,date.quartertxt,customer.keyaccount",
-		"date.fiscal,customer.reportchannel,customer.reportsubchannel",
-		"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel",
-		"date.fiscal,customer.channelname,customer.areaname"}
+	}
+
+	// listdimension := []string{
+	// 	"date.fiscal,date.month",
+	// 	"date.fiscal,date.quartertxt",
+	// 	"date.fiscal,date.month,customer.channelid,customer.channelname",
+	// 	"date.fiscal,date.month,customer.branchname",
+	// 	"date.fiscal,date.month,customer.brand",
+	// 	"date.fiscal,date.month,customer.areaname",
+	// 	"date.fiscal,date.month,customer.region",
+	// 	"date.fiscal,date.month,customer.keyaccount",
+	// 	"date.fiscal,date.quartertxt,customer.channelid,customer.channelname",
+	// 	"date.fiscal,date.quartertxt,customer.branchname",
+	// 	"date.fiscal,date.quartertxt,product.brand",
+	// 	"date.fiscal,date.quartertxt,customer.areaname",
+	// 	"date.fiscal,date.quartertxt,customer.region",
+	// 	"date.fiscal,date.quartertxt,customer.keyaccount",
+	// 	"date.fiscal,customer.reportchannel,customer.reportsubchannel",
+	// 	"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel",
+	// 	"date.fiscal,customer.channelname,customer.areaname"}
 
 	// listdimension := []string{"customer.channelid,date.fiscal",
 	// 	"customer.areaname,date.fiscal",
@@ -153,7 +156,7 @@ func main() {
 	resdimension := make(chan int, len(listdimension))
 	dimension := make(chan string, len(listdimension))
 
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 10; i++ {
 		go workerbuilddimension(i, dimension, resdimension)
 	}
 
