@@ -153,7 +153,7 @@ func main() {
 	resdimension := make(chan int, len(listdimension))
 	dimension := make(chan string, len(listdimension))
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		go workerbuilddimension(i, dimension, resdimension)
 	}
 
