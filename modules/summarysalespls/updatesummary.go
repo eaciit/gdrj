@@ -254,9 +254,9 @@ func main() {
 
 		jobs <- tkm
 
-		if iscount == 5 {
-			break
-		}
+		// if iscount == 5 {
+		// 	break
+		// }
 
 		if iscount%step == 0 {
 			toolkit.Printfn("Sending %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
@@ -380,7 +380,7 @@ func CalcSalesReturn(tkm toolkit.M) {
 		dtkm.GetString("customer_custtype"), dtkm.GetString("product_brand"), dtkm.GetString("trxsrc"),
 		dtkm.GetString("source"), dtkm.GetString("ref"))
 
-	toolkit.Println(key)
+	// toolkit.Println(key)
 
 	tkm.Set("salesreturn", salesreturns.GetFloat64(key))
 
