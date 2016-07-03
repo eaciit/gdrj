@@ -190,6 +190,15 @@ func prepmastersalesreturn() {
 
 	}
 
+	i := 0
+	for k, v := range salesreturns {
+		toolkit.Println(k, " : ", v)
+		i++
+		if i == 5 {
+			break
+		}
+	}
+
 	masters.Set("salesreturns", salesreturns)
 }
 
@@ -363,6 +372,8 @@ func CalcSalesReturn(tkm toolkit.M) {
 		dtkm.GetString("customer_areaname"), dtkm.GetString("customer_customergroup"), dtkm.GetString("customer_customergroupname"),
 		dtkm.GetString("customer_custtype"), dtkm.GetString("brand"), dtkm.GetString("trxsrc"),
 		dtkm.GetString("source"), dtkm.GetString("ref"))
+
+	toolkit.Println(key)
 
 	tkm.Set("salesreturn", salesreturns.GetFloat64(key))
 
