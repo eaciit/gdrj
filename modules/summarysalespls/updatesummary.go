@@ -283,6 +283,9 @@ func main() {
 func CleanAddCustomerGroupName(tkm toolkit.M) {
 	dtkm, _ := toolkit.ToM(tkm.Get("key"))
 	dtkm.Set("customer_customergroupname", dtkm.GetString("customer_groupname"))
+	dtkm.Set("customer_customergroup", dtkm.GetString("customer_group"))
+	dtkm.Unset("customer_groupname")
+	dtkm.Unset("customer_group")
 	tkm.Set("key", dtkm)
 }
 
@@ -539,8 +542,9 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 	trx := toolkit.M{}
 	for trx = range jobs {
+		CleanAddCustomerGroupName(trx)
 		CalcSalesReturn(trx)
-		// CleanAddCustomerGroupName(trx)
+
 		// CalcRatio(trx)
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
