@@ -157,6 +157,42 @@ func prepmasterratio() {
 	masters.Set("ratio", ratio)
 }
 
+func prepmastersalesreturn() {
+	toolkit.Println("--> Sales Return")
+	salesreturns := toolkit.M{}
+
+	csrsr, _ := conn.NewQuery().From("salestrxs-return").
+		Where(dbox.Eq("fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))).
+		Cursor(nil)
+
+	defer csrsr.Close()
+	for {
+		m := toolkit.M{}
+		e := csrsr.Fetch(&m, 1, false)
+
+		if e != nil {
+			break
+		}
+
+		ctkm, _ := toolkit.ToM(m.Get("customer"))
+		ptkm, _ := toolkit.ToM(m.Get("product"))
+
+		key := toolkit.Sprintf("%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s",
+			m.GetString("fiscal"), m.GetInt("month"), m.GetInt("year"),
+			ctkm.GetString("branchid"), ctkm.GetString("branchname"), ctkm.GetString("keyaccount"),
+			ctkm.GetString("channelid"), ctkm.GetString("channelname"), ctkm.GetString("reportchannel"),
+			ctkm.GetString("reportsubchannel"), ctkm.GetString("zone"), ctkm.GetString("region"),
+			ctkm.GetString("areaname"), ctkm.GetString("customergroup"), ctkm.GetString("customergroupname"),
+			ctkm.GetString("custtype"), ptkm.GetString("brand"), "VDIST", "", "")
+
+		v := m.GetFloat64("grossamount") + salesreturns.GetFloat64(key)
+		salesreturns.Set(key, v)
+
+	}
+
+	masters.Set("salesreturns", salesreturns)
+}
+
 func getstep(count int) int {
 	v := count / 100
 	if v == 0 {
@@ -177,6 +213,7 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 
+	prepmastersalesreturn()
 	// prepmasterratio()
 	// prepmastercalc()
 	// prepmasterrevadv()
@@ -304,6 +341,30 @@ func CalcAdvertisementsRev(tkm toolkit.M) {
 		fv += tkm.GetFloat64(k)
 		tkm.Set(k, fv)
 	}
+
+	return
+}
+
+func CalcSalesReturn(tkm toolkit.M) {
+	if !masters.Has("salesreturns") {
+		return
+	}
+
+	tkm.Set("salesreturn", float64(0))
+
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+
+	salesreturns := masters.Get("salesreturns").(toolkit.M)
+	key := toolkit.Sprintf("%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s",
+		dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"), dtkm.GetInt("date_year"),
+		dtkm.GetString("customer_branchid"), dtkm.GetString("customer_branchname"), dtkm.GetString("customer_keyaccount"),
+		dtkm.GetString("customer_channelid"), dtkm.GetString("customer_channelname"), dtkm.GetString("customer_reportchannel"),
+		dtkm.GetString("customer_reportsubchannel"), dtkm.GetString("customer_zone"), dtkm.GetString("customer_region"),
+		dtkm.GetString("customer_areaname"), dtkm.GetString("customer_customergroup"), dtkm.GetString("customer_customergroupname"),
+		dtkm.GetString("customer_custtype"), dtkm.GetString("brand"), dtkm.GetString("trxsrc"),
+		dtkm.GetString("source"), dtkm.GetString("ref"))
+
+	tkm.Set("salesreturn", salesreturns.GetFloat64(key))
 
 	return
 }
@@ -463,7 +524,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 	trx := toolkit.M{}
 	for trx = range jobs {
-		CleanAddCustomerGroupName(trx)
+		CalcSalesReturn(trx)
+		// CleanAddCustomerGroupName(trx)
 		// CalcRatio(trx)
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
