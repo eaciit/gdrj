@@ -99,9 +99,7 @@ func main() {
 		tarrstr := []string{comblist[i]}
 		for ix := i + 1; ix < len(comblist); ix++ {
 			tarrstr = append(tarrstr, comblist[ix])
-		}
 
-		if len(tarrstr) > 1 {
 			tstr := strings.Join(tarrstr, ",")
 			listdimension = append(listdimension, tstr)
 		}
