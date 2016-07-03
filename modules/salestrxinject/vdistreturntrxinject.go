@@ -238,7 +238,7 @@ func main() {
 		st.SalesHeaderID = toolkit.Sprintf("%s_%s", tkmsd.Get("iv_no", ""), tkmsd.Get("brsap", ""))
 
 		if st.SalesHeaderID == "" {
-			st.SalesHeaderID = "OTHER/03/2015-2014_CD00"
+			st.SalesHeaderID = toolkit.Sprintf("OTHER/03/%d-%d_CD00", fiscalyear-1, fiscalyear)
 		}
 
 		if lastSalesLine.Has(st.SalesHeaderID) {
@@ -329,7 +329,7 @@ func main() {
 		}
 
 		st.Src = "VDIST"
-		st.ID = toolkit.Sprintf("VDIST/2015-2014/%v_%d", st.SalesHeaderID, st.LineNo)
+		st.ID = toolkit.Sprintf("VDIST/%d-%d/%v_%d", fiscalyear-1, fiscalyear, st.SalesHeaderID, st.LineNo)
 
 		jobs <- st
 
