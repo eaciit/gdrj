@@ -131,18 +131,18 @@ func main() {
 	// 	"customer.areaname,customer.channelid,date.fiscal",
 	// 	"customer.channelid,date.fiscal,product.brand"}
 
-	comblist := []string{"customer.branchname", "product.brand", "customer.channelname",
-		"customer.areaname", "customer.region", "customer.zone", "customer.keyaccount"}
+	// comblist := []string{"customer.branchname", "product.brand", "customer.channelname",
+	// 	"customer.areaname", "customer.region", "customer.zone", "customer.keyaccount"}
 
-	for i := 0; i < len(comblist); i++ {
-		tarrstr := []string{comblist[i]}
-		for ix := i + 1; ix < len(comblist); ix++ {
-			tarrstr = append(tarrstr, comblist[ix])
+	// for i := 0; i < len(comblist); i++ {
+	// 	tarrstr := []string{comblist[i]}
+	// 	for ix := i + 1; ix < len(comblist); ix++ {
+	// 		tarrstr = append(tarrstr, comblist[ix])
 
-			tstr := strings.Join(tarrstr, ",")
-			listdimension = append(listdimension, tstr)
-		}
-	}
+	// 		tstr := strings.Join(tarrstr, ",")
+	// 		listdimension = append(listdimension, tstr)
+	// 	}
+	// }
 
 	toolkit.Printfn("All Dimension : %d", len(listdimension))
 	for _, v := range listdimension {
