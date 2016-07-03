@@ -71,47 +71,50 @@ func main() {
 
 	toolkit.Printfn("Buffered alldata, %d rows in %s", len(alldata), time.Since(t0).String())
 
-	listdimension := []string{"date.fiscal,customer.channelid,customer.channelname",
-		"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel",
-		"date.fiscal,customer.channelid,customer.channelname,customer.zone",
-		"date.fiscal,customer.channelid,customer.channelname,customer.areaname",
-		"date.fiscal,customer.channelid,customer.channelname,customer.region",
-		"date.fiscal,customer.branchname",
+	listdimension := []string{"customer.channelid,date.fiscal",
+		"customer.areaname,date.fiscal",
+		"customer.branchname,date.fiscal",
+		"customer.region,date.fiscal",
+		"customer.zone,date.fiscal",
 		"date.fiscal,product.brand",
-		"date.fiscal,customer.zone",
-		"date.fiscal,customer.areaname",
-		"date.fiscal,customer.region",
-		"date.fiscal,customer.keyaccount",
-		"date.fiscal,date.month,customer.channelid,customer.channelname",
-		"date.fiscal,date.month,customer.branchname",
-		"date.fiscal,date.month,customer.brand",
-		"date.fiscal,date.month,customer.areaname",
-		"date.fiscal,date.month,customer.region",
-		"date.fiscal,date.month,customer.keyaccount",
-		"date.fiscal,date.quartertxt,customer.channelid,customer.channelname",
-		"date.fiscal,date.quartertxt,customer.branchname",
-		"date.fiscal,date.quartertxt,product.brand",
-		"date.fiscal,date.quartertxt,customer.areaname",
-		"date.fiscal,date.quartertxt,customer.region",
-		"date.fiscal,date.quartertxt,customer.keyaccount",
-		"date.fiscal,customer.reportchannel,customer.reportsubchannel",
-		"date.fiscal,customer.customergroupname",
-		"date.fiscal,customer.channelid,customer.channelname,customer.branchname",
-		"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel",
-		"date.fiscal,customer.channelname,customer.areaname"}
+		"customer.channelid,customer.reportsubchannel,date.fiscal",
+		"customer.areaname,customer.channelid,customer.reportsubchannel,date.fiscal",
+		"customer.branchname,customer.channelid,customer.reportsubchannel,date.fiscal",
+		"customer.channelid,customer.region,customer.reportsubchannel,date.fiscal",
+		"customer.channelid,customer.reportsubchannel,customer.zone,date.fiscal",
+		"customer.channelid,customer.reportsubchannel,date.fiscal,product.brand",
+		"customer.keyaccount,date.fiscal",
+		"date.fiscal,date.month",
+		"date.fiscal,date.quartertxt",
+		"customer.customergroupname,customer.keyaccount,date.fiscal",
+		"customer.branchname,customer.channelid,customer.reportsubchannel,date.fiscal",
+		"customer.branchname,customer.channelid,date.fiscal",
+		"customer.areaname,customer.channelid,date.fiscal",
+		"customer.channelid,date.fiscal,product.brand"}
 
-	// listdimension := []string{"date.fiscal,customer.channelid,customer.channelname",
-	// 	"date.fiscal,customer.branchname",
-	// 	"date.fiscal,product.brand",
-	// 	"date.fiscal,customer.zone",
-	// 	"date.fiscal,customer.areaname",
-	// 	"date.fiscal,customer.reportchannel,customer.reportsubchannel",
-	// 	"date.fiscal,customer.reportchannel,customer.reportsubchannel,customer.branchname"}
+	comblist := []string{"customer.branchname", "product.brand", "customer.channelname",
+		"customer.areaname", "customer.region", "customer.zone", "customer.keyaccount"}
+
+	for i := 0; i < len(comblist); i++ {
+		tarrstr := []string{comblist[i]}
+		for ix := i + 1; ix < len(comblist); ix++ {
+			tarrstr = append(tarrstr, comblist[ix])
+
+			tstr := strings.Join(tarrstr, ",")
+			listdimension = append(listdimension, tstr)
+		}
+	}
+
+	toolkit.Printfn("All Dimension : %d", len(listdimension))
+	for _, v := range listdimension {
+		toolkit.Println(v)
+	}
+	toolkit.Println()
 
 	resdimension := make(chan int, len(listdimension))
 	dimension := make(chan string, len(listdimension))
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 10; i++ {
 		go workerbuilddimension(i, dimension, resdimension)
 	}
 
@@ -124,7 +127,7 @@ func main() {
 	toolkit.Printfn("Waiting dimension result")
 	for i := 0; i < len(listdimension); i++ {
 		<-resdimension
-		toolkit.Printfn("%v Dimension created", i)
+		toolkit.Printfn("%d of %d Dimension created", i+1, len(listdimension))
 	}
 
 	toolkit.Printfn("Processing done in %s",
