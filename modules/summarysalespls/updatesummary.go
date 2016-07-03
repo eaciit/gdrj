@@ -161,7 +161,7 @@ func prepmastersalesreturn() {
 	toolkit.Println("--> Sales Return")
 	salesreturns := toolkit.M{}
 
-	csrsr, _ := conn.NewQuery().From("salestrxs-return").Select("grossamount", "customer", "product").
+	csrsr, _ := conn.NewQuery().From("salestrxs-return").Select("fiscal", "month", "year", "grossamount", "customer", "product").
 		Where(dbox.Eq("fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))).
 		Cursor(nil)
 
