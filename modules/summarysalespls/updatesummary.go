@@ -161,7 +161,7 @@ func prepmastersalesreturn() {
 	toolkit.Println("--> Sales Return")
 	salesreturns := toolkit.M{}
 
-	csrsr, _ := conn.NewQuery().From("salestrxs-return").
+	csrsr, _ := conn.NewQuery().From("salestrxs-return").Select("grossamount", "customer", "product").
 		Where(dbox.Eq("fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))).
 		Cursor(nil)
 
@@ -253,6 +253,10 @@ func main() {
 		}
 
 		jobs <- tkm
+
+		if iscount == 5 {
+			break
+		}
 
 		if iscount%step == 0 {
 			toolkit.Printfn("Sending %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
