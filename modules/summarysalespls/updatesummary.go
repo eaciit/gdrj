@@ -377,7 +377,7 @@ func CalcSalesReturn(tkm toolkit.M) {
 		dtkm.GetString("customer_custtype"), dtkm.GetString("product_brand"), dtkm.GetString("trxsrc"),
 		dtkm.GetString("source"), dtkm.GetString("ref"))
 
-	// toolkit.Println(key)
+	toolkit.Println(key)
 
 	tkm.Set("salesreturn", salesreturns.GetFloat64(key))
 
