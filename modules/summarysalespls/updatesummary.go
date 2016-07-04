@@ -516,7 +516,7 @@ func CalcSalesReturn2016(tkm toolkit.M) {
 		dtkm.GetString("customer_channelid"), dtkm.GetString("customer_channelname"), dtkm.GetString("customer_zone"),
 		dtkm.GetString("customer_region"), dtkm.GetString("customer_areaname"), dtkm.GetString("product_brand"))
 
-	dratio.Set("fiscalchannelbranchbrandcityregionzone", (tkm.GetFloat64("grossamount") / ratiosalesreturn2016.GetFloat64(key)))
+	dratio.Set("fiscalchannelbranchbrandcityregionzone", gdrj.SaveDiv(tkm.GetFloat64("grossamount"), ratiosalesreturn2016.GetFloat64(key)))
 	v := tkm.GetFloat64("salesreturn_ori") + (mapsalesreturn2016.GetFloat64(key) * dratio.GetFloat64("fiscalchannelbranchbrandcityregionzone"))
 	tkm.Set("salesreturn", v)
 
