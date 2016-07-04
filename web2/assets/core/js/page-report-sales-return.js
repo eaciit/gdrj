@@ -7,7 +7,7 @@ sr.plGrossSales = ko.observable('PL0');
 sr.plSalesReturn = ko.observable('PL3');
 sr.breakdown = ko.observable('customer.channelname');
 sr.fiscalYear = ko.observable(rpt.value.FiscalYear());
-sr.title = ko.observable('P&L by Channels');
+sr.title = ko.observable('Sales Return by Channels');
 
 sr.changeTo = function (d, e) {
 	sr.title(e);
