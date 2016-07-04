@@ -14,6 +14,313 @@ dsbt.changeTo = function (d) {
 viewModel.revenueEbit = {};
 var rve = viewModel.revenueEbit;
 rve.contentIsLoading = ko.observable(false);
+rve.plNetSales = ko.observable('PL8A');
+rve.plEBIT = ko.observable('PL44B');
+rve.breakdown = ko.observable('customer.channelname');
+rve.fiscalYear = ko.observable(rpt.value.FiscalYear());
+
+rve.refresh = function () {
+	var param = {};
+	param.pls = [rve.plNetSales(), rve.plEBIT()];
+	param.groups = rpt.parseGroups([rve.breakdown()]);
+	param.aggr = 'sum';
+	param.flag = 'branch-vs-rd';
+	param.filters = rpt.getFilterValue(false, rve.fiscalYear);
+
+	var fetch = function fetch() {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			if (rpt.isEmptyData(res)) {
+				rve.contentIsLoading(false);
+				return;
+			}
+
+			rve.contentIsLoading(false);
+			rve.render(res);
+		}, function () {
+			rve.contentIsLoading(false);
+		});
+	};
+
+	rve.contentIsLoading(true);
+	fetch();
+};
+
+rve.render = function (res) {
+	var data = res.Data.Data;
+
+	// Branch
+
+	var dataBranch = _.filter(data, function (d) {
+		return d._id._id_branchrd == 'Branch';
+	});
+	var dataBranchGT = _.filter(dataBranch, function (d) {
+		return d._id._id_customer_channelname == 'General Trade';
+	});
+	var dataBranchMT = _.filter(dataBranch, function (d) {
+		return d._id._id_customer_channelname == 'Modern Trade';
+	});
+	var dataBranchOther = _.filter(dataBranch, function (d) {
+		return ['General Trade', 'Modern Trade'].indexOf(d._id._id_customer_channelname) == -1;
+	});
+
+	var rowBranch = {};
+	rowBranch.name = 'Branch';
+
+	rowBranch.netSalesTotal = toolkit.sum(dataBranch, function (d) {
+		return d[rve.plNetSales()];
+	});
+	rowBranch.netSalesGT = toolkit.sum(dataBranchGT, function (d) {
+		return d[rve.plNetSales()];
+	});
+	rowBranch.netSalesMT = toolkit.sum(dataBranchMT, function (d) {
+		return d[rve.plNetSales()];
+	});
+	rowBranch.netSalesOther = toolkit.sum(dataBranchOther, function (d) {
+		return d[rve.plNetSales()];
+	});
+
+	rowBranch.ebitTotal = toolkit.sum(dataBranch, function (d) {
+		return d[rve.plEBIT()];
+	});
+	rowBranch.ebitGT = toolkit.sum(dataBranchGT, function (d) {
+		return d[rve.plEBIT()];
+	});
+	rowBranch.ebitMT = toolkit.sum(dataBranchMT, function (d) {
+		return d[rve.plEBIT()];
+	});
+	rowBranch.ebitOther = toolkit.sum(dataBranchOther, function (d) {
+		return d[rve.plEBIT()];
+	});
+
+	rowBranch.netSalesTotalPercentage = 100;
+	rowBranch.netSalesGTPercentage = toolkit.number(rowBranch.netSalesGT / rowBranch.netSalesTotal) * 100;
+	rowBranch.netSalesMTPercentage = toolkit.number(rowBranch.netSalesMT / rowBranch.netSalesTotal) * 100;
+	rowBranch.netSalesOtherPercentage = toolkit.number(rowBranch.netSalesOther / rowBranch.netSalesTotal) * 100;
+
+	rowBranch.ebitTotalPercentage = 100;
+	rowBranch.ebitGTPercentage = toolkit.number(rowBranch.ebitGT / rowBranch.ebitTotal) * 100;
+	rowBranch.ebitMTPercentage = toolkit.number(rowBranch.ebitMT / rowBranch.ebitTotal) * 100;
+	rowBranch.ebitOtherPercentage = toolkit.number(rowBranch.ebitOther / rowBranch.ebitTotal) * 100;
+
+	// RD
+
+	var dataRD = _.filter(data, function (d) {
+		return d._id._id_branchrd == 'Regional Distributor';
+	});
+	var dataRDGT = _.filter(dataRD, function (d) {
+		return d._id._id_customer_channelname == 'General Trade';
+	});
+	var dataRDMT = _.filter(dataRD, function (d) {
+		return d._id._id_customer_channelname == 'Modern Trade';
+	});
+	var dataRDOther = _.filter(dataRD, function (d) {
+		return ['General Trade', 'Modern Trade'].indexOf(d._id._id_customer_channelname) == -1;
+	});
+
+	var rowRD = {};
+	rowRD.name = 'RD';
+
+	rowRD.netSalesTotal = toolkit.sum(dataRD, function (d) {
+		return d[rve.plNetSales()];
+	});
+	rowRD.netSalesGT = toolkit.sum(dataRDGT, function (d) {
+		return d[rve.plNetSales()];
+	});
+	rowRD.netSalesMT = toolkit.sum(dataRDMT, function (d) {
+		return d[rve.plNetSales()];
+	});
+	rowRD.netSalesOther = toolkit.sum(dataRDOther, function (d) {
+		return d[rve.plNetSales()];
+	});
+
+	rowRD.ebitTotal = toolkit.sum(dataRD, function (d) {
+		return d[rve.plEBIT()];
+	});
+	rowRD.ebitGT = toolkit.sum(dataRDGT, function (d) {
+		return d[rve.plEBIT()];
+	});
+	rowRD.ebitMT = toolkit.sum(dataRDMT, function (d) {
+		return d[rve.plEBIT()];
+	});
+	rowRD.ebitOther = toolkit.sum(dataRDOther, function (d) {
+		return d[rve.plEBIT()];
+	});
+
+	rowRD.netSalesTotalPercentage = 100;
+	rowRD.netSalesGTPercentage = toolkit.number(rowRD.netSalesGT / rowRD.netSalesTotal) * 100;
+	rowRD.netSalesMTPercentage = toolkit.number(rowRD.netSalesMT / rowRD.netSalesTotal) * 100;
+	rowRD.netSalesOtherPercentage = toolkit.number(rowRD.netSalesOther / rowRD.netSalesTotal) * 100;
+
+	rowRD.ebitTotalPercentage = 100;
+	rowRD.ebitGTPercentage = toolkit.number(rowRD.ebitGT / rowRD.ebitTotal) * 100;
+	rowRD.ebitMTPercentage = toolkit.number(rowRD.ebitMT / rowRD.ebitTotal) * 100;
+	rowRD.ebitOtherPercentage = toolkit.number(rowBranch.ebitOther / rowBranch.ebitTotal) * 100;
+
+	var dataParsed = [rowBranch, rowRD];
+	console.log(rowBranch, rowRD);
+
+	var columns = [{
+		title: '&nbsp;',
+		field: 'name',
+		locked: true,
+		width: 120
+	}, {
+		title: 'Revenue',
+		headerAttributes: { class: 'align-center color-0' },
+		columns: [{
+			title: 'Total',
+			headerAttributes: { class: 'align-center', style: 'font-weight: bold;' },
+			columns: [{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesTotal', attributes: { class: 'align-right' }, format: '{0:n0}' }, { headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesTotalPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' }]
+		}, {
+			title: 'GT',
+			headerAttributes: { class: 'align-center' },
+			columns: [{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesGT', attributes: { class: 'align-right' }, format: '{0:n0}' }, { headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' }]
+		}, {
+			title: 'MT',
+			headerAttributes: { class: 'align-center' },
+			columns: [{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesMT', attributes: { class: 'align-right' }, format: '{0:n0}' }, { headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' }]
+		}, {
+			title: 'Other',
+			headerAttributes: { class: 'align-center' },
+			columns: [{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesOther', attributes: { class: 'align-right' }, format: '{0:n0}' }, { headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' }]
+		}]
+	}, {
+		title: 'EBIT',
+		headerAttributes: { class: 'align-center color-1' },
+		columns: [{
+			title: 'Total',
+			headerAttributes: { class: 'align-center', style: 'font-weight: bold;' },
+			columns: [{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitTotal', attributes: { class: 'align-right' }, format: '{0:n0}' }, { headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitTotalPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' }]
+		}, {
+			title: 'GT',
+			headerAttributes: { class: 'align-center' },
+			columns: [{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitGT', attributes: { class: 'align-right' }, format: '{0:n0}' }, { headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' }]
+		}, {
+			title: 'MT',
+			headerAttributes: { class: 'align-center' },
+			columns: [{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitMT', attributes: { class: 'align-right' }, format: '{0:n0}' }, { headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' }]
+		}, {
+			title: 'Other',
+			headerAttributes: { class: 'align-center' },
+			columns: [{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitOther', attributes: { class: 'align-right' }, format: '{0:n0}' }, { headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' }]
+		}]
+	}];
+
+	var config = {
+		dataSource: {
+			data: dataParsed
+		},
+		columns: columns,
+		resizable: false,
+		sortable: false,
+		pageable: false,
+		filterable: false,
+		dataBound: function dataBound() {
+			var sel = '.grid-dashboard .k-grid-content-locked tr, .grid-dashboard .k-grid-content tr';
+
+			$(sel).on('mouseenter', function () {
+				var index = $(this).index();
+				console.log(this, index);
+				var elh = $('.grid-dashboard .k-grid-content-locked tr:eq(' + index + ')').addClass('hover');
+				var elc = $('.grid-dashboard .k-grid-content tr:eq(' + index + ')').addClass('hover');
+			});
+			$(sel).on('mouseleave', function () {
+				$('.grid-dashboard tr.hover').removeClass('hover');
+			});
+		}
+	};
+
+	$('.grid-revenue-ebit').replaceWith('<div class="grid-revenue-ebit"></div>');
+	$('.grid-revenue-ebit').kendoGrid(config);
+
+	return;
+
+	var netSalesFlatData = [];
+	var ebitFlatData = [];
+
+	data.forEach(function (d) {
+		var o = {};
+		o.pl = 'Revenue';
+		o.value = d[rve.plNetSales()];
+		netSalesFlatData.push(o);
+
+		var p = {};
+		p.pl = 'EBIT';
+		p.value = d[rve.plEBIT()];
+		ebitFlatData.push(p);
+
+		console.log("=", d);
+
+		for (var _q in d._id) {
+			if (d._id.hasOwnProperty(_q)) {
+				o[_q] = d._id[_q];
+				p[_q] = d._id[_q];
+			}
+		}
+	});
+
+	var opNS1 = _.groupBy(netSalesFlatData, function (d) {
+		return d._id_customer_channelname;
+	});
+	var opNS2 = _.map(opNS1, function (v, k) {
+		var p = {};
+		p.pl = 'Revenue';
+		p.channel = k;
+		p.value = toolkit.sum(v, function (d) {
+			return d.value;
+		});
+
+		return p;
+	});
+	var opNS3 = _.orderBy(opNS2, function (d) {
+		return d.value;
+	}, 'desc');
+
+	var opE1 = _.groupBy(netSalesFlatData, function (d) {
+		return d._id_customer_channelname;
+	});
+	var opE2 = _.map(opE1, function (v, k) {
+		var p = {};
+		p.pl = 'EBIT';
+		p.channel = k;
+		p.value = toolkit.sum(v, function (d) {
+			return d.value;
+		});
+
+		return p;
+	});
+	var opE3 = _.orderBy(opE2, function (d) {
+		return d.value;
+	}, 'desc');
+
+	var p = {};
+	p.pl = 'Revenue';
+	p.channel = 'Total';
+	p.value = toolkit.sum(opNS3, function (d) {
+		return d.value;
+	});
+	var opNS4 = [p].concat(opNS3);
+
+	var q = {};
+	q.pl = 'EBIT';
+	q.channel = 'Total';
+	q.value = toolkit.sum(opE3, function (d) {
+		return d.value;
+	});
+	var opE4 = [q].concat(opE3);
+
+	// let columns = opE3.
+
+	console.log("-----", opNS4);
+	console.log("-----", opE4);
+};
 
 viewModel.salesDistribution = {};
 var sd = viewModel.salesDistribution;
@@ -263,9 +570,14 @@ sd.initSort = function () {
 	});
 };
 
+vm.currentMenu('Analysis');
+vm.currentTitle('&nbsp;');
+vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Distribution Analysis', href: '#' }]);
+
 $(function () {
 	rpt.tabbedContent();
-	rpt.refreshView('dashboard');
+
+	rve.refresh();
 
 	sd.refresh();
 	sd.initSort();

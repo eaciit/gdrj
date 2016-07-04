@@ -1,6 +1,26 @@
 <div>
 	<div class="col-md-12 col-sm-12 ez panel-content">
 
+<style>
+	.grid-revenue-ebit th {
+		border-color: white;
+	}
+	.grid-revenue-ebit th[data-title="Total"] {
+		border-right: 1px solid white;
+	}
+	.align-center {
+		text-align: center !important;
+	}
+	.grid-revenue-ebit th.color-0 {
+		background-color: #3498DB;
+		color: white;
+	}
+	.grid-revenue-ebit th.color-1 {
+		background-color: #28B463;
+		color: white;
+	}
+</style>
+
 <script src="{{BaseUrl}}res/core/js/page-report.js"></script>
 <script src="{{BaseUrl}}res/core/js/page-report-distribution.js"></script>
 
@@ -36,7 +56,13 @@
 		</div>
 
 		<div class="panel-body" style="min-height: 100px;">
-			asdfasdf
+			<div data-bind="visible: rve.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+			
+			<div data-bind="visible: !rve.contentIsLoading()">
+				<div class="grid-revenue-ebit"></div>
+			</div>
 		</div>
 	</div>
 </div>
@@ -82,6 +108,7 @@
 			<div data-bind="visible: sd.contentIsLoading">
 				{{template "_loader.html"}}
 			</div>
+
 			<div data-bind="visible: !sd.contentIsLoading()">
 				<div class="grid-sales-dist"></div>
 			</div>

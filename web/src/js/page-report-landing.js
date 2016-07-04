@@ -3,7 +3,7 @@ let lgd = viewModel.landing
 
 lgd.menu = ko.observableArray([
 	{ to: 'pnlperformance', title: 'P&L Performance', icon: 'fa-bar-chart', color: 'rgb(10, 114, 183)' },
-	{ to: 'distributionanalysis', title: 'Distribution Analysis', icon: 'fa-bus', nope: true, color: 'rgb(17, 134, 212)' },
+	{ to: 'distributionanalysis', title: 'Distribution Analysis', icon: 'fa-bus', color: 'rgb(17, 134, 212)' },
 	{ to: 'contributionanalysis', title: 'Contribution Analysis', icon: 'fa-plus', color: '#3498DB' },
 
 	{ to: 'growthanalysis', title: 'Growth Analysis', icon: 'fa-area-chart', color: 'rgb(23, 142, 73)' },

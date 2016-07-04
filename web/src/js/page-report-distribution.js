@@ -16,7 +16,276 @@ dsbt.changeTo = (d) => {
 viewModel.revenueEbit = {}
 let rve = viewModel.revenueEbit
 rve.contentIsLoading = ko.observable(false)
+rve.plNetSales = ko.observable('PL8A')
+rve.plEBIT = ko.observable('PL44B')
+rve.breakdown = ko.observable('customer.channelname')
+rve.fiscalYear = ko.observable(rpt.value.FiscalYear())
 
+rve.refresh = () => {
+	let param = {}
+	param.pls = [rve.plNetSales(), rve.plEBIT()]
+	param.groups = rpt.parseGroups([rve.breakdown()])
+	param.aggr = 'sum'
+	param.flag = 'branch-vs-rd'
+	param.filters = rpt.getFilterValue(false, rve.fiscalYear)
+
+	let fetch = () => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => { fetch() }, 1000 * 5)
+				return
+			}
+
+			if (rpt.isEmptyData(res)) {
+				rve.contentIsLoading(false)
+				return
+			}
+	
+			rve.contentIsLoading(false)
+			rve.render(res)
+		}, () => {
+			rve.contentIsLoading(false)
+		})
+	}
+
+	rve.contentIsLoading(true)
+	fetch()
+}
+
+rve.render = (res) => {
+	let data = res.Data.Data
+
+
+	// Branch
+
+
+	let dataBranch = _.filter(data, (d) => d._id._id_branchrd == 'Branch')
+	let dataBranchGT = _.filter(dataBranch, (d) => d._id._id_customer_channelname == 'General Trade')
+	let dataBranchMT = _.filter(dataBranch, (d) => d._id._id_customer_channelname == 'Modern Trade')
+	let dataBranchOther = _.filter(dataBranch, (d) => ['General Trade', 'Modern Trade'].indexOf(d._id._id_customer_channelname) == -1)
+
+	let rowBranch = {}
+	rowBranch.name = 'Branch'
+
+	rowBranch.netSalesTotal = toolkit.sum(dataBranch, (d) => d[rve.plNetSales()])
+	rowBranch.netSalesGT = toolkit.sum(dataBranchGT, (d) => d[rve.plNetSales()])
+	rowBranch.netSalesMT = toolkit.sum(dataBranchMT, (d) => d[rve.plNetSales()])
+	rowBranch.netSalesOther = toolkit.sum(dataBranchOther, (d) => d[rve.plNetSales()])
+
+	rowBranch.ebitTotal = toolkit.sum(dataBranch, (d) => d[rve.plEBIT()])
+	rowBranch.ebitGT = toolkit.sum(dataBranchGT, (d) => d[rve.plEBIT()])
+	rowBranch.ebitMT = toolkit.sum(dataBranchMT, (d) => d[rve.plEBIT()])
+	rowBranch.ebitOther = toolkit.sum(dataBranchOther, (d) => d[rve.plEBIT()])
+
+	rowBranch.netSalesTotalPercentage = 100
+	rowBranch.netSalesGTPercentage = toolkit.number(rowBranch.netSalesGT / rowBranch.netSalesTotal) * 100
+	rowBranch.netSalesMTPercentage = toolkit.number(rowBranch.netSalesMT / rowBranch.netSalesTotal) * 100
+	rowBranch.netSalesOtherPercentage = toolkit.number(rowBranch.netSalesOther / rowBranch.netSalesTotal) * 100
+
+	rowBranch.ebitTotalPercentage = 100
+	rowBranch.ebitGTPercentage = toolkit.number(rowBranch.ebitGT / rowBranch.ebitTotal) * 100
+	rowBranch.ebitMTPercentage = toolkit.number(rowBranch.ebitMT / rowBranch.ebitTotal) * 100
+	rowBranch.ebitOtherPercentage = toolkit.number(rowBranch.ebitOther / rowBranch.ebitTotal) * 100
+
+	// RD
+
+
+	let dataRD = _.filter(data, (d) => d._id._id_branchrd == 'Regional Distributor')
+	let dataRDGT = _.filter(dataRD, (d) => d._id._id_customer_channelname == 'General Trade')
+	let dataRDMT = _.filter(dataRD, (d) => d._id._id_customer_channelname == 'Modern Trade')
+	let dataRDOther = _.filter(dataRD, (d) => ['General Trade', 'Modern Trade'].indexOf(d._id._id_customer_channelname) == -1)
+
+	let rowRD = {}
+	rowRD.name = 'RD'
+
+	rowRD.netSalesTotal = toolkit.sum(dataRD, (d) => d[rve.plNetSales()])
+	rowRD.netSalesGT = toolkit.sum(dataRDGT, (d) => d[rve.plNetSales()])
+	rowRD.netSalesMT = toolkit.sum(dataRDMT, (d) => d[rve.plNetSales()])
+	rowRD.netSalesOther = toolkit.sum(dataRDOther, (d) => d[rve.plNetSales()])
+
+	rowRD.ebitTotal = toolkit.sum(dataRD, (d) => d[rve.plEBIT()])
+	rowRD.ebitGT = toolkit.sum(dataRDGT, (d) => d[rve.plEBIT()])
+	rowRD.ebitMT = toolkit.sum(dataRDMT, (d) => d[rve.plEBIT()])
+	rowRD.ebitOther = toolkit.sum(dataRDOther, (d) => d[rve.plEBIT()])
+
+	rowRD.netSalesTotalPercentage = 100
+	rowRD.netSalesGTPercentage = toolkit.number(rowRD.netSalesGT / rowRD.netSalesTotal) * 100
+	rowRD.netSalesMTPercentage = toolkit.number(rowRD.netSalesMT / rowRD.netSalesTotal) * 100
+	rowRD.netSalesOtherPercentage = toolkit.number(rowRD.netSalesOther / rowRD.netSalesTotal) * 100
+
+	rowRD.ebitTotalPercentage = 100
+	rowRD.ebitGTPercentage = toolkit.number(rowRD.ebitGT / rowRD.ebitTotal) * 100
+	rowRD.ebitMTPercentage = toolkit.number(rowRD.ebitMT / rowRD.ebitTotal) * 100
+	rowRD.ebitOtherPercentage = toolkit.number(rowBranch.ebitOther / rowBranch.ebitTotal) * 100
+
+	let dataParsed = [rowBranch, rowRD]
+	console.log(rowBranch, rowRD)
+
+	let columns = [{
+		title: '&nbsp;',
+		field: 'name',
+		locked: true,
+		width: 120
+	}, {
+		title: 'Revenue',
+		headerAttributes: { class: 'align-center color-0' },
+		columns: [{
+			title: 'Total',
+			headerAttributes: { class: 'align-center', style: 'font-weight: bold;' },
+			columns: [
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesTotal', attributes: { class: 'align-right' }, format: '{0:n0}' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesTotalPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+			]
+		}, {
+			title: 'GT',
+			headerAttributes: { class: 'align-center' },
+			columns: [
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesGT', attributes: { class: 'align-right' }, format: '{0:n0}' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+			]
+		}, {
+			title: 'MT',
+			headerAttributes: { class: 'align-center' },
+			columns: [
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesMT', attributes: { class: 'align-right' }, format: '{0:n0}' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+			]
+		}, {
+			title: 'Other',
+			headerAttributes: { class: 'align-center' },
+			columns: [
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesOther', attributes: { class: 'align-right' }, format: '{0:n0}' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+			]
+		}]
+	}, {
+		title: 'EBIT',
+		headerAttributes: { class: 'align-center color-1' },
+		columns: [{
+			title: 'Total',
+			headerAttributes: { class: 'align-center', style: 'font-weight: bold;' },
+			columns: [
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitTotal', attributes: { class: 'align-right' }, format: '{0:n0}' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitTotalPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+			]
+		}, {
+			title: 'GT',
+			headerAttributes: { class: 'align-center' },
+			columns: [
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitGT', attributes: { class: 'align-right' }, format: '{0:n0}' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+			]
+		}, {
+			title: 'MT',
+			headerAttributes: { class: 'align-center' },
+			columns: [
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitMT', attributes: { class: 'align-right' }, format: '{0:n0}' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+			]
+		}, {
+			title: 'Other',
+			headerAttributes: { class: 'align-center' },
+			columns: [
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitOther', attributes: { class: 'align-right' }, format: '{0:n0}' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+			]
+		}]
+	}]
+
+	let config = {
+		dataSource: {
+			data: dataParsed
+		},
+		columns: columns,
+		resizable: false,
+		sortable: false, 
+		pageable: false,
+		filterable: false,
+		dataBound: () => {
+			let sel = '.grid-dashboard .k-grid-content-locked tr, .grid-dashboard .k-grid-content tr'
+
+			$(sel).on('mouseenter', function () {
+				let index = $(this).index()
+				console.log(this, index)
+		        let elh = $(`.grid-dashboard .k-grid-content-locked tr:eq(${index})`).addClass('hover')
+		        let elc = $(`.grid-dashboard .k-grid-content tr:eq(${index})`).addClass('hover')
+			})
+			$(sel).on('mouseleave', function () {
+				$('.grid-dashboard tr.hover').removeClass('hover')
+			})
+		}
+	}
+
+
+	$('.grid-revenue-ebit').replaceWith('<div class="grid-revenue-ebit"></div>')
+	$('.grid-revenue-ebit').kendoGrid(config)
+
+	return
+
+
+	let netSalesFlatData = []
+	let ebitFlatData = []
+
+	data.forEach((d) => {
+		let o = {}
+		o.pl = 'Revenue'
+		o.value = d[rve.plNetSales()]
+		netSalesFlatData.push(o)
+		
+		let p = {}
+		p.pl = 'EBIT'
+		p.value = d[rve.plEBIT()]
+		ebitFlatData.push(p)
+
+		console.log("=", d)
+
+		for (let q in d._id) if (d._id.hasOwnProperty(q)) {
+			o[q] = d._id[q]
+			p[q] = d._id[q]
+		}
+	})
+
+
+	let opNS1 = _.groupBy(netSalesFlatData, (d) => d._id_customer_channelname)
+	let opNS2 = _.map(opNS1, (v, k) => {
+		let p = {}
+		p.pl = 'Revenue'
+		p.channel = k
+		p.value = toolkit.sum(v, (d) => d.value)
+
+		return p
+	})
+	let opNS3 = _.orderBy(opNS2, (d) => d.value, 'desc')
+
+	let opE1 = _.groupBy(netSalesFlatData, (d) => d._id_customer_channelname)
+	let opE2 = _.map(opE1, (v, k) => {
+		let p = {}
+		p.pl = 'EBIT'
+		p.channel = k
+		p.value = toolkit.sum(v, (d) => d.value)
+		
+		return p
+	})
+	let opE3 = _.orderBy(opE2, (d) => d.value, 'desc')
+
+	let p = {}
+	p.pl = 'Revenue'
+	p.channel = 'Total'
+	p.value = toolkit.sum(opNS3, (d) => d.value)
+	let opNS4 = [p].concat(opNS3)
+
+	let q = {}
+	q.pl = 'EBIT'
+	q.channel = 'Total'
+	q.value = toolkit.sum(opE3, (d) => d.value)
+	let opE4 = [q].concat(opE3)
+
+
+	// let columns = opE3.
+
+	console.log("-----", opNS4)
+	console.log("-----", opE4)
+}
 
 
 
@@ -261,9 +530,20 @@ sd.initSort = () => {
 	})
 }
 
+
+vm.currentMenu('Analysis')
+vm.currentTitle('&nbsp;')
+vm.breadcrumb([
+	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
+	{ title: 'Home', href: viewModel.appName + 'page/landing' },
+	{ title: 'Distribution Analysis', href: '#' }
+])
+
+
 $(() => {
 	rpt.tabbedContent()
-	rpt.refreshView('dashboard')
+
+	rve.refresh()
 
 	sd.refresh()
 	sd.initSort()
