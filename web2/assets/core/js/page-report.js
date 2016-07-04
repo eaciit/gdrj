@@ -179,7 +179,9 @@ rpt.getOtherMasterData = function () {
 };
 
 rpt.isEmptyData = function (res) {
-	if (res.Data.Data.length == 0) {
+	// return false
+
+	if (res.Data.length == 0) {
 		toolkit.showError('The UI data is not ready');
 		return true;
 	}
