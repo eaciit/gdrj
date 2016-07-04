@@ -296,6 +296,7 @@ func prepmasterdiffsalesreturn2016() {
 
 				if !ratiosalesreturn2016.Has(key) {
 					amount += m.GetFloat64("grossamount")
+					toolkit.Println("not mapped : ", key)
 				}
 			}
 
