@@ -276,6 +276,11 @@ func prepmasterdiffsalesreturn2016() {
 		ctkm, _ := toolkit.ToM(m.Get("customer"))
 		ptkm, _ := toolkit.ToM(m.Get("product"))
 
+		//except RD in 2015-2016
+		if ctkm.GetString("channelid") == "I1" {
+			continue
+		}
+
 		key := toolkit.Sprintf("%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s",
 			m.GetString("fiscal"), m.GetInt("month"), m.GetInt("year"),
 			ctkm.GetString("branchid"), ctkm.GetString("branchname"), ctkm.GetString("keyaccount"),
@@ -296,7 +301,6 @@ func prepmasterdiffsalesreturn2016() {
 
 				if !ratiosalesreturn2016.Has(key) {
 					amount += m.GetFloat64("grossamount")
-					toolkit.Println("not mapped : ", key)
 				}
 			}
 
