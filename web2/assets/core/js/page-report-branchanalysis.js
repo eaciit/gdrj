@@ -423,7 +423,6 @@ ba.emptyGrid = function () {
 	$('.breakdown-view').replaceWith('<div class="breakdown-view ez"  id="branch-analysis"></div>');
 };
 
-ba.idarrayhide = ko.observableArray(['PL44A']);
 ba.render = function () {
 	if (ba.data().length == 0) {
 		$('.breakdown-view').html('No data found.');
@@ -581,7 +580,7 @@ ba.render = function () {
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = TotalPercentage;
+		rows[e].Percentage = toolkit.number(TotalPercentage);
 	});
 
 	// ========================= PLOT DATA
@@ -637,47 +636,6 @@ ba.render = function () {
 
 	// ========================= CONFIGURE THE HIRARCHY
 	rpt.buildGridLevels(rows);
-};
-
-ba.showExpandAll = function (a) {
-	if (a == true) {
-		$('tr.dd').find('i').removeClass('fa-chevron-right');
-		$('tr.dd').find('i').addClass('fa-chevron-down');
-		$('tr[idparent]').css('display', '');
-		$('tr[idcontparent]').css('display', '');
-		$('tr[statusvaltemp=hide]').css('display', 'none');
-	} else {
-		$('tr.dd').find('i').removeClass('fa-chevron-down');
-		$('tr.dd').find('i').addClass('fa-chevron-right');
-		$('tr[idparent]').css('display', 'none');
-		$('tr[idcontparent]').css('display', 'none');
-		$('tr[statusvaltemp=hide]').css('display', 'none');
-	}
-};
-
-ba.showZeroValue = function (a) {
-	ba.zeroValue(a);
-	if (a == true) {
-		$(".table-header tbody>tr").each(function (i) {
-			if (i > 0) {
-				$(this).attr('statusvaltemp', 'show');
-				$('tr[idpl=' + $(this).attr('idheaderpl') + ']').attr('statusvaltemp', 'show');
-				if (!$(this).attr('idparent')) {
-					$(this).show();
-					$('tr[idpl=' + $(this).attr('idheaderpl') + ']').show();
-				}
-			}
-		});
-	} else {
-		$(".table-header tbody>tr").each(function (i) {
-			if (i > 0) {
-				$(this).attr('statusvaltemp', $(this).attr('statusval'));
-				$('tr[idpl=' + $(this).attr('idheaderpl') + ']').attr('statusvaltemp', $(this).attr('statusval'));
-			}
-		});
-	}
-
-	ba.showExpandAll(false);
 };
 
 ba.breakdownValueAll = { _id: 'All', Name: 'All' };
@@ -749,6 +707,5 @@ $(function () {
 
 	setTimeout(function () {
 		ba.breakdownValue(['All']);
-		ba.refresh(false);
 	}, 200);
 });

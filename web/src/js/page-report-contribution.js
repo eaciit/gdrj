@@ -9,6 +9,13 @@ cbt.breakdownByFiscalYear = ko.observable('date.fiscal')
 cbt.data = ko.observableArray([])
 cbt.fiscalYear = ko.observable(rpt.value.FiscalYear())
 cbt.level = ko.observable(1)
+cbt.title = ko.observable('Contribution by Channels')
+
+cbt.changeTo = (d, title) => {
+	cbt.breakdownBy(d)
+	cbt.title(title)
+	cbt.refresh()
+}
 
 cbt.refresh = (useCache = false) => {
 	let param = {}
@@ -505,7 +512,7 @@ cbt.buildGridLevels = (container, rows) => {
 }
 
 vm.currentMenu('Analysis')
-vm.currentTitle('Contribution Analysis')
+vm.currentTitle('&nbsp;')
 vm.breadcrumb([
 	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
 	{ title: 'Home', href: viewModel.appName + 'page/landing' },

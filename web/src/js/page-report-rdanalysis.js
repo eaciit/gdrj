@@ -5,7 +5,7 @@ rd.contentIsLoading = ko.observable(false)
 rd.title = ko.observable('RD Analysis')
 rd.level = ko.observable(2)
 
-rd.breakdownBy = ko.observable('customer.customergroupname')
+rd.breakdownBy = ko.observable('customer.reportsubchannel')
 rd.breakdownByCity = ko.observable('customer.areaname')
 rd.breakdownByFiscalYear = ko.observable('date.fiscal')
 

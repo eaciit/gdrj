@@ -274,6 +274,10 @@ func (s *PLFinderParam) GetTableName() string {
 	// 	}
 	// }
 
+	if toolkit.HasMember(filterKeys, "customer.channelid") && !toolkit.HasMember(filterKeys, "customer.channelname") {
+		filterKeys = append(filterKeys, "customer.channelname")
+	}
+
 	sort.Strings(filterKeys)
 	key := strings.Replace(strings.Join(filterKeys, "_"), ".", "_", -1)
 	tableName := fmt.Sprintf("pl_%s", key)
@@ -438,36 +442,36 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 		}
 	}
 
-	fmt.Println("========= OTHER DATA BLEND INTO ONE OTHER")
-	fmt.Printf("%#v\n", otherData)
-	if len(otherData) > 1 {
-		sumOther := toolkit.M{}
-		for _, each := range otherData {
-			sumOther.Set("_id", each.Get("_id"))
+	// fmt.Println("========= OTHER DATA BLEND INTO ONE OTHER")
+	// fmt.Printf("%#v\n", otherData)
+	// if len(otherData) > 1 {
+	// 	sumOther := toolkit.M{}
+	// 	for _, each := range otherData {
+	// 		sumOther.Set("_id", each.Get("_id"))
 
-			for key := range *each {
-				if key == "_id" {
-					continue
-				}
+	// 		for key := range *each {
+	// 			if key == "_id" {
+	// 				continue
+	// 			}
 
-				if _, ok := sumOther[key]; !ok {
-					sumOther.Set(key, each.GetFloat64(key))
-				} else {
-					sumOther.Set(key, each.GetFloat64(key)+sumOther.GetFloat64(key))
-				}
-			}
-		}
+	// 			if _, ok := sumOther[key]; !ok {
+	// 				sumOther.Set(key, each.GetFloat64(key))
+	// 			} else {
+	// 				sumOther.Set(key, each.GetFloat64(key)+sumOther.GetFloat64(key))
+	// 			}
+	// 		}
+	// 	}
 
-		newData := []*toolkit.M{&sumOther}
-		for i, each := range *data {
-			if _, ok := otherData[i]; ok {
-				continue
-			}
+	// 	newData := []*toolkit.M{&sumOther}
+	// 	for i, each := range *data {
+	// 		if _, ok := otherData[i]; ok {
+	// 			continue
+	// 		}
 
-			newData = append(newData, each)
-		}
-		data = &newData
-	}
+	// 		newData = append(newData, each)
+	// 	}
+	// 	data = &newData
+	// }
 
 	/** NOT USED NOW, THE DAtA IS VALLID
 	// if breakdown channel

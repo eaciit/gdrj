@@ -11,6 +11,13 @@ cbt.breakdownByFiscalYear = ko.observable('date.fiscal');
 cbt.data = ko.observableArray([]);
 cbt.fiscalYear = ko.observable(rpt.value.FiscalYear());
 cbt.level = ko.observable(1);
+cbt.title = ko.observable('Contribution by Channels');
+
+cbt.changeTo = function (d, title) {
+	cbt.breakdownBy(d);
+	cbt.title(title);
+	cbt.refresh();
+};
 
 cbt.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
@@ -268,7 +275,7 @@ cbt.render = function () {
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = TotalPercentage;
+		rows[e].Percentage = toolkit.number(TotalPercentage);
 	});
 
 	// ========================= PLOT DATA
@@ -483,7 +490,7 @@ cbt.buildGridLevels = function (container, rows) {
 };
 
 vm.currentMenu('Analysis');
-vm.currentTitle('Contribution Analysis');
+vm.currentTitle('&nbsp;');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Contribution Analysis', href: '#' }]);
 
 $(function () {

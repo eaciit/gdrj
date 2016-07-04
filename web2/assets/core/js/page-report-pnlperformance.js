@@ -801,7 +801,7 @@ bkd.render = function () {
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = TotalPercentage;
+		rows[e].Percentage = toolkit.number(TotalPercentage);
 	});
 
 	// ========================= PLOT DATA
@@ -1536,6 +1536,10 @@ rs.generateReport = function (title, raw) {
 	var data = [];
 	var multiplier = sumNetSales == 0 ? 1 : sumNetSales;
 
+	var safe = function safe(d) {
+		return Math.abs(toolkit.number(d));
+	};
+
 	dataAllPNL.forEach(function (d, i) {
 		var category = d._id['_id_' + app.idAble(breakdown)];
 		var order = category;
@@ -1548,10 +1552,10 @@ rs.generateReport = function (title, raw) {
 			valueNetSales: dataAllPNLNetSales[i].value,
 			category: category,
 			order: order,
-			valuePNL: Math.abs(d.value),
-			valuePNLPercentage: Math.abs(d.value / dataAllPNLNetSales[i].value * 100),
-			avgPNL: Math.abs(avgPNL),
-			avgPNLPercentage: Math.abs(avgPNL / multiplier * 100)
+			valuePNL: safe(d.value),
+			valuePNLPercentage: safe(d.value / dataAllPNLNetSales[i].value * 100),
+			avgPNL: safe(avgPNL),
+			avgPNLPercentage: safe(avgPNL / multiplier * 100)
 		});
 	});
 
