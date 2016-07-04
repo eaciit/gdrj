@@ -274,6 +274,10 @@ func (s *PLFinderParam) GetTableName() string {
 	// 	}
 	// }
 
+	if toolkit.HasMember(filterKeys, "customer.channelid") && !toolkit.HasMember(filterKeys, "customer.channelname") {
+		filterKeys = append(filterKeys, "customer.channelname")
+	}
+
 	sort.Strings(filterKeys)
 	key := strings.Replace(strings.Join(filterKeys, "_"), ".", "_", -1)
 	tableName := fmt.Sprintf("pl_%s", key)
