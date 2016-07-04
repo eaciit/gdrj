@@ -27,32 +27,32 @@
 	<!-- Nav tabs -->
 	<ul class="nav nav-pills nav-replace-title" role="tablist">
 		<li role="presentation" class="active">
-			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('customer.channelname', 'P&L by Channels')">Channels</a>
+			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('customer.channelname', 'Sales Return by Channels')">Channels</a>
 		</li>
 		<li role="presentation">
-			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('customer.branchname', 'P&L by Branches')">Branches</a>
+			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('customer.branchname', 'Sales Return by Branches')">Branches</a>
 		</li>
 		<li role="presentation">
-			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('product.brand', 'P&L by Brands')">Brands</a>
+			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('product.brand', 'Sales Return by Brands')">Brands</a>
 		</li>
 		<li role="presentation">
-			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('customer.areaname', 'P&L by City')">City</a>
+			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('customer.areaname', 'Sales Return by City')">City</a>
 		</li>
 		<li role="presentation">
-			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('customer.region', 'P&L by Region')">Region</a>
+			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('customer.region', 'Sales Return by Region')">Region</a>
 		</li>
 		<li role="presentation">
-			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('customer.zone', 'P&L by Zone')">Zone</a>
+			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('customer.zone', 'Sales Return by Zone')">Zone</a>
 		</li>
 	</ul>
 
 
 <div class="panel ez no-padding hardcore">
 	<div class="panel-heading">
-		<h3 class="no-margin" data-bind="html: sr.title">P&L by Channels</h3>
+		<h3 class="no-margin" data-bind="html: sr.title">Sales Return by Channels</h3>
 		<div class="panel-nav-button" data-bind="visible: !sr.contentIsLoading()">
 			<div class="form-inline">
-				<button class="btn btn-sm btn-primary tooltipster" data-bind="click: sr.refresh" title="Refresh P&L Analysis">
+				<button class="btn btn-sm btn-primary tooltipster" data-bind="click: sr.refresh" title="Refresh">
 					<i class="fa fa-refresh"></i> Refresh
 				</button>
 				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">

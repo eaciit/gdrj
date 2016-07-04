@@ -11,7 +11,7 @@ cbt.breakdownByFiscalYear = ko.observable('date.fiscal');
 cbt.data = ko.observableArray([]);
 cbt.fiscalYear = ko.observable(rpt.value.FiscalYear());
 cbt.level = ko.observable(1);
-cbt.title = ko.observable('P&L by Channels');
+cbt.title = ko.observable('Contribution by Channels');
 
 cbt.changeTo = function (d, title) {
 	cbt.breakdownBy(d);
