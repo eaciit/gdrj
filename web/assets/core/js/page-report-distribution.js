@@ -521,7 +521,7 @@ sd.render = function (res) {
 		// $(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height())
 	});
 };
-sd.sortVal = ['desc', 'desc', 'desc', 'desc', 'desc', 'desc'];
+sd.sortVal = ['desc', 'desc', 'desc', '', 'desc', ''];
 sd.sortData = function () {
 	sd.render(sd.oldData());
 };
