@@ -8,7 +8,7 @@ lgd.menu = ko.observableArray([
 
 	{ to: 'growthanalysis', title: 'Growth Analysis', icon: 'fa-area-chart', color: 'rgb(23, 142, 73)' },
 	{ to: 'keyaccountanalysis', title: 'Key Account Analysis', icon: 'fa-key', color: 'rgb(32, 162, 87)' },
-	{ to: 'sales-return-analysis', title: 'Sales Return Analysis', nope: true, icon: 'fa-refresh', color: '#28B463' },
+	{ to: 'salesreturnanalysis', title: 'Sales Return Analysis', icon: 'fa-refresh', color: '#28B463' },
 
 	{ to: 'branchanalysis', title: 'Branch Analysis', icon: 'fa-home', color: 'rgb(212, 130, 0)' },
 	{ to: 'rdanalysis', title: 'RD Analysis', icon: 'fa-bar-chart', color: 'rgb(234, 144, 0)' },

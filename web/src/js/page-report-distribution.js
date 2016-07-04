@@ -219,72 +219,6 @@ rve.render = (res) => {
 
 	$('.grid-revenue-ebit').replaceWith('<div class="grid-revenue-ebit"></div>')
 	$('.grid-revenue-ebit').kendoGrid(config)
-
-	return
-
-
-	let netSalesFlatData = []
-	let ebitFlatData = []
-
-	data.forEach((d) => {
-		let o = {}
-		o.pl = 'Revenue'
-		o.value = d[rve.plNetSales()]
-		netSalesFlatData.push(o)
-		
-		let p = {}
-		p.pl = 'EBIT'
-		p.value = d[rve.plEBIT()]
-		ebitFlatData.push(p)
-
-		console.log("=", d)
-
-		for (let q in d._id) if (d._id.hasOwnProperty(q)) {
-			o[q] = d._id[q]
-			p[q] = d._id[q]
-		}
-	})
-
-
-	let opNS1 = _.groupBy(netSalesFlatData, (d) => d._id_customer_channelname)
-	let opNS2 = _.map(opNS1, (v, k) => {
-		let p = {}
-		p.pl = 'Revenue'
-		p.channel = k
-		p.value = toolkit.sum(v, (d) => d.value)
-
-		return p
-	})
-	let opNS3 = _.orderBy(opNS2, (d) => d.value, 'desc')
-
-	let opE1 = _.groupBy(netSalesFlatData, (d) => d._id_customer_channelname)
-	let opE2 = _.map(opE1, (v, k) => {
-		let p = {}
-		p.pl = 'EBIT'
-		p.channel = k
-		p.value = toolkit.sum(v, (d) => d.value)
-		
-		return p
-	})
-	let opE3 = _.orderBy(opE2, (d) => d.value, 'desc')
-
-	let p = {}
-	p.pl = 'Revenue'
-	p.channel = 'Total'
-	p.value = toolkit.sum(opNS3, (d) => d.value)
-	let opNS4 = [p].concat(opNS3)
-
-	let q = {}
-	q.pl = 'EBIT'
-	q.channel = 'Total'
-	q.value = toolkit.sum(opE3, (d) => d.value)
-	let opE4 = [q].concat(opE3)
-
-
-	// let columns = opE3.
-
-	console.log("-----", opNS4)
-	console.log("-----", opE4)
 }
 
 
@@ -480,7 +414,7 @@ sd.render = (res) => {
 		// $(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height())
 	})
 }
-sd.sortVal = ['desc', 'desc', 'desc', 'desc', 'desc', 'desc']
+sd.sortVal = ['desc', 'desc', 'desc', '', 'desc', '']
 sd.sortData = () => {
 	sd.render(sd.oldData())
 }

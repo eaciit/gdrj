@@ -239,87 +239,6 @@ rve.render = function (res) {
 
 	$('.grid-revenue-ebit').replaceWith('<div class="grid-revenue-ebit"></div>');
 	$('.grid-revenue-ebit').kendoGrid(config);
-
-	return;
-
-	var netSalesFlatData = [];
-	var ebitFlatData = [];
-
-	data.forEach(function (d) {
-		var o = {};
-		o.pl = 'Revenue';
-		o.value = d[rve.plNetSales()];
-		netSalesFlatData.push(o);
-
-		var p = {};
-		p.pl = 'EBIT';
-		p.value = d[rve.plEBIT()];
-		ebitFlatData.push(p);
-
-		console.log("=", d);
-
-		for (var _q in d._id) {
-			if (d._id.hasOwnProperty(_q)) {
-				o[_q] = d._id[_q];
-				p[_q] = d._id[_q];
-			}
-		}
-	});
-
-	var opNS1 = _.groupBy(netSalesFlatData, function (d) {
-		return d._id_customer_channelname;
-	});
-	var opNS2 = _.map(opNS1, function (v, k) {
-		var p = {};
-		p.pl = 'Revenue';
-		p.channel = k;
-		p.value = toolkit.sum(v, function (d) {
-			return d.value;
-		});
-
-		return p;
-	});
-	var opNS3 = _.orderBy(opNS2, function (d) {
-		return d.value;
-	}, 'desc');
-
-	var opE1 = _.groupBy(netSalesFlatData, function (d) {
-		return d._id_customer_channelname;
-	});
-	var opE2 = _.map(opE1, function (v, k) {
-		var p = {};
-		p.pl = 'EBIT';
-		p.channel = k;
-		p.value = toolkit.sum(v, function (d) {
-			return d.value;
-		});
-
-		return p;
-	});
-	var opE3 = _.orderBy(opE2, function (d) {
-		return d.value;
-	}, 'desc');
-
-	var p = {};
-	p.pl = 'Revenue';
-	p.channel = 'Total';
-	p.value = toolkit.sum(opNS3, function (d) {
-		return d.value;
-	});
-	var opNS4 = [p].concat(opNS3);
-
-	var q = {};
-	q.pl = 'EBIT';
-	q.channel = 'Total';
-	q.value = toolkit.sum(opE3, function (d) {
-		return d.value;
-	});
-	var opE4 = [q].concat(opE3);
-
-	// let columns = opE3.
-
-	console.log("-----", opNS4);
-	console.log("-----", opE4);
 };
 
 viewModel.salesDistribution = {};
@@ -521,7 +440,7 @@ sd.render = function (res) {
 		// $(this).find('table').height($(".grid-sales-dist>table tbody>tr:eq(1)").height())
 	});
 };
-sd.sortVal = ['desc', 'desc', 'desc', 'desc', 'desc', 'desc'];
+sd.sortVal = ['desc', 'desc', 'desc', '', 'desc', ''];
 sd.sortData = function () {
 	sd.render(sd.oldData());
 };
