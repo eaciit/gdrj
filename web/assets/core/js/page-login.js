@@ -46,7 +46,7 @@ lg.getLogin = function () {
 		lg.ErrorMessage(res.message);
 
 		if (res.message == "Login Success") {
-			window.location = viewModel.appName + "page/pnlperformance";
+			window.location = viewModel.appName + "page/home";
 		}
 	});
 };
