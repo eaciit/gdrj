@@ -231,11 +231,10 @@ func prepmasterratiomapsalesreturn2016() {
 
 		mapsalesreturn2016.Set(mapkey, float64(0))
 
-		////Fiscal, Channels, Branches, Brands, City, Region, Zone for 2016,
-		key := toolkit.Sprintf("%s|%s|%s|%s|%s|%s|%s|%s|%s",
-			dtkm.GetString("date_fiscal"), dtkm.GetString("customer_branchid"), dtkm.GetString("customer_branchname"),
-			dtkm.GetString("customer_channelid"), dtkm.GetString("customer_channelname"), dtkm.GetString("customer_zone"),
-			dtkm.GetString("customer_region"), dtkm.GetString("customer_areaname"), dtkm.GetString("product_brand"))
+		////Fiscal, Channels, Branches, Brands for 2016,
+		key := toolkit.Sprintf("%s|%s|%s|%s",
+			dtkm.GetString("date_fiscal"), dtkm.GetString("customer_branchid"),
+			dtkm.GetString("customer_channelid"), dtkm.GetString("product_brand"))
 
 		v := ratiosalesreturn2016.GetFloat64(key) + tkm.GetFloat64("grossamount")
 		ratiosalesreturn2016.Set(key, v)
@@ -250,10 +249,13 @@ func prepmasterratiomapsalesreturn2016() {
 func prepmasterdiffsalesreturn2016() {
 	toolkit.Println("--> Sales Return")
 	mapsalesreturn2016 := masters.Get("mapsalesreturn2016").(toolkit.M)
+	ratiosalesreturn2016 := masters.Get("ratiosalesreturn2016").(toolkit.M)
 
 	csrsr, _ := conn.NewQuery().From("salestrxs-return").Select("fiscal", "month", "year", "grossamount", "customer", "product").
 		Where(dbox.Eq("fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))).
 		Cursor(nil)
+
+	amount := float64(0)
 
 	defer csrsr.Close()
 	for {
@@ -276,10 +278,14 @@ func prepmasterdiffsalesreturn2016() {
 			ctkm.GetString("custtype"), ptkm.GetString("brand"), "VDIST", "", "")
 
 		if !mapsalesreturn2016.Has(key) {
-			key = toolkit.Sprintf("%s|%s|%s|%s|%s|%s|%s|%s|%s",
-				m.GetString("fiscal"), ctkm.GetString("branchid"), ctkm.GetString("branchname"),
-				ctkm.GetString("channelid"), ctkm.GetString("channelname"), ctkm.GetString("zone"),
-				ctkm.GetString("region"), ctkm.GetString("areaname"), ptkm.GetString("brand"))
+			key = toolkit.Sprintf("%s|%s|%s|%s",
+				m.GetString("fiscal"), ctkm.GetString("branchid"),
+				ctkm.GetString("channelid"), ptkm.GetString("brand"))
+
+			if !ratiosalesreturn2016.Has(key) {
+				amount += m.GetFloat64("grossamount")
+			}
+
 		}
 
 		v := m.GetFloat64("grossamount") + mapsalesreturn2016.GetFloat64(key)
@@ -295,6 +301,8 @@ func prepmasterdiffsalesreturn2016() {
 			break
 		}
 	}
+
+	toolkit.Println("Amount not dist : ", amount)
 
 	masters.Set("mapsalesreturn2016", mapsalesreturn2016)
 }
@@ -510,14 +518,13 @@ func CalcSalesReturn2016(tkm toolkit.M) {
 
 	tkm.Set("salesreturn_ori", mapsalesreturn2016.GetFloat64(key))
 
-	//Fiscal, Channels, Branches, Brands, City, Region, Zone for 2016,
-	key = toolkit.Sprintf("%s|%s|%s|%s|%s|%s|%s|%s|%s",
-		dtkm.GetString("date_fiscal"), dtkm.GetString("customer_branchid"), dtkm.GetString("customer_branchname"),
-		dtkm.GetString("customer_channelid"), dtkm.GetString("customer_channelname"), dtkm.GetString("customer_zone"),
-		dtkm.GetString("customer_region"), dtkm.GetString("customer_areaname"), dtkm.GetString("product_brand"))
+	//Fiscal, Channels, Branches, Brands for 2016,
+	key = toolkit.Sprintf("%s|%s|%s|%s",
+		dtkm.GetString("date_fiscal"), dtkm.GetString("customer_branchid"),
+		dtkm.GetString("customer_channelid"), dtkm.GetString("product_brand"))
 
-	dratio.Set("fiscalchannelbranchbrandcityregionzone", gdrj.SaveDiv(tkm.GetFloat64("grossamount"), ratiosalesreturn2016.GetFloat64(key)))
-	v := tkm.GetFloat64("salesreturn_ori") + (mapsalesreturn2016.GetFloat64(key) * dratio.GetFloat64("fiscalchannelbranchbrandcityregionzone"))
+	dratio.Set("fiscalchannelbranchbrand", gdrj.SaveDiv(tkm.GetFloat64("grossamount"), ratiosalesreturn2016.GetFloat64(key)))
+	v := tkm.GetFloat64("salesreturn_ori") + (mapsalesreturn2016.GetFloat64(key) * dratio.GetFloat64("fiscalchannelbranchbrand"))
 	tkm.Set("salesreturn", v)
 
 	tkm.Set("ratio", dratio)
