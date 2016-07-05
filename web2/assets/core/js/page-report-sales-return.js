@@ -4,7 +4,7 @@ viewModel.salesReturn = {};
 var sr = viewModel.salesReturn;
 sr.contentIsLoading = ko.observable(false);
 sr.plGrossSales = ko.observable('PL0');
-sr.plSalesReturn = ko.observable('PL3');
+sr.plSalesReturn = ko.observable('salesreturn');
 sr.breakdown = ko.observable('customer.channelname');
 sr.fiscalYear = ko.observable(rpt.value.FiscalYear());
 sr.title = ko.observable('Sales Return by Channels');
@@ -17,7 +17,7 @@ sr.changeTo = function (d, e) {
 
 sr.refresh = function () {
 	var param = {};
-	param.pls = [sr.plGrossSales(), sr.plSalesReturn()];
+	param.pls = [];
 	param.groups = rpt.parseGroups([sr.breakdown()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, sr.fiscalYear);

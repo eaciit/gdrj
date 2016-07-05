@@ -895,25 +895,24 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		groups[plmod.ID] = bson.M{op: field}
 	}
 
-	if s.Flag != "" {
-		fields := []string{
-			"grossamount",
-			"ratiotoglobalsales",
-			"ratiotobrandsales",
-			"discountamount",
-			"salesqty",
-			"count",
-			"ratiotobranchsales",
-			"ratiotoskusales",
-			"taxamount",
-			"netamount",
-			// "totaloutlet",
-		}
+	fields := []string{
+		"grossamount",
+		"ratiotoglobalsales",
+		"ratiotobrandsales",
+		"discountamount",
+		"salesqty",
+		"count",
+		"ratiotobranchsales",
+		"ratiotoskusales",
+		"taxamount",
+		"netamount",
+		"salesreturn",
+		// "totaloutlet",
+	}
 
-		for _, other := range fields {
-			field := fmt.Sprintf("$%s", other)
-			groups[other] = bson.M{"$sum": field}
-		}
+	for _, other := range fields {
+		field := fmt.Sprintf("$%s", other)
+		groups[other] = bson.M{"$sum": field}
 	}
 
 	// groups["totalOutlet"] = bson.M{"$size": "$outlets"}
