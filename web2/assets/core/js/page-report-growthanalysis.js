@@ -209,7 +209,7 @@ grw.renderGrid = function (res) {
 				o.data = w;
 
 				if (grw.breakdownBy() == 'date.month') {
-					o.order = parseInt(o.key);
+					o.order = parseInt(o.key, 10);
 				}
 
 				return o;
@@ -296,6 +296,10 @@ grw.renderGrid = function (res) {
 		columnsPlaceholder[0].locked = true;
 		columnsPlaceholder[1].locked = true;
 	}
+
+	columnGrouped = _.orderBy(columnGrouped, function (d) {
+		return d.title;
+	}, 'asc');
 
 	grw.data(rowsAfter);
 	grw.columns(columnsPlaceholder.concat(columnGrouped));
