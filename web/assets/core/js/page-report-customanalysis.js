@@ -13,12 +13,40 @@ cst.dimensionPNL = ko.observable([]);
 
 cst.optionRowColumn = ko.observableArray([{ _id: 'row', Name: 'Row' }, { _id: 'column', Name: 'Column' }]);
 cst.rowColumn = ko.observable('row');
+cst.sortOrder = ko.observable('desc');
+
+cst.optionSortOrders = ko.observableArray([{ field: 'asc', name: 'Smallest to largest' }, { field: 'desc', name: 'Largest to smallest' }]);
 
 cst.optionDimensionBreakdown = ko.observableArray([{ name: "Channel", field: "customer.channelname", title: "customer_channelname" },
 // { name: "RD by distributor name", field: "" },
 // { name: "GT by GT category", field: "" },
 { name: "Branch", field: "customer.branchname", title: "customer_branchname" }, { name: "Customer Group", field: "customer.keyaccount", title: "customer_keyaccount" }, { name: "Key Account", field: "customer.customergroup", title: "customer_customergroupname" }, { name: "Brand", field: "product.brand", title: "product_brand" }, { name: "Zone", field: "customer.zone", title: "customer_zone" }, { name: "Region", field: "customer.region", title: "customer_region" }, { name: "City", field: "customer.areaname", title: "customer_areaname" }, { name: "Date Month", field: "date.month", title: "date_month" }, { name: "Date Quarter", field: "date.quartertxt", title: "date_quartertxt" }]);
 cst.breakdown = ko.observableArray(['product.brand', 'customer.channelname']);
+cst.putTotalOf = ko.observable('customer.channelname');
+
+cst.isDimensionNotContainDate = ko.computed(function () {
+	if (cst.breakdown().indexOf('date.month') > -1) {
+		return false;
+	}
+	if (cst.breakdown().indexOf('date.quartertxt') > -1) {
+		return false;
+	}
+	return true;
+}, cst.breakdown);
+
+cst.optionDimensionBreakdownForTotal = ko.computed(function () {
+	return cst.optionDimensionBreakdown().filter(function (d) {
+		return cst.breakdown().indexOf(d.field) > -1;
+	});
+}, cst.breakdown);
+
+cst.changeBreakdown = function () {
+	setTimeout(function () {
+		if (cst.breakdown().indexOf(cst.putTotalOf()) == -1) {
+			cst.putTotalOf('');
+		}
+	}, 300);
+};
 
 cst.refresh = function () {
 	var param = {};
@@ -145,13 +173,99 @@ cst.build = function () {
 
 		col.rows = _.orderBy(col.rows, function (d) {
 			return d.value;
-		}, 'desc');
+		}, cst.sortOrder());
 		all.push(col);
 	});
 
 	all = _.orderBy(all, function (d) {
 		return d.rows.length > 0 ? d.rows[0].value : d;
-	}, 'desc');
+	}, cst.sortOrder());
+
+	// REORDER
+
+	if (cst.breakdown().indexOf('date.month') > -1) {
+		all = _.orderBy(all, function (d) {
+			return parseInt(d.date_month, 10);
+		}, 'asc'); // cst.sortOrder())
+
+		all.forEach(function (d) {
+			d.date_month = moment(new Date(2015, d.date_month - 1, 1)).format('MMMM');
+		});
+	} else if (cst.breakdown().indexOf('date.quartertxt') > -1) {
+		all = _.orderBy(all, function (d) {
+			return d.date_quartertxt;
+		}, 'asc'); // cst.sortOrder())
+	}
+
+	// INJECT TOTAL
+	if (cst.putTotalOf() != '') {
+		(function () {
+			var group = cst.breakdown().slice(0, cst.breakdown().indexOf(cst.putTotalOf()));
+			var groupOther = cst.breakdown().filter(function (d) {
+				return group.indexOf(d) == -1 && d != cst.putTotalOf();
+			});
+			var allCloned = [];
+			var cache = {};
+
+			console.log("cst.breakdown", cst.breakdown());
+			console.log("group", group);
+			console.log("groupOther", groupOther);
+
+			all.forEach(function (d, i) {
+				var currentKey = group.map(function (f) {
+					return d[toolkit.replace(f, '.', '_')];
+				}).join('_');
+
+				if (!cache.hasOwnProperty(currentKey)) {
+					(function () {
+						var currentData = all.filter(function (f) {
+							var targetKey = group.map(function (g) {
+								return f[toolkit.replace(g, '.', '_')];
+							}).join('_');
+							return targetKey == currentKey;
+						});
+
+						if (currentData.length > 0) {
+							(function () {
+								var sample = currentData[0];
+								var o = {};
+								o[toolkit.replace(cst.putTotalOf(), '.', '_')] = 'Total';
+								o.rows = [];
+
+								group.forEach(function (g) {
+									o[toolkit.replace(g, '.', '_')] = sample[toolkit.replace(g, '.', '_')];
+								});
+
+								groupOther.forEach(function (g) {
+									o[toolkit.replace(g, '.', '_')] = '&nbsp;';
+								});
+
+								sample.rows.forEach(function (g, b) {
+									var row = {};
+									row.pnl = g.pnl;
+									row.value = toolkit.sum(currentData, function (d) {
+										return d.rows[b].value;
+									});
+									o.rows.push(row);
+								});
+
+								allCloned.push(o);
+							})();
+						}
+
+						console.log('---currentKey', currentKey);
+						console.log('---currentData', currentData);
+
+						cache[currentKey] = true;
+					})();
+				}
+
+				allCloned.push(d);
+			});
+
+			all = allCloned;
+		})();
+	}
 
 	console.log('columns', columns);
 	console.log('plmodels', rpt.plmodels());
@@ -205,22 +319,6 @@ cst.build = function () {
 			counter++;
 		});
 	};
-
-	// REORDER
-
-	if (cst.breakdown().indexOf('date.month') > -1) {
-		all = _.orderBy(all, function (d) {
-			return parseInt(d.date_month, 10);
-		}, 'asc');
-
-		all.forEach(function (d) {
-			d.date_month = moment(new Date(2015, d.date_month - 1, 1)).format('MMMM');
-		});
-	} else if (cst.breakdown().indexOf('date.quartertxt') > -1) {
-		all = _.orderBy(all, function (d) {
-			return d.date_quartertxt;
-		}, 'asc');
-	}
 
 	// GENERATE TABLE CONTENT HEADER
 

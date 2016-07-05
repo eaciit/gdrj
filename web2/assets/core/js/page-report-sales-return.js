@@ -70,7 +70,7 @@ sr.render = function (res) {
 
 		rowGrossSales[holder] = d[sr.plGrossSales()];
 		rowSalesReturn[holder] = d[sr.plSalesReturn()];
-		rowPercentage[holder] = toolkit.number(d[sr.plGrossSales()] / d[sr.plSalesReturn()]) * 100;
+		rowPercentage[holder] = Math.abs(toolkit.number(d[sr.plSalesReturn()] / d[sr.plGrossSales()]) * 100);
 
 		var column = {};
 		columns.push(column);
