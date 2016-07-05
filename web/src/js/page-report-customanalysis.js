@@ -14,6 +14,12 @@ cst.optionRowColumn = ko.observableArray([
 	{ _id: 'column', Name: 'Column' },
 ])
 cst.rowColumn = ko.observable('row')
+cst.sortOrder = ko.observable('desc')
+
+cst.optionSortOrders = ko.observableArray([
+	{ field: 'asc', name: 'Smallest to largest' },
+	{ field: 'desc', name: 'Largest to smallest' },
+])
 
 cst.optionDimensionBreakdown = ko.observableArray([
 	{ name: "Channel", field: "customer.channelname", title: "customer_channelname" },
@@ -30,6 +36,30 @@ cst.optionDimensionBreakdown = ko.observableArray([
 	{ name: "Date Quarter", field: "date.quartertxt", title: "date_quartertxt" },
 ])
 cst.breakdown = ko.observableArray(['product.brand', 'customer.channelname'])
+cst.putTotalOf = ko.observable('customer.channelname')
+
+cst.isDimensionNotContainDate = ko.computed(() => {
+	if (cst.breakdown().indexOf('date.month') > -1) {
+		return false
+	}
+	if (cst.breakdown().indexOf('date.quartertxt') > -1) {
+		return false
+	}
+	return true
+}, cst.breakdown)
+
+cst.optionDimensionBreakdownForTotal = ko.computed(() => {
+	return cst.optionDimensionBreakdown()
+		.filter((d) => cst.breakdown().indexOf(d.field) > -1)
+}, cst.breakdown)
+
+cst.changeBreakdown = () => {
+	setTimeout(() => {
+		if (cst.breakdown().indexOf(cst.putTotalOf()) == -1) {
+			cst.putTotalOf('')
+		}
+	}, 300)
+}
 
 cst.refresh = () => {
 	let param = {}
@@ -78,7 +108,11 @@ cst.refresh = () => {
 }
 
 cst.build = () => {
-	let keys = cst.dimensionPNL()
+	let keys = _.orderBy(cst.dimensionPNL(), (d) => {
+		let plmodel = rpt.plmodels().find((e) => e._id == d)
+	    return (plmodel != undefined) ? plmodel.OrderIndex : ''
+	}, 'asc')
+
 	let all = []
 	let columns = []
 	let rows = []
@@ -128,12 +162,89 @@ cst.build = () => {
 			col.rows.push(row)
 		})
 
-		col.rows = _.orderBy(col.rows, (d) => d.value, 'desc')
+		col.rows = _.orderBy(col.rows, (d) => d.value, cst.sortOrder())
 		all.push(col)
 	})
 
-	all = _.orderBy(all, (d) => toolkit.sum(d.rows, (e) => e.value), 'desc')
+	all = _.orderBy(all, (d) => (d.rows.length > 0) ? d.rows[0].value : d, cst.sortOrder())
 
+	// REORDER
+
+	if (cst.breakdown().indexOf('date.month') > -1) {
+		all = _.orderBy(all, (d) => {
+			return parseInt(d.date_month, 10)
+		}, 'asc') // cst.sortOrder())
+
+		all.forEach((d) => {
+			d.date_month = moment(new Date(2015, d.date_month - 1, 1)).format('MMMM')
+		})
+	} else 
+
+	if (cst.breakdown().indexOf('date.quartertxt') > -1) {
+		all = _.orderBy(all, (d) => {
+			return d.date_quartertxt
+		}, 'asc') // cst.sortOrder())
+	}
+
+	// INJECT TOTAL
+	if (cst.putTotalOf() != '') {
+		let group = cst.breakdown().slice(0, cst.breakdown().indexOf(cst.putTotalOf()))
+		let groupOther = cst.breakdown().filter((d) => (group.indexOf(d) == -1) && d != cst.putTotalOf())
+		let allCloned = []
+		let cache = {}
+
+		console.log("cst.breakdown", cst.breakdown())
+		console.log("group", group)
+		console.log("groupOther", groupOther)
+
+		all.forEach((d, i) => {
+			let currentKey = group.map((f) => d[toolkit.replace(f, '.', '_')]).join('_')
+
+			if (!cache.hasOwnProperty(currentKey)) {
+				let currentData = all.filter((f) => {
+					let targetKey = group.map((g) => f[toolkit.replace(g, '.', '_')]).join('_')
+					return (targetKey == currentKey)
+				})
+
+				if (currentData.length > 0) {
+					let sample = currentData[0]
+					let o = {}
+					o[toolkit.replace(cst.putTotalOf(), '.', '_')] = 'Total'
+					o.rows = []
+
+					group.forEach((g) => {
+						o[toolkit.replace(g, '.', '_')] = sample[toolkit.replace(g, '.', '_')]
+					})
+
+					groupOther.forEach((g) => {
+						o[toolkit.replace(g, '.', '_')] = '&nbsp;'
+					})
+
+					sample.rows.forEach((g, b) => {
+						let row = {}
+						row.pnl = g.pnl
+						row.value = toolkit.sum(currentData, (d) => d.rows[b].value)
+						o.rows.push(row)
+					})
+
+					allCloned.push(o)
+				}
+
+				console.log('---currentKey', currentKey)
+				console.log('---currentData', currentData)
+
+				cache[currentKey] = true
+			}
+
+			allCloned.push(d)
+		})
+
+		all = allCloned
+	}
+
+	console.log('columns', columns)
+	console.log('plmodels', rpt.plmodels())
+	console.log('keys', keys)
 	console.log("all", all)
 
 	// PREPARE TEMPLATE
