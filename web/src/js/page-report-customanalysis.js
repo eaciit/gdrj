@@ -78,7 +78,11 @@ cst.refresh = () => {
 }
 
 cst.build = () => {
-	let keys = cst.dimensionPNL()
+	let keys = _.orderBy(cst.dimensionPNL(), (d) => {
+		let plmodel = rpt.plmodels().find((e) => e._id == d)
+	    return (plmodel != undefined) ? plmodel.OrderIndex : ''
+	}, 'asc')
+
 	let all = []
 	let columns = []
 	let rows = []
@@ -132,8 +136,11 @@ cst.build = () => {
 		all.push(col)
 	})
 
-	all = _.orderBy(all, (d) => toolkit.sum(d.rows, (e) => e.value), 'desc')
+	all = _.orderBy(all, (d) => (d.rows.length > 0) ? d.rows[0].value : d, 'desc')
 
+	console.log('columns', columns)
+	console.log('plmodels', rpt.plmodels())
+	console.log('keys', keys)
 	console.log("all", all)
 
 	// PREPARE TEMPLATE
@@ -185,6 +192,24 @@ cst.build = () => {
 
 			counter++
 		})
+	}
+
+	// REORDER
+
+	if (cst.breakdown().indexOf('date.month') > -1) {
+		all = _.orderBy(all, (d) => {
+			return parseInt(d.date_month, 10)
+		}, 'asc')
+
+		all.forEach((d) => {
+			d.date_month = moment(new Date(2015, d.date_month - 1, 1)).format('MMMM')
+		})
+	} else 
+
+	if (cst.breakdown().indexOf('date.quartertxt') > -1) {
+		all = _.orderBy(all, (d) => {
+			return d.date_quartertxt
+		}, 'asc')
 	}
 
 	// GENERATE TABLE CONTENT HEADER

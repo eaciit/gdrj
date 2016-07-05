@@ -73,7 +73,13 @@ cst.refresh = function () {
 };
 
 cst.build = function () {
-	var keys = cst.dimensionPNL();
+	var keys = _.orderBy(cst.dimensionPNL(), function (d) {
+		var plmodel = rpt.plmodels().find(function (e) {
+			return e._id == d;
+		});
+		return plmodel != undefined ? plmodel.OrderIndex : '';
+	}, 'asc');
+
 	var all = [];
 	var columns = [];
 	var rows = [];
@@ -144,11 +150,12 @@ cst.build = function () {
 	});
 
 	all = _.orderBy(all, function (d) {
-		return toolkit.sum(d.rows, function (e) {
-			return e.value;
-		});
+		return d.rows.length > 0 ? d.rows[0].value : d;
 	}, 'desc');
 
+	console.log('columns', columns);
+	console.log('plmodels', rpt.plmodels());
+	console.log('keys', keys);
 	console.log("all", all);
 
 	// PREPARE TEMPLATE
@@ -198,6 +205,22 @@ cst.build = function () {
 			counter++;
 		});
 	};
+
+	// REORDER
+
+	if (cst.breakdown().indexOf('date.month') > -1) {
+		all = _.orderBy(all, function (d) {
+			return parseInt(d.date_month, 10);
+		}, 'asc');
+
+		all.forEach(function (d) {
+			d.date_month = moment(new Date(2015, d.date_month - 1, 1)).format('MMMM');
+		});
+	} else if (cst.breakdown().indexOf('date.quartertxt') > -1) {
+		all = _.orderBy(all, function (d) {
+			return d.date_quartertxt;
+		}, 'asc');
+	}
 
 	// GENERATE TABLE CONTENT HEADER
 
