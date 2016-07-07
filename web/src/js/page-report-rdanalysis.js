@@ -127,6 +127,8 @@ rd.render = () => {
 
 	// ========================= TABLE STRUCTURE
 
+	let percentageWidth = 110
+
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl-branch pivot-pnl')
 		.appendTo($('.breakdown-view'))
@@ -167,8 +169,12 @@ rd.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('%')
+		.html('% of Net Sales')
 		.css('height', `${34 * rd.level()}px`)
+		.css('vertical-align', 'middle')
+		.css('font-weight', 'normal')
+		.css('font-style', 'italic')
+		.width(percentageWidth - 20)
 		.attr('data-rowspan', rd.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
@@ -189,7 +195,6 @@ rd.render = () => {
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
-	let percentageWidth = 80
 
 	let countWidthThenPush = (thheader, each, key) => {
 		let currentColumnWidth = each._id.length * 10
@@ -220,8 +225,11 @@ rd.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('%')
+				.html('% of Net Sales')
 				.width(percentageWidth)
+				.addClass('align-center')
+				.css('font-weight', 'normal')
+				.css('font-style', 'italic')
 				.addClass('align-center')
 				.appendTo(trContents[0])
 
@@ -240,8 +248,11 @@ rd.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('%')
+					.html('% of Net Sales')
 					.width(percentageWidth)
+					.addClass('align-center')
+					.css('font-weight', 'normal')
+					.css('font-style', 'italic')
 					.addClass('align-center')
 					.appendTo(trContents[1])
 
@@ -401,6 +412,36 @@ rd.render = () => {
 
 	// ========================= CONFIGURE THE HIRARCHY
 	rpt.buildGridLevels(rows)
+}
+
+rd.clickExpand = (e) => {
+	let right = $(e).find('i.fa-chevron-right').length
+	let down = $(e).find('i.fa-chevron-down').length
+	if (right > 0){
+		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
+			$('.pivot-pnl .table-header').css('width', '530px')
+			$('.pivot-pnl .table-content').css('margin-left', '530px')
+		}
+
+		$(e).find('i').removeClass('fa-chevron-right')
+		$(e).find('i').addClass('fa-chevron-down')
+		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
+		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
+		$(`tr[statusvaltemp=hide]`).css('display', 'none')
+		rpt.refreshHeight(e.attr('idheaderpl'))
+	}
+	if (down > 0) {
+		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
+			$('.pivot-pnl .table-header').css('width', '')
+			$('.pivot-pnl .table-content').css('margin-left', '')
+		}
+		
+		$(e).find('i').removeClass('fa-chevron-down')
+		$(e).find('i').addClass('fa-chevron-right')
+		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
+		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
+		rpt.hideAllChild(e.attr('idheaderpl'))
+	}
 }
 
 rd.optionBreakdownValues = ko.observableArray(rpt.masterData.Area())

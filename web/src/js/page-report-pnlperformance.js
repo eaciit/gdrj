@@ -628,6 +628,8 @@ bkd.render = () => {
 
 	// ========================= TABLE STRUCTURE
 
+	let percentageWidth = 110
+
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl-branch pivot-pnl')
 		.appendTo($('.breakdown-view'))
@@ -668,10 +670,13 @@ bkd.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('%')
+		.html('% of Net Sales')
 		.css('height', `${34 * bkd.level()}px`)
-		.attr('data-rowspan', bkd.level())
 		.css('vertical-align', 'middle')
+		.css('font-weight', 'normal')
+		.css('font-style', 'italic')
+		.width(percentageWidth - 20)
+		.attr('data-rowspan', bkd.level())
 		.addClass('cell-percentage-header align-right')
 		.appendTo(trHeader)
 
@@ -690,7 +695,6 @@ bkd.render = () => {
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
-	let percentageWidth = 80
 
 	let countWidthThenPush = (thheader, each, key) => {
 		let currentColumnWidth = each._id.length * (bkd.isBreakdownChannel() ? 10 : 6)
@@ -721,9 +725,11 @@ bkd.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('%')
+				.html('% of Net Sales')
 				.width(percentageWidth)
 				.addClass('align-center')
+				.css('font-weight', 'normal')
+				.css('font-style', 'italic')
 				.appendTo(trContents[0])
 
 			return
@@ -741,9 +747,11 @@ bkd.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('%')
+					.html('% of Net Sales')
 					.width(percentageWidth)
 					.addClass('align-center')
+					.css('font-weight', 'normal')
+					.css('font-style', 'italic')
 					.appendTo(trContents[1])
 
 				return

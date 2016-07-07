@@ -311,6 +311,17 @@ cst.build = function () {
 									o.rows.push(row);
 								});
 
+								o.rows = _.orderBy(o.rows, function (d) {
+									var pl = rpt.allowedPL().find(function (g) {
+										return g.PLHeader3 == d.pnl;
+									});
+									if (pl != undefined) {
+										return pl.OrderIndex;
+									}
+
+									return '';
+								}, 'asc');
+
 								allCloned.push(o);
 							})();
 						}
