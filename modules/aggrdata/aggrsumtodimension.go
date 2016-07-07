@@ -119,7 +119,7 @@ func main() {
 		"date.fiscal,customer.channelid,customer.channelname,customer.zone,customer.reportsubchannel",
 		"date.fiscal,customer.channelid,customer.channelname,customer.region,customer.reportsubchannel",
 		"date.fiscal,customer.channelid,customer.channelname,product.brand,customer.reportsubchannel",
-		"date.fiscal,customer.channelid,customer.channelname,customer.areaname,customer.customergroupname",
+		"date.fiscal,customer.channelid,customer.channelname,customer.areaname,customer.customergroupname", //problem
 		"date.fiscal,date.month,date.year,customer.channelid,customer.channelname",
 		"date.fiscal,customer.keyaccount,customer.customergroupname",
 		"date.fiscal,customer.channelid,customer.channelname,customer.areaname",
@@ -249,7 +249,7 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 		i := 0
 		for k, v := range tkm {
 			i++
-			a, _ := toolkit.ToM(v)
+			a := v.(toolkit.M)
 
 			a.Set("_id", k)
 			_ = workerconn.NewQuery().
