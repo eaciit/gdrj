@@ -144,6 +144,8 @@ rd.render = function () {
 
 	// ========================= TABLE STRUCTURE
 
+	var percentageWidth = 110;
+
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl-branch pivot-pnl').appendTo($('.breakdown-view'));
 
 	var tableHeaderWrap = toolkit.newEl('div').addClass('table-header').appendTo(wrapper);
@@ -160,7 +162,7 @@ rd.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('%').css('height', 34 * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of Net Sales').css('height', 34 * rd.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < rd.level(); i++) {
@@ -175,7 +177,6 @@ rd.render = function () {
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
-	var percentageWidth = 80;
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
 		var currentColumnWidth = each._id.length * 10;
@@ -201,7 +202,7 @@ rd.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-center').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('% of Net Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[0]);
 
 			return;
 		}
@@ -214,7 +215,7 @@ rd.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p = toolkit.newEl('th').html('% of Net Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[1]);
 
 				return;
 			}
@@ -346,6 +347,36 @@ rd.render = function () {
 
 	// ========================= CONFIGURE THE HIRARCHY
 	rpt.buildGridLevels(rows);
+};
+
+rd.clickExpand = function (e) {
+	var right = $(e).find('i.fa-chevron-right').length;
+	var down = $(e).find('i.fa-chevron-down').length;
+	if (right > 0) {
+		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
+			$('.pivot-pnl .table-header').css('width', '530px');
+			$('.pivot-pnl .table-content').css('margin-left', '530px');
+		}
+
+		$(e).find('i').removeClass('fa-chevron-right');
+		$(e).find('i').addClass('fa-chevron-down');
+		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', '');
+		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
+		$('tr[statusvaltemp=hide]').css('display', 'none');
+		rpt.refreshHeight(e.attr('idheaderpl'));
+	}
+	if (down > 0) {
+		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
+			$('.pivot-pnl .table-header').css('width', '');
+			$('.pivot-pnl .table-content').css('margin-left', '');
+		}
+
+		$(e).find('i').removeClass('fa-chevron-down');
+		$(e).find('i').addClass('fa-chevron-right');
+		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
+		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
+		rpt.hideAllChild(e.attr('idheaderpl'));
+	}
 };
 
 rd.optionBreakdownValues = ko.observableArray(rpt.masterData.Area());
