@@ -26,7 +26,7 @@
 
 <div class="panel ez no-padding hardcore">
 	<div class="panel-heading">
-		<h3 class="no-margin">&nbsp;</h3>
+		<h3 class="no-margin">Growth Analysis</h3>
 		<div class="panel-nav-button" data-bind="visible: !grw.contentIsLoading()">
 			<div class="form-inline">
 				<button class="btn btn-sm btn-primary tooltipster" data-bind="click: grw.refresh" title="Refresh P&L Analysis">
@@ -53,6 +53,20 @@
 					<span class="input-group-addon width-100 align-right">Breakdown by</span>
 					<div class="width-full">
 						<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: grw.optionBreakdowns, dataValueField: 'field', dataTextField: 'name', value: grw.breakdownBy }"></select>
+					</div>
+				</div>
+
+				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+					<span class="input-group-addon width-100 align-right">Select P&L</span>
+					<div class="width-full">
+						<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.allowedPL, dataValueField: '_id', dataTextField: 'PLHeader3', value: grw.plNetSales, filter: 'contains' }"></select>
+					</div>
+				</div>
+
+				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+					<span class="input-group-addon width-100 align-right">vs P&L</span>
+					<div class="width-full">
+						<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.allowedPL, dataValueField: '_id', dataTextField: 'PLHeader3', value: grw.plEBIT, filter: 'contains' }"></select>
 					</div>
 				</div>
 			</div>
