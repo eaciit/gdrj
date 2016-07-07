@@ -16,8 +16,8 @@ dsbt.changeTo = (d) => {
 viewModel.revenueEbit = {}
 let rve = viewModel.revenueEbit
 rve.contentIsLoading = ko.observable(false)
-rve.plNetSales = ko.observable('PL8A')
-rve.plEBIT = ko.observable('PL44B')
+rve.plNetSales = ko.observable('')
+rve.plEBIT = ko.observable('')
 rve.breakdown = ko.observable('customer.channelname')
 rve.fiscalYear = ko.observable(rpt.value.FiscalYear())
 
@@ -54,6 +54,9 @@ rve.refresh = () => {
 
 rve.render = (res) => {
 	let data = res.Data.Data
+
+	let compare1 = rpt.plmodels().find((d) => d._id == rve.plNetSales())
+	let compare2 = rpt.plmodels().find((d) => d._id == rve.plEBIT())
 
 
 	// Branch
@@ -127,7 +130,7 @@ rve.render = (res) => {
 		locked: true,
 		width: 120
 	}, {
-		title: 'Revenue',
+		title: compare1.PLHeader3,
 		headerAttributes: { class: 'align-center color-0' },
 		columns: [{
 			title: 'Total',
@@ -159,7 +162,7 @@ rve.render = (res) => {
 			]
 		}]
 	}, {
-		title: 'EBIT',
+		title: compare2.PLHeader3,
 		headerAttributes: { class: 'align-center color-1' },
 		columns: [{
 			title: 'Total',
@@ -234,11 +237,16 @@ sd.breakdownSub = ko.observable('customer.reportsubchannel')
 sd.data = ko.observableArray([])
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 sd.selectedPL = ko.observable('PL8A')
-sd.getPLModels = () => {
+sd.getPLModels = (c) => {
 	app.ajaxPost(viewModel.appName + "report/getplmodel", {}, (res) => {
 		sd.selectedPL('')
 		rpt.plmodels(_.orderBy(res, (d) => d.OrderIndex))
 		sd.selectedPL('PL8A')
+
+		rve.plNetSales('PL8A')
+		rve.plEBIT('PL44B')
+
+		c(res)
 	})
 }
 sd.render = (res) => {
@@ -477,9 +485,9 @@ vm.breadcrumb([
 $(() => {
 	rpt.tabbedContent()
 
-	rve.refresh()
-
 	sd.refresh()
 	sd.initSort()
-	sd.getPLModels()
+	sd.getPLModels(() => {
+		rve.refresh()
+	})
 })
