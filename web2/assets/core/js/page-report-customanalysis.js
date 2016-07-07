@@ -1,9 +1,8 @@
-"use strict";
+'use strict';
 
 viewModel.customtable = new Object();
 var cst = viewModel.customtable;
 
-cst.allowedPL = ko.observableArray(["PL0", "PL6A", "PL7A", "PL8", "PL7", "PL8A", "PL6", "PL2", "PL1", "PL14A", "PL14", "PL9", "PL74A", "PL74", "PL21", "PL74B", "PL74C", "PL23", "PL26A", "PL25", "PL32A", "PL31", "PL31E", "PL31D", "PL31C", "PL31B", "PL31A", "PL29A", "PL29A32", "PL29A31", "PL29A30", "PL29A29", "PL29A27", "PL29A26", "PL29A25", "PL29A24", "PL29A23", "PL29A22", "PL29A20", "PL29A19", "PL29A18", "PL29A17", "PL29A16", "PL29A15", "PL29A14", "PL29A13", "PL29A12", "PL29A11", "PL29A10", "PL29A9", "PL29A8", "PL29A6", "PL29A5", "PL29A4", "PL29A3", "PL29A2", "PL28", "PL28I", "PL28G", "PL28F", "PL28E", "PL28D", "PL28C", "PL28B", "PL28A", "PL32B", "PL94A", "PL94B", "PL44B", "PL44", "PL43", "PL42", "PL44C", "PL44E", "PL44D", "PL44F"]);
 cst.contentIsLoading = ko.observable(false);
 cst.title = ko.observable('Custom Analysis');
 cst.fiscalYear = ko.observable(rpt.value.FiscalYear());
@@ -19,8 +18,8 @@ cst.sortOrder = ko.observable('desc');
 cst.optionSortOrders = ko.observableArray([{ field: 'asc', name: 'Smallest to largest' }, { field: 'desc', name: 'Largest to smallest' }]);
 
 cst.optionDimensionBreakdown = ko.observableArray([{ name: "Channel", field: "customer.channelname", title: "customer_channelname" }, { name: "RD by RD category", field: "customer.reportsubchannel|I1", filter: { Op: "$in", Field: "customer.channelname", Value: ["I1"] } }, { name: "GT by GT category", field: "customer.reportsubchannel|I2", filter: { Op: "$in", Field: "customer.channelname", Value: ["I2"] } }, { name: "MT by MT category", field: "customer.reportsubchannel|I3", filter: { Op: "$in", Field: "customer.channelname", Value: ["I3"] } }, { name: "IT by IT category", field: "customer.reportsubchannel|I4", filter: { Op: "$in", Field: "customer.channelname", Value: ["I4"] } }, { name: "Branch", field: "customer.branchname", title: "customer_branchname" }, { name: "Customer Group", field: "customer.keyaccount", title: "customer_keyaccount" }, { name: "Key Account", field: "customer.customergroup", title: "customer_customergroupname" }, { name: "Brand", field: "product.brand", title: "product_brand" }, { name: "Zone", field: "customer.zone", title: "customer_zone" }, { name: "Region", field: "customer.region", title: "customer_region" }, { name: "City", field: "customer.areaname", title: "customer_areaname" }, { name: "Date Month", field: "date.month", title: "date_month" }, { name: "Date Quarter", field: "date.quartertxt", title: "date_quartertxt" }]);
-cst.breakdown = ko.observableArray(['customer.channelname', 'customer.reportsubchannel|I3']);
-cst.putTotalOf = ko.observable('customer.reportsubchannel');
+cst.breakdown = ko.observableArray(['customer.channelname']); // , 'customer.reportsubchannel|I3'])
+cst.putTotalOf = ko.observable('customer.channelname'); // reportsubchannel')
 
 cst.isDimensionNotContainDate = ko.computed(function () {
 	if (cst.breakdown().indexOf('date.month') > -1) {
@@ -133,12 +132,10 @@ cst.refresh = function () {
 
 			cst.contentIsLoading(false);
 
-			rpt.plmodels(res.Data.PLModels.filter(function (d) {
-				return cst.allowedPL().indexOf(d._id) > -1;
-			}));
+			rpt.plmodels(res.Data.PLModels);
 			cst.data(res.Data.Data);
 
-			var opl1 = _.orderBy(rpt.plmodels(), function (d) {
+			var opl1 = _.orderBy(rpt.allowedPL(), function (d) {
 				return d.OrderIndex;
 			});
 			var opl2 = _.map(opl1, function (d) {
@@ -146,7 +143,7 @@ cst.refresh = function () {
 			});
 			cst.optionDimensionPNL(opl2);
 			if (cst.dimensionPNL().length == 0) {
-				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL74C", "PL94A", "PL44B", "PL44C"]);
+				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL44B"]);
 			}
 
 			cst.build();
@@ -164,7 +161,7 @@ cst.build = function () {
 	console.log('breakdown', breakdown);
 
 	var keys = _.orderBy(cst.dimensionPNL(), function (d) {
-		var plmodel = rpt.plmodels().find(function (e) {
+		var plmodel = rpt.allowedPL().find(function (e) {
 			return e._id == d;
 		});
 		return plmodel != undefined ? plmodel.OrderIndex : '';
@@ -201,7 +198,7 @@ cst.build = function () {
 				o[toolkit.replace(key, '_id_', '')] = d._id[key];
 			}
 		}keys.map(function (e) {
-			var pl = rpt.plmodels().find(function (g) {
+			var pl = rpt.allowedPL().find(function (g) {
 				return g._id == e;
 			});
 			var p = toolkit.clone(o);
@@ -251,7 +248,10 @@ cst.build = function () {
 		}, 'asc'); // cst.sortOrder())
 
 		all.forEach(function (d) {
-			d.date_month = moment(new Date(2015, d.date_month - 1, 1)).format('MMMM');
+			var m = d.date_month - 1 + 3;
+			var y = parseInt(cst.fiscalYear().split('-')[0], 0);
+
+			d.date_month = moment(new Date(2015, m, 1)).format("MMMM YYYY");
 		});
 	} else if (breakdown.indexOf('date.quartertxt') > -1) {
 		all = _.orderBy(all, function (d) {
@@ -311,6 +311,17 @@ cst.build = function () {
 									o.rows.push(row);
 								});
 
+								o.rows = _.orderBy(o.rows, function (d) {
+									var pl = rpt.allowedPL().find(function (g) {
+										return g.PLHeader3 == d.pnl;
+									});
+									if (pl != undefined) {
+										return pl.OrderIndex;
+									}
+
+									return '';
+								}, 'asc');
+
 								allCloned.push(o);
 							})();
 						}
@@ -330,7 +341,7 @@ cst.build = function () {
 	}
 
 	console.log('columns', columns);
-	console.log('plmodels', rpt.plmodels());
+	console.log('plmodels', rpt.allowedPL());
 	console.log('keys', keys);
 	console.log("all", all);
 
@@ -347,7 +358,7 @@ cst.build = function () {
 	var trHeaderTableHeader = toolkit.newEl('tr').appendTo(tableHeader);
 	var tdHeaderTableHeader = toolkit.newEl('td').html('&nbsp;').attr('colspan', rows.length).attr('data-rowspan', columns.length).height(columnHeight * columns.length).appendTo(trHeaderTableHeader);
 
-	var tableContentWrapper = toolkit.newEl('div').addClass('table-content').appendTo(container).css('left', tableHeaderWidth + "px");
+	var tableContentWrapper = toolkit.newEl('div').addClass('table-content').appendTo(container).css('left', tableHeaderWidth + 'px');
 	var tableContent = toolkit.newEl('table').appendTo(tableContentWrapper);
 
 	var groupThenLoop = function groupThenLoop(data, groups) {
@@ -390,7 +401,7 @@ cst.build = function () {
 
 	// columns.forEach((d) => {
 	groupThenLoop(all, columns, function (groups) {
-		var rowHeader = tableContent.find("tr[data-key=" + groups.length + "]");
+		var rowHeader = tableContent.find('tr[data-key=' + groups.length + ']');
 		if (rowHeader.size() == 0) {
 			rowHeader = toolkit.newEl('tr').appendTo(tableContent).attr('data-key', groups.length);
 		}
@@ -434,7 +445,7 @@ cst.build = function () {
 				return v[0][d];
 			}).join("_");
 
-			var rowTrHeader = tableHeader.find("tr[data-key=\"" + key + "\"]");
+			var rowTrHeader = tableHeader.find('tr[data-key="' + key + '"]');
 			if (rowTrHeader.size() == 0) {
 				rowTrHeader = toolkit.newEl('tr').appendTo(tableHeader).attr('data-key', key);
 			}
@@ -443,13 +454,13 @@ cst.build = function () {
 
 			rows.forEach(function (e) {
 				var tdKey = [e, key].join('_');
-				var rowTdHeader = rowTrHeader.find("td[data-key=\"" + tdKey + "\"]");
+				var rowTdHeader = rowTrHeader.find('td[data-key="' + tdKey + '"]');
 				if (rowTdHeader.size() == 0) {
 					toolkit.newEl('td').addClass('title').appendTo(rowTrHeader).attr('data-key', tdKey).html(v[0][e]);
 				}
 			});
 
-			var rowTrContent = tableContent.find("tr[data-key=\"" + key + "\"]");
+			var rowTrContent = tableContent.find('tr[data-key="' + key + '"]');
 			if (rowTrContent.size() == 0) {
 				rowTrContent = toolkit.newEl('tr').appendTo(tableContent).attr('data-key', key);
 			}

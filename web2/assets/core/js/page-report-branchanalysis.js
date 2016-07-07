@@ -431,6 +431,7 @@ ba.render = function () {
 
 	// ========================= TABLE STRUCTURE
 
+	var percentageWidth = 110;
 	var data = _.orderBy(ba.data(), function (d) {
 		return d.PL8A;
 	}, 'desc');
@@ -451,7 +452,7 @@ ba.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * ba.level() + 'px').attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('%').css('height', 34 * ba.level() + 'px').attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of Net Sales').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < ba.level(); i++) {
@@ -472,7 +473,11 @@ ba.render = function () {
 		}
 
 		if (ba.expand() && ba.subBreakdownValue().length > 0) {
-			currentColumnWidth = 150;
+			if (ba.subBreakdownValue().indexOf('I1') > -1) {
+				if (each._id == 'Other') {
+					currentColumnWidth = 180;
+				}
+			}
 		}
 
 		each.key = key.join('_');
