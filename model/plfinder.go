@@ -96,10 +96,20 @@ func (s *PLFinderParam) GetPayload(r *knot.WebContext) error {
 		return err
 	}
 
+	hasFiscalYear := false
+
 	for i, breakdown := range s.Breakdowns {
 		if breakdown == "customer.channelname" {
 			s.Breakdowns[i] = "customer.channelid"
 		}
+
+		if breakdown == "date.fiscal" {
+			hasFiscalYear = true
+		}
+	}
+
+	if !hasFiscalYear {
+		s.Breakdowns = append(s.Breakdowns, "date.fiscal")
 	}
 
 	for _, filter := range s.Filters {

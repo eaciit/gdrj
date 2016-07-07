@@ -81,8 +81,11 @@ grw.renderChart = (res) => {
 		let ebit = Math.abs(toolkit.sum(grw.rows()[1].plcodes, (plcode) => d[plcode]))
 
 		if (grw.breakdownBy() == 'date.month') {
-			let month = moment(new Date(2015, parseInt(sub, 10) - 1, 1)).format('MMMM')
-			sub = `${fiscal}\n${month}`
+			let m = parseInt(sub, 10) - 1 + 3
+			let y = parseInt(fiscal.split('-')[0], 10)
+			let mP = moment(new Date(y, m, 1)).format(`MMMM`)
+			let yP = moment(new Date(y, m, 1)).format(`YYYY`)
+			sub = `${mP}\n${yP}`
 		}
 
 		return { 
@@ -234,7 +237,10 @@ grw.renderGrid = (res) => {
 				if (grw.breakdownBy() == 'date.quartertxt') {
 					title = `Quarter ${toolkit.getNumberFromString(d.key.split(' ')[1])}`
 				} else {
-					title = moment(new Date(2015, parseInt(d.key, 10), 1)).format('MMMM')
+					let m = parseInt(d.key, 10) - 1 + 3
+					let y = parseInt(k.split('-')[0], 10)
+
+					title = moment(new Date(y, m, 1)).format('MMMM YYYY')
 				}
 
 				row.columnData.push({

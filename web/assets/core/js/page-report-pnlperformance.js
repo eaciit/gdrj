@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 viewModel.breakdown = new Object();
 var bkd = viewModel.breakdown;
 
@@ -974,7 +976,7 @@ dsbrd.fiscalYears = ko.observableArray(rpt.value.FiscalYears());
 dsbrd.contentIsLoading = ko.observable(false);
 dsbrd.optionStructures = ko.observableArray([{ field: "date.fiscal", name: "Fiscal Year" }, { field: "date.quartertxt", name: "Quarter" }, { field: "date.month", name: "Month" }]);
 dsbrd.structure = ko.observable(dsbrd.optionStructures()[0].field);
-dsbrd.structureYear = ko.observable('date.year');
+// dsbrd.structureYear = ko.observable('date.year')
 dsbrd.optionBreakdownValues = ko.observableArray([]);
 dsbrd.breakdownValue = ko.observableArray([]);
 dsbrd.breakdownValueAll = { _id: 'All', Name: 'All' };
@@ -1072,9 +1074,9 @@ dsbrd.refresh = function () {
 		});
 	}
 
-	if (dsbrd.structure() == 'date.month') {
-		param.groups.push(dsbrd.structureYear());
-	}
+	// if (dsbrd.structure() == 'date.month') {
+	// 	param.groups.push(dsbrd.structureYear())
+	// }
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
@@ -1126,7 +1128,7 @@ dsbrd.render = function (res) {
 			var columnAfter = {
 				breakdownTitle: toolkit.redefine(column._id['_id_' + toolkit.replace(dsbrd.breakdown(), '.', '_')]),
 				structureTitle: toolkit.redefine(column._id['_id_' + toolkit.replace(dsbrd.structure(), '.', '_')]),
-				structureYearTitle: toolkit.redefine(column._id['_id_' + toolkit.replace(dsbrd.structureYear(), '.', '_')]),
+				titleYear: parseInt(toolkit.redefine(column._id['_id_date_fiscal'], '').split('-')[0], 10),
 				original: toolkit.sum(row.plcodes, function (plcode) {
 					return toolkit.number(column[plcode]);
 				}),
@@ -1196,7 +1198,11 @@ dsbrd.render = function (res) {
 		};
 
 		if (dsbrd.structure() == 'date.month') {
-			column.titleYear = $.trim(columnInfo.structureYearTitle);
+			var m = parseInt(column.title, 10) - 1 + 3;
+			var y = columnInfo.titleYear;
+
+			column.order = y * 100 + parseInt(column.title, 10);
+			column.title = moment(new Date(y, m, 1)).format('MMMM YYYY');
 		}
 
 		columnData.push(column);
@@ -1206,20 +1212,6 @@ dsbrd.render = function (res) {
 		return d.breakdown;
 	});
 	var op2 = _.map(op1, function (v, k) {
-		v.forEach(function (h) {
-			h.month = h.title;
-			h.year = h.titleYear;
-
-			if (dsbrd.structure() == 'date.month') {
-				var month = moment(new Date(2015, parseInt(h.title, 10) - 1, 1)).format('MMMM');
-				h.title = month;
-
-				if (rpt.value.FiscalYears().length > 1) {
-					h.title = month + ' ' + h.titleYear;
-				}
-			}
-		});
-
 		return {
 			title: $.trim(k) == '' ? '' : k,
 			columns: v,
@@ -1233,39 +1225,41 @@ dsbrd.render = function (res) {
 		return d.title;
 	});
 
-	op2.forEach(function (d) {
-		d.columns = _.sortBy(d.columns, function (e) {
-			if (dsbrd.structure() == 'date.month') {
-				var monthString = ('0' + e.month).split('').reverse().slice(0, 2).reverse().join('');
-
-				if (rpt.value.FiscalYears().length > 1) {
-					var yearMonthString = '' + e.year + monthString;
-					return yearMonthString;
-				}
-
-				return monthString;
-			}
-
-			return e.title;
-		});
-	});
-
 	if (columnGrouped.length > 0) {
 		columnsPlaceholder[0].locked = true;
 		columnsPlaceholder[1].locked = true;
 	}
 
 	columnGrouped = _.orderBy(columnGrouped, function (d) {
-		var value = 0;
-		var dataColumn = rowsAfter[0].columnData.find(function (e) {
+		var dataColumns = rowsAfter[0].columnData.filter(function (e) {
 			return $.trim(e.breakdownTitle) == $.trim(d.title);
 		});
-		if (typeof dataColumn != 'undefined') {
-			value = dataColumn.value;
+		if (dataColumns.length > 0) {
+			return toolkit.sum(dataColumns, function (e) {
+				return e.value;
+			});
 		}
 
-		return value;
+		return 0;
 	}, 'desc');
+
+	columnGrouped.forEach(function (d) {
+		if (dsbrd.structure() == 'date.month') {
+			d.columns = _.orderBy(d.columns, function (e) {
+				return e.order;
+			}, 'asc');
+		}
+
+		if (dsbrd.structure() == 'date.quartertxt') {
+			d.columns = _.orderBy(d.columns, function (e) {
+				return e.title;
+			}, 'asc');
+		}
+
+		d.columns = _.orderBy(d.columns, function (e) {
+			return e.value;
+		}, 'desc');
+	});
 
 	dsbrd.data(rowsAfter);
 	dsbrd.columns(columnsPlaceholder.concat(columnGrouped));
@@ -1349,25 +1343,39 @@ rs.fiscalYear = ko.observable(rpt.value.FiscalYear());
 rs.columnWidth = ko.observable(130);
 rs.breakdownTimeValue = ko.observableArray([]);
 rs.optionTimeSubBreakdowns = ko.computed(function () {
-	switch (rs.breakdownTimeBy()) {
-		case 'date.fiscal':
-			return rpt.optionFiscalYears().slice(0).map(function (d) {
-				return { field: d, name: d };
-			});
-			break;
-		case 'date.quartertxt':
-			return ['Q1', 'Q2', 'Q3', 'Q4'].map(function (d) {
-				return { field: d, name: d };
-			});
-			break;
-		case 'date.month':
-			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (d) {
-				return { field: d, name: moment(new Date(2015, d, 0)).format('MMMM') };
-			});
-			break;
-		default:
-			return [];break;
-	}
+	var _ret4 = function () {
+		switch (rs.breakdownTimeBy()) {
+			case 'date.fiscal':
+				return {
+					v: rpt.optionFiscalYears().slice(0).map(function (d) {
+						return { field: d, name: d };
+					})
+				};
+				break;
+			case 'date.quartertxt':
+				return {
+					v: ['Q1', 'Q2', 'Q3', 'Q4'].map(function (d) {
+						return { field: d, name: d };
+					})
+				};
+				break;
+			case 'date.month':
+				var y = parseInt(rs.fiscalYear().split('-')[0]);
+				return {
+					v: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (d) {
+						var m = d - 1 + 3;
+						return { field: d, name: moment(new Date(y, m, 0)).format('MMMM YYYY') };
+					})
+				};
+				break;
+			default:
+				return {
+					v: []
+				};break;
+		}
+	}();
+
+	if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
 }, rs.breakdownTimeBy);
 rs.changeBreakdownTimeBy = function () {
 	rs.breakdownTimeValue([]);
@@ -1545,7 +1553,11 @@ rs.generateReport = function (title, raw) {
 		var order = category;
 
 		if (breakdown == 'date.month') {
-			category = moment(new Date(2015, category - 1, 1)).format('MMMM');
+			var y = d._id['_id_date_fiscal'].split('-')[0];
+			var m = parseInt(category) - 1 + 3;
+
+			order = y * 100 + parseInt(category);
+			category = moment(new Date(y, m, 1)).format('MMMM YYYY');
 		}
 
 		data.push({
@@ -1559,9 +1571,17 @@ rs.generateReport = function (title, raw) {
 		});
 	});
 
-	if (breakdown == 'date.month') {
+	if (breakdown == 'date.quartertxt') {
+		data = _.orderBy(data, function (d) {
+			return d.order;
+		}, 'asc');
+	} else if (breakdown == 'date.month') {
 		data = _.orderBy(data, function (d) {
 			return parseInt(d.order, 10);
+		}, 'asc');
+	} else if (breakdown == 'date.fiscal') {
+		data = _.orderBy(data, function (d) {
+			return d.order.split('-')[0];
 		}, 'asc');
 	} else {
 		data = _.orderBy(data, function (d) {
@@ -1746,10 +1766,10 @@ rank.render = function (breakdown, res) {
 			row.original = '';
 			row.pnl = '';
 		}
-		if (breakdown == 'date.month') {
-			row.original = parseInt(row.pnl, 10) - 1;
-			row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM');
-		}
+		// if (breakdown == 'date.month') {
+		// 	row.original = (parseInt(row.pnl, 10) - 1)
+		// 	row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM')
+		// }
 
 		row.gmPercentage = toolkit.number(d.PL74C / d.PL8A) * 100;
 		row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A) * 100;

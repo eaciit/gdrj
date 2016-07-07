@@ -39,8 +39,8 @@ cst.optionDimensionBreakdown = ko.observableArray([
 	{ name: "Date Month", field: "date.month", title: "date_month" },
 	{ name: "Date Quarter", field: "date.quartertxt", title: "date_quartertxt" },
 ])
-cst.breakdown = ko.observableArray(['customer.channelname', 'customer.reportsubchannel|I3'])
-cst.putTotalOf = ko.observable('customer.reportsubchannel')
+cst.breakdown = ko.observableArray(['customer.channelname']) // , 'customer.reportsubchannel|I3'])
+cst.putTotalOf = ko.observable('customer.channelname') // reportsubchannel')
 
 cst.isDimensionNotContainDate = ko.computed(() => {
 	if (cst.breakdown().indexOf('date.month') > -1) {
@@ -150,7 +150,7 @@ cst.refresh = () => {
 			let opl2 = _.map(opl1, (d) => ({ field: d._id, name: d.PLHeader3 }))
 			cst.optionDimensionPNL(opl2)
 			if (cst.dimensionPNL().length == 0) {
-				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL74C", "PL94A", "PL44B", "PL44C"])
+				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL44B"])
 			}
 
 			cst.build()
@@ -235,7 +235,10 @@ cst.build = () => {
 		}, 'asc') // cst.sortOrder())
 
 		all.forEach((d) => {
-			d.date_month = moment(new Date(2015, d.date_month - 1, 1)).format('MMMM')
+			let m = d.date_month - 1 + 3
+			let y = parseInt(cst.fiscalYear().split('-')[0], 0)
+
+			d.date_month = moment(new Date(2015, m, 1)).format("MMMM YYYY")
 		})
 	} else 
 

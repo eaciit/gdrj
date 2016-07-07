@@ -18,8 +18,8 @@ cst.sortOrder = ko.observable('desc');
 cst.optionSortOrders = ko.observableArray([{ field: 'asc', name: 'Smallest to largest' }, { field: 'desc', name: 'Largest to smallest' }]);
 
 cst.optionDimensionBreakdown = ko.observableArray([{ name: "Channel", field: "customer.channelname", title: "customer_channelname" }, { name: "RD by RD category", field: "customer.reportsubchannel|I1", filter: { Op: "$in", Field: "customer.channelname", Value: ["I1"] } }, { name: "GT by GT category", field: "customer.reportsubchannel|I2", filter: { Op: "$in", Field: "customer.channelname", Value: ["I2"] } }, { name: "MT by MT category", field: "customer.reportsubchannel|I3", filter: { Op: "$in", Field: "customer.channelname", Value: ["I3"] } }, { name: "IT by IT category", field: "customer.reportsubchannel|I4", filter: { Op: "$in", Field: "customer.channelname", Value: ["I4"] } }, { name: "Branch", field: "customer.branchname", title: "customer_branchname" }, { name: "Customer Group", field: "customer.keyaccount", title: "customer_keyaccount" }, { name: "Key Account", field: "customer.customergroup", title: "customer_customergroupname" }, { name: "Brand", field: "product.brand", title: "product_brand" }, { name: "Zone", field: "customer.zone", title: "customer_zone" }, { name: "Region", field: "customer.region", title: "customer_region" }, { name: "City", field: "customer.areaname", title: "customer_areaname" }, { name: "Date Month", field: "date.month", title: "date_month" }, { name: "Date Quarter", field: "date.quartertxt", title: "date_quartertxt" }]);
-cst.breakdown = ko.observableArray(['customer.channelname', 'customer.reportsubchannel|I3']);
-cst.putTotalOf = ko.observable('customer.reportsubchannel');
+cst.breakdown = ko.observableArray(['customer.channelname']); // , 'customer.reportsubchannel|I3'])
+cst.putTotalOf = ko.observable('customer.channelname'); // reportsubchannel')
 
 cst.isDimensionNotContainDate = ko.computed(function () {
 	if (cst.breakdown().indexOf('date.month') > -1) {
@@ -143,7 +143,7 @@ cst.refresh = function () {
 			});
 			cst.optionDimensionPNL(opl2);
 			if (cst.dimensionPNL().length == 0) {
-				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL74C", "PL94A", "PL44B", "PL44C"]);
+				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL44B"]);
 			}
 
 			cst.build();
@@ -248,7 +248,10 @@ cst.build = function () {
 		}, 'asc'); // cst.sortOrder())
 
 		all.forEach(function (d) {
-			d.date_month = moment(new Date(2015, d.date_month - 1, 1)).format('MMMM');
+			var m = d.date_month - 1 + 3;
+			var y = parseInt(cst.fiscalYear().split('-')[0], 0);
+
+			d.date_month = moment(new Date(2015, m, 1)).format("MMMM YYYY");
 		});
 	} else if (breakdown.indexOf('date.quartertxt') > -1) {
 		all = _.orderBy(all, function (d) {
