@@ -14,7 +14,7 @@ lgd.menu = ko.observableArray([
 	{ to: 'rdanalysis', title: 'RD Analysis', icon: 'fa-bar-chart', color: 'rgb(234, 144, 0)' },
 	{ to: 'rdvsbranchanalysis', title: 'Branch vs RD Analysis', icon: 'fa-bar-chart', color: '#F39C12' },
 
-	{ to: 'customanalysis', title: 'Ad Hoc Analysis', icon: 'fa-gear', color: '#b70f5d' },
+	{ to: 'customanalysis', title: 'Custom Analysis', icon: 'fa-gear', color: '#b70f5d' },
 ])
 
 vm.currentMenu('Home')

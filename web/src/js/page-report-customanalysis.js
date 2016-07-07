@@ -1,6 +1,7 @@
 viewModel.customtable = new Object()
 let cst = viewModel.customtable
 
+cst.allowedPL = ko.observableArray(["PL0", "PL6A", "PL7A", "PL8", "PL7", "PL8A", "PL6", "PL2", "PL1", "PL14A", "PL14", "PL9", "PL74A", "PL74", "PL21", "PL74B", "PL74C", "PL23", "PL26A", "PL25", "PL32A", "PL31", "PL31E", "PL31D", "PL31C", "PL31B", "PL31A", "PL29A", "PL29A32", "PL29A31", "PL29A30", "PL29A29", "PL29A27", "PL29A26", "PL29A25", "PL29A24", "PL29A23", "PL29A22", "PL29A20", "PL29A19", "PL29A18", "PL29A17", "PL29A16", "PL29A15", "PL29A14", "PL29A13", "PL29A12", "PL29A11", "PL29A10", "PL29A9", "PL29A8", "PL29A6", "PL29A5", "PL29A4", "PL29A3", "PL29A2", "PL28", "PL28I", "PL28G", "PL28F", "PL28E", "PL28D", "PL28C", "PL28B", "PL28A", "PL32B", "PL94A", "PL94B", "PL44B", "PL44", "PL43", "PL42", "PL44C", "PL44E", "PL44D", "PL44F"])
 cst.contentIsLoading = ko.observable(false)
 cst.title = ko.observable('Custom Analysis')
 cst.fiscalYear = ko.observable(rpt.value.FiscalYear())
@@ -14,11 +15,19 @@ cst.optionRowColumn = ko.observableArray([
 	{ _id: 'column', Name: 'Column' },
 ])
 cst.rowColumn = ko.observable('row')
+cst.sortOrder = ko.observable('desc')
+
+cst.optionSortOrders = ko.observableArray([
+	{ field: 'asc', name: 'Smallest to largest' },
+	{ field: 'desc', name: 'Largest to smallest' },
+])
 
 cst.optionDimensionBreakdown = ko.observableArray([
 	{ name: "Channel", field: "customer.channelname", title: "customer_channelname" },
-	// { name: "RD by distributor name", field: "" },
-	// { name: "GT by GT category", field: "" },
+	{ name: "RD by RD category", field: "customer.reportsubchannel|I1", filter: { Op: "$in", Field: "customer.channelname", Value: ["I1"] } },
+	{ name: "GT by GT category", field: "customer.reportsubchannel|I2", filter: { Op: "$in", Field: "customer.channelname", Value: ["I2"] } },
+	{ name: "MT by MT category", field: "customer.reportsubchannel|I3", filter: { Op: "$in", Field: "customer.channelname", Value: ["I3"] } },
+	{ name: "IT by IT category", field: "customer.reportsubchannel|I4", filter: { Op: "$in", Field: "customer.channelname", Value: ["I4"] } },
 	{ name: "Branch", field: "customer.branchname", title: "customer_branchname" },
 	{ name: "Customer Group", field: "customer.keyaccount", title: "customer_keyaccount" },
 	{ name: "Key Account", field: "customer.customergroup", title: "customer_customergroupname" },
@@ -29,19 +38,95 @@ cst.optionDimensionBreakdown = ko.observableArray([
 	{ name: "Date Month", field: "date.month", title: "date_month" },
 	{ name: "Date Quarter", field: "date.quartertxt", title: "date_quartertxt" },
 ])
-cst.breakdown = ko.observableArray(['product.brand', 'customer.channelname'])
+cst.breakdown = ko.observableArray(['customer.channelname', 'customer.reportsubchannel|I3'])
+cst.putTotalOf = ko.observable('customer.reportsubchannel')
+
+cst.isDimensionNotContainDate = ko.computed(() => {
+	if (cst.breakdown().indexOf('date.month') > -1) {
+		return false
+	}
+	if (cst.breakdown().indexOf('date.quartertxt') > -1) {
+		return false
+	}
+	return true
+}, cst.breakdown)
+
+cst.isDimensionNotContainChannel = ko.computed(() => {
+	return (cst.breakdown().filter((d) => d.indexOf('|') > -1).length == 0)
+}, cst.breakdown)
+
+cst.optionDimensionBreakdownForTotal = ko.computed(() => {
+	return cst.optionDimensionBreakdown()
+		.filter((d) => cst.breakdown().indexOf(d.field) > -1)
+}, cst.breakdown)
+
+cst.changeBreakdown = () => {
+	setTimeout(() => {
+		cst.putTotalOf('')
+
+		if (cst.breakdown().indexOf(cst.putTotalOf()) == -1) {
+			cst.putTotalOf('')
+		}
+		if (cst.breakdown().filter((d) => d.indexOf('|') > -1).length > 0) {
+			cst.putTotalOf('customer.reportsubchannel')
+		}
+	}, 300)
+}
+
+cst.breakdownClean = () => {
+	let groups = []
+
+	cst.breakdown().forEach((d) => {
+		let dimension = d
+
+		if (d.indexOf('|') > -1) {
+			dimension = d.split('|')[0]
+		}
+
+		if (groups.indexOf(dimension) == -1) {
+			if (dimension == 'customer.reportsubchannel') {
+				groups = groups.filter((e) => e != 'customer.channelname')
+				groups.push('customer.channelname')
+			}
+
+			groups.push(dimension)
+		}
+	})
+
+	return groups
+}
 
 cst.refresh = () => {
+	if (cst.breakdown().length == 0) {
+		toolkit.showError('At least one breakdown is required')
+		return
+	}
+
 	let param = {}
-	let groups = ['date.fiscal']
-		.concat(cst.breakdown())
-		.filter((d) => d != 'pnl')
+	let groups = ['date.fiscal'].concat(cst.breakdownClean())
 
 	param.pls = cst.dimensionPNL()
 	param.flag = ''
 	param.groups = groups
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, cst.fiscalYear)
+
+	let subchannels = []
+
+	cst.optionDimensionBreakdown()
+		.filter((d) => cst.breakdown().indexOf(d.field) > -1)
+		.filter((d) => d.hasOwnProperty('filter'))
+		.forEach((d) => {
+			subchannels = subchannels.concat(d.filter.Value)
+		})
+
+	if (subchannels.length > 0) {
+		param.filters.push({
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: subchannels
+		})
+	}
 
 	let fetch = () => {
 		app.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
@@ -57,7 +142,7 @@ cst.refresh = () => {
 
 			cst.contentIsLoading(false)
 
-			rpt.plmodels(res.Data.PLModels)
+			rpt.plmodels(res.Data.PLModels.filter((d) => cst.allowedPL().indexOf(d._id) > -1))
 			cst.data(res.Data.Data)
 
 			let opl1 = _.orderBy(rpt.plmodels(), (d) => d.OrderIndex)
@@ -78,17 +163,24 @@ cst.refresh = () => {
 }
 
 cst.build = () => {
-	let keys = cst.dimensionPNL()
+	let breakdown = cst.breakdownClean()
+	console.log('breakdown', breakdown)
+
+	let keys = _.orderBy(cst.dimensionPNL(), (d) => {
+		let plmodel = rpt.plmodels().find((e) => e._id == d)
+	    return (plmodel != undefined) ? plmodel.OrderIndex : ''
+	}, 'asc')
+
 	let all = []
 	let columns = []
 	let rows = []
 
 	if (cst.rowColumn() == 'row') {
-		columns = cst.breakdown().map((d) => toolkit.replace(d, '.', '_'))
+		columns = breakdown.map((d) => toolkit.replace(d, '.', '_'))
 		rows = ['pnl'].map((d) => toolkit.replace(d, '.', '_'))
 	} else {
 		columns = ['pnl'].map((d) => toolkit.replace(d, '.', '_'))
-		rows = cst.breakdown().map((d) => toolkit.replace(d, '.', '_'))
+		rows = breakdown.map((d) => toolkit.replace(d, '.', '_'))
 	}
 
 	// BUILD WELL STRUCTURED DATA
@@ -128,12 +220,89 @@ cst.build = () => {
 			col.rows.push(row)
 		})
 
-		col.rows = _.orderBy(col.rows, (d) => d.value, 'desc')
+		col.rows = _.orderBy(col.rows, (d) => d.value, cst.sortOrder())
 		all.push(col)
 	})
 
-	all = _.orderBy(all, (d) => toolkit.sum(d.rows, (e) => e.value), 'desc')
+	all = _.orderBy(all, (d) => (d.rows.length > 0) ? d.rows[0].value : d, cst.sortOrder())
 
+	// REORDER
+
+	if (breakdown.indexOf('date.month') > -1) {
+		all = _.orderBy(all, (d) => {
+			return parseInt(d.date_month, 10)
+		}, 'asc') // cst.sortOrder())
+
+		all.forEach((d) => {
+			d.date_month = moment(new Date(2015, d.date_month - 1, 1)).format('MMMM')
+		})
+	} else 
+
+	if (breakdown.indexOf('date.quartertxt') > -1) {
+		all = _.orderBy(all, (d) => {
+			return d.date_quartertxt
+		}, 'asc') // cst.sortOrder())
+	}
+
+	// INJECT TOTAL
+	if (cst.putTotalOf() != '') {
+		let group = breakdown.slice(0, breakdown.indexOf(cst.putTotalOf()))
+		let groupOther = breakdown.filter((d) => (group.indexOf(d) == -1) && d != cst.putTotalOf())
+		let allCloned = []
+		let cache = {}
+
+		// console.log("cst.breakdown", breakdown)
+		// console.log("group", group)
+		// console.log("groupOther", groupOther)
+
+		all.forEach((d, i) => {
+			let currentKey = group.map((f) => d[toolkit.replace(f, '.', '_')]).join('_')
+
+			if (!cache.hasOwnProperty(currentKey)) {
+				let currentData = all.filter((f) => {
+					let targetKey = group.map((g) => f[toolkit.replace(g, '.', '_')]).join('_')
+					return (targetKey == currentKey)
+				})
+
+				if (currentData.length > 0) {
+					let sample = currentData[0]
+					let o = {}
+					o[toolkit.replace(cst.putTotalOf(), '.', '_')] = 'Total'
+					o.rows = []
+
+					group.forEach((g) => {
+						o[toolkit.replace(g, '.', '_')] = sample[toolkit.replace(g, '.', '_')]
+					})
+
+					groupOther.forEach((g) => {
+						o[toolkit.replace(g, '.', '_')] = '&nbsp;'
+					})
+
+					sample.rows.forEach((g, b) => {
+						let row = {}
+						row.pnl = g.pnl
+						row.value = toolkit.sum(currentData, (d) => d.rows[b].value)
+						o.rows.push(row)
+					})
+
+					allCloned.push(o)
+				}
+
+				console.log('---currentKey', currentKey)
+				console.log('---currentData', currentData)
+
+				cache[currentKey] = true
+			}
+
+			allCloned.push(d)
+		})
+
+		all = allCloned
+	}
+
+	console.log('columns', columns)
+	console.log('plmodels', rpt.plmodels())
+	console.log('keys', keys)
 	console.log("all", all)
 
 	// PREPARE TEMPLATE
@@ -172,6 +341,10 @@ cst.build = () => {
 		let op1 = _.groupBy(data, (e) => e[groups[0]])
 		let op2 = _.map(op1, (v, k) => toolkit.return({ key: k, val: v }))
 
+		// console.log('columns', columns)
+		// console.log('op1', op1)
+		// console.log('op2', op2)
+
 		let op3 = op2.forEach((g) => {
 			let k = g.key, v = g.val
 			callbackEach(groups, counter, what, k, v)
@@ -189,7 +362,7 @@ cst.build = () => {
 
 	// GENERATE TABLE CONTENT HEADER
 
-	columns.forEach((d) => {
+	// columns.forEach((d) => {
 		groupThenLoop(all, columns, (groups) => {
 			let rowHeader = tableContent.find(`tr[data-key=${groups.length}]`)
 			if (rowHeader.size() == 0) {
@@ -248,6 +421,8 @@ cst.build = () => {
 						.attr('data-key', key)
 				}
 
+				// console.log("-------", rows)
+
 				rows.forEach((e) => {
 					let tdKey = [e, key].join('_')
 					let rowTdHeader = rowTrHeader.find(`td[data-key="${tdKey}"]`)
@@ -275,7 +450,7 @@ cst.build = () => {
 		})
 
 		tableContent.width(totalWidth)
-	})
+	// })
 
 	let tableClear = toolkit.newEl('div')
 		.addClass('clearfix')
