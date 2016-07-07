@@ -375,6 +375,8 @@ kac.render = () => {
 		rows[e].Percentage = toolkit.number(TotalPercentage)
 	})
 
+	let percentageWidth = 110
+
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl')
 		.appendTo($('.breakdown-view'))
@@ -408,7 +410,10 @@ kac.render = () => {
 		.appendTo(trHeader1)
 
 	toolkit.newEl('th')
-		.html('%')
+		.html('% of Net Sales')
+		.css('font-weight', 'normal')
+		.css('font-style', 'italic')
+		.width(percentageWidth - 20)
 		.addClass('align-right')
 		.appendTo(trHeader1)
 
@@ -416,7 +421,6 @@ kac.render = () => {
 		.appendTo(tableContent)
 
 	let colWidth = 160
-	let colPercentWidth = 60
 	let totalWidth = 0
 	let pnlTotalSum = 0
 
@@ -438,12 +442,15 @@ kac.render = () => {
 			.width(colWidth)
 
 		toolkit.newEl('th')
-			.html('%')
+			.html('% of Net Sales')
+			.css('font-weight', 'normal')
+			.css('font-style', 'italic')
+			.width(percentageWidth)
 			.addClass('align-right cell-percentage')
 			.appendTo(trContent1)
-			.width(colPercentWidth)
+			.width(percentageWidth)
 
-		totalWidth += colWidth + colPercentWidth
+		totalWidth += colWidth + percentageWidth
 	})
 	// console.log('data ', data)
 

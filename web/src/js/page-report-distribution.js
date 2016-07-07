@@ -134,31 +134,31 @@ rve.render = (res) => {
 		headerAttributes: { class: 'align-center color-0' },
 		columns: [{
 			title: 'Total',
-			headerAttributes: { class: 'align-center', style: 'font-weight: bold;' },
-			columns: [
-				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesTotal', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesTotalPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
-			]
+			headerAttributes: { style: 'text-align: center; vertical-align: middle; font-weight: bold;' },
+			width: 120,
+			field: 'netSalesTotal',
+			attributes: { class: 'align-right' },
+			format: '{0:n0}'
 		}, {
 			title: 'GT',
 			headerAttributes: { class: 'align-center' },
 			columns: [
 				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesGT', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'netSalesGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
 			]
 		}, {
 			title: 'MT',
 			headerAttributes: { class: 'align-center' },
 			columns: [
 				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesMT', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'netSalesMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
 			]
 		}, {
 			title: 'Other',
 			headerAttributes: { class: 'align-center' },
 			columns: [
 				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesOther', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'netSalesOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
 			]
 		}]
 	}, {
@@ -166,31 +166,31 @@ rve.render = (res) => {
 		headerAttributes: { class: 'align-center color-1' },
 		columns: [{
 			title: 'Total',
-			headerAttributes: { class: 'align-center', style: 'font-weight: bold;' },
-			columns: [
-				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitTotal', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitTotalPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
-			]
+			headerAttributes: { style: 'text-align: center; vertical-align: middle; font-weight: bold;' },
+			width: 120,
+			field: 'ebitTotal',
+			attributes: { class: 'align-right' },
+			format: '{0:n0}'
 		}, {
 			title: 'GT',
 			headerAttributes: { class: 'align-center' },
 			columns: [
 				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitGT', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'ebitGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
 			]
 		}, {
 			title: 'MT',
 			headerAttributes: { class: 'align-center' },
 			columns: [
 				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitMT', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'ebitMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
 			]
 		}, {
 			title: 'Other',
 			headerAttributes: { class: 'align-center' },
 			columns: [
 				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitOther', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'ebitOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'ebitOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
 			]
 		}]
 	}]

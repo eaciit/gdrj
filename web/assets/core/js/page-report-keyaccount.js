@@ -390,6 +390,8 @@ kac.render = function () {
 		rows[e].Percentage = toolkit.number(TotalPercentage);
 	});
 
+	var percentageWidth = 110;
+
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
 
 	var tableHeaderWrap = toolkit.newEl('div').addClass('table-header').appendTo(wrapper);
@@ -406,12 +408,11 @@ kac.render = function () {
 
 	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader1);
 
-	toolkit.newEl('th').html('%').addClass('align-right').appendTo(trHeader1);
+	toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).addClass('align-right').appendTo(trHeader1);
 
 	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
 
 	var colWidth = 160;
-	var colPercentWidth = 60;
 	var totalWidth = 0;
 	var pnlTotalSum = 0;
 
@@ -427,9 +428,9 @@ kac.render = function () {
 		if (d._id.length > 22) colWidth += 30;
 		toolkit.newEl('th').html(d._id).addClass('align-right').appendTo(trContent1).width(colWidth);
 
-		toolkit.newEl('th').html('%').addClass('align-right cell-percentage').appendTo(trContent1).width(colPercentWidth);
+		toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-right cell-percentage').appendTo(trContent1).width(percentageWidth);
 
-		totalWidth += colWidth + colPercentWidth;
+		totalWidth += colWidth + percentageWidth;
 	});
 	// console.log('data ', data)
 

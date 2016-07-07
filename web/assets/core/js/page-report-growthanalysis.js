@@ -304,12 +304,12 @@ grw.renderGrid = function (res) {
 				columnEach.columns.push(columnValue);
 
 				var columnGrowth = {};
-				columnGrowth.title = '%';
+				columnGrowth.title = 'Growth %';
 				columnGrowth.width = 70;
 				columnGrowth.template = function (d) {
 					return kendo.toString(d.columnData[left].growth, 'n2') + " %";
 				};
-				columnGrowth.headerAttributes = { class: 'align-center' };
+				columnGrowth.headerAttributes = { class: 'align-center', style: 'font-style: italic;' };
 				columnGrowth.attributes = { class: 'align-right' };
 				columnEach.columns.push(columnGrowth);
 			});
