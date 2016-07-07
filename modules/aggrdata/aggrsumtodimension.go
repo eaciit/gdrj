@@ -231,8 +231,8 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 			dtkm := toolkit.M{}
 			if tkm.Has(t_id) {
 				dtkm = tkm[t_id].(toolkit.M)
-				dtkm.Set("key", key)
 			}
+			dtkm.Set("key", key)
 
 			for k, v := range val {
 				if k == "key" || k == "_id" {
