@@ -72,36 +72,83 @@ func main() {
 	toolkit.Printfn("Buffered alldata, %d rows in %s", len(alldata), time.Since(t0).String())
 
 	//LIST01
+	// listdimension := []string{
+	// 	"date.fiscal,customer.channelid,customer.channelname,customer.areaname,customer.reportsubchannel",
+	// 	"date.fiscal,customer.channelid,customer.channelname,customer.branchname,customer.reportsubchannel",
+	// 	"date.fiscal,customer.channelid,customer.channelname,customer.zone,customer.reportsubchannel",
+	// 	"date.fiscal,customer.channelid,customer.channelname,customer.region,customer.reportsubchannel",
+	// 	"date.fiscal,customer.channelid,customer.channelname,product.brand,customer.reportsubchannel",
+	// 	"date.fiscal,customer.channelid,customer.channelname,customer.areaname,customer.customergroupname",
+	// 	"date.fiscal,customer.channelid,customer.channelname,customer.areaname",
+	// 	"date.fiscal,customer.channelid,customer.channelname,customer.branchname",
+	// 	"date.fiscal,customer.channelid,customer.channelname,customer.zone",
+	// 	"date.fiscal,customer.channelid,customer.channelname,customer.region",
+	// 	"date.fiscal,customer.channelid,customer.channelname,product.brand",
+	// 	"date.fiscal,customer.keyaccount,customer.customergroupname",
+	// 	"date.fiscal,customer.reportchannel,customer.reportsubchannel",
+	// 	"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel",
+	// 	"date.fiscal,customer.channelname,customer.areaname",
+	// 	"date.fiscal,date.month,customer.channelid,customer.channelname",
+	// 	"date.fiscal,date.month,customer.branchname",
+	// 	"date.fiscal,date.month,customer.brand",
+	// 	"date.fiscal,date.month,customer.areaname",
+	// 	"date.fiscal,date.month,customer.region",
+	// 	"date.fiscal,date.month,customer.keyaccount",
+	// 	"date.fiscal,date.quartertxt,customer.branchname",
+	// 	"date.fiscal,date.quartertxt,product.brand",
+	// 	"date.fiscal,date.quartertxt,customer.areaname",
+	// 	"date.fiscal,date.quartertxt,customer.region",
+	// 	"date.fiscal,date.quartertxt,customer.keyaccount",
+	// 	"date.fiscal,date.quartertxt,customer.channelid,customer.channelname",
+	// 	"date.fiscal,customer.channelid,customer.channelname",
+	// 	"date.fiscal,customer.channelid", //add
+	// 	"date.fiscal,customer.areaname",
+	// 	"date.fiscal,customer.branchname",
+	// 	"date.fiscal,customer.zone",
+	// 	"date.fiscal,customer.region",
+	// 	"date.fiscal,customer.keyaccount",
+	// 	"date.fiscal,product.brand",
+	// 	"date.fiscal,customer.customergroupname",
+	// 	"date.fiscal,date.month",
+	// 	"date.fiscal,date.quartertxt",
+	// }
+
 	listdimension := []string{
 		"date.fiscal,customer.channelid,customer.channelname,customer.areaname,customer.reportsubchannel",
 		"date.fiscal,customer.channelid,customer.channelname,customer.branchname,customer.reportsubchannel",
 		"date.fiscal,customer.channelid,customer.channelname,customer.zone,customer.reportsubchannel",
 		"date.fiscal,customer.channelid,customer.channelname,customer.region,customer.reportsubchannel",
 		"date.fiscal,customer.channelid,customer.channelname,product.brand,customer.reportsubchannel",
-		"date.fiscal,customer.channelid,customer.channelname,customer.areaname,customer.customergroupname",
+		"date.fiscal,customer.channelid,customer.channelname,customer.areaname,customer.customergroupname", //problem
+		"date.fiscal,date.month,date.year,customer.channelid,customer.channelname",
+		"date.fiscal,customer.keyaccount,customer.customergroupname",
 		"date.fiscal,customer.channelid,customer.channelname,customer.areaname",
 		"date.fiscal,customer.channelid,customer.channelname,customer.branchname",
 		"date.fiscal,customer.channelid,customer.channelname,customer.zone",
 		"date.fiscal,customer.channelid,customer.channelname,customer.region",
 		"date.fiscal,customer.channelid,customer.channelname,product.brand",
-		"date.fiscal,customer.keyaccount,customer.customergroupname",
+		"date.fiscal,date.month,customer.channelid,customer.channelname",
 		"date.fiscal,customer.reportchannel,customer.reportsubchannel",
 		"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel",
-		"date.fiscal,customer.channelname,customer.areaname",
-		"date.fiscal,date.month,customer.channelid,customer.channelname",
 		"date.fiscal,date.month,customer.branchname",
 		"date.fiscal,date.month,customer.brand",
 		"date.fiscal,date.month,customer.areaname",
 		"date.fiscal,date.month,customer.region",
 		"date.fiscal,date.month,customer.keyaccount",
+		"date.fiscal,date.quartertxt,customer.channelid,customer.channelname",
+		"date.fiscal,date.month,date.year,customer.branchname",
+		"date.fiscal,date.month,date.year,customer.brand",
+		"date.fiscal,date.month,date.year,customer.areaname",
+		"date.fiscal,date.month,date.year,customer.region",
+		"date.fiscal,date.month,date.year,customer.keyaccount",
+		"date.fiscal,customer.channelname,customer.areaname",
+		"date.fiscal,customer.channelid,customer.channelname",
 		"date.fiscal,date.quartertxt,customer.branchname",
 		"date.fiscal,date.quartertxt,product.brand",
 		"date.fiscal,date.quartertxt,customer.areaname",
 		"date.fiscal,date.quartertxt,customer.region",
 		"date.fiscal,date.quartertxt,customer.keyaccount",
-		"date.fiscal,date.quartertxt,customer.channelid,customer.channelname",
-		"date.fiscal,customer.channelid,customer.channelname",
-		"date.fiscal,customer.channelid", //add
+		"date.fiscal,date.month,date.year",
 		"date.fiscal,customer.areaname",
 		"date.fiscal,customer.branchname",
 		"date.fiscal,customer.zone",
@@ -112,27 +159,6 @@ func main() {
 		"date.fiscal,date.month",
 		"date.fiscal,date.quartertxt",
 	}
-
-	// listdimension := []string{"customer.channelid,date.fiscal",
-	// 	"customer.areaname,date.fiscal",
-	// 	"customer.branchname,date.fiscal",
-	// 	"customer.region,date.fiscal",
-	// 	"customer.zone,date.fiscal",
-	// 	"date.fiscal,product.brand",
-	// 	"customer.channelid,customer.reportsubchannel,date.fiscal",
-	// 	"customer.areaname,customer.channelid,customer.reportsubchannel,date.fiscal",
-	// 	"customer.branchname,customer.channelid,customer.reportsubchannel,date.fiscal",
-	// 	"customer.channelid,customer.region,customer.reportsubchannel,date.fiscal",
-	// 	"customer.channelid,customer.reportsubchannel,customer.zone,date.fiscal",
-	// 	"customer.channelid,customer.reportsubchannel,date.fiscal,product.brand",
-	// 	"customer.keyaccount,date.fiscal",
-	// 	"date.fiscal,date.month",
-	// 	"date.fiscal,date.quartertxt",
-	// 	"customer.customergroupname,customer.keyaccount,date.fiscal",
-	// 	"customer.branchname,customer.channelid,customer.reportsubchannel,date.fiscal",
-	// 	"customer.branchname,customer.channelid,date.fiscal",
-	// 	"customer.areaname,customer.channelid,date.fiscal",
-	// 	"customer.channelid,date.fiscal,product.brand"}
 
 	// comblist := []string{"customer.branchname", "product.brand", "customer.channelname",
 	// 	"customer.areaname", "customer.region", "customer.zone", "customer.keyaccount"}
@@ -205,8 +231,8 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 			dtkm := toolkit.M{}
 			if tkm.Has(t_id) {
 				dtkm = tkm[t_id].(toolkit.M)
-				dtkm.Set("key", key)
 			}
+			dtkm.Set("key", key)
 
 			for k, v := range val {
 				if k == "key" || k == "_id" {
@@ -223,7 +249,7 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 		i := 0
 		for k, v := range tkm {
 			i++
-			a, _ := toolkit.ToM(v)
+			a := v.(toolkit.M)
 
 			a.Set("_id", k)
 			_ = workerconn.NewQuery().
