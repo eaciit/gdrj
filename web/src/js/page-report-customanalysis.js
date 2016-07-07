@@ -289,6 +289,15 @@ cst.build = () => {
 						o.rows.push(row)
 					})
 
+					o.rows = _.orderBy(o.rows, (d) => {
+						let pl = rpt.allowedPL().find((g) => g.PLHeader3 == d.pnl)
+						if (pl != undefined) {
+							return pl.OrderIndex
+						}
+
+						return ''
+					}, 'asc')
+
 					allCloned.push(o)
 				}
 
