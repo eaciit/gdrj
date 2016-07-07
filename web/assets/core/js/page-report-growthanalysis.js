@@ -8,8 +8,8 @@ grw.contentIsLoading = ko.observable(false);
 grw.optionBreakdowns = ko.observableArray([{ field: "date.quartertxt", name: "Quarter" }, { field: "date.month", name: "Month" }]);
 grw.breakdownBy = ko.observable('date.quartertxt');
 grw.breakdownByFiscalYear = ko.observable('date.fiscal');
-grw.rows = ko.observableArray([{ pnl: "Net Sales", plcodes: ["PL8A"] }, //  ["PL9"] }, //
-{ pnl: "EBIT", plcodes: ["PL44B"] }]);
+grw.plNetSales = ko.observable('');
+grw.plEBIT = ko.observable('');
 grw.columns = ko.observableArray([]);
 
 grw.data = ko.observableArray([]);
@@ -47,7 +47,12 @@ grw.refresh = function () {
 			}
 
 			// grw.data(grw.buildStructure(res.Data.Data))
-			// rpt.plmodels(res.Data.PLModels)
+			rpt.plmodels(res.Data.PLModels);
+			if (grw.plNetSales() == '') {
+				grw.plNetSales('PL8A');
+				grw.plEBIT('PL44B');
+			}
+
 			grw.emptyGrid();
 			grw.contentIsLoading(false);
 			grw.renderGrid(res);
@@ -75,16 +80,15 @@ grw.renderChart = function (res) {
 		var fiscal = d._id["_id_" + toolkit.replace(grw.breakdownByFiscalYear(), '.', '_')];
 		var order = d._id["_id_" + toolkit.replace(grw.breakdownBy(), '.', '_')];
 		var sub = d._id["_id_" + toolkit.replace(grw.breakdownBy(), '.', '_')];
-		var net = Math.abs(toolkit.sum(grw.rows()[0].plcodes, function (plcode) {
-			return d[plcode];
-		}));
-		var ebit = Math.abs(toolkit.sum(grw.rows()[1].plcodes, function (plcode) {
-			return d[plcode];
-		}));
+		var net = Math.abs(d[grw.plNetSales()]);
+		var ebit = Math.abs(d[grw.plEBIT()]);
 
 		if (grw.breakdownBy() == 'date.month') {
-			var month = moment(new Date(2015, parseInt(sub, 10) - 1, 1)).format('MMMM');
-			sub = fiscal + "\n" + month;
+			var m = parseInt(sub, 10) - 1 + 3;
+			var y = parseInt(fiscal.split('-')[0], 10);
+			var mP = moment(new Date(y, m, 1)).format("MMMM");
+			var yP = moment(new Date(y, m, 1)).format("YYYY");
+			sub = mP + "\n" + yP;
 		}
 
 		return {
@@ -129,10 +133,28 @@ grw.renderChart = function (res) {
 		seriesColors: toolkit.seriesColorsGodrej,
 		series: [{
 			field: 'net',
-			name: grw.rows()[0].pnl
+			name: function () {
+				var row = rpt.plmodels().find(function (d) {
+					return d._id == grw.plNetSales();
+				});
+				if (row != undefined) {
+					return row.PLHeader3;
+				}
+
+				return '&nbsp;';
+			}()
 		}, {
 			field: 'ebit',
-			name: grw.rows()[1].pnl
+			name: function () {
+				var row = rpt.plmodels().find(function (d) {
+					return d._id == grw.plEBIT();
+				});
+				if (row != undefined) {
+					return row.PLHeader3;
+				}
+
+				return '&nbsp;';
+			}()
 		}],
 		valueAxis: {
 			majorGridLines: { color: '#fafafa' },
@@ -177,15 +199,20 @@ grw.renderGrid = function (res) {
 	}];
 
 	var columnGrouped = [];
-	var data = res.Data.Data;
-
-	grw.rows().forEach(function (row, rowIndex) {
+	var data = res.Data.Data;[grw.plNetSales(), grw.plEBIT()].forEach(function (g, rowIndex) {
+		var row = {};
+		row.pnl = '&nbsp;';
 		row.columnData = [];
 		row.total = toolkit.sum(data, function (each) {
-			return toolkit.number(toolkit.sum(row.plcodes, function (d) {
-				return each[d];
-			}));
+			return toolkit.number(each[g]);
 		});
+
+		var pl = rpt.plmodels().find(function (r) {
+			return r._id == g;
+		});
+		if (pl != undefined) {
+			row.pnl = pl.PLHeader3;
+		}
 
 		var prev = null;
 
@@ -229,18 +256,14 @@ grw.renderGrid = function (res) {
 
 			op4.forEach(function (d, i) {
 				var current = d.data;
-				var value = toolkit.sum(row.plcodes, function (plcode) {
-					return toolkit.sum(current, function (d) {
-						return toolkit.number(d[plcode]);
-					});
+				var value = toolkit.sum(current, function (d) {
+					return toolkit.number(d[g]);
 				});
 
 				var prevValue = 0;
 				if (!(j == 0 && i == 0)) {
-					prevValue = toolkit.sum(row.plcodes, function (plcode) {
-						return toolkit.sum(prev, function (d) {
-							return toolkit.number(d[plcode]);
-						});
+					prevValue = toolkit.sum(prev, function (d) {
+						return toolkit.number(d[g]);
 					});
 				}
 
@@ -250,7 +273,10 @@ grw.renderGrid = function (res) {
 				if (grw.breakdownBy() == 'date.quartertxt') {
 					title = "Quarter " + toolkit.getNumberFromString(d.key.split(' ')[1]);
 				} else {
-					title = moment(new Date(2015, parseInt(d.key, 10), 1)).format('MMMM');
+					var m = parseInt(d.key, 10) - 1 + 3;
+					var y = parseInt(k.split('-')[0], 10);
+
+					title = moment(new Date(y, m, 1)).format('MMMM YYYY');
 				}
 
 				row.columnData.push({

@@ -1036,7 +1036,7 @@ dsbrd.optionStructures = ko.observableArray([
 	{ field: "date.month", name: "Month" }
 ])
 dsbrd.structure = ko.observable(dsbrd.optionStructures()[0].field)
-dsbrd.structureYear = ko.observable('date.year')
+// dsbrd.structureYear = ko.observable('date.year')
 dsbrd.optionBreakdownValues = ko.observableArray([])
 dsbrd.breakdownValue = ko.observableArray([])
 dsbrd.breakdownValueAll = { _id: 'All', Name: 'All' }
@@ -1128,9 +1128,9 @@ dsbrd.refresh = () => {
 		})
 	}
 
-	if (dsbrd.structure() == 'date.month') {
-		param.groups.push(dsbrd.structureYear())
-	}
+	// if (dsbrd.structure() == 'date.month') {
+	// 	param.groups.push(dsbrd.structureYear())
+	// }
 
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
@@ -1180,7 +1180,7 @@ dsbrd.render = (res) => {
 			let columnAfter = {
 				breakdownTitle: toolkit.redefine(column._id[`_id_${toolkit.replace(dsbrd.breakdown(), '.', '_')}`]), 
 				structureTitle: toolkit.redefine(column._id[`_id_${toolkit.replace(dsbrd.structure(), '.', '_')}`]), 
-				structureYearTitle: toolkit.redefine(column._id[`_id_${toolkit.replace(dsbrd.structureYear(), '.', '_')}`]), 
+				titleYear: parseInt(toolkit.redefine(column._id[`_id_date_fiscal`], '').split('-')[0], 10), 
 				original: toolkit.sum(row.plcodes, (plcode) => toolkit.number(column[plcode])),
 				value: toolkit.sum(row.plcodes, (plcode) => toolkit.number(column[plcode])),
 			}
@@ -1234,7 +1234,11 @@ dsbrd.render = (res) => {
 		}
 
 		if (dsbrd.structure() == 'date.month') {
-			column.titleYear = $.trim(columnInfo.structureYearTitle)
+			let m = parseInt(column.title, 10) - 1 + 3
+			let y = columnInfo.titleYear
+
+			column.order = y * 100 + parseInt(column.title, 10)
+			column.title = moment(new Date(y, m, 1)).format('MMMM YYYY')
 		}
 
 		columnData.push(column)
@@ -1242,20 +1246,6 @@ dsbrd.render = (res) => {
 
 	let op1 = _.groupBy(columnData, (d) => d.breakdown)
 	let op2 = _.map(op1, (v, k) => { 
-		v.forEach((h) => {
-			h.month = h.title
-			h.year = h.titleYear
-
-			if (dsbrd.structure() == 'date.month') {
-				let month = moment(new Date(2015, parseInt(h.title, 10) - 1, 1)).format('MMMM')
-				h.title = month
-
-				if (rpt.value.FiscalYears().length > 1) {
-					h.title = `${month} ${h.titleYear}`
-				}
-			}
-		})
-
 		return { 
 			title: ($.trim(k) == '' ? '' : k), 
 			columns: v,
@@ -1267,38 +1257,32 @@ dsbrd.render = (res) => {
 
 	let columnGrouped = _.sortBy(op2, (d) => d.title)
 
-	op2.forEach((d) => {
-		d.columns = _.sortBy(d.columns, (e) => {
-			if (dsbrd.structure() == 'date.month') {
-				let monthString = `0${e.month}`.split('').reverse().slice(0, 2).reverse().join('')
-				
-				if (rpt.value.FiscalYears().length > 1) {
-					let yearMonthString = `${e.year}${monthString}`
-					return yearMonthString
-				}
-
-				return monthString
-			}
-
-			return e.title
-		})
-	})
-
 	if (columnGrouped.length > 0) {
 		columnsPlaceholder[0].locked = true
 		columnsPlaceholder[1].locked = true
 	}
 
 	columnGrouped = _.orderBy(columnGrouped, (d) => {
-		let value = 0
-		let dataColumn = rowsAfter[0].columnData
-			.find((e) => $.trim(e.breakdownTitle) == $.trim(d.title))
-		if (typeof dataColumn != 'undefined') {
-			value = dataColumn.value
+		let dataColumns = rowsAfter[0].columnData
+			.filter((e) => $.trim(e.breakdownTitle) == $.trim(d.title))
+		if (dataColumns.length > 0) {
+			return toolkit.sum(dataColumns, (e) => e.value)
 		}
 
-		return value
+		return 0
 	}, 'desc')
+
+	columnGrouped.forEach((d) => {
+		if (dsbrd.structure() == 'date.month') {
+			d.columns = _.orderBy(d.columns, (e) => e.order, 'asc')
+		}
+
+		if (dsbrd.structure() == 'date.quartertxt') {
+			d.columns = _.orderBy(d.columns, (e) => e.title, 'asc')
+		}
+
+		d.columns = _.orderBy(d.columns, (e) => e.value, 'desc')
+	})
 
 	dsbrd.data(rowsAfter)
 	dsbrd.columns(columnsPlaceholder.concat(columnGrouped))
@@ -1403,8 +1387,10 @@ rs.optionTimeSubBreakdowns = ko.computed(() => {
 			})
 		break;
 		case 'date.month': 
+			let y = parseInt(rs.fiscalYear().split('-')[0])
 			return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((d) => {
-				return { field: d, name: moment(new Date(2015, d, 0)).format('MMMM') }
+				let m = d - 1 + 3
+				return { field: d, name: moment(new Date(y, m, 0)).format('MMMM YYYY') }
 			})
 		break;
 		default: return []; break;
@@ -1567,7 +1553,11 @@ rs.generateReport = (title, raw) => {
 		let order = category
 
 		if (breakdown == 'date.month') {
-			category = moment(new Date(2015, category - 1, 1)).format('MMMM')
+			let y = d._id[`_id_date_fiscal`].split('-')[0]
+			let m = parseInt(category) - 1 + 3
+
+			order = y * 100 + parseInt(category)
+			category = moment(new Date(y, m, 1)).format('MMMM YYYY')
 		}
 
 		data.push({
@@ -1581,8 +1571,12 @@ rs.generateReport = (title, raw) => {
 		})
 	})
 
-	if (breakdown == 'date.month') {
+	if (breakdown == 'date.quartertxt') {
+		data = _.orderBy(data, (d) => d.order, 'asc')
+	} else if (breakdown == 'date.month') {
 		data = _.orderBy(data, (d) => parseInt(d.order, 10), 'asc')
+	} else if (breakdown == 'date.fiscal') {
+		data = _.orderBy(data, (d) => d.order.split('-')[0], 'asc')
 	} else {
 		data = _.orderBy(data, (d) => d.valuePNLPercentage, 'desc')
 	}
@@ -1768,10 +1762,10 @@ rank.render = (breakdown, res) => {
 			row.original = ''
 			row.pnl = ''
 		}
-		if (breakdown == 'date.month') {
-			row.original = (parseInt(row.pnl, 10) - 1)
-			row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM')
-		}
+		// if (breakdown == 'date.month') {
+		// 	row.original = (parseInt(row.pnl, 10) - 1)
+		// 	row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM')
+		// }
 
 
 		row.gmPercentage = toolkit.number(d.PL74C / d.PL8A) * 100

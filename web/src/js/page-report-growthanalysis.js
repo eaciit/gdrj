@@ -9,10 +9,8 @@ grw.optionBreakdowns = ko.observableArray([
 ])
 grw.breakdownBy = ko.observable('date.quartertxt')
 grw.breakdownByFiscalYear = ko.observable('date.fiscal')
-grw.rows = ko.observableArray([
-	{ pnl: "Net Sales", plcodes: ["PL8A"] }, //  ["PL9"] }, //
-	{ pnl: "EBIT", plcodes: ["PL44B"] }, // ["PL9"] }, // 
-])
+grw.plNetSales = ko.observable('')
+grw.plEBIT = ko.observable('')
 grw.columns = ko.observableArray([])
 
 grw.data = ko.observableArray([])
@@ -48,7 +46,12 @@ grw.refresh = (useCache = false) => {
 			}
 
 			// grw.data(grw.buildStructure(res.Data.Data))
-			// rpt.plmodels(res.Data.PLModels)
+			rpt.plmodels(res.Data.PLModels)
+			if (grw.plNetSales() == '') {
+				grw.plNetSales('PL8A')
+				grw.plEBIT('PL44B')
+			}
+			
 			grw.emptyGrid()
 			grw.contentIsLoading(false)
 			grw.renderGrid(res)
@@ -77,12 +80,15 @@ grw.renderChart = (res) => {
 		let fiscal = d._id[`_id_${toolkit.replace(grw.breakdownByFiscalYear(), '.', '_')}`]
 		let order = d._id[`_id_${toolkit.replace(grw.breakdownBy(), '.', '_')}`]
 		let sub = d._id[`_id_${toolkit.replace(grw.breakdownBy(), '.', '_')}`]
-		let net = Math.abs(toolkit.sum(grw.rows()[0].plcodes, (plcode) => d[plcode]))
-		let ebit = Math.abs(toolkit.sum(grw.rows()[1].plcodes, (plcode) => d[plcode]))
+		let net = Math.abs(d[grw.plNetSales()])
+		let ebit = Math.abs(d[grw.plEBIT()])
 
 		if (grw.breakdownBy() == 'date.month') {
-			let month = moment(new Date(2015, parseInt(sub, 10) - 1, 1)).format('MMMM')
-			sub = `${fiscal}\n${month}`
+			let m = parseInt(sub, 10) - 1 + 3
+			let y = parseInt(fiscal.split('-')[0], 10)
+			let mP = moment(new Date(y, m, 1)).format(`MMMM`)
+			let yP = moment(new Date(y, m, 1)).format(`YYYY`)
+			sub = `${mP}\n${yP}`
 		}
 
 		return { 
@@ -127,10 +133,24 @@ grw.renderChart = (res) => {
 		seriesColors: toolkit.seriesColorsGodrej,
 		series: [{
 			field: 'net',
-			name: grw.rows()[0].pnl,
+			name: (() => {
+				let row = rpt.plmodels().find((d) => d._id == grw.plNetSales())
+				if (row != undefined) {
+					return row.PLHeader3
+				}
+
+				return '&nbsp;'
+			})(),
 		}, {
 			field: 'ebit',
-			name: grw.rows()[1].pnl
+			name: (() => {
+				let row = rpt.plmodels().find((d) => d._id == grw.plEBIT())
+				if (row != undefined) {
+					return row.PLHeader3
+				}
+
+				return '&nbsp;'
+			})(),
 		}],
         valueAxis: {
 			majorGridLines: { color: '#fafafa' },
@@ -177,11 +197,16 @@ grw.renderGrid = (res) => {
 	let columnGrouped = []
 	let data = res.Data.Data
 
-	grw.rows().forEach((row, rowIndex) => {
+	;[grw.plNetSales(), grw.plEBIT()].forEach((g, rowIndex) => {
+		let row = {}
+		row.pnl = '&nbsp;'
 		row.columnData = []
-		row.total = toolkit.sum(data, (each) => toolkit.number(
-			toolkit.sum(row.plcodes, (d) => each[d])
-		))
+		row.total = toolkit.sum(data, (each) => toolkit.number(each[g]))
+
+		let pl = rpt.plmodels().find((r) => r._id == g)
+		if (pl != undefined) {
+			row.pnl = pl.PLHeader3
+		}
 
 		let prev = null
 
@@ -217,15 +242,11 @@ grw.renderGrid = (res) => {
 
 			op4.forEach((d, i) => {
 				let current = d.data
-				let value = toolkit.sum(row.plcodes, (plcode) => {
-					return toolkit.sum(current, (d) => toolkit.number(d[plcode]))
-				})
+				let value = toolkit.sum(current, (d) => toolkit.number(d[g]))
 
 				let prevValue = 0
 				if (!(j == 0 && i == 0)) {
-					prevValue = toolkit.sum(row.plcodes, (plcode) => {
-						return toolkit.sum(prev, (d) => toolkit.number(d[plcode]))
-					})
+					prevValue = toolkit.sum(prev, (d) => toolkit.number(d[g]))
 				}
 
 				prev = current
@@ -234,7 +255,10 @@ grw.renderGrid = (res) => {
 				if (grw.breakdownBy() == 'date.quartertxt') {
 					title = `Quarter ${toolkit.getNumberFromString(d.key.split(' ')[1])}`
 				} else {
-					title = moment(new Date(2015, parseInt(d.key, 10), 1)).format('MMMM')
+					let m = parseInt(d.key, 10) - 1 + 3
+					let y = parseInt(k.split('-')[0], 10)
+
+					title = moment(new Date(y, m, 1)).format('MMMM YYYY')
 				}
 
 				row.columnData.push({

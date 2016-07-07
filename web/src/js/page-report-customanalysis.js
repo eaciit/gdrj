@@ -1,7 +1,8 @@
 viewModel.customtable = new Object()
 let cst = viewModel.customtable
 
-cst.allowedPL = ko.observableArray(["PL0", "PL6A", "PL7A", "PL8", "PL7", "PL8A", "PL6", "PL2", "PL1", "PL14A", "PL14", "PL9", "PL74A", "PL74", "PL21", "PL74B", "PL74C", "PL23", "PL26A", "PL25", "PL32A", "PL31", "PL31E", "PL31D", "PL31C", "PL31B", "PL31A", "PL29A", "PL29A32", "PL29A31", "PL29A30", "PL29A29", "PL29A27", "PL29A26", "PL29A25", "PL29A24", "PL29A23", "PL29A22", "PL29A20", "PL29A19", "PL29A18", "PL29A17", "PL29A16", "PL29A15", "PL29A14", "PL29A13", "PL29A12", "PL29A11", "PL29A10", "PL29A9", "PL29A8", "PL29A6", "PL29A5", "PL29A4", "PL29A3", "PL29A2", "PL28", "PL28I", "PL28G", "PL28F", "PL28E", "PL28D", "PL28C", "PL28B", "PL28A", "PL32B", "PL94A", "PL94B", "PL44B", "PL44", "PL43", "PL42", "PL44C", "PL44E", "PL44D", "PL44F"])
+
+
 cst.contentIsLoading = ko.observable(false)
 cst.title = ko.observable('Custom Analysis')
 cst.fiscalYear = ko.observable(rpt.value.FiscalYear())
@@ -38,8 +39,8 @@ cst.optionDimensionBreakdown = ko.observableArray([
 	{ name: "Date Month", field: "date.month", title: "date_month" },
 	{ name: "Date Quarter", field: "date.quartertxt", title: "date_quartertxt" },
 ])
-cst.breakdown = ko.observableArray(['customer.channelname', 'customer.reportsubchannel|I3'])
-cst.putTotalOf = ko.observable('customer.reportsubchannel')
+cst.breakdown = ko.observableArray(['customer.channelname']) // , 'customer.reportsubchannel|I3'])
+cst.putTotalOf = ko.observable('customer.channelname') // reportsubchannel')
 
 cst.isDimensionNotContainDate = ko.computed(() => {
 	if (cst.breakdown().indexOf('date.month') > -1) {
@@ -142,14 +143,14 @@ cst.refresh = () => {
 
 			cst.contentIsLoading(false)
 
-			rpt.plmodels(res.Data.PLModels.filter((d) => cst.allowedPL().indexOf(d._id) > -1))
+			rpt.plmodels(res.Data.PLModels)
 			cst.data(res.Data.Data)
 
-			let opl1 = _.orderBy(rpt.plmodels(), (d) => d.OrderIndex)
+			let opl1 = _.orderBy(rpt.allowedPL(), (d) => d.OrderIndex)
 			let opl2 = _.map(opl1, (d) => ({ field: d._id, name: d.PLHeader3 }))
 			cst.optionDimensionPNL(opl2)
 			if (cst.dimensionPNL().length == 0) {
-				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL74C", "PL94A", "PL44B", "PL44C"])
+				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL44B"])
 			}
 
 			cst.build()
@@ -167,7 +168,7 @@ cst.build = () => {
 	console.log('breakdown', breakdown)
 
 	let keys = _.orderBy(cst.dimensionPNL(), (d) => {
-		let plmodel = rpt.plmodels().find((e) => e._id == d)
+		let plmodel = rpt.allowedPL().find((e) => e._id == d)
 	    return (plmodel != undefined) ? plmodel.OrderIndex : ''
 	}, 'asc')
 
@@ -194,7 +195,7 @@ cst.build = () => {
 		}
 
 		keys.map((e) => {
-			let pl = rpt.plmodels().find((g) => g._id == e)
+			let pl = rpt.allowedPL().find((g) => g._id == e)
 			let p = toolkit.clone(o)
 			p.pnl = pl.PLHeader3
 			p.value = d[e]
@@ -234,7 +235,10 @@ cst.build = () => {
 		}, 'asc') // cst.sortOrder())
 
 		all.forEach((d) => {
-			d.date_month = moment(new Date(2015, d.date_month - 1, 1)).format('MMMM')
+			let m = d.date_month - 1 + 3
+			let y = parseInt(cst.fiscalYear().split('-')[0], 0)
+
+			d.date_month = moment(new Date(2015, m, 1)).format("MMMM YYYY")
 		})
 	} else 
 
@@ -301,7 +305,7 @@ cst.build = () => {
 	}
 
 	console.log('columns', columns)
-	console.log('plmodels', rpt.plmodels())
+	console.log('plmodels', rpt.allowedPL())
 	console.log('keys', keys)
 	console.log("all", all)
 

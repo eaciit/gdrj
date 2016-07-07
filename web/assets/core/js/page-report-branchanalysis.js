@@ -472,7 +472,11 @@ ba.render = function () {
 		}
 
 		if (ba.expand() && ba.subBreakdownValue().length > 0) {
-			currentColumnWidth = 150;
+			if (ba.subBreakdownValue().indexOf('I1') > -1) {
+				if (each._id == 'Other') {
+					currentColumnWidth = 180;
+				}
+			}
 		}
 
 		each.key = key.join('_');

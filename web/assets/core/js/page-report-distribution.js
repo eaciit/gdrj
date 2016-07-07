@@ -14,8 +14,8 @@ dsbt.changeTo = function (d) {
 viewModel.revenueEbit = {};
 var rve = viewModel.revenueEbit;
 rve.contentIsLoading = ko.observable(false);
-rve.plNetSales = ko.observable('PL8A');
-rve.plEBIT = ko.observable('PL44B');
+rve.plNetSales = ko.observable('');
+rve.plEBIT = ko.observable('');
 rve.breakdown = ko.observable('customer.channelname');
 rve.fiscalYear = ko.observable(rpt.value.FiscalYear());
 
@@ -54,6 +54,13 @@ rve.refresh = function () {
 
 rve.render = function (res) {
 	var data = res.Data.Data;
+
+	var compare1 = rpt.plmodels().find(function (d) {
+		return d._id == rve.plNetSales();
+	});
+	var compare2 = rpt.plmodels().find(function (d) {
+		return d._id == rve.plEBIT();
+	});
 
 	// Branch
 
@@ -172,7 +179,7 @@ rve.render = function (res) {
 		locked: true,
 		width: 120
 	}, {
-		title: 'Revenue',
+		title: compare1.PLHeader3,
 		headerAttributes: { class: 'align-center color-0' },
 		columns: [{
 			title: 'Total',
@@ -192,7 +199,7 @@ rve.render = function (res) {
 			columns: [{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesOther', attributes: { class: 'align-right' }, format: '{0:n0}' }, { headerAttributes: { style: 'text-align: center;' }, width: 70, title: '%', field: 'netSalesOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' }]
 		}]
 	}, {
-		title: 'EBIT',
+		title: compare2.PLHeader3,
 		headerAttributes: { class: 'align-center color-1' },
 		columns: [{
 			title: 'Total',
@@ -250,13 +257,18 @@ sd.breakdownSub = ko.observable('customer.reportsubchannel');
 sd.data = ko.observableArray([]);
 sd.fiscalYear = ko.observable(rpt.value.FiscalYear());
 sd.selectedPL = ko.observable('PL8A');
-sd.getPLModels = function () {
+sd.getPLModels = function (c) {
 	app.ajaxPost(viewModel.appName + "report/getplmodel", {}, function (res) {
 		sd.selectedPL('');
 		rpt.plmodels(_.orderBy(res, function (d) {
 			return d.OrderIndex;
 		}));
 		sd.selectedPL('PL8A');
+
+		rve.plNetSales('PL8A');
+		rve.plEBIT('PL44B');
+
+		c(res);
 	});
 };
 sd.render = function (res) {
@@ -496,9 +508,9 @@ vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { 
 $(function () {
 	rpt.tabbedContent();
 
-	rve.refresh();
-
 	sd.refresh();
 	sd.initSort();
-	sd.getPLModels();
+	sd.getPLModels(function () {
+		rve.refresh();
+	});
 });
