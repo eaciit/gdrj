@@ -142,10 +142,10 @@ func processTable(tn string) error {
 		fiscal := key.GetString("date_fiscal")
 		kacode := key.GetString("customer_customergroupname")
 		for k, v := range mr {
-			if strings.HasPrefix(k, "Pl29") ||
-				strings.HasPrefix(k, "Pl30") ||
-				strings.HasPrefix(k, "Pl31") ||
-				strings.HasPrefix(k, "Pl31A") {
+			if strings.HasPrefix(k, "PL29") ||
+				strings.HasPrefix(k, "PL30") ||
+				strings.HasPrefix(k, "PL31") ||
+				strings.HasPrefix(k, "PL31A") {
 				newv := float64(0)
 				if kacode != "" {
 					falloc := plallocs[fiscal]
