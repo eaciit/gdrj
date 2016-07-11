@@ -463,7 +463,7 @@ func main() {
 	// prepmastersalesreturn()
 	prepmasterratio()
 	prepmasterrevfreight()
-	// prepmastercalc()
+	prepmastercalc()
 	// prepmasterrevadv()
 
 	toolkit.Println("Start data query...")
