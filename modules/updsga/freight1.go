@@ -84,7 +84,7 @@ func calcDiff(tablename string) (m map[string]map[string]*plalloc, err error) {
 
 		channelid := key.GetString("customer_channelid")
 		if channelid != "EXP" {
-			pla, plaExist := sgaf[channelid]
+			pla, plaExist := plaf[channelid]
 			if !plaExist {
 				pla = new(plalloc)
 				plaf[channelid] = pla
