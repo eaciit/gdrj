@@ -158,10 +158,11 @@ func prepmasterrevfreight() {
 		freights[key] = tfreight
 	}
 
-	for k, v := range freights {
+	masters.Set("freights", freights)
+	freight01 := masters.Get("freights").(toolkit.M)
+	for k, v := range freight01 {
 		toolkit.Println(k, " - ", v)
 	}
-	masters.Set("freights", freights)
 }
 
 func prepmasterrevdiscountactivity() {
