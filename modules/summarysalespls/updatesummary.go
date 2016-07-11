@@ -148,14 +148,8 @@ func prepmasterrevfreight() {
 		Date := time.Date(m.GetInt("year"), time.Month(m.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		key := toolkit.Sprintf("%d_%d", Date.Year(), Date.Month())
 
-		tfreight := toolkit.M{}
-		if freights.Has(key) {
-			tfreight = freights.Get(key).(toolkit.M)
-		}
-
-		v := tfreight.GetFloat64(key) + m.GetFloat64("amountinidr")
-		tfreight.Set(key, v)
-		freights[key] = tfreight
+		v := freights.GetFloat64(key) + m.GetFloat64("amountinidr")
+		freights.Set(key, v)
 	}
 
 	masters.Set("freights", freights)
@@ -493,10 +487,6 @@ func main() {
 
 		jobs <- tkm
 
-		if iscount == 25 {
-			break
-		}
-
 		if iscount%step == 0 {
 			toolkit.Printfn("Sending %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
 				time.Since(t0).String())
@@ -645,11 +635,11 @@ func CalcFreightsRev(tkm toolkit.M) {
 	key := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
 	val := -dratio.GetFloat64("exexpmonth") * freights.GetFloat64(key)
 
-	toolkit.Println(key, " : ", val, " : ", dratio.GetFloat64("exexpmonth"), " : ", freights.GetFloat64(key))
+	// toolkit.Println(key, " : ", val, " : ", dratio.GetFloat64("exexpmonth"), " : ", freights.GetFloat64(key))
 
-	for k, v := range freights {
-		toolkit.Println(k, " - ", v)
-	}
+	// for k, v := range freights {
+	// 	toolkit.Println(k, " - ", v)
+	// }
 
 	tkm.Set("PL23", val)
 	return
