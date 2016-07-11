@@ -648,7 +648,7 @@ func CalcFreightsRev(tkm toolkit.M) {
 	key := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
 	val := -dratio.GetFloat64("exexpmonth") * freights.GetFloat64(key)
 
-	toolkit.Println(key, " : ", val, " : ", dratio.GetFloat64("exexpmonth"))
+	toolkit.Println(key, " : ", val, " : ", dratio.GetFloat64("exexpmonth"), " : ", freights.GetFloat64(key))
 
 	tkm.Set("PL23", val)
 	return
