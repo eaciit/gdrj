@@ -84,7 +84,7 @@ func calcDiff(tablename string) (m map[string]map[string]*plalloc, err error) {
 
 		channelid := key.GetString("customer_channelid")
 		if channelid != "EXP" {
-			pla, plaExist := sgaf[channelid]
+			pla, plaExist := plaf[channelid]
 			if !plaExist {
 				pla = new(plalloc)
 				plaf[channelid] = pla
@@ -104,7 +104,7 @@ func calcDiff(tablename string) (m map[string]map[string]*plalloc, err error) {
 	for fid, fallocs := range m {
 		totalplv := totalplvs[fid]
 		totalsales := totalsaless[fid]
-		for cid, calloc := range fallocs {
+		for _, calloc := range fallocs {
 			//calloc.RatioNow = calloc.TotalNow / total
 			calloc.TotalExpect = calloc.TotalSales * totalplv / totalsales
 		}
@@ -168,7 +168,7 @@ func processTable(tn string, ratio map[string]map[string]*plalloc) error {
 		}
 
 		if channelid == "EXP" {
-			for k, v := range mr {
+			for k, _ := range mr {
 				//if toolkit.HasMember([]string{"PL33", "PL34", "PL35", "PL94", "PL94A"}, k) {
 				if k == "PL23" {
 					newv := float64(0)
