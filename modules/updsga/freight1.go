@@ -104,7 +104,7 @@ func calcDiff(tablename string) (m map[string]map[string]*plalloc, err error) {
 	for fid, fallocs := range m {
 		totalplv := totalplvs[fid]
 		totalsales := totalsaless[fid]
-		for cid, calloc := range fallocs {
+		for _, calloc := range fallocs {
 			//calloc.RatioNow = calloc.TotalNow / total
 			calloc.TotalExpect = calloc.TotalSales * totalplv / totalsales
 		}
