@@ -496,9 +496,9 @@ func main() {
 
 		jobs <- tkm
 
-		// if iscount == 5 {
-		// 	break
-		// }
+		if iscount == 25 {
+			break
+		}
 
 		if iscount%step == 0 {
 			toolkit.Printfn("Sending %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
@@ -647,6 +647,8 @@ func CalcFreightsRev(tkm toolkit.M) {
 	freights := masters.Get("freights").(toolkit.M)
 	key := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
 	val := -dratio.GetFloat64("exexpmonth") * freights.GetFloat64(key)
+
+	toolkit.Println(key, " : ", val, " : ", dratio.GetFloat64("exexpmonth"))
 
 	tkm.Set("PL23", val)
 	return
