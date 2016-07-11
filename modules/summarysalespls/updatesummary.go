@@ -158,6 +158,9 @@ func prepmasterrevfreight() {
 		freights[key] = tfreight
 	}
 
+	for k, v := range freights {
+		toolkit.Println(k, " - ", v)
+	}
 	masters.Set("freights", freights)
 }
 
@@ -457,13 +460,13 @@ func main() {
 
 	setinitialconnection()
 	defer gdrj.CloseDb()
+	prepmastercalc()
 
 	// prepmasterratiomapsalesreturn2016()
 	// prepmasterdiffsalesreturn2016()
 	// prepmastersalesreturn()
 	prepmasterratio()
 	prepmasterrevfreight()
-	prepmastercalc()
 	// prepmasterrevadv()
 
 	toolkit.Println("Start data query...")
@@ -493,9 +496,9 @@ func main() {
 
 		jobs <- tkm
 
-		// if iscount == 5 {
-		// 	break
-		// }
+		if iscount == 25 {
+			break
+		}
 
 		if iscount%step == 0 {
 			toolkit.Printfn("Sending %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
@@ -643,8 +646,11 @@ func CalcFreightsRev(tkm toolkit.M) {
 
 	freights := masters.Get("freights").(toolkit.M)
 	key := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
+	val := -dratio.GetFloat64("exexpmonth") * freights.GetFloat64(key)
 
-	tkm.Set("PL23", (-dratio.GetFloat64("exexpmonth") * freights.GetFloat64(key)))
+	toolkit.Println(key, " : ", val, " : ", dratio.GetFloat64("exexpmonth"))
+
+	tkm.Set("PL23", val)
 	return
 }
 
@@ -870,7 +876,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary").
+		From("salespls-summary-check").
 		SetConfig("multiexec", true).
 		Save()
 
