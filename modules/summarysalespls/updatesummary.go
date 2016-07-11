@@ -128,6 +128,83 @@ func prepmasterrevadv() {
 	masters.Set("advertisements", advertisements)
 }
 
+func prepmasterrevfreight() {
+	toolkit.Println("--> Freight Revision")
+	freights := toolkit.M{}
+
+	csr, _ := conn.NewQuery().From("rawdatapl_freight").
+		Where(dbox.Eq("year", fiscalyear-1)).
+		Cursor(nil)
+
+	defer csr.Close()
+	for {
+		m := toolkit.M{}
+		e := csr.Fetch(&m, 1, false)
+
+		if e != nil {
+			break
+		}
+
+		Date := time.Date(m.GetInt("year"), time.Month(m.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
+		key := toolkit.Sprintf("%d_%d", Date.Year(), Date.Month())
+
+		tfreight := toolkit.M{}
+		if freights.Has(key) {
+			tfreight = freights.Get(key).(toolkit.M)
+		}
+
+		v := tfreight.GetFloat64(key) + m.GetFloat64("amountinidr")
+		tfreight.Set(key, v)
+		freights[key] = tfreight
+	}
+
+	masters.Set("freights", freights)
+}
+
+func prepmasterrevdiscountactivity() {
+	toolkit.Println("--> Discount Activity")
+	discountactivities := toolkit.M{}
+
+	csr, _ := conn.NewQuery().From("rawdiscountact_11072016").
+		Where(dbox.Eq("year", fiscalyear-1)).
+		Cursor(nil)
+
+	defer csr.Close()
+	for {
+		m := toolkit.M{}
+		e := csr.Fetch(&m, 1, false)
+
+		if e != nil {
+			break
+		}
+
+		Date := time.Date(m.GetInt("year"), time.Month(m.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
+		key := toolkit.Sprintf("%d_%d", Date.Year(), Date.Month())
+
+		// "date_year" : 2014.0
+		// "date_month" : 7.0,
+		// "customer_branchid" : "CD12",
+		// "customer_channelid" : "I2",
+		// "customer_customergroup" : "TM",
+		// "product_brand" : "MITU",
+
+		if len(m.GetString("brand")) > 2 {
+			key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("brand"))))
+		}
+
+		tdiscactivity := toolkit.M{}
+		if discountactivities.Has(key) {
+			tdiscactivity = discountactivities.Get(key).(toolkit.M)
+		}
+
+		v := tdiscactivity.GetFloat64(key) + m.GetFloat64("amountinidr")
+		tdiscactivity.Set(key, v)
+		discountactivities[key] = tdiscactivity
+	}
+
+	masters.Set("discountactivities", discountactivities)
+}
+
 func prepmasterratio() {
 	toolkit.Println("--> Master Ratio")
 
@@ -145,13 +222,51 @@ func prepmasterratio() {
 
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
 		key := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
-		keybrand := toolkit.Sprintf("%s_%s", key, dtkm.GetString("product_brand"))
-
 		v := ratio.GetFloat64(key) + tkm.GetFloat64("grossamount")
 		ratio.Set(key, v)
 
-		v = ratio.GetFloat64(keybrand) + tkm.GetFloat64("grossamount")
-		ratio.Set(keybrand, v)
+		if dtkm.GetString("customer_channelid") != "EXP" {
+			key = toolkit.Sprintf("ExEXP_%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
+			v = ratio.GetFloat64(key) + tkm.GetFloat64("grossamount")
+			ratio.Set(key, v)
+		}
+
+		key = toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"), strings.ToUpper(dtkm.GetString("product_brand")))
+		v = ratio.GetFloat64(key) + tkm.GetFloat64("grossamount")
+		ratio.Set(key, v)
+
+		key = toolkit.Sprintf("%d_%d_%s_%s_%s_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
+			dtkm.GetString("customer_branchid"), dtkm.GetString("customer_channelid"),
+			dtkm.GetString("customer_customergroup"), strings.ToUpper(dtkm.GetString("product_brand")))
+
+		v = ratio.GetFloat64(key) + tkm.GetFloat64("grossamount")
+		ratio.Set(key, v)
+
+		key = toolkit.Sprintf("%d_%d_%s_%s_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
+			dtkm.GetString("customer_branchid"), dtkm.GetString("customer_channelid"),
+			dtkm.GetString("customer_customergroup"))
+
+		v = ratio.GetFloat64(key) + tkm.GetFloat64("grossamount")
+		ratio.Set(key, v)
+
+		key = toolkit.Sprintf("%d_%d_%s_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
+			dtkm.GetString("customer_branchid"), dtkm.GetString("customer_channelid"))
+
+		v = ratio.GetFloat64(key) + tkm.GetFloat64("grossamount")
+		ratio.Set(key, v)
+
+		key = toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
+			dtkm.GetString("customer_branchid"))
+
+		v = ratio.GetFloat64(key) + tkm.GetFloat64("grossamount")
+		ratio.Set(key, v)
+
+		key = toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
+			dtkm.GetString("customer_channelid"))
+
+		v = ratio.GetFloat64(key) + tkm.GetFloat64("grossamount")
+		ratio.Set(key, v)
+
 	}
 
 	masters.Set("ratio", ratio)
@@ -202,7 +317,6 @@ func prepmastersalesreturn() {
 	masters.Set("salesreturns", salesreturns)
 }
 
-//Fiscal, Channels, Branches, Brands, City, Region, Zone for 2016,
 func prepmasterratiomapsalesreturn2016() {
 	toolkit.Println("--> Master Ratio and maps for sales return 2016")
 
@@ -250,7 +364,6 @@ func prepmasterratiomapsalesreturn2016() {
 
 	masters.Set("ratiosalesreturn2016", ratiosalesreturn2016)
 	masters.Set("mapsalesreturn2016", mapsalesreturn2016)
-
 }
 
 func prepmasterdiffsalesreturn2016() {
@@ -345,10 +458,11 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 
-	prepmasterratiomapsalesreturn2016()
-	prepmasterdiffsalesreturn2016()
+	// prepmasterratiomapsalesreturn2016()
+	// prepmasterdiffsalesreturn2016()
 	// prepmastersalesreturn()
-	// prepmasterratio()
+	prepmasterratio()
+	prepmasterrevfreight()
 	// prepmastercalc()
 	// prepmasterrevadv()
 
@@ -422,12 +536,43 @@ func CalcRatio(tkm toolkit.M) {
 	dtkm, _ := toolkit.ToM(tkm.Get("key"))
 	ratio := masters.Get("ratio").(toolkit.M)
 
-	keymonth := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
-	keymonthbrand := toolkit.Sprintf("%s_%s", keymonth, dtkm.GetString("product_brand"))
-
 	rtkm := toolkit.M{}
-	rtkm.Set("month", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(keymonth)))
-	rtkm.Set("monthbrand", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(keymonthbrand)))
+	if tkm.Has("ratio") {
+		rtkm = tkm["ratio"].(toolkit.M)
+	}
+
+	key := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
+	rtkm.Set("month", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(key)))
+
+	if dtkm.GetString("customer_channelid") != "EXP" {
+		key = toolkit.Sprintf("ExEXP_%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
+		rtkm.Set("exexpmonth", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(key)))
+	}
+
+	key = toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"), dtkm.GetString("product_brand"))
+	rtkm.Set("monthbrand", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(key)))
+
+	key = toolkit.Sprintf("%d_%d_%s_%s_%s_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
+		dtkm.GetString("customer_branchid"), dtkm.GetString("customer_channelid"),
+		dtkm.GetString("customer_customergroup"), dtkm.GetString("product_brand"))
+	rtkm.Set("monthbranchchannelcustgroupbrand", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(key)))
+
+	key = toolkit.Sprintf("%d_%d_%s_%s_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
+		dtkm.GetString("customer_branchid"), dtkm.GetString("customer_channelid"),
+		dtkm.GetString("customer_customergroup"))
+	rtkm.Set("monthbranchchannelcustgroup", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(key)))
+
+	key = toolkit.Sprintf("%d_%d_%s_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
+		dtkm.GetString("customer_branchid"), dtkm.GetString("customer_channelid"))
+	rtkm.Set("monthbranchchannel", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(key)))
+
+	key = toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
+		dtkm.GetString("customer_branchid"))
+	rtkm.Set("monthbranch", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(key)))
+
+	key = toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
+		dtkm.GetString("customer_channelid"))
+	rtkm.Set("monthchannel", (tkm.GetFloat64("grossamount") / ratio.GetFloat64(key)))
 
 	tkm.Set("ratio", rtkm)
 }
@@ -465,7 +610,7 @@ func CalcAdvertisementsRev(tkm toolkit.M) {
 	}
 
 	if len(dtkm.GetString("product_brand")) > 2 {
-		key02 := toolkit.Sprintf("%s_%s", key01, dtkm.GetString("product_brand"))
+		key02 := toolkit.Sprintf("%s_%s", key01, strings.ToUpper(dtkm.GetString("product_brand")))
 		if advertisements.Has(key02) {
 			tkm02 = advertisements.Get(key02).(toolkit.M)
 		}
@@ -483,6 +628,23 @@ func CalcAdvertisementsRev(tkm toolkit.M) {
 		tkm.Set(k, fv)
 	}
 
+	return
+}
+
+func CalcFreightsRev(tkm toolkit.M) {
+	if !masters.Has("freights") {
+		return
+	}
+
+	tkm.Set("PL23", float64(0))
+
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	dratio, _ := toolkit.ToM(tkm.Get("ratio"))
+
+	freights := masters.Get("freights").(toolkit.M)
+	key := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
+
+	tkm.Set("PL23", (-dratio.GetFloat64("exexpmonth") * freights.GetFloat64(key)))
 	return
 }
 
@@ -717,13 +879,15 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CleanAddCustomerGroupName(trx)
 		// CalcSalesReturn(trx)
 
-		CalcSalesReturn2016(trx)
+		// CalcSalesReturn2016(trx)
 
-		// CalcRatio(trx)
+		CalcRatio(trx)
+		CalcFreightsRev(trx)
+
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
 		// CalcSalesVDist20142015(trx)
-		// CalcSum(trx)
+		CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
