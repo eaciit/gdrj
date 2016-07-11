@@ -73,17 +73,17 @@ func calcDiff(tablename string) (m map[string]map[string]*plalloc, err error) {
 			i, count, time.Since(t0).String())
 
 		key := mnow.Get("key", toolkit.M{}).(toolkit.M)
-		fiscal := key.GetString("date_fiscal")
-		plaf, plafExist := m[fiscal]
-		totalplv := totalplvs[fiscal]
-		totalsales := totalsaless[fiscal]
-		if !plafExist {
-			plaf = map[string]*plalloc{}
-			m[fiscal] = plaf
-		}
-
 		channelid := key.GetString("customer_channelid")
 		if channelid != "EXP" {
+			fiscal := key.GetString("date_fiscal")
+			plaf, plafExist := m[fiscal]
+			totalplv := totalplvs[fiscal]
+			totalsales := totalsaless[fiscal]
+			if !plafExist {
+				plaf = map[string]*plalloc{}
+				m[fiscal] = plaf
+			}
+
 			pla, plaExist := plaf[channelid]
 			if !plaExist {
 				pla = new(plalloc)

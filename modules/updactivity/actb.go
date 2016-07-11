@@ -140,7 +140,7 @@ func processTable(tn string) error {
 		for k, v := range mr {
 			if toolkit.HasMember([]string{"PL7A"}, k) {
 				newv := float64(0)
-				if kacode == "" {
+				if kacode != "" {
 					falloc := plallocs[fiscal]
 					if falloc != nil {
 						newv = v.(float64) + v.(float64)*falloc.Expect/falloc.Total
