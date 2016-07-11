@@ -168,7 +168,7 @@ func processTable(tn string, ratio map[string]map[string]*plalloc) error {
 		}
 
 		if channelid == "EXP" {
-			for k, v := range mr {
+			for k, _ := range mr {
 				//if toolkit.HasMember([]string{"PL33", "PL34", "PL35", "PL94", "PL94A"}, k) {
 				if k == "PL23" {
 					newv := float64(0)
