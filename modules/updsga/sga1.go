@@ -65,12 +65,17 @@ func calcDiff(tablename string) (m map[string]map[string]*sgaalloc, err error) {
 	totals := map[string]float64{}
 	sumnow, _ := diffConn.NewQuery().From(tablename).
 		Cursor(nil)
+	count := sumnow.Count()
+	i := 0
 	for {
 		mnow := toolkit.M{}
 		efetch := sumnow.Fetch(&mnow, 1, false)
 		if efetch != nil {
 			break
 		}
+		i++
+		toolkit.Printfn("Calculating diff. %d of %d in %s",
+			i, count, time.Since(t0).String())
 
 		key := mnow.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
@@ -117,7 +122,7 @@ func main() {
 
 	toolkit.Println("Start data query...")
 	tablenames := []string{
-		"pl_customer_channelid_customer_channelname_date_fiscal"}
+		"salespls-summary"}
 
 	for _, tn := range tablenames {
 		diff, e := calcDiff(tn)
@@ -150,7 +155,8 @@ func processTable(tn string, ratio map[string]map[string]*sgaalloc) error {
 		}
 
 		i++
-		toolkit.Printfn("Processing %s, %d of %d", tn, i, count)
+		toolkit.Printfn("Processing %s, %d of %d in %s",
+			tn, i, count, time.Since(t0).String())
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
