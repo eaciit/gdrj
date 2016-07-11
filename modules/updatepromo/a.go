@@ -144,8 +144,7 @@ func processTable(tn string) error {
 		for k, v := range mr {
 			if strings.HasPrefix(k, "PL29") ||
 				strings.HasPrefix(k, "PL30") ||
-				strings.HasPrefix(k, "PL31") ||
-				strings.HasPrefix(k, "PL31A") {
+				strings.HasPrefix(k, "PL31") {
 				newv := float64(0)
 				if kacode != "" {
 					falloc := plallocs[fiscal]
