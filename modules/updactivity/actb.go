@@ -52,7 +52,7 @@ func buildRatio(tn string) error {
 	rconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer rconn.Close()
 
-	totalBlanks := map[string]float64{}
+	//totalBlanks := map[string]float64{}
 
 	ctrx, e := rconn.NewQuery().From(tn).
 		Select().Cursor(nil)
