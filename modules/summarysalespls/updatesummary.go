@@ -465,7 +465,7 @@ func main() {
 	// prepmasterratiomapsalesreturn2016()
 	// prepmasterdiffsalesreturn2016()
 	// prepmastersalesreturn()
-	// prepmasterratio()
+	prepmasterratio()
 	prepmasterrevfreight()
 	// prepmasterrevadv()
 
@@ -646,8 +646,9 @@ func CalcFreightsRev(tkm toolkit.M) {
 
 	freights := masters.Get("freights").(toolkit.M)
 	key := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
+	val := -dratio.GetFloat64("exexpmonth") * freights.GetFloat64(key)
 
-	tkm.Set("PL23", (-dratio.GetFloat64("exexpmonth") * freights.GetFloat64(key)))
+	tkm.Set("PL23", val)
 	return
 }
 
@@ -873,7 +874,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary").
+		From("salespls-summary-check").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -884,7 +885,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CalcSalesReturn2016(trx)
 
-		// CalcRatio(trx)
+		CalcRatio(trx)
 		CalcFreightsRev(trx)
 
 		// CalcAdvertisementsRev(trx)
