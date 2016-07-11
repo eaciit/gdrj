@@ -22,9 +22,9 @@ var (
 	masters                     = toolkit.M{}
 
 	alloc = map[string]float64{
-		"I1": 0.21,
-		"I3": 0.49,
-		"I2": 0.30,
+		"I1": 0.17,
+		"I3": 0.51,
+		"I2": 0.32,
 	}
 )
 
