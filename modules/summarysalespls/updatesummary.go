@@ -158,6 +158,9 @@ func prepmasterrevfreight() {
 		freights[key] = tfreight
 	}
 
+	for k, v := range freights {
+		toolkit.Println(k, " - ", v)
+	}
 	masters.Set("freights", freights)
 }
 
@@ -457,13 +460,13 @@ func main() {
 
 	setinitialconnection()
 	defer gdrj.CloseDb()
+	prepmastercalc()
 
 	// prepmasterratiomapsalesreturn2016()
 	// prepmasterdiffsalesreturn2016()
 	// prepmastersalesreturn()
-	prepmasterratio()
+	// prepmasterratio()
 	prepmasterrevfreight()
-	prepmastercalc()
 	// prepmasterrevadv()
 
 	toolkit.Println("Start data query...")
@@ -881,7 +884,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CalcSalesReturn2016(trx)
 
-		CalcRatio(trx)
+		// CalcRatio(trx)
 		CalcFreightsRev(trx)
 
 		// CalcAdvertisementsRev(trx)
