@@ -159,10 +159,6 @@ func prepmasterrevfreight() {
 	}
 
 	masters.Set("freights", freights)
-	freight01 := masters.Get("freights").(toolkit.M)
-	for k, v := range freight01 {
-		toolkit.Println(k, " - ", v)
-	}
 }
 
 func prepmasterrevdiscountactivity() {
@@ -650,6 +646,10 @@ func CalcFreightsRev(tkm toolkit.M) {
 	val := -dratio.GetFloat64("exexpmonth") * freights.GetFloat64(key)
 
 	toolkit.Println(key, " : ", val, " : ", dratio.GetFloat64("exexpmonth"), " : ", freights.GetFloat64(key))
+
+	for k, v := range freights {
+		toolkit.Println(k, " - ", v)
+	}
 
 	tkm.Set("PL23", val)
 	return
