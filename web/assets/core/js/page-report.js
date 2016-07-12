@@ -575,17 +575,30 @@ rpt.fixRowValue = function (data) {
 		rpt.arrFormulaPL().forEach(function (d) {
 			// let total = toolkit.sum(d.formula, (f) => e[f])
 			var total = 0;
+			var isNotNumber = false;
+
 			d.formula.forEach(function (f, l) {
+				var eachValue = e[f];
+
+				if (!toolkit.typeIs(eachValue, "number")) {
+					eachValue = toolkit.getNumberFromString(eachValue);
+					isNotNumber = true;
+				}
+
 				if (l == 0) {
-					total = e[f];
+					total = eachValue;
 				} else {
 					if (d.cal == 'sum') {
-						total += e[f];
+						total += eachValue;
 					} else {
-						total -= e[f];
+						total -= eachValue;
 					}
 				}
 			});
+
+			if (isNotNumber) {
+				total = kendo.toString(total, 'n2') + ' %';
+			}
 
 			data[a][d.id] = total;
 		});
