@@ -42,7 +42,7 @@ ba.changeBreakdownRD = function () {
 ba.level = ko.observable(2);
 
 ba.buildStructure = function (breakdownRD, expand, data) {
-	var rdCategories = ["RD", "Non RD"];
+	var rdCategories = ["Regional Distributor", "Non RD"];
 	var keys = ["_id_customer_branchname", "_id_customer_channelid", "_id_customer_channelname"];
 
 	var fixEmptySubs = function fixEmptySubs(d) {
@@ -257,6 +257,70 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		_parsed2 = _.orderBy(_parsed2, function (d) {
 			return d.total;
 		}, 'desc');
+
+		_parsed2.forEach(function (g) {
+			g.subs.forEach(function (d, i) {
+				if (i == 0) {
+					return;
+				}
+
+				var sample = d.subs[0];
+				var percentage = {};
+				percentage._id = '% of Net Sales';
+				percentage.count = 1;
+				percentage.excludeFromTotal = true;
+				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
+
+				var total = {};
+				total._id = 'Total&nbsp;';
+				total.count = 1;
+				total.excludeFromTotal = true;
+
+				var _loop3 = function _loop3(p) {
+					if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
+						var vTarget = toolkit.sum(d.subs, function (h) {
+							return h[p];
+						});
+						var vNetSales = toolkit.sum(d.subs, function (h) {
+							return h.PL8A;
+						});
+						var value = toolkit.number(vTarget / vNetSales) * 100;
+						percentage[p] = kendo.toString(value, 'n2') + ' %';
+						total[p] = vTarget;
+					}
+				};
+
+				for (var p in sample) {
+					_loop3(p);
+				}if (d._id == 'Regional Distributor') {
+					toolkit.try(function () {
+						d.subs[0]._id = 'Total&nbsp;';
+					});
+					d.subs.push(percentage);
+					d.count++;
+					g.count++;
+				} else {
+					if (d.subs.length > 0) {
+						if (d.subs[0]._id == 'Non RD') {
+							toolkit.try(function () {
+								d.subs[0]._id = 'Total&nbsp;';
+							});
+							d.subs.push(percentage);
+							d.count++;
+							g.count++;
+						} else {
+							d.subs = [percentage].concat(d.subs);
+							d.count++;
+							g.count++;
+							d.subs = [total].concat(d.subs);
+							d.count++;
+							g.count++;
+						}
+					}
+				}
+			});
+		});
+
 		return _parsed2;
 	} else if (!expand && ba.breakdownRD() == 'All') {
 		var _parsed3 = groupThenMap(data, function (d) {
@@ -285,6 +349,24 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		_parsed3 = _.orderBy(_parsed3, function (d) {
 			return d.total;
 		}, 'desc');
+
+		_parsed3.forEach(function (d) {
+			var total = d.subs[0];
+			var percentage = {};
+			percentage._id = '% of Net Sales';
+			percentage.count = 1;
+			percentage.excludeFromTotal = true;
+			// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
+
+			for (var p in total) {
+				if (total.hasOwnProperty(p) && p.indexOf('PL') > -1) {
+					var value = toolkit.number(total[p] / total.PL8A) * 100;
+					percentage[p] = kendo.toString(value, 'n2') + ' %';
+				}
+			}d.count++;
+			d.subs.splice(1, 0, percentage);
+		});
+
 		return _parsed3;
 	}
 
@@ -368,7 +450,7 @@ ba.refresh = function () {
 				return;
 			}
 
-			var data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data);
+			var data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data.splice(0, 50));
 			ba.data(data);
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			ba.breakdownNote('Last refreshed on: ' + date);
@@ -480,6 +562,11 @@ ba.render = function () {
 			}
 		}
 
+		if (each._id == '% of Net Sales') {
+			currentColumnWidth -= 20;
+			thheader.css('font-weight', 'normal').css('font-style', 'italic');
+		}
+
 		each.key = key.join('_');
 		dataFlat.push(each);
 		totalColumnWidth += currentColumnWidth;
@@ -549,7 +636,6 @@ ba.render = function () {
 		dataFlat.forEach(function (e) {
 			var breakdown = e.key;
 			var value = e['' + d._id];
-			value = toolkit.number(value);
 			row[breakdown] = value;
 
 			if (toolkit.isDefined(e.excludeFromTotal)) {
@@ -558,19 +644,20 @@ ba.render = function () {
 
 			row.PNLTotal += value;
 		});
-		dataFlat.forEach(function (e) {
-			var breakdown = e.key;
-			var percentage = toolkit.number(e['' + d._id] / row.PNLTotal) * 100;
-			percentage = toolkit.number(percentage);
+		// dataFlat.forEach((e) => {
+		// 	let breakdown = e.key
+		// 	let percentage = toolkit.number(e[`${d._id}`] / row.PNLTotal) * 100;
+		// 	percentage = toolkit.number(percentage)
 
-			if (d._id != netSalesPLCode) {
-				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
-			}
+		// 	if (d._id != netSalesPLCode) {
+		// 		percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
+		// 	}
 
-			if (percentage < 0) percentage = percentage * -1;
+		// 	if (percentage < 0)
+		// 		percentage = percentage * -1
 
-			row[breakdown + ' %'] = percentage;
-		});
+		// 	row[`${breakdown} %`] = percentage
+		// })
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
 			return;
@@ -618,6 +705,10 @@ ba.render = function () {
 
 			if ($.trim(value) == '') {
 				value = 0;
+			}
+
+			if (e._id == "% of Net Sales") {
+				value = d[key];
 			}
 
 			var cell = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trContent);
