@@ -150,6 +150,8 @@ v1.render = () => {
 
 	// ========================= TABLE STRUCTURE
 
+	let percentageWidth = 110
+
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl-branch pivot-pnl')
 		.appendTo(container)
@@ -190,11 +192,14 @@ v1.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('%')
+		.html('% of Net Sales')
 		.css('height', `${34 * v1.level()}px`)
+		.css('vertical-align', 'middle')
+		.css('font-weight', 'normal')
+		.css('font-style', 'italic')
+		.width(percentageWidth - 20)
 		.attr('data-rowspan', v1.level())
 		.css('vertical-align', 'middle')
-		.addClass('cell-percentage-header align-right')
 		.appendTo(trHeader)
 
 	let trContents = []
@@ -212,7 +217,6 @@ v1.render = () => {
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
-	let percentageWidth = 80
 
 	let countWidthThenPush = (thheader, each, key) => {
 		let currentColumnWidth = columnWidth
@@ -238,9 +242,11 @@ v1.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('%')
+				.html('% of Net Sales')
+				.css('font-weight', 'normal')
+				.css('font-style', 'italic')
 				.width(percentageWidth)
-				.addClass('align-right')
+				.addClass('align-center')
 				.appendTo(trContents[0])
 				.css('background-color', colors[i])
 				.css('color', 'white')
@@ -265,9 +271,11 @@ v1.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('%')
+					.html('% of Net Sales')
+					.css('font-weight', 'normal')
+					.css('font-style', 'italic')
 					.width(percentageWidth)
-					.addClass('align-right')
+					.addClass('align-center')
 					.appendTo(trContents[1])
 
 				if (lvl2._id == 'Total') {
@@ -629,11 +637,13 @@ v2.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('%')
+		.html('% of Net Sales')
 		.css('height', `${34 * v2.level()}px`)
-		.attr('data-rowspan', v2.level())
 		.css('vertical-align', 'middle')
-		.addClass('cell-percentage-header align-right')
+		.css('font-weight', 'normal')
+		.css('font-style', 'italic')
+		.width(percentageWidth - 20)
+		.attr('data-rowspan', v2.level())
 		.appendTo(trHeader)
 
 	let trContents = []
@@ -651,7 +661,7 @@ v2.render = () => {
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
-	let percentageWidth = 80
+	let percentageWidth = 110
 
 	let countWidthThenPush = (thheader, each, key) => {
 		let currentColumnWidth = columnWidth
@@ -677,9 +687,11 @@ v2.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('%')
+				.html('% of Net Sales')
+				.css('font-weight', 'normal')
+				.css('font-style', 'italic')
 				.width(percentageWidth)
-				.addClass('align-right')
+				.addClass('align-center')
 				.appendTo(trContents[0])
 
 			return
@@ -702,9 +714,11 @@ v2.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('%')
+					.html('% of Net Sales')
+					.css('font-weight', 'normal')
+					.css('font-style', 'italic')
 					.width(percentageWidth)
-					.addClass('align-right')
+					.addClass('align-center')
 					.appendTo(trContents[1])
 
 				if (lvl2._id == 'Total') {
@@ -1044,11 +1058,13 @@ v3.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('%')
+		.html('% of Net Sales')
 		.css('height', `${34 * v3.level()}px`)
-		.attr('data-rowspan', v3.level())
 		.css('vertical-align', 'middle')
-		.addClass('cell-percentage-header align-right')
+		.css('font-weight', 'normal')
+		.css('font-style', 'italic')
+		.width(percentageWidth - 20)
+		.attr('data-rowspan', v3.level())
 		.appendTo(trHeader)
 
 	let trContents = []
@@ -1066,7 +1082,7 @@ v3.render = () => {
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
-	let percentageWidth = 70
+	let percentageWidth = 110
 
 	let countWidthThenPush = (thheader, each, key) => {
 		let currentColumnWidth = columnWidth
@@ -1092,9 +1108,11 @@ v3.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('%')
+				.html('% of Net Sales')
+				.css('font-weight', 'normal')
+				.css('font-style', 'italic')
 				.width(percentageWidth)
-				.addClass('align-right')
+				.addClass('align-center')
 				.appendTo(trContents[0])
 				.css('background-color', colors[i])
 				.css('color', 'white')
@@ -1114,9 +1132,11 @@ v3.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('%')
+					.html('% of Net Sales')
+					.css('font-weight', 'normal')
+					.css('font-style', 'italic')
 					.width(percentageWidth)
-					.addClass('align-right')
+					.addClass('align-center')
 					.appendTo(trContents[1])
 
 				return

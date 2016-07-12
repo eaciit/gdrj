@@ -184,7 +184,7 @@ cbt.render = () => {
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
-	let percentageWidth = 70
+	let percentageWidth = 110
 
 	let countWidthThenPush = (thheader, each, key) => {
 		let currentColumnWidth = columnWidth
@@ -210,7 +210,10 @@ cbt.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('%')
+				.html('% of total')
+				.css('vertical-align', 'middle')
+				.css('font-weight', 'normal')
+				.css('font-style', 'italic')
 				.width(percentageWidth)
 				.addClass('align-right')
 				.appendTo(trContents[0])
@@ -232,7 +235,10 @@ cbt.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('%')
+					.html('% of total')
+					.css('vertical-align', 'middle')
+					.css('font-weight', 'normal')
+					.css('font-style', 'italic')
 					.width(percentageWidth)
 					.addClass('align-right')
 					.appendTo(trContents[1])
