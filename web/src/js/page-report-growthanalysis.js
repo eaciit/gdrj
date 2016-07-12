@@ -365,7 +365,7 @@ ag.optionPercentageValue = ko.observableArray([
 ag.series1PL = ko.observable('')
 ag.series1Type = ko.observable('value')
 ag.series2PL = ko.observable('')
-ag.series2Type = ko.observable('percentage') // value
+ag.series2Type = ko.observable('value') // value
 ag.limit = ko.observable(6)
 ag.data = ko.observableArray([])
 
@@ -374,7 +374,7 @@ ag.getPLModels = (c) => {
 		rpt.plmodels(_.orderBy(res, (d) => d.OrderIndex))
 
 		ag.series1PL('PL8A')
-		ag.series2PL('PL8A') // PL44B
+		ag.series2PL('PL44B') // PL44B
 		ag.refresh()
 	})
 }
