@@ -139,14 +139,14 @@ func processTable(tn string) error {
 		reportchannel := key.GetString("customer_reportchannel")
 		if reportchannel == "RD" {
 			//salesRD := mr.GetFloat64("PL2")
-			discountRD := mr.GetFloat64("PL4")
+			discountRD := mr.GetFloat64("PL8")
 			netSales := mr.GetFloat64("PL8A")
 
 			salesRD := netSales / 0.892
 			discountRD = netSales - salesRD
 
 			mr.Set("PL2", salesRD)
-			mr.Set("PL4", discountRD)
+			mr.Set("PL8", discountRD)
 
 			mr = CalcSum(mr)
 			esave := conn.NewQuery().From(tn).Save().Exec(toolkit.M{}.Set("data", mr))
