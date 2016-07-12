@@ -709,6 +709,8 @@ rpt.changeParent = (elemheader, elemcontent, PLCode) => {
 }
 
 rpt.fixRowValue = (data) => {
+	return
+	
 	data.forEach((e,a) => {
 		rpt.arrFormulaPL().forEach((d) => {
 			// let total = toolkit.sum(d.formula, (f) => e[f])
