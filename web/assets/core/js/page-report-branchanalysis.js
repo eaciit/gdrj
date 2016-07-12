@@ -220,6 +220,49 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 			return d.total;
 		}, 'desc');
 
+		_parsed.forEach(function (g) {
+			g.subs.forEach(function (d, i) {
+				if (i == 0) {
+					return;
+				}
+
+				var sample = d.subs[0];
+				var percentage = {};
+				percentage._id = '% of Net Sales';
+				percentage.count = 1;
+				percentage.excludeFromTotal = true;
+				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
+
+				var total = {};
+				total._id = 'Total&nbsp;';
+				total.count = 1;
+				total.excludeFromTotal = true;
+
+				var _loop3 = function _loop3(p) {
+					if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
+						var vTarget = toolkit.sum(d.subs, function (h) {
+							return h[p];
+						});
+						var vNetSales = toolkit.sum(d.subs, function (h) {
+							return h.PL8A;
+						});
+						var value = toolkit.number(vTarget / vNetSales) * 100;
+						percentage[p] = kendo.toString(value, 'n2') + ' %';
+						total[p] = vTarget;
+					}
+				};
+
+				for (var p in sample) {
+					_loop3(p);
+				}d.subs = [percentage].concat(d.subs);
+				d.count++;
+				g.count++;
+				d.subs = [total].concat(d.subs);
+				d.count++;
+				g.count++;
+			});
+		});
+
 		return _parsed;
 	} else if (expand && ba.subBreakdownValue().length == 0) {
 		var _parsed2 = groupThenMap(data, function (d) {
@@ -276,7 +319,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 				total.count = 1;
 				total.excludeFromTotal = true;
 
-				var _loop3 = function _loop3(p) {
+				var _loop4 = function _loop4(p) {
 					if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
 						var vTarget = toolkit.sum(d.subs, function (h) {
 							return h[p];
@@ -291,7 +334,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 				};
 
 				for (var p in sample) {
-					_loop3(p);
+					_loop4(p);
 				}if (d._id == 'Regional Distributor') {
 					toolkit.try(function () {
 						d.subs[0]._id = 'Total&nbsp;';

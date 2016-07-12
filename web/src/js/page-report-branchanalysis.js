@@ -189,6 +189,41 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		showAsBreakdown(parsed)
 		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
 
+		parsed.forEach((g) => {
+			g.subs.forEach((d, i) => {
+				if (i == 0) {
+					return
+				}
+
+				let sample = d.subs[0]
+				let percentage = {}
+				percentage._id = '% of Net Sales'
+				percentage.count = 1
+				percentage.excludeFromTotal = true
+				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
+
+				let total = {}
+				total._id = 'Total&nbsp;'
+				total.count = 1
+				total.excludeFromTotal = true
+
+				for (let p in sample) if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
+					let vTarget = toolkit.sum(d.subs, (h) => h[p])
+					let vNetSales = toolkit.sum(d.subs, (h) => h.PL8A)
+					let value = toolkit.number(vTarget / vNetSales) * 100
+					percentage[p] = `${kendo.toString(value, 'n2')} %`
+					total[p] = vTarget
+				}
+
+				d.subs = [percentage].concat(d.subs)
+				d.count++
+				g.count++
+				d.subs = [total].concat(d.subs)
+				d.count++
+				g.count++
+			})
+		})
+
 		return parsed
 	} else
 
