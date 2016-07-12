@@ -102,9 +102,8 @@ func main() {
 	tablenames := []string{
 		"salespls-summary"}
 
-	var e error
 	for _, tn := range tablenames {
-		//e := buildRatio(tn)
+		e := buildRatio(tn)
 		if e != nil {
 			toolkit.Printfn("Build ratio error: %s - %s", tn, e.Error())
 			return
@@ -136,23 +135,25 @@ func processTable(tn string) error {
 			tn, i, count, time.Since(t0).String())
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		reportchannel := key.GetString("customer_reportchannel")
-		if reportchannel == "RD" {
-			//salesRD := mr.GetFloat64("PL2")
-			discountRD := mr.GetFloat64("PL8")
-			netSales := mr.GetFloat64("PL8A")
-
-			salesRD := netSales / 0.892
-			discountRD = netSales - salesRD
-
-			mr.Set("PL2", salesRD)
-			mr.Set("PL8", discountRD)
-
-			mr = CalcSum(mr)
-			esave := conn.NewQuery().From(tn).Save().Exec(toolkit.M{}.Set("data", mr))
-			if esave != nil {
-				return esave
+		fiscal := key.GetString("date_fiscal")
+		kacode := key.GetString("customer_customergroupname")
+		for k, v := range mr {
+			if toolkit.HasMember([]string{"PL7A"}, k) {
+				newv := float64(0)
+				if kacode != "" {
+					falloc := plallocs[fiscal]
+					if falloc != nil {
+						newv = v.(float64) + v.(float64)*falloc.Expect/falloc.Total
+					}
+				}
+				mr.Set(k, newv)
 			}
+		}
+
+		mr = CalcSum(mr)
+		esave := conn.NewQuery().From(tn).Save().Exec(toolkit.M{}.Set("data", mr))
+		if esave != nil {
+			return esave
 		}
 	}
 
