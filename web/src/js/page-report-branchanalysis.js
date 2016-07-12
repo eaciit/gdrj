@@ -42,7 +42,7 @@ ba.changeBreakdownRD = () => {
 ba.level = ko.observable(2)
 
 ba.buildStructure = (breakdownRD, expand, data) => {
-	let rdCategories = ["Regional Distributor", "Non RD"]
+	let rdCategories = ["RD", "Non RD"]
 	let keys = [
 		"_id_customer_branchname",
 		"_id_customer_channelid",
@@ -220,58 +220,6 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		ba.level(3)
 		showAsBreakdown(parsed)
 		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
-
-		parsed.forEach((g) => {
-			g.subs.forEach((d, i) => {
-				if (i == 0) {
-					return
-				}
-
-				let sample = d.subs[0]
-				let percentage = {}
-				percentage._id = '% of Net Sales'
-				percentage.count = 1
-				percentage.excludeFromTotal = true
-				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
-
-				let total = {}
-				total._id = 'Total&nbsp;'
-				total.count = 1
-				total.excludeFromTotal = true
-
-				for (let p in sample) if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
-					let vTarget = toolkit.sum(d.subs, (h) => h[p])
-					let vNetSales = toolkit.sum(d.subs, (h) => h.PL8A)
-					let value = toolkit.number(vTarget / vNetSales) * 100
-					percentage[p] = `${kendo.toString(value, 'n2')} %`
-					total[p] = vTarget
-				}
-
-				if (d._id == 'Regional Distributor') {
-					toolkit.try(() => { d.subs[0]._id = 'Total&nbsp;' })
-					d.subs.push(percentage)
-					d.count++
-					g.count++
-				} else {
-					if (d.subs.length > 0) {
-						if (d.subs[0]._id == 'Non RD') {
-							toolkit.try(() => { d.subs[0]._id = 'Total&nbsp;' })
-							d.subs.push(percentage)
-							d.count++
-							g.count++
-						} else {
-							d.subs = [percentage].concat(d.subs)
-							d.count++
-							g.count++
-							d.subs = [total].concat(d.subs)
-							d.count++
-							g.count++
-						}
-					}
-				}
-			})
-		})
-
 		return parsed
 	} else
 
@@ -296,24 +244,6 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		ba.level(2)
 		showAsBreakdown(parsed)
 		parsed = _.orderBy(parsed, (d) => d.total, 'desc')
-
-		parsed.forEach((d) => {
-			let total = d.subs[0]
-			let percentage = {}
-			percentage._id = '% of Net Sales'
-			percentage.count = 1
-			percentage.excludeFromTotal = true
-			// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
-
-			for (let p in total) if (total.hasOwnProperty(p) && p.indexOf('PL') > -1) {
-				let value = toolkit.number(total[p] / total.PL8A) * 100
-				percentage[p] = `${kendo.toString(value, 'n2')} %`
-			}
-
-			d.count++
-			d.subs.splice(1, 0, percentage)
-		})
-
 		return parsed
 	}
 
@@ -385,7 +315,7 @@ ba.refresh = (useCache = false) => {
 				return
 			}
 
-			let data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data.splice(0, 50))
+			let data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data)
 			ba.data(data)
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			ba.breakdownNote(`Last refreshed on: ${date}`)
@@ -529,12 +459,6 @@ ba.render = () => {
 			}
 		}
 
-		if (each._id == '% of Net Sales') {
-			currentColumnWidth -= 20
-			thheader.css('font-weight', 'normal')
-					.css('font-style', 'italic')
-		}
-
 		each.key = key.join('_')
 		dataFlat.push(each)
 		totalColumnWidth += currentColumnWidth
@@ -609,8 +533,9 @@ ba.render = () => {
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
 		dataFlat.forEach((e) => {
 			let breakdown = e.key
-			let value = e[`${d._id}`];
-			row[breakdown] = value;
+			let value = e[`${d._id}`]; 
+			value = toolkit.number(value)
+			row[breakdown] = value
 
 			if (toolkit.isDefined(e.excludeFromTotal)) {
 				return
@@ -618,20 +543,20 @@ ba.render = () => {
 
 			row.PNLTotal += value
 		})
-		// dataFlat.forEach((e) => {
-		// 	let breakdown = e.key
-		// 	let percentage = toolkit.number(e[`${d._id}`] / row.PNLTotal) * 100; 
-		// 	percentage = toolkit.number(percentage)
+		dataFlat.forEach((e) => {
+			let breakdown = e.key
+			let percentage = toolkit.number(e[`${d._id}`] / row.PNLTotal) * 100; 
+			percentage = toolkit.number(percentage)
 
-		// 	if (d._id != netSalesPLCode) {
-		// 		percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
-		// 	}
+			if (d._id != netSalesPLCode) {
+				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
+			}
 
-		// 	if (percentage < 0)
-		// 		percentage = percentage * -1
+			if (percentage < 0)
+				percentage = percentage * -1
 
-		// 	row[`${breakdown} %`] = percentage
-		// })
+			row[`${breakdown} %`] = percentage
+		})
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
 			return
@@ -694,10 +619,6 @@ ba.render = () => {
 
 			if ($.trim(value) == '') {
 				value = 0
-			}
-
-			if (e._id == "% of Net Sales") {
-				value = d[key]
 			}
 
 			let cell = toolkit.newEl('td')
