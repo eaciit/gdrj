@@ -138,11 +138,11 @@ func processTable(tn string) error {
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		reportchannel := key.GetString("customer_reportchannel")
 		if reportchannel == "RD" {
-			salesRD := mr.GetFloat64("PL2")
+			//salesRD := mr.GetFloat64("PL2")
 			discountRD := mr.GetFloat64("PL4")
 			netSales := mr.GetFloat64("PL8A")
 
-			salesRD = salesRD / 0.892
+			salesRD := netSales / 0.892
 			discountRD = netSales - salesRD
 
 			mr.Set("PL2", salesRD)
