@@ -39,10 +39,18 @@ func setinitialconnection() {
 }
 
 type plalloc struct {
-	Key     string
-	Current float64
-	Expect  float64
-	Total   float64
+	Key string
+	/*
+		    Current float64
+			Expect  float64
+			Total   float64
+	*/
+	TotalSales    float64
+	TotalValue    float64
+	ChannelSales  map[string]float64
+	ChannelValue  map[string]float64
+	ExpectedValue map[string]float64
+	Ratio         map[string]float64
 }
 
 var plallocs = map[string]*plalloc{}
@@ -73,19 +81,30 @@ func buildRatio(tn string) error {
 
 		key := mtrx.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
-		kacode := key.GetString("customer_customergroupname")
+		channel := key.GetString("customer_reportchannel")
+		sales := mtrx.GetFloat64("PL8A")
 		value := mtrx.GetFloat64("PL7A")
 		falloc := plallocs[fiscal]
 		if falloc == nil {
 			falloc = new(plalloc)
+			falloc.Ratio = map[string]float64{}
+			falloc.ChannelValue = map[string]float64{}
+			falloc.ChannelSales = map[string]float64{}
 		}
 
-		if kacode == "" {
-			falloc.Expect += value
-		} else {
-			falloc.Total += value
-		}
+		falloc.Key = fiscal
+		falloc.TotalSales += sales
+		falloc.TotalValue += value
+		falloc.ChannelSales[channel] = falloc.ChannelSales[channel] + sales
+		falloc.ChannelValue[channel] = falloc.ChannelValue[channel] + value
 		plallocs[fiscal] = falloc
+	}
+
+	for k, falloc := range plallocs {
+		for c, s := range falloc.ChannelSales {
+			falloc.Ratio[c] = toolkit.Div(falloc.ChannelSales[k], falloc.TotalSales)
+			falloc.ExpectedValue[c] = falloc.Ratio[c] * falloc.TotalValue
+		}
 	}
 
 	return nil
@@ -136,20 +155,22 @@ func processTable(tn string) error {
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
-		kacode := key.GetString("customer_customergroupname")
-		for k, v := range mr {
-			if toolkit.HasMember([]string{"PL7A"}, k) {
-				newv := float64(0)
-				if kacode != "" {
-					falloc := plallocs[fiscal]
-					if falloc != nil {
-						newv = v.(float64) + v.(float64)*falloc.Expect/falloc.Total
-					}
-				}
-				mr.Set(k, newv)
+		channel := key.GetString("customer_reportchannel")
+		sales := mr.GetFloat64("PL8A")
+		value := mr.GetFloat64("PL7A")
+		newv := value
+		falloc := plallocs[fiscal]
+		if channel == "RD" {
+			newv = sales * falloc.ExpectedValue[channel] / falloc.ChannelSales[channel]
+		} else {
+			if value != 0 {
+				newv = value * falloc.ExpectedValue[channel] / falloc.ChannelValue[channel]
 			}
 		}
-
+		key.Set("customer_customergroupname", "RD")
+		key.Set("customer_customergroup", "RD")
+		mr.Set("key", key)
+		mr.Set("PL7A", newv)
 		mr = CalcSum(mr)
 		esave := conn.NewQuery().From(tn).Save().Exec(toolkit.M{}.Set("data", mr))
 		if esave != nil {
