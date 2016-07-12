@@ -571,6 +571,8 @@ rpt.changeParent = function (elemheader, elemcontent, PLCode) {
 };
 
 rpt.fixRowValue = function (data) {
+	return;
+
 	data.forEach(function (e, a) {
 		rpt.arrFormulaPL().forEach(function (d) {
 			// let total = toolkit.sum(d.formula, (f) => e[f])
