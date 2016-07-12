@@ -424,17 +424,17 @@ ag.render = () => {
 
 		toolkit.try(() => {
 			if (ag.series1Type() == 'percentage') {
-				o[ag.series1PL()] = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100
+				o[ag.series1PL()] = Math.abs((v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100)
 			} else {
-				o[ag.series1PL()] = (v[1][ag.series1PL()] - v[0][ag.series1PL()])
+				o[ag.series1PL()] = Math.abs((v[1][ag.series1PL()] - v[0][ag.series1PL()]))
 			}
 		})
 
 		toolkit.try(() => {
 			if (ag.series2Type() == 'percentage') {
-				o[ag.series2PL()] = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100
+				o[ag.series2PL()] = Math.abs((v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100)
 			} else {
-				o[ag.series2PL()] = (v[1][ag.series2PL()] - v[0][ag.series2PL()])
+				o[ag.series2PL()] = Math.abs((v[1][ag.series2PL()] - v[0][ag.series2PL()]))
 			}
 		})
 
@@ -446,6 +446,9 @@ ag.render = () => {
 	let width = $('#tab1').width()
 	if (_.min([ag.limit(), op4.length]) > 6) {
 		width = 160 * ag.limit()
+	}
+	if (width == $('#tab1').width()) {
+		width = '100%'
 	}
 
 	let series = [{
@@ -545,7 +548,7 @@ ag.render = () => {
             position: "bottom"
         },
         seriesDefaults: {
-            type: "line",
+            type: "column",
             style: "smooth",
             missingValues: "gap",
 			line: {
@@ -554,6 +557,8 @@ ag.render = () => {
 					color: 'white'
 				},
 			},
+			overlay: { gradient: 'none' },
+			border: { width: 0 },
         },
 		series: series,
         valueAxis: axes,
