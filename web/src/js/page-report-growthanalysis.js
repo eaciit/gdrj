@@ -66,12 +66,14 @@ grw.refresh = (useCache = false) => {
 }
 
 grw.reloadLayout = (d) => {
-	toolkit.try(() => {
-		$(d).find('.k-chart').data('kendoChart').redraw()
-	})
-	toolkit.try(() => {
-		$(d).find('.k-grid').data('kendoGrid').refresh()
-	})
+	setTimeout(() => {
+		toolkit.try(() => {
+			$(d).find('.k-chart').data('kendoChart').redraw()
+		})
+		toolkit.try(() => {
+			$(d).find('.k-grid').data('kendoGrid').refresh()
+		})
+	}, 200)
 }
 
 
@@ -337,6 +339,236 @@ grw.renderGrid = (res) => {
 	$('.grid').kendoGrid(config)
 }
 
+
+
+
+
+
+viewModel.annualGrowth = new Object()
+let ag = viewModel.annualGrowth
+
+ag.optionBreakdowns = ko.observableArray([
+	{"field":"customer.branchname","name":"Branch/RD","title":"customer_branchname"},
+	{"field":"product.brand","name":"Brand","title":"product_brand"},
+	{"field":"customer.channelname","name":"Channel","title":"customer_channelname"},
+	{"field":"customer.areaname","name":"City","title":"customer_areaname"},
+	{"field":"customer.region","name":"Region","title":"customer_region"},
+	{"field":"customer.zone","name":"Zone","title":"customer_zone"},
+	{"field":"customer.keyaccount","name":"Customer Group","title":"customer_keyaccount"}
+])
+ag.contentIsLoading = ko.observable(false)
+ag.breakdownBy = ko.observable('customer.channelname')
+ag.optionPercentageValue = ko.observableArray([
+	{_id: "value", name: "Value"},
+	{_id: "percentage", name: "Percentage"},
+])
+ag.series1PL = ko.observable('')
+ag.series1Type = ko.observable('percentage')
+ag.series2PL = ko.observable('')
+ag.series2Type = ko.observable('percentage')
+ag.limit = ko.observable(6)
+ag.data = ko.observableArray([])
+
+ag.getPLModels = (c) => {
+	app.ajaxPost(viewModel.appName + "report/getplmodel", {}, (res) => {
+		rpt.plmodels(_.orderBy(res, (d) => d.OrderIndex))
+
+		ag.series1PL('PL8A')
+		ag.series2PL('PL0')
+		ag.refresh()
+	})
+}
+
+ag.refresh = () => {
+	let param = {}
+	param.pls = [ag.series1PL(), ag.series2PL()]
+	param.groups = rpt.parseGroups([ag.breakdownBy()])
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue(true, ko.observableArray(rpt.optionFiscalYears()))
+
+	let fetch = () => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
+			}
+
+			if (rpt.isEmptyData(res)) {
+				ag.contentIsLoading(false)
+				return
+			}
+
+			ag.contentIsLoading(false)
+			ag.data(res.Data.Data)
+			ag.render()
+		}, () => {
+			ag.contentIsLoading(false)
+		})
+	}
+
+	ag.contentIsLoading(true)
+	fetch()
+}
+
+ag.render = () => {
+	let op1 = _.groupBy(ag.data(), (d) => d._id[`_id_${toolkit.replace(ag.breakdownBy(), '.', '_')}`])
+	let op2 = _.map(op1, (v, k) => {
+		v = _.orderBy(v, (e) => e._id._id_date_fiscal, 'asc')
+
+		let o = {}
+		o.breakdown = k
+		o[ag.series1PL()] = 0
+		o[ag.series2PL()] = 0
+
+		toolkit.try(() => {
+			if (ag.series1Type() == 'percentage') {
+				o[ag.series1PL()] = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100
+			} else {
+				o[ag.series1PL()] = (v[1][ag.series1PL()] - v[0][ag.series1PL()])
+			}
+		})
+
+		toolkit.try(() => {
+			if (ag.series2Type() == 'percentage') {
+				o[ag.series2PL()] = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100
+			} else {
+				o[ag.series2PL()] = (v[1][ag.series2PL()] - v[0][ag.series2PL()])
+			}
+		})
+
+		return o
+	})
+	let op3 = _.orderBy(op2, (d) => d[ag.series1PL()], 'desc')
+	let op4 = _.take(op3, ag.limit())
+
+	let width = $('#tab1').width()
+	if (_.min([ag.limit(), op4.length]) > 6) {
+		width = 160 * ag.limit()
+	}
+
+	let series = [{
+		field: ag.series1PL(),
+		name: (() => {
+			let row = rpt.plmodels().find((d) => d._id == ag.series1PL())
+			if (row != undefined) {
+				return row.PLHeader3
+			}
+
+			return '&nbsp;'
+		})(),
+		axis: ag.series1Type(),
+		color: toolkit.seriesColorsGodrej[0]
+	}, {
+		field: ag.series2PL(),
+		name: (() => {
+			let row = rpt.plmodels().find((d) => d._id == ag.series2PL())
+			if (row != undefined) {
+				return row.PLHeader3
+			}
+
+			return '&nbsp;'
+		})(),
+		axis: ag.series2Type(),
+		color: toolkit.seriesColorsGodrej[1]
+	}]
+
+	let axes = [{
+		name: ag.series1Type(),
+		majorGridLines: { color: '#fafafa' },
+        labels: { 
+			font: '"Source Sans Pro" 11px',
+        	format: "{0:n2}"
+        },
+    }]
+
+    let categoryAxis = {
+        field: 'breakdown',
+        labels: {
+			font: '"Source Sans Pro" 11px',
+        	format: "{0:n2}"
+        },
+		majorGridLines: { color: '#fafafa' }
+	}
+
+    if (ag.series1Type() != ag.series2Type()) {
+    	axes.push({
+			name: ag.series2Type(),
+			majorGridLines: { color: '#fafafa' },
+	        labels: { 
+				font: '"Source Sans Pro" 11px',
+	        	format: "{0:n2}"
+	        },
+	    })
+    }
+
+	axes.forEach((d, i) => {
+		if (axes.length > 1) {
+			d.color = toolkit.seriesColorsGodrej[i]
+
+			if (i == 1) {
+				categoryAxis.axisCrossingValue = [0, op4.length]
+			}
+		}
+	})
+
+	series.forEach((d, i) => {
+		d.tooltip = {
+			visible: true,
+			template: (e) => {
+				let value = kendo.toString(e.value, 'n0')
+
+				if (ag[`series${i + 1}Type`]() == 'percentage') {
+					value = `${kendo.toString(e.value, 'n2')} %`
+				}
+
+				return `${d.name}: ${value}`
+			}
+		}
+
+		d.labels = {
+			visible: true,
+		}
+
+		if (ag[`series${i + 1}Type`]() == 'percentage') {
+			d.labels.format = '{0:n2} %'
+		} else {
+			d.labels.format = '{0:n0}'
+		}
+	})
+
+	let config = {
+		dataSource: { data: op4 },
+        legend: {
+            visible: true,
+            position: "bottom"
+        },
+        seriesDefaults: {
+            type: "line",
+            style: "smooth",
+            missingValues: "gap",
+			line: {
+				border: {
+					width: 1,
+					color: 'white'
+				},
+			},
+        },
+		series: series,
+        valueAxis: axes,
+        categoryAxis: categoryAxis
+    }
+
+    $('.annually-diff').replaceWith(`<div class="annually-diff" style="width: ${width}px;"></div>`)
+    $('.annually-diff').kendoChart(config)
+}
+
+
+
+
+
+
 vm.currentMenu('Analysis')
 vm.currentTitle('&nbsp;')
 vm.breadcrumb([
@@ -348,4 +580,5 @@ vm.breadcrumb([
 
 $(() => {
 	grw.refresh()
+	ag.getPLModels()
 })
