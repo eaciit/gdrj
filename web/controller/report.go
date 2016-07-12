@@ -98,6 +98,17 @@ func (m *ReportController) GetDataHGeographi(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, res, "")
 }
 
+func (m *ReportController) GetDataMasterArea(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.MasterAreaGetAll()
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.MasterArea{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
 func (m *ReportController) GetDataCustomer(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
