@@ -173,12 +173,10 @@ func processTable(tn string) error {
 		mr.Set("key", key)
 		mr.Set("PL7A", newv)
 		mr = CalcSum(mr)
-		/*
-			        esave := conn.NewQuery().From(tn).Save().Exec(toolkit.M{}.Set("data", mr))
-					if esave != nil {
-						return esave
-					}
-		*/
+		esave := conn.NewQuery().From(tn).Save().Exec(toolkit.M{}.Set("data", mr))
+		if esave != nil {
+			return esave
+		}
 	}
 
 	return nil
