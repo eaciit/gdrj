@@ -10,20 +10,15 @@
  2. make changes on file `config/databases.json`
 
 	```json
-	[{
 	    "_id": "db_acl",
 	    "data": {
 	        "db": "ecgodrej_prod",
-	        // ...
-	    }
-	},
-	{
+	```
+	
+	```json
 	    "_id": "db_godrej",
 	    "data": {
 	        "db": "ecgodrej_prod",
-	        // ...
-	    }
-	}]
 	```
 
  3. change the port on file `config/port.json`
