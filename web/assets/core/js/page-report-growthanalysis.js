@@ -357,10 +357,208 @@ grw.renderGrid = function (res) {
 	$('.grid').kendoGrid(config);
 };
 
+viewModel.annualGrowth = new Object();
+var ag = viewModel.annualGrowth;
+
+ag.optionBreakdowns = ko.observableArray([{ "field": "customer.branchname", "name": "Branch/RD", "title": "customer_branchname" }, { "field": "product.brand", "name": "Brand", "title": "product_brand" }, { "field": "customer.channelname", "name": "Channel", "title": "customer_channelname" }, { "field": "customer.areaname", "name": "City", "title": "customer_areaname" }, { "field": "customer.region", "name": "Region", "title": "customer_region" }, { "field": "customer.zone", "name": "Zone", "title": "customer_zone" }, { "field": "customer.keyaccount", "name": "Customer Group", "title": "customer_keyaccount" }]);
+ag.contentIsLoading = ko.observable(false);
+ag.breakdownBy = ko.observable('customer.channelname');
+ag.optionPercentageValue = ko.observableArray([{ _id: "value", name: "Value" }, { _id: "percentage", name: "Percentage" }]);
+ag.series1PL = ko.observable('');
+ag.series1Type = ko.observable('percentage');
+ag.series2PL = ko.observable('');
+ag.series2Type = ko.observable('percentage');
+ag.limit = ko.observable(3);
+ag.data = ko.observableArray([]);
+
+ag.getPLModels = function (c) {
+	app.ajaxPost(viewModel.appName + "report/getplmodel", {}, function (res) {
+		rpt.plmodels(_.orderBy(res, function (d) {
+			return d.OrderIndex;
+		}));
+
+		ag.series1PL('PL8A');
+		ag.series2PL('PL0');
+		ag.refresh();
+	});
+};
+
+ag.refresh = function () {
+	var param = {};
+	param.pls = [ag.series1PL(), ag.series2PL()];
+	param.groups = rpt.parseGroups([ag.breakdownBy()]);
+	param.aggr = 'sum';
+	param.filters = rpt.getFilterValue(true, ko.observableArray(rpt.optionFiscalYears()));
+
+	var fetch = function fetch() {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			if (rpt.isEmptyData(res)) {
+				ag.contentIsLoading(false);
+				return;
+			}
+
+			ag.contentIsLoading(false);
+			ag.data(res.Data.Data);
+			ag.render();
+		}, function () {
+			ag.contentIsLoading(false);
+		});
+	};
+
+	ag.contentIsLoading(true);
+	fetch();
+};
+
+ag.render = function () {
+	var op1 = _.groupBy(ag.data(), function (d) {
+		return d._id["_id_" + toolkit.replace(ag.breakdownBy(), '.', '_')];
+	});
+	var op2 = _.map(op1, function (v, k) {
+		v = _.orderBy(v, function (e) {
+			return e._id._id_date_fiscal;
+		}, 'asc');
+
+		var o = {};
+		o.breakdown = k;
+
+		if (ag.series1Type() == 'percentage') {
+			o[ag.series1PL()] = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100;
+		} else {
+			o[ag.series1PL()] = v[1][ag.series1PL()] - v[0][ag.series1PL()];
+		}
+
+		if (ag.series2Type() == 'percentage') {
+			o[ag.series2PL()] = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100;
+		} else {
+			o[ag.series2PL()] = v[1][ag.series2PL()] - v[0][ag.series2PL()];
+		}
+
+		return o;
+	});
+
+	var series = [{
+		field: ag.series1PL(),
+		name: function () {
+			var row = rpt.plmodels().find(function (d) {
+				return d._id == ag.series1PL();
+			});
+			if (row != undefined) {
+				return row.PLHeader3;
+			}
+
+			return '&nbsp;';
+		}(),
+		axis: ag.series1Type(),
+		color: toolkit.seriesColorsGodrej[0]
+	}, {
+		field: ag.series2PL(),
+		name: function () {
+			var row = rpt.plmodels().find(function (d) {
+				return d._id == ag.series2PL();
+			});
+			if (row != undefined) {
+				return row.PLHeader3;
+			}
+
+			return '&nbsp;';
+		}(),
+		axis: ag.series2Type(),
+		color: toolkit.seriesColorsGodrej[1]
+	}];
+
+	var axes = [{
+		name: ag.series1Type(),
+		majorGridLines: { color: '#fafafa' },
+		labels: {
+			font: '"Source Sans Pro" 11px',
+			format: "{0:n2}"
+		}
+	}];
+
+	var categoryAxis = {
+		field: 'breakdown',
+		labels: {
+			font: '"Source Sans Pro" 11px',
+			format: "{0:n2}"
+		},
+		majorGridLines: { color: '#fafafa' }
+	};
+
+	if (ag.series1Type() != ag.series2Type()) {
+		axes.push({
+			name: ag.series2Type(),
+			majorGridLines: { color: '#fafafa' },
+			labels: {
+				font: '"Source Sans Pro" 11px',
+				format: "{0:n2}"
+			}
+		});
+	}
+
+	axes.forEach(function (d, i) {
+		if (axes.length > 1) {
+			d.color = toolkit.seriesColorsGodrej[i];
+
+			if (i == 1) {
+				categoryAxis.axisCrossingValue = [0, op2.length];
+			}
+		}
+
+		if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
+			series[i].labels = { format: '{0:n2} %' };
+		} else {
+			series[i].labels = { format: '{0:n0}' };
+		}
+	});
+
+	console.log('----', axes);
+
+	var config = {
+		dataSource: { data: op2 },
+		legend: {
+			visible: true,
+			position: "bottom"
+		},
+		seriesDefaults: {
+			type: "line",
+			style: "smooth",
+			missingValues: "gap",
+			labels: {
+				visible: true,
+				position: 'top',
+				format: '{0:n0}'
+			},
+			line: {
+				border: {
+					width: 1,
+					color: 'white'
+				}
+			}
+		},
+		series: series,
+		valueAxis: axes,
+		categoryAxis: categoryAxis
+	};
+
+	$('.annually-diff').replaceWith("<div class=\"annually-diff\"></div>");
+	$('.annually-diff').kendoChart(config);
+
+	console.log("==", config);
+	console.log("==", ag.data());
+};
+
 vm.currentMenu('Analysis');
-vm.currentTitle('&nbsp;');
+vm.currentTitle('Growth Analysis');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Growth Analysis', href: '#' }]);
 
 $(function () {
 	grw.refresh();
+	ag.getPLModels();
 });
