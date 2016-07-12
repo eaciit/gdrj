@@ -9,6 +9,11 @@ rd.breakdownBy = ko.observable('customer.reportsubchannel')
 rd.breakdownByCity = ko.observable('customer.areaname')
 rd.breakdownByFiscalYear = ko.observable('date.fiscal')
 
+rd.filterDistributor = ko.observableArray([])
+rd.optionDistributor = ko.computed(() => {
+	return rpt.masterData.Distributor().filter((d) => d._id != '')
+}, rpt.masterData.Distributor)
+
 rd.data = ko.observableArray([])
 rd.fiscalYear = ko.observable(rpt.value.FiscalYear())
 rd.breakdownValue = ko.observableArray([])
@@ -29,6 +34,14 @@ rd.refresh = (useCache = false) => {
 		Op: '$in',
 		Value: ['I1']
 	})
+
+	if (rd.filterDistributor().length > 0) {
+		param.filters.push({
+			Field: 'customer.reportsubchannel',
+			Op: '$in',
+			Value: rd.filterDistributor()
+		})
+	}
 
 	let breakdownValue = rd.breakdownValue().filter((d) => d != 'All')
 	if (breakdownValue.length > 0) {
