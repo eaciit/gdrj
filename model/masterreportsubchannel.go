@@ -3,7 +3,6 @@ package gdrj
 import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
-	"strings"
 )
 
 type MasterReportSubChannel struct {
