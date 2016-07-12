@@ -447,6 +447,9 @@ ag.render = () => {
 	if (_.min([ag.limit(), op4.length]) > 6) {
 		width = 160 * ag.limit()
 	}
+	if (width == $('#tab1').width()) {
+		width = '100%'
+	}
 
 	let series = [{
 		field: ag.series1PL(),
