@@ -742,7 +742,6 @@ rpt.fixRowValue = (data) => {
 		})
 	})
 	// console.log(data)
-
 }
 
 rpt.buildGridLevels = (rows) => {
