@@ -94,7 +94,7 @@ func processTable(tn string) error {
 			tn, i, count, time.Since(t0).String())
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		trxsource := mr.GetString("trxsrc")
+		trxsource := key.GetString("trxsrc")
 		reportchannel := key.GetString("customer_reportchannel")
 		if trxsource == "VDIST" && reportchannel == "RD" {
 			//salesRD := mr.GetFloat64("PL2")
