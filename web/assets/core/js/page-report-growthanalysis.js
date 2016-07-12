@@ -367,9 +367,9 @@ ag.contentIsLoading = ko.observable(false);
 ag.breakdownBy = ko.observable('customer.channelname');
 ag.optionPercentageValue = ko.observableArray([{ _id: "value", name: "Value" }, { _id: "percentage", name: "Percentage" }]);
 ag.series1PL = ko.observable('');
-ag.series1Type = ko.observable('percentage');
+ag.series1Type = ko.observable('value');
 ag.series2PL = ko.observable('');
-ag.series2Type = ko.observable('percentage');
+ag.series2Type = ko.observable('value');
 ag.limit = ko.observable(6);
 ag.data = ko.observableArray([]);
 
@@ -380,7 +380,7 @@ ag.getPLModels = function (c) {
 		}));
 
 		ag.series1PL('PL8A');
-		ag.series2PL('PL0');
+		ag.series2PL('PL44B');
 		ag.refresh();
 	});
 };
