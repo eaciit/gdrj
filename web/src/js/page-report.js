@@ -29,7 +29,8 @@ rpt.filter = [
 		{ _id: 'ChannelC', from: 'Channel', title: 'Channel' },
 		{ _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' },
 		{ _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' },
-		{ _id: 'Customer', from: 'Customer', title: 'Outlet' }
+		{ _id: 'Customer', from: 'Customer', title: 'Outlet' },
+		{ _id: 'Distributor', from: 'MasterDistributor', title: 'Distributor' }
 	] },
 	{ _id: 'product', group: 'Product', sub: [
 		{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' },
@@ -142,6 +143,7 @@ rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYea
 		{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
 		{ 'Field': 'customer.customergroup', 'Op': '$in', 'Value': rpt.value.CustomerGroup() },
 		{ 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
+		{ 'Field': 'customer.reportsubchannel', 'Op': '$in', 'Value': rpt.value.Distributor() },
 
 		{ 'Field': 'product.brandcategoryid', 'Op': '$in', Value: rpt.value.HBrandCategory() },
 		// ---> Brand OK
@@ -380,7 +382,7 @@ rpt.filterMultiSelect = (d) => {
 			},
 			value: rpt.value[d._id]
 		})
-	} else if (['Branch', 'Brand', 'MasterArea', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
+	} else if (['Branch', 'Brand', 'MasterArea', 'MasterDistributor', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -401,7 +403,6 @@ rpt.filterMultiSelect = (d) => {
 			config.dataValueField = '_id'
 		}
 
-console.log("get from", `report/getdata${d.from.toLowerCase()}`)
 		toolkit.ajaxPost(viewModel.appName + `report/getdata${d.from.toLowerCase()}`, {}, (res) => {
 			if (!res.success) {
 				return
