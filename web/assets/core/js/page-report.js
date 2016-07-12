@@ -538,7 +538,7 @@ rpt.showZeroValue = function (a) {
 	}
 };
 
-rpt.arrChangeParent = ko.observableArray([{ idfrom: 'PL6A', idto: '', after: 'PL0' }, { idfrom: 'PL1', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL2', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL3', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL4', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL5', idto: 'PL8A', after: 'PL8A' }, { idfrom: 'PL6', idto: 'PL8A', after: 'PL8A' }]);
+rpt.arrChangeParent = ko.observableArray([{ idfrom: 'PL1', idto: 'PL0', after: 'PL0' }, { idfrom: 'PL7', idto: 'PL0', after: 'PL1' }, { idfrom: 'PL2', idto: 'PL0', after: 'PL7' }, { idfrom: 'PL8', idto: 'PL0', after: 'PL2' }, { idfrom: 'PL6', idto: 'PL0', after: 'PL8' }, { idfrom: 'PL7A', idto: '', after: 'PL6' }]);
 
 // rpt.arrFormulaPL = ko.observableArray([
 // 	{ id: "PL0", formula: ["PL1","PL2","PL3","PL4","PL5","PL6"], cal: "sum"},
@@ -594,17 +594,19 @@ rpt.fixRowValue = function (data) {
 };
 
 rpt.buildGridLevels = function (rows) {
-	var grouppl1 = _.map(_.groupBy(rpt.plmodels(), function (d) {
+	var plmodels = rpt.plmodels();
+
+	var grouppl1 = _.map(_.groupBy(plmodels, function (d) {
 		return d.PLHeader1;
 	}), function (k, v) {
 		return { data: k, key: v };
 	});
-	var grouppl2 = _.map(_.groupBy(rpt.plmodels(), function (d) {
+	var grouppl2 = _.map(_.groupBy(plmodels, function (d) {
 		return d.PLHeader2;
 	}), function (k, v) {
 		return { data: k, key: v };
 	});
-	var grouppl3 = _.map(_.groupBy(rpt.plmodels(), function (d) {
+	var grouppl3 = _.map(_.groupBy(plmodels, function (d) {
 		return d.PLHeader3;
 	}), function (k, v) {
 		return { data: k, key: v };
