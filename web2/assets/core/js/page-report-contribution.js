@@ -172,7 +172,7 @@ cbt.render = function () {
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
-	var percentageWidth = 70;
+	var percentageWidth = 110;
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
 		var currentColumnWidth = columnWidth;
@@ -193,7 +193,7 @@ cbt.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('% of total').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-right').appendTo(trContents[0]);
 			// .css('background-color', colors[i])
 			// .css('color', 'white')
 
@@ -208,7 +208,7 @@ cbt.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[1]);
+				var _thheader1p = toolkit.newEl('th').html('% of total').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-right').appendTo(trContents[1]);
 
 				return;
 			}
@@ -223,7 +223,7 @@ cbt.render = function () {
 	var plmodels = _.sortBy(rpt.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
 	});
-	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */];
+	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
 	var rows = [];
