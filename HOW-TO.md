@@ -35,10 +35,10 @@
  4. make some changes on the installer file, `install.sh`
 
 	```bash
-	rm -rf gdrjprod
-	go build
+	rm -rf gdrj
+	go build -o gdrj
 	echo '' > log.txt
-	sudo ./gdrjprod > log.txt &
+	sudo ./gdrj > log.txt &
 	```
 
  5. ssh to `go.eaciit.com`, go to prod path
