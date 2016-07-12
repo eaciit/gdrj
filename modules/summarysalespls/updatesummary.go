@@ -128,6 +128,93 @@ func prepmasterrevadv() {
 	masters.Set("advertisements", advertisements)
 }
 
+func prepmasterrevpromospg() {
+	toolkit.Println("--> Promotion and SPG Revision")
+	promotions := toolkit.M{}
+
+	csradv, _ := conn.NewQuery().From("rawdatapl_promospg11072016").
+		Where(dbox.Eq("year", fiscalyear-1)).
+		Cursor(nil)
+
+	defer csradv.Close()
+
+	// "date_year" : 2014.0
+	// "date_month" : 7.0,
+	// "customer_branchid" : "CD12",
+	// "customer_channelid" : "I2",
+	// "customer_customergroup" : "TM",
+	// "product_brand" : "MITU",
+
+	// "year" : NumberInt(2014),
+	// "period" : NumberInt(1),
+	// "amountinidr" : -9000000.0,
+	// "accountdescription" : "GONDOLA",
+	// "grouping" : "Promotion Expenses",
+	// "channelid" : "I3",
+	// "branchid" : "CD04",
+	// "keyaccountcode" : "",
+	// "brand" : ""
+
+	for {
+		m := toolkit.M{}
+		e := csradv.Fetch(&m, 1, false)
+
+		if e != nil {
+			break
+		}
+
+		Date := time.Date(m.GetInt("year"), time.Month(m.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
+		key := toolkit.Sprintf("%d_%d", Date.Year(), Date.Month())
+
+		if len(m.GetString("branchid")) > 2 {
+			key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("branchid"))))
+			if len(m.GetString("channelid")) == 2 {
+				key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("channelid"))))
+				if len(m.GetString("keyaccountcode")) > 1 {
+					key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("keyaccountcode"))))
+					if len(m.GetString("brand")) > 1 {
+						key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("brand"))))
+					}
+				}
+			}
+		} else if len(m.GetString("channelid")) == 2 {
+			key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("channelid"))))
+		}
+
+		tpromo := toolkit.M{}
+		if promotions.Has(key) {
+			tpromo = promotions.Get(key).(toolkit.M)
+		}
+
+		skey := "PL28I"
+		tstr := strings.TrimSpace(strings.ToUpper(m.GetString("accountdescription")))
+		switch tstr {
+		case "ADVERTISEMENT - INTERNET":
+			skey = "PL28A"
+		case "ADVERTISEMENT - PRODN - DESIGN - DVLOPMNT":
+			skey = "PL28B"
+		case "ADVERTISEMENT - TV":
+			skey = "PL28C"
+		case "MARKET RESEARCH":
+			skey = "PL28D"
+		case "FAIRS & EVENTS":
+			skey = "PL28E"
+		case "AGENCY FEES":
+			skey = "PL28F"
+		case "ADVERTISEMENT - POP MATERIALS":
+			skey = "PL28G"
+		case "SPONSORSHIP":
+			skey = "PL28H"
+		}
+
+		v := tpromo.GetFloat64(skey) + m.GetFloat64("amountinidr")
+		tpromo.Set(skey, v)
+		promotions[key] = tpromo
+	}
+
+	masters.Set("promotions", promotions)
+}
+
 func prepmasterrevfreight() {
 	toolkit.Println("--> Freight Revision")
 	freights := toolkit.M{}
@@ -182,18 +269,33 @@ func prepmasterrevdiscountactivity() {
 		// "customer_customergroup" : "TM",
 		// "product_brand" : "MITU",
 
-		if len(m.GetString("brand")) > 2 {
+		// "year" : NumberInt(2014),
+		// "period" : NumberInt(1),
+		// "amountinidr" : 145035.0,
+		// "channelid" : "I3",
+		// "branchid" : "CD02",
+		// "keyaccountgroup" : "(blank)",
+		// "brand" : "HIT",
+
+		if len(m.GetString("branchid")) > 2 && m.GetString("branchid") != "(blank)" {
+			key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("branchid"))))
+			if len(m.GetString("channelid")) > 1 && m.GetString("channelid") != "(blank)" {
+				key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("channelid"))))
+				if len(m.GetString("keyaccountgroup")) > 1 && m.GetString("keyaccountgroup") != "(blank)" {
+					key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("keyaccountgroup"))))
+					if len(m.GetString("brand")) > 2 && m.GetString("brand") != "(blank)" {
+						key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("brand"))))
+					}
+				}
+			}
+		} else if len(m.GetString("channelid")) > 1 && m.GetString("channelid") != "(blank)" {
+			key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("channelid"))))
+		} else if len(m.GetString("brand")) > 2 && m.GetString("brand") != "(blank)" {
 			key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("brand"))))
 		}
 
-		tdiscactivity := toolkit.M{}
-		if discountactivities.Has(key) {
-			tdiscactivity = discountactivities.Get(key).(toolkit.M)
-		}
-
-		v := tdiscactivity.GetFloat64(key) + m.GetFloat64("amountinidr")
-		tdiscactivity.Set(key, v)
-		discountactivities[key] = tdiscactivity
+		v := discountactivities.GetFloat64(key) + m.GetFloat64("amountinidr")
+		discountactivities.Set(key, v)
 	}
 
 	masters.Set("discountactivities", discountactivities)
@@ -456,8 +558,8 @@ func main() {
 	// prepmasterratiomapsalesreturn2016()
 	// prepmasterdiffsalesreturn2016()
 	// prepmastersalesreturn()
-	prepmasterratio()
-	prepmasterrevfreight()
+	// prepmasterratio()
+	// prepmasterrevfreight()
 	// prepmasterrevadv()
 
 	toolkit.Println("Start data query...")
@@ -634,12 +736,6 @@ func CalcFreightsRev(tkm toolkit.M) {
 	freights := masters.Get("freights").(toolkit.M)
 	key := toolkit.Sprintf("%d_%d", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"))
 	val := -dratio.GetFloat64("exexpmonth") * freights.GetFloat64(key)
-
-	// toolkit.Println(key, " : ", val, " : ", dratio.GetFloat64("exexpmonth"), " : ", freights.GetFloat64(key))
-
-	// for k, v := range freights {
-	// 	toolkit.Println(k, " - ", v)
-	// }
 
 	tkm.Set("PL23", val)
 	return
@@ -867,7 +963,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-check").
+		From("salespls-summary-plchange").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -878,8 +974,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CalcSalesReturn2016(trx)
 
-		CalcRatio(trx)
-		CalcFreightsRev(trx)
+		// CalcRatio(trx)
+		// CalcFreightsRev(trx)
 
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
