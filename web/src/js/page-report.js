@@ -664,13 +664,13 @@ rpt.showZeroValue = (a) => {
 }
 
 rpt.arrChangeParent = ko.observableArray([
-	{ idfrom: 'PL6A', idto: '', after: 'PL0'},
-	{ idfrom: 'PL1', idto: 'PL8A', after: 'PL8A'},
-	{ idfrom: 'PL2', idto: 'PL8A', after: 'PL8A'},
-	{ idfrom: 'PL3', idto: 'PL8A', after: 'PL8A'},
-	{ idfrom: 'PL4', idto: 'PL8A', after: 'PL8A'},
-	{ idfrom: 'PL5', idto: 'PL8A', after: 'PL8A'},
-	{ idfrom: 'PL6', idto: 'PL8A', after: 'PL8A'}
+	{ idfrom: 'PL1', idto: 'PL0', after: 'PL0'},
+	{ idfrom: 'PL2', idto: 'PL0', after: 'PL0'},
+	{ idfrom: 'PL3', idto: 'PL0', after: 'PL0'},
+	{ idfrom: 'PL4', idto: 'PL0', after: 'PL0'},
+	{ idfrom: 'PL5', idto: 'PL0', after: 'PL0'},
+	{ idfrom: 'PL6', idto: 'PL0', after: 'PL0'},
+	{ idfrom: 'PL7A', idto: '', after: 'PL1'},
 ])
 
 // rpt.arrFormulaPL = ko.observableArray([
@@ -731,9 +731,11 @@ rpt.fixRowValue = (data) => {
 }
 
 rpt.buildGridLevels = (rows) => {
-	let grouppl1 = _.map(_.groupBy(rpt.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
-	let grouppl2 = _.map(_.groupBy(rpt.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
-	let grouppl3 = _.map(_.groupBy(rpt.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
+	let plmodels = rpt.plmodels()
+
+	let grouppl1 = _.map(_.groupBy(plmodels, (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
+	let grouppl2 = _.map(_.groupBy(plmodels, (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
+	let grouppl3 = _.map(_.groupBy(plmodels, (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
 
 	let $trElem, $columnElem
 	let resg1, resg2, resg3, PLyo, PLyo2, child = 0, parenttr = 0, textPL
