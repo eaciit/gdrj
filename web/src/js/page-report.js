@@ -23,7 +23,7 @@ rpt.filter = [
 	{ _id: 'geo', group: 'Geographical', sub: [
 		{ _id: 'Zone', from: 'Zone', title: 'Zone' },
 		{ _id: 'Region', from: 'Region', title: 'Region' },
-		{ _id: 'Area', from: 'Area', title: 'Area' }
+		{ _id: 'Area', from: 'MasterArea', title: 'City' }
 	] },
 	{ _id: 'customer', group: 'Customer', sub: [
 		{ _id: 'ChannelC', from: 'Channel', title: 'Channel' },
@@ -343,7 +343,7 @@ rpt.filterMultiSelect = (d) => {
 	let config = {
 		filter: 'contains',
 		placeholder: 'Choose items ...',
-		change: rpt.eventChange[d._id],
+		// change: rpt.eventChange[d._id],
 		value: rpt.value[d._id]
 	}
 
@@ -380,7 +380,7 @@ rpt.filterMultiSelect = (d) => {
 			},
 			value: rpt.value[d._id]
 		})
-	} else if (['Branch', 'Brand', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
+	} else if (['Branch', 'Brand', 'MasterArea', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -401,6 +401,7 @@ rpt.filterMultiSelect = (d) => {
 			config.dataValueField = '_id'
 		}
 
+console.log("get from", `report/getdata${d.from.toLowerCase()}`)
 		toolkit.ajaxPost(viewModel.appName + `report/getdata${d.from.toLowerCase()}`, {}, (res) => {
 			if (!res.success) {
 				return
@@ -412,7 +413,7 @@ rpt.filterMultiSelect = (d) => {
 				rpt.masterData[d._id].push({ _id: "OTHER", Name: "OTHER" })
 			}
 		})
-	} else if (['Region', 'Area', 'Zone'].indexOf(d.from) > -1) {
+	} else if (['Region', /* 'Area', */ 'Zone'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -429,7 +430,7 @@ rpt.filterMultiSelect = (d) => {
 
 				rpt.masterData.geographi(_.sortBy(res.data, (d) => d.Name));
 
-				['Region', 'Area', 'Zone'].forEach((e) => {
+				['Region', /* 'Area', */ 'Zone'].forEach((e) => {
 					let res = rpt.groupGeoBy(rpt.masterData.geographi(), e)
 					rpt.masterData[e](_.sortBy(res, (d) => d.Name))
 					rpt.masterData[e].push({ _id: "OTHER", Name: "OTHER" })
@@ -669,7 +670,7 @@ rpt.arrChangeParent = ko.observableArray([
 	{ idfrom: 'PL2', idto: 'PL0', after: 'PL7'},
 	{ idfrom: 'PL8', idto: 'PL0', after: 'PL2'},
 	{ idfrom: 'PL6', idto: 'PL0', after: 'PL8'},
-	
+
 	{ idfrom: 'PL7A', idto: '', after: 'PL6'},
 ])
 
