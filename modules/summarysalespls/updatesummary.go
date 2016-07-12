@@ -21,7 +21,19 @@ var (
 	fiscalyear, iscount, scount int
 	data                        map[string]float64
 	masters                     = toolkit.M{}
+
+	alloc = map[string]float64{
+		"I1": 0.17,
+		"I3": 0.51,
+		"I2": 0.32,
+	}
 )
+
+type sgaalloc struct {
+	ChannelID                                    string
+	TotalNow, TotalExpect, RatioNow, RatioExpect float64
+	TotalSales                                   float64
+}
 
 func buildmap(holder interface{},
 	fnModel func() orm.IModel,
@@ -163,8 +175,13 @@ func prepmasterrevpromospg() {
 			break
 		}
 
+		agroup := "promo"
+		if strings.Contains(strings.ToUpper(m.GetString("grouping")), "SPG") {
+			agroup = "spg"
+		}
+
 		Date := time.Date(m.GetInt("year"), time.Month(m.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
-		key := toolkit.Sprintf("%d_%d", Date.Year(), Date.Month())
+		key := toolkit.Sprintf("%s_%d_%d", agroup, Date.Year(), Date.Month())
 
 		if len(m.GetString("branchid")) > 2 {
 			key = toolkit.Sprintf("%s_%s", key, strings.TrimSpace(strings.ToUpper(m.GetString("branchid"))))
@@ -186,25 +203,29 @@ func prepmasterrevpromospg() {
 			tpromo = promotions.Get(key).(toolkit.M)
 		}
 
-		skey := "PL28I"
-		tstr := strings.TrimSpace(strings.ToUpper(m.GetString("accountdescription")))
-		switch tstr {
-		case "ADVERTISEMENT - INTERNET":
-			skey = "PL28A"
-		case "ADVERTISEMENT - PRODN - DESIGN - DVLOPMNT":
-			skey = "PL28B"
-		case "ADVERTISEMENT - TV":
-			skey = "PL28C"
-		case "MARKET RESEARCH":
-			skey = "PL28D"
-		case "FAIRS & EVENTS":
-			skey = "PL28E"
-		case "AGENCY FEES":
-			skey = "PL28F"
-		case "ADVERTISEMENT - POP MATERIALS":
-			skey = "PL28G"
-		case "SPONSORSHIP":
-			skey = "PL28H"
+		skey := ""
+		if agroup == "spg" {
+			skey = "PL31E"
+			tstr := strings.ToUpper(strings.TrimSpace(m.GetString("accountdescription")))
+			switch tstr {
+			case "SPG EXPENSES - MANUAL":
+				skey = "PL31D"
+			case "SPG EXPENSES":
+				skey = "PL31C"
+			case "SPG ALLOCATION":
+				skey = "PL31B"
+			case "COORDINATION FEE":
+				skey = "PL31A"
+			}
+		} else {
+			tstr := strings.TrimSpace(m.GetString("accountdescription"))
+			plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
+			skey = "PL29A32"
+			for _, v := range plmodels {
+				if v.PLHeader2 == "Promotions Expenses" && v.PLHeader3 == tstr {
+					skey = v.ID
+				}
+			}
 		}
 
 		v := tpromo.GetFloat64(skey) + m.GetFloat64("amountinidr")
@@ -542,6 +563,70 @@ func getstep(count int) int {
 	return v
 }
 
+func prepmastersgacalcrev() {
+	toolkit.Println("--> SGA Rev Calculation")
+	diffConn, _ := modules.GetDboxIConnection("db_godrej")
+	defer diffConn.Close()
+
+	m := map[string]map[string]*sgaalloc{}
+	totalsga := float64(0)
+	totalsgach := map[string]float64{}
+	totalsalesch := map[string]float64{}
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	sumnow, _ := diffConn.NewQuery().From("salespls-summary").
+		Where(filter).
+		Cursor(nil)
+	// count := sumnow.Count()
+	i := 0
+
+	for {
+		mnow := toolkit.M{}
+		efetch := sumnow.Fetch(&mnow, 1, false)
+		if efetch != nil {
+			break
+		}
+
+		i++
+		key := mnow.Get("key", toolkit.M{}).(toolkit.M)
+		channelid := key.GetString("customer_channelid")
+		mchannel, mchannelExist := m[channelid]
+		if !mchannelExist {
+			mchannel = map[string]*sgaalloc{}
+			m[channelid] = mchannel
+		}
+
+		for sgakey, val := range mnow {
+			if strings.Contains(sgakey, "PL33_") || strings.Contains(sgakey, "PL34_") || strings.Contains(sgakey, "PL35_") {
+				cvalsga := toolkit.ToFloat64(val, 0, toolkit.RoundingAuto)
+
+				totalsga += cvalsga
+				totalsgach[channelid] += cvalsga
+
+				dcsga, dcsgaexist := mchannel[sgakey]
+				if !dcsgaexist {
+					dcsga = new(sgaalloc)
+					mchannel[sgakey] = dcsga
+				}
+
+				dcsga.TotalNow += cvalsga
+				dcsga.TotalSales += mnow.GetFloat64("PL8A")
+				totalsalesch[channelid] += mnow.GetFloat64("PL8A")
+			}
+		}
+	}
+
+	for chid, challocs := range m {
+		totalchexpect := alloc[chid] * totalsga
+		for _, dcsga := range challocs {
+			dcsga.RatioNow = gdrj.SaveDiv(dcsga.TotalNow, totalsgach[chid])
+			dcsga.TotalExpect = totalchexpect * gdrj.SaveDiv(dcsga.TotalSales, totalsalesch[chid])
+		}
+	}
+
+	masters.Set("sgacalcrev", m)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -555,6 +640,7 @@ func main() {
 	defer gdrj.CloseDb()
 	prepmastercalc()
 
+	prepmastersgacalcrev()
 	// prepmasterratiomapsalesreturn2016()
 	// prepmasterdiffsalesreturn2016()
 	// prepmastersalesreturn()
@@ -829,6 +915,28 @@ func CalcSalesVDist20142015(tkm toolkit.M) {
 	}
 }
 
+func CalcSgaRev(tkm toolkit.M) {
+	if !masters.Has("sgacalcrev") {
+		return
+	}
+
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	// dratio, _ := toolkit.ToM(tkm.Get("ratio"))
+
+	gsgaratios := masters["sgacalcrev"].(map[string]map[string]*sgaalloc)
+	gsgaratio := gsgaratios[dtkm.GetString("customer_channelid")]
+
+	for sgakey, val := range tkm {
+		if strings.Contains(sgakey, "PL33_") || strings.Contains(sgakey, "PL34_") || strings.Contains(sgakey, "PL35_") {
+			sgadetail := gsgaratio[sgakey]
+			cvalsga := toolkit.ToFloat64(val, 0, toolkit.RoundingAuto)
+			cvalsga += (sgadetail.TotalExpect - sgadetail.TotalNow) * gdrj.SaveDiv(tkm.GetFloat64("PL8A"), sgadetail.TotalSales)
+			tkm.Set(sgakey, cvalsga)
+		}
+	}
+	return
+}
+
 func CalcSum(tkm toolkit.M) {
 	var netsales, cogs, grossmargin, sellingexpense,
 		sga, opincome, directexpense, indirectexpense,
@@ -963,7 +1071,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-plchange").
+		From("salespls-summary-sgacalc").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -980,6 +1088,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
 		// CalcSalesVDist20142015(trx)
+		CalcSgaRev(trx)
 		CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
