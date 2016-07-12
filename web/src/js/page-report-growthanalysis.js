@@ -73,7 +73,7 @@ grw.reloadLayout = (d) => {
 		toolkit.try(() => {
 			$(d).find('.k-grid').data('kendoGrid').refresh()
 		})
-	}, 200)
+	}, 100)
 }
 
 
@@ -363,9 +363,9 @@ ag.optionPercentageValue = ko.observableArray([
 	{_id: "percentage", name: "Percentage"},
 ])
 ag.series1PL = ko.observable('')
-ag.series1Type = ko.observable('percentage')
+ag.series1Type = ko.observable('value')
 ag.series2PL = ko.observable('')
-ag.series2Type = ko.observable('percentage')
+ag.series2Type = ko.observable('value')
 ag.limit = ko.observable(6)
 ag.data = ko.observableArray([])
 
@@ -374,7 +374,7 @@ ag.getPLModels = (c) => {
 		rpt.plmodels(_.orderBy(res, (d) => d.OrderIndex))
 
 		ag.series1PL('PL8A')
-		ag.series2PL('PL0')
+		ag.series2PL('PL44B')
 		ag.refresh()
 	})
 }
@@ -440,7 +440,25 @@ ag.render = () => {
 
 		return o
 	})
-	let op3 = _.orderBy(op2, (d) => d[ag.series1PL()], 'desc')
+	let op3 = _.orderBy(op2, (d) => {
+		let hack = parseInt('10 000 000 000 000'.replace(/\ /g, ''), 10)
+
+		if (ag.breakdownBy() == 'customer.channelname') {
+			let order = ag.getChannelOrderByChannelName(d.breakdown)
+			if (order > -1) {
+				return hack - order
+			}
+		} else
+
+		if (ag.breakdownBy() == 'product.brand') {
+			let order = ag.getBrandOrderByBrand(d.breakdown)
+			if (order > -1) {
+				return hack - order
+			}
+		}
+
+		return d[ag.series1PL()]
+	}, 'desc')
 	let op4 = _.take(op3, ag.limit())
 
 	let width = $('#tab1').width()
@@ -448,7 +466,7 @@ ag.render = () => {
 		width = 160 * ag.limit()
 	}
 	if (width == $('#tab1').width()) {
-		width = '100%'
+		width = `${width - 22}px`
 	}
 
 	let series = [{
@@ -567,6 +585,40 @@ ag.render = () => {
 
     $('.annually-diff').replaceWith(`<div class="annually-diff" style="width: ${width}px;"></div>`)
     $('.annually-diff').kendoChart(config)
+}
+
+ag.getChannelOrderByChannelName = (channelname) => {
+	// MT, GT, RD, INDUSTRIAL, MOTORIST, EXPORT
+	switch (channelname.toLowerCase()) {
+		case 'modern trade': case 'mt':
+			return 0; break;
+		case 'general trade': case 'gt':
+			return 1; break;
+		case 'regional distributor': case 'rd':
+			return 2; break;
+		case 'industrial trade': case 'industrial': case 'it':
+			return 3; break;
+		case 'motorist':
+			return 4; break;
+		case 'export':
+			return 5; break;
+	}
+
+	return -1
+}
+
+ag.getBrandOrderByBrand = (brandname) => {
+	// HIT, STELLA, MITU, other
+	switch (brandname.toLowerCase()) {
+		case 'hit':
+			return 0; break;
+		case 'stella':
+			return 1; break;
+		case 'mitu':
+			return 2; break;
+	}
+
+	return -1
 }
 
 

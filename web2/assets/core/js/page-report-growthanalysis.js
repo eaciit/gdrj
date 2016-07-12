@@ -74,7 +74,7 @@ grw.reloadLayout = function (d) {
 		toolkit.try(function () {
 			$(d).find('.k-grid').data('kendoGrid').refresh();
 		});
-	}, 200);
+	}, 100);
 };
 
 grw.renderChart = function (res) {
@@ -367,9 +367,9 @@ ag.contentIsLoading = ko.observable(false);
 ag.breakdownBy = ko.observable('customer.channelname');
 ag.optionPercentageValue = ko.observableArray([{ _id: "value", name: "Value" }, { _id: "percentage", name: "Percentage" }]);
 ag.series1PL = ko.observable('');
-ag.series1Type = ko.observable('percentage');
+ag.series1Type = ko.observable('value');
 ag.series2PL = ko.observable('');
-ag.series2Type = ko.observable('percentage');
+ag.series2Type = ko.observable('value');
 ag.limit = ko.observable(6);
 ag.data = ko.observableArray([]);
 
@@ -380,7 +380,7 @@ ag.getPLModels = function (c) {
 		}));
 
 		ag.series1PL('PL8A');
-		ag.series2PL('PL0');
+		ag.series2PL('PL44B');
 		ag.refresh();
 	});
 };
@@ -434,23 +434,37 @@ ag.render = function () {
 
 		toolkit.try(function () {
 			if (ag.series1Type() == 'percentage') {
-				o[ag.series1PL()] = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100;
+				o[ag.series1PL()] = Math.abs((v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100);
 			} else {
-				o[ag.series1PL()] = v[1][ag.series1PL()] - v[0][ag.series1PL()];
+				o[ag.series1PL()] = Math.abs(v[1][ag.series1PL()] - v[0][ag.series1PL()]);
 			}
 		});
 
 		toolkit.try(function () {
 			if (ag.series2Type() == 'percentage') {
-				o[ag.series2PL()] = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100;
+				o[ag.series2PL()] = Math.abs((v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100);
 			} else {
-				o[ag.series2PL()] = v[1][ag.series2PL()] - v[0][ag.series2PL()];
+				o[ag.series2PL()] = Math.abs(v[1][ag.series2PL()] - v[0][ag.series2PL()]);
 			}
 		});
 
 		return o;
 	});
 	var op3 = _.orderBy(op2, function (d) {
+		var hack = parseInt('10 000 000 000 000'.replace(/\ /g, ''), 10);
+
+		if (ag.breakdownBy() == 'customer.channelname') {
+			var order = ag.getChannelOrderByChannelName(d.breakdown);
+			if (order > -1) {
+				return hack - order;
+			}
+		} else if (ag.breakdownBy() == 'product.brand') {
+			var _order = ag.getBrandOrderByBrand(d.breakdown);
+			if (_order > -1) {
+				return hack - _order;
+			}
+		}
+
 		return d[ag.series1PL()];
 	}, 'desc');
 	var op4 = _.take(op3, ag.limit());
@@ -458,6 +472,9 @@ ag.render = function () {
 	var width = $('#tab1').width();
 	if (_.min([ag.limit(), op4.length]) > 6) {
 		width = 160 * ag.limit();
+	}
+	if (width == $('#tab1').width()) {
+		width = width - 22 + "px";
 	}
 
 	var series = [{
@@ -561,7 +578,7 @@ ag.render = function () {
 			position: "bottom"
 		},
 		seriesDefaults: {
-			type: "line",
+			type: "column",
 			style: "smooth",
 			missingValues: "gap",
 			line: {
@@ -569,7 +586,9 @@ ag.render = function () {
 					width: 1,
 					color: 'white'
 				}
-			}
+			},
+			overlay: { gradient: 'none' },
+			border: { width: 0 }
 		},
 		series: series,
 		valueAxis: axes,
@@ -578,6 +597,40 @@ ag.render = function () {
 
 	$('.annually-diff').replaceWith("<div class=\"annually-diff\" style=\"width: " + width + "px;\"></div>");
 	$('.annually-diff').kendoChart(config);
+};
+
+ag.getChannelOrderByChannelName = function (channelname) {
+	// MT, GT, RD, INDUSTRIAL, MOTORIST, EXPORT
+	switch (channelname.toLowerCase()) {
+		case 'modern trade':case 'mt':
+			return 0;break;
+		case 'general trade':case 'gt':
+			return 1;break;
+		case 'regional distributor':case 'rd':
+			return 2;break;
+		case 'industrial trade':case 'industrial':case 'it':
+			return 3;break;
+		case 'motorist':
+			return 4;break;
+		case 'export':
+			return 5;break;
+	}
+
+	return -1;
+};
+
+ag.getBrandOrderByBrand = function (brandname) {
+	// HIT, STELLA, MITU, other
+	switch (brandname.toLowerCase()) {
+		case 'hit':
+			return 0;break;
+		case 'stella':
+			return 1;break;
+		case 'mitu':
+			return 2;break;
+	}
+
+	return -1;
 };
 
 vm.currentMenu('Analysis');
