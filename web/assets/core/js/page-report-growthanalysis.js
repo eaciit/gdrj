@@ -460,7 +460,6 @@ ag.render = function () {
 			}
 		} else if (ag.breakdownBy() == 'product.brand') {
 			var _order = ag.getBrandOrderByBrand(d.breakdown);
-			console.log('---', d.breakdown, _order, hack);
 			if (_order > -1) {
 				return hack - _order;
 			}

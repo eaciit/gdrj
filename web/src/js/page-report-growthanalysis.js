@@ -452,7 +452,6 @@ ag.render = () => {
 
 		if (ag.breakdownBy() == 'product.brand') {
 			let order = ag.getBrandOrderByBrand(d.breakdown)
-			console.log('---', d.breakdown, order, hack)
 			if (order > -1) {
 				return hack - order
 			}
