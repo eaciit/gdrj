@@ -26,17 +26,17 @@
 
 	<!-- Nav tabs -->
 	<ul class="nav nav-pills nav-replace-title" role="tablist">
-		<li role="presentation" class="active">
+		<li role="presentation">
 			<a href="#tab1" role="tab" data-toggle="tab" onclick="grw.reloadLayout('#tab1')">Quarterly/Monthly Growth</a>
 		</li>
-		<li role="presentation">
+		<li role="presentation" class="active">
 			<a href="#tab2" role="tab" data-toggle="tab" onclick="grw.reloadLayout('#tab2')">Year on Year Growth</a>
 		</li>
 	</ul>
 
 
 	<div class="tab-content">
-		<div role="tabpanel" class="tab-pane active" id="tab1">
+		<div role="tabpanel" class="tab-pane" id="tab1">
 <div class="panel ez no-padding hardcore">
 	<div class="panel-heading">
 		<h3 class="no-margin">Quarterly/Monthly Growth</h3>
@@ -112,7 +112,7 @@
 	</div>
 </div>
 		</div>
-		<div role="tabpanel" class="tab-pane" id="tab2">
+		<div role="tabpanel" class="tab-pane active" id="tab2">
 <div class="panel ez no-padding hardcore">
 	<div class="panel-heading">
 		<h3 class="no-margin">Year on Year Growth</h3>
@@ -147,7 +147,7 @@
 
 				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 					<div>
-						<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: ag.optionPercentageValue, dataValueField: '_id', dataTextField: 'name', value: ag.series1Type }"></select>
+						<select type="text" style="width: 100px;" data-bind="kendoDropDownList: { data: ag.optionPercentageValue, dataValueField: '_id', dataTextField: 'name', value: ag.series1Type }"></select>
 					</div>
 				</div>
 			</div>
@@ -171,7 +171,7 @@
 
 				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 					<div>
-						<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: ag.optionPercentageValue, dataValueField: '_id', dataTextField: 'name', value: ag.series2Type }"></select>
+						<select type="text" style="width: 100px;" data-bind="kendoDropDownList: { data: ag.optionPercentageValue, dataValueField: '_id', dataTextField: 'name', value: ag.series2Type }"></select>
 					</div>
 				</div>
 			</div>
