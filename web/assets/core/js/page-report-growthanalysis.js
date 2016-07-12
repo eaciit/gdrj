@@ -74,7 +74,7 @@ grw.reloadLayout = function (d) {
 		toolkit.try(function () {
 			$(d).find('.k-grid').data('kendoGrid').refresh();
 		});
-	}, 200);
+	}, 100);
 };
 
 grw.renderChart = function (res) {
@@ -451,6 +451,21 @@ ag.render = function () {
 		return o;
 	});
 	var op3 = _.orderBy(op2, function (d) {
+		var hack = parseInt('10 000 000 000 000'.replace(/\ /g, ''), 10);
+
+		if (ag.breakdownBy() == 'customer.channelname') {
+			var order = ag.getChannelOrderByChannelName(d.breakdown);
+			if (order > -1) {
+				return hack - order;
+			}
+		} else if (ag.breakdownBy() == 'product.brand') {
+			var _order = ag.getBrandOrderByBrand(d.breakdown);
+			console.log('---', d.breakdown, _order, hack);
+			if (_order > -1) {
+				return hack - _order;
+			}
+		}
+
 		return d[ag.series1PL()];
 	}, 'desc');
 	var op4 = _.take(op3, ag.limit());
@@ -460,7 +475,7 @@ ag.render = function () {
 		width = 160 * ag.limit();
 	}
 	if (width == $('#tab1').width()) {
-		width = '100%';
+		width = width - 22 + "px";
 	}
 
 	var series = [{
@@ -583,6 +598,40 @@ ag.render = function () {
 
 	$('.annually-diff').replaceWith("<div class=\"annually-diff\" style=\"width: " + width + "px;\"></div>");
 	$('.annually-diff').kendoChart(config);
+};
+
+ag.getChannelOrderByChannelName = function (channelname) {
+	// MT, GT, RD, INDUSTRIAL, MOTORIST, EXPORT
+	switch (channelname.toLowerCase()) {
+		case 'modern trade':case 'mt':
+			return 0;break;
+		case 'general trade':case 'gt':
+			return 1;break;
+		case 'regional distributor':case 'rd':
+			return 2;break;
+		case 'industrial trade':case 'industrial':case 'it':
+			return 3;break;
+		case 'motorist':
+			return 4;break;
+		case 'export':
+			return 5;break;
+	}
+
+	return -1;
+};
+
+ag.getBrandOrderByBrand = function (brandname) {
+	// HIT, STELLA, MITU, other
+	switch (brandname.toLowerCase()) {
+		case 'hit':
+			return 0;break;
+		case 'stella':
+			return 1;break;
+		case 'mitu':
+			return 2;break;
+	}
+
+	return -1;
 };
 
 vm.currentMenu('Analysis');
