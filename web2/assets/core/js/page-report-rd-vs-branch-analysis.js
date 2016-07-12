@@ -171,6 +171,8 @@ v1.render = function () {
 
 	// ========================= TABLE STRUCTURE
 
+	var percentageWidth = 110;
+
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl-branch pivot-pnl').appendTo(container);
 
 	var tableHeaderWrap = toolkit.newEl('div').addClass('table-header').appendTo(wrapper);
@@ -187,7 +189,7 @@ v1.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * v1.level() + 'px').attr('data-rowspan', v1.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('%').css('height', 34 * v1.level() + 'px').attr('data-rowspan', v1.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of Net Sales').css('height', 34 * v1.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v1.level()).css('vertical-align', 'middle').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < v1.level(); i++) {
@@ -202,7 +204,6 @@ v1.render = function () {
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
-	var percentageWidth = 80;
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
 		var currentColumnWidth = columnWidth;
@@ -221,7 +222,7 @@ v1.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
+			var thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
 
 			return;
 		}
@@ -239,7 +240,7 @@ v1.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[1]);
+				var _thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
 
 				if (lvl2._id == 'Total') {
 					_thheader1p.css('background-color', 'rgb(116, 149, 160)');
@@ -259,7 +260,7 @@ v1.render = function () {
 	var plmodels = _.sortBy(rpt.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
 	});
-	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */];
+	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
 	var rows = [];
@@ -564,7 +565,7 @@ v2.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * v2.level() + 'px').attr('data-rowspan', v2.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('%').css('height', 34 * v2.level() + 'px').attr('data-rowspan', v2.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of Net Sales').css('height', 34 * v2.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v2.level()).appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < v2.level(); i++) {
@@ -579,7 +580,7 @@ v2.render = function () {
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
-	var percentageWidth = 80;
+	var percentageWidth = 110;
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
 		var currentColumnWidth = columnWidth;
@@ -598,7 +599,7 @@ v2.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]);
 
 			return;
 		}
@@ -616,7 +617,7 @@ v2.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p2 = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[1]);
+				var _thheader1p2 = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
 
 				if (lvl2._id == 'Total') {
 					_thheader1p2.css('background-color', 'rgb(116, 149, 160)');
@@ -636,7 +637,7 @@ v2.render = function () {
 	var plmodels = _.sortBy(rpt.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
 	});
-	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */];
+	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
 	var rows = [];
@@ -904,7 +905,7 @@ v3.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * v3.level() + 'px').attr('data-rowspan', v3.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('%').css('height', 34 * v3.level() + 'px').attr('data-rowspan', v3.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of Net Sales').css('height', 34 * v3.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v3.level()).appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < v3.level(); i++) {
@@ -919,7 +920,7 @@ v3.render = function () {
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
-	var percentageWidth = 70;
+	var percentageWidth = 110;
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
 		var currentColumnWidth = columnWidth;
@@ -938,7 +939,7 @@ v3.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
+			var thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
 
 			return;
 		}
@@ -951,7 +952,7 @@ v3.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p3 = toolkit.newEl('th').html('%').width(percentageWidth).addClass('align-right').appendTo(trContents[1]);
+				var _thheader1p3 = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
 
 				return;
 			}
@@ -966,7 +967,7 @@ v3.render = function () {
 	var plmodels = _.sortBy(rpt.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
 	});
-	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */];
+	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
 	var rows = [];

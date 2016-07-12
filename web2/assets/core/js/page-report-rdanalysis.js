@@ -11,6 +11,13 @@ rd.breakdownBy = ko.observable('customer.reportsubchannel');
 rd.breakdownByCity = ko.observable('customer.areaname');
 rd.breakdownByFiscalYear = ko.observable('date.fiscal');
 
+rd.filterDistributor = ko.observableArray([]);
+rd.optionDistributor = ko.computed(function () {
+	return rpt.masterData.Distributor().filter(function (d) {
+		return d._id != '';
+	});
+}, rpt.masterData.Distributor);
+
 rd.data = ko.observableArray([]);
 rd.fiscalYear = ko.observable(rpt.value.FiscalYear());
 rd.breakdownValue = ko.observableArray([]);
@@ -33,6 +40,14 @@ rd.refresh = function () {
 		Op: '$in',
 		Value: ['I1']
 	});
+
+	if (rd.filterDistributor().length > 0) {
+		param.filters.push({
+			Field: 'customer.reportsubchannel',
+			Op: '$in',
+			Value: rd.filterDistributor()
+		});
+	}
 
 	var breakdownValue = rd.breakdownValue().filter(function (d) {
 		return d != 'All';
@@ -230,7 +245,7 @@ rd.render = function () {
 	var plmodels = _.sortBy(rpt.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
 	});
-	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */];
+	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
 	var rows = [];
