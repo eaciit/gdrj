@@ -24,6 +24,19 @@
 <script src="{{BaseUrl}}res/core/js/page-report.js"></script>
 <script src="{{BaseUrl}}res/core/js/page-report-growthanalysis.js"></script>
 
+	<!-- Nav tabs -->
+	<ul class="nav nav-pills nav-replace-title" role="tablist">
+		<li role="presentation" class="active">
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="grw.reloadLayout('#tab1')">Quarterly/Monthly Growth</a>
+		</li>
+		<li role="presentation">
+			<a href="#tab2" role="tab" data-toggle="tab" onclick="grw.reloadLayout('#tab2')">Annually Growth</a>
+		</li>
+	</ul>
+
+
+	<div class="tab-content">
+		<div role="tabpanel" class="tab-pane active" id="tab1">
 <div class="panel ez no-padding hardcore">
 	<div class="panel-heading">
 		<h3 class="no-margin">Quarterly/Monthly Growth</h3>
@@ -98,7 +111,8 @@
 		</div>
 	</div>
 </div>
-
+		</div>
+		<div role="tabpanel" class="tab-pane" id="tab2">
 <div class="panel ez no-padding hardcore">
 	<div class="panel-heading">
 		<h3 class="no-margin">Annually Growth</h3>
@@ -144,7 +158,7 @@
 				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 					<span class="input-group-addon width-100 align-right">Show many</span>
 					<div class="width-full">
-						<select type="text" style="width: 150px;" data-bind="kendoNumericTextBox: { value: ag.limit, format: 'n0' }"></select>
+						<input type="text" style="width: 150px;" data-bind="kendoNumericTextBox: { value: ag.limit, format: 'n0' }" />
 					</div>
 				</div>
 
@@ -169,14 +183,14 @@
 			{{template "_loader.html"}}
 		</div>
 
-		<div data-bind="visible: !ag.contentIsLoading()">
+		<div data-bind="visible: !ag.contentIsLoading()" style="overflow-x: scroll;">
 			<div class="margin-bottom-5">
 				<div class="annually-diff"></div>
 			</div>
 		</div>
 	</div>
 </div>
-
+		</div>
 	</div>
 
 	{{template "_filter.html"}}

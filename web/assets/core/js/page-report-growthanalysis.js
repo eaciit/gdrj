@@ -67,12 +67,14 @@ grw.refresh = function () {
 };
 
 grw.reloadLayout = function (d) {
-	toolkit.try(function () {
-		$(d).find('.k-chart').data('kendoChart').redraw();
-	});
-	toolkit.try(function () {
-		$(d).find('.k-grid').data('kendoGrid').refresh();
-	});
+	setTimeout(function () {
+		toolkit.try(function () {
+			$(d).find('.k-chart').data('kendoChart').redraw();
+		});
+		toolkit.try(function () {
+			$(d).find('.k-grid').data('kendoGrid').refresh();
+		});
+	}, 200);
 };
 
 grw.renderChart = function (res) {
@@ -368,7 +370,7 @@ ag.series1PL = ko.observable('');
 ag.series1Type = ko.observable('percentage');
 ag.series2PL = ko.observable('');
 ag.series2Type = ko.observable('percentage');
-ag.limit = ko.observable(3);
+ag.limit = ko.observable(6);
 ag.data = ko.observableArray([]);
 
 ag.getPLModels = function (c) {
@@ -427,21 +429,36 @@ ag.render = function () {
 
 		var o = {};
 		o.breakdown = k;
+		o[ag.series1PL()] = 0;
+		o[ag.series2PL()] = 0;
 
-		if (ag.series1Type() == 'percentage') {
-			o[ag.series1PL()] = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100;
-		} else {
-			o[ag.series1PL()] = v[1][ag.series1PL()] - v[0][ag.series1PL()];
-		}
+		toolkit.try(function () {
+			if (ag.series1Type() == 'percentage') {
+				o[ag.series1PL()] = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100;
+			} else {
+				o[ag.series1PL()] = v[1][ag.series1PL()] - v[0][ag.series1PL()];
+			}
+		});
 
-		if (ag.series2Type() == 'percentage') {
-			o[ag.series2PL()] = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100;
-		} else {
-			o[ag.series2PL()] = v[1][ag.series2PL()] - v[0][ag.series2PL()];
-		}
+		toolkit.try(function () {
+			if (ag.series2Type() == 'percentage') {
+				o[ag.series2PL()] = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100;
+			} else {
+				o[ag.series2PL()] = v[1][ag.series2PL()] - v[0][ag.series2PL()];
+			}
+		});
 
 		return o;
 	});
+	var op3 = _.orderBy(op2, function (d) {
+		return d[ag.series1PL()];
+	}, 'desc');
+	var op4 = _.take(op3, ag.limit());
+
+	var width = $('#tab1').width();
+	if (_.min([ag.limit(), op4.length]) > 6) {
+		width = 160 * ag.limit();
+	}
 
 	var series = [{
 		field: ag.series1PL(),
@@ -507,21 +524,38 @@ ag.render = function () {
 			d.color = toolkit.seriesColorsGodrej[i];
 
 			if (i == 1) {
-				categoryAxis.axisCrossingValue = [0, op2.length];
+				categoryAxis.axisCrossingValue = [0, op4.length];
 			}
-		}
-
-		if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
-			series[i].labels = { format: '{0:n2} %' };
-		} else {
-			series[i].labels = { format: '{0:n0}' };
 		}
 	});
 
-	console.log('----', axes);
+	series.forEach(function (d, i) {
+		d.tooltip = {
+			visible: true,
+			template: function template(e) {
+				var value = kendo.toString(e.value, 'n0');
+
+				if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
+					value = kendo.toString(e.value, 'n2') + " %";
+				}
+
+				return d.name + ": " + value;
+			}
+		};
+
+		d.labels = {
+			visible: true
+		};
+
+		if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
+			d.labels.format = '{0:n2} %';
+		} else {
+			d.labels.format = '{0:n0}';
+		}
+	});
 
 	var config = {
-		dataSource: { data: op2 },
+		dataSource: { data: op4 },
 		legend: {
 			visible: true,
 			position: "bottom"
@@ -530,11 +564,6 @@ ag.render = function () {
 			type: "line",
 			style: "smooth",
 			missingValues: "gap",
-			labels: {
-				visible: true,
-				position: 'top',
-				format: '{0:n0}'
-			},
 			line: {
 				border: {
 					width: 1,
@@ -547,15 +576,12 @@ ag.render = function () {
 		categoryAxis: categoryAxis
 	};
 
-	$('.annually-diff').replaceWith("<div class=\"annually-diff\"></div>");
+	$('.annually-diff').replaceWith("<div class=\"annually-diff\" style=\"width: " + width + "px;\"></div>");
 	$('.annually-diff').kendoChart(config);
-
-	console.log("==", config);
-	console.log("==", ag.data());
 };
 
 vm.currentMenu('Analysis');
-vm.currentTitle('Growth Analysis');
+vm.currentTitle('&nbsp;');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Growth Analysis', href: '#' }]);
 
 $(function () {
