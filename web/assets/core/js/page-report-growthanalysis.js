@@ -542,9 +542,11 @@ ag.render = function () {
 		axes.forEach(function (d, i) {
 			d.color = toolkit.seriesColorsGodrej[i];
 
-			var max = _.max(op4.map(function (f) {
+			var orig = _.max(op4.map(function (f) {
 				return Math.abs(f["series" + (i + 1)]);
 			}));
+			var max = Math.pow(10, String(parseInt(orig, 10)).length - 1) * (parseInt(String(parseInt(orig, 10))[0], 10) + 1);
+
 			d.min = max * -1;
 			d.max = max;
 
@@ -552,7 +554,7 @@ ag.render = function () {
 				d.labels.format = "{0:n2} %";
 			}
 
-			console.log('---', max, d);
+			console.log('---', orig, max, d);
 		});
 	}
 

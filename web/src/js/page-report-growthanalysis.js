@@ -530,7 +530,9 @@ ag.render = () => {
 		axes.forEach((d, i) => {
 			d.color = toolkit.seriesColorsGodrej[i]
 
-			let max = _.max(op4.map((f) => Math.abs(f[`series${i + 1}`])))
+			let orig = _.max(op4.map((f) => Math.abs(f[`series${i + 1}`])))
+			let max = Math.pow(10, String(parseInt(orig, 10)).length - 1) * (parseInt(String(parseInt(orig, 10))[0], 10) + 1)
+
 			d.min = max * -1
 			d.max = max
 
@@ -538,7 +540,7 @@ ag.render = () => {
 				d.labels.format = "{0:n2} %"
 			}
 
-			console.log('---', max, d)
+			console.log('---', orig, max, d)
 		})
 	}
 
