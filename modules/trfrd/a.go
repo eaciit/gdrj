@@ -110,6 +110,7 @@ func processTable(tn string) error {
 			key.Set("customer_reportchannel", "MT")
 			key.Set("customer_channelname", "MT")
 			key.Set("customer_channelname", "MT")
+			key.Set("ref", "trfrd")
 			mr.Set("key", key)
 
 			//mr = CalcSum(mr)
