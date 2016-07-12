@@ -84,21 +84,23 @@ func buildRatio(tn string) error {
 		channel := key.GetString("customer_reportchannel")
 		sales := mtrx.GetFloat64("PL8A")
 		value := mtrx.GetFloat64("PL7A")
-		falloc := plallocs[fiscal]
-		if falloc == nil {
-			falloc = new(plalloc)
-			falloc.Ratio = map[string]float64{}
-			falloc.ChannelValue = map[string]float64{}
-			falloc.ChannelSales = map[string]float64{}
-			falloc.ExpectedValue = map[string]float64{}
-		}
+		if toolkit.HasMember([]string{"GT", "MT", "RD"}, channel) {
+			falloc := plallocs[fiscal]
+			if falloc == nil {
+				falloc = new(plalloc)
+				falloc.Ratio = map[string]float64{}
+				falloc.ChannelValue = map[string]float64{}
+				falloc.ChannelSales = map[string]float64{}
+				falloc.ExpectedValue = map[string]float64{}
+			}
 
-		falloc.Key = fiscal
-		falloc.TotalSales += sales
-		falloc.TotalValue += value
-		falloc.ChannelSales[channel] = falloc.ChannelSales[channel] + sales
-		falloc.ChannelValue[channel] = falloc.ChannelValue[channel] + value
-		plallocs[fiscal] = falloc
+			falloc.Key = fiscal
+			falloc.TotalSales += sales
+			falloc.TotalValue += value
+			falloc.ChannelSales[channel] = falloc.ChannelSales[channel] + sales
+			falloc.ChannelValue[channel] = falloc.ChannelValue[channel] + value
+			plallocs[fiscal] = falloc
+		}
 	}
 
 	for _, falloc := range plallocs {
