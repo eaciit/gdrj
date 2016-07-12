@@ -101,7 +101,7 @@ func buildRatio(tn string) error {
 	}
 
 	for k, falloc := range plallocs {
-		for c, s := range falloc.ChannelSales {
+		for c, _ := range falloc.ChannelSales {
 			falloc.Ratio[c] = toolkit.Div(falloc.ChannelSales[k], falloc.TotalSales)
 			falloc.ExpectedValue[c] = falloc.Ratio[c] * falloc.TotalValue
 		}
