@@ -665,12 +665,12 @@ rpt.showZeroValue = (a) => {
 
 rpt.arrChangeParent = ko.observableArray([
 	{ idfrom: 'PL1', idto: 'PL0', after: 'PL0'},
-	{ idfrom: 'PL2', idto: 'PL0', after: 'PL0'},
-	{ idfrom: 'PL3', idto: 'PL0', after: 'PL0'},
-	{ idfrom: 'PL4', idto: 'PL0', after: 'PL0'},
-	{ idfrom: 'PL5', idto: 'PL0', after: 'PL0'},
-	{ idfrom: 'PL6', idto: 'PL0', after: 'PL0'},
-	{ idfrom: 'PL7A', idto: '', after: 'PL1'},
+	{ idfrom: 'PL7', idto: 'PL0', after: 'PL1'},
+	{ idfrom: 'PL2', idto: 'PL0', after: 'PL7'},
+	{ idfrom: 'PL8', idto: 'PL0', after: 'PL2'},
+	{ idfrom: 'PL6', idto: 'PL0', after: 'PL8'},
+	
+	{ idfrom: 'PL7A', idto: '', after: 'PL6'},
 ])
 
 // rpt.arrFormulaPL = ko.observableArray([
