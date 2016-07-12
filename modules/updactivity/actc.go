@@ -90,6 +90,7 @@ func buildRatio(tn string) error {
 			falloc.Ratio = map[string]float64{}
 			falloc.ChannelValue = map[string]float64{}
 			falloc.ChannelSales = map[string]float64{}
+			falloc.ExpectedValue = map[string]float64{}
 		}
 
 		falloc.Key = fiscal
