@@ -369,7 +369,7 @@ ag.optionPercentageValue = ko.observableArray([{ _id: "value", name: "Value" }, 
 ag.series1PL = ko.observable('');
 ag.series1Type = ko.observable('value');
 ag.series2PL = ko.observable('');
-ag.series2Type = ko.observable('value');
+ag.series2Type = ko.observable('percentage'); // value
 ag.limit = ko.observable(6);
 ag.data = ko.observableArray([]);
 
@@ -380,7 +380,7 @@ ag.getPLModels = function (c) {
 		}));
 
 		ag.series1PL('PL8A');
-		ag.series2PL('PL44B');
+		ag.series2PL('PL8A'); // PL44B
 		ag.refresh();
 	});
 };
@@ -429,22 +429,22 @@ ag.render = function () {
 
 		var o = {};
 		o.breakdown = k;
-		o[ag.series1PL()] = 0;
-		o[ag.series2PL()] = 0;
+		o.series1 = 0;
+		o.series2 = 0;
 
 		toolkit.try(function () {
 			if (ag.series1Type() == 'percentage') {
-				o[ag.series1PL()] = Math.abs((v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100);
+				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100;
 			} else {
-				o[ag.series1PL()] = Math.abs(v[1][ag.series1PL()] - v[0][ag.series1PL()]);
+				o.series1 = v[1][ag.series1PL()] - v[0][ag.series1PL()];
 			}
 		});
 
 		toolkit.try(function () {
 			if (ag.series2Type() == 'percentage') {
-				o[ag.series2PL()] = Math.abs((v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100);
+				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100;
 			} else {
-				o[ag.series2PL()] = Math.abs(v[1][ag.series2PL()] - v[0][ag.series2PL()]);
+				o.series2 = v[1][ag.series2PL()] - v[0][ag.series2PL()];
 			}
 		});
 
@@ -465,7 +465,7 @@ ag.render = function () {
 			}
 		}
 
-		return d[ag.series1PL()];
+		return d.series1;
 	}, 'desc');
 	var op4 = _.take(op3, ag.limit());
 
@@ -478,13 +478,13 @@ ag.render = function () {
 	}
 
 	var series = [{
-		field: ag.series1PL(),
+		field: 'series1',
 		name: function () {
 			var row = rpt.plmodels().find(function (d) {
 				return d._id == ag.series1PL();
 			});
 			if (row != undefined) {
-				return row.PLHeader3;
+				return row.PLHeader3 + " " + ag.series1Type();
 			}
 
 			return '&nbsp;';
@@ -492,13 +492,13 @@ ag.render = function () {
 		axis: ag.series1Type(),
 		color: toolkit.seriesColorsGodrej[0]
 	}, {
-		field: ag.series2PL(),
+		field: 'series2',
 		name: function () {
 			var row = rpt.plmodels().find(function (d) {
 				return d._id == ag.series2PL();
 			});
 			if (row != undefined) {
-				return row.PLHeader3;
+				return row.PLHeader3 + " " + ag.series2Type();
 			}
 
 			return '&nbsp;';
@@ -536,15 +536,25 @@ ag.render = function () {
 		});
 	}
 
-	axes.forEach(function (d, i) {
-		if (axes.length > 1) {
+	if (axes.length > 1) {
+		categoryAxis.axisCrossingValue = [0, op4.length];
+
+		axes.forEach(function (d, i) {
 			d.color = toolkit.seriesColorsGodrej[i];
 
-			if (i == 1) {
-				categoryAxis.axisCrossingValue = [0, op4.length];
+			var max = _.max(op4.map(function (f) {
+				return Math.abs(f["series" + (i + 1)]);
+			}));
+			d.min = max * -1;
+			d.max = max;
+
+			if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
+				d.labels.format = "{0:n2} %";
 			}
-		}
-	});
+
+			console.log('---', max, d);
+		});
+	}
 
 	series.forEach(function (d, i) {
 		d.tooltip = {
