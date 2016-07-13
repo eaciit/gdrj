@@ -653,6 +653,28 @@ func prepmastercustomergroup() {
 	masters.Set("customergroupname", customergroupname)
 }
 
+func prepmasterrollback() {
+	toolkit.Println("--> Roll back data to")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-s11072016").Cursor(nil)
+	defer csr.Close()
+
+	salesplssummary := toolkit.M{}
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		salesplssummary.Set(tkm.GetString("_id"), tkm)
+	}
+
+	masters.Set("salesplssummary", salesplssummary)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -665,8 +687,9 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
+	prepmasterrollback()
 
-	prepmastercustomergroup()
+	// prepmastercustomergroup()
 
 	// prepmastersgacalcrev()
 	// prepmasterratiomapsalesreturn2016()
@@ -863,6 +886,18 @@ func CleanUpdateCustomerGroupName(tkm toolkit.M) {
 	dtkm.Set("customer_customergroupname", customergroupname.GetString(tkm.GetString("_id")))
 	dtkm.Set("customer_customergroup", customergroup.GetString(tkm.GetString("_id")))
 	tkm.Set("key", dtkm)
+}
+
+//masters.Set("salesplssummary", salesplssummary)
+func RollbackSalesplsSummary(tkm toolkit.M) {
+	salesplssummaries := masters.Get("salesplssummary").(toolkit.M)
+	salesplssummary := salesplssummaries.Get(tkm.GetString("_id")).(toolkit.M)
+
+	// dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	// dtkm.Set("customer_customergroupname", customergroupname.GetString(tkm.GetString("_id")))
+	// dtkm.Set("customer_customergroup", customergroup.GetString(tkm.GetString("_id")))
+	// tkm.Set("key", dtkm)
+	tkm.Set("PL7A", salesplssummary.GetFloat64("PL7A"))
 }
 
 func CalcSalesReturn(tkm toolkit.M) {
@@ -1128,7 +1163,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcSalesVDist20142015(trx)
 		// CalcSgaRev(trx)
 
-		CleanUpdateCustomerGroupName(trx)
+		// CleanUpdateCustomerGroupName(trx)
+		RollbackSalesplsSummary(trx)
 
 		CalcSum(trx)
 
