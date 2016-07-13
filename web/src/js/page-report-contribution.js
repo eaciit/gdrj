@@ -518,6 +518,7 @@ cbt.buildGridLevels = (container, rows) => {
 	rpt.showZeroValue(false)
 	container.find(".table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
 	rpt.refreshHeight()
+	rpt.addScrollBottom()
 }
 
 vm.currentMenu('Analysis')
