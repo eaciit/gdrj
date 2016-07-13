@@ -77,7 +77,7 @@ func main() {
 var pcts = map[string]float64{
 	"MT": -0.0596980,
 	"GT": -0.0630389,
-	"RD": -0.0645020,
+	"RD": -0.0609675,
 }
 
 func processTable(tn string) error {
