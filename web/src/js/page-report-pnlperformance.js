@@ -625,6 +625,33 @@ bkd.render = () => {
 		return
 	}
 
+	// reorder
+	if (bkd.breakdownBy() == "customer.channelname") {
+		let prev = _.orderBy(bkd.data(), (d) => {
+			if (d._id == "General Trade") {
+				let mt = bkd.data().find((e) => e._id == "Modern Trade")
+				if (toolkit.isDefined(mt)) {
+					return mt.PL8A - 10
+				}
+			}
+
+			return d.PL8A
+		}, 'desc')
+
+		let mt = bkd.data().find((e) => e._id == "Modern Trade")
+		if (toolkit.isDefined(mt)) {
+			mt._id = `Branch Modern Trade`
+		}
+
+		let gt = bkd.data().find((e) => e._id == "General Trade")
+		if (toolkit.isDefined(gt)) {
+			gt._id = `Branch General Trade`
+		}
+
+
+		bkd.data(prev)
+	}
+
 
 	// ========================= TABLE STRUCTURE
 
@@ -670,12 +697,12 @@ bkd.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('% of Net Sales')
+		.html('% of NS')
 		.css('height', `${34 * bkd.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
-		.width(percentageWidth - 20)
+		.width(percentageWidth - 40)
 		.attr('data-rowspan', bkd.level())
 		.addClass('cell-percentage-header align-right')
 		.appendTo(trHeader)
@@ -697,7 +724,7 @@ bkd.render = () => {
 	let dataFlat = []
 
 	let countWidthThenPush = (thheader, each, key) => {
-		let currentColumnWidth = each._id.length * (bkd.isBreakdownChannel() ? 10 : 6)
+		let currentColumnWidth = each._id.length * (bkd.isBreakdownChannel() ? 7 : 6)
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth
 		}

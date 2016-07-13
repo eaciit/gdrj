@@ -405,7 +405,7 @@ kac.render = function () {
 
 	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader1);
 
-	toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).addClass('align-right').appendTo(trHeader1);
+	toolkit.newEl('th').html('% of NS').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 40).addClass('align-right').appendTo(trHeader1);
 
 	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
 

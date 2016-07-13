@@ -629,6 +629,8 @@ html, body{
 	}
 }
 
+@table-header-pnl-width: 380px;
+
 .pivot-pnl {
     position: relative;
     // height: 300px;
@@ -640,13 +642,13 @@ html, body{
 		position: absolute;
 		left: 0;
 		top: 0;
-		width: 420px;
+		width: @table-header-pnl-width;
 		border-right: 1px solid @color-base-grey;
 	}
 
 	.table-content {
 		overflow-x: scroll;
-		margin-left: 420px;
+		margin-left: @table-header-pnl-width;
 	}
 
 	table {

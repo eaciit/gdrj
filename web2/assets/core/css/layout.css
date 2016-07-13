@@ -481,12 +481,12 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 420px;
+  width: 380px;
   border-right: 1px solid #F0F3F4;
 }
 .pivot-pnl .table-content {
   overflow-x: scroll;
-  margin-left: 420px;
+  margin-left: 380px;
 }
 .pivot-pnl table {
   margin-bottom: 0;

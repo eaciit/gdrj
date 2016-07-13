@@ -660,6 +660,38 @@ bkd.render = function () {
 		return;
 	}
 
+	// reorder
+	if (bkd.breakdownBy() == "customer.channelname") {
+		var prev = _.orderBy(bkd.data(), function (d) {
+			if (d._id == "General Trade") {
+				var _mt = bkd.data().find(function (e) {
+					return e._id == "Modern Trade";
+				});
+				if (toolkit.isDefined(_mt)) {
+					return _mt.PL8A - 10;
+				}
+			}
+
+			return d.PL8A;
+		}, 'desc');
+
+		var mt = bkd.data().find(function (e) {
+			return e._id == "Modern Trade";
+		});
+		if (toolkit.isDefined(mt)) {
+			mt._id = 'Branch Modern Trade';
+		}
+
+		var gt = bkd.data().find(function (e) {
+			return e._id == "General Trade";
+		});
+		if (toolkit.isDefined(gt)) {
+			gt._id = 'Branch General Trade';
+		}
+
+		bkd.data(prev);
+	}
+
 	// ========================= TABLE STRUCTURE
 
 	var percentageWidth = 110;
@@ -680,7 +712,7 @@ bkd.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * bkd.level() + 'px').attr('data-rowspan', bkd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of Net Sales').css('height', 34 * bkd.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', bkd.level()).addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of NS').css('height', 34 * bkd.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 40).attr('data-rowspan', bkd.level()).addClass('cell-percentage-header align-right').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < bkd.level(); i++) {
@@ -697,7 +729,7 @@ bkd.render = function () {
 	var dataFlat = [];
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
-		var currentColumnWidth = each._id.length * (bkd.isBreakdownChannel() ? 10 : 6);
+		var currentColumnWidth = each._id.length * (bkd.isBreakdownChannel() ? 7 : 6);
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth;
 		}

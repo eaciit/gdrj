@@ -365,29 +365,15 @@ var ag = viewModel.annualGrowth;
 ag.optionBreakdowns = ko.observableArray([{ "field": "customer.branchname", "name": "Branch/RD", "title": "customer_branchname" }, { "field": "product.brand", "name": "Brand", "title": "product_brand" }, { "field": "customer.channelname", "name": "Channel", "title": "customer_channelname" }, { "field": "customer.areaname", "name": "City", "title": "customer_areaname" }, { "field": "customer.region", "name": "Region", "title": "customer_region" }, { "field": "customer.zone", "name": "Zone", "title": "customer_zone" }, { "field": "customer.keyaccount", "name": "Customer Group", "title": "customer_keyaccount" }]);
 ag.contentIsLoading = ko.observable(false);
 ag.breakdownBy = ko.observable('customer.channelname');
-ag.optionPercentageValue = ko.observableArray([{ _id: "value", name: "Value" }, { _id: "percentage", name: "Percentage" }]);
-ag.series1PL = ko.observable('');
-ag.series1Type = ko.observable('value');
-ag.series2PL = ko.observable('');
-ag.series2Type = ko.observable('value');
+ag.series1PL = ko.observable('PL8A|value');
+ag.series2PL = ko.observable('PL44B|value');
 ag.limit = ko.observable(6);
 ag.data = ko.observableArray([]);
-
-ag.getPLModels = function (c) {
-	app.ajaxPost(viewModel.appName + "report/getplmodel", {}, function (res) {
-		rpt.plmodels(_.orderBy(res, function (d) {
-			return d.OrderIndex;
-		}));
-
-		ag.series1PL('PL8A');
-		ag.series2PL('PL44B');
-		ag.refresh();
-	});
-};
+ag.optionSeries = ko.observableArray([{ _id: 'PL8A|value', name: 'Net Sales' }, { _id: 'PL8A|percentage', name: 'Net Sales Percent' }, { _id: 'PL44B|value', name: 'EBIT' }, { _id: 'PL44B|percentage', name: 'EBIT Percent' }]);
 
 ag.refresh = function () {
 	var param = {};
-	param.pls = [ag.series1PL(), ag.series2PL()];
+	param.pls = [ag.series1PL().split('|')[0], ag.series2PL().split('|')[0]];
 	param.groups = rpt.parseGroups([ag.breakdownBy()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(true, ko.observableArray(rpt.optionFiscalYears()));
@@ -419,6 +405,12 @@ ag.refresh = function () {
 };
 
 ag.render = function () {
+	var series1PL = ag.series1PL().split('|')[0];
+	var series1Type = ag.series1PL().split('|')[1];
+	var series2PL = ag.series2PL().split('|')[0];
+	var series2Type = ag.series2PL().split('|')[1];
+
+	var billion = 1000000000;
 	var op1 = _.groupBy(ag.data(), function (d) {
 		return d._id["_id_" + toolkit.replace(ag.breakdownBy(), '.', '_')];
 	});
@@ -429,22 +421,22 @@ ag.render = function () {
 
 		var o = {};
 		o.breakdown = k;
-		o[ag.series1PL()] = 0;
-		o[ag.series2PL()] = 0;
+		o.series1 = 0;
+		o.series2 = 0;
 
 		toolkit.try(function () {
-			if (ag.series1Type() == 'percentage') {
-				o[ag.series1PL()] = Math.abs((v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100);
+			if (series1Type == 'percentage') {
+				o.series1 = (v[1][series1PL] - v[0][series1PL]) / v[0][series1PL] * 100;
 			} else {
-				o[ag.series1PL()] = Math.abs(v[1][ag.series1PL()] - v[0][ag.series1PL()]);
+				o.series1 = (v[1][series1PL] - v[0][series1PL]) / billion;
 			}
 		});
 
 		toolkit.try(function () {
-			if (ag.series2Type() == 'percentage') {
-				o[ag.series2PL()] = Math.abs((v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100);
+			if (series2Type == 'percentage') {
+				o.series2 = (v[1][series2PL] - v[0][series2PL]) / v[0][series2PL] * 100;
 			} else {
-				o[ag.series2PL()] = Math.abs(v[1][ag.series2PL()] - v[0][ag.series2PL()]);
+				o.series2 = (v[1][series2PL] - v[0][series2PL]) / billion;
 			}
 		});
 
@@ -465,7 +457,7 @@ ag.render = function () {
 			}
 		}
 
-		return d[ag.series1PL()];
+		return d.series1;
 	}, 'desc');
 	var op4 = _.take(op3, ag.limit());
 
@@ -478,37 +470,37 @@ ag.render = function () {
 	}
 
 	var series = [{
-		field: ag.series1PL(),
+		field: 'series1',
 		name: function () {
-			var row = rpt.plmodels().find(function (d) {
+			var row = ag.optionSeries().find(function (d) {
 				return d._id == ag.series1PL();
 			});
 			if (row != undefined) {
-				return row.PLHeader3;
+				return row.name;
 			}
 
 			return '&nbsp;';
 		}(),
-		axis: ag.series1Type(),
+		axis: series1Type,
 		color: toolkit.seriesColorsGodrej[0]
 	}, {
-		field: ag.series2PL(),
+		field: 'series2',
 		name: function () {
-			var row = rpt.plmodels().find(function (d) {
+			var row = ag.optionSeries().find(function (d) {
 				return d._id == ag.series2PL();
 			});
 			if (row != undefined) {
-				return row.PLHeader3;
+				return row.name;
 			}
 
 			return '&nbsp;';
 		}(),
-		axis: ag.series2Type(),
+		axis: series2Type,
 		color: toolkit.seriesColorsGodrej[1]
 	}];
 
 	var axes = [{
-		name: ag.series1Type(),
+		name: series1Type,
 		majorGridLines: { color: '#fafafa' },
 		labels: {
 			font: '"Source Sans Pro" 11px',
@@ -525,9 +517,9 @@ ag.render = function () {
 		majorGridLines: { color: '#fafafa' }
 	};
 
-	if (ag.series1Type() != ag.series2Type()) {
+	if (series1Type != series2Type) {
 		axes.push({
-			name: ag.series2Type(),
+			name: series2Type,
 			majorGridLines: { color: '#fafafa' },
 			labels: {
 				font: '"Source Sans Pro" 11px',
@@ -536,24 +528,42 @@ ag.render = function () {
 		});
 	}
 
-	axes.forEach(function (d, i) {
-		if (axes.length > 1) {
+	if (axes.length > 1) {
+		categoryAxis.axisCrossingValue = [0, op4.length];
+
+		axes.forEach(function (d, i) {
 			d.color = toolkit.seriesColorsGodrej[i];
 
-			if (i == 1) {
-				categoryAxis.axisCrossingValue = [0, op4.length];
+			var orig = _.max(op4.map(function (f) {
+				return Math.abs(f["series" + (i + 1)]);
+			}));
+			var max = Math.pow(10, String(parseInt(orig, 10)).length - 1) * (parseInt(String(parseInt(orig, 10))[0], 10) + 1);
+
+			d.min = max * -1;
+			d.max = max;
+
+			var seriesType = i == 0 ? series1Type : series2Type;
+			if (seriesType == 'percentage') {
+				d.labels.format = "{0:n1} %";
+			} else {
+				d.labels.format = "{0:n1} B";
 			}
-		}
-	});
+
+			console.log('---', orig, max, d);
+		});
+	}
 
 	series.forEach(function (d, i) {
+		var seriesType = i == 0 ? series1Type : series2Type;
+
 		d.tooltip = {
 			visible: true,
 			template: function template(e) {
-				var value = kendo.toString(e.value, 'n0');
+				var value = kendo.toString(e.value, 'n1') + " B";
 
-				if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
-					value = kendo.toString(e.value, 'n2') + " %";
+				var seriesType = i == 0 ? series1Type : series2Type;
+				if (seriesType == 'percentage') {
+					value = kendo.toString(e.value, 'n1') + " %";
 				}
 
 				return d.name + ": " + value;
@@ -564,10 +574,14 @@ ag.render = function () {
 			visible: true
 		};
 
-		if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
-			d.labels.format = '{0:n2} %';
+		if (seriesType == 'percentage') {
+			d.labels.template = function (g) {
+				return g.series.name + "\n" + kendo.toString(g.value, 'n1') + " %";
+			};
 		} else {
-			d.labels.format = '{0:n0}';
+			d.labels.template = function (g) {
+				return g.series.name + "\n" + kendo.toString(g.value, 'n1') + " B";
+			};
 		}
 	});
 
@@ -594,6 +608,9 @@ ag.render = function () {
 		valueAxis: axes,
 		categoryAxis: categoryAxis
 	};
+
+	console.log('---- data', op4.slice(0));
+	console.log('---- config', toolkit.clone(config));
 
 	$('.annually-diff').replaceWith("<div class=\"annually-diff\" style=\"width: " + width + "px;\"></div>");
 	$('.annually-diff').kendoChart(config);
@@ -639,5 +656,5 @@ vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { 
 
 $(function () {
 	grw.refresh();
-	ag.getPLModels();
+	ag.refresh();
 });
