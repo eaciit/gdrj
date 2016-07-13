@@ -867,8 +867,16 @@ rpt.buildGridLevels = (rows) => {
 	})
 
 	rpt.showZeroValue(false)
+	rpt.hideSubGrowthValue()
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
 	rpt.refreshHeight()
+}
+
+rpt.hideSubGrowthValue = () => {
+	toolkit.repeat(8, (i) => {
+		$(`[idheaderpl="PL${i + 1}"] td:contains("%")`).html('&nbsp;')
+		$(`[idpl="PL${i + 1}"] td:contains("%")`).html('&nbsp;')
+	})
 }
 
 rpt.hideAllChild = (PLCode) => {
