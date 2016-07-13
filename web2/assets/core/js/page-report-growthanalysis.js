@@ -369,7 +369,7 @@ ag.optionPercentageValue = ko.observableArray([{ _id: "value", name: "Value" }, 
 ag.series1PL = ko.observable('');
 ag.series1Type = ko.observable('value');
 ag.series2PL = ko.observable('');
-ag.series2Type = ko.observable('value');
+ag.series2Type = ko.observable('value'); // value
 ag.limit = ko.observable(6);
 ag.data = ko.observableArray([]);
 
@@ -380,7 +380,7 @@ ag.getPLModels = function (c) {
 		}));
 
 		ag.series1PL('PL8A');
-		ag.series2PL('PL44B');
+		ag.series2PL('PL44B'); // PL44B
 		ag.refresh();
 	});
 };
@@ -419,6 +419,7 @@ ag.refresh = function () {
 };
 
 ag.render = function () {
+	var billion = 1000000000;
 	var op1 = _.groupBy(ag.data(), function (d) {
 		return d._id["_id_" + toolkit.replace(ag.breakdownBy(), '.', '_')];
 	});
@@ -429,22 +430,22 @@ ag.render = function () {
 
 		var o = {};
 		o.breakdown = k;
-		o[ag.series1PL()] = 0;
-		o[ag.series2PL()] = 0;
+		o.series1 = 0;
+		o.series2 = 0;
 
 		toolkit.try(function () {
 			if (ag.series1Type() == 'percentage') {
-				o[ag.series1PL()] = Math.abs((v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100);
+				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100;
 			} else {
-				o[ag.series1PL()] = Math.abs(v[1][ag.series1PL()] - v[0][ag.series1PL()]);
+				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / billion;
 			}
 		});
 
 		toolkit.try(function () {
 			if (ag.series2Type() == 'percentage') {
-				o[ag.series2PL()] = Math.abs((v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100);
+				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100;
 			} else {
-				o[ag.series2PL()] = Math.abs(v[1][ag.series2PL()] - v[0][ag.series2PL()]);
+				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / billion;
 			}
 		});
 
@@ -465,7 +466,7 @@ ag.render = function () {
 			}
 		}
 
-		return d[ag.series1PL()];
+		return d.series1;
 	}, 'desc');
 	var op4 = _.take(op3, ag.limit());
 
@@ -478,13 +479,13 @@ ag.render = function () {
 	}
 
 	var series = [{
-		field: ag.series1PL(),
+		field: 'series1',
 		name: function () {
 			var row = rpt.plmodels().find(function (d) {
 				return d._id == ag.series1PL();
 			});
 			if (row != undefined) {
-				return row.PLHeader3;
+				return row.PLHeader3 + " " + ag.series1Type();
 			}
 
 			return '&nbsp;';
@@ -492,13 +493,13 @@ ag.render = function () {
 		axis: ag.series1Type(),
 		color: toolkit.seriesColorsGodrej[0]
 	}, {
-		field: ag.series2PL(),
+		field: 'series2',
 		name: function () {
 			var row = rpt.plmodels().find(function (d) {
 				return d._id == ag.series2PL();
 			});
 			if (row != undefined) {
-				return row.PLHeader3;
+				return row.PLHeader3 + " " + ag.series2Type();
 			}
 
 			return '&nbsp;';
@@ -536,24 +537,38 @@ ag.render = function () {
 		});
 	}
 
-	axes.forEach(function (d, i) {
-		if (axes.length > 1) {
+	if (axes.length > 1) {
+		categoryAxis.axisCrossingValue = [0, op4.length];
+
+		axes.forEach(function (d, i) {
 			d.color = toolkit.seriesColorsGodrej[i];
 
-			if (i == 1) {
-				categoryAxis.axisCrossingValue = [0, op4.length];
+			var orig = _.max(op4.map(function (f) {
+				return Math.abs(f["series" + (i + 1)]);
+			}));
+			var max = Math.pow(10, String(parseInt(orig, 10)).length - 1) * (parseInt(String(parseInt(orig, 10))[0], 10) + 1);
+
+			d.min = max * -1;
+			d.max = max;
+
+			if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
+				d.labels.format = "{0:n1} %";
+			} else {
+				d.labels.format = "{0:n1} B";
 			}
-		}
-	});
+
+			console.log('---', orig, max, d);
+		});
+	}
 
 	series.forEach(function (d, i) {
 		d.tooltip = {
 			visible: true,
 			template: function template(e) {
-				var value = kendo.toString(e.value, 'n0');
+				var value = kendo.toString(e.value, 'n1') + " B";
 
 				if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
-					value = kendo.toString(e.value, 'n2') + " %";
+					value = kendo.toString(e.value, 'n1') + " %";
 				}
 
 				return d.name + ": " + value;
@@ -565,9 +580,9 @@ ag.render = function () {
 		};
 
 		if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
-			d.labels.format = '{0:n2} %';
+			d.labels.format = '{0:n1} %';
 		} else {
-			d.labels.format = '{0:n0}';
+			d.labels.format = '{0:n1} B';
 		}
 	});
 

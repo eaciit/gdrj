@@ -571,6 +571,8 @@ rpt.changeParent = function (elemheader, elemcontent, PLCode) {
 };
 
 rpt.fixRowValue = function (data) {
+	return;
+
 	data.forEach(function (e, a) {
 		rpt.arrFormulaPL().forEach(function (d) {
 			// let total = toolkit.sum(d.formula, (f) => e[f])
@@ -761,8 +763,16 @@ rpt.buildGridLevels = function (rows) {
 	});
 
 	rpt.showZeroValue(false);
+	rpt.hideSubGrowthValue();
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
 	rpt.refreshHeight();
+};
+
+rpt.hideSubGrowthValue = function () {
+	toolkit.repeat(8, function (i) {
+		$('[idheaderpl="PL' + (i + 1) + '"] td:contains("%")').html('&nbsp;');
+		$('[idpl="PL' + (i + 1) + '"] td:contains("%")').html('&nbsp;');
+	});
 };
 
 rpt.hideAllChild = function (PLCode) {
