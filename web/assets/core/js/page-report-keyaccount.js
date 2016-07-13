@@ -544,4 +544,5 @@ rpt.refresh = function () {
 
 $(function () {
 	rpt.refresh();
+	rpt.showExport(true);
 });

@@ -984,6 +984,8 @@ rpt.export = (target, title, mode) => {
 		}
 
 		tableHeader.find('tr').each((i, e) => {
+			$(e).css('height', '')
+			
 			if (i == 0) {
 				let rowspan = parseInt($(e).find('td,th').attr('data-rowspan'), 10)
 				if (isNaN(rowspan)) rowspan = 1
@@ -998,6 +1000,8 @@ rpt.export = (target, title, mode) => {
 		})
 
 		tableContent.find('tr').each((i, e) => {
+			$(e).css('height', '')
+			
 			let rowTarget = fakeTable.find(`tr:eq(${i})`)
 			$(e).find('td,th').each((j, f) => {
 				$(f).clone(true).appendTo(rowTarget)
@@ -1016,10 +1020,10 @@ rpt.export = (target, title, mode) => {
 
 		downloader[0].click()
 		
-		// setTimeout(() => { 
-		// 	fakeTable.remove()
-		// 	downloader.remove()
-		// }, 400)
+		setTimeout(() => { 
+			fakeTable.remove()
+			downloader.remove()
+		}, 400)
 	}
 }
 
