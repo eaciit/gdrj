@@ -189,7 +189,7 @@ v1.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * v1.level() + 'px').attr('data-rowspan', v1.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of NS').css('height', 34 * v1.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v1.level()).css('vertical-align', 'middle').appendTo(trHeader);
+	toolkit.newEl('th').html('% of N Sales').css('height', 34 * v1.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v1.level()).css('vertical-align', 'middle').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < v1.level(); i++) {
@@ -222,7 +222,7 @@ v1.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
+			var thheader1p = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
 
 			return;
 		}
@@ -240,7 +240,7 @@ v1.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
 
 				if (lvl2._id == 'Total') {
 					_thheader1p.css('background-color', 'rgb(116, 149, 160)');
@@ -565,7 +565,7 @@ v2.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * v2.level() + 'px').attr('data-rowspan', v2.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of NS').css('height', 34 * v2.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v2.level()).appendTo(trHeader);
+	toolkit.newEl('th').html('% of N Sales').css('height', 34 * v2.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v2.level()).appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < v2.level(); i++) {
@@ -599,7 +599,7 @@ v2.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]);
 
 			return;
 		}
@@ -617,7 +617,7 @@ v2.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p2 = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p2 = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
 
 				if (lvl2._id == 'Total') {
 					_thheader1p2.css('background-color', 'rgb(116, 149, 160)');
@@ -905,7 +905,7 @@ v3.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * v3.level() + 'px').attr('data-rowspan', v3.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of NS').css('height', 34 * v3.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v3.level()).appendTo(trHeader);
+	toolkit.newEl('th').html('% of N Sales').css('height', 34 * v3.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v3.level()).appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < v3.level(); i++) {
@@ -939,7 +939,7 @@ v3.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
+			var thheader1p = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
 
 			return;
 		}
@@ -952,7 +952,7 @@ v3.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p3 = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p3 = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
 
 				return;
 			}

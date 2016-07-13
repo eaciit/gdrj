@@ -197,7 +197,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 
 				let sample = d.subs[0]
 				let percentage = {}
-				percentage._id = '% of Net Sales'
+				percentage._id = '% of N Sales'
 				percentage.count = 1
 				percentage.excludeFromTotal = true
 				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
@@ -264,7 +264,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 
 				let sample = d.subs[0]
 				let percentage = {}
-				percentage._id = '% of Net Sales'
+				percentage._id = '% of N Sales'
 				percentage.count = 1
 				percentage.excludeFromTotal = true
 				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
@@ -335,7 +335,7 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 		parsed.forEach((d) => {
 			let total = d.subs[0]
 			let percentage = {}
-			percentage._id = '% of Net Sales'
+			percentage._id = '% of N Sales'
 			percentage.count = 1
 			percentage.excludeFromTotal = true
 			// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
@@ -527,7 +527,7 @@ ba.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('% of NS')
+		.html('% of N Sales')
 		.css('height', `${34 * ba.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
@@ -564,7 +564,7 @@ ba.render = () => {
 			}
 		}
 
-		if (each._id == '% of Net Sales') {
+		if (each._id == '% of N Sales') {
 			currentColumnWidth -= 20
 			thheader.css('font-weight', 'normal')
 					.css('font-style', 'italic')
@@ -731,7 +731,7 @@ ba.render = () => {
 				value = 0
 			}
 
-			if (e._id == "% of Net Sales") {
+			if (e._id == "% of N Sales") {
 				value = d[key]
 			}
 

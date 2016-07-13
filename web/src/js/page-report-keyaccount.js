@@ -406,7 +406,7 @@ kac.render = () => {
 		.appendTo(trHeader1)
 
 	toolkit.newEl('th')
-		.html('% of NS')
+		.html('% of N Sales')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
 		.width(percentageWidth - 20)
@@ -438,7 +438,7 @@ kac.render = () => {
 			.width(colWidth)
 
 		toolkit.newEl('th')
-			.html('% of Net Sales')
+			.html('% of N Sales')
 			.css('font-weight', 'normal')
 			.css('font-style', 'italic')
 			.width(percentageWidth)
