@@ -165,13 +165,13 @@ func processTable(tn string) error {
 		falloc := plallocs[fiscal]
 		if channel == "RD" {
 			newv = sales * falloc.ExpectedValue[channel] / falloc.ChannelSales[channel]
+			key.Set("customer_customergroupname", "RD")
+			key.Set("customer_customergroup", "RD")
 		} else {
 			if value != 0 {
 				newv = value * falloc.ExpectedValue[channel] / falloc.ChannelValue[channel]
 			}
 		}
-		key.Set("customer_customergroupname", "RD")
-		key.Set("customer_customergroup", "RD")
 		mr.Set("key", key)
 		mr.Set("PL7A", newv)
 		mr = CalcSum(mr)
