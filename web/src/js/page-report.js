@@ -1021,46 +1021,66 @@ rpt.export = (target, title, mode) => {
 	}
 }
 
-rpt.addScrollBottom = () => {
-	$(".breakdown-view").each(function( i ) {
- 		toolkit.newEl('div')
-			.addClass('scroll-grid-bottom-yo')
-			.appendTo($(this).find(".pivot-pnl"))
- 		
-		let tableContent = toolkit.newEl('div')
-			.addClass('scroll-grid-bottom')
-			.appendTo($(this).find(".pivot-pnl"))
- 		
-		toolkit.newEl('div')
-			.addClass('content-grid-bottom')
-			.css("min-width", $(this).find('.table-content>.table').width() - 48)
-			.html("&nbsp;")
-			.appendTo(tableContent)
- 		
- 		let target = $(this).find(".scroll-grid-bottom")[0]
-		$(this).find(".table-content").scroll(function() {
- 			target.scrollLeft = this.scrollLeft
-		})
-	});
+rpt.addScrollBottom = (container) => {
+	if (container == undefined)
+		container = $(".breakdown-view")
+	// $(".breakdown-view").each(function( i ) {
+	toolkit.newEl('div')
+		.addClass('scroll-grid-bottom-yo')
+		.appendTo(container.find(".pivot-pnl"))
+		
+	let tableContent = toolkit.newEl('div')
+		.addClass('scroll-grid-bottom')
+		.appendTo(container.find(".pivot-pnl"))
+		
+	toolkit.newEl('div')
+		.addClass('content-grid-bottom')
+		// .css("min-width", container.find('.table-content>.table').width() - 48)
+		.html("&nbsp;")
+		.appendTo(tableContent)
+		
+	let target = container.find(".scroll-grid-bottom")[0]
+	container.find(".table-content").scroll(function() {
+			target.scrollLeft = this.scrollLeft
+	})
+	// });
 	rpt.panel_scrollrelocated()
 }
 
 rpt.panel_scrollrelocated = () => {
- 	if ($('.scroll-grid-bottom-yo').size() == 0) {
- 		return;
-	}
+	$(".scroll-grid-bottom").each(function( i ) {
+		$(this).find('.content-grid-bottom').css("min-width", $(this).parent().find('.table-content>.table').width() - 48)
+	 	if ($(this).parent().find('.scroll-grid-bottom-yo').size() == 0) {
+	 		return;
+		}
+		
+		let window_top = $(window).scrollTop() + $(window).innerHeight()
+	    var div_top = $(this).parent().find('.scroll-grid-bottom-yo').offset().top.toFixed()
+	    if (parseInt(div_top) < parseInt(window_top.toFixed(0))) {
+	        $(this).removeClass('viewscrollfix')
+	        $(this).hide()
+	        $(this).css("width", "100%")
+	    } else {
+	        $(this).addClass('viewscrollfix')
+	        $(this).show()
+	        $(this).css("width", $(this).parent().find('.table-content').width())
+	    }
+	})
+	// if ($('.scroll-grid-bottom-yo').size() == 0) {
+ // 		return;
+	// }
 	
-	let window_top = $(window).scrollTop() + $(window).innerHeight()
-    var div_top = $('.scroll-grid-bottom-yo').offset().top.toFixed()
-    if (parseInt(div_top) < parseInt(window_top.toFixed(0))) {
-         $('.scroll-grid-bottom').removeClass('viewscrollfix')
-        $(".scroll-grid-bottom").hide()
-        $('.scroll-grid-bottom.viewscrollfix').css("width", "100%")
-    } else {
-         $('.scroll-grid-bottom').addClass('viewscrollfix')
-        $(".scroll-grid-bottom").show()
-        $('.scroll-grid-bottom.viewscrollfix').css("width", $('.breakdown-view .table-content').width())
-    }
+	// let window_top = $(window).scrollTop() + $(window).innerHeight()
+ //    var div_top = $('.scroll-grid-bottom-yo').offset().top.toFixed()
+ //    if (parseInt(div_top) < parseInt(window_top.toFixed(0))) {
+ //         $('.scroll-grid-bottom').removeClass('viewscrollfix')
+ //        $(".scroll-grid-bottom").hide()
+ //        $('.scroll-grid-bottom.viewscrollfix').css("width", "100%")
+ //    } else {
+ //         $('.scroll-grid-bottom').addClass('viewscrollfix')
+ //        $(".scroll-grid-bottom").show()
+ //        $('.scroll-grid-bottom.viewscrollfix').css("width", $('.breakdown-view .table-content').width())
+ //    }
 }
 
 $(() => {
