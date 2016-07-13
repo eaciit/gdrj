@@ -532,9 +532,18 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesPL, result chan<- string) {
 		product := new(gdrj.Product)
 
 		productexports := masters.Get("productexport").(toolkit.M)
-		productexport := productexports.Get(spl.SKUID).(toolkit.M)
 
-		toolkit.Serde(productexport, product, "json")
+		if productexports.Has(spl.SKUID) {
+			productexport := productexports.Get(spl.SKUID).(toolkit.M)
+			toolkit.Serde(productexport, product, "json")
+		} else if productexports.Has(spl.Product.ID) {
+			productexport := productexports.Get(spl.Product.ID).(toolkit.M)
+			toolkit.Serde(productexport, product, "json")
+		} else {
+			toolkit.Printfn("Not Found : %v", spl.SKUID)
+			product = spl.Product
+		}
+
 		spl.Product = product
 
 		//=== Clean Product Export ====
