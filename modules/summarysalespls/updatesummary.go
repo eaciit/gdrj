@@ -627,6 +627,54 @@ func prepmastersgacalcrev() {
 	masters.Set("sgacalcrev", m)
 }
 
+func prepmastercustomergroup() {
+	toolkit.Println("--> Customer Group Replace")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-s12072016.v2").Cursor(nil)
+	defer csr.Close()
+	customergroup := toolkit.M{}
+	customergroupname := toolkit.M{}
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+
+		customergroup.Set(tkm.GetString("_id"), dtkm.GetString("customer_customergroup"))
+		customergroupname.Set(tkm.GetString("_id"), dtkm.GetString("customer_customergroupname"))
+	}
+
+	masters.Set("customergroup", customergroup)
+	masters.Set("customergroupname", customergroupname)
+}
+
+func prepmasterrollback() {
+	toolkit.Println("--> Roll back data to")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-s11072016").Cursor(nil)
+	defer csr.Close()
+
+	salesplssummary := toolkit.M{}
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		salesplssummary.Set(tkm.GetString("_id"), tkm)
+	}
+
+	masters.Set("salesplssummary", salesplssummary)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -639,6 +687,9 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
+	prepmasterrollback()
+
+	// prepmastercustomergroup()
 
 	// prepmastersgacalcrev()
 	// prepmasterratiomapsalesreturn2016()
@@ -650,7 +701,7 @@ func main() {
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-s13072016.v1").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -825,6 +876,28 @@ func CalcFreightsRev(tkm toolkit.M) {
 
 	tkm.Set("PL23", val)
 	return
+}
+
+func CleanUpdateCustomerGroupName(tkm toolkit.M) {
+	customergroup := masters.Get("customergroup").(toolkit.M)
+	customergroupname := masters.Get("customergroupname").(toolkit.M)
+
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	dtkm.Set("customer_customergroupname", customergroupname.GetString(tkm.GetString("_id")))
+	dtkm.Set("customer_customergroup", customergroup.GetString(tkm.GetString("_id")))
+	tkm.Set("key", dtkm)
+}
+
+//masters.Set("salesplssummary", salesplssummary)
+func RollbackSalesplsSummary(tkm toolkit.M) {
+	salesplssummaries := masters.Get("salesplssummary").(toolkit.M)
+	salesplssummary := salesplssummaries.Get(tkm.GetString("_id")).(toolkit.M)
+
+	// dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	// dtkm.Set("customer_customergroupname", customergroupname.GetString(tkm.GetString("_id")))
+	// dtkm.Set("customer_customergroup", customergroup.GetString(tkm.GetString("_id")))
+	// tkm.Set("key", dtkm)
+	tkm.Set("PL7A", salesplssummary.GetFloat64("PL7A"))
 }
 
 func CalcSalesReturn(tkm toolkit.M) {
@@ -1071,7 +1144,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-grosssales").
+		From("salespls-summary-update").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1089,6 +1162,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcRoyalties(trx)
 		// CalcSalesVDist20142015(trx)
 		// CalcSgaRev(trx)
+
+		// CleanUpdateCustomerGroupName(trx)
+		RollbackSalesplsSummary(trx)
+
 		CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))

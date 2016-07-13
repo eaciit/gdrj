@@ -372,6 +372,7 @@ v1.render = function () {
 	});
 
 	// ========================= CONFIGURE THE HIRARCHY
+
 	v3.buildGridLevels(container, rows);
 };
 
@@ -1237,7 +1238,7 @@ v3.buildGridLevels = function (container, rows) {
 	rpt.showZeroValue(false);
 	container.find(".table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
 	rpt.refreshHeight();
-	rpt.addScrollBottom();
+	rpt.addScrollBottom(container);
 };
 
 vm.currentMenu('Analysis');
