@@ -75,9 +75,9 @@ func main() {
 }
 
 var pcts = map[string]float64{
-	"MT": -0.0596980,
-	"GT": -0.0630389,
-	"RD": -0.0609675,
+	"MT": -0.05633490,
+	"GT": -0.05930065,
+	"RD": -0.05746188,
 }
 
 func processTable(tn string) error {
@@ -88,6 +88,8 @@ func processTable(tn string) error {
 
 	count := cursor.Count()
 	i := 0
+	step := count / 20
+	mstone := step
 	for {
 		mr := toolkit.M{}
 		ef := cursor.Fetch(&mr, 1, false)
@@ -96,14 +98,18 @@ func processTable(tn string) error {
 		}
 
 		i++
-		toolkit.Printfn("Processing %s, %d of %d in %s",
-			tn, i, count, time.Since(t0).String())
+		if i >= mstone {
+			pct := i * 100 / count
+			toolkit.Printfn("Processing %s, %d of %d [%d pct] in %s",
+				tn, i, count, pct, time.Since(t0).String())
+			mstone += step
+		}
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		channel := key.GetString("customer_channelname")
 		actpct := pcts[channel]
 
-		sales := mr.GetFloat64("PL8A")
+		sales := mr.GetFloat64("PL0")
 		disc := actpct * sales
 		mr.Set("PL7A", disc)
 
