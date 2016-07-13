@@ -159,7 +159,7 @@ rd.render = function () {
 
 	// ========================= TABLE STRUCTURE
 
-	var percentageWidth = 110;
+	var percentageWidth = 100;
 
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl-branch pivot-pnl').appendTo($('.breakdown-view'));
 
@@ -177,7 +177,7 @@ rd.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of NS').css('height', 34 * rd.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 40).attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of NS').css('height', 34 * rd.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < rd.level(); i++) {

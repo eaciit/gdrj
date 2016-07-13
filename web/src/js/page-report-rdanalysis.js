@@ -140,7 +140,7 @@ rd.render = () => {
 
 	// ========================= TABLE STRUCTURE
 
-	let percentageWidth = 110
+	let percentageWidth = 100
 
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl-branch pivot-pnl')
@@ -187,7 +187,7 @@ rd.render = () => {
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
-		.width(percentageWidth - 40)
+		.width(percentageWidth - 20)
 		.attr('data-rowspan', rd.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')

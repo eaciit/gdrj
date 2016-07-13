@@ -556,7 +556,7 @@ ba.render = function () {
 
 	// ========================= TABLE STRUCTURE
 
-	var percentageWidth = 110;
+	var percentageWidth = 100;
 	var data = _.orderBy(ba.data(), function (d) {
 		return d.PL8A;
 	}, 'desc');
@@ -577,7 +577,7 @@ ba.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * ba.level() + 'px').attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of NS').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 40).attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of NS').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < ba.level(); i++) {

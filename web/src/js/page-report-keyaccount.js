@@ -371,7 +371,7 @@ kac.render = () => {
 		rows[e].Percentage = toolkit.number(TotalPercentage)
 	})
 
-	let percentageWidth = 110
+	let percentageWidth = 100
 
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl')
@@ -409,7 +409,7 @@ kac.render = () => {
 		.html('% of NS')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
-		.width(percentageWidth - 40)
+		.width(percentageWidth - 20)
 		.addClass('align-right')
 		.appendTo(trHeader1)
 
