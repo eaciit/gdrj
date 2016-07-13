@@ -95,8 +95,8 @@ func processTable(tn string) error {
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		trxsource := key.GetString("trxsrc")
-		reportchannel := key.GetString("customer_reportchannel")
-		if trxsource == "VDIST" && reportchannel == "RD" {
+		ref := key.GetString("ref")
+		if trxsource == "VDIST" && ref == "trfrd" {
 			//salesRD := mr.GetFloat64("PL2")
 			//discountRD := mr.GetFloat64("PL8")
 			//netSales := mr.GetFloat64("PL8A")
@@ -107,6 +107,7 @@ func processTable(tn string) error {
 			//mr.Set("PL2", salesRD)
 			//mr.Set("PL8", discountRD)
 
+			key.Set("customer_channelid", "I3")
 			key.Set("customer_reportchannel", "MT")
 			key.Set("customer_channelname", "MT")
 			key.Set("customer_channelname", "MT")
