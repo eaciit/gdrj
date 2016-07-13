@@ -1,9 +1,9 @@
 [{
     "_id": "db_acl",
     "data": {
-        "db": "ecgodrej",
+        "db": "ecgodrej_prod",
         "driver": "mongo",
-        "host": "127.0.0.1:27123",
+        "host": "localhost:27123",
         "pass": "",
         "user": "",
         "setting": {
@@ -14,9 +14,9 @@
 {
     "_id": "db_godrej",
     "data": {
-        "db": "ecgodrej",
+        "db": "ecgodrej_prod",
         "driver": "mongo",
-        "host": "127.0.0.1:27123",
+        "host": "localhost:27123",
         "pass": "",
         "user": "",
         "setting": {
