@@ -434,6 +434,7 @@ v1.render = () => {
 	
 
 	// ========================= CONFIGURE THE HIRARCHY
+	
 	v3.buildGridLevels(container, rows)
 }
 
@@ -1420,7 +1421,7 @@ v3.buildGridLevels = (container, rows) => {
 	rpt.showZeroValue(false)
 	container.find(".table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
 	rpt.refreshHeight()
-	rpt.addScrollBottom()
+	rpt.addScrollBottom(container)
 }
 
 
