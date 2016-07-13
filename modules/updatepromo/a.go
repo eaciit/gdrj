@@ -40,27 +40,37 @@ func setinitialconnection() {
 }
 
 type plalloc struct {
-	Key     string
-	Current float64
-	Expect  float64
-	Total   float64
+	Key string
+	//Current float64
+	//Expect  float64
+	//Total   float64
+
+	TotalSales  float64
+	TotalValues float64
+
+	GroupSales,
+	GLValues,
+	GLRatios,
+	ExpectedValues map[string]float64
 }
 
 var plallocs = map[string]*plalloc{}
 
-func buildRatio(tn string) error {
+func buildRatio() error {
 	plallocs = map[string]*plalloc{}
 	rconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer rconn.Close()
 
 	//totalBlanks := map[string]float64{}
 
-	ctrx, e := rconn.NewQuery().From(tn).
+	ctrx, e := rconn.NewQuery().From("rawdatapl_promospg11072016").
 		Select().Cursor(nil)
 	if e != nil {
 		return e
 	}
 	defer ctrx.Close()
+
+	t0 = time.Now()
 	count := ctrx.Count()
 	i := 0
 	for {
@@ -72,24 +82,60 @@ func buildRatio(tn string) error {
 		toolkit.Printfn("Ratio 1: %d of %d in %s",
 			i, count, time.Since(t0).String())
 
-		key := mtrx.Get("key", toolkit.M{}).(toolkit.M)
-		fiscal := key.GetString("date_fiscal")
-		kacode := key.GetString("customer_customergroupname")
-		value := mtrx.GetFloat64("PL29") +
-			mtrx.GetFloat64("PL29A") +
-			mtrx.GetFloat64("PL30") +
-			mtrx.GetFloat64("PL31")
+		//key := mtrx.Get("key", toolkit.M{}).(toolkit.M)
+		fiscal := toolkit.Sprintf("%d_%d", mtrx.GetInt("year"), mtrx.GetInt("period"))
+		//kacode := key.GetString("keyaccountcode")
+		value := mtrx.GetFloat64("amountinidr")
+		glcode := mtrx.GetString("account")
+
 		falloc := plallocs[fiscal]
 		if falloc == nil {
 			falloc = new(plalloc)
 		}
 
-		if kacode == "" {
-			falloc.Expect += value
-		} else {
-			falloc.Total += value
-		}
+		falloc.TotalSales += 0
+		falloc.TotalValues += value
+		falloc.GLValues[glcode] = falloc.GLValues[glcode] + value
 		plallocs[fiscal] = falloc
+	}
+
+	csls, _ := rconn.NewQuery().From("salespls-summary").Select().Cursor(nil)
+	defer csls.Close()
+
+	count = csls.Count()
+	i = 0
+
+	t0 = time.Now()
+	for {
+		mr := toolkit.M{}
+		e := csls.Fetch(&mr, 1, false)
+		if e != nil {
+			break
+		}
+		i++
+		toolkit.Printfn("Ratio 2: %d of %d in %s",
+			i, count, time.Since(t0).String())
+
+		key := mr.Get("key", toolkit.M{}).(toolkit.M)
+		kacode := key.GetString("customer_customergroupname")
+		keyDate := time.Date(key.GetInt("date_year"), time.Month(key.GetInt("date_month")), 1,
+			0, 0, 0, 0, time.UTC)
+		fiscalDate := keyDate.AddDate(0, -3, 0)
+		keyPeriod := toolkit.Sprintf("%d_%d",
+			fiscalDate.Year(), fiscalDate.Month())
+		alloc := plallocs[keyPeriod]
+		if alloc == nil {
+			continue
+		}
+
+		sales := mr.GetFloat64("PL8A")
+		alloc.TotalSales += sales
+		alloc.GroupSales[kacode] = alloc.GroupSales[kacode] + sales
+		plallocs[keyPeriod] = alloc
+	}
+
+	for k, v := range plallocs {
+
 	}
 
 	return nil
@@ -106,13 +152,13 @@ func main() {
 	tablenames := []string{
 		"salespls-summary"}
 
-	for _, tn := range tablenames {
-		e := buildRatio(tn)
-		if e != nil {
-			toolkit.Printfn("Build ratio error: %s - %s", tn, e.Error())
-			return
-		}
+	e := buildRatio()
+	if e != nil {
+		toolkit.Printfn("Build ratio error: %s", e.Error())
+		return
+	}
 
+	for _, tn := range tablenames {
 		e = processTable(tn)
 		if e != nil {
 			toolkit.Printfn("Process table error: %s - %s", tn, e.Error())
@@ -125,8 +171,10 @@ func processTable(tn string) error {
 	cursor, _ := conn.NewQuery().From(tn).Select().Cursor(nil)
 	defer cursor.Close()
 
+	plmodels := masters.Get("plmodel", nil).(map[string]*gdrj.PLModel)
 	count := cursor.Count()
 	i := 0
+	t0 = time.Now()
 	for {
 		mr := toolkit.M{}
 		ef := cursor.Fetch(&mr, 1, false)
@@ -139,18 +187,29 @@ func processTable(tn string) error {
 			tn, i, count, time.Since(t0).String())
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		fiscal := key.GetString("date_fiscal")
 		kacode := key.GetString("customer_customergroupname")
-		for k, v := range mr {
+		keyDate := time.Date(key.GetInt("date_year"), time.Month(key.GetInt("date_month")), 1,
+			0, 0, 0, 0, time.UTC)
+		fiscalDate := keyDate.AddDate(0, -3, 0)
+		keyPeriod := toolkit.Sprintf("%d_%d",
+			fiscalDate.Year(), fiscalDate.Month())
+		falloc := plallocs[keyPeriod]
+
+		sales := mr.GetFloat64("PL8A")
+		for k, _ := range mr {
 			if strings.HasPrefix(k, "PL29") ||
 				strings.HasPrefix(k, "PL30") ||
 				strings.HasPrefix(k, "PL31") {
 				newv := float64(0)
-				if kacode != "" {
-					falloc := plallocs[fiscal]
-					if falloc != nil {
-						newv = v.(float64) + v.(float64)*falloc.Expect/falloc.Total
-					}
+				plmodel := plmodels[k]
+				if plmodel == nil {
+					//continue
+				} else if plmodel.GLReff == "" {
+					//continue
+				} else {
+					glratio := falloc.GLRatios[plmodel.GLReff]
+					expectedvalue := falloc.ExpectedValues[kacode]
+					newv = (sales / falloc.TotalSales) * glratio * expectedvalue
 				}
 				mr.Set(k, newv)
 			}
