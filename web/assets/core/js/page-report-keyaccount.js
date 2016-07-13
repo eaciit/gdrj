@@ -74,6 +74,7 @@ kac.refresh = function () {
 			kac.emptyGrid();
 			kac.contentIsLoading(false);
 			kac.render();
+			rpt.prepareEvents();
 		}, function () {
 			kac.emptyGrid();
 			kac.contentIsLoading(false);
@@ -401,11 +402,11 @@ kac.render = function () {
 
 	var trHeader1 = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('P&L').appendTo(trHeader1);
+	toolkit.newEl('th').html('P&L').css('height', rpt.rowHeaderHeight() + 'px').appendTo(trHeader1);
 
-	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader1);
+	toolkit.newEl('th').html('Total').css('height', rpt.rowHeaderHeight() + 'px').addClass('align-right').appendTo(trHeader1);
 
-	toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).addClass('align-right').appendTo(trHeader1);
+	toolkit.newEl('th').html('% of N Sales').css('height', rpt.rowHeaderHeight() + 'px').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).addClass('align-right').appendTo(trHeader1);
 
 	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
 
@@ -439,7 +440,7 @@ kac.render = function () {
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader).css('height', rpt.rowContentHeight() + 'px');
 
 		trHeader.on('click', function () {
 			kac.clickExpand(trHeader);
@@ -452,7 +453,7 @@ kac.render = function () {
 
 		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + '%').addClass('align-right').appendTo(trHeader);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('data-row', 'row-' + i).attr('idpl', PL).appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('data-row', 'row-' + i).attr('idpl', PL).css('height', rpt.rowContentHeight() + 'px').appendTo(tableContent);
 
 		data.forEach(function (e, f) {
 			var key = e._id;
@@ -539,8 +540,6 @@ rpt.refresh = function () {
 		kac.breakdownValue(['All']);
 		kac.refresh(false);
 	}, 200);
-
-	rpt.prepareEvents();
 };
 
 $(function () {

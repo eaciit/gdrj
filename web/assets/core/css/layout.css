@@ -473,7 +473,6 @@ body {
 }
 .pivot-pnl {
   position: relative;
-  overflow-y: scroll;
   border-bottom: 1px solid #F0F3F4;
 }
 .pivot-pnl .table-header {

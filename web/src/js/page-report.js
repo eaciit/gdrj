@@ -231,6 +231,8 @@ rpt.parseGroups = (what) => {
 
 	return what
 }
+rpt.rowHeaderHeight = ko.observable(34)
+rpt.rowContentHeight = ko.observable(26)
 rpt.mode = ko.observable('render')
 rpt.refreshView = ko.observable('')
 rpt.modecustom = ko.observable(false)
@@ -579,13 +581,13 @@ rpt.allowedPL = ko.computed(() => {
 rpt.idarrayhide = ko.observableArray(['PL44A'])
 
 rpt.prepareEvents = () => {
-	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
+	$('.breakdown-view').parent().off('mouseover').on('mouseover', 'tr', function () {
 		let rowID = $(this).attr('data-row')
 
         let elh = $(`.breakdown-view .table-header tr[data-row="${rowID}"]`).addClass('hover')
         let elc = $(`.breakdown-view .table-content tr[data-row="${rowID}"]`).addClass('hover')
 	})
-	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
+	$('.breakdown-view').parent().off('mouseleave').on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover')
 	})
 }
@@ -1055,8 +1057,8 @@ rpt.panel_scrollrelocated = () => {
 		}
 		
 		let window_top = $(window).scrollTop() + $(window).innerHeight()
-	    var div_top = $(this).parent().find('.scroll-grid-bottom-yo').offset().top.toFixed()
-	    if (parseInt(div_top) < parseInt(window_top.toFixed(0))) {
+	    var div_top = $(this).parent().find('.scroll-grid-bottom-yo').offset().top
+	    if (parseInt(div_top, 10) < parseInt(window_top, 10)) {
 	        $(this).removeClass('viewscrollfix')
 	        $(this).hide()
 	        $(this).css("width", "100%")
@@ -1084,7 +1086,7 @@ rpt.panel_scrollrelocated = () => {
 }
 
 $(() => {
-	$(window).scroll(() => { 
+	$(window).on('scroll', () => { 
 		rpt.panel_scrollrelocated()
 	});
 	// rpt.getIdeas()
