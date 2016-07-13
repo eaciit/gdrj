@@ -76,7 +76,7 @@ func main() {
 
 func processTable(tn string) error {
 	cursor, _ := conn.NewQuery().From(tn).
-		Where(dbox.Eq("key.trxsrc", "VDIST"), dbox.Eq("key.customer_reportchannel", "RD")).
+		Where(dbox.Eq("key.trxsrc", "VDIST"), dbox.Eq("key.ref", "trfrd")).
 		Select().Cursor(nil)
 	defer cursor.Close()
 
@@ -94,9 +94,9 @@ func processTable(tn string) error {
 			tn, i, count, time.Since(t0).String())
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		trxsource := mr.GetString("trxsrc")
-		reportchannel := key.GetString("customer_reportchannel")
-		if trxsource == "VDIST" && reportchannel == "RD" {
+		trxsource := key.GetString("trxsrc")
+		ref := key.GetString("ref")
+		if trxsource == "VDIST" && ref == "trfrd" {
 			//salesRD := mr.GetFloat64("PL2")
 			//discountRD := mr.GetFloat64("PL8")
 			//netSales := mr.GetFloat64("PL8A")
@@ -107,6 +107,7 @@ func processTable(tn string) error {
 			//mr.Set("PL2", salesRD)
 			//mr.Set("PL8", discountRD)
 
+			key.Set("customer_channelid", "I3")
 			key.Set("customer_reportchannel", "MT")
 			key.Set("customer_channelname", "MT")
 			key.Set("customer_channelname", "MT")

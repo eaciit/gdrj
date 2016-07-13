@@ -365,7 +365,7 @@ ag.optionPercentageValue = ko.observableArray([
 ag.series1PL = ko.observable('')
 ag.series1Type = ko.observable('value')
 ag.series2PL = ko.observable('')
-ag.series2Type = ko.observable('percentage') // value
+ag.series2Type = ko.observable('value') // value
 ag.limit = ko.observable(6)
 ag.data = ko.observableArray([])
 
@@ -374,7 +374,7 @@ ag.getPLModels = (c) => {
 		rpt.plmodels(_.orderBy(res, (d) => d.OrderIndex))
 
 		ag.series1PL('PL8A')
-		ag.series2PL('PL8A') // PL44B
+		ag.series2PL('PL44B') // PL44B
 		ag.refresh()
 	})
 }
@@ -413,6 +413,7 @@ ag.refresh = () => {
 }
 
 ag.render = () => {
+	let billion = 1000000000
 	let op1 = _.groupBy(ag.data(), (d) => d._id[`_id_${toolkit.replace(ag.breakdownBy(), '.', '_')}`])
 	let op2 = _.map(op1, (v, k) => {
 		v = _.orderBy(v, (e) => e._id._id_date_fiscal, 'asc')
@@ -426,7 +427,7 @@ ag.render = () => {
 			if (ag.series1Type() == 'percentage') {
 				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100
 			} else {
-				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()])
+				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / billion
 			}
 		})
 
@@ -434,7 +435,7 @@ ag.render = () => {
 			if (ag.series2Type() == 'percentage') {
 				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100
 			} else {
-				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()])
+				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / billion
 			}
 		})
 
@@ -530,15 +531,19 @@ ag.render = () => {
 		axes.forEach((d, i) => {
 			d.color = toolkit.seriesColorsGodrej[i]
 
-			let max = _.max(op4.map((f) => Math.abs(f[`series${i + 1}`])))
+			let orig = _.max(op4.map((f) => Math.abs(f[`series${i + 1}`])))
+			let max = Math.pow(10, String(parseInt(orig, 10)).length - 1) * (parseInt(String(parseInt(orig, 10))[0], 10) + 1)
+
 			d.min = max * -1
 			d.max = max
 
 			if (ag[`series${i + 1}Type`]() == 'percentage') {
-				d.labels.format = "{0:n2} %"
+				d.labels.format = "{0:n1} %"
+			} else {
+				d.labels.format = "{0:n1} B"
 			}
 
-			console.log('---', max, d)
+			console.log('---', orig, max, d)
 		})
 	}
 
@@ -546,10 +551,10 @@ ag.render = () => {
 		d.tooltip = {
 			visible: true,
 			template: (e) => {
-				let value = kendo.toString(e.value, 'n0')
+				let value = `${kendo.toString(e.value, 'n1')} B`
 
 				if (ag[`series${i + 1}Type`]() == 'percentage') {
-					value = `${kendo.toString(e.value, 'n2')} %`
+					value = `${kendo.toString(e.value, 'n1')} %`
 				}
 
 				return `${d.name}: ${value}`
@@ -561,9 +566,9 @@ ag.render = () => {
 		}
 
 		if (ag[`series${i + 1}Type`]() == 'percentage') {
-			d.labels.format = '{0:n2} %'
+			d.labels.format = '{0:n1} %'
 		} else {
-			d.labels.format = '{0:n0}'
+			d.labels.format = '{0:n1} B'
 		}
 	})
 

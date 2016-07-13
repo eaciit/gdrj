@@ -369,7 +369,7 @@ ag.optionPercentageValue = ko.observableArray([{ _id: "value", name: "Value" }, 
 ag.series1PL = ko.observable('');
 ag.series1Type = ko.observable('value');
 ag.series2PL = ko.observable('');
-ag.series2Type = ko.observable('percentage'); // value
+ag.series2Type = ko.observable('value'); // value
 ag.limit = ko.observable(6);
 ag.data = ko.observableArray([]);
 
@@ -380,7 +380,7 @@ ag.getPLModels = function (c) {
 		}));
 
 		ag.series1PL('PL8A');
-		ag.series2PL('PL8A'); // PL44B
+		ag.series2PL('PL44B'); // PL44B
 		ag.refresh();
 	});
 };
@@ -419,6 +419,7 @@ ag.refresh = function () {
 };
 
 ag.render = function () {
+	var billion = 1000000000;
 	var op1 = _.groupBy(ag.data(), function (d) {
 		return d._id["_id_" + toolkit.replace(ag.breakdownBy(), '.', '_')];
 	});
@@ -436,7 +437,7 @@ ag.render = function () {
 			if (ag.series1Type() == 'percentage') {
 				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100;
 			} else {
-				o.series1 = v[1][ag.series1PL()] - v[0][ag.series1PL()];
+				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / billion;
 			}
 		});
 
@@ -444,7 +445,7 @@ ag.render = function () {
 			if (ag.series2Type() == 'percentage') {
 				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100;
 			} else {
-				o.series2 = v[1][ag.series2PL()] - v[0][ag.series2PL()];
+				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / billion;
 			}
 		});
 
@@ -542,17 +543,21 @@ ag.render = function () {
 		axes.forEach(function (d, i) {
 			d.color = toolkit.seriesColorsGodrej[i];
 
-			var max = _.max(op4.map(function (f) {
+			var orig = _.max(op4.map(function (f) {
 				return Math.abs(f["series" + (i + 1)]);
 			}));
+			var max = Math.pow(10, String(parseInt(orig, 10)).length - 1) * (parseInt(String(parseInt(orig, 10))[0], 10) + 1);
+
 			d.min = max * -1;
 			d.max = max;
 
 			if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
-				d.labels.format = "{0:n2} %";
+				d.labels.format = "{0:n1} %";
+			} else {
+				d.labels.format = "{0:n1} B";
 			}
 
-			console.log('---', max, d);
+			console.log('---', orig, max, d);
 		});
 	}
 
@@ -560,10 +565,10 @@ ag.render = function () {
 		d.tooltip = {
 			visible: true,
 			template: function template(e) {
-				var value = kendo.toString(e.value, 'n0');
+				var value = kendo.toString(e.value, 'n1') + " B";
 
 				if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
-					value = kendo.toString(e.value, 'n2') + " %";
+					value = kendo.toString(e.value, 'n1') + " %";
 				}
 
 				return d.name + ": " + value;
@@ -575,9 +580,9 @@ ag.render = function () {
 		};
 
 		if (ag["series" + (i + 1) + "Type"]() == 'percentage') {
-			d.labels.format = '{0:n2} %';
+			d.labels.format = '{0:n1} %';
 		} else {
-			d.labels.format = '{0:n0}';
+			d.labels.format = '{0:n1} B';
 		}
 	});
 
