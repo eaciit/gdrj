@@ -45,9 +45,12 @@ func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
 	flag.IntVar(&fiscalyear, "year", 2015, "YYYY representation of godrej fiscal year. Default is 2015")
+	flag.StringVar(&tablename, "table", "salespls-2015", "tablename to process. default is salespls-2015")
 	flag.Parse()
 
-	tablename = toolkit.Sprintf("salespls-%d", fiscalyear)
+	if tablename == "" {
+		tablename = toolkit.Sprintf("salespls-%d", fiscalyear)
+	}
 
 	setinitialconnection()
 	defer gdrj.CloseDb()
@@ -104,7 +107,7 @@ func main() {
 			// toolkit.Println(k)
 			tkm.Set("_id", k)
 			_ = conn.NewQuery().
-				From("salespls-summary").
+				From("salespls-summary-exp").
 				SetConfig("multiexec", true).
 				Save().Exec(toolkit.M{}.Set("data", tkm))
 		}
