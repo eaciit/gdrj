@@ -640,7 +640,7 @@ func main() {
 	defer gdrj.CloseDb()
 	prepmastercalc()
 
-	prepmastersgacalcrev()
+	// prepmastersgacalcrev()
 	// prepmasterratiomapsalesreturn2016()
 	// prepmasterdiffsalesreturn2016()
 	// prepmastersalesreturn()
@@ -650,7 +650,7 @@ func main() {
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-s13072016.v1").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -1071,7 +1071,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-sgacalc").
+		From("salespls-summary-grosssales").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1088,7 +1088,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
 		// CalcSalesVDist20142015(trx)
-		CalcSgaRev(trx)
+		// CalcSgaRev(trx)
 		CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
