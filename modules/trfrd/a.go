@@ -76,7 +76,7 @@ func main() {
 
 func processTable(tn string) error {
 	cursor, _ := conn.NewQuery().From(tn).
-		Where(dbox.Eq("key.trxsrc", "VDIST"), dbox.Eq("key.customer_reportchannel", "RD")).
+		Where(dbox.Eq("key.trxsrc", "VDIST"), dbox.Eq("key.ref", "trfrd")).
 		Select().Cursor(nil)
 	defer cursor.Close()
 
