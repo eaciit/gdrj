@@ -874,6 +874,8 @@ rpt.export = function (target, title, mode) {
 			}
 
 			tableHeader.find('tr').each(function (i, e) {
+				$(e).css('height', '');
+
 				if (i == 0) {
 					var rowspan = parseInt($(e).find('td,th').attr('data-rowspan'), 10);
 					if (isNaN(rowspan)) rowspan = 1;
@@ -888,6 +890,8 @@ rpt.export = function (target, title, mode) {
 			});
 
 			tableContent.find('tr').each(function (i, e) {
+				$(e).css('height', '');
+
 				var rowTarget = fakeTable.find('tr:eq(' + i + ')');
 				$(e).find('td,th').each(function (j, f) {
 					$(f).clone(true).appendTo(rowTarget);
@@ -902,10 +906,10 @@ rpt.export = function (target, title, mode) {
 
 			downloader[0].click();
 
-			// setTimeout(() => {
-			// 	fakeTable.remove()
-			// 	downloader.remove()
-			// }, 400)
+			setTimeout(function () {
+				fakeTable.remove();
+				downloader.remove();
+			}, 400);
 		})();
 	}
 };
