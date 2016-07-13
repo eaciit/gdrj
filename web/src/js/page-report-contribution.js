@@ -45,6 +45,7 @@ cbt.refresh = (useCache = false) => {
 			cbt.emptyGrid()
 			cbt.contentIsLoading(false)
 			cbt.render()
+			rpt.prepareEvents()
 		}, () => {
 			cbt.emptyGrid()
 			cbt.contentIsLoading(false)
@@ -155,7 +156,7 @@ cbt.render = () => {
 
 	toolkit.newEl('th')
 		.html('P&L')
-		.css('height', `${34 * cbt.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * cbt.level()}px`)
 		.attr('data-rowspan', cbt.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
@@ -163,7 +164,7 @@ cbt.render = () => {
 
 	toolkit.newEl('th')
 		.html('Total')
-		.css('height', `${34 * cbt.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * cbt.level()}px`)
 		.attr('data-rowspan', cbt.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
@@ -171,7 +172,9 @@ cbt.render = () => {
 
 	let trContents = []
 	for (let i = 0; i < cbt.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent))
+		trContents.push(toolkit.newEl('tr')
+			.appendTo(tableContent)
+			.css('height', `${rpt.rowHeaderHeight()}px`))
 	}
 
 
@@ -205,8 +208,7 @@ cbt.render = () => {
 			.attr('colspan', lvl1.count)
 			.addClass('align-right')
 			.appendTo(trContents[0])
-			// .css('background-color', colors[i])
-			// .css('color', 'white')
+			.css('border-top', 'none')
 
 		if (cbt.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id])
@@ -218,10 +220,9 @@ cbt.render = () => {
 				.css('font-weight', 'normal')
 				.css('font-style', 'italic')
 				.width(percentageWidth)
+				.css('border-top', 'none')
 				.addClass('align-right')
 				.appendTo(trContents[0])
-				// .css('background-color', colors[i])
-				// .css('color', 'white')
 
 			return
 		}
@@ -329,6 +330,7 @@ cbt.render = () => {
 			.attr(`idheaderpl`, PL)
 			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableHeader)
+			.css('height', `${rpt.rowContentHeight()}px`)
 
 		trHeader.on('click', () => {
 			cbt.clickExpand(trHeader)
@@ -349,6 +351,7 @@ cbt.render = () => {
 			.attr(`idpl`, PL)
 			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableContent)
+			.css('height', `${rpt.rowContentHeight()}px`)
 
 		dataFlat.forEach((e, f) => {
 			let key = e.key

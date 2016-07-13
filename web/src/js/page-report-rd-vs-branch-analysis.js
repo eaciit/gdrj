@@ -13,6 +13,11 @@ v1.fiscalYear = ko.observable(rpt.value.FiscalYear())
 v1.level = ko.observable(2)
 v1.title = ko.observable('Total Branch & RD')
 
+v1.changeTo = (d) => {
+	v1.title(d)
+	$(window).trigger('scroll')
+}
+
 v1.refresh = (useCache = false) => {
 	let param = {}
 	param.pls = []
@@ -42,6 +47,7 @@ v1.refresh = (useCache = false) => {
 			v1.emptyGrid()
 			v1.contentIsLoading(false)
 			v1.render()
+			rpt.prepareEvents()
 		}, () => {
 			v1.emptyGrid()
 			v1.contentIsLoading(false)
@@ -177,7 +183,7 @@ v1.render = () => {
 
 	toolkit.newEl('th')
 		.html('P&L')
-		.css('height', `${34 * v1.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * v1.level()}px`)
 		.attr('data-rowspan', v1.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
@@ -185,7 +191,7 @@ v1.render = () => {
 
 	toolkit.newEl('th')
 		.html('Total')
-		.css('height', `${34 * v1.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * v1.level()}px`)
 		.attr('data-rowspan', v1.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
@@ -193,7 +199,7 @@ v1.render = () => {
 
 	toolkit.newEl('th')
 		.html('% of N Sales')
-		.css('height', `${34 * v1.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * v1.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
@@ -204,7 +210,9 @@ v1.render = () => {
 
 	let trContents = []
 	for (let i = 0; i < v1.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent))
+		trContents.push(toolkit.newEl('tr')
+			.appendTo(tableContent)
+			.css('height', `${rpt.rowHeaderHeight()}px`))
 	}
 
 
@@ -236,6 +244,7 @@ v1.render = () => {
 			.appendTo(trContents[0])
 			.css('background-color', colors[i])
 			.css('color', 'white')
+			.css('border-top', 'none')
 
 		if (v1.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id])
@@ -250,6 +259,7 @@ v1.render = () => {
 				.appendTo(trContents[0])
 				.css('background-color', colors[i])
 				.css('color', 'white')
+				.css('border-top', 'none')
 
 			return
 		}
@@ -369,6 +379,7 @@ v1.render = () => {
 			.addClass(`header${PL}`)
 			.attr(`idheaderpl`, PL)
 			.attr(`data-row`, `row-${i}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
@@ -394,6 +405,7 @@ v1.render = () => {
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
 			.attr(`data-row`, `row-${i}`)
+			.css('height', `${rpt.rowHeaderHeight()}px`)
 			.appendTo(tableContent)
 
 		dataFlat.forEach((e, f) => {
@@ -484,6 +496,7 @@ v2.refresh = (useCache = false) => {
 			v2.emptyGrid()
 			v2.contentIsLoading(false)
 			v2.render()
+			rpt.prepareEvents()
 		}, () => {
 			v2.emptyGrid()
 			v2.contentIsLoading(false)
@@ -623,7 +636,7 @@ v2.render = () => {
 
 	toolkit.newEl('th')
 		.html('P&L')
-		.css('height', `${34 * v2.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * v2.level()}px`)
 		.attr('data-rowspan', v2.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
@@ -631,7 +644,7 @@ v2.render = () => {
 
 	toolkit.newEl('th')
 		.html('Total')
-		.css('height', `${34 * v2.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * v2.level()}px`)
 		.attr('data-rowspan', v2.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
@@ -639,7 +652,7 @@ v2.render = () => {
 
 	toolkit.newEl('th')
 		.html('% of N Sales')
-		.css('height', `${34 * v2.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * v2.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
@@ -649,7 +662,9 @@ v2.render = () => {
 
 	let trContents = []
 	for (let i = 0; i < v2.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent))
+		trContents.push(toolkit.newEl('tr')
+			.appendTo(tableContent)
+			.css('height', `${rpt.rowHeaderHeight()}px`))
 	}
 
 
@@ -682,6 +697,7 @@ v2.render = () => {
 			.appendTo(trContents[0])
 			.css('background-color', colors[i])
 			.css('color', 'white')
+			.css('border-top', 'none')
 
 		if (v2.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id])
@@ -694,6 +710,7 @@ v2.render = () => {
 				.width(percentageWidth)
 				.addClass('align-center')
 				.appendTo(trContents[0])
+				.css('border-top', 'none')
 
 			return
 		}
@@ -814,6 +831,7 @@ v2.render = () => {
 			.attr(`idheaderpl`, PL)
 			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableHeader)
+			.css('height', `${rpt.rowContentHeight()}px`)
 
 		trHeader.on('click', () => {
 			v2.clickExpand(trHeader)
@@ -838,6 +856,7 @@ v2.render = () => {
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
 			.attr(`data-row`, `row-${i}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableContent)
 
 		dataFlat.forEach((e, f) => {
@@ -934,6 +953,7 @@ v3.refresh = (useCache = false) => {
 			v3.emptyGrid()
 			v3.contentIsLoading(false)
 			v3.render()
+			rpt.prepareEvents()
 		}, () => {
 			v3.emptyGrid()
 			v3.contentIsLoading(false)
@@ -1044,7 +1064,7 @@ v3.render = () => {
 
 	toolkit.newEl('th')
 		.html('P&L')
-		.css('height', `${34 * v3.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * v3.level()}px`)
 		.attr('data-rowspan', v3.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
@@ -1052,7 +1072,7 @@ v3.render = () => {
 
 	toolkit.newEl('th')
 		.html('Total')
-		.css('height', `${34 * v3.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * v3.level()}px`)
 		.attr('data-rowspan', v3.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
@@ -1060,7 +1080,7 @@ v3.render = () => {
 
 	toolkit.newEl('th')
 		.html('% of N Sales')
-		.css('height', `${34 * v3.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * v3.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
@@ -1070,7 +1090,9 @@ v3.render = () => {
 
 	let trContents = []
 	for (let i = 0; i < v3.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent))
+		trContents.push(toolkit.newEl('tr')
+			.appendTo(tableContent)
+			.css('height', `${rpt.rowHeaderHeight()}px`))
 	}
 
 
@@ -1103,6 +1125,7 @@ v3.render = () => {
 			.appendTo(trContents[0])
 			.css('background-color', colors[i])
 			.css('color', 'white')
+			.css('border-top', 'none')
 
 		if (v3.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id])
@@ -1117,6 +1140,7 @@ v3.render = () => {
 				.appendTo(trContents[0])
 				.css('background-color', colors[i])
 				.css('color', 'white')
+				.css('border-top', 'none')
 
 			return
 		}
@@ -1226,6 +1250,7 @@ v3.render = () => {
 			.addClass(`header${PL}`)
 			.attr(`idheaderpl`, PL)
 			.attr(`data-row`, `row-${i}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
@@ -1251,6 +1276,7 @@ v3.render = () => {
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
 			.attr(`data-row`, `row-${i}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableContent)
 
 		dataFlat.forEach((e, f) => {
@@ -1442,6 +1468,4 @@ $(() => {
 	v3.refresh()
 	v1.refresh()
 	v2.refresh()
-
-	rpt.prepareEvents()
 })

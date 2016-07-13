@@ -83,6 +83,7 @@ rd.refresh = function () {
 			rd.emptyGrid();
 			rd.contentIsLoading(false);
 			rd.render();
+			rpt.prepareEvents();
 		}, function () {
 			rd.emptyGrid();
 			rd.contentIsLoading(false);
@@ -173,15 +174,15 @@ rd.render = function () {
 
 	var trHeader = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('P&L').css('height', 34 * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
+	toolkit.newEl('th').html('P&L').css('height', rpt.rowHeaderHeight() * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
 
-	toolkit.newEl('th').html('Total').css('height', 34 * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('Total').css('height', rpt.rowHeaderHeight() * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of N Sales').css('height', 34 * rd.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of N Sales').css('height', rpt.rowHeaderHeight() * rd.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < rd.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent));
+		trContents.push(toolkit.newEl('tr').appendTo(tableContent).css('height', rpt.rowHeaderHeight() + 'px'));
 	}
 
 	// ========================= BUILD HEADER
@@ -211,13 +212,13 @@ rd.render = function () {
 	};
 
 	data.forEach(function (lvl1, i) {
-		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]);
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('border-top', 'none');
 
 		if (rd.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of N Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('% of N Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[0]).css('border-top', 'none');
 
 			return;
 		}
@@ -311,7 +312,7 @@ rd.render = function () {
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).css('height', rpt.rowContentHeight() + 'px').appendTo(tableHeader);
 
 		trHeader.on('click', function () {
 			rd.clickExpand(trHeader);
@@ -324,7 +325,7 @@ rd.render = function () {
 
 		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + ' %').addClass('align-right').appendTo(trHeader);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).css('height', rpt.rowContentHeight() + 'px').appendTo(tableContent);
 
 		dataFlat.forEach(function (e, f) {
 			var key = e.key;
@@ -439,8 +440,6 @@ rpt.refresh = function () {
 		rd.breakdownValue(['All']);
 		rd.refresh(false);
 	}, 200);
-
-	rpt.prepareEvents();
 };
 
 $(function () {

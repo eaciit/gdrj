@@ -429,6 +429,7 @@ ba.refresh = (useCache = false) => {
 			ba.emptyGrid()
 			ba.contentIsLoading(false)
 			ba.render()
+			rpt.prepareEvents()
 		}, () => {
 			ba.emptyGrid()
 			ba.contentIsLoading(false)
@@ -512,7 +513,7 @@ ba.render = () => {
 
 	toolkit.newEl('th')
 		.html('P&L')
-		.css('height', `${34 * ba.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * ba.level()}px`)
 		.attr('data-rowspan', ba.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
@@ -520,7 +521,7 @@ ba.render = () => {
 
 	toolkit.newEl('th')
 		.html('Total')
-		.css('height', `${34 * ba.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * ba.level()}px`)
 		.attr('data-rowspan', ba.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
@@ -528,7 +529,7 @@ ba.render = () => {
 
 	toolkit.newEl('th')
 		.html('% of N Sales')
-		.css('height', `${34 * ba.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * ba.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
@@ -540,7 +541,9 @@ ba.render = () => {
 
 	let trContents = []
 	for (let i = 0; i < ba.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent))
+		trContents.push(toolkit.newEl('tr')
+			.appendTo(tableContent)
+			.css('height', `${rpt.rowHeaderHeight()}px`))
 	}
 
 	// ========================= BUILD HEADER
@@ -583,6 +586,7 @@ ba.render = () => {
 			.attr('colspan', lvl1.count)
 			.addClass('align-center')
 			.appendTo(trContents[0])
+			.css('border-top', 'none')
 
 		if (ba.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id])
@@ -695,6 +699,7 @@ ba.render = () => {
 			.attr(`idheaderpl`, PL)
 			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableHeader)
+			.css('height', `${rpt.rowContentHeight()}px`)
 
 		trHeader.on('click', () => {
 			ba.clickExpand(trHeader)
@@ -719,6 +724,7 @@ ba.render = () => {
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
 			.attr(`data-row`, `row-${i}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableContent)
 
 		dataFlat.forEach((e, f) => {
@@ -822,7 +828,6 @@ ba.title('&nbsp;')
 
 rpt.refresh = () => {
 	ba.refresh(false)
-	rpt.prepareEvents()
 }
 
 $(() => {
