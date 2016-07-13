@@ -406,10 +406,10 @@ kac.render = () => {
 		.appendTo(trHeader1)
 
 	toolkit.newEl('th')
-		.html('% of Net Sales')
+		.html('% of NS')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
-		.width(percentageWidth - 20)
+		.width(percentageWidth - 40)
 		.addClass('align-right')
 		.appendTo(trHeader1)
 
