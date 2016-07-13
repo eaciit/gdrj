@@ -538,7 +538,9 @@ ag.render = () => {
 			d.max = max
 
 			if (ag[`series${i + 1}Type`]() == 'percentage') {
-				d.labels.format = "{0:n2} %"
+				d.labels.format = "{0:n1} %"
+			} else {
+				d.labels.format = "{0:n1} B"
 			}
 
 			console.log('---', orig, max, d)
@@ -549,10 +551,10 @@ ag.render = () => {
 		d.tooltip = {
 			visible: true,
 			template: (e) => {
-				let value = kendo.toString(e.value, 'n0')
+				let value = `${kendo.toString(e.value, 'n1')} B`
 
 				if (ag[`series${i + 1}Type`]() == 'percentage') {
-					value = `${kendo.toString(e.value, 'n2')} %`
+					value = `${kendo.toString(e.value, 'n1')} %`
 				}
 
 				return `${d.name}: ${value}`
@@ -564,7 +566,7 @@ ag.render = () => {
 		}
 
 		if (ag[`series${i + 1}Type`]() == 'percentage') {
-			d.labels.format = '{0:n2} %'
+			d.labels.format = '{0:n1} %'
 		} else {
 			d.labels.format = '{0:n1} B'
 		}
