@@ -3,7 +3,7 @@ let cbt = viewModel.contribution
 
 cbt.contentIsLoading = ko.observable(false)
 
-cbt.breakdownBy = ko.observable('product.brand')
+cbt.breakdownBy = ko.observable('customer.channelname')
 cbt.breakdownByFiscalYear = ko.observable('date.fiscal')
 
 cbt.data = ko.observableArray([])
