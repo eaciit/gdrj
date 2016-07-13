@@ -228,7 +228,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 
 				var sample = d.subs[0];
 				var percentage = {};
-				percentage._id = '% of Net Sales';
+				percentage._id = '% of N Sales';
 				percentage.count = 1;
 				percentage.excludeFromTotal = true;
 				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
@@ -309,7 +309,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 
 				var sample = d.subs[0];
 				var percentage = {};
-				percentage._id = '% of Net Sales';
+				percentage._id = '% of N Sales';
 				percentage.count = 1;
 				percentage.excludeFromTotal = true;
 				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
@@ -396,7 +396,7 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 		_parsed3.forEach(function (d) {
 			var total = d.subs[0];
 			var percentage = {};
-			percentage._id = '% of Net Sales';
+			percentage._id = '% of N Sales';
 			percentage.count = 1;
 			percentage.excludeFromTotal = true;
 			// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
@@ -577,7 +577,7 @@ ba.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * ba.level() + 'px').attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of NS').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of N Sales').css('height', 34 * ba.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', ba.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < ba.level(); i++) {
@@ -605,7 +605,7 @@ ba.render = function () {
 			}
 		}
 
-		if (each._id == '% of Net Sales') {
+		if (each._id == '% of N Sales') {
 			currentColumnWidth -= 20;
 			thheader.css('font-weight', 'normal').css('font-style', 'italic');
 		}
@@ -750,7 +750,7 @@ ba.render = function () {
 				value = 0;
 			}
 
-			if (e._id == "% of Net Sales") {
+			if (e._id == "% of N Sales") {
 				value = d[key];
 			}
 

@@ -177,7 +177,7 @@ rd.render = function () {
 
 	toolkit.newEl('th').html('Total').css('height', 34 * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of NS').css('height', 34 * rd.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of N Sales').css('height', 34 * rd.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < rd.level(); i++) {
@@ -217,7 +217,7 @@ rd.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of Net Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('% of N Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[0]);
 
 			return;
 		}
@@ -230,7 +230,7 @@ rd.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p = toolkit.newEl('th').html('% of Net Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p = toolkit.newEl('th').html('% of N Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[1]);
 
 				return;
 			}

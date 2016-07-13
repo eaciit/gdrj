@@ -192,7 +192,7 @@ v1.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('% of NS')
+		.html('% of N Sales')
 		.css('height', `${34 * v1.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
@@ -242,7 +242,7 @@ v1.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('% of Net Sales')
+				.html('% of N Sales')
 				.css('font-weight', 'normal')
 				.css('font-style', 'italic')
 				.width(percentageWidth)
@@ -271,7 +271,7 @@ v1.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of Net Sales')
+					.html('% of N Sales')
 					.css('font-weight', 'normal')
 					.css('font-style', 'italic')
 					.width(percentageWidth)
@@ -637,7 +637,7 @@ v2.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('% of NS')
+		.html('% of N Sales')
 		.css('height', `${34 * v2.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
@@ -687,7 +687,7 @@ v2.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('% of Net Sales')
+				.html('% of N Sales')
 				.css('font-weight', 'normal')
 				.css('font-style', 'italic')
 				.width(percentageWidth)
@@ -714,7 +714,7 @@ v2.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of Net Sales')
+					.html('% of N Sales')
 					.css('font-weight', 'normal')
 					.css('font-style', 'italic')
 					.width(percentageWidth)
@@ -1058,7 +1058,7 @@ v3.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('% of NS')
+		.html('% of N Sales')
 		.css('height', `${34 * v3.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
@@ -1108,7 +1108,7 @@ v3.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('% of Net Sales')
+				.html('% of N Sales')
 				.css('font-weight', 'normal')
 				.css('font-style', 'italic')
 				.width(percentageWidth)
@@ -1132,7 +1132,7 @@ v3.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of Net Sales')
+					.html('% of N Sales')
 					.css('font-weight', 'normal')
 					.css('font-style', 'italic')
 					.width(percentageWidth)

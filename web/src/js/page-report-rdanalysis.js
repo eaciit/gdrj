@@ -182,7 +182,7 @@ rd.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('% of NS')
+		.html('% of N Sales')
 		.css('height', `${34 * rd.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
@@ -238,7 +238,7 @@ rd.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('% of Net Sales')
+				.html('% of N Sales')
 				.width(percentageWidth)
 				.addClass('align-center')
 				.css('font-weight', 'normal')
@@ -261,7 +261,7 @@ rd.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of Net Sales')
+					.html('% of N Sales')
 					.width(percentageWidth)
 					.addClass('align-center')
 					.css('font-weight', 'normal')

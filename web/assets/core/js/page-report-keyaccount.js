@@ -405,7 +405,7 @@ kac.render = function () {
 
 	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader1);
 
-	toolkit.newEl('th').html('% of NS').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).addClass('align-right').appendTo(trHeader1);
+	toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).addClass('align-right').appendTo(trHeader1);
 
 	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
 
@@ -425,7 +425,7 @@ kac.render = function () {
 		if (d._id.length > 22) colWidth += 30;
 		toolkit.newEl('th').html(d._id).addClass('align-right').appendTo(trContent1).width(colWidth);
 
-		toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-right cell-percentage').appendTo(trContent1).width(percentageWidth);
+		toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-right cell-percentage').appendTo(trContent1).width(percentageWidth);
 
 		totalWidth += colWidth + percentageWidth;
 	});
