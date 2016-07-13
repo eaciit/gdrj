@@ -342,7 +342,6 @@ rpt.toggleFilter = function () {
 	$('.k-chart').each(function (i, d) {
 		$(d).data('kendoChart').redraw();
 	});
-	rpt.panel_relocated();
 };
 
 // rpt.getIdeas = () => {
@@ -414,22 +413,6 @@ rpt.refreshAll = function () {
 			pvt.refresh();
 			crt.refresh();
 			break;
-	}
-};
-rpt.panel_relocated = function () {
-	if ($('.panel-yo').size() == 0) {
-		return;
-	}
-
-	var window_top = $(window).scrollTop();
-	var div_top = $('.panel-yo').offset().top;
-	if (window_top > div_top) {
-		$('.panel-fix').css('width', $('.panel-yo').width());
-		$('.panel-fix').addClass('contentfilter');
-		$('.panel-yo').height($('.panel-fix').outerHeight());
-	} else {
-		$('.panel-fix').removeClass('contentfilter');
-		$('.panel-yo').height(0);
 	}
 };
 
@@ -766,6 +749,7 @@ rpt.buildGridLevels = function (rows) {
 	rpt.hideSubGrowthValue();
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
 	rpt.refreshHeight();
+	rpt.addScrollBottom();
 };
 
 rpt.hideSubGrowthValue = function () {
@@ -924,9 +908,44 @@ rpt.export = function (target, title, mode) {
 	}
 };
 
+rpt.addScrollBottom = function () {
+	$(".breakdown-view").each(function (i) {
+		toolkit.newEl('div').addClass('scroll-grid-bottom-yo').appendTo($(this).find(".pivot-pnl"));
+
+		var tableContent = toolkit.newEl('div').addClass('scroll-grid-bottom').appendTo($(this).find(".pivot-pnl"));
+
+		toolkit.newEl('div').addClass('content-grid-bottom').css("min-width", $(this).find('.table-content>.table').width() - 48).html("&nbsp;").appendTo(tableContent);
+
+		var target = $(this).find(".scroll-grid-bottom")[0];
+		$(this).find(".table-content").scroll(function () {
+			target.scrollLeft = this.scrollLeft;
+		});
+	});
+	rpt.panel_scrollrelocated();
+};
+
+rpt.panel_scrollrelocated = function () {
+	if ($('.scroll-grid-bottom-yo').size() == 0) {
+		return;
+	}
+
+	var window_top = $(window).scrollTop() + $(window).innerHeight();
+	var div_top = $('.scroll-grid-bottom-yo').offset().top.toFixed();
+	if (parseInt(div_top) < parseInt(window_top.toFixed(0))) {
+		$('.scroll-grid-bottom').removeClass('viewscrollfix');
+		$(".scroll-grid-bottom").hide();
+		$('.scroll-grid-bottom.viewscrollfix').css("width", "100%");
+	} else {
+		$('.scroll-grid-bottom').addClass('viewscrollfix');
+		$(".scroll-grid-bottom").show();
+		$('.scroll-grid-bottom.viewscrollfix').css("width", $('.breakdown-view .table-content').width());
+	}
+};
+
 $(function () {
-	$(window).scroll(rpt.panel_relocated);
-	rpt.panel_relocated();
+	$(window).scroll(function () {
+		rpt.panel_scrollrelocated();
+	});
 	// rpt.getIdeas()
 	rpt.getOtherMasterData();
 });
