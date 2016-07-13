@@ -210,7 +210,7 @@ rd.render = () => {
 	let dataFlat = []
 
 	let countWidthThenPush = (thheader, each, key) => {
-		let currentColumnWidth = each._id.length * 10
+		let currentColumnWidth = each._id.length * 8
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth
 		}

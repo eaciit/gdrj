@@ -194,7 +194,7 @@ rd.render = function () {
 	var dataFlat = [];
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
-		var currentColumnWidth = each._id.length * 10;
+		var currentColumnWidth = each._id.length * 8;
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth;
 		}

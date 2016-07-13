@@ -180,14 +180,17 @@ cbt.render = () => {
 
 	let data = cbt.data()
 
-	let columnWidth = 180
+	let columnWidth = 130
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
-	let percentageWidth = 110
+	let percentageWidth = 100
 
 	let countWidthThenPush = (thheader, each, key) => {
-		let currentColumnWidth = columnWidth
+		let currentColumnWidth = each._id.length * 8
+		if (currentColumnWidth < columnWidth) {
+			currentColumnWidth = columnWidth
+		}
 
 		each.key = key.join('_')
 		dataFlat.push(each)
