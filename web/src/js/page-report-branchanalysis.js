@@ -484,7 +484,7 @@ ba.render = () => {
 
 	// ========================= TABLE STRUCTURE
 	
-	let percentageWidth = 110
+	let percentageWidth = 100
 	let data = _.orderBy(ba.data(), (d) => d.PL8A, 'desc')
 
 	let wrapper = toolkit.newEl('div')
@@ -532,7 +532,7 @@ ba.render = () => {
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
-		.width(percentageWidth - 40)
+		.width(percentageWidth - 20)
 		.attr('data-rowspan', ba.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')

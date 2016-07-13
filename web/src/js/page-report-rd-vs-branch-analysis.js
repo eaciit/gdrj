@@ -150,7 +150,7 @@ v1.render = () => {
 
 	// ========================= TABLE STRUCTURE
 
-	let percentageWidth = 110
+	let percentageWidth = 100
 
 	let wrapper = toolkit.newEl('div')
 		.addClass('pivot-pnl-branch pivot-pnl')
@@ -197,7 +197,7 @@ v1.render = () => {
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
-		.width(percentageWidth - 40)
+		.width(percentageWidth - 20)
 		.attr('data-rowspan', v1.level())
 		.css('vertical-align', 'middle')
 		.appendTo(trHeader)
@@ -642,7 +642,7 @@ v2.render = () => {
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
-		.width(percentageWidth - 40)
+		.width(percentageWidth - 20)
 		.attr('data-rowspan', v2.level())
 		.appendTo(trHeader)
 
@@ -661,7 +661,7 @@ v2.render = () => {
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
-	let percentageWidth = 110
+	let percentageWidth = 100
 
 	let countWidthThenPush = (thheader, each, key) => {
 		let currentColumnWidth = columnWidth
@@ -1063,7 +1063,7 @@ v3.render = () => {
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
-		.width(percentageWidth - 40)
+		.width(percentageWidth - 20)
 		.attr('data-rowspan', v3.level())
 		.appendTo(trHeader)
 
@@ -1082,7 +1082,7 @@ v3.render = () => {
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
-	let percentageWidth = 110
+	let percentageWidth = 100
 
 	let countWidthThenPush = (thheader, each, key) => {
 		let currentColumnWidth = columnWidth
