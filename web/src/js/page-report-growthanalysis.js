@@ -530,8 +530,8 @@ ag.render = () => {
 			let orig = _.max(op4.map((f) => Math.abs(f[`series${i + 1}`])))
 			let max = Math.pow(10, String(parseInt(orig, 10)).length - 1) * (parseInt(String(parseInt(orig, 10))[0], 10) + 1)
 
-			d.min = max * -1
-			d.max = max
+			d.min = (max * -1)
+			d.max = (max)
 
 			let seriesType = (i == 0) ? series1Type : series2Type
 			if (seriesType == 'percentage') {
@@ -539,9 +539,12 @@ ag.render = () => {
 			} else {
 				d.labels.format = "{0:n1} B"
 			}
-
-			console.log('---', orig, max, d)
 		})
+	} else {
+		let max = _.max(op4.map((e) => _.max([e.series1, e.series2])))
+		let min = _.min(op4.map((e) => _.min([e.series1, e.series2])))
+		axes[0].max = toolkit.hardCeil(max)
+		axes[0].min = toolkit.hardFloor(min)
 	}
 
 	series.forEach((d, i) => {

@@ -549,9 +549,16 @@ ag.render = function () {
 			} else {
 				d.labels.format = "{0:n1} B";
 			}
-
-			console.log('---', orig, max, d);
 		});
+	} else {
+		var max = _.max(op4.map(function (e) {
+			return _.max([e.series1, e.series2]);
+		}));
+		var min = _.min(op4.map(function (e) {
+			return _.min([e.series1, e.series2]);
+		}));
+		axes[0].max = toolkit.hardCeil(max);
+		axes[0].min = toolkit.hardFloor(min);
 	}
 
 	series.forEach(function (d, i) {
