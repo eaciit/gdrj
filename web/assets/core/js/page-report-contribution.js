@@ -5,7 +5,7 @@ var cbt = viewModel.contribution;
 
 cbt.contentIsLoading = ko.observable(false);
 
-cbt.breakdownBy = ko.observable('product.brand');
+cbt.breakdownBy = ko.observable('customer.channelname');
 cbt.breakdownByFiscalYear = ko.observable('date.fiscal');
 
 cbt.data = ko.observableArray([]);
@@ -168,14 +168,17 @@ cbt.render = function () {
 
 	var data = cbt.data();
 
-	var columnWidth = 180;
+	var columnWidth = 130;
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
-	var percentageWidth = 110;
+	var percentageWidth = 100;
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
-		var currentColumnWidth = columnWidth;
+		var currentColumnWidth = each._id.length * 8;
+		if (currentColumnWidth < columnWidth) {
+			currentColumnWidth = columnWidth;
+		}
 
 		each.key = key.join('_');
 		dataFlat.push(each);
