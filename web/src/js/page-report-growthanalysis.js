@@ -413,6 +413,7 @@ ag.refresh = () => {
 }
 
 ag.render = () => {
+	let billion = 1000000000
 	let op1 = _.groupBy(ag.data(), (d) => d._id[`_id_${toolkit.replace(ag.breakdownBy(), '.', '_')}`])
 	let op2 = _.map(op1, (v, k) => {
 		v = _.orderBy(v, (e) => e._id._id_date_fiscal, 'asc')
@@ -426,7 +427,7 @@ ag.render = () => {
 			if (ag.series1Type() == 'percentage') {
 				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100
 			} else {
-				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()])
+				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / billion
 			}
 		})
 
@@ -434,7 +435,7 @@ ag.render = () => {
 			if (ag.series2Type() == 'percentage') {
 				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100
 			} else {
-				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()])
+				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / billion
 			}
 		})
 
@@ -565,7 +566,7 @@ ag.render = () => {
 		if (ag[`series${i + 1}Type`]() == 'percentage') {
 			d.labels.format = '{0:n2} %'
 		} else {
-			d.labels.format = '{0:n0}'
+			d.labels.format = '{0:n1} B'
 		}
 	})
 
