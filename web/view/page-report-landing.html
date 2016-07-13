@@ -7,7 +7,7 @@
 <div class="col-md-12 col-sm-12 no-padding hardcore landing">
 	<div class="panel ez no-padding hardcore">
 		<div class="panel-body" data-bind="foreach: lgd.menu">
-			<div class="box col-md-4" data-bind="css: { 'disabled': $data.hasOwnProperty('nope') }">
+			<div class="box col-md-3" data-bind="css: { 'disabled': $data.hasOwnProperty('nope') }">
 				<div class="wrapper" data-bind="style: { 'background-color': $data.color }">
 					<a data-bind="attr: { 'href': ($data.hasOwnProperty('nope') ? '#' : (viewModel.appName + 'page/' + $data.to)) }">
 						<span class="fa" data-bind="css: toolkit.makeObject($data.icon, true)"></span>
