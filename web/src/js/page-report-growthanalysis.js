@@ -358,30 +358,20 @@ ag.optionBreakdowns = ko.observableArray([
 ])
 ag.contentIsLoading = ko.observable(false)
 ag.breakdownBy = ko.observable('customer.channelname')
-ag.optionPercentageValue = ko.observableArray([
-	{_id: "value", name: "Value"},
-	{_id: "percentage", name: "Percentage"},
-])
-ag.series1PL = ko.observable('')
-ag.series1Type = ko.observable('value')
-ag.series2PL = ko.observable('')
-ag.series2Type = ko.observable('value') // value
+ag.series1PL = ko.observable('PL8A|value')
+ag.series2PL = ko.observable('PL44B|value')
 ag.limit = ko.observable(6)
 ag.data = ko.observableArray([])
-
-ag.getPLModels = (c) => {
-	app.ajaxPost(viewModel.appName + "report/getplmodel", {}, (res) => {
-		rpt.plmodels(_.orderBy(res, (d) => d.OrderIndex))
-
-		ag.series1PL('PL8A')
-		ag.series2PL('PL44B') // PL44B
-		ag.refresh()
-	})
-}
+ag.optionSeries = ko.observableArray([
+	{ _id: 'PL8A|value', name: 'Net Sales' },
+	{ _id: 'PL8A|percentage', name: 'Net Sales Percent' },
+	{ _id: 'PL44B|value', name: 'EBIT' },
+	{ _id: 'PL44B|percentage', name: 'EBIT Percent' },
+])
 
 ag.refresh = () => {
 	let param = {}
-	param.pls = [ag.series1PL(), ag.series2PL()]
+	param.pls = [ag.series1PL().split('|')[0], ag.series2PL().split('|')[0]]
 	param.groups = rpt.parseGroups([ag.breakdownBy()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(true, ko.observableArray(rpt.optionFiscalYears()))
@@ -413,6 +403,11 @@ ag.refresh = () => {
 }
 
 ag.render = () => {
+	let series1PL = ag.series1PL().split('|')[0]
+	let series1Type = ag.series1PL().split('|')[1]
+	let series2PL = ag.series2PL().split('|')[0]
+	let series2Type = ag.series2PL().split('|')[1]
+
 	let billion = 1000000000
 	let op1 = _.groupBy(ag.data(), (d) => d._id[`_id_${toolkit.replace(ag.breakdownBy(), '.', '_')}`])
 	let op2 = _.map(op1, (v, k) => {
@@ -424,18 +419,18 @@ ag.render = () => {
 		o.series2 = 0
 
 		toolkit.try(() => {
-			if (ag.series1Type() == 'percentage') {
-				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / v[0][ag.series1PL()] * 100
+			if (series1Type == 'percentage') {
+				o.series1 = (v[1][series1PL] - v[0][series1PL]) / v[0][series1PL] * 100
 			} else {
-				o.series1 = (v[1][ag.series1PL()] - v[0][ag.series1PL()]) / billion
+				o.series1 = (v[1][series1PL] - v[0][series1PL]) / billion
 			}
 		})
 
 		toolkit.try(() => {
-			if (ag.series2Type() == 'percentage') {
-				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / v[0][ag.series2PL()] * 100
+			if (series2Type == 'percentage') {
+				o.series2 = (v[1][series2PL] - v[0][series2PL]) / v[0][series2PL] * 100
 			} else {
-				o.series2 = (v[1][ag.series2PL()] - v[0][ag.series2PL()]) / billion
+				o.series2 = (v[1][series2PL] - v[0][series2PL]) / billion
 			}
 		})
 
@@ -473,31 +468,31 @@ ag.render = () => {
 	let series = [{
 		field: 'series1',
 		name: (() => {
-			let row = rpt.plmodels().find((d) => d._id == ag.series1PL())
+			let row = ag.optionSeries().find((d) => d._id == ag.series1PL())
 			if (row != undefined) {
-				return `${row.PLHeader3} ${ag.series1Type()}`
+				return row.name
 			}
 
 			return '&nbsp;'
 		})(),
-		axis: ag.series1Type(),
+		axis: series1Type,
 		color: toolkit.seriesColorsGodrej[0]
 	}, {
 		field: 'series2',
 		name: (() => {
-			let row = rpt.plmodels().find((d) => d._id == ag.series2PL())
+			let row = ag.optionSeries().find((d) => d._id == ag.series2PL())
 			if (row != undefined) {
-				return `${row.PLHeader3} ${ag.series2Type()}`
+				return row.name
 			}
 
 			return '&nbsp;'
 		})(),
-		axis: ag.series2Type(),
+		axis: series2Type,
 		color: toolkit.seriesColorsGodrej[1]
 	}]
 
 	let axes = [{
-		name: ag.series1Type(),
+		name: series1Type,
 		majorGridLines: { color: '#fafafa' },
         labels: { 
 			font: '"Source Sans Pro" 11px',
@@ -514,9 +509,9 @@ ag.render = () => {
 		majorGridLines: { color: '#fafafa' }
 	}
 
-    if (ag.series1Type() != ag.series2Type()) {
+    if (series1Type != series2Type) {
     	axes.push({
-			name: ag.series2Type(),
+			name: series2Type,
 			majorGridLines: { color: '#fafafa' },
 	        labels: { 
 				font: '"Source Sans Pro" 11px',
@@ -537,7 +532,8 @@ ag.render = () => {
 			d.min = max * -1
 			d.max = max
 
-			if (ag[`series${i + 1}Type`]() == 'percentage') {
+			let seriesType = (i == 0) ? series1Type : series2Type
+			if (seriesType == 'percentage') {
 				d.labels.format = "{0:n1} %"
 			} else {
 				d.labels.format = "{0:n1} B"
@@ -548,12 +544,15 @@ ag.render = () => {
 	}
 
 	series.forEach((d, i) => {
+		let seriesType = (i == 0) ? series1Type : series2Type
+
 		d.tooltip = {
 			visible: true,
 			template: (e) => {
 				let value = `${kendo.toString(e.value, 'n1')} B`
 
-				if (ag[`series${i + 1}Type`]() == 'percentage') {
+				let seriesType = (i == 0) ? series1Type : series2Type
+				if (seriesType == 'percentage') {
 					value = `${kendo.toString(e.value, 'n1')} %`
 				}
 
@@ -565,10 +564,14 @@ ag.render = () => {
 			visible: true,
 		}
 
-		if (ag[`series${i + 1}Type`]() == 'percentage') {
-			d.labels.format = '{0:n1} %'
+		if (seriesType == 'percentage') {
+			d.labels.template = (g) => {
+				return `${g.series.name}\n${kendo.toString(g.value, 'n1')} %`
+			}
 		} else {
-			d.labels.format = '{0:n1} B'
+			d.labels.template = (g) => {
+				return `${g.series.name}\n${kendo.toString(g.value, 'n1')} B`
+			}
 		}
 	})
 
@@ -595,6 +598,9 @@ ag.render = () => {
         valueAxis: axes,
         categoryAxis: categoryAxis
     }
+
+	console.log('---- data', op4.slice(0))
+	console.log('---- config', toolkit.clone(config))
 
     $('.annually-diff').replaceWith(`<div class="annually-diff" style="width: ${width}px;"></div>`)
     $('.annually-diff').kendoChart(config)
@@ -650,5 +656,5 @@ vm.breadcrumb([
 
 $(() => {
 	grw.refresh()
-	ag.getPLModels()
+	ag.refresh()
 })
