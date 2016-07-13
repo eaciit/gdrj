@@ -496,7 +496,7 @@ ag.render = function () {
 			return '&nbsp;';
 		}(),
 		axis: series2Type,
-		color: toolkit.seriesColorsGodrej[1]
+		color: toolkit.seriesColorsGodrej[2]
 	}];
 
 	var axes = [{
@@ -532,7 +532,8 @@ ag.render = function () {
 		categoryAxis.axisCrossingValue = [0, op4.length];
 
 		axes.forEach(function (d, i) {
-			d.color = toolkit.seriesColorsGodrej[i];
+			var s = toolkit.seriesColorsGodrej;
+			d.color = [s[0], s[2]][i];
 
 			var orig = _.max(op4.map(function (f) {
 				return Math.abs(f["series" + (i + 1)]);
@@ -566,7 +567,7 @@ ag.render = function () {
 					value = kendo.toString(e.value, 'n1') + " %";
 				}
 
-				return d.name + ": " + value;
+				return d.name + ": " + value + "<br />Click to show detail";
 			}
 		};
 
@@ -606,14 +607,216 @@ ag.render = function () {
 		},
 		series: series,
 		valueAxis: axes,
-		categoryAxis: categoryAxis
+		categoryAxis: categoryAxis,
+		seriesClick: ag.seriesClick
 	};
-
-	console.log('---- data', op4.slice(0));
-	console.log('---- config', toolkit.clone(config));
 
 	$('.annually-diff').replaceWith("<div class=\"annually-diff\" style=\"width: " + width + "px;\"></div>");
 	$('.annually-diff').kendoChart(config);
+	$('.annually-diff').data('kendoChart').bind('seriesClick', function (e) {
+		if (ag.breakdownBy() == 'customer.channelname') {
+			var channelMap = {
+				"Modern Trade": "I3",
+				"General Trade": "I2",
+				"Regional Distributor": "I1",
+				"Industrial": "I4",
+				"Motorist": "I6",
+				"Export": "EXP"
+			};
+
+			ag.selectedData([channelMap[e.category]]);
+		} else {
+			ag.selectedData([e.category]);
+		}
+
+		ag.modalDetailTitle("Detail of " + e.category);
+		ag.showDetailAs('value');
+		ag.showDetail();
+	});
+};
+
+ag.popupIsLoading = ko.observable(false);
+ag.modalDetailTitle = ko.observable('Detail Growth');
+ag.detailPNL = ko.observableArray([{ plcode: 'PL8A', plname: 'Net Sales' }, { plcode: 'PL44B', plname: 'EBIT' }, { plcode: 'PL74B', sub: true, plname: 'Cost of Goods Sold' }, { plcode: 'PL32B', sub: true, plname: 'Selling Expenses' }, { plcode: 'PL94A', sub: true, plname: 'G&A Expenses' }]);
+ag.showDetailAs = ko.observable('value');
+ag.optionShowDetailAs = ko.observableArray([{ _id: 'percentage', name: 'Percentage' }, { _id: 'value', name: 'Value' }]);
+ag.selectedData = ko.observableArray([]);
+
+ag.showDetail = function () {
+	ag.doRefreshDetail(true);
+};
+
+ag.refreshDetail = function () {
+	ag.doRefreshDetail(false);
+};
+
+ag.doRefreshDetail = function () {
+	var withModal = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
+	var param = {};
+	param.pls = ag.detailPNL().map(function (d) {
+		return d.plcode;
+	});
+	param.groups = rpt.parseGroups([ag.breakdownBy()]);
+	param.aggr = 'sum';
+	param.filters = rpt.getFilterValue(true, ko.observableArray(rpt.optionFiscalYears()));
+	param.filters.push({
+		Field: ag.breakdownBy(),
+		Op: '$in',
+		Value: ag.selectedData()
+	});
+
+	var fetch = function fetch() {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			if (rpt.isEmptyData(res)) {
+				ag.popupIsLoading(false);
+				if (withModal) {
+					$('#modal-detail-annual-diff').modal('hide');
+				}
+				return;
+			}
+
+			ag.popupIsLoading(false);
+			if (withModal) {
+				toolkit.runAfter(function () {
+					ag.renderDetail(res.Data.Data);
+				}, 300);
+			} else {
+				ag.renderDetail(res.Data.Data);
+			}
+		}, function () {
+			ag.popupIsLoading(false);
+			if (withModal) {
+				$('#modal-detail-annual-diff').modal('hide');
+			}
+		});
+	};
+
+	ag.popupIsLoading(true);
+	if (withModal) {
+		$('#modal-detail-annual-diff').modal('show');
+	}
+
+	$('.chart-detail-annual-diff').empty();
+	fetch();
+};
+
+ag.renderDetail = function (data) {
+	var billion = 1000000000;
+
+	var values = [];
+	var op1 = _.groupBy(data, function (d) {
+		return d._id["_id_" + toolkit.replace(ag.breakdownBy(), '.', '_')];
+	});
+	var op2 = _.map(op1, function (v, k) {
+		var op3 = _.orderBy(v, function (d) {
+			return d._id._id_date_fiscal;
+		}, 'asc');
+		var o = {};
+		o.breakdown = k;
+
+		ag.detailPNL().forEach(function (d) {
+			o[d.plcode] = 0;
+
+			toolkit.try(function () {
+				if (ag.showDetailAs() == 'value') {
+					o[d.plcode] = (op3[1][d.plcode] - op3[0][d.plcode]) / billion;
+				} else {
+					o[d.plcode] = (op3[1][d.plcode] - op3[0][d.plcode]) / op3[0][d.plcode] * 100;
+				}
+
+				o[d.plcode] = toolkit.number(o[d.plcode]);
+				values.push(o[d.plcode]);
+			});
+		});
+
+		return o;
+	});
+
+	var series = ag.detailPNL()
+	// .filter((d) => d.sub == true)
+	.map(function (d) {
+		return {
+			name: d.plname,
+			field: d.plcode,
+			tooltip: {
+				visible: true,
+				template: function template(e) {
+					var suffix = ag.showDetailAs() == 'value' ? 'B' : '%';
+					return e.series.name + ": " + kendo.toString(e.value, 'n1') + " " + suffix;
+				}
+			},
+			labels: {
+				visible: true,
+				template: function template(e) {
+					var suffix = ag.showDetailAs() == 'value' ? 'B' : '%';
+					return e.series.name + "\n" + kendo.toString(e.value, 'n1') + " " + suffix;
+				}
+			},
+			color: function color(e) {
+				return e.value < 0 ? '#e7505a' : '#74B841';
+			}
+		};
+	});
+
+	var max = toolkit.increaseXPercent(toolkit.hardCeil(_.max(values)), 10);
+	var min = toolkit.increaseXPercent(toolkit.hardFloor(_.min(values)), 5);
+
+	var config = {
+		dataSource: { data: op2 },
+		legend: {
+			visible: false,
+			position: "bottom"
+		},
+		seriesDefaults: {
+			type: "column",
+			style: "smooth",
+			missingValues: "gap",
+			line: {
+				border: {
+					width: 1,
+					color: 'white'
+				}
+			},
+			overlay: { gradient: 'none' },
+			border: { width: 0 }
+		},
+		series: series,
+		valueAxis: {
+			majorGridLines: { color: '#fafafa' },
+			labels: {
+				font: '"Source Sans Pro" 11px',
+				format: "{0:n2}"
+			},
+			min: min,
+			max: max
+		},
+		categoryAxis: {
+			field: 'breakdown',
+			labels: {
+				font: '"Source Sans Pro" 11px',
+				format: "{0:n2}",
+				padding: {
+					bottom: 40
+				}
+			},
+			majorGridLines: { color: '#fafafa' }
+		}
+	};
+
+	console.log('---- data', data);
+	console.log('---- op2', op2);
+	console.log('---- config', config);
+
+	$('.chart-detail-annual-diff').replaceWith("<div class=\"chart-detail-annual-diff\" style=\"height: 300px;\"></div>");
+	$('.chart-detail-annual-diff').kendoChart(config);
 };
 
 ag.getChannelOrderByChannelName = function (channelname) {
@@ -655,6 +858,7 @@ vm.currentTitle('&nbsp;');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Growth Analysis', href: '#' }]);
 
 $(function () {
+	$('#modal-detail-annual-diff').appendTo($('body'));
 	grw.refresh();
 	ag.refresh();
 });
