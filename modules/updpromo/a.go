@@ -150,26 +150,20 @@ func buildRatio(tn string) error {
 		*/
 		//fiscal := dt.Fiscal
 		fiscal := toolkit.Sprintf("%d-%d", yr, yr+1)
-		promoratios := promoElementRatios[fiscal]
+		//promoratios := promoElementRatios[fiscal]
 		kc := mr.GetString("keyaccountcode")
 
 		if kc != "" {
 			gl := mr.GetString("account")
 			promovalue := mr.GetFloat64("amountinidr_target")
-			for _, v := range []string{"spg", "promo"} {
-				keypromo := toolkit.Sprintf("%s_%s_%s_%s", fiscal, kc, gl, v)
-				alloc := plallocs[keypromo]
-				if alloc == nil {
-					alloc = new(plalloc)
-					alloc.Key = keypromo
-				}
-				multi := promoratios.SPG
-				if v != "spg" {
-					multi = promoratios.Promo
-				}
-				alloc.Expect += promovalue * multi
-				plallocs[keypromo] = alloc
+			keypromo := toolkit.Sprintf("%s_%s_%s", fiscal, kc, gl)
+			alloc := plallocs[keypromo]
+			if alloc == nil {
+				alloc = new(plalloc)
+				alloc.Key = keypromo
 			}
+			alloc.Expect += promovalue
+			plallocs[keypromo] = alloc
 		}
 		i++
 		current = makeProgressLog("Build Promotion Ratio", i, count, 5, current, tstart)
@@ -240,24 +234,12 @@ func processTable(tn string) error {
 				plmodel.PLHeader1 == "Advt & Promo Expenses" {
 				newv := float64(0)
 				//keypromo := toolkit.Sprintf("%d_%d_%s_%s", year, month, kc, plmodel.GLReff)
-				spgOrPromo := "spg"
-				if !strings.HasPrefix(plmodel.PLHeader2, "SPG") {
-					spgOrPromo = "promo"
-				}
-				keypromo := toolkit.Sprintf("%s_%s_%s_%s", fiscal, kc, plmodel.GLReff, spgOrPromo)
+				keypromo := toolkit.Sprintf("%s_%s_%s", fiscal, kc, plmodel.GLReff)
 				alloc := plallocs[keypromo]
 				if alloc != nil && salestotal != nil {
 					newv = -toolkit.Div(alloc.Expect*sales, salestotal.Current)
 					alloc.Absorbed += newv
 					plallocs[keypromo] = alloc
-					/*
-						                    if plmodelcheck == "" {
-												plmodelcheck = plmodel.ID
-												toolkit.Printfn("Update %s - %s : %f", mr.GetString("_id"), plmodelcheck, newv)
-											}
-					*/
-				} else if salestotal == nil {
-					//toolkit.Printfn("Issue for %s %s", keysales, keypromo)
 				}
 				mr.Set(k, float64(newv))
 			}
