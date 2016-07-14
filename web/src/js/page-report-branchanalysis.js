@@ -42,6 +42,9 @@ ba.changeBreakdownRD = () => {
 ba.level = ko.observable(2)
 
 ba.buildStructure = (breakdownRD, expand, data) => {
+	let netSalesPLCode = 'PL8A'
+	let grossSalesPLCode = 'PL0'
+	let discountActivityPLCode = 'PL7A'
 	let rdCategories = ["Regional Distributor", "Non RD"]
 	let keys = [
 		"_id_customer_branchname",
@@ -209,8 +212,14 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 
 				for (let p in sample) if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
 					let vTarget = toolkit.sum(d.subs, (h) => h[p])
-					let vNetSales = toolkit.sum(d.subs, (h) => h.PL8A)
+					let vNetSales = toolkit.sum(d.subs, (h) => h[netSalesPLCode])
+					let vGrossSales = toolkit.sum(d.subs, (h) => h[grossSalesPLCode])
+
 					let value = toolkit.number(vTarget / vNetSales) * 100
+					if (p == discountActivityPLCode) {
+						value = toolkit.number(vTarget / vGrossSales) * 100
+					}
+
 					percentage[p] = `${kendo.toString(value, 'n2')} %`
 					total[p] = vTarget
 				}
@@ -276,8 +285,14 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 
 				for (let p in sample) if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
 					let vTarget = toolkit.sum(d.subs, (h) => h[p])
-					let vNetSales = toolkit.sum(d.subs, (h) => h.PL8A)
+					let vNetSales = toolkit.sum(d.subs, (h) => h[netSalesPLCode])
+					let vGrossSales = toolkit.sum(d.subs, (h) => h[grossSalesPLCode])
+
 					let value = toolkit.number(vTarget / vNetSales) * 100
+					if (p == discountActivityPLCode) {
+						value = toolkit.number(vTarget / vGrossSales) * 100
+					}
+
 					percentage[p] = `${kendo.toString(value, 'n2')} %`
 					total[p] = vTarget
 				}
@@ -341,7 +356,11 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 			// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
 
 			for (let p in total) if (total.hasOwnProperty(p) && p.indexOf('PL') > -1) {
-				let value = toolkit.number(total[p] / total.PL8A) * 100
+				let value = toolkit.number(total[p] / total[netSalesPLCode]) * 100
+				if (p == discountActivityPLCode) {
+					value = toolkit.number(total[p] / total[grossSalesPLCode]) * 100
+				}
+
 				percentage[p] = `${kendo.toString(value, 'n2')} %`
 			}
 
@@ -429,6 +448,7 @@ ba.refresh = (useCache = false) => {
 			ba.emptyGrid()
 			ba.contentIsLoading(false)
 			ba.render()
+			rpt.prepareEvents()
 		}, () => {
 			ba.emptyGrid()
 			ba.contentIsLoading(false)
@@ -512,7 +532,7 @@ ba.render = () => {
 
 	toolkit.newEl('th')
 		.html('P&L')
-		.css('height', `${34 * ba.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * ba.level()}px`)
 		.attr('data-rowspan', ba.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
@@ -520,7 +540,7 @@ ba.render = () => {
 
 	toolkit.newEl('th')
 		.html('Total')
-		.css('height', `${34 * ba.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * ba.level()}px`)
 		.attr('data-rowspan', ba.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
@@ -528,7 +548,7 @@ ba.render = () => {
 
 	toolkit.newEl('th')
 		.html('% of N Sales')
-		.css('height', `${34 * ba.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * ba.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
@@ -540,7 +560,9 @@ ba.render = () => {
 
 	let trContents = []
 	for (let i = 0; i < ba.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent))
+		trContents.push(toolkit.newEl('tr')
+			.appendTo(tableContent)
+			.css('height', `${rpt.rowHeaderHeight()}px`))
 	}
 
 	// ========================= BUILD HEADER
@@ -583,6 +605,7 @@ ba.render = () => {
 			.attr('colspan', lvl1.count)
 			.addClass('align-center')
 			.appendTo(trContents[0])
+			.css('border-top', 'none')
 
 		if (ba.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id])
@@ -634,7 +657,10 @@ ba.render = () => {
 	let exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */]
 	let netSalesPLCode = 'PL8A'
 	let netSalesPlModel = rpt.plmodels().find((d) => d._id == netSalesPLCode)
-	let netSalesRow = {}, changeformula, formulayo
+	let netSalesRow = {}
+	let grossSalesPLCode = 'PL0'
+	let grossSalesRow = {}
+	let discountActivityPLCode = 'PL7A'
 
 	let rows = []
 
@@ -675,9 +701,14 @@ ba.render = () => {
 		rows.push(row)
 	})
 	
-	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == "PL8A" }).PNLTotal
+	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
+	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 	rows.forEach((d, e) => {
-		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100;
+		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
+		}
+
 		if (TotalPercentage < 0)
 			TotalPercentage = TotalPercentage * -1 
 		rows[e].Percentage = toolkit.number(TotalPercentage)
@@ -695,6 +726,7 @@ ba.render = () => {
 			.attr(`idheaderpl`, PL)
 			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableHeader)
+			.css('height', `${rpt.rowContentHeight()}px`)
 
 		trHeader.on('click', () => {
 			ba.clickExpand(trHeader)
@@ -719,6 +751,7 @@ ba.render = () => {
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
 			.attr(`data-row`, `row-${i}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableContent)
 
 		dataFlat.forEach((e, f) => {
@@ -822,7 +855,6 @@ ba.title('&nbsp;')
 
 rpt.refresh = () => {
 	ba.refresh(false)
-	rpt.prepareEvents()
 }
 
 $(() => {

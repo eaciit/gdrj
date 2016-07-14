@@ -68,6 +68,7 @@ kac.refresh = (useCache = false) => {
 			kac.emptyGrid()
 			kac.contentIsLoading(false)
 			kac.render()
+			rpt.prepareEvents()
 		}, () => {
 			kac.emptyGrid()
 			kac.contentIsLoading(false)
@@ -319,16 +320,17 @@ kac.render = () => {
 	let plmodels = _.sortBy(rpt.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
 	let exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */]
 	let netSalesPLCode = 'PL8A'
-	let netSalesPlModel = rpt.plmodels().find((d) => d._id == netSalesPLCode)
 	let netSalesRow = {}
+	let grossSalesPLCode = 'PL0'
+	let grossSalesRow = {}
+	let discountActivityPLCode = 'PL7A'
 
 	rpt.fixRowValue(data)
 
 	data.forEach((e) => {
 		let breakdown = e._id
-		let value = e[`${netSalesPlModel._id}`]; 
-		value = toolkit.number(value)
-		netSalesRow[breakdown] = value
+		netSalesRow[breakdown] = e[netSalesPLCode]
+		grossSalesRow[breakdown] = e[grossSalesPLCode]
 	})
 	data = _.orderBy(data, (d) => netSalesRow[d._id], 'desc')
 
@@ -346,7 +348,9 @@ kac.render = () => {
 			let percentage = toolkit.number(e[`${d._id}`] / row.PNLTotal) * 100; 
 			percentage = toolkit.number(percentage)
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
 			}
 
@@ -363,9 +367,14 @@ kac.render = () => {
 		rows.push(row)
 	})
 
-	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == "PL8A" }).PNLTotal
+	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
+	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 	rows.forEach((d, e) => {
-		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100;
+		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
+		}
+
 		if (TotalPercentage < 0)
 			TotalPercentage = TotalPercentage * -1 
 		rows[e].Percentage = toolkit.number(TotalPercentage)
@@ -398,15 +407,18 @@ kac.render = () => {
 
 	toolkit.newEl('th')
 		.html('P&L')
+		.css('height', `${rpt.rowHeaderHeight()}px`)
 		.appendTo(trHeader1)
 
 	toolkit.newEl('th')
 		.html('Total')
+		.css('height', `${rpt.rowHeaderHeight()}px`)
 		.addClass('align-right')
 		.appendTo(trHeader1)
 
 	toolkit.newEl('th')
 		.html('% of N Sales')
+		.css('height', `${rpt.rowHeaderHeight()}px`)
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
 		.width(percentageWidth - 20)
@@ -463,6 +475,7 @@ kac.render = () => {
 			.attr(`idheaderpl`, PL)
 			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableHeader)
+			.css('height', `${rpt.rowContentHeight()}px`)
 
 		trHeader.on('click', () => {
 			kac.clickExpand(trHeader)
@@ -487,6 +500,7 @@ kac.render = () => {
 			.addClass(`column${PL}`)
 			.attr(`data-row`, `row-${i}`)
 			.attr(`idpl`, PL)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableContent)
 
 		data.forEach((e, f) => {
@@ -586,10 +600,9 @@ rpt.refresh = () => {
 		kac.breakdownValue(['All'])
 		kac.refresh(false)
 	}, 200)
-
-	rpt.prepareEvents()
 }
 
 $(() => {
 	rpt.refresh()
+	rpt.showExport(true)
 })

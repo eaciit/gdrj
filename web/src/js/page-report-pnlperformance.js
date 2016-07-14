@@ -209,6 +209,7 @@ bkd.refresh = (useCache = false) => {
 			bkd.emptyGrid()
 			bkd.contentIsLoading(false)
 			bkd.render()
+			rpt.prepareEvents()
 		}, () => {
 			bkd.emptyGrid()
 			bkd.contentIsLoading(false)
@@ -682,7 +683,7 @@ bkd.render = () => {
 
 	toolkit.newEl('th')
 		.html('P&L')
-		.css('height', `${34 * bkd.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * bkd.level()}px`)
 		.attr('data-rowspan', bkd.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
@@ -690,7 +691,7 @@ bkd.render = () => {
 
 	toolkit.newEl('th')
 		.html('Total')
-		.css('height', `${34 * bkd.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * bkd.level()}px`)
 		.attr('data-rowspan', bkd.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
@@ -698,7 +699,7 @@ bkd.render = () => {
 
 	toolkit.newEl('th')
 		.html('% of N Sales')
-		.css('height', `${34 * bkd.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * bkd.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
@@ -709,7 +710,9 @@ bkd.render = () => {
 
 	let trContents = []
 	for (let i = 0; i < bkd.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent))
+		trContents.push(toolkit.newEl('tr')
+			.appendTo(tableContent)
+			.css('height', `${rpt.rowHeaderHeight()}px`))
 	}
 
 
@@ -745,6 +748,7 @@ bkd.render = () => {
 			.html(lvl1._id)
 			.attr('colspan', lvl1.count)
 			.addClass('align-center')
+			.css('border-top', 'none')
 			.appendTo(trContents[0])
 
 		if (bkd.level() == 1) {
@@ -757,6 +761,7 @@ bkd.render = () => {
 				.addClass('align-center')
 				.css('font-weight', 'normal')
 				.css('font-style', 'italic')
+				.css('border-top', 'none')
 				.appendTo(trContents[0])
 
 			return
@@ -797,6 +802,9 @@ bkd.render = () => {
 	let exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */]
 	let netSalesPLCode = 'PL8A'
 	let netSalesRow = {}
+	let grossSalesPLCode = 'PL0'
+	let grossSalesRow = {}
+	let discountActivityPLCode = 'PL7A'
 	let rows = []
 
 	rpt.fixRowValue(dataFlat)
@@ -806,6 +814,7 @@ bkd.render = () => {
 	dataFlat.forEach((e) => {
 		let breakdown = e.key
 		netSalesRow[breakdown] = e[netSalesPLCode]
+		grossSalesRow[breakdown] = e[grossSalesPLCode]
 	})
 
 	plmodels.forEach((d) => {
@@ -826,7 +835,9 @@ bkd.render = () => {
 			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 			percentage = toolkit.number(percentage)
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
 			}
 
@@ -845,9 +856,14 @@ bkd.render = () => {
 
 	console.log("rows", rows)
 	
-	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == "PL8A" }).PNLTotal
+	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
+	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 	rows.forEach((d, e) => {
-		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100;
+		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
+		}
+
 		if (TotalPercentage < 0)
 			TotalPercentage = TotalPercentage * -1 
 		rows[e].Percentage = toolkit.number(TotalPercentage)
@@ -867,6 +883,7 @@ bkd.render = () => {
 			.addClass(`header${PL}`)
 			.attr(`idheaderpl`, PL)
 			.attr(`data-row`, `row-${i}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
@@ -892,6 +909,7 @@ bkd.render = () => {
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
 			.attr(`data-row`, `row-${i}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableContent)
 
 		dataFlat.forEach((e, f) => {
@@ -1864,8 +1882,6 @@ rpt.refresh = () => {
 	
 	rs.getSalesHeaderList()
 	rank.refresh()
-
-	rpt.prepareEvents()
 }
 
 $(() => {
