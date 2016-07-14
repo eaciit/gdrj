@@ -146,7 +146,7 @@ func prepmasteraggrdatapromo() {
 		m := v.(toolkit.M)
 		transferablepromo := m.GetFloat64("transferablepromo")
 		if transferablepromo != float64(0) {
-			transferableratio := transferablepromo / needtotransferpromo
+			transferableratio := gdrj.SaveDiv(transferablepromo, needtotransferpromo)
 			promototransfer := transferableratio * needtotransferpromo
 			m.Set("promotarget", m.GetFloat64("promo")+promototransfer)
 			m.Set("spgtarget", m.GetFloat64("spg")-promototransfer)
@@ -256,7 +256,7 @@ func UpdateRawDataPromo(tkm toolkit.M) {
 		totalnewval = promo.GetFloat64("spgtarget")
 	}
 
-	newval := val * totalnewval / totaloldval
+	newval := val * gdrj.SaveDiv(totalnewval, totaloldval)
 	tkm.Set("amountinidr_newtarget", newval)
 	// promoaggrs := masters.Get("promoaggr").(toolkit.M)
 
