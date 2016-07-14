@@ -269,6 +269,9 @@ v1.render = function () {
 	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
+	var grossSalesPLCode = 'PL0';
+	var grossSalesRow = {};
+	var discountActivityPLCode = 'PL7A';
 	var rows = [];
 
 	rpt.fixRowValue(dataFlat);
@@ -278,6 +281,7 @@ v1.render = function () {
 	dataFlat.forEach(function (e) {
 		var breakdown = e.key;
 		netSalesRow[breakdown] = e[netSalesPLCode];
+		grossSalesRow[breakdown] = e[grossSalesPLCode];
 	});
 
 	plmodels.forEach(function (d) {
@@ -298,11 +302,11 @@ v1.render = function () {
 			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100;
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
-
-			if (percentage < 0) percentage = percentage * -1;
 
 			row[breakdown + ' %'] = percentage;
 		});
@@ -316,13 +320,49 @@ v1.render = function () {
 
 	console.log("rows", rows);
 
+	var grossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
+	});
 	var TotalNetSales = _.find(rows, function (r) {
-		return r.PLCode == "PL8A";
+		return r.PLCode == netSalesPLCode;
+	}).PNLTotal;
+	var TotalGrossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
 	}).PNLTotal;
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+
+			// ====== hek MODERN TRADE numbah
+			var grossSalesRedisMT = grossSales['Regional Distributor_Modern Trade'];
+			var grossSalesRedisGT = grossSales['Regional Distributor_Modern Trade'];
+
+			var discountBranchMTpercent = d['Branch_Modern Trade %'];
+			var discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent);
+			var discountRedisTotal = d['Regional Distributor_Total'];
+			var discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated;
+			var discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100;
+
+			d['Regional Distributor_Modern Trade'] = discountRedisMTCalculated;
+			d['Regional Distributor_Modern Trade %'] = discountBranchMTpercent;
+
+			d['Regional Distributor_General Trade'] = discountRedisGTCalculated;
+			d['Regional Distributor_General Trade %'] = discountRedisGTPercentCalculated;
+		}
+
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = toolkit.number(TotalPercentage);
+		d.Percentage = toolkit.number(TotalPercentage);
+
+		// ===== ABS %
+
+		for (var p in d) {
+			if (d.hasOwnProperty(p)) {
+				if (p.indexOf('%') > -1 || p == "Percentage") {
+					d[p] = Math.abs(d[p]);
+				}
+			}
+		}
 	});
 
 	// ========================= PLOT DATA
@@ -648,6 +688,9 @@ v2.render = function () {
 	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
+	var grossSalesPLCode = 'PL0';
+	var grossSalesRow = {};
+	var discountActivityPLCode = 'PL7A';
 	var rows = [];
 
 	rpt.fixRowValue(dataFlat);
@@ -657,6 +700,7 @@ v2.render = function () {
 	dataFlat.forEach(function (e) {
 		var breakdown = e.key;
 		netSalesRow[breakdown] = e[netSalesPLCode];
+		grossSalesRow[breakdown] = e[grossSalesPLCode];
 	});
 
 	plmodels.forEach(function (d) {
@@ -677,7 +721,9 @@ v2.render = function () {
 			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100;
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
@@ -695,13 +741,49 @@ v2.render = function () {
 
 	console.log("rows", rows);
 
+	var grossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
+	});
 	var TotalNetSales = _.find(rows, function (r) {
-		return r.PLCode == "PL8A";
+		return r.PLCode == netSalesPLCode;
+	}).PNLTotal;
+	var TotalGrossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
 	}).PNLTotal;
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+
+			// ====== hek MODERN TRADE numbah
+			var grossSalesRedisMT = grossSales['Modern Trade_Regional Distributor'];
+			var grossSalesRedisGT = grossSales['Modern Trade_Regional Distributor'];
+
+			var discountBranchMTpercent = d['Modern Trade_Branch %'];
+			var discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent);
+			var discountRedisTotal = d['General Trade_Total'];
+			var discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated;
+			var discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100;
+
+			d['Modern Trade_Regional Distributor'] = discountRedisMTCalculated;
+			d['Modern Trade_Regional Distributor %'] = discountBranchMTpercent;
+
+			d['General Trade_Regional Distributor'] = discountRedisGTCalculated;
+			d['General Trade_Regional Distributor %'] = discountRedisGTPercentCalculated;
+		}
+
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = TotalPercentage;
+		d.Percentage = toolkit.number(TotalPercentage);
+
+		// ===== ABS %
+
+		for (var p in d) {
+			if (d.hasOwnProperty(p)) {
+				if (p.indexOf('%') > -1 || p == "Percentage") {
+					d[p] = Math.abs(d[p]);
+				}
+			}
+		}
 	});
 
 	// ========================= PLOT DATA
@@ -979,6 +1061,9 @@ v3.render = function () {
 	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
+	var grossSalesPLCode = 'PL0';
+	var grossSalesRow = {};
+	var discountActivityPLCode = 'PL7A';
 	var rows = [];
 
 	rpt.fixRowValue(dataFlat);
@@ -988,6 +1073,7 @@ v3.render = function () {
 	dataFlat.forEach(function (e) {
 		var breakdown = e.key;
 		netSalesRow[breakdown] = e[netSalesPLCode];
+		grossSalesRow[breakdown] = e[grossSalesPLCode];
 	});
 
 	plmodels.forEach(function (d, i) {
@@ -1008,7 +1094,9 @@ v3.render = function () {
 			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100;
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
@@ -1027,12 +1115,19 @@ v3.render = function () {
 	console.log("rows", rows);
 
 	var TotalNetSales = _.find(rows, function (r) {
-		return r.PLCode == "PL8A";
+		return r.PLCode == netSalesPLCode;
+	}).PNLTotal;
+	var TotalGrossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
 	}).PNLTotal;
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+		}
+
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = TotalPercentage;
+		rows[e].Percentage = toolkit.number(TotalPercentage);
 	});
 
 	// ========================= PLOT DATA

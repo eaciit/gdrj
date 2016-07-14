@@ -35,6 +35,17 @@
             "program": "${workspaceRoot}/modules/trfrd",
             "env": {},
             "args": ["-test.v"]
+        },{
+            "name": "Promo",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "remotePath": "",
+            "port": 2345,
+            "host": "127.0.0.1",
+            "program": "${workspaceRoot}/modules/updpromo",
+            "env": {},
+            "args": ["-test.v"]
         },
         {
             "name": "TestSGAAlloc",

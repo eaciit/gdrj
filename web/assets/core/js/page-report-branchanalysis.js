@@ -42,6 +42,9 @@ ba.changeBreakdownRD = function () {
 ba.level = ko.observable(2);
 
 ba.buildStructure = function (breakdownRD, expand, data) {
+	var netSalesPLCode = 'PL8A';
+	var grossSalesPLCode = 'PL0';
+	var discountActivityPLCode = 'PL7A';
 	var rdCategories = ["Regional Distributor", "Non RD"];
 	var keys = ["_id_customer_branchname", "_id_customer_channelid", "_id_customer_channelname"];
 
@@ -244,9 +247,17 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 							return h[p];
 						});
 						var vNetSales = toolkit.sum(d.subs, function (h) {
-							return h.PL8A;
+							return h[netSalesPLCode];
 						});
+						var vGrossSales = toolkit.sum(d.subs, function (h) {
+							return h[grossSalesPLCode];
+						});
+
 						var value = toolkit.number(vTarget / vNetSales) * 100;
+						if (p == discountActivityPLCode) {
+							value = toolkit.number(vTarget / vGrossSales) * 100;
+						}
+
 						percentage[p] = kendo.toString(value, 'n2') + ' %';
 						total[p] = vTarget;
 					}
@@ -325,9 +336,17 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 							return h[p];
 						});
 						var vNetSales = toolkit.sum(d.subs, function (h) {
-							return h.PL8A;
+							return h[netSalesPLCode];
 						});
+						var vGrossSales = toolkit.sum(d.subs, function (h) {
+							return h[grossSalesPLCode];
+						});
+
 						var value = toolkit.number(vTarget / vNetSales) * 100;
+						if (p == discountActivityPLCode) {
+							value = toolkit.number(vTarget / vGrossSales) * 100;
+						}
+
 						percentage[p] = kendo.toString(value, 'n2') + ' %';
 						total[p] = vTarget;
 					}
@@ -403,7 +422,11 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 
 			for (var p in total) {
 				if (total.hasOwnProperty(p) && p.indexOf('PL') > -1) {
-					var value = toolkit.number(total[p] / total.PL8A) * 100;
+					var value = toolkit.number(total[p] / total[netSalesPLCode]) * 100;
+					if (p == discountActivityPLCode) {
+						value = toolkit.number(total[p] / total[grossSalesPLCode]) * 100;
+					}
+
 					percentage[p] = kendo.toString(value, 'n2') + ' %';
 				}
 			}d.count++;
@@ -667,9 +690,10 @@ ba.render = function () {
 	var netSalesPlModel = rpt.plmodels().find(function (d) {
 		return d._id == netSalesPLCode;
 	});
-	var netSalesRow = {},
-	    changeformula = void 0,
-	    formulayo = void 0;
+	var netSalesRow = {};
+	var grossSalesPLCode = 'PL0';
+	var grossSalesRow = {};
+	var discountActivityPLCode = 'PL7A';
 
 	var rows = [];
 
@@ -711,10 +735,17 @@ ba.render = function () {
 	});
 
 	var TotalNetSales = _.find(rows, function (r) {
-		return r.PLCode == "PL8A";
+		return r.PLCode == netSalesPLCode;
+	}).PNLTotal;
+	var TotalGrossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
 	}).PNLTotal;
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+		}
+
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
 		rows[e].Percentage = toolkit.number(TotalPercentage);
 	});
