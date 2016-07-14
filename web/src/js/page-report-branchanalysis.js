@@ -859,6 +859,7 @@ rpt.refresh = () => {
 
 $(() => {
 	rpt.refresh()
+	rpt.showExport(true)
 
 	setTimeout(() => {
 		ba.breakdownValue(['All'])

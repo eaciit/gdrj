@@ -874,6 +874,7 @@ rpt.refresh = function () {
 
 $(function () {
 	rpt.refresh();
+	rpt.showExport(true);
 
 	setTimeout(function () {
 		ba.breakdownValue(['All']);

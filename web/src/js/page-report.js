@@ -892,51 +892,76 @@ rpt.export = (target, title, mode) => {
 	target = toolkit.$(target)
 
 	if (mode == 'kendo') {
-		// var workbook = new kendo.ooxml.Workbook({
-		//   sheets: [
-		//     {
-		//       // Column settings (width)
-		//       columns: [
-		//         { autoWidth: true },
-		//         { autoWidth: true }
-		//       ],
-		//       // Title of the sheet
-		//       title: "Customers",
-		//       // Rows of the sheet
-		//       rows: [
-		//         // First row (header)
-		//         {
-		//           cells: [
-		//             // First cell
-		//             { value: "Company Name" },
-		//             // Second cell
-		//             { value: "Contact" }
-		//           ]
-		//         },
-		//         // Second row (data)
-		//         {
-		//           cells: [
-		//             { value: "Around the Horn" },
-		//             { value: "Thomas Hardy" }
-		//           ]
-		//         },
-		//         // Third row (data)
-		//         {
-		//           cells: [
-		//             { value: "B's Beverages" },
-		//             { value: "Victoria Ashworth" }
-		//           ]
-		//         }
-		//       ]
-		//     }
-		//   ]
-		// });
-		// kendo.saveAs({
-		//     dataURI: workbook.toDataURL(),
-		//     fileName: "Test.xlsx"
-		// });
-
-
+		let rowdata = [], cellval = {}, cells = []
+		let tableHeaderLock = target.find('.k-grid-header-locked')
+		let tableHeader = target.find('.k-grid-header-wrap')
+		let tableContentLock = target.find('.k-grid-content-locked')
+		let tableContent = target.find('.k-grid-content')
+		tableHeaderLock.find('tr').each((i, e) => {
+			cells = []
+			$(e).find('th').each((i, e) => {
+				cellval = {}
+				cellval['value'] = $(e).attr('data-title')
+				if ($(e).attr('rowspan')){
+					if (title == 'Distribution Analysis')
+						cellval['rowSpan'] = parseInt($(e).attr('rowspan')) + 2
+					else
+						cellval['rowSpan'] = parseInt($(e).attr('rowspan'))
+				}
+				if ($(e).attr('colspan'))
+					cellval['colSpan'] = parseInt($(e).attr('colspan'))
+				cells.push(cellval)
+			})
+			rowdata.push({cells:cells})
+		})
+		tableHeader.find('tr').each((a, e) => {
+			cells = []
+			$(e).find('th').each((i, e) => {
+				cellval = {}
+				cellval['value'] = $(e).attr('data-title')
+				if ($(e).attr('rowspan'))
+					cellval['rowSpan'] = parseInt($(e).attr('rowspan'))
+				if ($(e).attr('colspan'))
+					cellval['colSpan'] = parseInt($(e).attr('colspan'))
+				if (rowdata[a])
+					rowdata[a].cells.push(cellval)
+				else
+					cells.push(cellval)
+			})
+			if (cells.length > 0)
+				rowdata.push({cells:cells})
+		})
+		tableContentLock.find('tr').each((i, e) => {
+			cells = []
+			$(e).find('td').each((i, e) => {
+				cellval = {}
+				cellval['value'] = $(e).html()
+				cells.push(cellval)
+			})
+			tableContent.find(`tr:eq(${i}) td`).each((i, e) => {
+				cellval = {}
+				cellval['value'] = $(e).html()
+				cells.push(cellval)
+			})
+			rowdata.push({cells:cells})
+		})
+		// console.log(rowdata)
+		var workbook = new kendo.ooxml.Workbook({
+		  sheets: [
+		    {
+		      columns: [
+		        { autoWidth: true },
+		        { autoWidth: true }
+		      ],
+		      title: title,
+		      rows: rowdata
+		    }
+		  ]
+		});
+		kendo.saveAs({
+		    dataURI: workbook.toDataURL(),
+		    fileName: title+".xlsx"
+		});
 		return
 	} else if (mode == 'normal') {
 		$('#fake-table').remove()
