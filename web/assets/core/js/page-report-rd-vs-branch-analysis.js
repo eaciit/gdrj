@@ -308,8 +308,6 @@ v1.render = function () {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
-			if (percentage < 0) percentage = percentage * -1;
-
 			row[breakdown + ' %'] = percentage;
 		});
 
@@ -322,6 +320,9 @@ v1.render = function () {
 
 	console.log("rows", rows);
 
+	var grossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
+	});
 	var TotalNetSales = _.find(rows, function (r) {
 		return r.PLCode == netSalesPLCode;
 	}).PNLTotal;
@@ -332,10 +333,36 @@ v1.render = function () {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
 		if (d.PLCode == discountActivityPLCode) {
 			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+
+			// ====== hek MODERN TRADE numbah
+			var grossSalesRedisMT = grossSales['Regional Distributor_Modern Trade'];
+			var grossSalesRedisGT = grossSales['Regional Distributor_Modern Trade'];
+
+			var discountBranchMTpercent = d['Branch_Modern Trade %'];
+			var discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent);
+			var discountRedisTotal = d['Regional Distributor_Total'];
+			var discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated;
+			var discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100;
+
+			d['Regional Distributor_Modern Trade'] = discountRedisMTCalculated;
+			d['Regional Distributor_Modern Trade %'] = discountBranchMTpercent;
+
+			d['Regional Distributor_General Trade'] = discountRedisGTCalculated;
+			d['Regional Distributor_General Trade %'] = discountRedisGTPercentCalculated;
 		}
 
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = toolkit.number(TotalPercentage);
+		d.Percentage = toolkit.number(TotalPercentage);
+
+		// ===== ABS %
+
+		for (var p in d) {
+			if (d.hasOwnProperty(p)) {
+				if (p.indexOf('%') > -1 || p == "Percentage") {
+					d[p] = Math.abs(d[p]);
+				}
+			}
+		}
 	});
 
 	// ========================= PLOT DATA
