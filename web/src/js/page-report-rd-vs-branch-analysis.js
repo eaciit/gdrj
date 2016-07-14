@@ -405,7 +405,7 @@ v1.render = () => {
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
 			.attr(`data-row`, `row-${i}`)
-			.css('height', `${rpt.rowHeaderHeight()}px`)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableContent)
 
 		dataFlat.forEach((e, f) => {
