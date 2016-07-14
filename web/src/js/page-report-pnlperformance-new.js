@@ -1788,18 +1788,18 @@ let v1 = viewModel.RDvsBranchView1
 			d.breakdowns = d.subs[0]._id
 			d.count = d.subs.length
 
-			let total = {}
-			total._id = 'Total'
-			total.key = 'Total'
-			total.excludeFromTotal = true
+			// let total = {}
+			// total._id = 'Total'
+			// total.key = 'Total'
+			// total.excludeFromTotal = true
 
-			for (let prop in subs[0]) if (subs[0].hasOwnProperty(prop) && (prop.search('PL') > -1)) {
-				let val = subs[0][prop]
-				total[prop] = toolkit.sum(subs, (f) => f[prop])
-			}
+			// for (let prop in subs[0]) if (subs[0].hasOwnProperty(prop) && (prop.search('PL') > -1)) {
+			// 	let val = subs[0][prop]
+			// 	total[prop] = toolkit.sum(subs, (f) => f[prop])
+			// }
 
-			d.subs = [total].concat(d.subs)
-			d.count++
+			// d.subs = [total].concat(d.subs)
+			// d.count++
 
 			return d
 		})
@@ -1905,8 +1905,6 @@ let v1 = viewModel.RDvsBranchView1
 				.attr('colspan', lvl1.count)
 				.addClass('align-center')
 				.appendTo(trContents[0])
-				.css('background-color', colors[i])
-				.css('color', 'white')
 				.css('border-top', 'none')
 
 			if (v1.level() == 1) {
@@ -1920,8 +1918,6 @@ let v1 = viewModel.RDvsBranchView1
 					.width(percentageWidth)
 					.addClass('align-center')
 					.appendTo(trContents[0])
-					.css('background-color', colors[i])
-					.css('color', 'white')
 					.css('border-top', 'none')
 
 				return
