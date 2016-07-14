@@ -2410,6 +2410,7 @@ var subchan = viewModel.subChannel;(function () {
 	subchan.breakdownValue = ko.observableArray([]);
 	subchan.level = ko.observable(1);
 	subchan.what = ko.observable('mt sub channel');
+	subchan.isInlineFilter = ko.observable(true);
 
 	subchan.switchRefresh = function (title, what) {
 		bkd.title(title);
@@ -2420,10 +2421,13 @@ var subchan = viewModel.subChannel;(function () {
 	subchan.refresh = function () {
 		var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
+		subchan.isInlineFilter(true);
+
 		var param = {};
 		param.pls = [];
 		param.aggr = 'sum';
 		param.filters = rpt.getFilterValue(false, subchan.fiscalYear);
+		var groups = [subchan.breakdownBy()];
 
 		if (subchan.what() == 'mt sub channel') {
 			subchan.breakdownBy('customer.reportsubchannel');
@@ -2436,11 +2440,26 @@ var subchan = viewModel.subChannel;(function () {
 			});
 		} else if (subchan.what() == 'account') {
 			subchan.breakdownBy('customer.keyaccount');
+		} else if (subchan.what() == 'brand') {
+			subchan.isInlineFilter(false);
+			subchan.breakdownBy('product.brand');
+			groups = [subchan.breakdownBy()];
+
+			var breakdownBrand = subchan.breakdownBrand().filter(function (d) {
+				return d != 'All';
+			});
+			if (breakdownBrand.length > 0) {
+				param.filters.push({
+					Field: subchan.breakdownBy(),
+					Op: '$in',
+					Value: breakdownBrand
+				});
+			}
 		}
 
 		$('.breakdown-view:not(#subchan)').empty();
 
-		param.groups = rpt.parseGroups([subchan.breakdownBy()]);
+		param.groups = rpt.parseGroups(groups);
 		subchan.contentIsLoading(true);
 
 		var fetch = function fetch() {
@@ -2775,6 +2794,48 @@ var subchan = viewModel.subChannel;(function () {
 		// ========================= CONFIGURE THE HIRARCHY
 		rpt.buildGridLevels(rows);
 	};
+
+	subchan.breakdownBrand = ko.observableArray([]);
+	subchan.optionBreakdownBrandValues = ko.observableArray([]);
+	subchan.changeBreakdownBrand = function () {
+		var all = kac.breakdownValueAll;
+		var masterData = [];
+
+		masterData = rpt.masterData.Brand();
+
+		toolkit.runUntil(function (i) {
+			subchan.optionBreakdownBrandValues([all].concat(masterData.map(function (d) {
+				return { _id: d.Name, Name: d.Name };
+			})));
+
+			subchan.breakdownBrand([all._id]);
+		}, function (i) {
+			return i > 10 || masterData.length > 0;
+		});
+	};
+	subchan.changeBreakdownBrandValue = function () {
+		var all = kac.breakdownValueAll;
+		setTimeout(function () {
+			var condA1 = subchan.breakdownBrand().length == 2;
+			var condA2 = subchan.breakdownBrand().indexOf(all._id) == 0;
+			if (condA1 && condA2) {
+				subchan.breakdownBrand.remove(all._id);
+				return;
+			}
+
+			var condB1 = subchan.breakdownBrand().length > 1;
+			var condB2 = subchan.breakdownBrand().reverse()[0] == all._id;
+			if (condB1 && condB2) {
+				subchan.breakdownBrand([all._id]);
+				return;
+			}
+
+			var condC1 = subchan.breakdownBrand().length == 0;
+			if (condC1) {
+				subchan.breakdownBrand([all._id]);
+			}
+		}, 100);
+	};
 })();
 
 vm.currentMenu('P&L Performance');
@@ -2788,11 +2849,13 @@ rpt.refresh = function () {
 	bkd.changeBreakdown();
 	kac.changeBreakdown();
 	kac.changeBreakdownGroup();
+	subchan.changeBreakdownBrand();
 
 	toolkit.runAfter(function () {
 		kac.breakdownValue(['All']);
 		kac.breakdownGroupValue(['KEY']);
 		bkd.breakdownValue(['All']);
+		subchan.breakdownBrand(['All']);
 
 		bkd.refresh();
 	}, 200);
