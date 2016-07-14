@@ -133,6 +133,15 @@ func (w *PageController) PNLPerformance(r *knot.WebContext) interface{} {
 	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
+	r.Config.ViewName = "page-report-pnlperformance-new.html"
+
+	return w.Params
+}
+
+func (w *PageController) PNLPerformanceOld(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
 	r.Config.ViewName = "page-report-pnlperformance.html"
 
 	return w.Params
