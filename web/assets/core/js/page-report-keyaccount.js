@@ -332,18 +332,17 @@ kac.render = function () {
 	});
 	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
-	var netSalesPlModel = rpt.plmodels().find(function (d) {
-		return d._id == netSalesPLCode;
-	});
 	var netSalesRow = {};
+	var grossSalesPLCode = 'PL0';
+	var grossSalesRow = {};
+	var discountActivityPLCode = 'PL7A';
 
 	rpt.fixRowValue(data);
 
 	data.forEach(function (e) {
 		var breakdown = e._id;
-		var value = e['' + netSalesPlModel._id];
-		value = toolkit.number(value);
-		netSalesRow[breakdown] = value;
+		netSalesRow[breakdown] = e[netSalesPLCode];
+		grossSalesRow[breakdown] = e[grossSalesPLCode];
 	});
 	data = _.orderBy(data, function (d) {
 		return netSalesRow[d._id];
@@ -363,7 +362,9 @@ kac.render = function () {
 			var percentage = toolkit.number(e['' + d._id] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100;
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
@@ -380,10 +381,17 @@ kac.render = function () {
 	});
 
 	var TotalNetSales = _.find(rows, function (r) {
-		return r.PLCode == "PL8A";
+		return r.PLCode == netSalesPLCode;
+	}).PNLTotal;
+	var TotalGrossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
 	}).PNLTotal;
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+		}
+
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
 		rows[e].Percentage = toolkit.number(TotalPercentage);
 	});
