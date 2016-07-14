@@ -152,7 +152,7 @@ func prepmasteraggrdatapromo() {
 		m := v.(toolkit.M)
 		transferablepromo := m.GetFloat64("transferablepromo")
 		if transferablepromo != float64(0) {
-			transferableratio := gdrj.SaveDiv(transferablepromo, needtotransferpromo)
+			transferableratio := gdrj.SaveDiv(transferablepromo, totaltransferablepromo)
 			promototransfer := transferableratio * needtotransferpromo
 			m.Set("promotarget", m.GetFloat64("promo")+promototransfer)
 			m.Set("spgtarget", m.GetFloat64("spg")-promototransfer)
