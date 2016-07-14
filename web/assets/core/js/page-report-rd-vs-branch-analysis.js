@@ -345,7 +345,7 @@ v1.render = function () {
 
 		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + ' %').addClass('align-right').appendTo(trHeader);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).css('height', rpt.rowHeaderHeight() + 'px').appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).css('height', rpt.rowContentHeight() + 'px').appendTo(tableContent);
 
 		dataFlat.forEach(function (e, f) {
 			var key = e.key;
