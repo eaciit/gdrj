@@ -1713,17 +1713,23 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 			d.breakdowns = d.subs[0]._id;
 			d.count = d.subs.length;
 
-			// let total = {}
-			// total._id = 'Total'
-			// total.key = 'Total'
-			// total.excludeFromTotal = true
+			var total = {};
+			total._id = 'Total';
+			total.key = 'Total';
+			total.excludeFromTotal = true;
 
-			// for (let prop in subs[0]) if (subs[0].hasOwnProperty(prop) && (prop.search('PL') > -1)) {
-			// 	let val = subs[0][prop]
-			// 	total[prop] = toolkit.sum(subs, (f) => f[prop])
-			// }
+			var _loop6 = function _loop6(prop) {
+				if (subs[0].hasOwnProperty(prop) && prop.search('PL') > -1) {
+					var val = subs[0][prop];
+					total[prop] = toolkit.sum(subs, function (f) {
+						return f[prop];
+					});
+				}
+			};
 
-			// d.subs = [total].concat(d.subs)
+			for (var prop in subs[0]) {
+				_loop6(prop);
+			}d.subs = [total].concat(d.subs);
 			// d.count++
 
 			return d;
@@ -1790,6 +1796,18 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 		};
 
 		data.filter(function (d) {
+			return d._id != v1.mode();
+		}).forEach(function (lvl1, i) {
+			lvl1.subs.forEach(function (lvl2, j) {
+				var each = lvl2;
+				var key = [lvl1._id, lvl2._id];
+
+				each.key = key.join('_');
+				dataFlat.push(each);
+			});
+		});
+
+		data.filter(function (d) {
 			return d._id == v1.mode();
 		}).forEach(function (lvl1, i) {
 			var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('border-top', 'none');
@@ -1805,22 +1823,20 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 			thheader1.attr('colspan', lvl1.count * 2);
 
 			lvl1.subs.forEach(function (lvl2, j) {
-				var thheader2 = toolkit.newEl('th').html(lvl2._id).addClass('align-center').appendTo(trContents[1]);
+				var thheader2 = toolkit.newEl('th').html(lvl2._id).addClass('align-center');
 
-				if (lvl2._id == 'Total') {
-					thheader2.css('background-color', 'rgb(116, 149, 160)');
-					thheader2.css('color', 'white');
+				if (lvl2._id != 'Total') {
+					thheader2.appendTo(trContents[1]);
 				}
 
 				if (v1.level() == 2) {
 					countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 					totalColumnWidth += percentageWidth;
-					var _thheader1p3 = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+					var _thheader1p3 = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center');
 
-					if (lvl2._id == 'Total') {
-						_thheader1p3.css('background-color', 'rgb(116, 149, 160)');
-						_thheader1p3.css('color', 'white');
+					if (lvl2._id != 'Total') {
+						_thheader1p3.appendTo(trContents[1]);
 					}
 
 					return;
@@ -1960,6 +1976,10 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 			dataFlat.filter(function (g) {
 				return g.key.split('_')[0] == v1.mode();
 			}).forEach(function (e, f) {
+				if (e._id == 'Total') {
+					return;
+				}
+
 				var key = e.key;
 				var value = kendo.toString(d[key], 'n0');
 				var percentage = kendo.toString(d[key + ' %'], 'n2') + ' %';
@@ -2565,7 +2585,7 @@ var subchan = viewModel.subChannel;(function () {
 				var key = { _id: k, subs: v };
 				var sample = v[0];
 
-				var _loop6 = function _loop6(prop) {
+				var _loop7 = function _loop7(prop) {
 					if (sample.hasOwnProperty(prop) && prop != '_id') {
 						key[prop] = toolkit.sum(v, function (d) {
 							return d[prop];
@@ -2574,7 +2594,7 @@ var subchan = viewModel.subChannel;(function () {
 				};
 
 				for (var prop in sample) {
-					_loop6(prop);
+					_loop7(prop);
 				}
 
 				return key;

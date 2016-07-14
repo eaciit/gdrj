@@ -1791,17 +1791,17 @@ let v1 = viewModel.RDvsBranchView1
 			d.breakdowns = d.subs[0]._id
 			d.count = d.subs.length
 
-			// let total = {}
-			// total._id = 'Total'
-			// total.key = 'Total'
-			// total.excludeFromTotal = true
+			let total = {}
+			total._id = 'Total'
+			total.key = 'Total'
+			total.excludeFromTotal = true
 
-			// for (let prop in subs[0]) if (subs[0].hasOwnProperty(prop) && (prop.search('PL') > -1)) {
-			// 	let val = subs[0][prop]
-			// 	total[prop] = toolkit.sum(subs, (f) => f[prop])
-			// }
+			for (let prop in subs[0]) if (subs[0].hasOwnProperty(prop) && (prop.search('PL') > -1)) {
+				let val = subs[0][prop]
+				total[prop] = toolkit.sum(subs, (f) => f[prop])
+			}
 
-			// d.subs = [total].concat(d.subs)
+			d.subs = [total].concat(d.subs)
 			// d.count++
 
 			return d
@@ -1902,7 +1902,19 @@ let v1 = viewModel.RDvsBranchView1
 			thheader.width(currentColumnWidth)
 		}
 
-		data.filter((d) => d._id == v1.mode()).forEach((lvl1, i) => {
+	data.filter((d) => d._id != v1.mode())
+		.forEach((lvl1, i) => {
+			lvl1.subs.forEach((lvl2, j) => {
+				let each = lvl2
+				let key = [lvl1._id, lvl2._id]
+
+				each.key = key.join('_')
+				dataFlat.push(each)
+			})
+		})
+
+	data.filter((d) => d._id == v1.mode())
+		.forEach((lvl1, i) => {
 			let thheader1 = toolkit.newEl('th')
 				.html(lvl1._id)
 				.attr('colspan', lvl1.count)
@@ -1931,11 +1943,9 @@ let v1 = viewModel.RDvsBranchView1
 				let thheader2 = toolkit.newEl('th')
 					.html(lvl2._id)
 					.addClass('align-center')
-					.appendTo(trContents[1])
 
-				if (lvl2._id == 'Total') {
-					thheader2.css('background-color', 'rgb(116, 149, 160)')
-					thheader2.css('color', 'white')
+				if (lvl2._id != 'Total') {
+					thheader2.appendTo(trContents[1])
 				}
 
 				if (v1.level() == 2) {
@@ -1948,11 +1958,9 @@ let v1 = viewModel.RDvsBranchView1
 						.css('font-style', 'italic')
 						.width(percentageWidth)
 						.addClass('align-center')
-						.appendTo(trContents[1])
 
-					if (lvl2._id == 'Total') {
-						thheader1p.css('background-color', 'rgb(116, 149, 160)')
-						thheader1p.css('color', 'white')
+					if (lvl2._id != 'Total') {
+						thheader1p.appendTo(trContents[1])
 					}
 
 					return
@@ -2105,6 +2113,10 @@ let v1 = viewModel.RDvsBranchView1
 		dataFlat
 			.filter((g) => g.key.split('_')[0] == v1.mode())
 			.forEach((e, f) => {
+				if (e._id == 'Total') {
+					return
+				}
+
 				let key = e.key
 				let value = kendo.toString(d[key], 'n0')
 				let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
