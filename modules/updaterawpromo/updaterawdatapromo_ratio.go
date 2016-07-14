@@ -136,14 +136,18 @@ func prepmasteraggrdatapromo() {
 			totalpromo += tkm.GetFloat64("amountinidr_target")
 		}
 
+		promovalue.Set(tkm.GetString("keyaccountcode"), m)
+	}
+
+	for k, v := range promovalue {
+		m := v.(toolkit.M)
 		if m.GetFloat64("spg") != 0 && m.GetFloat64("promo") != 0 {
 			m.Set("transferablepromo", m.GetFloat64("promo"))
 			totaltransferablepromo += m.GetFloat64("promo")
 		} else {
 			m.Set("transferablepromo", float64(0))
 		}
-
-		promovalue.Set(tkm.GetString("keyaccountcode"), m)
+		promovalue.Set(k, m)
 	}
 
 	needtotransferpromo := targetyearpromo - totalpromo
