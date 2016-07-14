@@ -92,18 +92,21 @@ func buildRatio(tn string) error {
 		}
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		yr := key.GetInt("date_year")
-		mth := key.GetInt("date_month")
+		//yr := key.GetInt("date_year")
+		//mth := key.GetInt("date_month")
+		fiscal := key.GetString("date_fiscal")
 		kc := key.GetString("customer_customergroup")
-		keysales := toolkit.Sprintf("%d_%d_%s", yr, mth, kc)
-		salestotal := salestotals[keysales]
-		if salestotal == nil {
-			salestotal = new(plalloc)
-			salestotal.Key = keysales
+		if kc != "" {
+			//keysales := toolkit.Sprintf("%d_%d_%s", yr, mth, kc)
+			keysales := toolkit.Sprintf("%s_%s", fiscal, kc)
+			salestotal := salestotals[keysales]
+			if salestotal == nil {
+				salestotal = new(plalloc)
+				salestotal.Key = keysales
+			}
+			salestotal.Current += mr.GetFloat64("PL8A")
+			salestotals[keysales] = salestotal
 		}
-		salestotal.Current = mr.GetFloat64("PL8A")
-		salestotals[keysales] = salestotal
-
 		i++
 		current = makeProgressLog("Build Sales Ratio", i, count, 5, current, tstart)
 	}
@@ -126,12 +129,16 @@ func buildRatio(tn string) error {
 
 		yr := mr.GetInt("year")
 		mth := mr.GetInt("period")
-		dt := time.Date(yr, time.Month(mth), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
-		yr = dt.Year()
-		mth = int(dt.Month())
+		dt := gdrj.NewDate(yr, mth, 1)
+		/*
+			        			dt := time.Date(yr, time.Month(mth), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
+								yr = dt.Year()
+								mth = int(dt.Month())
+		*/
+		fiscal := dt.Fiscal
 		kc := mr.GetString("keyaccountcode")
 		gl := mr.GetString("account")
-		key := toolkit.Sprintf("%d_%d_%s_%s", yr, mth, kc, gl)
+		key := toolkit.Sprintf("%s_%s_%s", fiscal, kc, gl)
 
 		alloc := plallocs[key]
 		if alloc == nil {
@@ -165,7 +172,7 @@ func makeProgressLog(reference string, i, count, step, current int, tstart time.
 func processTable(tn string) error {
 	cursor, _ := conn.NewQuery().From(tn).
 		//Where(dbox.Eq("key.trxsrc", "VDIST"), dbox.Eq("key.customer_reportchannel", "RD")).
-		Where(dbox.Eq("key.date_fiscal", "2015-2016")).
+		Where(dbox.Eq("key.date_fiscal", "2015-2016"), dbox.Eq("key.customer_customergroup", "CR")).
 		Select().Cursor(nil)
 	defer cursor.Close()
 
@@ -191,20 +198,26 @@ func processTable(tn string) error {
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		kc := key.GetString("customer_customergroup")
-		year := key.GetInt("date_year")
-		month := key.GetInt("date_month")
+		//year := key.GetInt("date_year")
+		//month := key.GetInt("date_month")
+		fiscal := key.GetString("date_fiscal")
 
 		sales := mr.GetFloat64("PL8A")
+		//keysales := toolkit.Sprintf("%d_%d_%s", year, month, kc)
+		keysales := toolkit.Sprintf("%s_%s", fiscal, kc)
+		salestotal := salestotals[keysales]
+
 		for k, _ := range mr {
 			plmodel := plmodels[k]
 			if plmodel != nil && plmodel.GLReff != "" && plmodel.PLHeader1 == "Advt & Promo Expenses" {
 				newv := float64(0)
-				keypromo := toolkit.Sprintf("%d_%d_%s_%s", year, month, kc, plmodel.GLReff)
-				keysales := toolkit.Sprintf("%d_%d_%s", year, month, kc)
+				//keypromo := toolkit.Sprintf("%d_%d_%s_%s", year, month, kc, plmodel.GLReff)
+				keypromo := toolkit.Sprintf("%s_%s_%s", fiscal, kc, plmodel.GLReff)
 				alloc := plallocs[keypromo]
-				salestotal := salestotals[keysales]
 				if alloc != nil && salestotal != nil {
-					newv = toolkit.Div(alloc.Expect*sales, salestotal.Current)
+					newv = -toolkit.Div(alloc.Expect*sales, salestotal.Current)
+				} else if salestotal == nil {
+					toolkit.Printfn("Issue for %s %s", keysales, keypromo)
 				}
 				mr.Set(k, newv)
 			}
