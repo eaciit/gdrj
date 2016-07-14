@@ -675,6 +675,27 @@ func prepmasterrollback() {
 	masters.Set("salesplssummary", salesplssummary)
 }
 
+func prepmastertotaldiscactivity() {
+	toolkit.Println("--> Get discount activity")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	defer csr.Close()
+	totdiscactivity := float64(0)
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		totdiscactivity += tkm.GetFloat64("PL7A")
+	}
+
+	masters.Set("totdiscactivity", totdiscactivity)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -687,7 +708,8 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
-	prepmasterrollback()
+	prepmastertotaldiscactivity()
+	// prepmasterrollback()
 
 	// prepmastercustomergroup()
 
@@ -1139,12 +1161,25 @@ func CalcSum(tkm toolkit.M) {
 	tkm.Set("PL44F", ebitsgaroyalty)
 }
 
+// masters.Set("totdiscactivity", totdiscactivity)
+func AllocateDiscountActivity(tkm toolkit.M) {
+	if !masters.Has("totdiscactivity") {
+		return
+	}
+
+	allocateval := float64(3245794696)
+	totdiscactivity := masters.GetFloat64("totdiscactivity")
+
+	val := tkm.GetFloat64("PL7A") + (allocateval * tkm.GetFloat64("PL7A") / totdiscactivity)
+	tkm.Set("PL7A", val)
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-update").
+		From("salespls-summary-allocdiscact").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1164,8 +1199,9 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcSgaRev(trx)
 
 		// CleanUpdateCustomerGroupName(trx)
-		RollbackSalesplsSummary(trx)
+		// RollbackSalesplsSummary(trx)
 
+		AllocateDiscountActivity(trx)
 		CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
