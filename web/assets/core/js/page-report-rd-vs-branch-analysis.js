@@ -92,7 +92,7 @@ v1.clickExpand = function (e) {
 };
 
 v1.emptyGrid = function () {
-	$('.grid-breakdown-branch-rd').replaceWith('<div class="breakdown-view ez grid-breakdown-branch-rd"></div>');
+	$('.grid-breakdown-branch-rd').replaceWith('<div class="breakdown-view ez grid-breakdown-branch-rd" id="breakdown-branch-rd"></div>');
 };
 
 v1.buildStructure = function (data) {
@@ -506,7 +506,7 @@ v2.clickExpand = function (e) {
 };
 
 v2.emptyGrid = function () {
-	$('.grid-breakdown-channel').replaceWith('<div class="breakdown-view ez grid-breakdown-channel"></div>');
+	$('.grid-breakdown-channel').replaceWith('<div class="breakdown-view ez grid-breakdown-channel" id="breakdown-channel"></div>');
 };
 
 v2.buildStructure = function (data) {
@@ -926,7 +926,7 @@ v3.clickExpand = function (e) {
 };
 
 v3.emptyGrid = function () {
-	$('.grid-total-branch-rd').replaceWith('<div class="breakdown-view ez grid-total-branch-rd"></div>');
+	$('.grid-total-branch-rd').replaceWith('<div class="breakdown-view ez grid-total-branch-rd" id="breakdown-total-branch-rd"></div>');
 };
 
 v3.buildStructure = function (data) {
@@ -1352,4 +1352,5 @@ $(function () {
 	v3.refresh();
 	v1.refresh();
 	v2.refresh();
+	rpt.showExport(true);
 });

@@ -86,7 +86,7 @@ cbt.clickExpand = (e) => {
 }
 
 cbt.emptyGrid = () => {
-	$('.grid').replaceWith(`<div class="breakdown-view ez grid"></div>`)
+	$('.grid').replaceWith(`<div class="breakdown-view ez grid" id="contribution-analysis"></div>`)
 }
 
 cbt.buildStructure = (data) => {
@@ -535,4 +535,5 @@ vm.breadcrumb([
 
 $(() => {
 	cbt.refresh()
+	rpt.showExport(true)
 })

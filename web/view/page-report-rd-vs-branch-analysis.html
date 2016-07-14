@@ -43,6 +43,9 @@
 				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 					<i class="fa fa-server"></i> Show Filter
 				</button>
+				<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#breakdown-branch-rd', 'Total Branch & RD', 'header-content')">
+					<i class="fa fa-download"></i> Export as Excel
+				</button>
 			</div>
 		</div>
 	</div>
@@ -84,6 +87,9 @@
 				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 					<i class="fa fa-server"></i> Show Filter
 				</button>
+				<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#breakdown-channel', 'Branch/RD to Channel', 'header-content')">
+					<i class="fa fa-download"></i> Export as Excel
+				</button>
 			</div>
 		</div>
 	</div>
@@ -124,6 +130,9 @@
 				</button>
 				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 					<i class="fa fa-server"></i> Show Filter
+				</button>
+				<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#breakdown-total-branch-rd', 'Channel to Branch/RD', 'header-content')">
+					<i class="fa fa-download"></i> Export as Excel
 				</button>
 			</div>
 		</div>
