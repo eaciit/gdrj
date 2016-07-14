@@ -15,7 +15,7 @@ v1.fiscalYear = ko.observable(rpt.value.FiscalYear());
 v1.level = ko.observable(2);
 v1.title = ko.observable('Total Branch & RD');
 
-v1.changeTo = function (d) {
+v1.changeTo = function (d, e) {
 	v1.title(d);
 	$(window).trigger('scroll');
 };
@@ -308,8 +308,6 @@ v1.render = function () {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
-			if (percentage < 0) percentage = percentage * -1;
-
 			row[breakdown + ' %'] = percentage;
 		});
 
@@ -322,6 +320,9 @@ v1.render = function () {
 
 	console.log("rows", rows);
 
+	var grossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
+	});
 	var TotalNetSales = _.find(rows, function (r) {
 		return r.PLCode == netSalesPLCode;
 	}).PNLTotal;
@@ -332,10 +333,36 @@ v1.render = function () {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
 		if (d.PLCode == discountActivityPLCode) {
 			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+
+			// ====== hek MODERN TRADE numbah
+			var grossSalesRedisMT = grossSales['Regional Distributor_Modern Trade'];
+			var grossSalesRedisGT = grossSales['Regional Distributor_Modern Trade'];
+
+			var discountBranchMTpercent = d['Branch_Modern Trade %'];
+			var discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent);
+			var discountRedisTotal = d['Regional Distributor_Total'];
+			var discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated;
+			var discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100;
+
+			d['Regional Distributor_Modern Trade'] = discountRedisMTCalculated;
+			d['Regional Distributor_Modern Trade %'] = discountBranchMTpercent;
+
+			d['Regional Distributor_General Trade'] = discountRedisGTCalculated;
+			d['Regional Distributor_General Trade %'] = discountRedisGTPercentCalculated;
 		}
 
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = toolkit.number(TotalPercentage);
+		d.Percentage = toolkit.number(TotalPercentage);
+
+		// ===== ABS %
+
+		for (var p in d) {
+			if (d.hasOwnProperty(p)) {
+				if (p.indexOf('%') > -1 || p == "Percentage") {
+					d[p] = Math.abs(d[p]);
+				}
+			}
+		}
 	});
 
 	// ========================= PLOT DATA
@@ -714,6 +741,9 @@ v2.render = function () {
 
 	console.log("rows", rows);
 
+	var grossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
+	});
 	var TotalNetSales = _.find(rows, function (r) {
 		return r.PLCode == netSalesPLCode;
 	}).PNLTotal;
@@ -724,10 +754,36 @@ v2.render = function () {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
 		if (d.PLCode == discountActivityPLCode) {
 			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+
+			// ====== hek MODERN TRADE numbah
+			var grossSalesRedisMT = grossSales['Modern Trade_Regional Distributor'];
+			var grossSalesRedisGT = grossSales['Modern Trade_Regional Distributor'];
+
+			var discountBranchMTpercent = d['Modern Trade_Branch %'];
+			var discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent);
+			var discountRedisTotal = d['General Trade_Total'];
+			var discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated;
+			var discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100;
+
+			d['Modern Trade_Regional Distributor'] = discountRedisMTCalculated;
+			d['Modern Trade_Regional Distributor %'] = discountBranchMTpercent;
+
+			d['General Trade_Regional Distributor'] = discountRedisGTCalculated;
+			d['General Trade_Regional Distributor %'] = discountRedisGTPercentCalculated;
 		}
 
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = toolkit.number(TotalPercentage);
+		d.Percentage = toolkit.number(TotalPercentage);
+
+		// ===== ABS %
+
+		for (var p in d) {
+			if (d.hasOwnProperty(p)) {
+				if (p.indexOf('%') > -1 || p == "Percentage") {
+					d[p] = Math.abs(d[p]);
+				}
+			}
+		}
 	});
 
 	// ========================= PLOT DATA

@@ -187,7 +187,7 @@ func UpdateRawDataPromo(tkm toolkit.M) {
 		promotarget = promotargets.Get(tkm.GetString("keyaccountcode")).(toolkit.M)
 	}
 
-	val := (tkm.GetFloat64("amountinidr") / promoaggrs.GetFloat64(tkm.GetString("keyaccountcode"))) * promotarget.GetFloat64("target2015")
+	val := (tkm.GetFloat64("amountinidr") / promoaggrs.GetFloat64(tkm.GetString("keyaccountcode"))) * promotarget.GetFloat64("target2014")
 
 	tkm.Set("amountinidr_target", val)
 }
