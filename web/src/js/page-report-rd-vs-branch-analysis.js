@@ -13,7 +13,7 @@ v1.fiscalYear = ko.observable(rpt.value.FiscalYear())
 v1.level = ko.observable(2)
 v1.title = ko.observable('Total Branch & RD')
 
-v1.changeTo = (d) => {
+v1.changeTo = (d,e) => {
 	v1.title(d)
 	$(window).trigger('scroll')
 }
@@ -1481,12 +1481,6 @@ v3.buildGridLevels = (container, rows) => {
 	rpt.refreshHeight()
 	rpt.addScrollBottom(container)
 }
-
-
-
-
-
-
 
 vm.currentMenu('Analysis')
 vm.currentTitle('&nbsp;')

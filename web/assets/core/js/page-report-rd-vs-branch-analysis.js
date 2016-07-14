@@ -15,7 +15,7 @@ v1.fiscalYear = ko.observable(rpt.value.FiscalYear());
 v1.level = ko.observable(2);
 v1.title = ko.observable('Total Branch & RD');
 
-v1.changeTo = function (d) {
+v1.changeTo = function (d, e) {
 	v1.title(d);
 	$(window).trigger('scroll');
 };

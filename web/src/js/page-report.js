@@ -1046,8 +1046,12 @@ rpt.addScrollBottom = (container) => {
 		.appendTo(tableContent)
 		
 	let target = container.find(".scroll-grid-bottom")[0]
+	let target2 = container.find(".table-content")[0]
 	container.find(".table-content").scroll(function() {
-			target.scrollLeft = this.scrollLeft
+		target.scrollLeft = this.scrollLeft
+	})
+	container.find(".scroll-grid-bottom").scroll(function() {
+		target2.scrollLeft = this.scrollLeft
 	})
 	// });
 	rpt.panel_scrollrelocated()
