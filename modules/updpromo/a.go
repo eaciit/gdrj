@@ -5,11 +5,13 @@ import (
 	"eaciit/gdrj/modules"
 	"os"
 
+	"math"
+	"strings"
+	"time"
+
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	// "strings"
-	"time"
 )
 
 var conn dbox.IConnection
@@ -40,9 +42,10 @@ func setinitialconnection() {
 }
 
 type plalloc struct {
-	Key     string
-	Current float64
-	Expect  float64
+	Key      string
+	Current  float64
+	Expect   float64
+	Absorbed float64
 }
 
 var plallocs = map[string]*plalloc{}
@@ -128,26 +131,28 @@ func buildRatio(tn string) error {
 		}
 
 		yr := mr.GetInt("year")
-		mth := mr.GetInt("period")
-		dt := gdrj.NewDate(yr, mth, 1)
+		//mth := mr.GetInt("period")
+		//dt := gdrj.NewDate(yr, mth, 1)
 		/*
 			        			dt := time.Date(yr, time.Month(mth), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 								yr = dt.Year()
 								mth = int(dt.Month())
 		*/
-		fiscal := dt.Fiscal
+		//fiscal := dt.Fiscal
+		fiscal := toolkit.Sprintf("%d-%d", yr, yr+1)
 		kc := mr.GetString("keyaccountcode")
-		gl := mr.GetString("account")
-		key := toolkit.Sprintf("%s_%s_%s", fiscal, kc, gl)
+		if kc != "" {
+			gl := mr.GetString("account")
+			keypromo := toolkit.Sprintf("%s_%s_%s", fiscal, kc, gl)
 
-		alloc := plallocs[key]
-		if alloc == nil {
-			alloc = new(plalloc)
-			alloc.Key = key
+			alloc := plallocs[keypromo]
+			if alloc == nil {
+				alloc = new(plalloc)
+				alloc.Key = keypromo
+			}
+			alloc.Expect += mr.GetFloat64("amountinidr_target")
+			plallocs[keypromo] = alloc
 		}
-		alloc.Expect += mr.GetFloat64("amountinidr_target")
-		plallocs[key] = alloc
-
 		i++
 		current = makeProgressLog("Build Promotion Ratio", i, count, 5, current, tstart)
 	}
@@ -172,7 +177,8 @@ func makeProgressLog(reference string, i, count, step, current int, tstart time.
 func processTable(tn string) error {
 	cursor, _ := conn.NewQuery().From(tn).
 		//Where(dbox.Eq("key.trxsrc", "VDIST"), dbox.Eq("key.customer_reportchannel", "RD")).
-		Where(dbox.Eq("key.date_fiscal", "2015-2016"), dbox.Eq("key.customer_customergroup", "CR")).
+		//Where(dbox.Eq("key.date_fiscal", "2015-2016"), dbox.Eq("key.customer_customergroup", "CR")).
+		Where(dbox.Eq("key.date_fiscal", "2015-2016")).
 		Select().Cursor(nil)
 	defer cursor.Close()
 
@@ -181,6 +187,7 @@ func processTable(tn string) error {
 	i := 0
 	step := count / 20
 	mstone := step
+	absorsedsales := float64(0)
 	for {
 		mr := toolkit.M{}
 		ef := cursor.Fetch(&mr, 1, false)
@@ -203,37 +210,196 @@ func processTable(tn string) error {
 		fiscal := key.GetString("date_fiscal")
 
 		sales := mr.GetFloat64("PL8A")
+		absorsedsales += sales
 		//keysales := toolkit.Sprintf("%d_%d_%s", year, month, kc)
 		keysales := toolkit.Sprintf("%s_%s", fiscal, kc)
 		salestotal := salestotals[keysales]
 
-		for k, _ := range mr {
-			plmodel := plmodels[k]
-			if plmodel != nil && plmodel.GLReff != "" && plmodel.PLHeader1 == "Advt & Promo Expenses" {
+		//plmodelcheck := ""
+		for k, plmodel := range plmodels {
+			//plmodel := plmodels[k]
+			if plmodel.GLReff != "" &&
+				plmodel.PLHeader1 == "Advt & Promo Expenses" {
 				newv := float64(0)
 				//keypromo := toolkit.Sprintf("%d_%d_%s_%s", year, month, kc, plmodel.GLReff)
 				keypromo := toolkit.Sprintf("%s_%s_%s", fiscal, kc, plmodel.GLReff)
 				alloc := plallocs[keypromo]
 				if alloc != nil && salestotal != nil {
 					newv = -toolkit.Div(alloc.Expect*sales, salestotal.Current)
+					alloc.Absorbed += newv
+					plallocs[keypromo] = alloc
+					/*
+						                    if plmodelcheck == "" {
+												plmodelcheck = plmodel.ID
+												toolkit.Printfn("Update %s - %s : %f", mr.GetString("_id"), plmodelcheck, newv)
+											}
+					*/
 				} else if salestotal == nil {
-					toolkit.Printfn("Issue for %s %s", keysales, keypromo)
+					//toolkit.Printfn("Issue for %s %s", keysales, keypromo)
 				}
-				mr.Set(k, newv)
+				mr.Set(k, float64(newv))
 			}
 		}
 
-		mr = CalcSum(mr)
+		/*
+			if mr.GetFloat64(plmodelcheck) != 0 {
+				toolkit.Printfn("%s previously has value", mr.GetString("_id"))
+			}
+		*/
+
+		CalcSum(mr)
+		/*
+			        if mr.GetFloat64(plmodelcheck) == 0 {
+						toolkit.Printfn("%s after calc has no value", mr.GetString("_id"))
+					}
+					plmodelcheck = ""
+		*/
 		esave := conn.NewQuery().From(tn).Save().Exec(toolkit.M{}.Set("data", mr))
 		if esave != nil {
 			return esave
 		}
 	}
 
+	toolkit.Printfn("Done. Sales absorsed: %f", absorsedsales)
+	for k, v := range plallocs {
+		if strings.HasPrefix(k, "2015-2016_CR") && math.Abs(v.Expect+v.Absorbed) > 10 {
+			toolkit.Printfn("%s: Expected: %f Absorbed: %f", k, v.Expect, v.Absorbed)
+		}
+	}
+
 	return nil
 }
 
-func CalcSum(tkm toolkit.M) toolkit.M {
+func CalcSum(tkm toolkit.M) {
+	var netsales, cogs, grossmargin, sellingexpense,
+		sga, opincome, directexpense, indirectexpense,
+		royaltiestrademark, advtpromoexpense, operatingexpense,
+		freightexpense, nonoprincome, ebt, taxexpense,
+		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga,
+		grosssales, discount, advexp, promoexp, spgexp float64
+
+	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL39A", "PL41A", "PL44A",
+		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
+		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31", "PL94A"}
+
+	plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
+
+	inexclude := func(f string) bool {
+		for _, v := range exclude {
+			if v == f {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	for k, v := range tkm {
+		if k == "_id" || k == "key" {
+			continue
+		}
+
+		ar01k := strings.Split(k, "_")
+
+		if inexclude(ar01k[0]) {
+			continue
+		}
+
+		plmodel, exist := plmodels[ar01k[0]]
+		if !exist {
+			//toolkit.Println(k)
+			continue
+		}
+		Amount := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+		switch plmodel.PLHeader1 {
+		case "Net Sales":
+			netsales += Amount
+		case "Direct Expense":
+			directexpense += Amount
+		case "Indirect Expense":
+			indirectexpense += Amount
+		case "Freight Expense":
+			freightexpense += Amount
+		case "Royalties & Trademark Exp":
+			royaltiestrademark += Amount
+		case "Advt & Promo Expenses":
+			advtpromoexpense += Amount
+		case "G&A Expenses":
+			sga += Amount
+		case "Non Operating (Income) / Exp":
+			nonoprincome += Amount
+		case "Tax Expense":
+			taxexpense += Amount
+		case "Total Depreciation Exp":
+			if plmodel.PLHeader2 == "Damaged Goods" {
+				damagegoods += Amount
+			} else {
+				totdepreexp += Amount
+			}
+		}
+
+		// switch v.Group2 {
+		switch plmodel.PLHeader2 {
+		case "Gross Sales":
+			grosssales += Amount
+		case "Discount":
+			discount += Amount
+		case "Advertising Expenses":
+			advexp += Amount
+		case "Promotions Expenses":
+			promoexp += Amount
+		case "SPG Exp / Export Cost":
+			spgexp += Amount
+		}
+	}
+
+	cogs = directexpense + indirectexpense
+	grossmargin = netsales + cogs
+	sellingexpense = freightexpense + royaltiestrademark + advtpromoexpense
+	operatingexpense = sellingexpense + sga
+	opincome = grossmargin + operatingexpense
+	ebt = opincome + nonoprincome //asume nonopriceincome already minus
+	percentpbt = 0
+	if ebt != 0 {
+		percentpbt = taxexpense / ebt * 100
+	}
+	eat = ebt + taxexpense
+	ebitda = totdepreexp + damagegoods + opincome
+	ebitdaroyalties = ebitda - royaltiestrademark
+	ebitsga = opincome - sga
+	ebitsgaroyalty := ebitsga - royaltiestrademark
+
+	tkm.Set("PL0", grosssales)
+	tkm.Set("PL6A", discount)
+	tkm.Set("PL8A", netsales)
+	tkm.Set("PL14A", directexpense)
+	tkm.Set("PL74A", indirectexpense)
+	tkm.Set("PL26A", royaltiestrademark)
+	tkm.Set("PL32A", advtpromoexpense)
+	tkm.Set("PL94A", sga)
+	tkm.Set("PL39A", nonoprincome)
+	tkm.Set("PL41A", taxexpense)
+	tkm.Set("PL44A", totdepreexp)
+
+	tkm.Set("PL28", advexp)
+	tkm.Set("PL29A", promoexp)
+	tkm.Set("PL31", spgexp)
+	tkm.Set("PL74B", cogs)
+	tkm.Set("PL74C", grossmargin)
+	tkm.Set("PL32B", sellingexpense)
+	tkm.Set("PL94B", operatingexpense)
+	tkm.Set("PL94C", opincome)
+	tkm.Set("PL39B", ebt)
+	tkm.Set("PL41B", percentpbt)
+	tkm.Set("PL41C", eat)
+	tkm.Set("PL44B", opincome)
+	tkm.Set("PL44C", ebitda)
+	tkm.Set("PL44D", ebitdaroyalties)
+	tkm.Set("PL44E", ebitsga)
+	tkm.Set("PL44F", ebitsgaroyalty)
+}
+
+func CalcSum_(tkm toolkit.M) toolkit.M {
 	var netsales, cogs, grossmargin, sellingexpense,
 		sga, opincome, directexpense, indirectexpense,
 		royaltiestrademark, advtpromoexpense, operatingexpense,
