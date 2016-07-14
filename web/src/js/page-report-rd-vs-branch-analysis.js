@@ -88,7 +88,7 @@ v1.clickExpand = (e) => {
 }
 
 v1.emptyGrid = () => {
-	$('.grid-breakdown-branch-rd').replaceWith(`<div class="breakdown-view ez grid-breakdown-branch-rd"></div>`)
+	$('.grid-breakdown-branch-rd').replaceWith(`<div class="breakdown-view ez grid-breakdown-branch-rd" id="breakdown-branch-rd"></div>`)
 }
 
 v1.buildStructure = (data) => {
@@ -569,7 +569,7 @@ v2.clickExpand = (e) => {
 }
 
 v2.emptyGrid = () => {
-	$('.grid-breakdown-channel').replaceWith(`<div class="breakdown-view ez grid-breakdown-channel"></div>`)
+	$('.grid-breakdown-channel').replaceWith(`<div class="breakdown-view ez grid-breakdown-channel" id="breakdown-channel"></div>`)
 }
 
 v2.buildStructure = (data) => {
@@ -1063,7 +1063,7 @@ v3.clickExpand = (e) => {
 }
 
 v3.emptyGrid = () => {
-	$('.grid-total-branch-rd').replaceWith(`<div class="breakdown-view ez grid-total-branch-rd"></div>`)
+	$('.grid-total-branch-rd').replaceWith(`<div class="breakdown-view ez grid-total-branch-rd" id="breakdown-total-branch-rd"></div>`)
 }
 
 v3.buildStructure = (data) => {
@@ -1542,4 +1542,5 @@ $(() => {
 	v3.refresh()
 	v1.refresh()
 	v2.refresh()
+	rpt.showExport(true)
 })

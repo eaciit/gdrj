@@ -485,5 +485,6 @@ cst.title('&nbsp;')
 
 $(() => {
 	cst.refresh()
+	rpt.showExport(true)
 	// cst.selectfield()
 })

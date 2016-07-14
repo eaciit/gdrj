@@ -90,7 +90,7 @@ cbt.clickExpand = function (e) {
 };
 
 cbt.emptyGrid = function () {
-	$('.grid').replaceWith('<div class="breakdown-view ez grid"></div>');
+	$('.grid').replaceWith('<div class="breakdown-view ez grid" id="contribution-analysis"></div>');
 };
 
 cbt.buildStructure = function (data) {
@@ -496,4 +496,5 @@ vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { 
 
 $(function () {
 	cbt.refresh();
+	rpt.showExport(true);
 });

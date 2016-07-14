@@ -20,8 +20,8 @@ func (c *MasterReportSubChannel) TableName() string {
 	return "masterreportsubchannel"
 }
 
-func MasterReportSubChannelGetDistributor() ([]*MasterReportSubChannel, error) {
-	cursor, err := Find(new(MasterReportSubChannel), dbox.Eq("channelid", "I1"), nil)
+func MasterReportSubChannelGetByChannelID(channelid string) ([]*MasterReportSubChannel, error) {
+	cursor, err := Find(new(MasterReportSubChannel), dbox.Eq("channelid", channelid), nil)
 	if err != nil {
 		return nil, err
 	}

@@ -164,6 +164,7 @@ var bkd = viewModel.breakdown;(function () {
 		bkd.contentIsLoading(true);
 
 		var fetch = function fetch() {
+			subchan.injectFilters(param.filters);
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 				if (res.Status == "NOK") {
 					setTimeout(function () {
@@ -1015,6 +1016,7 @@ var v2 = viewModel.RDvsBranchView2;(function () {
 		v2.contentIsLoading(true);
 
 		var fetch = function fetch() {
+			subchan.injectFilter(param.filters);
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 				if (res.Status == "NOK") {
 					setTimeout(function () {
@@ -1604,6 +1606,7 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 		v1.contentIsLoading(true);
 
 		var fetch = function fetch() {
+			subchan.injectFilter(param.filters);
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 				if (res.Status == "NOK") {
 					setTimeout(function () {
@@ -2054,6 +2057,7 @@ var kac = viewModel.keyAccount;(function () {
 		kac.contentIsLoading(true);
 
 		var fetch = function fetch() {
+			subchan.injectFilter(param.filters);
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 				if (res.Status == "NOK") {
 					setTimeout(function () {
@@ -2427,11 +2431,12 @@ var subchan = viewModel.subChannel;(function () {
 		param.pls = [];
 		param.aggr = 'sum';
 		param.filters = rpt.getFilterValue(false, subchan.fiscalYear);
-		var groups = [subchan.breakdownBy()];
+		var groups = [];
 
 		if (subchan.what() == 'mt sub channel') {
 			subchan.breakdownBy('customer.reportsubchannel');
 			subchan.breakdownValue(['I3']);
+			groups.push(subchan.breakdownBy());
 
 			param.filters.push({
 				Field: 'customer.channelname',
@@ -2440,10 +2445,11 @@ var subchan = viewModel.subChannel;(function () {
 			});
 		} else if (subchan.what() == 'account') {
 			subchan.breakdownBy('customer.keyaccount');
+			groups.push(subchan.breakdownBy());
 		} else if (subchan.what() == 'brand') {
 			subchan.isInlineFilter(false);
 			subchan.breakdownBy('product.brand');
-			groups = [subchan.breakdownBy()];
+			groups.push(subchan.breakdownBy());
 
 			var breakdownBrand = subchan.breakdownBrand().filter(function (d) {
 				return d != 'All';
@@ -2455,6 +2461,29 @@ var subchan = viewModel.subChannel;(function () {
 					Value: breakdownBrand
 				});
 			}
+		} else if (subchan.what() == 'rd') {
+			subchan.isInlineFilter(false);
+			subchan.breakdownBy('customer.reportsubchannel');
+			groups.push(subchan.breakdownBy());
+
+			var breakdownChannel = 'customer.channelname';
+			groups.push(breakdownChannel);
+			param.filters.push({
+				Field: breakdownChannel,
+				Op: '$in',
+				Value: ['I1']
+			});
+
+			var breakdownDistributor = subchan.breakdownDistributor().filter(function (d) {
+				return d != 'All';
+			});
+			if (breakdownDistributor.length > 0) {
+				param.filters.push({
+					Field: subchan.breakdownBy(),
+					Op: '$in',
+					Value: breakdownDistributor
+				});
+			}
 		}
 
 		$('.breakdown-view:not(#subchan)').empty();
@@ -2463,6 +2492,7 @@ var subchan = viewModel.subChannel;(function () {
 		subchan.contentIsLoading(true);
 
 		var fetch = function fetch() {
+			subchan.injectFilter(param.filters);
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 				if (res.Status == "NOK") {
 					setTimeout(function () {
@@ -2836,7 +2866,131 @@ var subchan = viewModel.subChannel;(function () {
 			}
 		}, 100);
 	};
+
+	subchan.breakdownDistributor = ko.observableArray([]);
+	subchan.optionBreakdownDistributorValues = ko.observableArray([]);
+	subchan.changeBreakdownDistributor = function () {
+		var all = kac.breakdownValueAll;
+		var masterData = [];
+
+		masterData = rpt.masterData.Distributor();
+
+		toolkit.runUntil(function (i) {
+			subchan.optionBreakdownDistributorValues([all].concat(masterData.map(function (d) {
+				return { _id: d.Name, Name: d.Name };
+			})));
+
+			subchan.breakdownDistributor([all._id]);
+		}, function (i) {
+			return i > 10 || masterData.length > 0;
+		});
+	};
+	subchan.changeBreakdownDistributorValue = function () {
+		var all = kac.breakdownValueAll;
+		setTimeout(function () {
+			var condA1 = subchan.breakdownDistributor().length == 2;
+			var condA2 = subchan.breakdownDistributor().indexOf(all._id) == 0;
+			if (condA1 && condA2) {
+				subchan.breakdownDistributor.remove(all._id);
+				return;
+			}
+
+			var condB1 = subchan.breakdownDistributor().length > 1;
+			var condB2 = subchan.breakdownDistributor().reverse()[0] == all._id;
+			if (condB1 && condB2) {
+				subchan.breakdownDistributor([all._id]);
+				return;
+			}
+
+			var condC1 = subchan.breakdownDistributor().length == 0;
+			if (condC1) {
+				subchan.breakdownDistributor([all._id]);
+			}
+		}, 100);
+	};
+
+	subchan.optionMTBreakdown = ko.observableArray([]);
+	subchan.optionAccount = ko.observableArray([]);
+	subchan.optionBrand = ko.observableArray([]);
+	subchan.optionBranch = ko.observableArray([]);
+	subchan.optionDistributor = ko.observableArray([]);
+
+	subchan.fillOptionFilters = function () {
+		app.ajaxPost(viewModel.appName + "report/getdatamasterhypersupermini", {}, function (res) {
+			subchan.optionMTBreakdown(_.orderBy(res.data.map(function (d) {
+				return { _id: d._id, Name: d.Name };
+			}), function (d) {
+				return d.Name;
+			}));
+		});
+
+		app.ajaxPost(viewModel.appName + "report/getdatakeyaccount", {}, function (res) {
+			subchan.optionAccount(_.orderBy(res.data.map(function (d) {
+				return { _id: d._id, Name: d.Name };
+			}).concat({ _id: 'OHTER', Name: 'OHTER' }), function (d) {
+				return d.Name;
+			}));
+		});
+
+		app.ajaxPost(viewModel.appName + "report/getdatabrand", {}, function (res) {
+			subchan.optionBrand(_.orderBy(res.data.map(function (d) {
+				return { _id: d._id, Name: d.Name };
+			}), function (d) {
+				return d.Name;
+			}));
+		});
+
+		app.ajaxPost(viewModel.appName + "report/getdatabranch", {}, function (res) {
+			subchan.optionBranch(_.orderBy(res.data.map(function (d) {
+				return { _id: d.Name, Name: d.Name };
+			}), function (d) {
+				return d.Name;
+			}));
+		});
+
+		app.ajaxPost(viewModel.appName + "report/getdatamasterdistributor", {}, function (res) {
+			subchan.optionDistributor(_.orderBy(res.data.map(function (d) {
+				return { _id: d.Name, Name: d.Name };
+			}), function (d) {
+				return d.Name;
+			}));
+		});
+	};
+
+	subchan.filterMTBreakdown = ko.observableArray([]);
+	subchan.filterAccount = ko.observableArray([]);
+	subchan.filterBrand = ko.observableArray([]);
+	subchan.filterBranch = ko.observableArray([]);
+	subchan.filterDistributor = ko.observableArray([]);
+
+	subchan.injectFilters = function (filters) {
+		var DA_LORD_OF_DA_RING = [{ field: 'customer.reportsubchannel', holder: subchan.filterMTBreakdown }, { field: 'customer.keyaccount', holder: subchan.filterAccount }, { field: 'customer.brand', holder: subchan.filterBrand }, { field: 'customer.branch', holder: subchan.filterBranch }, { field: 'customer.reportsubchannel', holder: subchan.filterDistributor }];
+
+		DA_LORD_OF_DA_RING.filter(function (d) {
+			return d.holder().length > 0;
+		}).forEach(function (d) {
+			var previousFilter = filters.find(function (e) {
+				return e.Field == d.field;
+			});
+			if (toolkit.isDefined(previousFilter)) {
+				previousFilter.Value.push(d.holder());
+			} else {
+				filters.push({
+					Field: d.field,
+					Op: '$in',
+					Value: d.holder()
+				});
+			}
+		});
+	};
 })();
+
+// combinations(["customer.reportsubchannel", "customer.reportchannel", "customer.channelid", "customer.keyaccount", "product.brand", "customer.branch", "customer.customergroupname"]).map((d) => {
+// d.push("customer.channelname")
+// d.push("date.fiscal")
+
+// return _.orderBy(d).join("_").replace(/\./g, '_')
+// }).join(" ")
 
 vm.currentMenu('P&L Performance');
 vm.currentTitle('&nbsp;');
@@ -2846,22 +3000,27 @@ bkd.title('P&L by Channels');
 kac.title('&nbsp;');
 
 rpt.refresh = function () {
+	$('.tab-pane.active .btn-primary').trigger('click');
+};
+
+$(function () {
+	rpt.showExport(true);
+
+	subchan.fillOptionFilters();
+
 	bkd.changeBreakdown();
 	kac.changeBreakdown();
 	kac.changeBreakdownGroup();
 	subchan.changeBreakdownBrand();
+	subchan.changeBreakdownDistributor();
 
 	toolkit.runAfter(function () {
 		kac.breakdownValue(['All']);
 		kac.breakdownGroupValue(['KEY']);
 		bkd.breakdownValue(['All']);
 		subchan.breakdownBrand(['All']);
+		subchan.breakdownDistributor(['All']);
 
 		bkd.refresh();
 	}, 200);
-};
-
-$(function () {
-	rpt.refresh();
-	rpt.showExport(true);
 });

@@ -533,4 +533,5 @@ rpt.refresh = () => {
 
 $(() => {
 	rpt.refresh()
+	rpt.showExport(true)
 })
