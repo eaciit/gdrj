@@ -155,7 +155,7 @@ func buildRatio(tn string) error {
 
 		if kc != "" {
 			gl := mr.GetString("account")
-			promovalue := mr.GetFloat64("amountinidr_target")
+			promovalue := mr.GetFloat64("amountinidr_newtarget")
 			keypromo := toolkit.Sprintf("%s_%s_%s", fiscal, kc, gl)
 			alloc := plallocs[keypromo]
 			if alloc == nil {
