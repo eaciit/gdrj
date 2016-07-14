@@ -348,9 +348,6 @@ v1.render = () => {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
 			}
 
-			if (percentage < 0)
-				percentage = percentage * -1
-
 			row[`${breakdown} %`] = percentage
 		})
 
@@ -363,19 +360,44 @@ v1.render = () => {
 
 	console.log("rows", rows)
 	
+	let grossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode })
 	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 	rows.forEach((d, e) => {
 		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
 		if (d.PLCode == discountActivityPLCode) {
 			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
+
+			// ====== hek MODERN TRADE numbah
+			let grossSalesRedisMT = grossSales[`Regional Distributor_Modern Trade`]
+			let grossSalesRedisGT = grossSales[`Regional Distributor_Modern Trade`]
+
+			let discountBranchMTpercent = d[`Branch_Modern Trade %`]
+			let discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent)
+			let discountRedisTotal = d[`Regional Distributor_Total`]
+			let discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated
+			let discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100
+
+			d[`Regional Distributor_Modern Trade`] = discountRedisMTCalculated
+			d[`Regional Distributor_Modern Trade %`] = discountBranchMTpercent
+
+			d[`Regional Distributor_General Trade`] = discountRedisGTCalculated
+			d[`Regional Distributor_General Trade %`] = discountRedisGTPercentCalculated
+			
 		}
 
 		if (TotalPercentage < 0)
 			TotalPercentage = TotalPercentage * -1 
-		rows[e].Percentage = toolkit.number(TotalPercentage)
-	})
+		d.Percentage = toolkit.number(TotalPercentage)
 
+		// ===== ABS %
+
+		for (let p in d) if (d.hasOwnProperty(p)) {
+			if (p.indexOf('%') > -1 || p == "Percentage") {
+				d[p] = Math.abs(d[p])
+			}
+		}
+	})
 
 
 	// ========================= PLOT DATA
