@@ -108,7 +108,7 @@ func prepmasteraggrdatapromo() {
 
 	//2016
 	targetyearpromo := float64(175512849213)
-	targetyearspg := float64(50122691220)
+	// targetyearspg := float64(50122691220)
 
 	for {
 		tkm := toolkit.M{}
@@ -146,7 +146,7 @@ func prepmasteraggrdatapromo() {
 		m := v.(toolkit.M)
 		transferablepromo := m.GetFloat64("transferablepromo")
 		if transferablepromo != float64(0) {
-			transferableratio := toolkit.transferablepromo / needtotransferpromo
+			transferableratio := transferablepromo / needtotransferpromo
 			promototransfer := transferableratio * needtotransferpromo
 			m.Set("promotarget", m.GetFloat64("promo")+promototransfer)
 			m.Set("spgtarget", m.GetFloat64("spg")-promototransfer)
