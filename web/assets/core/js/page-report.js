@@ -41,6 +41,7 @@ rpt.getFilterValue = function () {
 				'Value': fiscalField()
 			});
 		} else {
+			rpt.saveFiscalYear(fiscalField());
 			res.push({
 				'Field': 'date.fiscal',
 				'Op': '$eq',
@@ -58,6 +59,21 @@ rpt.getFilterValue = function () {
 	});
 
 	return res;
+};
+
+rpt.getFiscalYear = function () {
+	var fy = rpt.optionFiscalYears();
+
+	var savedFY = toolkit.redefine(localStorage.fiscalYear, fy[1]);
+	if (fy.indexOf(savedFY) == -1) {
+		savedFY = fy[1];
+	}
+
+	return savedFY;
+};
+
+rpt.saveFiscalYear = function (fy) {
+	localStorage.fiscalYear = fy;
 };
 
 rpt.optionFiscalYears = ko.observableArray(['2014-2015', '2015-2016']);
@@ -112,8 +128,8 @@ rpt.value = {
 	HQ: ko.observable(false),
 	From: ko.observable(new Date(2014, 0, 1)),
 	To: ko.observable(new Date(2016, 11, 31)),
-	FiscalYear: ko.observable(rpt.optionFiscalYears()[1]),
-	FiscalYears: ko.observableArray([rpt.optionFiscalYears()[1]])
+	FiscalYear: ko.observable(rpt.getFiscalYear()),
+	FiscalYears: ko.observableArray([rpt.getFiscalYear()])
 };
 rpt.masterData.Type = ko.observableArray([{ value: 'Mfg', text: 'Mfg' }, { value: 'Branch', text: 'Branch' }]);
 rpt.masterData.HQ = ko.observableArray([{ value: true, text: 'True' }, { value: false, text: 'False' }]);
@@ -980,21 +996,6 @@ rpt.panel_scrollrelocated = function () {
 			$(this).css("width", $(this).parent().find('.table-content').width());
 		}
 	});
-	// if ($('.scroll-grid-bottom-yo').size() == 0) {
-	// 		return;
-	// }
-
-	// let window_top = $(window).scrollTop() + $(window).innerHeight()
-	//    var div_top = $('.scroll-grid-bottom-yo').offset().top.toFixed()
-	//    if (parseInt(div_top) < parseInt(window_top.toFixed(0))) {
-	//         $('.scroll-grid-bottom').removeClass('viewscrollfix')
-	//        $(".scroll-grid-bottom").hide()
-	//        $('.scroll-grid-bottom.viewscrollfix').css("width", "100%")
-	//    } else {
-	//         $('.scroll-grid-bottom').addClass('viewscrollfix')
-	//        $(".scroll-grid-bottom").show()
-	//        $('.scroll-grid-bottom.viewscrollfix').css("width", $('.breakdown-view .table-content').width())
-	//    }
 };
 
 $(function () {
