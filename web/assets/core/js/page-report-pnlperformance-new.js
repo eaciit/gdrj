@@ -2427,11 +2427,12 @@ var subchan = viewModel.subChannel;(function () {
 		param.pls = [];
 		param.aggr = 'sum';
 		param.filters = rpt.getFilterValue(false, subchan.fiscalYear);
-		var groups = [subchan.breakdownBy()];
+		var groups = [];
 
 		if (subchan.what() == 'mt sub channel') {
 			subchan.breakdownBy('customer.reportsubchannel');
 			subchan.breakdownValue(['I3']);
+			groups.push(subchan.breakdownBy());
 
 			param.filters.push({
 				Field: 'customer.channelname',
@@ -2440,10 +2441,11 @@ var subchan = viewModel.subChannel;(function () {
 			});
 		} else if (subchan.what() == 'account') {
 			subchan.breakdownBy('customer.keyaccount');
+			groups.push(subchan.breakdownBy());
 		} else if (subchan.what() == 'brand') {
 			subchan.isInlineFilter(false);
 			subchan.breakdownBy('product.brand');
-			groups = [subchan.breakdownBy()];
+			groups.push(subchan.breakdownBy());
 
 			var breakdownBrand = subchan.breakdownBrand().filter(function (d) {
 				return d != 'All';

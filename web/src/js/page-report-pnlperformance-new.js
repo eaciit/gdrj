@@ -2646,11 +2646,12 @@ let subchan = viewModel.subChannel
 		param.pls = []
 		param.aggr = 'sum'
 		param.filters = rpt.getFilterValue(false, subchan.fiscalYear)
-		let groups = [subchan.breakdownBy()]
+		let groups = []
 
 		if (subchan.what() == 'mt sub channel') {
 			subchan.breakdownBy('customer.reportsubchannel')
 			subchan.breakdownValue(['I3'])
+			groups.push(subchan.breakdownBy())
 
 			param.filters.push({
 				Field: 'customer.channelname',
@@ -2659,10 +2660,11 @@ let subchan = viewModel.subChannel
 			})
 		} else if (subchan.what() == 'account') {
 			subchan.breakdownBy('customer.keyaccount')
+			groups.push(subchan.breakdownBy())
 		} else if (subchan.what() == 'brand') {
 			subchan.isInlineFilter(false)
 			subchan.breakdownBy('product.brand')
-			groups = [subchan.breakdownBy()]
+			groups.push(subchan.breakdownBy())
 
 			let breakdownBrand = subchan.breakdownBrand().filter((d) => d != 'All')
 			if (breakdownBrand.length > 0) {
