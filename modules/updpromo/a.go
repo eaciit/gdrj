@@ -125,7 +125,7 @@ func buildRatio(tn string) error {
 	}
 
 	//rawdatapl_promospg11072016_target
-	ctarget, _ := conn.NewQuery().From("rawdatapl_promospg11072016_target").
+	ctarget, _ := conn.NewQuery().From("rawdatapl_promospg11072016_targetratio").
 		Select().Cursor(nil)
 	defer ctarget.Close()
 
