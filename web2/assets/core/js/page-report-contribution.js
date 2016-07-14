@@ -5,7 +5,7 @@ var cbt = viewModel.contribution;
 
 cbt.contentIsLoading = ko.observable(false);
 
-cbt.breakdownBy = ko.observable('product.brand');
+cbt.breakdownBy = ko.observable('customer.channelname');
 cbt.breakdownByFiscalYear = ko.observable('date.fiscal');
 
 cbt.data = ko.observableArray([]);
@@ -49,6 +49,7 @@ cbt.refresh = function () {
 			cbt.emptyGrid();
 			cbt.contentIsLoading(false);
 			cbt.render();
+			rpt.prepareEvents();
 		}, function () {
 			cbt.emptyGrid();
 			cbt.contentIsLoading(false);
@@ -89,7 +90,7 @@ cbt.clickExpand = function (e) {
 };
 
 cbt.emptyGrid = function () {
-	$('.grid').replaceWith('<div class="breakdown-view ez grid"></div>');
+	$('.grid').replaceWith('<div class="breakdown-view ez grid" id="contribution-analysis"></div>');
 };
 
 cbt.buildStructure = function (data) {
@@ -155,27 +156,30 @@ cbt.render = function () {
 
 	var trHeader = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('P&L').css('height', 34 * cbt.level() + 'px').attr('data-rowspan', cbt.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
+	toolkit.newEl('th').html('P&L').css('height', rpt.rowHeaderHeight() * cbt.level() + 'px').attr('data-rowspan', cbt.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
 
-	toolkit.newEl('th').html('Total').css('height', 34 * cbt.level() + 'px').attr('data-rowspan', cbt.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('Total').css('height', rpt.rowHeaderHeight() * cbt.level() + 'px').attr('data-rowspan', cbt.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < cbt.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent));
+		trContents.push(toolkit.newEl('tr').appendTo(tableContent).css('height', rpt.rowHeaderHeight() + 'px'));
 	}
 
 	// ========================= BUILD HEADER
 
 	var data = cbt.data();
 
-	var columnWidth = 180;
+	var columnWidth = 130;
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
-	var percentageWidth = 110;
+	var percentageWidth = 100;
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
-		var currentColumnWidth = columnWidth;
+		var currentColumnWidth = each._id.length * 8;
+		if (currentColumnWidth < columnWidth) {
+			currentColumnWidth = columnWidth;
+		}
 
 		each.key = key.join('_');
 		dataFlat.push(each);
@@ -185,17 +189,13 @@ cbt.render = function () {
 	};
 
 	data.forEach(function (lvl1, i) {
-		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-right').appendTo(trContents[0]);
-		// .css('background-color', colors[i])
-		// .css('color', 'white')
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-right').appendTo(trContents[0]).css('border-top', 'none');
 
 		if (cbt.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of total').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-right').appendTo(trContents[0]);
-			// .css('background-color', colors[i])
-			// .css('color', 'white')
+			var thheader1p = toolkit.newEl('th').html('% of total').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).css('border-top', 'none').addClass('align-right').appendTo(trContents[0]);
 
 			return;
 		}
@@ -285,7 +285,7 @@ cbt.render = function () {
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader).css('height', rpt.rowContentHeight() + 'px');
 
 		trHeader.on('click', function () {
 			cbt.clickExpand(trHeader);
@@ -296,7 +296,7 @@ cbt.render = function () {
 		var pnlTotal = kendo.toString(d.PNLTotal, 'n0');
 		toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trHeader);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).appendTo(tableContent).css('height', rpt.rowContentHeight() + 'px');
 
 		dataFlat.forEach(function (e, f) {
 			var key = e.key;
@@ -487,6 +487,7 @@ cbt.buildGridLevels = function (container, rows) {
 	rpt.showZeroValue(false);
 	container.find(".table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
 	rpt.refreshHeight();
+	rpt.addScrollBottom(container);
 };
 
 vm.currentMenu('Analysis');
@@ -495,4 +496,5 @@ vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { 
 
 $(function () {
 	cbt.refresh();
+	rpt.showExport(true);
 });

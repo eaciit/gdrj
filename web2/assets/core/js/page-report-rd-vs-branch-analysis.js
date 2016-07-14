@@ -15,6 +15,11 @@ v1.fiscalYear = ko.observable(rpt.value.FiscalYear());
 v1.level = ko.observable(2);
 v1.title = ko.observable('Total Branch & RD');
 
+v1.changeTo = function (d, e) {
+	v1.title(d);
+	$(window).trigger('scroll');
+};
+
 v1.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
@@ -46,6 +51,7 @@ v1.refresh = function () {
 			v1.emptyGrid();
 			v1.contentIsLoading(false);
 			v1.render();
+			rpt.prepareEvents();
 		}, function () {
 			v1.emptyGrid();
 			v1.contentIsLoading(false);
@@ -86,7 +92,7 @@ v1.clickExpand = function (e) {
 };
 
 v1.emptyGrid = function () {
-	$('.grid-breakdown-branch-rd').replaceWith('<div class="breakdown-view ez grid-breakdown-branch-rd"></div>');
+	$('.grid-breakdown-branch-rd').replaceWith('<div class="breakdown-view ez grid-breakdown-branch-rd" id="breakdown-branch-rd"></div>');
 };
 
 v1.buildStructure = function (data) {
@@ -171,7 +177,7 @@ v1.render = function () {
 
 	// ========================= TABLE STRUCTURE
 
-	var percentageWidth = 110;
+	var percentageWidth = 100;
 
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl-branch pivot-pnl').appendTo(container);
 
@@ -185,15 +191,15 @@ v1.render = function () {
 
 	var trHeader = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('P&L').css('height', 34 * v1.level() + 'px').attr('data-rowspan', v1.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
+	toolkit.newEl('th').html('P&L').css('height', rpt.rowHeaderHeight() * v1.level() + 'px').attr('data-rowspan', v1.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
 
-	toolkit.newEl('th').html('Total').css('height', 34 * v1.level() + 'px').attr('data-rowspan', v1.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('Total').css('height', rpt.rowHeaderHeight() * v1.level() + 'px').attr('data-rowspan', v1.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of NS').css('height', 34 * v1.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 40).attr('data-rowspan', v1.level()).css('vertical-align', 'middle').appendTo(trHeader);
+	toolkit.newEl('th').html('% of N Sales').css('height', rpt.rowHeaderHeight() * v1.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v1.level()).css('vertical-align', 'middle').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < v1.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent));
+		trContents.push(toolkit.newEl('tr').appendTo(tableContent).css('height', rpt.rowHeaderHeight() + 'px'));
 	}
 
 	// ========================= BUILD HEADER
@@ -216,13 +222,13 @@ v1.render = function () {
 	};
 
 	data.forEach(function (lvl1, i) {
-		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white').css('border-top', 'none');
 
 		if (v1.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
+			var thheader1p = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white').css('border-top', 'none');
 
 			return;
 		}
@@ -240,7 +246,7 @@ v1.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
 
 				if (lvl2._id == 'Total') {
 					_thheader1p.css('background-color', 'rgb(116, 149, 160)');
@@ -263,6 +269,9 @@ v1.render = function () {
 	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
+	var grossSalesPLCode = 'PL0';
+	var grossSalesRow = {};
+	var discountActivityPLCode = 'PL7A';
 	var rows = [];
 
 	rpt.fixRowValue(dataFlat);
@@ -272,6 +281,7 @@ v1.render = function () {
 	dataFlat.forEach(function (e) {
 		var breakdown = e.key;
 		netSalesRow[breakdown] = e[netSalesPLCode];
+		grossSalesRow[breakdown] = e[grossSalesPLCode];
 	});
 
 	plmodels.forEach(function (d) {
@@ -292,11 +302,11 @@ v1.render = function () {
 			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100;
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
-
-			if (percentage < 0) percentage = percentage * -1;
 
 			row[breakdown + ' %'] = percentage;
 		});
@@ -310,13 +320,49 @@ v1.render = function () {
 
 	console.log("rows", rows);
 
+	var grossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
+	});
 	var TotalNetSales = _.find(rows, function (r) {
-		return r.PLCode == "PL8A";
+		return r.PLCode == netSalesPLCode;
+	}).PNLTotal;
+	var TotalGrossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
 	}).PNLTotal;
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+
+			// ====== hek MODERN TRADE numbah
+			var grossSalesRedisMT = grossSales['Regional Distributor_Modern Trade'];
+			var grossSalesRedisGT = grossSales['Regional Distributor_Modern Trade'];
+
+			var discountBranchMTpercent = d['Branch_Modern Trade %'];
+			var discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent);
+			var discountRedisTotal = d['Regional Distributor_Total'];
+			var discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated;
+			var discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100;
+
+			d['Regional Distributor_Modern Trade'] = discountRedisMTCalculated;
+			d['Regional Distributor_Modern Trade %'] = discountBranchMTpercent;
+
+			d['Regional Distributor_General Trade'] = discountRedisGTCalculated;
+			d['Regional Distributor_General Trade %'] = discountRedisGTPercentCalculated;
+		}
+
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = toolkit.number(TotalPercentage);
+		d.Percentage = toolkit.number(TotalPercentage);
+
+		// ===== ABS %
+
+		for (var p in d) {
+			if (d.hasOwnProperty(p)) {
+				if (p.indexOf('%') > -1 || p == "Percentage") {
+					d[p] = Math.abs(d[p]);
+				}
+			}
+		}
 	});
 
 	// ========================= PLOT DATA
@@ -326,7 +372,7 @@ v1.render = function () {
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).css('height', rpt.rowContentHeight() + 'px').appendTo(tableHeader);
 
 		trHeader.on('click', function () {
 			v1.clickExpand(trHeader);
@@ -339,7 +385,7 @@ v1.render = function () {
 
 		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + ' %').addClass('align-right').appendTo(trHeader);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).css('height', rpt.rowContentHeight() + 'px').appendTo(tableContent);
 
 		dataFlat.forEach(function (e, f) {
 			var key = e.key;
@@ -372,6 +418,7 @@ v1.render = function () {
 	});
 
 	// ========================= CONFIGURE THE HIRARCHY
+
 	v3.buildGridLevels(container, rows);
 };
 
@@ -418,6 +465,7 @@ v2.refresh = function () {
 			v2.emptyGrid();
 			v2.contentIsLoading(false);
 			v2.render();
+			rpt.prepareEvents();
 		}, function () {
 			v2.emptyGrid();
 			v2.contentIsLoading(false);
@@ -458,7 +506,7 @@ v2.clickExpand = function (e) {
 };
 
 v2.emptyGrid = function () {
-	$('.grid-breakdown-channel').replaceWith('<div class="breakdown-view ez grid-breakdown-channel"></div>');
+	$('.grid-breakdown-channel').replaceWith('<div class="breakdown-view ez grid-breakdown-channel" id="breakdown-channel"></div>');
 };
 
 v2.buildStructure = function (data) {
@@ -561,15 +609,15 @@ v2.render = function () {
 
 	var trHeader = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('P&L').css('height', 34 * v2.level() + 'px').attr('data-rowspan', v2.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
+	toolkit.newEl('th').html('P&L').css('height', rpt.rowHeaderHeight() * v2.level() + 'px').attr('data-rowspan', v2.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
 
-	toolkit.newEl('th').html('Total').css('height', 34 * v2.level() + 'px').attr('data-rowspan', v2.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('Total').css('height', rpt.rowHeaderHeight() * v2.level() + 'px').attr('data-rowspan', v2.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of NS').css('height', 34 * v2.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 40).attr('data-rowspan', v2.level()).appendTo(trHeader);
+	toolkit.newEl('th').html('% of N Sales').css('height', rpt.rowHeaderHeight() * v2.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v2.level()).appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < v2.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent));
+		trContents.push(toolkit.newEl('tr').appendTo(tableContent).css('height', rpt.rowHeaderHeight() + 'px'));
 	}
 
 	// ========================= BUILD HEADER
@@ -580,7 +628,7 @@ v2.render = function () {
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
-	var percentageWidth = 110;
+	var percentageWidth = 100;
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
 		var currentColumnWidth = columnWidth;
@@ -593,13 +641,13 @@ v2.render = function () {
 	};
 
 	data.forEach(function (lvl1, i) {
-		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white').css('border-top', 'none');
 
 		if (v2.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('border-top', 'none');
 
 			return;
 		}
@@ -617,7 +665,7 @@ v2.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p2 = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p2 = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
 
 				if (lvl2._id == 'Total') {
 					_thheader1p2.css('background-color', 'rgb(116, 149, 160)');
@@ -640,6 +688,9 @@ v2.render = function () {
 	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
+	var grossSalesPLCode = 'PL0';
+	var grossSalesRow = {};
+	var discountActivityPLCode = 'PL7A';
 	var rows = [];
 
 	rpt.fixRowValue(dataFlat);
@@ -649,6 +700,7 @@ v2.render = function () {
 	dataFlat.forEach(function (e) {
 		var breakdown = e.key;
 		netSalesRow[breakdown] = e[netSalesPLCode];
+		grossSalesRow[breakdown] = e[grossSalesPLCode];
 	});
 
 	plmodels.forEach(function (d) {
@@ -669,7 +721,9 @@ v2.render = function () {
 			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100;
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
@@ -687,13 +741,49 @@ v2.render = function () {
 
 	console.log("rows", rows);
 
+	var grossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
+	});
 	var TotalNetSales = _.find(rows, function (r) {
-		return r.PLCode == "PL8A";
+		return r.PLCode == netSalesPLCode;
+	}).PNLTotal;
+	var TotalGrossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
 	}).PNLTotal;
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+
+			// ====== hek MODERN TRADE numbah
+			var grossSalesRedisMT = grossSales['Modern Trade_Regional Distributor'];
+			var grossSalesRedisGT = grossSales['Modern Trade_Regional Distributor'];
+
+			var discountBranchMTpercent = d['Modern Trade_Branch %'];
+			var discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent);
+			var discountRedisTotal = d['General Trade_Total'];
+			var discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated;
+			var discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100;
+
+			d['Modern Trade_Regional Distributor'] = discountRedisMTCalculated;
+			d['Modern Trade_Regional Distributor %'] = discountBranchMTpercent;
+
+			d['General Trade_Regional Distributor'] = discountRedisGTCalculated;
+			d['General Trade_Regional Distributor %'] = discountRedisGTPercentCalculated;
+		}
+
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = TotalPercentage;
+		d.Percentage = toolkit.number(TotalPercentage);
+
+		// ===== ABS %
+
+		for (var p in d) {
+			if (d.hasOwnProperty(p)) {
+				if (p.indexOf('%') > -1 || p == "Percentage") {
+					d[p] = Math.abs(d[p]);
+				}
+			}
+		}
 	});
 
 	// ========================= PLOT DATA
@@ -703,7 +793,7 @@ v2.render = function () {
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader).css('height', rpt.rowContentHeight() + 'px');
 
 		trHeader.on('click', function () {
 			v2.clickExpand(trHeader);
@@ -716,7 +806,7 @@ v2.render = function () {
 
 		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + ' %').addClass('align-right').appendTo(trHeader);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).css('height', rpt.rowContentHeight() + 'px').appendTo(tableContent);
 
 		dataFlat.forEach(function (e, f) {
 			var key = e.key;
@@ -795,6 +885,7 @@ v3.refresh = function () {
 			v3.emptyGrid();
 			v3.contentIsLoading(false);
 			v3.render();
+			rpt.prepareEvents();
 		}, function () {
 			v3.emptyGrid();
 			v3.contentIsLoading(false);
@@ -835,7 +926,7 @@ v3.clickExpand = function (e) {
 };
 
 v3.emptyGrid = function () {
-	$('.grid-total-branch-rd').replaceWith('<div class="breakdown-view ez grid-total-branch-rd"></div>');
+	$('.grid-total-branch-rd').replaceWith('<div class="breakdown-view ez grid-total-branch-rd" id="breakdown-total-branch-rd"></div>');
 };
 
 v3.buildStructure = function (data) {
@@ -901,15 +992,15 @@ v3.render = function () {
 
 	var trHeader = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('P&L').css('height', 34 * v3.level() + 'px').attr('data-rowspan', v3.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
+	toolkit.newEl('th').html('P&L').css('height', rpt.rowHeaderHeight() * v3.level() + 'px').attr('data-rowspan', v3.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
 
-	toolkit.newEl('th').html('Total').css('height', 34 * v3.level() + 'px').attr('data-rowspan', v3.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('Total').css('height', rpt.rowHeaderHeight() * v3.level() + 'px').attr('data-rowspan', v3.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of NS').css('height', 34 * v3.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 40).attr('data-rowspan', v3.level()).appendTo(trHeader);
+	toolkit.newEl('th').html('% of N Sales').css('height', rpt.rowHeaderHeight() * v3.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', v3.level()).appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < v3.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent));
+		trContents.push(toolkit.newEl('tr').appendTo(tableContent).css('height', rpt.rowHeaderHeight() + 'px'));
 	}
 
 	// ========================= BUILD HEADER
@@ -920,7 +1011,7 @@ v3.render = function () {
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
-	var percentageWidth = 110;
+	var percentageWidth = 100;
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
 		var currentColumnWidth = columnWidth;
@@ -933,13 +1024,13 @@ v3.render = function () {
 	};
 
 	data.forEach(function (lvl1, i) {
-		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-right').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-right').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white').css('border-top', 'none');
 
 		if (v3.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white');
+			var thheader1p = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white').css('border-top', 'none');
 
 			return;
 		}
@@ -952,7 +1043,7 @@ v3.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p3 = toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p3 = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
 
 				return;
 			}
@@ -970,6 +1061,9 @@ v3.render = function () {
 	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
+	var grossSalesPLCode = 'PL0';
+	var grossSalesRow = {};
+	var discountActivityPLCode = 'PL7A';
 	var rows = [];
 
 	rpt.fixRowValue(dataFlat);
@@ -979,6 +1073,7 @@ v3.render = function () {
 	dataFlat.forEach(function (e) {
 		var breakdown = e.key;
 		netSalesRow[breakdown] = e[netSalesPLCode];
+		grossSalesRow[breakdown] = e[grossSalesPLCode];
 	});
 
 	plmodels.forEach(function (d, i) {
@@ -999,7 +1094,9 @@ v3.render = function () {
 			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100;
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
@@ -1018,12 +1115,19 @@ v3.render = function () {
 	console.log("rows", rows);
 
 	var TotalNetSales = _.find(rows, function (r) {
-		return r.PLCode == "PL8A";
+		return r.PLCode == netSalesPLCode;
+	}).PNLTotal;
+	var TotalGrossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
 	}).PNLTotal;
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+		}
+
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
-		rows[e].Percentage = TotalPercentage;
+		rows[e].Percentage = toolkit.number(TotalPercentage);
 	});
 
 	// ========================= PLOT DATA
@@ -1033,7 +1137,7 @@ v3.render = function () {
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).css('height', rpt.rowContentHeight() + 'px').appendTo(tableHeader);
 
 		trHeader.on('click', function () {
 			v3.clickExpand(trHeader);
@@ -1046,7 +1150,7 @@ v3.render = function () {
 
 		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + ' %').addClass('align-right').appendTo(trHeader);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).css('height', rpt.rowContentHeight() + 'px').appendTo(tableContent);
 
 		dataFlat.forEach(function (e, f) {
 			var key = e.key;
@@ -1237,6 +1341,7 @@ v3.buildGridLevels = function (container, rows) {
 	rpt.showZeroValue(false);
 	container.find(".table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
 	rpt.refreshHeight();
+	rpt.addScrollBottom(container);
 };
 
 vm.currentMenu('Analysis');
@@ -1247,6 +1352,5 @@ $(function () {
 	v3.refresh();
 	v1.refresh();
 	v2.refresh();
-
-	rpt.prepareEvents();
+	rpt.showExport(true);
 });

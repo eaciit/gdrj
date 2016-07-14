@@ -9,13 +9,13 @@
 	<!-- Nav tabs -->
 	<ul class="nav nav-pills nav-replace-title" role="tablist">
 		<li role="presentation" class="active">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="v1.title('Total Branch & RD')">Total Branch & RD</a>
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="v1.changeTo('Total Branch & RD',this)">Total Branch & RD</a>
 		</li>
 		<li role="presentation">
-			<a href="#tab1" role="tab" data-toggle="tab" onclick="v1.title('Breakdown Branch/RD to Channel')">Breakdown Branch/RD to Channel</a>
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="v1.changeTo('Breakdown Branch/RD to Channel',this)">Breakdown Branch/RD to Channel</a>
 		</li>
 		<li role="presentation">
-			<a href="#tab2" role="tab" data-toggle="tab"onclick="v1.title('Breakdown Channel to Branch/RD')">Breakdown Channel to Branch/RD</a>
+			<a href="#tab2" role="tab" data-toggle="tab" onclick="v1.changeTo('Breakdown Channel to Branch/RD',this)">Breakdown Channel to Branch/RD</a>
 		</li>
 	</ul>
 
@@ -42,6 +42,9 @@
 				</button>
 				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 					<i class="fa fa-server"></i> Show Filter
+				</button>
+				<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#breakdown-branch-rd', 'Total Branch & RD', 'header-content')">
+					<i class="fa fa-download"></i> Export as Excel
 				</button>
 			</div>
 		</div>
@@ -84,6 +87,9 @@
 				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 					<i class="fa fa-server"></i> Show Filter
 				</button>
+				<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#breakdown-channel', 'Branch/RD to Channel', 'header-content')">
+					<i class="fa fa-download"></i> Export as Excel
+				</button>
 			</div>
 		</div>
 	</div>
@@ -124,6 +130,9 @@
 				</button>
 				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 					<i class="fa fa-server"></i> Show Filter
+				</button>
+				<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#breakdown-total-branch-rd', 'Channel to Branch/RD', 'header-content')">
+					<i class="fa fa-download"></i> Export as Excel
 				</button>
 			</div>
 		</div>

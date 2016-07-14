@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 // let menuLink = vm.menu()
 // 	.find((d) => d.href == ('/' + document.URL.split('/').slice(3).join('/')))
 
@@ -39,6 +41,7 @@ rpt.getFilterValue = function () {
 				'Value': fiscalField()
 			});
 		} else {
+			rpt.saveFiscalYear(fiscalField());
 			res.push({
 				'Field': 'date.fiscal',
 				'Op': '$eq',
@@ -56,6 +59,21 @@ rpt.getFilterValue = function () {
 	});
 
 	return res;
+};
+
+rpt.getFiscalYear = function () {
+	var fy = rpt.optionFiscalYears();
+
+	var savedFY = toolkit.redefine(localStorage.fiscalYear, fy[1]);
+	if (fy.indexOf(savedFY) == -1) {
+		savedFY = fy[1];
+	}
+
+	return savedFY;
+};
+
+rpt.saveFiscalYear = function (fy) {
+	localStorage.fiscalYear = fy;
 };
 
 rpt.optionFiscalYears = ko.observableArray(['2014-2015', '2015-2016']);
@@ -93,6 +111,8 @@ rpt.parseGroups = function (what) {
 
 	return what;
 };
+rpt.rowHeaderHeight = ko.observable(34);
+rpt.rowContentHeight = ko.observable(26);
 rpt.mode = ko.observable('render');
 rpt.refreshView = ko.observable('');
 rpt.modecustom = ko.observable(false);
@@ -108,8 +128,8 @@ rpt.value = {
 	HQ: ko.observable(false),
 	From: ko.observable(new Date(2014, 0, 1)),
 	To: ko.observable(new Date(2016, 11, 31)),
-	FiscalYear: ko.observable(rpt.optionFiscalYears()[1]),
-	FiscalYears: ko.observableArray([rpt.optionFiscalYears()[1]])
+	FiscalYear: ko.observable(rpt.getFiscalYear()),
+	FiscalYears: ko.observableArray([rpt.getFiscalYear()])
 };
 rpt.masterData.Type = ko.observableArray([{ value: 'Mfg', text: 'Mfg' }, { value: 'Branch', text: 'Branch' }]);
 rpt.masterData.HQ = ko.observableArray([{ value: true, text: 'True' }, { value: false, text: 'False' }]);
@@ -342,7 +362,6 @@ rpt.toggleFilter = function () {
 	$('.k-chart').each(function (i, d) {
 		$(d).data('kendoChart').redraw();
 	});
-	rpt.panel_relocated();
 };
 
 // rpt.getIdeas = () => {
@@ -416,22 +435,6 @@ rpt.refreshAll = function () {
 			break;
 	}
 };
-rpt.panel_relocated = function () {
-	if ($('.panel-yo').size() == 0) {
-		return;
-	}
-
-	var window_top = $(window).scrollTop();
-	var div_top = $('.panel-yo').offset().top;
-	if (window_top > div_top) {
-		$('.panel-fix').css('width', $('.panel-yo').width());
-		$('.panel-fix').addClass('contentfilter');
-		$('.panel-yo').height($('.panel-fix').outerHeight());
-	} else {
-		$('.panel-fix').removeClass('contentfilter');
-		$('.panel-yo').height(0);
-	}
-};
 
 rpt.tabbedContent = function () {
 	$('.app-title h2').html('&nbsp;');
@@ -467,13 +470,13 @@ rpt.allowedPL = ko.computed(function () {
 rpt.idarrayhide = ko.observableArray(['PL44A']);
 
 rpt.prepareEvents = function () {
-	$('.breakdown-view').parent().on('mouseover', 'tr', function () {
+	$('.breakdown-view').parent().off('mouseover').on('mouseover', 'tr', function () {
 		var rowID = $(this).attr('data-row');
 
 		var elh = $('.breakdown-view .table-header tr[data-row="' + rowID + '"]').addClass('hover');
 		var elc = $('.breakdown-view .table-content tr[data-row="' + rowID + '"]').addClass('hover');
 	});
-	$('.breakdown-view').parent().on('mouseleave', 'tr', function () {
+	$('.breakdown-view').parent().off('mouseleave').on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover');
 	});
 };
@@ -766,6 +769,7 @@ rpt.buildGridLevels = function (rows) {
 	rpt.hideSubGrowthValue();
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
 	rpt.refreshHeight();
+	rpt.addScrollBottom();
 };
 
 rpt.hideSubGrowthValue = function () {
@@ -802,51 +806,73 @@ rpt.export = function (target, title, mode) {
 	target = toolkit.$(target);
 
 	if (mode == 'kendo') {
-		// var workbook = new kendo.ooxml.Workbook({
-		//   sheets: [
-		//     {
-		//       // Column settings (width)
-		//       columns: [
-		//         { autoWidth: true },
-		//         { autoWidth: true }
-		//       ],
-		//       // Title of the sheet
-		//       title: "Customers",
-		//       // Rows of the sheet
-		//       rows: [
-		//         // First row (header)
-		//         {
-		//           cells: [
-		//             // First cell
-		//             { value: "Company Name" },
-		//             // Second cell
-		//             { value: "Contact" }
-		//           ]
-		//         },
-		//         // Second row (data)
-		//         {
-		//           cells: [
-		//             { value: "Around the Horn" },
-		//             { value: "Thomas Hardy" }
-		//           ]
-		//         },
-		//         // Third row (data)
-		//         {
-		//           cells: [
-		//             { value: "B's Beverages" },
-		//             { value: "Victoria Ashworth" }
-		//           ]
-		//         }
-		//       ]
-		//     }
-		//   ]
-		// });
-		// kendo.saveAs({
-		//     dataURI: workbook.toDataURL(),
-		//     fileName: "Test.xlsx"
-		// });
+		var workbook;
 
-		return;
+		var _ret2 = function () {
+			var rowdata = [],
+			    cellval = {},
+			    cells = [];
+			var tableHeaderLock = target.find('.k-grid-header-locked');
+			var tableHeader = target.find('.k-grid-header-wrap');
+			var tableContentLock = target.find('.k-grid-content-locked');
+			var tableContent = target.find('.k-grid-content');
+			tableHeaderLock.find('tr').each(function (i, e) {
+				cells = [];
+				$(e).find('th').each(function (i, e) {
+					cellval = {};
+					cellval['value'] = $(e).attr('data-title');
+					if ($(e).attr('rowspan')) {
+						if (title == 'Distribution Analysis') cellval['rowSpan'] = parseInt($(e).attr('rowspan')) + 2;else cellval['rowSpan'] = parseInt($(e).attr('rowspan'));
+					}
+					if ($(e).attr('colspan')) cellval['colSpan'] = parseInt($(e).attr('colspan'));
+					cells.push(cellval);
+				});
+				rowdata.push({ cells: cells });
+			});
+			tableHeader.find('tr').each(function (a, e) {
+				cells = [];
+				$(e).find('th').each(function (i, e) {
+					cellval = {};
+					cellval['value'] = $(e).attr('data-title');
+					if ($(e).attr('rowspan')) cellval['rowSpan'] = parseInt($(e).attr('rowspan'));
+					if ($(e).attr('colspan')) cellval['colSpan'] = parseInt($(e).attr('colspan'));
+					if (rowdata[a]) rowdata[a].cells.push(cellval);else cells.push(cellval);
+				});
+				if (cells.length > 0) rowdata.push({ cells: cells });
+			});
+			tableContentLock.find('tr').each(function (i, e) {
+				cells = [];
+				$(e).find('td').each(function (i, e) {
+					cellval = {};
+					cellval['value'] = $(e).html();
+					cells.push(cellval);
+				});
+				tableContent.find('tr:eq(' + i + ') td').each(function (i, e) {
+					cellval = {};
+					cellval['value'] = $(e).html();
+					cells.push(cellval);
+				});
+				rowdata.push({ cells: cells });
+			});
+			// console.log(rowdata)
+			workbook = new kendo.ooxml.Workbook({
+				sheets: [{
+					columns: [{ autoWidth: true }, { autoWidth: true }],
+					title: title,
+					rows: rowdata
+				}]
+			});
+
+			kendo.saveAs({
+				dataURI: workbook.toDataURL(),
+				fileName: title + ".xlsx"
+			});
+			return {
+				v: void 0
+			};
+		}();
+
+		if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
 	} else if (mode == 'normal') {
 		(function () {
 			$('#fake-table').remove();
@@ -888,6 +914,8 @@ rpt.export = function (target, title, mode) {
 			}
 
 			tableHeader.find('tr').each(function (i, e) {
+				$(e).css('height', '');
+
 				if (i == 0) {
 					var rowspan = parseInt($(e).find('td,th').attr('data-rowspan'), 10);
 					if (isNaN(rowspan)) rowspan = 1;
@@ -902,6 +930,8 @@ rpt.export = function (target, title, mode) {
 			});
 
 			tableContent.find('tr').each(function (i, e) {
+				$(e).css('height', '');
+
 				var rowTarget = fakeTable.find('tr:eq(' + i + ')');
 				$(e).find('td,th').each(function (j, f) {
 					$(f).clone(true).appendTo(rowTarget);
@@ -916,17 +946,62 @@ rpt.export = function (target, title, mode) {
 
 			downloader[0].click();
 
-			// setTimeout(() => {
-			// 	fakeTable.remove()
-			// 	downloader.remove()
-			// }, 400)
+			setTimeout(function () {
+				fakeTable.remove();
+				downloader.remove();
+			}, 400);
 		})();
 	}
 };
 
+rpt.addScrollBottom = function (container) {
+	if (container == undefined) container = $(".breakdown-view");
+	// $(".breakdown-view").each(function( i ) {
+	toolkit.newEl('div').addClass('scroll-grid-bottom-yo').appendTo(container.find(".pivot-pnl"));
+
+	var tableContent = toolkit.newEl('div').addClass('scroll-grid-bottom').appendTo(container.find(".pivot-pnl"));
+
+	toolkit.newEl('div').addClass('content-grid-bottom')
+	// .css("min-width", container.find('.table-content>.table').width() - 48)
+	.html("&nbsp;").appendTo(tableContent);
+
+	var target = container.find(".scroll-grid-bottom")[0];
+	var target2 = container.find(".table-content")[0];
+	container.find(".table-content").scroll(function () {
+		target.scrollLeft = this.scrollLeft;
+	});
+	container.find(".scroll-grid-bottom").scroll(function () {
+		target2.scrollLeft = this.scrollLeft;
+	});
+	// });
+	rpt.panel_scrollrelocated();
+};
+
+rpt.panel_scrollrelocated = function () {
+	$(".scroll-grid-bottom").each(function (i) {
+		$(this).find('.content-grid-bottom').css("min-width", $(this).parent().find('.table-content>.table').width() - 48);
+		if ($(this).parent().find('.scroll-grid-bottom-yo').size() == 0) {
+			return;
+		}
+
+		var window_top = $(window).scrollTop() + $(window).innerHeight();
+		var div_top = $(this).parent().find('.scroll-grid-bottom-yo').offset().top;
+		if (parseInt(div_top, 10) < parseInt(window_top, 10)) {
+			$(this).removeClass('viewscrollfix');
+			$(this).hide();
+			$(this).css("width", "100%");
+		} else {
+			$(this).addClass('viewscrollfix');
+			$(this).show();
+			$(this).css("width", $(this).parent().find('.table-content').width());
+		}
+	});
+};
+
 $(function () {
-	$(window).scroll(rpt.panel_relocated);
-	rpt.panel_relocated();
+	$(window).on('scroll', function () {
+		rpt.panel_scrollrelocated();
+	});
 	// rpt.getIdeas()
 	rpt.getOtherMasterData();
 });
