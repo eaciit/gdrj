@@ -9,7 +9,7 @@ import (
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	// "strings"
+	"strings"
 	"time"
 )
 
@@ -92,6 +92,7 @@ func prepmastertargetdatapromo() {
 	masters.Set("promotarget", promotarget)
 }
 
+//rawdatapl_promospg11072016_ratio
 func prepmasteraggrdatapromo() {
 
 	toolkit.Println("--> Get Data rawdatapl_promotarget")
@@ -102,6 +103,9 @@ func prepmasteraggrdatapromo() {
 	//promoaggrs := masters.Get("promoaggr").(toolkit.M)
 	promoaggr := toolkit.M{}
 
+	promospgaggr := toolkit.M{}
+	promo2aggr := toolkit.M{}
+
 	for {
 		tkm := toolkit.M{}
 		e := csr.Fetch(&tkm, 1, false)
@@ -110,9 +114,20 @@ func prepmasteraggrdatapromo() {
 		}
 		v := promoaggr.GetFloat64(tkm.GetString("keyaccountcode")) + tkm.GetFloat64("amountinidr")
 		promoaggr.Set(tkm.GetString("keyaccountcode"), v)
+
+		if strings.Contains(tkm.GetString("grouping"), "SPG") {
+			v := promospgaggr.GetFloat64(tkm.GetString("keyaccountcode")) + tkm.GetFloat64("amountinidr")
+			promospgaggr.Set(tkm.GetString("keyaccountcode"), v)
+		} else {
+			v := promo2aggr.GetFloat64(tkm.GetString("keyaccountcode")) + tkm.GetFloat64("amountinidr")
+			promo2aggr.Set(tkm.GetString("keyaccountcode"), v)
+		}
 	}
 
 	masters.Set("promoaggr", promoaggr)
+	masters.Set("promospgaggr", promospgaggr)
+	masters.Set("promo2aggr", promo2aggr)
+
 }
 
 func main() {
@@ -182,12 +197,25 @@ func UpdateRawDataPromo(tkm toolkit.M) {
 	promotargets := masters.Get("promotarget").(toolkit.M)
 	promoaggrs := masters.Get("promoaggr").(toolkit.M)
 
+	promospgaggr := masters.Get("promospgaggr").(toolkit.M)
+	promo2aggr := masters.Get("promo2aggr").(toolkit.M)
+
+	// masters.Set("promospgaggr", promospgaggr)
+	// masters.Set("promo2aggr", promo2aggr)
+
 	promotarget := toolkit.M{}
 	if promotargets.Has(tkm.GetString("keyaccountcode")) {
 		promotarget = promotargets.Get(tkm.GetString("keyaccountcode")).(toolkit.M)
 	}
 
-	val := (tkm.GetFloat64("amountinidr") / promoaggrs.GetFloat64(tkm.GetString("keyaccountcode"))) * promotarget.GetFloat64("target2014")
+	divide := promo2aggr.GetFloat64(tkm.GetString("keyaccountcode"))
+	if strings.Contains(tkm.GetString("grouping"), "SPG") {
+		divide = promospgaggr.GetFloat64(tkm.GetString("keyaccountcode"))
+	}
+
+	target := promotarget.GetFloat64("target2014") * gdrj.SaveDiv(divide, promoaggrs.GetFloat64(tkm.GetString("keyaccountcode")))
+
+	val := gdrj.SaveDiv(tkm.GetFloat64("amountinidr"), divide) * target
 
 	tkm.Set("amountinidr_target", val)
 }
@@ -197,7 +225,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("rawdatapl_promospg11072016_target").
+		From("rawdatapl_promospg11072016_targetratio").
 		SetConfig("multiexec", true).
 		Save()
 
