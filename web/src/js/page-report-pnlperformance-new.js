@@ -1068,7 +1068,7 @@ let v2 = viewModel.RDvsBranchView2
 		v2.contentIsLoading(true)
 
 		let fetch = () => {
-			subchan.injectFilter(param.filters)
+			subchan.injectFilters(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -1694,7 +1694,7 @@ let v1 = viewModel.RDvsBranchView1
 		v1.contentIsLoading(true)
 
 		let fetch = () => {
-			subchan.injectFilter(param.filters)
+			subchan.injectFilters(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -2210,7 +2210,7 @@ let kac = viewModel.keyAccount
 		kac.contentIsLoading(true)
 
 		let fetch = () => {
-			subchan.injectFilter(param.filters)
+			subchan.injectFilters(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -2707,7 +2707,7 @@ let subchan = viewModel.subChannel
 		subchan.contentIsLoading(true)
 
 		let fetch = () => {
-			subchan.injectFilter(param.filters)
+			subchan.injectFilters(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -3249,7 +3249,7 @@ let subchan = viewModel.subChannel
 			{ field: 'customer.reportsubchannel', holder: subchan.filterMTBreakdown },
 			{ field: 'customer.keyaccount', holder: subchan.filterAccount },
 			{ field: 'customer.brand', holder: subchan.filterBrand },
-			{ field: 'customer.branch', holder: subchan.filterBranch },
+			{ field: 'customer.branchname', holder: subchan.filterBranch },
 			{ field: 'customer.reportsubchannel', holder: subchan.filterDistributor },
 		]
 
@@ -3270,12 +3270,49 @@ let subchan = viewModel.subChannel
 	}
 })()
 
-// combinations(["customer.reportsubchannel", "customer.reportchannel", "customer.channelid", "customer.keyaccount", "product.brand", "customer.branch", "customer.customergroupname"]).map((d) => {
-// d.push("customer.channelname")
-// d.push("date.fiscal")
+// ===== JENERATE KOMBINASYON FOR DIS MODUL =====
 
-// return _.orderBy(d).join("_").replace(/\./g, '_')
-// }).join(" ")
+let MEJIK_FUNC = (() => {
+	combinations([
+		"customer.reportsubchannel",
+		"customer.reportchannel",
+		"customer.channelid",
+		"customer.keyaccount",
+		"product.brand",
+		"customer.branch",
+		"customer.customergroupname"
+	]).map((d) => {
+		if (d.indexOf("customer.channelid") > -1) {
+			d.push("customer.channelname")
+		}
+
+		d.push("date.fiscal")
+		return _.orderBy(d).map((e) => `"${e}"`).join(",")
+	}).join(" ")
+
+	let thisis = [
+		"date_fiscal",
+		"date_quartertxt",
+		"date_month",
+
+		"customer_reportchannel",
+		"customer_reportsubchannel",
+
+		"customer_channelid",
+		"customer_channelname",
+
+		"customer_region",
+		"customer_zone",
+		"customer_areaname",
+		"customer_branchname",
+
+		"customer_keyaccount",
+		"customer_customergroup",
+		"customer_customergroupname",
+
+		"product_brand",
+	]
+})
 
 vm.currentMenu('P&L Performance')
 vm.currentTitle('&nbsp;')

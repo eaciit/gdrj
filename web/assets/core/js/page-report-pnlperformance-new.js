@@ -1016,7 +1016,7 @@ var v2 = viewModel.RDvsBranchView2;(function () {
 		v2.contentIsLoading(true);
 
 		var fetch = function fetch() {
-			subchan.injectFilter(param.filters);
+			subchan.injectFilters(param.filters);
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 				if (res.Status == "NOK") {
 					setTimeout(function () {
@@ -1606,7 +1606,7 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 		v1.contentIsLoading(true);
 
 		var fetch = function fetch() {
-			subchan.injectFilter(param.filters);
+			subchan.injectFilters(param.filters);
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 				if (res.Status == "NOK") {
 					setTimeout(function () {
@@ -2057,7 +2057,7 @@ var kac = viewModel.keyAccount;(function () {
 		kac.contentIsLoading(true);
 
 		var fetch = function fetch() {
-			subchan.injectFilter(param.filters);
+			subchan.injectFilters(param.filters);
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 				if (res.Status == "NOK") {
 					setTimeout(function () {
@@ -2492,7 +2492,7 @@ var subchan = viewModel.subChannel;(function () {
 		subchan.contentIsLoading(true);
 
 		var fetch = function fetch() {
-			subchan.injectFilter(param.filters);
+			subchan.injectFilters(param.filters);
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 				if (res.Status == "NOK") {
 					setTimeout(function () {
@@ -2964,7 +2964,7 @@ var subchan = viewModel.subChannel;(function () {
 	subchan.filterDistributor = ko.observableArray([]);
 
 	subchan.injectFilters = function (filters) {
-		var DA_LORD_OF_DA_RING = [{ field: 'customer.reportsubchannel', holder: subchan.filterMTBreakdown }, { field: 'customer.keyaccount', holder: subchan.filterAccount }, { field: 'customer.brand', holder: subchan.filterBrand }, { field: 'customer.branch', holder: subchan.filterBranch }, { field: 'customer.reportsubchannel', holder: subchan.filterDistributor }];
+		var DA_LORD_OF_DA_RING = [{ field: 'customer.reportsubchannel', holder: subchan.filterMTBreakdown }, { field: 'customer.keyaccount', holder: subchan.filterAccount }, { field: 'customer.brand', holder: subchan.filterBrand }, { field: 'customer.branchname', holder: subchan.filterBranch }, { field: 'customer.reportsubchannel', holder: subchan.filterDistributor }];
 
 		DA_LORD_OF_DA_RING.filter(function (d) {
 			return d.holder().length > 0;
@@ -2985,12 +2985,22 @@ var subchan = viewModel.subChannel;(function () {
 	};
 })();
 
-// combinations(["customer.reportsubchannel", "customer.reportchannel", "customer.channelid", "customer.keyaccount", "product.brand", "customer.branch", "customer.customergroupname"]).map((d) => {
-// d.push("customer.channelname")
-// d.push("date.fiscal")
+// ===== JENERATE KOMBINASYON FOR DIS MODUL =====
 
-// return _.orderBy(d).join("_").replace(/\./g, '_')
-// }).join(" ")
+var MEJIK_FUNC = function MEJIK_FUNC() {
+	combinations(["customer.reportsubchannel", "customer.reportchannel", "customer.channelid", "customer.keyaccount", "product.brand", "customer.branch", "customer.customergroupname"]).map(function (d) {
+		if (d.indexOf("customer.channelid") > -1) {
+			d.push("customer.channelname");
+		}
+
+		d.push("date.fiscal");
+		return _.orderBy(d).map(function (e) {
+			return '"' + e + '"';
+		}).join(",");
+	}).join(" ");
+
+	var thisis = ["date_fiscal", "date_quartertxt", "date_month", "customer_reportchannel", "customer_reportsubchannel", "customer_channelid", "customer_channelname", "customer_region", "customer_zone", "customer_areaname", "customer_branchname", "customer_keyaccount", "customer_customergroup", "customer_customergroupname", "product_brand"];
+};
 
 vm.currentMenu('P&L Performance');
 vm.currentTitle('&nbsp;');
