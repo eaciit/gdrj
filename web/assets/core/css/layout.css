@@ -812,3 +812,19 @@ body {
   /* should match background, can't be transparent */
   background-color: rgba(0, 0, 0, 0.5);
 }
+.nav-pills {
+  /*right: 300px;*/
+  z-index: 1;
+}
+.nav-pills li {
+  margin-left: 2px;
+  margin-right: 2px;
+  margin-bottom: 2px;
+}
+.nav-pills li a {
+  border: 1px solid #f0f3f4;
+  background-color: rgba(51, 122, 183, 0.1);
+}
+.nav-pills li a:hover {
+  background-color: rgba(51, 122, 183, 0.4);
+}

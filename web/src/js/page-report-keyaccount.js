@@ -15,6 +15,7 @@ kac.oldBreakdownBy = ko.observable(kac.breakdownBy())
 kac.data = ko.observableArray([])
 kac.fiscalYear = ko.observable(rpt.value.FiscalYear())
 kac.breakdownValue = ko.observableArray([])
+kac.breakdownGroupValue = ko.observableArray([])
 
 kac.refresh = (useCache = false) => {
 	if (kac.breakdownValue().length == 0) {
@@ -22,16 +23,21 @@ kac.refresh = (useCache = false) => {
 		return
 	}
 
+	let breakdownKeyAccount = 'customer.keyaccount'
 	let param = {}
 	param.pls = []
-	param.groups = rpt.parseGroups([kac.breakdownBy()])
+	param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, kac.fiscalYear)
-	param.filters.push({
-		Field: 'customer.keyaccount',
-		Op: '$eq',
-		Value: 'KEY'
-	})
+
+	let breakdownGroupValue = kac.breakdownGroupValue().filter((d) => d != 'All')
+	if (breakdownGroupValue.length > 0) {
+		param.filters.push({
+			Field: breakdownKeyAccount,
+			Op: '$in',
+			Value: kac.breakdownGroupValue()
+		})
+	}
 
 	let breakdownValue = kac.breakdownValue().filter((d) => d != 'All')
 	if (breakdownValue.length > 0) {
@@ -110,187 +116,6 @@ kac.clickExpand = (e) => {
 }
 kac.emptyGrid = () => {
 	$('.breakdown-view').replaceWith(`<div class="breakdown-view ez" id="key-account-analysis"></div>`)
-}
-
-kac.renderDetailSalesTrans = (breakdown) => {
-	kac.popupIsLoading(true)
-	$('#modal-detail-ledger-summary').appendTo($('body'))
-	$('#modal-detail-ledger-summary').modal('show')
-
-	let columns = [
-		// { field: '_id', title: 'ID', width: 100, locked: true },
-		{ field: 'date', title: 'Date', width: 150, locked: true, template: (d) => {
-			return moment(d.date).format('DD/MM/YYYY HH:mm')
-		} },
-		{ field: "grossamount", headerTemplate: '<div class="align-right">Gross</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } },
-		{ field: "discountamount", headerTemplate: '<div class="align-right">Discount</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } },
-		{ field: "netamount", headerTemplate: '<div class="align-right">Net Sales</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } },
-		{ field: "salesqty", headerTemplate: '<div class="align-right">Sales Qty</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } },
-		{ field: "customer.branchname", title: 'Branch', width: 100 },
-		{ field: "product.name", title: 'Product', width: 250 },
-		{ field: "product.brand", title: 'Brand', width: 100 },
-	]
-
-	let config = {
-		dataSource: {
-			transport: {
-			    read: (options) => {
-			    	let param = options.data
-			    	param.tablename = "browsesalestrxs"
-			    	param[kac.breakdownBy()] = [breakdown]
-
-			    	if (toolkit.isUndefined(param.page)) {
-			    		param = $.extend(true, param, {
-			    			take: 5,
-			    			skip: 0,
-			    			page: 1,
-			    			pageSize: 5	
-			    		})
-			    	}
-
-		            $.ajax({
-		                type: "POST",
-						url: "/databrowser/getdatabrowser",
-		                contentType: "application/json; charset=utf-8",
-		                dataType: 'json',
-		                data: JSON.stringify(param),
-		                success: (res) => {
-							kac.popupIsLoading(false)
-							setTimeout(() => {
-								options.success(res.data)
-							}, 200)
-		                },
-		                error: () => {
-							kac.popupIsLoading(false)
-		                }
-		            });
-		        },
-		        pageSize: 5
-			},
-			schema: {
-			    data: (d) => d.DataValue,
-			    total: (d) => d.DataCount
-			},
-			serverPaging: true,
-			columns: [],
-			pageSize: 5,
-		},
-		sortable: true,
-        pageable: true,
-        scrollable: true,
-		columns: columns,
-	}
-
-	$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
-	$('.grid-detail').kendoGrid(config)
-}
-kac.renderDetail = (plcode, breakdowns) => {
-	kac.popupIsLoading(true)
-	$('#modal-detail-ledger-summary .modal-title').html('Detail')
-	$('#modal-detail-ledger-summary').appendTo($('body'))
-	$('#modal-detail-ledger-summary').modal('show')
-
-	let titleParts = []
-	for (let p in breakdowns) {
-		if (breakdowns.hasOwnProperty(p)) {
-			titleParts.push(breakdowns[p])
-		}
-	}
-
-	$('#modal-detail-ledger-summary .modal-title').html(`Detail of ${titleParts.join(' ')}`)
-
-	let columns = [
-		{ title: 'Date', width: 120, locked: true, footerTemplate: 'Total :', template: (d) => moment(d.date.date).format('DD/MM/YYYY HH:mm'), attributes: { class: 'bold' } },
-		// { field: `pldatas.${plcode}.amount`, width: 120, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => d[`pldatas.${plcode}.amount`].sum, format: '{0:n2}', attributes: { class: 'align-right' } },
-		{ field: 'grossamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Gross</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.grossamount.sum, 'n0')}</div>`,  */ format: '{0:n2}', attributes: { class: 'align-right' } },
-		{ field: 'discountamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Discount</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.discountamount.sum, 'n0')}</div>`,  */ format: '{0:n2}', attributes: { class: 'align-right' } },
-		{ field: 'netamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Net Sales</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.netamount.sum, 'n0')}</div>`,  */ format: '{0:n2}', attributes: { class: 'align-right' } },
-		// { title: 'Cost Center', template: (d) => toolkit.redefine(toolkit.redefine(d.cc, {}).name, ''), width: 250 },
-		{ title: 'Outlet', template: (d) => toolkit.redefine(toolkit.redefine(d.customer, {}).name, ''), width: 200 },
-		{ title: 'Branch', template: (d) => toolkit.redefine(toolkit.redefine(d.customer, {}).branchname, ''), width: 150 },
-		{ title: 'Channel', template: (d) => toolkit.redefine(toolkit.redefine(d.customer, {}).channelname, ''), width: 150 },
-		{ title: 'Brand', template: (d) => toolkit.redefine(toolkit.redefine(d.product, {}).brand, ''), width: 100 },
-		{ title: 'Product', template: (d) => toolkit.redefine(toolkit.redefine(d.product, {}).name, ''), width: 250 },
-	]
-
-	let config = {
-		dataSource: {
-			transport: {
-			    read: (options) => {
-			    	let param = options.data
-			    	param.filters = []
-
-					for (let p in breakdowns) {
-						if (breakdowns.hasOwnProperty(p)) {
-							param.filters.push({
-								field: p,
-								op: "$eq",
-								value: breakdowns[p]
-							})
-						}
-					}
-
-			    	if (toolkit.isUndefined(param.page)) {
-			    		param = $.extend(true, param, {
-			    			take: 5,
-			    			skip: 0,
-			    			page: 1,
-			    			pageSize: 5	
-			    		})
-			    	}
-
-		            $.ajax({
-		                type: "POST",
-						url: "/report/getpnldetail",
-		                contentType: "application/json; charset=utf-8",
-		                dataType: 'json',
-		                data: JSON.stringify(param),
-		                success: (res) => {
-							kac.popupIsLoading(false)
-							setTimeout(() => {
-								console.log("++++", res)
-								options.success(res.Data)
-							}, 200)
-		                },
-		                error: () => {
-							kac.popupIsLoading(false)
-		                }
-		            });
-		        },
-		        pageSize: 5
-			},
-			schema: {
-			    data: (d) => d.DataValue,
-			    total: (d) => d.DataCount
-			},
-	  //       aggregates: [
-			// 	{ field: "netamount", aggregate: "sum" },
-			// 	{ field: "grossamount", aggregate: "sum" },
-			// 	{ field: "discountamount", aggregate: "sum" },
-			// 	{ field: `pldatas.${plcode}.amount`, aggregate: 'sum' }
-			// ],
-			serverPaging: true,
-			pageSize: 5,
-		},
-		sortable: true,
-        pageable: true,
-        scrollable: true,
-		columns: columns,
-		dataBound: (d) => {
-			$('.grid-detail .k-pager-nav.k-pager-last').hide()
-			
-			setTimeout(() => {
-				let pager = $('.grid-detail .k-pager-info')
-				let text = `rows ${pager.html().split(" ").slice(0, 3).join(" ")}`
-				pager.html(text)
-			}, 10)
-		}
-	}
-
-	console.log("======", config)
-
-	$('.grid-detail').replaceWith('<div class="grid-detail"></div>')
-	$('.grid-detail').kendoGrid(config)
 }
 
 kac.render = () => {
@@ -584,6 +409,48 @@ kac.changeBreakdownValue = () => {
 	}, 100)
 }
 
+
+kac.optionBreakdownGroupValues = ko.observableArray([])
+kac.changeBreakdownGroup = () => {
+	let all = kac.breakdownValueAll
+	setTimeout(() => {
+		kac.optionBreakdownGroupValues([all].concat(
+			rpt.masterData.KeyAccount().map((d) => { 
+				let name = `(${d._id}) ${d.Name}`
+				if (d.Name == 'OTHER') {
+					name = d.Name
+				}
+
+				return { _id: d._id, Name: name } })
+			)
+		)
+		kac.breakdownGroupValue([all._id])
+	}, 100)
+}
+kac.changeBreakdownGroupValue = () => {
+	let all = kac.breakdownValueAll
+	setTimeout(() => {
+		let condA1 = kac.breakdownGroupValue().length == 2
+		let condA2 = kac.breakdownGroupValue().indexOf(all._id) == 0
+		if (condA1 && condA2) {
+			kac.breakdownGroupValue.remove(all._id)
+			return
+		}
+
+		let condB1 = kac.breakdownGroupValue().length > 1
+		let condB2 = kac.breakdownGroupValue().reverse()[0] == all._id
+		if (condB1 && condB2) {
+			kac.breakdownGroupValue([all._id])
+			return
+		}
+
+		let condC1 = kac.breakdownGroupValue().length == 0
+		if (condC1) {
+			kac.breakdownGroupValue([all._id])
+		}
+	}, 100)
+}
+
 vm.currentMenu('Analysis')
 vm.currentTitle('Key Account Analysis')
 vm.breadcrumb([
@@ -596,8 +463,10 @@ kac.title('&nbsp;')
 
 rpt.refresh = () => {
 	kac.changeBreakdown()
+	kac.changeBreakdownGroup()
 	setTimeout(() => {
 		kac.breakdownValue(['All'])
+		kac.breakdownGroupValue(['KEY'])
 		kac.refresh(false)
 	}, 200)
 }
