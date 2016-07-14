@@ -814,6 +814,7 @@ body {
 }
 .nav-pills {
   /*right: 300px;*/
+  min-width: 1000px;
   z-index: 1;
 }
 .nav-pills li {
