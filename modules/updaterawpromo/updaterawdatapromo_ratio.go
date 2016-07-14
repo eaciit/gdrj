@@ -141,9 +141,6 @@ func prepmasteraggrdatapromo() {
 			totaltransferablepromo += m.GetFloat64("promo")
 		}
 
-		m.Set("_id", tkm.GetString("keyaccountcode"))
-		_ = qSave.Exec(toolkit.M{}.Set("data", m))
-
 		promovalue.Set(tkm.GetString("keyaccountcode"), m)
 	}
 
@@ -158,6 +155,9 @@ func prepmasteraggrdatapromo() {
 			m.Set("promotarget", m.GetFloat64("promo")+promototransfer)
 			m.Set("spgtarget", m.GetFloat64("spg")-promototransfer)
 		}
+
+		m.Set("_id", k)
+		_ = qSave.Exec(toolkit.M{}.Set("data", m))
 
 		promovalue.Set(k, m)
 	}
