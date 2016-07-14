@@ -213,7 +213,7 @@ func UpdateRawDataPromo(tkm toolkit.M) {
 		divide = promospgaggr.GetFloat64(tkm.GetString("keyaccountcode"))
 	}
 
-	target := promotarget.GetFloat64("target2014") * gdrj.SaveDiv(divide, promoaggrs.GetFloat64(tkm.GetString("keyaccountcode")))
+	target := promotarget.GetFloat64("target2015") * gdrj.SaveDiv(divide, promoaggrs.GetFloat64(tkm.GetString("keyaccountcode")))
 
 	val := gdrj.SaveDiv(tkm.GetFloat64("amountinidr"), divide) * target
 
