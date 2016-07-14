@@ -177,6 +177,7 @@ let bkd = viewModel.breakdown
 		bkd.contentIsLoading(true)
 
 		let fetch = () => {
+			subchan.injectFilters(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -1067,6 +1068,7 @@ let v2 = viewModel.RDvsBranchView2
 		v2.contentIsLoading(true)
 
 		let fetch = () => {
+			subchan.injectFilter(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -1692,6 +1694,7 @@ let v1 = viewModel.RDvsBranchView1
 		v1.contentIsLoading(true)
 
 		let fetch = () => {
+			subchan.injectFilter(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -2207,6 +2210,7 @@ let kac = viewModel.keyAccount
 		kac.contentIsLoading(true)
 
 		let fetch = () => {
+			subchan.injectFilter(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -2674,6 +2678,27 @@ let subchan = viewModel.subChannel
 					Value: breakdownBrand
 				})
 			}
+		} else if (subchan.what() == 'rd') {
+			subchan.isInlineFilter(false)
+			subchan.breakdownBy('customer.reportsubchannel')
+			groups.push(subchan.breakdownBy())
+
+			let breakdownChannel = 'customer.channelname'
+			groups.push(breakdownChannel)
+			param.filters.push({
+				Field: breakdownChannel,
+				Op: '$in',
+				Value: ['I1']
+			})
+
+			let breakdownDistributor = subchan.breakdownDistributor().filter((d) => d != 'All')
+			if (breakdownDistributor.length > 0) {
+				param.filters.push({
+					Field: subchan.breakdownBy(),
+					Op: '$in',
+					Value: breakdownDistributor
+				})
+			}
 		}
 
 		$('.breakdown-view:not(#subchan)').empty()
@@ -2682,6 +2707,7 @@ let subchan = viewModel.subChannel
 		subchan.contentIsLoading(true)
 
 		let fetch = () => {
+			subchan.injectFilter(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -3129,12 +3155,127 @@ let subchan = viewModel.subChannel
 			}
 		}, 100)
 	}
+
+
+	subchan.breakdownDistributor = ko.observableArray([])
+	subchan.optionBreakdownDistributorValues = ko.observableArray([])
+	subchan.changeBreakdownDistributor = () => {
+		let all = kac.breakdownValueAll
+		let masterData = []
+
+		masterData = rpt.masterData.Distributor()
+
+		toolkit.runUntil((i) => {
+			subchan.optionBreakdownDistributorValues([all].concat(
+				masterData.map((d) => { 
+					return { _id: d.Name, Name: d.Name } })
+				)
+			)
+
+			subchan.breakdownDistributor([all._id])
+		}, (i) => (i > 10) || (masterData.length > 0))
+	}
+	subchan.changeBreakdownDistributorValue = () => {
+		let all = kac.breakdownValueAll
+		setTimeout(() => {
+			let condA1 = subchan.breakdownDistributor().length == 2
+			let condA2 = subchan.breakdownDistributor().indexOf(all._id) == 0
+			if (condA1 && condA2) {
+				subchan.breakdownDistributor.remove(all._id)
+				return
+			}
+
+			let condB1 = subchan.breakdownDistributor().length > 1
+			let condB2 = subchan.breakdownDistributor().reverse()[0] == all._id
+			if (condB1 && condB2) {
+				subchan.breakdownDistributor([all._id])
+				return
+			}
+
+			let condC1 = subchan.breakdownDistributor().length == 0
+			if (condC1) {
+				subchan.breakdownDistributor([all._id])
+			}
+		}, 100)
+	}
+
+
+	subchan.optionMTBreakdown = ko.observableArray([])
+	subchan.optionAccount = ko.observableArray([])
+	subchan.optionBrand = ko.observableArray([])
+	subchan.optionBranch = ko.observableArray([])
+	subchan.optionDistributor = ko.observableArray([])
+
+	subchan.fillOptionFilters = () => {
+		app.ajaxPost(viewModel.appName + "report/getdatamasterhypersupermini", {}, (res) => {
+			subchan.optionMTBreakdown(_.orderBy(res.data.map((d) => { 
+				return { _id: d._id, Name: d.Name }
+			}), (d) => d.Name))
+		})
+
+		app.ajaxPost(viewModel.appName + "report/getdatakeyaccount", {}, (res) => {
+			subchan.optionAccount(_.orderBy(res.data.map((d) => { 
+				return { _id: d._id, Name: d.Name }
+			}).concat({ _id: 'OHTER', Name: 'OHTER' }), (d) => d.Name))
+		})
+
+		app.ajaxPost(viewModel.appName + "report/getdatabrand", {}, (res) => {
+			subchan.optionBrand(_.orderBy(res.data.map((d) =>  
+				({ _id: d._id, Name: d.Name })
+			), (d) => d.Name))
+		})
+
+		app.ajaxPost(viewModel.appName + "report/getdatabranch", {}, (res) => {
+			subchan.optionBranch(_.orderBy(res.data.map((d) =>  
+				({ _id: d.Name, Name: d.Name })
+			), (d) => d.Name))
+		})
+
+		app.ajaxPost(viewModel.appName + "report/getdatamasterdistributor", {}, (res) => {
+			subchan.optionDistributor(_.orderBy(res.data.map((d) =>  
+				({ _id: d.Name, Name: d.Name })
+			), (d) => d.Name))
+		})
+	}
+
+	subchan.filterMTBreakdown = ko.observableArray([])
+	subchan.filterAccount = ko.observableArray([])
+	subchan.filterBrand = ko.observableArray([])
+	subchan.filterBranch = ko.observableArray([])
+	subchan.filterDistributor = ko.observableArray([])
+
+	subchan.injectFilters = (filters) => {
+		let DA_LORD_OF_DA_RING = [
+			{ field: 'customer.reportsubchannel', holder: subchan.filterMTBreakdown },
+			{ field: 'customer.keyaccount', holder: subchan.filterAccount },
+			{ field: 'customer.brand', holder: subchan.filterBrand },
+			{ field: 'customer.branch', holder: subchan.filterBranch },
+			{ field: 'customer.reportsubchannel', holder: subchan.filterDistributor },
+		]
+
+	DA_LORD_OF_DA_RING
+		.filter((d) => d.holder().length > 0)
+		.forEach((d) => {
+			let previousFilter = filters.find((e) => e.Field == d.field)
+			if (toolkit.isDefined(previousFilter)) {
+				previousFilter.Value.push(d.holder())
+			} else {
+				filters.push({
+					Field: d.field,
+					Op: '$in',
+					Value: d.holder()
+				})
+			}
+		})
+	}
 })()
 
+// combinations(["customer.reportsubchannel", "customer.reportchannel", "customer.channelid", "customer.keyaccount", "product.brand", "customer.branch", "customer.customergroupname"]).map((d) => {
+// d.push("customer.channelname")
+// d.push("date.fiscal")
 
-
-
-
+// return _.orderBy(d).join("_").replace(/\./g, '_')
+// }).join(" ")
 
 vm.currentMenu('P&L Performance')
 vm.currentTitle('&nbsp;')
@@ -3148,22 +3289,27 @@ bkd.title('P&L by Channels')
 kac.title('&nbsp;')
 
 rpt.refresh = () => {
+	$('.tab-pane.active .btn-primary').trigger('click')
+}
+
+$(() => {
+	rpt.showExport(true)
+
+	subchan.fillOptionFilters()
+
 	bkd.changeBreakdown()
 	kac.changeBreakdown()
 	kac.changeBreakdownGroup()
 	subchan.changeBreakdownBrand()
+	subchan.changeBreakdownDistributor()
 
 	toolkit.runAfter(() => { 
 		kac.breakdownValue(['All'])
 		kac.breakdownGroupValue(['KEY'])
 		bkd.breakdownValue(['All'])
 		subchan.breakdownBrand(['All'])
+		subchan.breakdownDistributor(['All'])
 
 		bkd.refresh()
 	}, 200)
-}
-
-$(() => {
-	rpt.refresh()
-	rpt.showExport(true)
 })
