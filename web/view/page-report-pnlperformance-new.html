@@ -20,19 +20,25 @@
 			<a href="#by-channel-then-branch-vs-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Channels by Branch/RD'); v2.refresh();">Channels by Branch/RD</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Branches by Channel'); v1.mode('Branch'); v1.refresh();">Branches by Channel</a>
+			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Branches - All Channel'); v1.mode('Branch'); v1.refresh();">Branches - All Channel</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by RD by Channel'); v1.mode('Regional Distributor'); v1.refresh();">RD by Channel</a>
+			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by RD - All Channel'); v1.mode('Regional Distributor'); v1.refresh();">RD - All Channel</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Key Account Group', 'account');">Key Account Group</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Key Accounts', 'account');">Key Accounts</a>
 		</li>
-		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by MT Sub Channel', 'mt sub channel');">MT Sub Channels</a>
+		<!-- <li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Key Account Groups', 'account');">Key Account Groups</a>
 		</li>
 		<li role="presentation">
 			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Key Accounts'); kac.refresh();">Key Accounts</a>
+		</li> -->
+		<li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Modern Trade Breakdown', 'mt sub channel');">MT Breakdown</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
 		</li>
 		<li role="presentation">
 			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Brand', 'brand');">Brand</a>
@@ -344,7 +350,15 @@
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'brand')">
 						<span class="input-group-addon align-right">Brand</span>
 						<div class="width-full">
-							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownBrandValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownBrand, placeholder: 'Choose value', change: subchan.changeBreakdownBrandValue }"></select>
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownBrandValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownBrand, placeholder: 'Choose value', change: subchan.changeBreakdownBrandValue, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'rd')">
+						<span class="input-group-addon align-right">Distributor</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownDistributorValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownDistributor, placeholder: 'Choose value', change: subchan.changeBreakdownDistributorValue, filter: 'contains' }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
@@ -370,5 +384,92 @@
 	
 	</div>
 
-	{{template "_filter.html"}}
+	<div class="col-md-3 col-sm-3 ez panel-filter" style="display: none;">
+		<div class="panel-yo"></div>
+		<div class="panel ez no-padding hardcore panel-fix">
+			<div class="panel-heading">
+				<h3 class="no-margin">Filter</h3>
+				<div class="panel-nav-button">
+					<div class="form-group relative align-right no-margin no-padding hardcore" data-bind="visible: true">
+						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refresh" title="Refresh All">
+							<i class="fa fa-refresh"></i> Refresh
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="panel-body">
+				<div id="from-filter">
+					<p>Click each section below to show respective filter.</p>
+					<div class="wrapper">
+						<div class="panel-group ez-collapse" role="tablist" aria-multiselectable="true">
+							<div class="panel">
+								<div class="panel-heading" role="tab" id="h-0">
+									<h4 class="panel-title">
+										<a class="tooltipster tooltipstered" role="button" data-toggle="collapse" data-parent=".ez-collapse" href="#c-0">
+											<span class="pull-left">Filter</span>
+											<span class="pull-right">
+												<i class="fa fa-angle-left"></i>
+												<i class="fa fa-angle-down"></i>
+											</span>
+											<span class="clearfix"></span>
+										</a>
+									</h4>
+								</div>
+								<div class="panel-collapse collapse in" role="tabpanel" id="c-0">
+									<div class="panel-body">
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">MT Breakdown</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionMTBreakdown, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterMTBreakdown, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Account</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionAccount, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterAccount, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Brand</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionBrand, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterBrand, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Branches</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionBranch, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterBranch, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Distributor</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionDistributor, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterDistributor, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
 </div>

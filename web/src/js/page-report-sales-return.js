@@ -211,7 +211,7 @@ sr.render = (res) => {
 	}
 
 
-	$('.grid').replaceWith('<div class="grid"></div>')
+	$('.grid').replaceWith('<div class="grid grid-sales-return"></div>')
 	$('.grid').kendoGrid(config)
 }
 
@@ -229,4 +229,5 @@ $(() => {
 	rpt.tabbedContent()
 
 	sr.refresh()
+	rpt.showExport(true)
 })

@@ -224,7 +224,7 @@ sr.render = function (res) {
 		}
 	};
 
-	$('.grid').replaceWith('<div class="grid"></div>');
+	$('.grid').replaceWith('<div class="grid grid-sales-return"></div>');
 	$('.grid').kendoGrid(config);
 };
 
@@ -236,4 +236,5 @@ $(function () {
 	rpt.tabbedContent();
 
 	sr.refresh();
+	rpt.showExport(true);
 });
