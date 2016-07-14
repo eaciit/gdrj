@@ -309,6 +309,9 @@ v1.render = () => {
 	let exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */]
 	let netSalesPLCode = 'PL8A'
 	let netSalesRow = {}
+	let grossSalesPLCode = 'PL0'
+	let grossSalesRow = {}
+	let discountActivityPLCode = 'PL7A'
 	let rows = []
 
 	rpt.fixRowValue(dataFlat)
@@ -318,6 +321,7 @@ v1.render = () => {
 	dataFlat.forEach((e) => {
 		let breakdown = e.key
 		netSalesRow[breakdown] = e[netSalesPLCode]
+		grossSalesRow[breakdown] = e[grossSalesPLCode]
 	})
 
 	plmodels.forEach((d) => {
@@ -338,7 +342,9 @@ v1.render = () => {
 			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 			percentage = toolkit.number(percentage)
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
 			}
 
@@ -357,14 +363,18 @@ v1.render = () => {
 
 	console.log("rows", rows)
 	
-	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == "PL8A" }).PNLTotal
+	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
+	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 	rows.forEach((d, e) => {
-		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100;
+		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
+		}
+
 		if (TotalPercentage < 0)
 			TotalPercentage = TotalPercentage * -1 
 		rows[e].Percentage = toolkit.number(TotalPercentage)
 	})
-
 
 
 
@@ -760,6 +770,9 @@ v2.render = () => {
 	let exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */]
 	let netSalesPLCode = 'PL8A'
 	let netSalesRow = {}
+	let grossSalesPLCode = 'PL0'
+	let grossSalesRow = {}
+	let discountActivityPLCode = 'PL7A'
 	let rows = []
 
 	rpt.fixRowValue(dataFlat)
@@ -769,6 +782,7 @@ v2.render = () => {
 	dataFlat.forEach((e) => {
 		let breakdown = e.key
 		netSalesRow[breakdown] = e[netSalesPLCode]
+		grossSalesRow[breakdown] = e[grossSalesPLCode]
 	})
 
 	plmodels.forEach((d) => {
@@ -789,7 +803,9 @@ v2.render = () => {
 			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 			percentage = toolkit.number(percentage)
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
 			}
 
@@ -808,12 +824,17 @@ v2.render = () => {
 
 	console.log("rows", rows)
 	
-	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == "PL8A" }).PNLTotal
+	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
+	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 	rows.forEach((d, e) => {
-		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100;
+		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
+		}
+
 		if (TotalPercentage < 0)
 			TotalPercentage = TotalPercentage * -1 
-		rows[e].Percentage = TotalPercentage
+		rows[e].Percentage = toolkit.number(TotalPercentage)
 	})
 
 
@@ -1180,6 +1201,9 @@ v3.render = () => {
 	let exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */]
 	let netSalesPLCode = 'PL8A'
 	let netSalesRow = {}
+	let grossSalesPLCode = 'PL0'
+	let grossSalesRow = {}
+	let discountActivityPLCode = 'PL7A'
 	let rows = []
 
 	rpt.fixRowValue(dataFlat)
@@ -1189,6 +1213,7 @@ v3.render = () => {
 	dataFlat.forEach((e) => {
 		let breakdown = e.key
 		netSalesRow[breakdown] = e[netSalesPLCode]
+		grossSalesRow[breakdown] = e[grossSalesPLCode]
 	})
 
 	plmodels.forEach((d, i) => {
@@ -1209,7 +1234,9 @@ v3.render = () => {
 			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 			percentage = toolkit.number(percentage)
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
 			}
 
@@ -1228,12 +1255,17 @@ v3.render = () => {
 
 	console.log("rows", rows)
 	
-	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == "PL8A" }).PNLTotal
+	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
+	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 	rows.forEach((d, e) => {
-		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100;
+		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
+		}
+
 		if (TotalPercentage < 0)
 			TotalPercentage = TotalPercentage * -1 
-		rows[e].Percentage = TotalPercentage
+		rows[e].Percentage = toolkit.number(TotalPercentage)
 	})
 
 
