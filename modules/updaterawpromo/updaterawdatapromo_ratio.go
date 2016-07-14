@@ -94,6 +94,10 @@ func prepmastertargetdatapromo() {
 
 //rawdatapl_promospg11072016_ratio
 func prepmasteraggrdatapromo() {
+	qSave := conn.NewQuery().
+		From("tmp_targetratio").
+		SetConfig("multiexec", true).
+		Save()
 
 	toolkit.Println("--> Get Data rawdatapl_promo")
 
@@ -137,6 +141,9 @@ func prepmasteraggrdatapromo() {
 			totaltransferablepromo += m.GetFloat64("promo")
 		}
 
+		m.Set("_id", tkm.GetString("keyaccountcode"))
+		_ = qSave.Exec(toolkit.M{}.Set("data", m))
+
 		promovalue.Set(tkm.GetString("keyaccountcode"), m)
 	}
 
@@ -156,6 +163,7 @@ func prepmasteraggrdatapromo() {
 	}
 
 	// promovalue
+
 	masters.Set("promovalue", promovalue)
 
 	// masters.Set("promoaggr", promoaggr)
