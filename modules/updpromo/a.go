@@ -25,6 +25,15 @@ var (
 	masters                     = toolkit.M{}
 )
 
+type promoratio struct {
+	SPG, Promo float64
+}
+
+var promoElementRatios = map[string]promoratio{
+	"2014-2015": promoratio{0.19152315, 0.80847685},
+	"2015-2016": promoratio{0.2221404765, 0.7778683875},
+}
+
 func setinitialconnection() {
 	var err error
 	conn, err = modules.GetDboxIConnection("db_godrej")
@@ -80,7 +89,7 @@ func main() {
 func buildRatio(tn string) error {
 	cursor, _ := conn.NewQuery().From(tn).
 		//Where(dbox.Eq("key.trxsrc", "VDIST"), dbox.Eq("key.customer_reportchannel", "RD")).
-		Where(dbox.Eq("key.date_fiscal", "2014-2015")).
+		//Where(dbox.Eq("key.date_fiscal", "2014-2015")).
 		Select().Cursor(nil)
 	defer cursor.Close()
 
@@ -99,15 +108,16 @@ func buildRatio(tn string) error {
 		//mth := key.GetInt("date_month")
 		fiscal := key.GetString("date_fiscal")
 		kc := key.GetString("customer_customergroup")
+
 		if kc != "" {
-			//keysales := toolkit.Sprintf("%d_%d_%s", yr, mth, kc)
 			keysales := toolkit.Sprintf("%s_%s", fiscal, kc)
+			salesvalue := mr.GetFloat64("PL8A")
 			salestotal := salestotals[keysales]
 			if salestotal == nil {
 				salestotal = new(plalloc)
 				salestotal.Key = keysales
 			}
-			salestotal.Current += mr.GetFloat64("PL8A")
+			salestotal.Current += salesvalue
 			salestotals[keysales] = salestotal
 		}
 		i++
@@ -140,18 +150,26 @@ func buildRatio(tn string) error {
 		*/
 		//fiscal := dt.Fiscal
 		fiscal := toolkit.Sprintf("%d-%d", yr, yr+1)
+		promoratios := promoElementRatios[fiscal]
 		kc := mr.GetString("keyaccountcode")
+
 		if kc != "" {
 			gl := mr.GetString("account")
-			keypromo := toolkit.Sprintf("%s_%s_%s", fiscal, kc, gl)
-
-			alloc := plallocs[keypromo]
-			if alloc == nil {
-				alloc = new(plalloc)
-				alloc.Key = keypromo
+			promovalue := mr.GetFloat64("amountinidr_target")
+			for _, v := range []string{"spg", "promo"} {
+				keypromo := toolkit.Sprintf("%s_%s_%s_%s", fiscal, kc, gl, v)
+				alloc := plallocs[keypromo]
+				if alloc == nil {
+					alloc = new(plalloc)
+					alloc.Key = keypromo
+				}
+				multi := promoratios.SPG
+				if v != "spg" {
+					multi = promoratios.Promo
+				}
+				alloc.Expect += promovalue * multi
+				plallocs[keypromo] = alloc
 			}
-			alloc.Expect += mr.GetFloat64("amountinidr_target")
-			plallocs[keypromo] = alloc
 		}
 		i++
 		current = makeProgressLog("Build Promotion Ratio", i, count, 5, current, tstart)
@@ -178,7 +196,7 @@ func processTable(tn string) error {
 	cursor, _ := conn.NewQuery().From(tn).
 		//Where(dbox.Eq("key.trxsrc", "VDIST"), dbox.Eq("key.customer_reportchannel", "RD")).
 		//Where(dbox.Eq("key.date_fiscal", "2015-2016"), dbox.Eq("key.customer_customergroup", "CR")).
-		Where(dbox.Eq("key.date_fiscal", "2014-2015")).
+		//Where(dbox.Eq("key.date_fiscal", "2014-2015")).
 		Select().Cursor(nil)
 	defer cursor.Close()
 
@@ -222,7 +240,11 @@ func processTable(tn string) error {
 				plmodel.PLHeader1 == "Advt & Promo Expenses" {
 				newv := float64(0)
 				//keypromo := toolkit.Sprintf("%d_%d_%s_%s", year, month, kc, plmodel.GLReff)
-				keypromo := toolkit.Sprintf("%s_%s_%s", fiscal, kc, plmodel.GLReff)
+				spgOrPromo := "spg"
+				if !strings.HasPrefix(plmodel.PLHeader2, "SPG") {
+					spgOrPromo = "promo"
+				}
+				keypromo := toolkit.Sprintf("%s_%s_%s_%s", fiscal, kc, plmodel.GLReff, spgOrPromo)
 				alloc := plallocs[keypromo]
 				if alloc != nil && salestotal != nil {
 					newv = -toolkit.Div(alloc.Expect*sales, salestotal.Current)
