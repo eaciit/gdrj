@@ -127,13 +127,13 @@ func prepmasteraggrdatapromo() {
 		}
 
 		if strings.Contains(tkm.GetString("grouping"), "SPG") {
-			v := m.GetFloat64("spg") + tkm.GetFloat64("amountinidr")
+			v := m.GetFloat64("spg") + tkm.GetFloat64("amountinidr_target")
 			m.Set("spg", v)
-			totalspg += tkm.GetFloat64("amountinidr")
+			totalspg += tkm.GetFloat64("amountinidr_target")
 		} else {
-			v := m.GetFloat64("promo") + tkm.GetFloat64("amountinidr")
+			v := m.GetFloat64("promo") + tkm.GetFloat64("amountinidr_target")
 			m.Set("promo", v)
-			totalpromo += tkm.GetFloat64("amountinidr")
+			totalpromo += tkm.GetFloat64("amountinidr_target")
 		}
 
 		if m.GetFloat64("spg") != 0 && m.GetFloat64("promo") != 0 {
