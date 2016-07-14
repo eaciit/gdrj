@@ -258,9 +258,9 @@ func (m *ReportController) GetDecreasedQty(r *knot.WebContext) interface{} {
 		return res
 	}
 
-	// fmt.Println("disable autogenerate collection")
-	// res.SetData([]toolkit.M{})
-	// return res
+	fmt.Println("disable autogenerate collection")
+	res.SetData([]toolkit.M{})
+	return res
 
 	if gocore.GetConfig(tableName) == "otw" {
 		res.SetError(errors.New("still processing, might take a while"))
@@ -395,9 +395,9 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 		return res
 	}
 
-	// fmt.Println("disable autogenerate collection")
-	// res.SetData([]toolkit.M{})
-	// return res
+	fmt.Println("disable autogenerate collection")
+	res.SetData([]toolkit.M{})
+	return res
 
 	if gocore.GetConfig(tableName) == "otw" {
 		res.SetError(errors.New("still processing, might take a while"))

@@ -1710,24 +1710,18 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 			d.breakdowns = d.subs[0]._id;
 			d.count = d.subs.length;
 
-			var total = {};
-			total._id = 'Total';
-			total.key = 'Total';
-			total.excludeFromTotal = true;
+			// let total = {}
+			// total._id = 'Total'
+			// total.key = 'Total'
+			// total.excludeFromTotal = true
 
-			var _loop6 = function _loop6(prop) {
-				if (subs[0].hasOwnProperty(prop) && prop.search('PL') > -1) {
-					var val = subs[0][prop];
-					total[prop] = toolkit.sum(subs, function (f) {
-						return f[prop];
-					});
-				}
-			};
+			// for (let prop in subs[0]) if (subs[0].hasOwnProperty(prop) && (prop.search('PL') > -1)) {
+			// 	let val = subs[0][prop]
+			// 	total[prop] = toolkit.sum(subs, (f) => f[prop])
+			// }
 
-			for (var prop in subs[0]) {
-				_loop6(prop);
-			}d.subs = [total].concat(d.subs);
-			d.count++;
+			// d.subs = [total].concat(d.subs)
+			// d.count++
 
 			return d;
 		});
@@ -1795,13 +1789,13 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 		data.filter(function (d) {
 			return d._id == v1.mode();
 		}).forEach(function (lvl1, i) {
-			var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white').css('border-top', 'none');
+			var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('border-top', 'none');
 
 			if (v1.level() == 1) {
 				countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 				totalColumnWidth += percentageWidth;
-				var thheader1p = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white').css('border-top', 'none');
+				var thheader1p = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('border-top', 'none');
 
 				return;
 			}
