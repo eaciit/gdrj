@@ -473,7 +473,6 @@ body {
 }
 .pivot-pnl {
   position: relative;
-  overflow-y: scroll;
   border-bottom: 1px solid #F0F3F4;
 }
 .pivot-pnl .table-header {
@@ -733,7 +732,7 @@ body {
   margin: 0px;
   color: white;
   border: none;
-  font-size: 24px;
+  font-size: 18px;
   padding: 10px;
   height: 150px;
   padding-top: 60px;
@@ -787,6 +786,7 @@ body {
   margin-left: 390px;
   height: 10px;
   overflow-x: scroll;
+  background-color: #F0F3F4;
 }
 .table-content::-webkit-scrollbar {
   -webkit-appearance: none;

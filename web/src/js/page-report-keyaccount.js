@@ -68,6 +68,7 @@ kac.refresh = (useCache = false) => {
 			kac.emptyGrid()
 			kac.contentIsLoading(false)
 			kac.render()
+			rpt.prepareEvents()
 		}, () => {
 			kac.emptyGrid()
 			kac.contentIsLoading(false)
@@ -398,15 +399,18 @@ kac.render = () => {
 
 	toolkit.newEl('th')
 		.html('P&L')
+		.css('height', `${rpt.rowHeaderHeight()}px`)
 		.appendTo(trHeader1)
 
 	toolkit.newEl('th')
 		.html('Total')
+		.css('height', `${rpt.rowHeaderHeight()}px`)
 		.addClass('align-right')
 		.appendTo(trHeader1)
 
 	toolkit.newEl('th')
 		.html('% of N Sales')
+		.css('height', `${rpt.rowHeaderHeight()}px`)
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
 		.width(percentageWidth - 20)
@@ -463,6 +467,7 @@ kac.render = () => {
 			.attr(`idheaderpl`, PL)
 			.attr(`data-row`, `row-${i}`)
 			.appendTo(tableHeader)
+			.css('height', `${rpt.rowContentHeight()}px`)
 
 		trHeader.on('click', () => {
 			kac.clickExpand(trHeader)
@@ -487,6 +492,7 @@ kac.render = () => {
 			.addClass(`column${PL}`)
 			.attr(`data-row`, `row-${i}`)
 			.attr(`idpl`, PL)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableContent)
 
 		data.forEach((e, f) => {
@@ -586,10 +592,9 @@ rpt.refresh = () => {
 		kac.breakdownValue(['All'])
 		kac.refresh(false)
 	}, 200)
-
-	rpt.prepareEvents()
 }
 
 $(() => {
 	rpt.refresh()
+	rpt.showExport(true)
 })

@@ -209,6 +209,7 @@ bkd.refresh = (useCache = false) => {
 			bkd.emptyGrid()
 			bkd.contentIsLoading(false)
 			bkd.render()
+			rpt.prepareEvents()
 		}, () => {
 			bkd.emptyGrid()
 			bkd.contentIsLoading(false)
@@ -682,7 +683,7 @@ bkd.render = () => {
 
 	toolkit.newEl('th')
 		.html('P&L')
-		.css('height', `${34 * bkd.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * bkd.level()}px`)
 		.attr('data-rowspan', bkd.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header')
@@ -690,7 +691,7 @@ bkd.render = () => {
 
 	toolkit.newEl('th')
 		.html('Total')
-		.css('height', `${34 * bkd.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * bkd.level()}px`)
 		.attr('data-rowspan', bkd.level())
 		.css('vertical-align', 'middle')
 		.addClass('cell-percentage-header align-right')
@@ -698,7 +699,7 @@ bkd.render = () => {
 
 	toolkit.newEl('th')
 		.html('% of N Sales')
-		.css('height', `${34 * bkd.level()}px`)
+		.css('height', `${rpt.rowHeaderHeight() * bkd.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
 		.css('font-style', 'italic')
@@ -709,7 +710,9 @@ bkd.render = () => {
 
 	let trContents = []
 	for (let i = 0; i < bkd.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent))
+		trContents.push(toolkit.newEl('tr')
+			.appendTo(tableContent)
+			.css('height', `${rpt.rowHeaderHeight()}px`))
 	}
 
 
@@ -745,6 +748,7 @@ bkd.render = () => {
 			.html(lvl1._id)
 			.attr('colspan', lvl1.count)
 			.addClass('align-center')
+			.css('border-top', 'none')
 			.appendTo(trContents[0])
 
 		if (bkd.level() == 1) {
@@ -757,6 +761,7 @@ bkd.render = () => {
 				.addClass('align-center')
 				.css('font-weight', 'normal')
 				.css('font-style', 'italic')
+				.css('border-top', 'none')
 				.appendTo(trContents[0])
 
 			return
@@ -867,6 +872,7 @@ bkd.render = () => {
 			.addClass(`header${PL}`)
 			.attr(`idheaderpl`, PL)
 			.attr(`data-row`, `row-${i}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableHeader)
 
 		trHeader.on('click', () => {
@@ -892,6 +898,7 @@ bkd.render = () => {
 			.addClass(`column${PL}`)
 			.attr(`idpl`, PL)
 			.attr(`data-row`, `row-${i}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableContent)
 
 		dataFlat.forEach((e, f) => {
@@ -1864,8 +1871,6 @@ rpt.refresh = () => {
 	
 	rs.getSalesHeaderList()
 	rank.refresh()
-
-	rpt.prepareEvents()
 }
 
 $(() => {
