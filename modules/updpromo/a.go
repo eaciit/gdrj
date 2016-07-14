@@ -31,7 +31,7 @@ type promoratio struct {
 
 var promoElementRatios = map[string]promoratio{
 	"2014-2015": promoratio{0.19152315, 0.80847685},
-	"2015-2016": promoratio{0.2221404765, 0.7778683875},
+	"2015-2016": promoratio{0.22213851, 0.77786149},
 }
 
 func setinitialconnection() {
