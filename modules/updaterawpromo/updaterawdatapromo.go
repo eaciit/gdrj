@@ -95,7 +95,7 @@ func prepmastertargetdatapromo() {
 //rawdatapl_promospg11072016_ratio
 func prepmasteraggrdatapromo() {
 
-	toolkit.Println("--> Get Data rawdatapl_promotarget")
+	toolkit.Println("--> Get Data rawdatapl_promo")
 
 	filter := dbox.Eq("year", fiscalyear-1)
 	csr, _ := conn.NewQuery().Select().Where(filter).From("rawdatapl_promospg11072016").Cursor(nil)
@@ -127,6 +127,10 @@ func prepmasteraggrdatapromo() {
 	masters.Set("promoaggr", promoaggr)
 	masters.Set("promospgaggr", promospgaggr)
 	masters.Set("promo2aggr", promo2aggr)
+
+	// toolkit.Println("year", promoaggr)
+	// toolkit.Println("promo", promoaggr)
+	// toolkit.Println("spg", promoaggr)
 
 }
 
