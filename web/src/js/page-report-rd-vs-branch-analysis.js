@@ -846,17 +846,43 @@ v2.render = () => {
 
 	console.log("rows", rows)
 	
+	let grossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode })
 	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 	rows.forEach((d, e) => {
 		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
 		if (d.PLCode == discountActivityPLCode) {
 			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
+
+			// ====== hek MODERN TRADE numbah
+			let grossSalesRedisMT = grossSales[`Modern Trade_Regional Distributor`]
+			let grossSalesRedisGT = grossSales[`Modern Trade_Regional Distributor`]
+
+			let discountBranchMTpercent = d[`Modern Trade_Branch %`]
+			let discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent)
+			let discountRedisTotal = d[`General Trade_Total`]
+			let discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated
+			let discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100
+
+			d[`Modern Trade_Regional Distributor`] = discountRedisMTCalculated
+			d[`Modern Trade_Regional Distributor %`] = discountBranchMTpercent
+
+			d[`General Trade_Regional Distributor`] = discountRedisGTCalculated
+			d[`General Trade_Regional Distributor %`] = discountRedisGTPercentCalculated
+			
 		}
 
 		if (TotalPercentage < 0)
 			TotalPercentage = TotalPercentage * -1 
-		rows[e].Percentage = toolkit.number(TotalPercentage)
+		d.Percentage = toolkit.number(TotalPercentage)
+
+		// ===== ABS %
+
+		for (let p in d) if (d.hasOwnProperty(p)) {
+			if (p.indexOf('%') > -1 || p == "Percentage") {
+				d[p] = Math.abs(d[p])
+			}
+		}
 	})
 
 
