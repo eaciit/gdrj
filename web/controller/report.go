@@ -112,7 +112,18 @@ func (m *ReportController) GetDataMasterArea(r *knot.WebContext) interface{} {
 func (m *ReportController) GetDataMasterDistributor(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	res, err := gdrj.MasterReportSubChannelGetDistributor()
+	res, err := gdrj.MasterReportSubChannelGetByChannelID("I1")
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.MasterReportSubChannel{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
+func (m *ReportController) GetDataMasterHyperSuperMini(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.MasterReportSubChannelGetByChannelID("I3")
 	if err != nil {
 		return helper.CreateResult(false, []*gdrj.MasterReportSubChannel{}, err.Error())
 	}

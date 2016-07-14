@@ -516,6 +516,7 @@ $(function () {
 
 	sd.refresh();
 	sd.initSort();
+	rpt.showExport(true);
 	sd.getPLModels(function () {
 		rve.refresh();
 	});

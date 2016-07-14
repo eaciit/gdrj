@@ -487,6 +487,7 @@ $(() => {
 
 	sd.refresh()
 	sd.initSort()
+	rpt.showExport(true)
 	sd.getPLModels(() => {
 		rve.refresh()
 	})
