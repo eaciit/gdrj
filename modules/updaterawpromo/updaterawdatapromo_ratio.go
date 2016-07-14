@@ -156,6 +156,8 @@ func prepmasteraggrdatapromo() {
 			promototransfer := transferableratio * needtotransferpromo
 			m.Set("promotarget", m.GetFloat64("promo")+promototransfer)
 			m.Set("spgtarget", m.GetFloat64("spg")-promototransfer)
+		} else {
+			m.Set("promotarget", m.GetFloat64("promo"))
 		}
 
 		m.Set("_id", k)
