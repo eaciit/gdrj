@@ -326,7 +326,7 @@ func prepmasterratio() {
 	toolkit.Println("--> Master Ratio")
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4exp").Cursor(nil)
 	defer csr.Close()
 	ratio := toolkit.M{}
 
@@ -380,6 +380,12 @@ func prepmasterratio() {
 
 		key = toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
 			dtkm.GetString("customer_channelid"))
+
+		v = ratio.GetFloat64(key) + tkm.GetFloat64("grossamount")
+		ratio.Set(key, v)
+
+		key = toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"),
+			strings.ToUpper(dtkm.GetString("product_brand")))
 
 		v = ratio.GetFloat64(key) + tkm.GetFloat64("grossamount")
 		ratio.Set(key, v)
@@ -708,7 +714,7 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
-	prepmastertotaldiscactivity()
+	// prepmastertotaldiscactivity()
 	// prepmasterrollback()
 
 	// prepmastercustomergroup()
@@ -717,13 +723,13 @@ func main() {
 	// prepmasterratiomapsalesreturn2016()
 	// prepmasterdiffsalesreturn2016()
 	// prepmastersalesreturn()
-	// prepmasterratio()
+	prepmasterratio()
 	// prepmasterrevfreight()
-	// prepmasterrevadv()
+	prepmasterrevadv()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4exp").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -908,6 +914,17 @@ func CleanUpdateCustomerGroupName(tkm toolkit.M) {
 	dtkm.Set("customer_customergroupname", customergroupname.GetString(tkm.GetString("_id")))
 	dtkm.Set("customer_customergroup", customergroup.GetString(tkm.GetString("_id")))
 	tkm.Set("key", dtkm)
+}
+
+func CleanUpdateOldExport(tkm toolkit.M) {
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	if dtkm.GetString("customer_channelid") == "EXP" {
+		for k, _ := range tkm {
+			if k == "PL23" || strings.Contains(k, "PL28") || strings.Contains(k, "PL29") || strings.Contains(k, "PL31") || k == "PL30" {
+				tkm.Set(k, float64(0))
+			}
+		}
+	}
 }
 
 //masters.Set("salesplssummary", salesplssummary)
@@ -1179,7 +1196,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary").
+		From("salespls-summary-4expclean").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1189,11 +1206,11 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcSalesReturn(trx)
 
 		// CalcSalesReturn2016(trx)
-
-		// CalcRatio(trx)
+		CleanUpdateOldExport(trx)
+		CalcRatio(trx)
 		// CalcFreightsRev(trx)
 
-		// CalcAdvertisementsRev(trx)
+		CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
 		// CalcSalesVDist20142015(trx)
 		// CalcSgaRev(trx)
@@ -1201,7 +1218,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CleanUpdateCustomerGroupName(trx)
 		// RollbackSalesplsSummary(trx)
 
-		AllocateDiscountActivity(trx)
+		// AllocateDiscountActivity(trx)
 		CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
