@@ -473,7 +473,6 @@ body {
 }
 .pivot-pnl {
   position: relative;
-  overflow-y: scroll;
   border-bottom: 1px solid #F0F3F4;
 }
 .pivot-pnl .table-header {
@@ -481,12 +480,12 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 380px;
+  width: 390px;
   border-right: 1px solid #F0F3F4;
 }
 .pivot-pnl .table-content {
   overflow-x: scroll;
-  margin-left: 380px;
+  margin-left: 390px;
 }
 .pivot-pnl table {
   margin-bottom: 0;
@@ -733,7 +732,7 @@ body {
   margin: 0px;
   color: white;
   border: none;
-  font-size: 24px;
+  font-size: 18px;
   padding: 10px;
   height: 150px;
   padding-top: 60px;
@@ -777,4 +776,56 @@ body {
 }
 #login-form .footnote {
   margin-top: 0px;
+}
+.scroll-grid-bottom.viewscrollfix {
+  position: fixed;
+  bottom: 0px;
+  z-index: 10000;
+}
+.scroll-grid-bottom {
+  margin-left: 390px;
+  height: 10px;
+  overflow-x: scroll;
+  background-color: #F0F3F4;
+}
+.table-content::-webkit-scrollbar {
+  -webkit-appearance: none;
+}
+.table-content::-webkit-scrollbar:horizontal {
+  height: 11px;
+}
+.table-content::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  border: 2px solid white;
+  /* should match background, can't be transparent */
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.scroll-grid-bottom::-webkit-scrollbar {
+  -webkit-appearance: none;
+}
+.scroll-grid-bottom::-webkit-scrollbar:horizontal {
+  height: 11px;
+}
+.scroll-grid-bottom::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  border: 2px solid white;
+  /* should match background, can't be transparent */
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.nav-pills {
+  /*right: 300px;*/
+  min-width: 1000px;
+  z-index: 1;
+}
+.nav-pills li {
+  margin-left: 2px;
+  margin-right: 2px;
+  margin-bottom: 2px;
+}
+.nav-pills li a {
+  border: 1px solid #f0f3f4;
+  background-color: rgba(51, 122, 183, 0.1);
+}
+.nav-pills li a:hover {
+  background-color: rgba(51, 122, 183, 0.4);
 }

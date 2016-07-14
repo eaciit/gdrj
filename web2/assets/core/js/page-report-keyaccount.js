@@ -17,6 +17,7 @@ kac.oldBreakdownBy = ko.observable(kac.breakdownBy());
 kac.data = ko.observableArray([]);
 kac.fiscalYear = ko.observable(rpt.value.FiscalYear());
 kac.breakdownValue = ko.observableArray([]);
+kac.breakdownGroupValue = ko.observableArray([]);
 
 kac.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
@@ -26,16 +27,23 @@ kac.refresh = function () {
 		return;
 	}
 
+	var breakdownKeyAccount = 'customer.keyaccount';
 	var param = {};
 	param.pls = [];
-	param.groups = rpt.parseGroups([kac.breakdownBy()]);
+	param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, kac.fiscalYear);
-	param.filters.push({
-		Field: 'customer.keyaccount',
-		Op: '$eq',
-		Value: 'KEY'
+
+	var breakdownGroupValue = kac.breakdownGroupValue().filter(function (d) {
+		return d != 'All';
 	});
+	if (breakdownGroupValue.length > 0) {
+		param.filters.push({
+			Field: breakdownKeyAccount,
+			Op: '$in',
+			Value: kac.breakdownGroupValue()
+		});
+	}
 
 	var breakdownValue = kac.breakdownValue().filter(function (d) {
 		return d != 'All';
@@ -74,6 +82,7 @@ kac.refresh = function () {
 			kac.emptyGrid();
 			kac.contentIsLoading(false);
 			kac.render();
+			rpt.prepareEvents();
 		}, function () {
 			kac.emptyGrid();
 			kac.contentIsLoading(false);
@@ -117,191 +126,6 @@ kac.emptyGrid = function () {
 	$('.breakdown-view').replaceWith('<div class="breakdown-view ez" id="key-account-analysis"></div>');
 };
 
-kac.renderDetailSalesTrans = function (breakdown) {
-	kac.popupIsLoading(true);
-	$('#modal-detail-ledger-summary').appendTo($('body'));
-	$('#modal-detail-ledger-summary').modal('show');
-
-	var columns = [
-	// { field: '_id', title: 'ID', width: 100, locked: true },
-	{ field: 'date', title: 'Date', width: 150, locked: true, template: function template(d) {
-			return moment(d.date).format('DD/MM/YYYY HH:mm');
-		} }, { field: "grossamount", headerTemplate: '<div class="align-right">Gross</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "discountamount", headerTemplate: '<div class="align-right">Discount</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "netamount", headerTemplate: '<div class="align-right">Net Sales</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "salesqty", headerTemplate: '<div class="align-right">Sales Qty</div>', width: 100, format: '{0:n0}', attributes: { class: 'align-right' } }, { field: "customer.branchname", title: 'Branch', width: 100 }, { field: "product.name", title: 'Product', width: 250 }, { field: "product.brand", title: 'Brand', width: 100 }];
-
-	var config = {
-		dataSource: {
-			transport: {
-				read: function read(options) {
-					var param = options.data;
-					param.tablename = "browsesalestrxs";
-					param[kac.breakdownBy()] = [breakdown];
-
-					if (toolkit.isUndefined(param.page)) {
-						param = $.extend(true, param, {
-							take: 5,
-							skip: 0,
-							page: 1,
-							pageSize: 5
-						});
-					}
-
-					$.ajax({
-						type: "POST",
-						url: "/databrowser/getdatabrowser",
-						contentType: "application/json; charset=utf-8",
-						dataType: 'json',
-						data: JSON.stringify(param),
-						success: function success(res) {
-							kac.popupIsLoading(false);
-							setTimeout(function () {
-								options.success(res.data);
-							}, 200);
-						},
-						error: function error() {
-							kac.popupIsLoading(false);
-						}
-					});
-				},
-				pageSize: 5
-			},
-			schema: {
-				data: function data(d) {
-					return d.DataValue;
-				},
-				total: function total(d) {
-					return d.DataCount;
-				}
-			},
-			serverPaging: true,
-			columns: [],
-			pageSize: 5
-		},
-		sortable: true,
-		pageable: true,
-		scrollable: true,
-		columns: columns
-	};
-
-	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
-	$('.grid-detail').kendoGrid(config);
-};
-kac.renderDetail = function (plcode, breakdowns) {
-	kac.popupIsLoading(true);
-	$('#modal-detail-ledger-summary .modal-title').html('Detail');
-	$('#modal-detail-ledger-summary').appendTo($('body'));
-	$('#modal-detail-ledger-summary').modal('show');
-
-	var titleParts = [];
-	for (var p in breakdowns) {
-		if (breakdowns.hasOwnProperty(p)) {
-			titleParts.push(breakdowns[p]);
-		}
-	}
-
-	$('#modal-detail-ledger-summary .modal-title').html('Detail of ' + titleParts.join(' '));
-
-	var columns = [{ title: 'Date', width: 120, locked: true, footerTemplate: 'Total :', template: function template(d) {
-			return moment(d.date.date).format('DD/MM/YYYY HH:mm');
-		}, attributes: { class: 'bold' } },
-	// { field: `pldatas.${plcode}.amount`, width: 120, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Amount</div>", footerTemplate: (d) => d[`pldatas.${plcode}.amount`].sum, format: '{0:n2}', attributes: { class: 'align-right' } },
-	{ field: 'grossamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Gross</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.grossamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'discountamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Discount</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.discountamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } }, { field: 'netamount', width: 90, aggregates: ["sum"], headerTemplate: "<div class='align-right'>Net Sales</div>", /** footerTemplate: (d) => `<div class="align-right">${kendo.toString(d.netamount.sum, 'n0')}</div>`,  */format: '{0:n2}', attributes: { class: 'align-right' } },
-	// { title: 'Cost Center', template: (d) => toolkit.redefine(toolkit.redefine(d.cc, {}).name, ''), width: 250 },
-	{ title: 'Outlet', template: function template(d) {
-			return toolkit.redefine(toolkit.redefine(d.customer, {}).name, '');
-		}, width: 200 }, { title: 'Branch', template: function template(d) {
-			return toolkit.redefine(toolkit.redefine(d.customer, {}).branchname, '');
-		}, width: 150 }, { title: 'Channel', template: function template(d) {
-			return toolkit.redefine(toolkit.redefine(d.customer, {}).channelname, '');
-		}, width: 150 }, { title: 'Brand', template: function template(d) {
-			return toolkit.redefine(toolkit.redefine(d.product, {}).brand, '');
-		}, width: 100 }, { title: 'Product', template: function template(d) {
-			return toolkit.redefine(toolkit.redefine(d.product, {}).name, '');
-		}, width: 250 }];
-
-	var config = {
-		dataSource: {
-			transport: {
-				read: function read(options) {
-					var param = options.data;
-					param.filters = [];
-
-					for (var _p in breakdowns) {
-						if (breakdowns.hasOwnProperty(_p)) {
-							param.filters.push({
-								field: _p,
-								op: "$eq",
-								value: breakdowns[_p]
-							});
-						}
-					}
-
-					if (toolkit.isUndefined(param.page)) {
-						param = $.extend(true, param, {
-							take: 5,
-							skip: 0,
-							page: 1,
-							pageSize: 5
-						});
-					}
-
-					$.ajax({
-						type: "POST",
-						url: "/report/getpnldetail",
-						contentType: "application/json; charset=utf-8",
-						dataType: 'json',
-						data: JSON.stringify(param),
-						success: function success(res) {
-							kac.popupIsLoading(false);
-							setTimeout(function () {
-								console.log("++++", res);
-								options.success(res.Data);
-							}, 200);
-						},
-						error: function error() {
-							kac.popupIsLoading(false);
-						}
-					});
-				},
-				pageSize: 5
-			},
-			schema: {
-				data: function data(d) {
-					return d.DataValue;
-				},
-				total: function total(d) {
-					return d.DataCount;
-				}
-			},
-			//       aggregates: [
-			// 	{ field: "netamount", aggregate: "sum" },
-			// 	{ field: "grossamount", aggregate: "sum" },
-			// 	{ field: "discountamount", aggregate: "sum" },
-			// 	{ field: `pldatas.${plcode}.amount`, aggregate: 'sum' }
-			// ],
-			serverPaging: true,
-			pageSize: 5
-		},
-		sortable: true,
-		pageable: true,
-		scrollable: true,
-		columns: columns,
-		dataBound: function dataBound(d) {
-			$('.grid-detail .k-pager-nav.k-pager-last').hide();
-
-			setTimeout(function () {
-				var pager = $('.grid-detail .k-pager-info');
-				var text = 'rows ' + pager.html().split(" ").slice(0, 3).join(" ");
-				pager.html(text);
-			}, 10);
-		}
-	};
-
-	console.log("======", config);
-
-	$('.grid-detail').replaceWith('<div class="grid-detail"></div>');
-	$('.grid-detail').kendoGrid(config);
-};
-
 kac.render = function () {
 	if (kac.data().length == 0) {
 		$('.breakdown-view').html('No data found.');
@@ -331,18 +155,17 @@ kac.render = function () {
 	});
 	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
-	var netSalesPlModel = rpt.plmodels().find(function (d) {
-		return d._id == netSalesPLCode;
-	});
 	var netSalesRow = {};
+	var grossSalesPLCode = 'PL0';
+	var grossSalesRow = {};
+	var discountActivityPLCode = 'PL7A';
 
 	rpt.fixRowValue(data);
 
 	data.forEach(function (e) {
 		var breakdown = e._id;
-		var value = e['' + netSalesPlModel._id];
-		value = toolkit.number(value);
-		netSalesRow[breakdown] = value;
+		netSalesRow[breakdown] = e[netSalesPLCode];
+		grossSalesRow[breakdown] = e[grossSalesPLCode];
 	});
 	data = _.orderBy(data, function (d) {
 		return netSalesRow[d._id];
@@ -362,7 +185,9 @@ kac.render = function () {
 			var percentage = toolkit.number(e['' + d._id] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100;
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
@@ -379,15 +204,22 @@ kac.render = function () {
 	});
 
 	var TotalNetSales = _.find(rows, function (r) {
-		return r.PLCode == "PL8A";
+		return r.PLCode == netSalesPLCode;
+	}).PNLTotal;
+	var TotalGrossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
 	}).PNLTotal;
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+		}
+
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
 		rows[e].Percentage = toolkit.number(TotalPercentage);
 	});
 
-	var percentageWidth = 110;
+	var percentageWidth = 100;
 
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
 
@@ -401,11 +233,11 @@ kac.render = function () {
 
 	var trHeader1 = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('P&L').appendTo(trHeader1);
+	toolkit.newEl('th').html('P&L').css('height', rpt.rowHeaderHeight() + 'px').appendTo(trHeader1);
 
-	toolkit.newEl('th').html('Total').addClass('align-right').appendTo(trHeader1);
+	toolkit.newEl('th').html('Total').css('height', rpt.rowHeaderHeight() + 'px').addClass('align-right').appendTo(trHeader1);
 
-	toolkit.newEl('th').html('% of NS').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 40).addClass('align-right').appendTo(trHeader1);
+	toolkit.newEl('th').html('% of N Sales').css('height', rpt.rowHeaderHeight() + 'px').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).addClass('align-right').appendTo(trHeader1);
 
 	var trContent1 = toolkit.newEl('tr').appendTo(tableContent);
 
@@ -425,7 +257,7 @@ kac.render = function () {
 		if (d._id.length > 22) colWidth += 30;
 		toolkit.newEl('th').html(d._id).addClass('align-right').appendTo(trContent1).width(colWidth);
 
-		toolkit.newEl('th').html('% of Net Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-right cell-percentage').appendTo(trContent1).width(percentageWidth);
+		toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-right cell-percentage').appendTo(trContent1).width(percentageWidth);
 
 		totalWidth += colWidth + percentageWidth;
 	});
@@ -439,7 +271,7 @@ kac.render = function () {
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader).css('height', rpt.rowContentHeight() + 'px');
 
 		trHeader.on('click', function () {
 			kac.clickExpand(trHeader);
@@ -452,7 +284,7 @@ kac.render = function () {
 
 		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + '%').addClass('align-right').appendTo(trHeader);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('data-row', 'row-' + i).attr('idpl', PL).appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('data-row', 'row-' + i).attr('idpl', PL).css('height', rpt.rowContentHeight() + 'px').appendTo(tableContent);
 
 		data.forEach(function (e, f) {
 			var key = e._id;
@@ -527,6 +359,45 @@ kac.changeBreakdownValue = function () {
 	}, 100);
 };
 
+kac.optionBreakdownGroupValues = ko.observableArray([]);
+kac.changeBreakdownGroup = function () {
+	var all = kac.breakdownValueAll;
+	setTimeout(function () {
+		kac.optionBreakdownGroupValues([all].concat(rpt.masterData.KeyAccount().map(function (d) {
+			var name = '(' + d._id + ') ' + d.Name;
+			if (d.Name == 'OTHER') {
+				name = d.Name;
+			}
+
+			return { _id: d._id, Name: name };
+		})));
+		kac.breakdownGroupValue([all._id]);
+	}, 100);
+};
+kac.changeBreakdownGroupValue = function () {
+	var all = kac.breakdownValueAll;
+	setTimeout(function () {
+		var condA1 = kac.breakdownGroupValue().length == 2;
+		var condA2 = kac.breakdownGroupValue().indexOf(all._id) == 0;
+		if (condA1 && condA2) {
+			kac.breakdownGroupValue.remove(all._id);
+			return;
+		}
+
+		var condB1 = kac.breakdownGroupValue().length > 1;
+		var condB2 = kac.breakdownGroupValue().reverse()[0] == all._id;
+		if (condB1 && condB2) {
+			kac.breakdownGroupValue([all._id]);
+			return;
+		}
+
+		var condC1 = kac.breakdownGroupValue().length == 0;
+		if (condC1) {
+			kac.breakdownGroupValue([all._id]);
+		}
+	}, 100);
+};
+
 vm.currentMenu('Analysis');
 vm.currentTitle('Key Account Analysis');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Key Account Analysis', href: '#' }]);
@@ -535,14 +406,15 @@ kac.title('&nbsp;');
 
 rpt.refresh = function () {
 	kac.changeBreakdown();
+	kac.changeBreakdownGroup();
 	setTimeout(function () {
 		kac.breakdownValue(['All']);
+		kac.breakdownGroupValue(['KEY']);
 		kac.refresh(false);
 	}, 200);
-
-	rpt.prepareEvents();
 };
 
 $(function () {
 	rpt.refresh();
+	rpt.showExport(true);
 });

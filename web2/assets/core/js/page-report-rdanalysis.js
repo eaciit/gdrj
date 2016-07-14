@@ -83,6 +83,7 @@ rd.refresh = function () {
 			rd.emptyGrid();
 			rd.contentIsLoading(false);
 			rd.render();
+			rpt.prepareEvents();
 		}, function () {
 			rd.emptyGrid();
 			rd.contentIsLoading(false);
@@ -159,7 +160,7 @@ rd.render = function () {
 
 	// ========================= TABLE STRUCTURE
 
-	var percentageWidth = 110;
+	var percentageWidth = 100;
 
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl-branch pivot-pnl').appendTo($('.breakdown-view'));
 
@@ -173,15 +174,15 @@ rd.render = function () {
 
 	var trHeader = toolkit.newEl('tr').appendTo(tableHeader);
 
-	toolkit.newEl('th').html('P&L').css('height', 34 * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
+	toolkit.newEl('th').html('P&L').css('height', rpt.rowHeaderHeight() * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header').appendTo(trHeader);
 
-	toolkit.newEl('th').html('Total').css('height', 34 * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('Total').css('height', rpt.rowHeaderHeight() * rd.level() + 'px').attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
-	toolkit.newEl('th').html('% of NS').css('height', 34 * rd.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 40).attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
+	toolkit.newEl('th').html('% of N Sales').css('height', rpt.rowHeaderHeight() * rd.level() + 'px').css('vertical-align', 'middle').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth - 20).attr('data-rowspan', rd.level()).css('vertical-align', 'middle').addClass('cell-percentage-header align-right').appendTo(trHeader);
 
 	var trContents = [];
 	for (var i = 0; i < rd.level(); i++) {
-		trContents.push(toolkit.newEl('tr').appendTo(tableContent));
+		trContents.push(toolkit.newEl('tr').appendTo(tableContent).css('height', rpt.rowHeaderHeight() + 'px'));
 	}
 
 	// ========================= BUILD HEADER
@@ -194,7 +195,7 @@ rd.render = function () {
 	var dataFlat = [];
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
-		var currentColumnWidth = each._id.length * 10;
+		var currentColumnWidth = each._id.length * 8;
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth;
 		}
@@ -211,13 +212,13 @@ rd.render = function () {
 	};
 
 	data.forEach(function (lvl1, i) {
-		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]);
+		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('border-top', 'none');
 
 		if (rd.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of Net Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('% of N Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[0]).css('border-top', 'none');
 
 			return;
 		}
@@ -230,7 +231,7 @@ rd.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p = toolkit.newEl('th').html('% of Net Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p = toolkit.newEl('th').html('% of N Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').addClass('align-center').appendTo(trContents[1]);
 
 				return;
 			}
@@ -248,6 +249,9 @@ rd.render = function () {
 	var exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */];
 	var netSalesPLCode = 'PL8A';
 	var netSalesRow = {};
+	var grossSalesPLCode = 'PL0';
+	var grossSalesRow = {};
+	var discountActivityPLCode = 'PL7A';
 	var rows = [];
 
 	rpt.fixRowValue(dataFlat);
@@ -257,6 +261,7 @@ rd.render = function () {
 	dataFlat.forEach(function (e) {
 		var breakdown = e.key;
 		netSalesRow[breakdown] = e[netSalesPLCode];
+		grossSalesRow[breakdown] = e[grossSalesPLCode];
 	});
 
 	plmodels.forEach(function (d) {
@@ -277,7 +282,9 @@ rd.render = function () {
 			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 			percentage = toolkit.number(percentage);
 
-			if (d._id != netSalesPLCode) {
+			if (d._id == discountActivityPLCode) {
+				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100;
+			} else if (d._id != netSalesPLCode) {
 				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
 			}
 
@@ -296,10 +303,17 @@ rd.render = function () {
 	console.log("rows", rows);
 
 	var TotalNetSales = _.find(rows, function (r) {
-		return r.PLCode == "PL8A";
+		return r.PLCode == netSalesPLCode;
+	}).PNLTotal;
+	var TotalGrossSales = _.find(rows, function (r) {
+		return r.PLCode == grossSalesPLCode;
 	}).PNLTotal;
 	rows.forEach(function (d, e) {
 		var TotalPercentage = d.PNLTotal / TotalNetSales * 100;
+		if (d.PLCode == discountActivityPLCode) {
+			TotalPercentage = d.PNLTotal / TotalGrossSales * 100;
+		}
+
 		if (TotalPercentage < 0) TotalPercentage = TotalPercentage * -1;
 		rows[e].Percentage = toolkit.number(TotalPercentage);
 	});
@@ -311,7 +325,7 @@ rd.render = function () {
 
 		var PL = d.PLCode;
 		PL = PL.replace(/\s+/g, '');
-		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).appendTo(tableHeader);
+		var trHeader = toolkit.newEl('tr').addClass('header' + PL).attr('idheaderpl', PL).attr('data-row', 'row-' + i).css('height', rpt.rowContentHeight() + 'px').appendTo(tableHeader);
 
 		trHeader.on('click', function () {
 			rd.clickExpand(trHeader);
@@ -324,7 +338,7 @@ rd.render = function () {
 
 		toolkit.newEl('td').html(kendo.toString(d.Percentage, 'n2') + ' %').addClass('align-right').appendTo(trHeader);
 
-		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).appendTo(tableContent);
+		var trContent = toolkit.newEl('tr').addClass('column' + PL).attr('idpl', PL).attr('data-row', 'row-' + i).css('height', rpt.rowContentHeight() + 'px').appendTo(tableContent);
 
 		dataFlat.forEach(function (e, f) {
 			var key = e.key;
@@ -439,10 +453,9 @@ rpt.refresh = function () {
 		rd.breakdownValue(['All']);
 		rd.refresh(false);
 	}, 200);
-
-	rpt.prepareEvents();
 };
 
 $(function () {
 	rpt.refresh();
+	rpt.showExport(true);
 });

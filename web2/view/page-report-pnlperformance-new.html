@@ -1,0 +1,477 @@
+<style>
+	.breadcrumb {
+		display: none;
+	}
+</style>
+
+<div>
+	<div class="col-md-12 col-sm-12 ez panel-content">
+
+<script src="{{BaseUrl}}res/core/js/page-report.js"></script>
+<script src="{{BaseUrl}}res/core/js/page-report-pnlperformance-new.js"></script>
+
+
+	<!-- Nav tabs -->
+	<ul class="nav nav-pills nav-replace-title" role="tablist">
+		<li role="presentation" class="active">
+			<a href="#by-channel" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Channels'); bkd.refresh();">Channels</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-channel-then-branch-vs-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Channels by Branch/RD'); v2.refresh();">Channels by Branch/RD</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Branches - All Channel'); v1.mode('Branch'); v1.refresh();">Branches - All Channel</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by RD - All Channel'); v1.mode('Regional Distributor'); v1.refresh();">RD - All Channel</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Key Accounts'); kac.refresh();">Key Accounts</a>
+		</li>
+		<!-- <li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Key Account Groups', 'account');">Key Account Groups</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Key Accounts'); kac.refresh();">Key Accounts</a>
+		</li> -->
+		<li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Modern Trade Breakdown', 'mt sub channel');">MT Breakdown</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Brand', 'brand');">Brand</a>
+		</li>
+	</ul>
+
+	<!-- Tab panes -->
+	<div class="tab-content">
+		<div role="tabpanel" class="tab-pane active" id="by-channel">
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin" data-bind="text: bkd.title"></h3>
+			<div class="panel-nav-button" data-bind="visible: !bkd.contentIsLoading()">
+				<div class="form-inline">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: bkd.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#pnl-analysis', 'P&L Analysis', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div class="filter" data-bind="visible: !bkd.contentIsLoading()">
+				<div class="form-inline pull-right">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: bkd.fiscalYear }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Breakdown Value</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: bkd.optionBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownValue, placeholder: 'Choose value', change: bkd.changeBreakdownValue }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Sub channels</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.optionsChannels, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownChannels, placeholder: 'Choose channels', enabled: ko.computed(function () { return bkd.breakdownChannelLocation() == '' }, bkd) }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+
+				<div class="form-inline pull-right" data-bind="visible: bkd.isBreakdownBranch">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">By channels</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.optionsChannels, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownBranch_Channels, placeholder: 'Not used', enabled: bkd.isBreakdownBranchSubEnabled('channel') }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Or by RD / non RD</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: bkd.optionBreakdownRDNonRD, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownBranch_ChannelRDNonRD, optionLabel: 'Not used', enabled: bkd.isBreakdownBranchSubEnabled('rd-non-rd') }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					<div class="input-group input-group-sm ez margin-bottom-10">
+						<span class="input-group-addon align-right">Or by sub channel of</span>
+						<div class="width-full">
+							<select type="text" style="width: 170px;" data-bind="kendoDropDownList: { data: rpt.optionsChannels, dataValueField: '_id', dataTextField: 'Name', value: bkd.breakdownBranch_SubChannel, optionLabel: 'Not used', enabled: bkd.isBreakdownBranchSubEnabled('sub-channel') }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+
+				<div class="clearfix"></div>
+			</div>
+
+			<div data-bind="visible: bkd.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !bkd.contentIsLoading()">
+				<div class="breakdown-view ez" id="pnl-analysis"></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="modal-detail-ledger-summary" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	    <div class="modal-dialog" role="document" style="width: 700px;">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	                	<span aria-hidden="true">&times;</span>
+	            	</button>
+	                <h4 class="modal-title">
+	        			Detail
+	        		</h4>
+	            </div>
+	            <div class="modal-body">
+					<div data-bind="visible: bkd.popupIsLoading">
+						{{template "_loader.html"}}
+					</div>
+					<div data-bind="visible: !bkd.popupIsLoading()">
+	                	<div class="grid-detail"></div>
+					</div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
+			        	Close
+			        </button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+</div>
+<div class="clearfix"></div>
+		</div>
+
+		<div role="tabpanel" class="tab-pane" id="by-channel-then-branch-vs-rd">
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin" data-bind="html: bkd.title"></h3>
+			<div class="panel-nav-button" data-bind="visible: !v2.contentIsLoading()">
+				<div class="form-inline">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: v2.fiscalYear }"></select>
+						</div>
+					</div>
+
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v2.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('.grid-breakdown-channel', 'Channels by Branch/RD', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div data-bind="visible: v2.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !v2.contentIsLoading()">
+				<div class="breakdown-view ez grid-breakdown-channel"></div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
+</div>
+		</div>
+
+		<div role="tabpanel" class="tab-pane" id="by-branch-or-rd">
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin" data-bind="html: bkd.title"></h3>
+			<div class="panel-nav-button" data-bind="visible: !v1.contentIsLoading()">
+				<div class="form-inline">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: v1.fiscalYear }"></select>
+						</div>
+					</div>
+
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v1.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('.grid-breakdown-branch-rd', 'Branches by Channel', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div data-bind="visible: v1.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !v1.contentIsLoading()">
+				<div class="breakdown-view ez grid-breakdown-branch-rd"></div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
+</div>
+		</div>
+
+		<div role="tabpanel" class="tab-pane" id="by-key-account">
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin" data-bind="html: bkd.title"></h3>
+			<div class="panel-nav-button" data-bind="visible: !kac.contentIsLoading()">
+				<div class="form-inline">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: kac.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#key-account-analysis', 'Key Account Analysis', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div class="filter" data-bind="visible: !kac.contentIsLoading()">
+				<div class="form-inline pull-right">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: kac.fiscalYear }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Key Account Groups</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: kac.optionBreakdownGroupValues, dataValueField: '_id', dataTextField: 'Name', value: kac.breakdownGroupValue, placeholder: 'Choose value', change: kac.changeBreakdownGroupValue }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Key Accounts</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: kac.optionBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: kac.breakdownValue, placeholder: 'Choose value', change: kac.changeBreakdownValue }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+
+			<div data-bind="visible: kac.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !kac.contentIsLoading()">
+				<div class="breakdown-view ez" id="key-account-analysis"></div>
+			</div>
+		</div>
+	</div>
+</div>
+		</div>
+
+		<div role="tabpanel" class="tab-pane" id="by-channel-mt-breakdown">
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin" data-bind="text: bkd.title"></h3>
+			<div class="panel-nav-button" data-bind="visible: !subchan.contentIsLoading()">
+				<div class="form-inline">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: subchan.isInlineFilter">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: v1.fiscalYear }"></select>
+						</div>
+					</div>
+
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: subchan.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#subchan', 'MT Sub Channel Analysis', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div class="filter" data-bind="visible: !subchan.isInlineFilter()">
+				<div class="form-inline pull-right" data-bind="visible: !subchan.contentIsLoading()">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: bkd.fiscalYear }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'brand')">
+						<span class="input-group-addon align-right">Brand</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownBrandValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownBrand, placeholder: 'Choose value', change: subchan.changeBreakdownBrandValue, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'rd')">
+						<span class="input-group-addon align-right">Distributor</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownDistributorValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownDistributor, placeholder: 'Choose value', change: subchan.changeBreakdownDistributorValue, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+
+			<div data-bind="visible: subchan.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !subchan.contentIsLoading()">
+				<div class="breakdown-view ez" id="subchan"></div>
+			</div>
+		</div>
+	</div>
+</div>
+		</div>
+	</div>
+
+
+	
+	</div>
+
+	<div class="col-md-3 col-sm-3 ez panel-filter" style="display: none;">
+		<div class="panel-yo"></div>
+		<div class="panel ez no-padding hardcore panel-fix">
+			<div class="panel-heading">
+				<h3 class="no-margin">Filter</h3>
+				<div class="panel-nav-button">
+					<div class="form-group relative align-right no-margin no-padding hardcore" data-bind="visible: true">
+						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refresh" title="Refresh All">
+							<i class="fa fa-refresh"></i> Refresh
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="panel-body">
+				<div id="from-filter">
+					<p>Click each section below to show respective filter.</p>
+					<div class="wrapper">
+						<div class="panel-group ez-collapse" role="tablist" aria-multiselectable="true">
+							<div class="panel">
+								<div class="panel-heading" role="tab" id="h-0">
+									<h4 class="panel-title">
+										<a class="tooltipster tooltipstered" role="button" data-toggle="collapse" data-parent=".ez-collapse" href="#c-0">
+											<span class="pull-left">Filter</span>
+											<span class="pull-right">
+												<i class="fa fa-angle-left"></i>
+												<i class="fa fa-angle-down"></i>
+											</span>
+											<span class="clearfix"></span>
+										</a>
+									</h4>
+								</div>
+								<div class="panel-collapse collapse in" role="tabpanel" id="c-0">
+									<div class="panel-body">
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">MT Breakdown</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionMTBreakdown, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterMTBreakdown, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Account</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionAccount, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterAccount, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Brand</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionBrand, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterBrand, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Branches</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionBranch, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterBranch, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Distributor</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionDistributor, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterDistributor, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div style="visibility: hidden; position: absolute; width: 1px; height: 1px; overflow: hidden;" data-bind="template: { name: 'template-report-filter', foreach: rpt.filter }"></div>

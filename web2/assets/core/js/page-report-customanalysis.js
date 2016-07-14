@@ -485,5 +485,6 @@ cst.title('&nbsp;');
 
 $(function () {
 	cst.refresh();
+	rpt.showExport(true);
 	// cst.selectfield()
 });
