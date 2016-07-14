@@ -14,10 +14,10 @@
 			<a href="#by-channel-then-branch-vs-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Channels by Branch/RD'); v2.refresh();">Channels by Branch/RD</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-branch" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Branches by Channel'); v1.mode('Branch'); v1.refresh();">Branches by Channel</a>
+			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Branches by Channel'); v1.mode('Branch'); v1.refresh();">Branches by Channel</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by RD by Channel'); v1.mode('Regional Distributor'); v1.refresh();">RD by Channel</a>
+			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by RD by Channel'); v1.mode('Regional Distributor'); v1.refresh();">RD by Channel</a>
 		</li>
 		<li role="presentation">
 			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Key Account'); kac.refresh();">Key Account</a>
@@ -36,11 +36,11 @@
 					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: bkd.refresh" title="Refresh P&L Analysis">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#pnl-analysis', 'P&L Analysis', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
 					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 						<i class="fa fa-server"></i> Show Filter
-					</button>
-					<button class="btn btn-sm btn-info tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#pnl-analysis', 'P&L Analysis', 'header-content')">
-						<i class="fa fa-download"></i> Export as Excel
 					</button>
 				</div>
 			</div>
@@ -192,6 +192,9 @@
 					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v2.refresh" title="Refresh P&L Analysis">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('.grid-breakdown-channel', 'Channels by Branch/RD', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
 					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 						<i class="fa fa-server"></i> Show Filter
 					</button>
@@ -213,7 +216,7 @@
 </div>
 		</div>
 
-		<div role="tabpanel" class="tab-pane" id="by-branch">
+		<div role="tabpanel" class="tab-pane" id="by-branch-or-rd">
 <div class="col-md-12 col-sm-12 no-padding hardcore">
 	<div class="panel ez no-padding hardcore">
 		<div class="panel-heading">
@@ -229,6 +232,9 @@
 
 					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v1.refresh" title="Refresh P&L Analysis">
 						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('.grid-breakdown-branch-rd', 'Branches by Channel', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
 					</button>
 					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
 						<i class="fa fa-server"></i> Show Filter
@@ -261,11 +267,11 @@
 					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: kac.refresh" title="Refresh P&L Analysis">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
-					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
-						<i class="fa fa-server"></i> Show Filter
-					</button>
 					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#key-account-analysis', 'Key Account Analysis', 'header-content')">
 						<i class="fa fa-download"></i> Export as Excel
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
 					</button>
 				</div>
 			</div>
