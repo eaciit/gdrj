@@ -178,7 +178,7 @@ func processTable(tn string) error {
 	cursor, _ := conn.NewQuery().From(tn).
 		//Where(dbox.Eq("key.trxsrc", "VDIST"), dbox.Eq("key.customer_reportchannel", "RD")).
 		//Where(dbox.Eq("key.date_fiscal", "2015-2016"), dbox.Eq("key.customer_customergroup", "CR")).
-		Where(dbox.Eq("key.date_fiscal", "2015-2016")).
+		Where(dbox.Eq("key.date_fiscal", "2014-2015")).
 		Select().Cursor(nil)
 	defer cursor.Close()
 
