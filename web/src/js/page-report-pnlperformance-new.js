@@ -2631,6 +2631,7 @@ let subchan = viewModel.subChannel
 	subchan.breakdownValue = ko.observableArray([])
 	subchan.level = ko.observable(1)
 	subchan.what = ko.observable('mt sub channel')
+	subchan.isInlineFilter = ko.observable(true)
 
 	subchan.switchRefresh = (title, what) => {
 		bkd.title(title); 
@@ -2639,10 +2640,13 @@ let subchan = viewModel.subChannel
 	}
 
 	subchan.refresh = (useCache = false) => {
+		subchan.isInlineFilter(true)
+
 		let param = {}
 		param.pls = []
 		param.aggr = 'sum'
 		param.filters = rpt.getFilterValue(false, subchan.fiscalYear)
+		let groups = [subchan.breakdownBy()]
 
 		if (subchan.what() == 'mt sub channel') {
 			subchan.breakdownBy('customer.reportsubchannel')
@@ -2655,11 +2659,24 @@ let subchan = viewModel.subChannel
 			})
 		} else if (subchan.what() == 'account') {
 			subchan.breakdownBy('customer.keyaccount')
+		} else if (subchan.what() == 'brand') {
+			subchan.isInlineFilter(false)
+			subchan.breakdownBy('product.brand')
+			groups = [subchan.breakdownBy()]
+
+			let breakdownBrand = subchan.breakdownBrand().filter((d) => d != 'All')
+			if (breakdownBrand.length > 0) {
+				param.filters.push({
+					Field: subchan.breakdownBy(),
+					Op: '$in',
+					Value: breakdownBrand
+				})
+			}
 		}
 
 		$('.breakdown-view:not(#subchan)').empty()
 
-		param.groups = rpt.parseGroups([subchan.breakdownBy()])
+		param.groups = rpt.parseGroups(groups)
 		subchan.contentIsLoading(true)
 
 		let fetch = () => {
@@ -3068,6 +3085,48 @@ let subchan = viewModel.subChannel
 		// ========================= CONFIGURE THE HIRARCHY
 		rpt.buildGridLevels(rows)
 	}
+
+	subchan.breakdownBrand = ko.observableArray([])
+	subchan.optionBreakdownBrandValues = ko.observableArray([])
+	subchan.changeBreakdownBrand = () => {
+		let all = kac.breakdownValueAll
+		let masterData = []
+
+		masterData = rpt.masterData.Brand()
+
+		toolkit.runUntil((i) => {
+			subchan.optionBreakdownBrandValues([all].concat(
+				masterData.map((d) => { 
+					return { _id: d.Name, Name: d.Name } })
+				)
+			)
+
+			subchan.breakdownBrand([all._id])
+		}, (i) => (i > 10) || (masterData.length > 0))
+	}
+	subchan.changeBreakdownBrandValue = () => {
+		let all = kac.breakdownValueAll
+		setTimeout(() => {
+			let condA1 = subchan.breakdownBrand().length == 2
+			let condA2 = subchan.breakdownBrand().indexOf(all._id) == 0
+			if (condA1 && condA2) {
+				subchan.breakdownBrand.remove(all._id)
+				return
+			}
+
+			let condB1 = subchan.breakdownBrand().length > 1
+			let condB2 = subchan.breakdownBrand().reverse()[0] == all._id
+			if (condB1 && condB2) {
+				subchan.breakdownBrand([all._id])
+				return
+			}
+
+			let condC1 = subchan.breakdownBrand().length == 0
+			if (condC1) {
+				subchan.breakdownBrand([all._id])
+			}
+		}, 100)
+	}
 })()
 
 
@@ -3090,11 +3149,13 @@ rpt.refresh = () => {
 	bkd.changeBreakdown()
 	kac.changeBreakdown()
 	kac.changeBreakdownGroup()
+	subchan.changeBreakdownBrand()
 
 	toolkit.runAfter(() => { 
 		kac.breakdownValue(['All'])
 		kac.breakdownGroupValue(['KEY'])
 		bkd.breakdownValue(['All'])
+		subchan.breakdownBrand(['All'])
 
 		bkd.refresh()
 	}, 200)

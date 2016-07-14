@@ -34,6 +34,9 @@
 		<li role="presentation">
 			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Key Accounts'); kac.refresh();">Key Accounts</a>
 		</li>
+		<li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Brand', 'brand');">Brand</a>
+		</li>
 	</ul>
 
 	<!-- Tab panes -->
@@ -307,7 +310,7 @@
 			<h3 class="no-margin" data-bind="text: bkd.title"></h3>
 			<div class="panel-nav-button" data-bind="visible: !subchan.contentIsLoading()">
 				<div class="form-inline">
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: subchan.isInlineFilter">
 						<span class="input-group-addon align-right">Fiscal Year</span>
 						<div class="width-full">
 							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: v1.fiscalYear }"></select>
@@ -328,6 +331,28 @@
 		</div>
 
 		<div class="panel-body">
+			<div class="filter" data-bind="visible: !subchan.isInlineFilter()">
+				<div class="form-inline pull-right" data-bind="visible: !subchan.contentIsLoading()">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: bkd.fiscalYear }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'brand')">
+						<span class="input-group-addon align-right">Brand</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownBrandValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownBrand, placeholder: 'Choose value', change: subchan.changeBreakdownBrandValue }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+
 			<div data-bind="visible: subchan.contentIsLoading">
 				{{template "_loader.html"}}
 			</div>
