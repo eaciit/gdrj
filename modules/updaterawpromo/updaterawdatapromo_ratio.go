@@ -111,7 +111,11 @@ func prepmasteraggrdatapromo() {
 	totalspg := float64(0)
 
 	//2016
-	targetyearpromo := float64(175512849213)
+	// targetyearpromo := float64(175512849213)
+
+	//2015
+	targetyearpromo := float64(182757263392)
+
 	// targetyearspg := float64(50122691220)
 
 	for {
