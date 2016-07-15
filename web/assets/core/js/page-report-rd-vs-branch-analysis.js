@@ -1144,6 +1144,21 @@ v3.render = function () {
 
 	console.log("rows", rows);
 
+	// === FIX TOTAL ===
+
+	var FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28'];
+	rows.forEach(function (r) {
+		FORBIDDEN_NUMBAH.forEach(function (plf) {
+			if (r.PLCode.indexOf(plf) > -1) {
+				r['Regional Distributor_Total'] -= r['Regional Distributor_General Trade'];
+				r['Regional Distributor_Total %'] -= r['Regional Distributor_General Trade %'];
+
+				r['Regional Distributor_General Trade'] = 0;
+				r['Regional Distributor_General Trade %'] = 0;
+			}
+		});
+	});
+
 	var TotalNetSales = _.find(rows, function (r) {
 		return r.PLCode == netSalesPLCode;
 	}).PNLTotal;
