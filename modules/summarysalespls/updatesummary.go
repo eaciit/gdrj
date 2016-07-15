@@ -786,6 +786,8 @@ func prepreclasspromospgtordmt() {
 		tkm.Set("key", dtkm)
 		salesplsreclass.Set(tkm.GetString("_id"), tkm)
 
+		tkmmt.Set("_id", oldid)
+
 		CalcSum(tkm)
 		CalcSum(tkmmt)
 
