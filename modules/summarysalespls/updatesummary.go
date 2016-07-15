@@ -85,7 +85,7 @@ func prepmastercalc() {
 func prepmasterrevadv() {
 	toolkit.Println("--> Advertisement Revision")
 	advertisements := toolkit.M{}
-
+	//rawdatapl_ads30062016
 	csradv, _ := conn.NewQuery().From("rawdatapl_ads30062016").
 		Where(dbox.Eq("year", fiscalyear-1)).
 		Cursor(nil)
@@ -659,14 +659,15 @@ func prepmastercustomergroup() {
 	masters.Set("customergroupname", customergroupname)
 }
 
-func prepmasterrollback() {
-	toolkit.Println("--> Roll back data to")
+func prepmasterrollback_adv() {
+	toolkit.Println("--> Roll back data to for advertisement")
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-s11072016").Cursor(nil)
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
 
-	salesplssummary := toolkit.M{}
+	// salesplssummary := toolkit.M{}
+	salesplsadvbrand := toolkit.M{}
 
 	for {
 		tkm := toolkit.M{}
@@ -675,10 +676,50 @@ func prepmasterrollback() {
 			break
 		}
 
-		salesplssummary.Set(tkm.GetString("_id"), tkm)
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+
+		brand := dtkm.GetString("product_brand")
+		// v := salesplsbrand.GetFloat64(brand) + tkm.GetFloat64("PL8A")
+		// salesplsbrand.Set(brand, v)
+		arrpladv := []string{"PL28I", "PL28A", "PL28B", "PL28C", "PL28D", "PL28E", "PL28F", "PL28G", "PL28H"}
+		for _, str := range arrpladv {
+			skey := toolkit.Sprintf("%s_%s", brand, str)
+			v := salesplsadvbrand.GetFloat64(skey) + tkm.GetFloat64(str)
+			salesplsadvbrand.Set(skey, v)
+		}
+
+		// salesplssummary.Set(tkm.GetString("_id"), tkm)
 	}
 
-	masters.Set("salesplssummary", salesplssummary)
+	masters.Set("salesplsadvbrand", salesplsadvbrand)
+}
+
+func prepmasterrollback_sumbrand() {
+	toolkit.Println("--> Roll back data to for summary brand")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4expclean").Cursor(nil)
+	defer csr.Close()
+
+	salesplsbrand := toolkit.M{}
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+
+		brand := dtkm.GetString("product_brand")
+		v := salesplsbrand.GetFloat64(brand) + tkm.GetFloat64("PL8A")
+		salesplsbrand.Set(brand, v)
+
+		// salesplssummary.Set(tkm.GetString("_id"), tkm)
+	}
+
+	masters.Set("salesplsbrand", salesplsbrand)
 }
 
 func prepmastertotaldiscactivity() {
@@ -723,13 +764,16 @@ func main() {
 	// prepmasterratiomapsalesreturn2016()
 	// prepmasterdiffsalesreturn2016()
 	// prepmastersalesreturn()
-	prepmasterratio()
+	// prepmasterratio()
 	// prepmasterrevfreight()
-	prepmasterrevadv()
+	// prepmasterrevadv()
+
+	prepmasterrollback_adv()
+	prepmasterrollback_sumbrand()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4exp").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4expclean").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -1191,6 +1235,27 @@ func AllocateDiscountActivity(tkm toolkit.M) {
 	tkm.Set("PL7A", val)
 }
 
+func RollbackSalesplsAdvertisement(tkm toolkit.M) {
+	if !masters.Has("salesplsbrand") || !masters.Has("salesplsadvbrand") {
+		return
+	}
+
+	salesplsbrand := masters["salesplsbrand"].(toolkit.M)
+	salesplsadvbrand := masters["salesplsadvbrand"].(toolkit.M)
+
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	brand := dtkm.GetString("product_brand")
+
+	brandval := salesplsbrand.GetFloat64(brand)
+
+	arrpladv := []string{"PL28I", "PL28A", "PL28B", "PL28C", "PL28D", "PL28E", "PL28F", "PL28G", "PL28H"}
+	for _, str := range arrpladv {
+		skey := toolkit.Sprintf("%s_%s", brand, str)
+		v := salesplsadvbrand.GetFloat64(skey) * tkm.GetFloat64("PL8A") / brandval
+		tkm.Set(str, v)
+	}
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
@@ -1207,16 +1272,16 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CalcSalesReturn2016(trx)
 		CleanUpdateOldExport(trx)
-		CalcRatio(trx)
+		// CalcRatio(trx)
 		// CalcFreightsRev(trx)
 
-		CalcAdvertisementsRev(trx)
+		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
 		// CalcSalesVDist20142015(trx)
 		// CalcSgaRev(trx)
 
 		// CleanUpdateCustomerGroupName(trx)
-		// RollbackSalesplsSummary(trx)
+		RollbackSalesplsAdvertisement(trx)
 
 		// AllocateDiscountActivity(trx)
 		CalcSum(trx)
