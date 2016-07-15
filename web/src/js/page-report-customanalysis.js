@@ -5,7 +5,7 @@ let cst = viewModel.customtable
 
 cst.contentIsLoading = ko.observable(false)
 cst.title = ko.observable('Custom Analysis')
-cst.fiscalYear = ko.observable(rpt.value.FiscalYear())
+cst.fiscalYears = ko.observableArray(rpt.optionFiscalYears())
 cst.data = ko.observableArray([])
 
 cst.optionDimensionPNL = ko.observableArray([])
@@ -36,8 +36,9 @@ cst.optionDimensionBreakdown = ko.observableArray([
 	{ name: "Zone", field: "customer.zone", title: "customer_zone" },
 	{ name: "Region", field: "customer.region", title: "customer_region" },
 	{ name: "City", field: "customer.areaname", title: "customer_areaname" },
-	{ name: "Date Month", field: "date.month", title: "date_month" },
-	{ name: "Date Quarter", field: "date.quartertxt", title: "date_quartertxt" },
+	{ name: "Date - Fiscal Year", field: "date.fiscal", title: "date_fiscal" },
+	{ name: "Date - Quarter", field: "date.quartertxt", title: "date_quartertxt" },
+	{ name: "Date - Month", field: "date.month", title: "date_month" },
 ])
 cst.breakdown = ko.observableArray(['customer.channelname']) // , 'customer.reportsubchannel|I3'])
 cst.putTotalOf = ko.observable('customer.channelname') // reportsubchannel')
@@ -47,6 +48,9 @@ cst.isDimensionNotContainDate = ko.computed(() => {
 		return false
 	}
 	if (cst.breakdown().indexOf('date.quartertxt') > -1) {
+		return false
+	}
+	if (cst.breakdown().indexOf('date.fiscal') > -1) {
 		return false
 	}
 	return true
@@ -110,7 +114,7 @@ cst.refresh = () => {
 	param.flag = ''
 	param.groups = groups
 	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue(false, cst.fiscalYear)
+	param.filters = rpt.getFilterValue(true, cst.fiscalYears)
 
 	let subchannels = []
 
@@ -236,7 +240,7 @@ cst.build = () => {
 
 		all.forEach((d) => {
 			let m = d.date_month - 1 + 3
-			let y = parseInt(cst.fiscalYear().split('-')[0], 0)
+			let y = parseInt(d.date_fiscal.split('-')[0], 0)
 
 			d.date_month = moment(new Date(2015, m, 1)).format("MMMM YYYY")
 		})
