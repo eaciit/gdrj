@@ -360,21 +360,6 @@ v1.render = () => {
 
 	console.log("rows", rows)
 
-	// === FIX TOTAL ===
-
-	let FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28']
-	rows.forEach((r) => {
-		FORBIDDEN_NUMBAH.forEach((plf) => {
-			if (r.PLCode.indexOf(plf) > -1) {
-r['Regional Distributor_Total'] -= r['Regional Distributor_General Trade']
-r['Regional Distributor_Total %'] -= r['Regional Distributor_General Trade %']
-
-r['Regional Distributor_General Trade'] = 0
-r['Regional Distributor_General Trade %'] = 0
-			}
-		})
-	})
-
 	let grossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode })
 	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
@@ -861,21 +846,6 @@ v2.render = () => {
 
 	console.log("rows", rows)
 
-	// === FIX TOTAL ===
-
-	let FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28']
-	rows.forEach((r) => {
-		FORBIDDEN_NUMBAH.forEach((plf) => {
-			if (r.PLCode.indexOf(plf) > -1) {
-r['General Trade_Total'] -= r['General Trade_Regional Distributor']
-r['General Trade_Total %'] -= r['General Trade_Regional Distributor %']
-
-r['General Trade_Regional Distributor'] = 0
-r['General Trade_Regional Distributor %'] = 0
-			}
-		})
-	})
-	
 	let grossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode })
 	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
@@ -1333,21 +1303,6 @@ v3.render = () => {
 
 	console.log("rows", rows)
 
-	// === FIX TOTAL ===
-
-	let FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28']
-	rows.forEach((r) => {
-		FORBIDDEN_NUMBAH.forEach((plf) => {
-			if (r.PLCode.indexOf(plf) > -1) {
-r['Regional Distributor_Total'] -= r['Regional Distributor_General Trade']
-r['Regional Distributor_Total %'] -= r['Regional Distributor_General Trade %']
-
-r['Regional Distributor_General Trade'] = 0
-r['Regional Distributor_General Trade %'] = 0
-			}
-		})
-	})
-	
 	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 	rows.forEach((d, e) => {

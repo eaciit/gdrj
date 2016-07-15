@@ -1311,21 +1311,6 @@ var v2 = viewModel.RDvsBranchView2;(function () {
 
 		console.log("rows", rows);
 
-		// === FIX TOTAL ===
-
-		var FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28'];
-		rows.forEach(function (r) {
-			FORBIDDEN_NUMBAH.forEach(function (plf) {
-				if (r.PLCode.indexOf(plf) > -1) {
-					r['General Trade_Total'] -= r['General Trade_Regional Distributor'];
-					r['General Trade_Total %'] -= r['General Trade_Regional Distributor %'];
-
-					r['General Trade_Regional Distributor'] = 0;
-					r['General Trade_Regional Distributor %'] = 0;
-				}
-			});
-		});
-
 		var grossSales = _.find(rows, function (r) {
 			return r.PLCode == grossSalesPLCode;
 		});
@@ -1920,21 +1905,6 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 		});
 
 		console.log("rows", rows);
-
-		// === FIX TOTAL ===
-
-		var FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28'];
-		rows.forEach(function (r) {
-			FORBIDDEN_NUMBAH.forEach(function (plf) {
-				if (r.PLCode.indexOf(plf) > -1) {
-					r['Regional Distributor_Total'] -= r['Regional Distributor_General Trade'];
-					r['Regional Distributor_Total %'] -= r['Regional Distributor_General Trade %'];
-
-					r['Regional Distributor_General Trade'] = 0;
-					r['Regional Distributor_General Trade %'] = 0;
-				}
-			});
-		});
 
 		rows.forEach(function (d) {
 			d.PNLTotal = 0;
