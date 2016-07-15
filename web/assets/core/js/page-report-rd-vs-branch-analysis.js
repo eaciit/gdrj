@@ -66,8 +66,8 @@ v1.clickExpand = function (e) {
 	var down = $(e).find('i.fa-chevron-down').length;
 	if (right > 0) {
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-			$('.pivot-pnl .table-header').css('width', '530px');
-			$('.pivot-pnl .table-content').css('margin-left', '530px');
+			$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth());
+			$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth());
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right');
@@ -320,6 +320,21 @@ v1.render = function () {
 
 	console.log("rows", rows);
 
+	// === FIX TOTAL ===
+
+	var FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28'];
+	rows.forEach(function (r) {
+		FORBIDDEN_NUMBAH.forEach(function (plf) {
+			if (r.PLCode.indexOf(plf) > -1) {
+				r['Regional Distributor_Total'] -= r['Regional Distributor_General Trade'];
+				r['Regional Distributor_Total %'] -= r['Regional Distributor_General Trade %'];
+
+				r['Regional Distributor_General Trade'] = 0;
+				r['Regional Distributor_General Trade %'] = 0;
+			}
+		});
+	});
+
 	var grossSales = _.find(rows, function (r) {
 		return r.PLCode == grossSalesPLCode;
 	});
@@ -480,8 +495,8 @@ v2.clickExpand = function (e) {
 	var down = $(e).find('i.fa-chevron-down').length;
 	if (right > 0) {
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-			$('.pivot-pnl .table-header').css('width', '530px');
-			$('.pivot-pnl .table-content').css('margin-left', '530px');
+			$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth());
+			$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth());
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right');
@@ -741,6 +756,21 @@ v2.render = function () {
 
 	console.log("rows", rows);
 
+	// === FIX TOTAL ===
+
+	var FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28'];
+	rows.forEach(function (r) {
+		FORBIDDEN_NUMBAH.forEach(function (plf) {
+			if (r.PLCode.indexOf(plf) > -1) {
+				r['General Trade_Total'] -= r['General Trade_Regional Distributor'];
+				r['General Trade_Total %'] -= r['General Trade_Regional Distributor %'];
+
+				r['General Trade_Regional Distributor'] = 0;
+				r['General Trade_Regional Distributor %'] = 0;
+			}
+		});
+	});
+
 	var grossSales = _.find(rows, function (r) {
 		return r.PLCode == grossSalesPLCode;
 	});
@@ -900,8 +930,8 @@ v3.clickExpand = function (e) {
 	var down = $(e).find('i.fa-chevron-down').length;
 	if (right > 0) {
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-			$('.pivot-pnl .table-header').css('width', '530px');
-			$('.pivot-pnl .table-content').css('margin-left', '530px');
+			$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth());
+			$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth());
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right');

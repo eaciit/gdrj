@@ -62,8 +62,8 @@ v1.clickExpand = (e) => {
 	let down = $(e).find('i.fa-chevron-down').length
 	if (right > 0){
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-			$('.pivot-pnl .table-header').css('width', '530px')
-			$('.pivot-pnl .table-content').css('margin-left', '530px')
+			$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
+			$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth())
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right')
@@ -359,7 +359,22 @@ v1.render = () => {
 	})
 
 	console.log("rows", rows)
-	
+
+	// === FIX TOTAL ===
+
+	let FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28']
+	rows.forEach((r) => {
+		FORBIDDEN_NUMBAH.forEach((plf) => {
+			if (r.PLCode.indexOf(plf) > -1) {
+r['Regional Distributor_Total'] -= r['Regional Distributor_General Trade']
+r['Regional Distributor_Total %'] -= r['Regional Distributor_General Trade %']
+
+r['Regional Distributor_General Trade'] = 0
+r['Regional Distributor_General Trade %'] = 0
+			}
+		})
+	})
+
 	let grossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode })
 	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
@@ -543,8 +558,8 @@ v2.clickExpand = (e) => {
 	let down = $(e).find('i.fa-chevron-down').length
 	if (right > 0){
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-			$('.pivot-pnl .table-header').css('width', '530px')
-			$('.pivot-pnl .table-content').css('margin-left', '530px')
+			$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
+			$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth())
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right')
@@ -845,6 +860,21 @@ v2.render = () => {
 	})
 
 	console.log("rows", rows)
+
+	// === FIX TOTAL ===
+
+	let FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28']
+	rows.forEach((r) => {
+		FORBIDDEN_NUMBAH.forEach((plf) => {
+			if (r.PLCode.indexOf(plf) > -1) {
+r['General Trade_Total'] -= r['General Trade_Regional Distributor']
+r['General Trade_Total %'] -= r['General Trade_Regional Distributor %']
+
+r['General Trade_Regional Distributor'] = 0
+r['General Trade_Regional Distributor %'] = 0
+			}
+		})
+	})
 	
 	let grossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode })
 	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
@@ -1037,8 +1067,8 @@ v3.clickExpand = (e) => {
 	let down = $(e).find('i.fa-chevron-down').length
 	if (right > 0){
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-			$('.pivot-pnl .table-header').css('width', '530px')
-			$('.pivot-pnl .table-content').css('margin-left', '530px')
+			$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
+			$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth())
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right')
