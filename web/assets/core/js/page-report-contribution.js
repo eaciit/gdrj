@@ -64,8 +64,8 @@ cbt.clickExpand = function (e) {
 	var down = $(e).find('i.fa-chevron-down').length;
 	if (right > 0) {
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-			$('.pivot-pnl .table-header').css('width', '530px');
-			$('.pivot-pnl .table-content').css('margin-left', '530px');
+			$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth());
+			$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth());
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right');
