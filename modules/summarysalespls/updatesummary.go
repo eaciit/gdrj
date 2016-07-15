@@ -729,13 +729,13 @@ func prepreclasspromospgtordmt() {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4afterreclass").
+		From("salespls-summary").
 		SetConfig("multiexec", true).
 		Save()
 
 	//2016
-	totrd := float64(526983045001)
-	totmt := float64(2132889211517)
+	// totrd := float64(526983045001)
+	// totmt := float64(2132889211517)
 	//strings.Contains(k, "PL29") || strings.Contains(k, "PL31") {
 	// 2015
 	// totrd := float64(513402656820)
@@ -763,7 +763,12 @@ func prepreclasspromospgtordmt() {
 		for k, _ := range tkm {
 			if strings.Contains(k, "PL") {
 				if strings.Contains(k, "PL29") || strings.Contains(k, "PL31") {
-					v := tkm.GetFloat64(k) * totrd / totmt
+					ratio := float64(0.1808)
+					if fiscalyear == 2015 {
+						ratio = float64(0.1872)
+					}
+					// v := tkm.GetFloat64(k) * totrd / totmt
+					v := tkm.GetFloat64(k) * ratio
 					newtkm.Set(k, v)
 
 					vori := tkm.GetFloat64(k) - v
