@@ -663,7 +663,7 @@ func prepmasterrollback_adv() {
 	toolkit.Println("--> Roll back data to for advertisement")
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-s15072016.v2").Cursor(nil)
 	defer csr.Close()
 
 	// salesplssummary := toolkit.M{}
@@ -698,7 +698,7 @@ func prepmasterrollback_sumbrand() {
 	toolkit.Println("--> Roll back data to for summary brand")
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4expclean").Cursor(nil)
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
 
 	salesplsbrand := toolkit.M{}
@@ -853,13 +853,13 @@ func main() {
 	// prepmasterratio()
 	// prepmasterrevfreight()
 	// prepmasterrevadv()
-	prepreclasspromospgtordmt()
-	// prepmasterrollback_adv()
-	// prepmasterrollback_sumbrand()
+	// prepreclasspromospgtordmt()
+	prepmasterrollback_adv()
+	prepmasterrollback_sumbrand()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4afterreclass").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -1347,7 +1347,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4afterreclass_sum").
+		From("salespls-summary-afterexp").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1357,7 +1357,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcSalesReturn(trx)
 
 		// CalcSalesReturn2016(trx)
-		// CleanUpdateOldExport(trx)
+
 		// CalcRatio(trx)
 		// CalcFreightsRev(trx)
 
@@ -1367,7 +1367,9 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcSgaRev(trx)
 
 		// CleanUpdateCustomerGroupName(trx)
-		// RollbackSalesplsAdvertisement(trx)
+
+		CleanUpdateOldExport(trx)
+		RollbackSalesplsAdvertisement(trx)
 
 		// AllocateDiscountActivity(trx)
 		CalcSum(trx)
