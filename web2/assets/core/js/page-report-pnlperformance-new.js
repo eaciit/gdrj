@@ -1906,6 +1906,18 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 
 		console.log("rows", rows);
 
+		// === FIX TOTAL ===
+
+		rows.forEach(function (d) {
+			d.PNLTotal = 0;
+
+			for (var p in d) {
+				if (d.hasOwnProperty(p) && p.split('_')[0] == v1.mode() && p.toLowerCase().indexOf('total') == -1) {
+					d.PNLTotal += d[p];
+				}
+			}
+		});
+
 		var grossSales = _.find(rows, function (r) {
 			return r.PLCode == grossSalesPLCode;
 		});

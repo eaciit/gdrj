@@ -327,7 +327,7 @@ cst.build = () => {
 	let container = $('.pivot-ez').empty()
 	let columnWidth = 100
 	let columnHeight = 30
-	let tableHeaderWidth = (120 * rows.length)
+	let tableHeaderWidth = 200
 	let totalWidth = 0
 
 	let tableHeaderWrapper = toolkit.newEl('div')
@@ -390,10 +390,11 @@ cst.build = () => {
 
 			return rowHeader
 		}, (groups, counter, what, k, v) => {
+			let calculatedColumnWidth = 100
+
 			let tdHeaderTableContent = toolkit.newEl('td')
 				.addClass('align-center title')
 				.html(k)
-				.width(tableHeaderWidth)
 				.appendTo(what)
 
 			if (v.length > 1) {
@@ -401,11 +402,14 @@ cst.build = () => {
 			}
 
 			if (k.length > 15) {
-				tdHeaderTableContent.width(columnWidth + 50)
-				totalWidth += 50
+				let newContentWidth = k.length * 10
+				if (newContentWidth > calculatedColumnWidth) {
+					calculatedColumnWidth = newContentWidth
+				}
 			}
 
-			totalWidth += columnWidth
+			tdHeaderTableContent.width(calculatedColumnWidth)
+			totalWidth += calculatedColumnWidth
 		}, (groups, counter, what, k, v) => {
 			// GENERATE CONTENT OF TABLE HEADER & TABLE CONTENT
 

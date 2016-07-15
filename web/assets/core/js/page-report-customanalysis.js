@@ -353,7 +353,7 @@ cst.build = function () {
 	var container = $('.pivot-ez').empty();
 	var columnWidth = 100;
 	var columnHeight = 30;
-	var tableHeaderWidth = 120 * rows.length;
+	var tableHeaderWidth = 200;
 	var totalWidth = 0;
 
 	var tableHeaderWrapper = toolkit.newEl('div').addClass('table-header').appendTo(container);
@@ -411,18 +411,23 @@ cst.build = function () {
 
 		return rowHeader;
 	}, function (groups, counter, what, k, v) {
-		var tdHeaderTableContent = toolkit.newEl('td').addClass('align-center title').html(k).width(tableHeaderWidth).appendTo(what);
+		var calculatedColumnWidth = 100;
+
+		var tdHeaderTableContent = toolkit.newEl('td').addClass('align-center title').html(k).appendTo(what);
 
 		if (v.length > 1) {
 			tdHeaderTableContent.attr('colspan', v.length);
 		}
 
 		if (k.length > 15) {
-			tdHeaderTableContent.width(columnWidth + 50);
-			totalWidth += 50;
+			var newContentWidth = k.length * 10;
+			if (newContentWidth > calculatedColumnWidth) {
+				calculatedColumnWidth = newContentWidth;
+			}
 		}
 
-		totalWidth += columnWidth;
+		tdHeaderTableContent.width(calculatedColumnWidth);
+		totalWidth += calculatedColumnWidth;
 	}, function (groups, counter, what, k, v) {
 		// GENERATE CONTENT OF TABLE HEADER & TABLE CONTENT
 

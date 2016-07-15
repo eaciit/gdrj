@@ -2029,7 +2029,17 @@ let v1 = viewModel.RDvsBranchView1
 		})
 
 		console.log("rows", rows)
-		
+
+		// === FIX TOTAL ===
+
+		rows.forEach((d) => {
+			d.PNLTotal = 0
+
+			for (let p in d) if (d.hasOwnProperty(p) && p.split('_')[0] == v1.mode() && p.toLowerCase().indexOf('total') == -1) {
+				d.PNLTotal += d[p]
+			}
+		})
+
 		let grossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode })
 		let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 		let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
