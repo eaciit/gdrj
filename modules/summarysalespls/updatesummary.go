@@ -722,6 +722,88 @@ func prepmasterrollback_sumbrand() {
 	masters.Set("salesplsbrand", salesplsbrand)
 }
 
+func prepreclasspromospgtordmt() {
+	toolkit.Println("--> Reclass Data Promo")
+
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
+
+	qSave := workerconn.NewQuery().
+		From("salespls-summary-4afterreclass").
+		SetConfig("multiexec", true).
+		Save()
+
+	//2016
+	totrd := float64(526983045001)
+	totmt := float64(1605906166516)
+	//strings.Contains(k, "PL29") || strings.Contains(k, "PL31") {
+	//2015
+	// totrd := float64(513402656820)
+	// totmt := float64(1521275910383)
+
+	filter := dbox.And(dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear)),
+		dbox.Eq("key.customer_channelid", "I3")) //I3 MT
+
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	defer csr.Close()
+
+	salesplsreclass := toolkit.M{}
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		tkmmt, _ := toolkit.ToM(tkm)
+
+		for k, _ := range tkm {
+			if strings.Contains(k, "PL") {
+				if strings.Contains(k, "PL29") || strings.Contains(k, "PL31") {
+					v := tkm.GetFloat64(k) * totrd / totmt
+					tkm.Set(k, v)
+
+					vori := tkmmt.GetFloat64(k) - v
+					tkmmt.Set(k, vori)
+				} else {
+					tkm.Set(k, float64(0))
+				}
+			}
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+
+		oldid := tkm.GetString("_id")
+		tkm.Set("_id", toolkit.Sprintf("%s|%s", oldid, "RECLASSPROMOSPGRDMT"))
+
+		dtkm.Set("customer_custtype", "RD")
+		dtkm.Set("customer_channelname", "RD")
+		dtkm.Set("customer_reportchannel", "RD")
+		dtkm.Set("customer_channelid", "I1")
+		dtkm.Set("trxsrc", "RECLASSPROMOSPGRDMT")
+
+		tkm.Set("key", dtkm)
+		salesplsreclass.Set(tkm.GetString("_id"), tkm)
+
+		CalcSum(tkm)
+		CalcSum(tkmmt)
+
+		err := qSave.Exec(toolkit.M{}.Set("data", tkm))
+		if err != nil {
+			toolkit.Println(err)
+		}
+
+		err = qSave.Exec(toolkit.M{}.Set("data", tkmmt))
+		if err != nil {
+			toolkit.Println(err)
+		}
+
+	}
+
+	masters.Set("salesplsreclass", salesplsreclass)
+}
+
 func prepmastertotaldiscactivity() {
 	toolkit.Println("--> Get discount activity")
 
@@ -767,13 +849,13 @@ func main() {
 	// prepmasterratio()
 	// prepmasterrevfreight()
 	// prepmasterrevadv()
-
-	prepmasterrollback_adv()
-	prepmasterrollback_sumbrand()
+	prepreclasspromospgtordmt()
+	// prepmasterrollback_adv()
+	// prepmasterrollback_sumbrand()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4expclean").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4afterreclass").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -1261,7 +1343,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4expclean").
+		From("salespls-summary-4afterreclass_sum").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1271,7 +1353,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcSalesReturn(trx)
 
 		// CalcSalesReturn2016(trx)
-		CleanUpdateOldExport(trx)
+		// CleanUpdateOldExport(trx)
 		// CalcRatio(trx)
 		// CalcFreightsRev(trx)
 
@@ -1281,7 +1363,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcSgaRev(trx)
 
 		// CleanUpdateCustomerGroupName(trx)
-		RollbackSalesplsAdvertisement(trx)
+		// RollbackSalesplsAdvertisement(trx)
 
 		// AllocateDiscountActivity(trx)
 		CalcSum(trx)
