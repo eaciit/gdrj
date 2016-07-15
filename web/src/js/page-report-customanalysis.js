@@ -7,6 +7,8 @@ cst.contentIsLoading = ko.observable(false)
 cst.title = ko.observable('Custom Analysis')
 cst.fiscalYears = ko.observableArray(rpt.optionFiscalYears())
 cst.data = ko.observableArray([])
+cst.dataconfig = ko.observableArray([])
+cst.selectconfig = ko.observable({})
 
 cst.optionDimensionPNL = ko.observableArray([])
 cst.dimensionPNL = ko.observable([])
@@ -42,6 +44,51 @@ cst.optionDimensionBreakdown = ko.observableArray([
 ])
 cst.breakdown = ko.observableArray(['customer.channelname']) // , 'customer.reportsubchannel|I3'])
 cst.putTotalOf = ko.observable('customer.channelname') // reportsubchannel')
+
+cst.saveConfigLocal = () => {
+	let retrievedObject = localStorage.getItem('arrConfigCustom')
+	let parseData = []
+	if (retrievedObject)
+		parseData = JSON.parse(retrievedObject)
+
+	parseData.push({
+		title: "config"+moment().unix(),
+		fiscalYears: cst.fiscalYears(),
+		breakdown: cst.breakdown(),
+		sortOrder: cst.sortOrder(),
+		putTotalOf: cst.putTotalOf()
+	})
+	localStorage.setItem('arrConfigCustom', JSON.stringify(parseData))
+	swal({ title: "Save Config", type: "success" })
+	cst.loadLocalStorage()
+}
+
+cst.loadLocalStorage = () => {
+	let retrievedObject = localStorage.getItem('arrConfigCustom')
+	let parseData = []
+	if (retrievedObject)
+		parseData = JSON.parse(retrievedObject)
+	cst.dataconfig(parseData)
+}
+
+cst.getConfigLocal = () => {
+	setTimeout(function(){ 
+		// console.log(cst.selectconfig())
+		if (cst.selectconfig() == ""){
+			cst.fiscalYears(rpt.optionFiscalYears())
+			cst.breakdown(['customer.channelname'])
+			cst.sortOrder('desc')
+			cst.putTotalOf('')
+		} else {
+			let getconfig = _.find(cst.dataconfig(), function(e){ return e.title == cst.selectconfig() })
+			cst.fiscalYears(getconfig.fiscalYears)
+			cst.breakdown(getconfig.breakdown)
+			cst.sortOrder(getconfig.sortOrder)
+			cst.putTotalOf(getconfig.putTotalOf)
+		}
+	})
+	// cst.refresh()
+}
 
 cst.isDimensionNotContainDate = ko.computed(() => {
 	if (cst.breakdown().indexOf('date.month') > -1) {
@@ -490,5 +537,6 @@ cst.title('&nbsp;')
 $(() => {
 	cst.refresh()
 	rpt.showExport(true)
+	cst.loadLocalStorage()
 	// cst.selectfield()
 })

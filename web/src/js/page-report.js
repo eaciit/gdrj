@@ -956,7 +956,7 @@ rpt.export = (target, title, mode) => {
 			})
 			tableContent.find(`tr:eq(${i}) td`).each((i, e) => {
 				cellval = {}
-				cellval['value'] = $(e).html()
+				cellval['value'] = $(e).html().replace(/,/g , "")
 				cells.push(cellval)
 			})
 			rowdata.push({cells:cells})
