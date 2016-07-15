@@ -489,6 +489,8 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 				if toolkit.HasMember([]string{"I1"}, channelID) {
 					breakdowns := map[string]float64{"General Trade": 0.38, "Modern Trade": 0.62}
 
+					totalAdvNPromo := toolkit.M{}
+
 					for channelname, percentage := range breakdowns {
 						newEach := toolkit.M{}
 
@@ -497,6 +499,8 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 
 							if strings.HasPrefix(key, "PL") {
 								newEach[key] = ((*each).GetFloat64(key) * percentage)
+
+								// === RD | MT 100% vs GT 0% ===
 
 								f := []string{"PL31", "PL30", "PL29"}
 								for _, forbidden := range f {
@@ -508,8 +512,24 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 										}
 									}
 								}
+
+								// === SUM TOTAL ADV & PROMO CHILD
+
+								if !totalAdvNPromo.Has(channelname) {
+									totalAdvNPromo[channelname] = float64(0)
+								}
+
+								g := []string{"PL31", "PL28", "PL29A"}
+								for _, forbidden := range g {
+									if key == forbidden {
+										totalAdvNPromo[channelname] = totalAdvNPromo.GetFloat64(channelname) + newEach.GetFloat64(key)
+									}
+								}
 							}
 						}
+
+						// === TOTAL ADV & PROMO
+						newEach["PL32A"] = totalAdvNPromo[channelname]
 
 						eachID := toolkit.M{"_id_branchrd": "Regional Distributor"}
 
@@ -552,6 +572,9 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 
 				if toolkit.HasMember([]string{"I1"}, channelID) {
 					breakdowns := map[string]float64{"General Trade": 0.38, "Modern Trade": 0.62}
+
+					totalAdvNPromo := toolkit.M{}
+
 					for channelname, percentage := range breakdowns {
 						newEach := toolkit.M{}
 
@@ -571,8 +594,24 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 										}
 									}
 								}
+
+								// === SUM TOTAL ADV & PROMO CHILD
+
+								if !totalAdvNPromo.Has(channelname) {
+									totalAdvNPromo[channelname] = float64(0)
+								}
+
+								g := []string{"PL31", "PL28", "PL29A"}
+								for _, forbidden := range g {
+									if key == forbidden {
+										totalAdvNPromo[channelname] = totalAdvNPromo.GetFloat64(channelname) + newEach.GetFloat64(key)
+									}
+								}
 							}
 						}
+
+						// === TOTAL ADV & PROMO
+						newEach["PL32A"] = totalAdvNPromo[channelname]
 
 						eachID := toolkit.M{"_id_branchrd": "Regional Distributor"}
 
