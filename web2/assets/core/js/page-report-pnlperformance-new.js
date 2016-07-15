@@ -204,8 +204,8 @@ var bkd = viewModel.breakdown;(function () {
 		var down = $(e).find('i.fa-chevron-down').length;
 		if (right > 0) {
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-				$('.pivot-pnl .table-header').css('width', '530px');
-				$('.pivot-pnl .table-content').css('margin-left', '530px');
+				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth());
+				$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth());
 			}
 
 			$(e).find('i').removeClass('fa-chevron-right');
@@ -1050,8 +1050,8 @@ var v2 = viewModel.RDvsBranchView2;(function () {
 		var down = $(e).find('i.fa-chevron-down').length;
 		if (right > 0) {
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-				$('.pivot-pnl .table-header').css('width', '530px');
-				$('.pivot-pnl .table-content').css('margin-left', '530px');
+				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth());
+				$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth());
 			}
 
 			$(e).find('i').removeClass('fa-chevron-right');
@@ -1310,6 +1310,21 @@ var v2 = viewModel.RDvsBranchView2;(function () {
 		});
 
 		console.log("rows", rows);
+
+		// === FIX TOTAL ===
+
+		var FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28'];
+		rows.forEach(function (r) {
+			FORBIDDEN_NUMBAH.forEach(function (plf) {
+				if (r.PLCode.indexOf(plf) > -1) {
+					r['General Trade_Total'] -= r['General Trade_Regional Distributor'];
+					r['General Trade_Total %'] -= r['General Trade_Regional Distributor %'];
+
+					r['General Trade_Regional Distributor'] = 0;
+					r['General Trade_Regional Distributor %'] = 0;
+				}
+			});
+		});
 
 		var grossSales = _.find(rows, function (r) {
 			return r.PLCode == grossSalesPLCode;
@@ -1640,8 +1655,8 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 		var down = $(e).find('i.fa-chevron-down').length;
 		if (right > 0) {
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-				$('.pivot-pnl .table-header').css('width', '530px');
-				$('.pivot-pnl .table-content').css('margin-left', '530px');
+				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth());
+				$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth());
 			}
 
 			$(e).find('i').removeClass('fa-chevron-right');
@@ -1908,6 +1923,19 @@ var v1 = viewModel.RDvsBranchView1;(function () {
 
 		// === FIX TOTAL ===
 
+		var FORBIDDEN_NUMBAH = ['PL31', 'PL30', 'PL29', 'PL28'];
+		rows.forEach(function (r) {
+			FORBIDDEN_NUMBAH.forEach(function (plf) {
+				if (r.PLCode.indexOf(plf) > -1) {
+					r['Regional Distributor_Total'] -= r['Regional Distributor_General Trade'];
+					r['Regional Distributor_Total %'] -= r['Regional Distributor_General Trade %'];
+
+					r['Regional Distributor_General Trade'] = 0;
+					r['Regional Distributor_General Trade %'] = 0;
+				}
+			});
+		});
+
 		rows.forEach(function (d) {
 			d.PNLTotal = 0;
 
@@ -2128,8 +2156,8 @@ var kac = viewModel.keyAccount;(function () {
 		var down = $(e).find('i.fa-chevron-down').length;
 		if (right > 0) {
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-				$('.pivot-pnl .table-header').css('width', '530px');
-				$('.pivot-pnl .table-content').css('margin-left', '530px');
+				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth());
+				$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth());
 			}
 
 			$(e).find('i').removeClass('fa-chevron-right');
@@ -2559,8 +2587,8 @@ var subchan = viewModel.subChannel;(function () {
 		var down = $(e).find('i.fa-chevron-down').length;
 		if (right > 0) {
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-				$('.pivot-pnl .table-header').css('width', '530px');
-				$('.pivot-pnl .table-content').css('margin-left', '530px');
+				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth());
+				$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth());
 			}
 
 			$(e).find('i').removeClass('fa-chevron-right');

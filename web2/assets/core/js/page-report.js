@@ -76,6 +76,7 @@ rpt.saveFiscalYear = function (fy) {
 	localStorage.fiscalYear = fy;
 };
 
+rpt.pnlTableHeaderWidth = ko.observable('560px');
 rpt.optionFiscalYears = ko.observableArray(['2014-2015', '2015-2016']);
 rpt.analysisIdeas = ko.observableArray([]);
 rpt.data = ko.observableArray([]);
