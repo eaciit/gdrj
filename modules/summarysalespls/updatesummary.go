@@ -734,12 +734,12 @@ func prepreclasspromospgtordmt() {
 		Save()
 
 	//2016
-	// totrd := float64(526983045001)
-	// totmt := float64(2132889211517)
+	totrd := float64(526983045001)
+	totmt := float64(2132889211517)
 	//strings.Contains(k, "PL29") || strings.Contains(k, "PL31") {
 	// 2015
-	totrd := float64(513402656820)
-	totmt := float64(2034678567203)
+	// totrd := float64(513402656820)
+	// totmt := float64(2034678567203)
 
 	filter := dbox.And(dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear)),
 		dbox.Eq("key.customer_channelid", "I3")) //I3 MT
