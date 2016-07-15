@@ -756,26 +756,32 @@ func prepreclasspromospgtordmt() {
 			break
 		}
 
-		tkmmt, _ := toolkit.ToM(tkm)
+		newtkm := toolkit.M{}
+
+		// tkmmt, _ := toolkit.ToM(tkm)
 
 		for k, _ := range tkm {
 			if strings.Contains(k, "PL") {
 				if strings.Contains(k, "PL29") || strings.Contains(k, "PL31") {
 					v := tkm.GetFloat64(k) * totrd / totmt
-					tkm.Set(k, v)
+					newtkm.Set(k, v)
 
-					vori := tkmmt.GetFloat64(k) - v
-					tkmmt.Set(k, vori)
-				} else {
-					tkm.Set(k, float64(0))
+					vori := tkm.GetFloat64(k) - v
+					tkm.Set(k, vori)
 				}
 			}
+		}
+
+		CalcSum(tkm)
+		err := qSave.Exec(toolkit.M{}.Set("data", tkm))
+		if err != nil {
+			toolkit.Println(err)
 		}
 
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
 
 		oldid := tkm.GetString("_id")
-		tkm.Set("_id", toolkit.Sprintf("%s|%s", oldid, "RECLASSPROMOSPGRDMT"))
+		newtkm.Set("_id", toolkit.Sprintf("%s|%s", oldid, "RECLASSPROMOSPGRDMT"))
 
 		dtkm.Set("customer_custtype", "RD")
 		dtkm.Set("customer_channelname", "RD")
@@ -783,20 +789,11 @@ func prepreclasspromospgtordmt() {
 		dtkm.Set("customer_channelid", "I1")
 		dtkm.Set("trxsrc", "RECLASSPROMOSPGRDMT")
 
-		tkm.Set("key", dtkm)
-		salesplsreclass.Set(tkm.GetString("_id"), tkm)
+		newtkm.Set("key", dtkm)
 
-		tkmmt.Set("_id", oldid)
+		CalcSum(newtkm)
 
-		CalcSum(tkm)
-		CalcSum(tkmmt)
-
-		err := qSave.Exec(toolkit.M{}.Set("data", tkm))
-		if err != nil {
-			toolkit.Println(err)
-		}
-
-		err = qSave.Exec(toolkit.M{}.Set("data", tkmmt))
+		err = qSave.Exec(toolkit.M{}.Set("data", newtkm))
 		if err != nil {
 			toolkit.Println(err)
 		}
