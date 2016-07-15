@@ -329,8 +329,8 @@ v1.render = function () {
 				r['Regional Distributor_Total'] -= r['Regional Distributor_General Trade'];
 				r['Regional Distributor_Total %'] -= r['Regional Distributor_General Trade %'];
 
-				r['Regional Distributor_General Trade'] = 12;
-				r['Regional Distributor_General Trade %'] = 12;
+				r['Regional Distributor_General Trade'] = 0;
+				r['Regional Distributor_General Trade %'] = 0;
 			}
 		});
 	});
@@ -765,8 +765,8 @@ v2.render = function () {
 				r['General Trade_Total'] -= r['General Trade_Regional Distributor'];
 				r['General Trade_Total %'] -= r['General Trade_Regional Distributor %'];
 
-				r['General Trade_Regional Distributor'] = 12;
-				r['General Trade_Regional Distributor %'] = 12;
+				r['General Trade_Regional Distributor'] = 0;
+				r['General Trade_Regional Distributor %'] = 0;
 			}
 		});
 	});
