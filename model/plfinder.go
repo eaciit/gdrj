@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/knot/knot.v1"
+	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -12,6 +13,45 @@ import (
 	"strings"
 	"time"
 )
+
+var (
+	masters = toolkit.M{}
+)
+
+func buildmap(holder interface{},
+	fnModel func() orm.IModel,
+	filter *dbox.Filter,
+	fnIter func(holder interface{}, obj interface{})) interface{} {
+	crx, ecrx := Find(fnModel(), filter, nil)
+	if ecrx != nil {
+		toolkit.Printfn("Cursor Error: %s", ecrx.Error())
+		// os.Exit(100)
+	}
+	defer crx.Close()
+	for {
+		s := fnModel()
+		e := crx.Fetch(s, 1, false)
+		if e != nil {
+			break
+		}
+		fnIter(holder, s)
+	}
+	return holder
+}
+
+func prepmastercalc() {
+	toolkit.Println("--> PL MODEL")
+	masters.Set("plmodel", buildmap(map[string]*PLModel{},
+		func() orm.IModel {
+			return new(PLModel)
+		},
+		nil,
+		func(holder, obj interface{}) {
+			h := holder.(map[string]*PLModel)
+			o := obj.(*PLModel)
+			h[o.ID] = o
+		}).(map[string]*PLModel))
+}
 
 type Filter struct {
 	Field string      `json:"field"`
@@ -376,6 +416,8 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 	channelname := "_id_customer_channelname"
 	res := []*toolkit.M{}
 
+	prepmastercalc()
+
 	// hasChannel := false
 	otherData := map[int]*toolkit.M{}
 
@@ -477,6 +519,9 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 
 						eachID.Set("_id_customer_channelname", channelname)
 						newEach.Set("_id", eachID)
+
+						//neweach final
+						CalcSum(newEach, masters)
 						res = append(res, &newEach)
 					}
 				}
@@ -537,6 +582,9 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 
 						eachID.Set("_id_customer_channelname", channelname)
 						newEach.Set("_id", eachID)
+
+						//neweach final
+						CalcSum(newEach, masters)
 						res = append(res, &newEach)
 					}
 				}
