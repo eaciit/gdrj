@@ -749,6 +749,17 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 
 							if strings.HasPrefix(key, "PL") {
 								newEach[key] = ((*each).GetFloat64(key) * percentage)
+
+								f := []string{"PL31", "PL30", "PL29"}
+								for _, forbidden := range f {
+									if strings.HasPrefix(key, forbidden) {
+										if channelname == "General Trade" {
+											newEach[key] = 0
+										} else if channelname == "Modern Trade" {
+											newEach[key] = (*each).GetFloat64(key)
+										}
+									}
+								}
 							}
 						}
 
@@ -798,6 +809,17 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 
 							if strings.HasPrefix(key, "PL") {
 								newEach[key] = ((*each).GetFloat64(key) * percentage)
+
+								f := []string{"PL31", "PL30", "PL29"}
+								for _, forbidden := range f {
+									if strings.HasPrefix(key, forbidden) {
+										if channelname == "General Trade" {
+											newEach[key] = 0
+										} else if channelname == "Modern Trade" {
+											newEach[key] = (*each).GetFloat64(key)
+										}
+									}
+								}
 							}
 						}
 
