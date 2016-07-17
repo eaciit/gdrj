@@ -3437,7 +3437,7 @@ let dsbrd = viewModel.dashboard
 	dsbrd.rows = ko.observableArray([
 		{ pnl: "Net Sales", plcodes: ["PL8A"] },
 		{ pnl: 'Growth', plcodes: [] }, // NOT YET
-		{ pnl: 'Discount Activity', plcodes: "PL7A" },
+		{ pnl: 'Discount Activity', plcodes: ["PL7A"] },
 		{ pnl: "COGS", plcodes: ["PL74B"] },
 		{ pnl: "Gross Margin", plcodes: ["PL74C"] },
 		{ pnl: "SGA", plcodes: ["PL94A"] },
@@ -3748,6 +3748,7 @@ let dsbrd = viewModel.dashboard
 				let gsPrev = grossSales.columnData[prevIndex]
 				let g = growth.columnData[index]
 				let value = toolkit.number((gs.value - gsPrev.value) / gsPrev.value) * 100
+				console.log('----', gs.value, gsPrev.value)
 				g.value = `${kendo.toString(value, 'n2')} %`
 
 				counter++
