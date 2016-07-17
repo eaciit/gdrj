@@ -368,21 +368,21 @@ v1.render = () => {
 		if (d.PLCode == discountActivityPLCode) {
 			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
 
-			// ====== hek MODERN TRADE numbah
-			let grossSalesRedisMT = grossSales[`Regional Distributor_Modern Trade`]
-			let grossSalesRedisGT = grossSales[`Regional Distributor_Modern Trade`]
+			// // ====== hek MODERN TRADE numbah
+			// let grossSalesRedisMT = grossSales[`Regional Distributor_Modern Trade`]
+			// let grossSalesRedisGT = grossSales[`Regional Distributor_Modern Trade`]
 
-			let discountBranchMTpercent = d[`Branch_Modern Trade %`]
-			let discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent)
-			let discountRedisTotal = d[`Regional Distributor_Total`]
-			let discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated
-			let discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100
+			// let discountBranchMTpercent = d[`Branch_Modern Trade %`]
+			// let discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent)
+			// let discountRedisTotal = d[`Regional Distributor_Total`]
+			// let discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated
+			// let discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100
 
-			d[`Regional Distributor_Modern Trade`] = discountRedisMTCalculated
-			d[`Regional Distributor_Modern Trade %`] = discountBranchMTpercent
+			// d[`Regional Distributor_Modern Trade`] = discountRedisMTCalculated
+			// d[`Regional Distributor_Modern Trade %`] = discountBranchMTpercent
 
-			d[`Regional Distributor_General Trade`] = discountRedisGTCalculated
-			d[`Regional Distributor_General Trade %`] = discountRedisGTPercentCalculated
+			// d[`Regional Distributor_General Trade`] = discountRedisGTCalculated
+			// d[`Regional Distributor_General Trade %`] = discountRedisGTPercentCalculated
 			
 		}
 
@@ -854,21 +854,21 @@ v2.render = () => {
 		if (d.PLCode == discountActivityPLCode) {
 			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
 
-			// ====== hek MODERN TRADE numbah
-			let grossSalesRedisMT = grossSales[`Modern Trade_Regional Distributor`]
-			let grossSalesRedisGT = grossSales[`Modern Trade_Regional Distributor`]
+			// // ====== hek MODERN TRADE numbah
+			// let grossSalesRedisMT = grossSales[`Modern Trade_Regional Distributor`]
+			// let grossSalesRedisGT = grossSales[`Modern Trade_Regional Distributor`]
 
-			let discountBranchMTpercent = d[`Modern Trade_Branch %`]
-			let discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent)
-			let discountRedisTotal = d[`General Trade_Total`]
-			let discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated
-			let discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100
+			// let discountBranchMTpercent = d[`Modern Trade_Branch %`]
+			// let discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent)
+			// let discountRedisTotal = d[`General Trade_Total`]
+			// let discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated
+			// let discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100
 
-			d[`Modern Trade_Regional Distributor`] = discountRedisMTCalculated
-			d[`Modern Trade_Regional Distributor %`] = discountBranchMTpercent
+			// d[`Modern Trade_Regional Distributor`] = discountRedisMTCalculated
+			// d[`Modern Trade_Regional Distributor %`] = discountBranchMTpercent
 
-			d[`General Trade_Regional Distributor`] = discountRedisGTCalculated
-			d[`General Trade_Regional Distributor %`] = discountRedisGTPercentCalculated
+			// d[`General Trade_Regional Distributor`] = discountRedisGTCalculated
+			// d[`General Trade_Regional Distributor %`] = discountRedisGTPercentCalculated
 			
 		}
 
