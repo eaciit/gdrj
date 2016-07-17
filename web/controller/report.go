@@ -120,6 +120,17 @@ func (m *ReportController) GetDataMasterDistributor(r *knot.WebContext) interfac
 	return helper.CreateResult(true, res, "")
 }
 
+func (m *ReportController) GetDataMasterGeneralTrade(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.MasterReportSubChannelGetByChannelID("I2")
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.MasterReportSubChannel{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
 func (m *ReportController) GetDataMasterHyperSuperMini(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
