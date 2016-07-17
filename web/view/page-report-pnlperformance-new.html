@@ -13,6 +13,9 @@
 
 	<!-- Nav tabs -->
 	<ul class="nav nav-pills nav-replace-title" role="tablist">
+		<li role="presentation">
+			<a href="#summary" role="tab" data-toggle="tab" onclick="bkd.title('Summary'); dsbrd.refresh();">Summary</a>
+		</li>
 		<li role="presentation" class="active">
 			<a href="#by-channel" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Channels'); bkd.refresh();">Channels</a>
 		</li>
@@ -38,15 +41,93 @@
 			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Modern Trade Breakdown', 'mt sub channel');">MT Breakdown</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownDistributor(); subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Brand', 'brand');">Brand</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownGeneralTrade(); subchan.switchRefresh('P&L by General Trade Breakdown', 'gt');">GT Breakdown</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownBrand(); subchan.switchRefresh('P&L by Brand', 'brand');">Brand</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownCity(); subchan.switchRefresh('P&L by City', 'city');">City</a>
 		</li>
 	</ul>
 
 	<!-- Tab panes -->
 	<div class="tab-content">
+
+		<div role="tabpanel" class="tab-pane" id="summary">
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin" data-bind="html: bkd.title"></h3>
+			<div class="panel-nav-button" data-bind="visible: !dsbrd.contentIsLoading()">
+				<div class="form-inline">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: dsbrd.refresh" title="Refresh Summary">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<!-- <button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('.grid-breakdown-channel', 'Channels by Branch/RD', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button> -->
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div data-bind="visible: dsbrd.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div class="filter" data-bind="visible: !dsbrd.contentIsLoading()">
+				<div class="form-inline pull-right breakdown-filter">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Structure</span>
+							<div class="width-full">
+								<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: dsbrd.optionStructures, dataValueField: 'field', dataTextField: 'name', value: dsbrd.structure }"></select>
+							</div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.optionFiscalYears, value: dsbrd.fiscalYears }"></select>
+						</div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Breakdown by</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: dsbrd.breakdown, select: dsbrd.changeBreakdown, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Breakdown Value</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: dsbrd.optionBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: dsbrd.breakdownValue, placeholder: 'Choose value', change: dsbrd.changeBreakdownValue }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+				</div>
+				<div class="clearfix"></div>
+			</div>
+
+			<div data-bind="visible: !dsbrd.contentIsLoading()">
+				<div class="grid-dashboard"></div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
+</div>
+		</div>
+
+
 		<div role="tabpanel" class="tab-pane active" id="by-channel">
 <div class="col-md-12 col-sm-12 no-padding hardcore">
 	<div class="panel ez no-padding hardcore">
@@ -359,6 +440,22 @@
 						<span class="input-group-addon align-right">Distributor</span>
 						<div class="width-full">
 							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownDistributorValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownDistributor, placeholder: 'Choose value', change: subchan.changeBreakdownDistributorValue, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'gt')">
+						<span class="input-group-addon align-right">General Trade</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownGeneralTradeValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownGeneralTrade, placeholder: 'Choose value', change: subchan.changeBreakdownGeneralTradeValue, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'city')">
+						<span class="input-group-addon align-right">General Trade</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownCityValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownCity, placeholder: 'Choose value', change: subchan.changeBreakdownCityValue, filter: 'contains' }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
