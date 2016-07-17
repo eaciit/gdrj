@@ -416,6 +416,9 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 	channelname := "_id_customer_channelname"
 	res := []*toolkit.M{}
 
+	grossmt := float64(0)
+	// discactrd := float64(0)
+
 	prepmastercalc()
 
 	// hasChannel := false
@@ -455,6 +458,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 				_id.Set(channelname, "Regional Distributor")
 			case "I3":
 				_id.Set(channelname, "Modern Trade")
+				grossmt += each.GetFloat64("PL0")
 			case "I2":
 				_id.Set(channelname, "General Trade")
 			case "EXP":
@@ -491,6 +495,10 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 
 					totalAdvNPromo := toolkit.M{}
 
+					//PL7A Disc Activity, grossmt total PL0 MT see line 461
+					totdiscrd := each.GetFloat64("PL7A")
+					discrdmt := totdiscrd * (each.GetFloat64("PL0") * 0.62) / grossmt
+
 					for channelname, percentage := range breakdowns {
 						newEach := toolkit.M{}
 
@@ -525,7 +533,15 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 										totalAdvNPromo[channelname] = totalAdvNPromo.GetFloat64(channelname) + newEach.GetFloat64(key)
 									}
 								}
+
+								//place for discounting activity
 							}
+						}
+
+						//For PL7A Disc Activity,
+						newEach["PL7A"] = discrdmt
+						if channelname == "General Trade" {
+							newEach["PL7A"] = totdiscrd - discrdmt
 						}
 
 						// === TOTAL ADV & PROMO
