@@ -416,7 +416,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 	channelname := "_id_customer_channelname"
 	res := []*toolkit.M{}
 
-	grossmt := float64(0)
+	branchMTpercent := float64(0)
 	// discactrd := float64(0)
 
 	prepmastercalc()
@@ -458,7 +458,11 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 				_id.Set(channelname, "Regional Distributor")
 			case "I3":
 				_id.Set(channelname, "Modern Trade")
-				grossmt += each.GetFloat64("PL0")
+				// get branch mt percentage
+				branchMTpercent = toolkit.Div(
+					each.GetFloat64("PL7A"), // DISCOUNT ACT
+					each.GetFloat64("PL0"),  // GROSS SALES
+				)
 			case "I2":
 				_id.Set(channelname, "General Trade")
 			case "EXP":
@@ -490,14 +494,10 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 					res = append(res, &newEach)
 				}
 
+				rdMT := float64(0)
+
 				if toolkit.HasMember([]string{"I1"}, channelID) {
-					breakdowns := map[string]float64{"General Trade": 0.38, "Modern Trade": 0.62}
-
-					totalAdvNPromo := toolkit.M{}
-
-					//PL7A Disc Activity, grossmt total PL0 MT see line 461
-					totdiscrd := each.GetFloat64("PL7A")
-					discrdmt := totdiscrd * (each.GetFloat64("PL0") * 0.62) / grossmt
+					breakdowns := map[string]float64{"Modern Trade": 0.62, "General Trade": 0.38}
 
 					for channelname, percentage := range breakdowns {
 						newEach := toolkit.M{}
@@ -520,32 +520,18 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 										}
 									}
 								}
-
-								// === SUM TOTAL ADV & PROMO CHILD
-
-								if !totalAdvNPromo.Has(channelname) {
-									totalAdvNPromo[channelname] = float64(0)
-								}
-
-								g := []string{"PL31", "PL28", "PL29A"}
-								for _, forbidden := range g {
-									if key == forbidden {
-										totalAdvNPromo[channelname] = totalAdvNPromo.GetFloat64(channelname) + newEach.GetFloat64(key)
-									}
-								}
-
-								//place for discounting activity
 							}
 						}
 
-						//For PL7A Disc Activity,
-						newEach["PL7A"] = discrdmt
-						if channelname == "General Trade" {
-							newEach["PL7A"] = totdiscrd - discrdmt
+						// === DISCOUNT ACT === RD GT & RD MT ===
+						if channelname == "Modern Trade" {
+							rdMT = branchMTpercent * newEach.GetFloat64("PL0")
+							newEach["PL7A"] = rdMT
+						} else {
+							totalRD := each.GetFloat64("PL7A")
+							rdGT := totalRD - rdMT
+							newEach["PL7A"] = rdGT
 						}
-
-						// === TOTAL ADV & PROMO
-						newEach["PL32A"] = totalAdvNPromo[channelname]
 
 						eachID := toolkit.M{"_id_branchrd": "Regional Distributor"}
 
@@ -586,10 +572,10 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 					res = append(res, &newEach)
 				}
 
-				if toolkit.HasMember([]string{"I1"}, channelID) {
-					breakdowns := map[string]float64{"General Trade": 0.38, "Modern Trade": 0.62}
+				rdMT := float64(0)
 
-					totalAdvNPromo := toolkit.M{}
+				if toolkit.HasMember([]string{"I1"}, channelID) {
+					breakdowns := map[string]float64{"Modern Trade": 0.62, "General Trade": 0.38}
 
 					for channelname, percentage := range breakdowns {
 						newEach := toolkit.M{}
@@ -610,24 +596,18 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 										}
 									}
 								}
-
-								// === SUM TOTAL ADV & PROMO CHILD
-
-								if !totalAdvNPromo.Has(channelname) {
-									totalAdvNPromo[channelname] = float64(0)
-								}
-
-								g := []string{"PL31", "PL28", "PL29A"}
-								for _, forbidden := range g {
-									if key == forbidden {
-										totalAdvNPromo[channelname] = totalAdvNPromo.GetFloat64(channelname) + newEach.GetFloat64(key)
-									}
-								}
 							}
 						}
 
-						// === TOTAL ADV & PROMO
-						newEach["PL32A"] = totalAdvNPromo[channelname]
+						// === DISCOUNT ACT === RD GT & RD MT ===
+						if channelname == "Modern Trade" {
+							rdMT = branchMTpercent * newEach.GetFloat64("PL0")
+							newEach["PL7A"] = rdMT
+						} else {
+							totalRD := each.GetFloat64("PL7A")
+							rdGT := totalRD - rdMT
+							newEach["PL7A"] = rdGT
+						}
 
 						eachID := toolkit.M{"_id_branchrd": "Regional Distributor"}
 
