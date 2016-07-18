@@ -9,21 +9,22 @@
 		<h3 class="no-margin" data-bind="html: cst.title"></h3>
 		<div class="panel-nav-button" data-bind="visible: !cst.contentIsLoading()">
 			<div class="form-inline">
+				<!-- <button class="btn btn-sm btn-success tooltipster" data-bind="click: cst.saveConfigLocal" title="Save config">
+					<i class="fa fa-floppy-o"></i> Save Config
+				</button> -->
+				<button class="btn btn-sm btn-success tooltipster" onclick="cst.configName(''); $('#modal-load-config').modal('show');" title="Load config">
+					<i class="fa fa-gear"></i> Configuration
+				</button>
+
 				<button class="btn btn-sm btn-primary tooltipster" data-bind="click: cst.refresh" title="Refresh">
 					<i class="fa fa-refresh"></i> Refresh
-				</button>
-				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
-					<i class="fa fa-server"></i> Show Filter
 				</button>
 				<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#custom-analysis', 'Custom Analysis', 'header-content')">
 					<i class="fa fa-download"></i> Export as Excel
 				</button>
-				<button class="btn btn-sm btn-success tooltipster" data-bind="click: cst.saveConfigLocal" title="Toggle Advanced Filter">
-					<i class="fa fa-floppy-o"></i> Save Config
+				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+					<i class="fa fa-server"></i> Show Filter
 				</button>
-				<!-- <button class="btn btn-sm btn-info tooltipster" data-bind="click: cst.getConfigLocal" title="Toggle Advanced Filter">
-					<i class="fa fa-refresh"></i> Load Config
-				</button> -->
 			</div>
 		</div>
 	</div>
@@ -32,9 +33,9 @@
 		<div class="filter" data-bind="visible: !cst.contentIsLoading()">
 			<div class="form-inline pull-right">
 				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-					<span class="input-group-addon align-right">Fiscal Year</span>
+					<span class="input-group-addon align-right">Fiscal Years</span>
 					<div class="width-full">
-						<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.optionFiscalYears, value: cst.fiscalYears }"></select>
+						<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: rpt.optionFiscalYears, value: cst.fiscalYears }"></select>
 					</div>
 					<div class="clearfix"></div>
 				</div>
@@ -80,13 +81,6 @@
 					</div>
 					<div class="clearfix"></div>
 				</div>
-				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-					<span class="input-group-addon align-right">Config</span>
-					<div class="width-full">
-						<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: cst.dataconfig, dataValueField: 'title', dataTextField: 'title', optionLabel: 'Choose Config..', value: cst.selectconfig, change: cst.getConfigLocal }"></select>
-					</div>
-					<div class="clearfix"></div>
-				</div>
 			</div>
 			<div class="clearfix"></div>
 		</div>
@@ -104,4 +98,68 @@
 	</div>
 
 	{{template "_filter.html"}}
+</div>
+
+
+
+
+<div class="modal fade" id="modal-load-config" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width: 420px;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                	<span aria-hidden="true">&times;</span>
+            	</button>
+                <h4 class="modal-title">
+        			Configuration
+        		</h4>
+            </div>
+            
+            <div class="modal-body">
+
+				<div class="filter" data-bind="visible: !cst.contentIsLoading()">
+					<p>Save current config</p>
+					<div class="form-inline">
+						<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" style="width: 200px;">
+							<span class="input-group-addon align-right">Config Name</span>
+							<div class="width-full">
+								<input class="input-sm ez" type="text" style="width: 150px; border: 1px solid #f0f3f4;" placeholder="Type config name here" data-bind="value: cst.configName" />
+							</div>
+							<div class="clearfix"></div>
+						</div>
+
+						<button class="btn btn-sm btn-success tooltipster" data-bind="click: function () { cst.saveConfigLocal(); $('#modal-load-config').modal('hide'); }" title="Save config" style="width: 100px;">
+							<i class="fa fa-save"></i> Save Config
+						</button>
+					</div>
+
+					<div class="clearfix"></div>
+
+					<p>Or, load previous saved config</p>
+
+					<div class="form-inline">
+						<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" style="width: 200px;">
+							<span class="input-group-addon align-right">Saved Config</span>
+							<div class="width-full">
+								<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: cst.dataconfig, dataValueField: 'title', dataTextField: 'title', optionLabel: 'Choose Config..', value: cst.selectconfig }"></select>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+
+						<button class="btn btn-sm btn-success tooltipster" data-bind="click: function () { cst.getConfigLocal(); $('#modal-load-config').modal('hide'); }" title="Load config" style="width: 100px;">
+							<i class="fa fa-share"></i> Load Config
+						</button>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">
+		        	Close
+		        </button>
+            </div>
+        </div>
+    </div>
 </div>
