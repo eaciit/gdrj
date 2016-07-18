@@ -44,7 +44,7 @@ cst.optionDimensionBreakdown = ko.observableArray([
 ])
 cst.breakdown = ko.observableArray(['customer.channelname']) // , 'customer.reportsubchannel|I3'])
 cst.putTotalOf = ko.observable('customer.channelname') // reportsubchannel')
-
+cst.configName = ko.observable("config"+moment().unix())
 cst.saveConfigLocal = () => {
 	let retrievedObject = localStorage.getItem('arrConfigCustom')
 	let parseData = []
@@ -52,14 +52,15 @@ cst.saveConfigLocal = () => {
 		parseData = JSON.parse(retrievedObject)
 
 	parseData.push({
-		title: "config"+moment().unix(),
+		title: cst.configName(),
 		fiscalYears: cst.fiscalYears(),
 		breakdown: cst.breakdown(),
 		sortOrder: cst.sortOrder(),
-		putTotalOf: cst.putTotalOf()
+		putTotalOf: cst.putTotalOf(),
+		dimensionPNL: cst.dimensionPNL()
 	})
 	localStorage.setItem('arrConfigCustom', JSON.stringify(parseData))
-	swal({ title: "Save Config", type: "success" })
+	swal({ title: "Config Saved", type: "success" })
 	cst.loadLocalStorage()
 }
 
@@ -73,20 +74,25 @@ cst.loadLocalStorage = () => {
 
 cst.getConfigLocal = () => {
 	setTimeout(function(){ 
-		// console.log(cst.selectconfig())
 		if (cst.selectconfig() == ""){
 			cst.fiscalYears(rpt.optionFiscalYears())
 			cst.breakdown(['customer.channelname'])
 			cst.sortOrder('desc')
 			cst.putTotalOf('')
+			cst.dimensionPNL([])
+			cst.refresh()
 		} else {
 			let getconfig = _.find(cst.dataconfig(), function(e){ return e.title == cst.selectconfig() })
 			cst.fiscalYears(getconfig.fiscalYears)
 			cst.breakdown(getconfig.breakdown)
 			cst.sortOrder(getconfig.sortOrder)
 			cst.putTotalOf(getconfig.putTotalOf)
+			cst.dimensionPNL(getconfig.dimensionPNL)
+			cst.refresh()
 		}
-	})
+
+		swal({ title: "Config Loaded", type: "success" })
+	}, 100)
 	// cst.refresh()
 }
 
@@ -543,4 +549,6 @@ $(() => {
 	rpt.showExport(true)
 	cst.loadLocalStorage()
 	// cst.selectfield()
+
+	$("#modal-load-config").appendTo($('body'))
 })

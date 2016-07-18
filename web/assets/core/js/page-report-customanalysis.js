@@ -22,21 +22,22 @@ cst.optionSortOrders = ko.observableArray([{ field: 'asc', name: 'Smallest to la
 cst.optionDimensionBreakdown = ko.observableArray([{ name: "Channel", field: "customer.channelname", title: "customer_channelname" }, { name: "RD by RD category", field: "customer.reportsubchannel|I1", filter: { Op: "$in", Field: "customer.channelname", Value: ["I1"] } }, { name: "GT by GT category", field: "customer.reportsubchannel|I2", filter: { Op: "$in", Field: "customer.channelname", Value: ["I2"] } }, { name: "MT by MT category", field: "customer.reportsubchannel|I3", filter: { Op: "$in", Field: "customer.channelname", Value: ["I3"] } }, { name: "IT by IT category", field: "customer.reportsubchannel|I4", filter: { Op: "$in", Field: "customer.channelname", Value: ["I4"] } }, { name: "Branch", field: "customer.branchname", title: "customer_branchname" }, { name: "Customer Group", field: "customer.keyaccount", title: "customer_keyaccount" }, { name: "Key Account", field: "customer.customergroup", title: "customer_customergroupname" }, { name: "Brand", field: "product.brand", title: "product_brand" }, { name: "Zone", field: "customer.zone", title: "customer_zone" }, { name: "Region", field: "customer.region", title: "customer_region" }, { name: "City", field: "customer.areaname", title: "customer_areaname" }, { name: "Date - Fiscal Year", field: "date.fiscal", title: "date_fiscal" }, { name: "Date - Quarter", field: "date.quartertxt", title: "date_quartertxt" }, { name: "Date - Month", field: "date.month", title: "date_month" }]);
 cst.breakdown = ko.observableArray(['customer.channelname']); // , 'customer.reportsubchannel|I3'])
 cst.putTotalOf = ko.observable('customer.channelname'); // reportsubchannel')
-
+cst.configName = ko.observable("config" + moment().unix());
 cst.saveConfigLocal = function () {
 	var retrievedObject = localStorage.getItem('arrConfigCustom');
 	var parseData = [];
 	if (retrievedObject) parseData = JSON.parse(retrievedObject);
 
 	parseData.push({
-		title: "config" + moment().unix(),
+		title: cst.configName(),
 		fiscalYears: cst.fiscalYears(),
 		breakdown: cst.breakdown(),
 		sortOrder: cst.sortOrder(),
-		putTotalOf: cst.putTotalOf()
+		putTotalOf: cst.putTotalOf(),
+		dimensionPNL: cst.dimensionPNL()
 	});
 	localStorage.setItem('arrConfigCustom', JSON.stringify(parseData));
-	swal({ title: "Save Config", type: "success" });
+	swal({ title: "Config Saved", type: "success" });
 	cst.loadLocalStorage();
 };
 
@@ -49,12 +50,13 @@ cst.loadLocalStorage = function () {
 
 cst.getConfigLocal = function () {
 	setTimeout(function () {
-		// console.log(cst.selectconfig())
 		if (cst.selectconfig() == "") {
 			cst.fiscalYears(rpt.optionFiscalYears());
 			cst.breakdown(['customer.channelname']);
 			cst.sortOrder('desc');
 			cst.putTotalOf('');
+			cst.dimensionPNL([]);
+			cst.refresh();
 		} else {
 			var getconfig = _.find(cst.dataconfig(), function (e) {
 				return e.title == cst.selectconfig();
@@ -63,8 +65,12 @@ cst.getConfigLocal = function () {
 			cst.breakdown(getconfig.breakdown);
 			cst.sortOrder(getconfig.sortOrder);
 			cst.putTotalOf(getconfig.putTotalOf);
+			cst.dimensionPNL(getconfig.dimensionPNL);
+			cst.refresh();
 		}
-	});
+
+		swal({ title: "Config Loaded", type: "success" });
+	}, 100);
 	// cst.refresh()
 };
 
@@ -543,4 +549,6 @@ $(function () {
 	rpt.showExport(true);
 	cst.loadLocalStorage();
 	// cst.selectfield()
+
+	$("#modal-load-config").appendTo($('body'));
 });
