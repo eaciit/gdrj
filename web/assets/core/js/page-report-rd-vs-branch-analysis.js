@@ -45,7 +45,7 @@ v1.refresh = function () {
 				v1.contentIsLoading(false);
 				return;
 			}
-
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels);
 			v1.data(v1.buildStructure(res.Data.Data));
 			rpt.plmodels(res.Data.PLModels);
 			v1.emptyGrid();
@@ -460,7 +460,7 @@ v2.refresh = function () {
 				v2.contentIsLoading(false);
 				return;
 			}
-
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels);
 			v2.data(v2.buildStructure(res.Data.Data));
 			rpt.plmodels(res.Data.PLModels);
 			v2.emptyGrid();
@@ -882,6 +882,7 @@ v3.refresh = function () {
 				return;
 			}
 
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels);
 			v3.data(v3.buildStructure(res.Data.Data));
 			rpt.plmodels(res.Data.PLModels);
 			v3.emptyGrid();

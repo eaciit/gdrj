@@ -77,6 +77,7 @@ kac.refresh = function () {
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			kac.breakdownNote('Last refreshed on: ' + date);
 
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels);
 			kac.data(res.Data.Data);
 			rpt.plmodels(res.Data.PLModels);
 			kac.emptyGrid();

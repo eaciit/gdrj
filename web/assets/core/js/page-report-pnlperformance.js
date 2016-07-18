@@ -194,6 +194,7 @@ bkd.refresh = function () {
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
 			bkd.breakdownNote('Last refreshed on: ' + date);
 
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels);
 			var data = bkd.buildStructure(res.Data.Data);
 			bkd.data(data);
 			rpt.plmodels(res.Data.PLModels);

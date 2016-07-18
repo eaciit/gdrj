@@ -515,7 +515,7 @@ ba.refresh = function () {
 				ba.contentIsLoading(false);
 				return;
 			}
-
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels);
 			var data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data);
 			ba.data(data);
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
