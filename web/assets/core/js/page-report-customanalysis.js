@@ -291,7 +291,16 @@ cst.build = function () {
 	var op2 = _.map(op1, function (v, k) {
 		var col = {};
 		col.rows = [];
-		columns.forEach(function (e) {
+
+		var columnsInjected = columns;
+
+		if (!cst.isDimensionNotContainDate()) {
+			columnsInjected = columnsInjected.filter(function (g) {
+				return g != 'date_fiscal';
+			}).concat(['date_fiscal']);
+		}
+
+		columnsInjected.forEach(function (e) {
 			col[e] = v[0][e];
 		});
 

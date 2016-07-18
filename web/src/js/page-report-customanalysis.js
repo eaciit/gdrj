@@ -283,7 +283,16 @@ cst.build = () => {
 	let op2 = _.map(op1, (v, k) => {
 		let col = {}
 		col.rows = []
-		columns.forEach((e) => {
+
+		let columnsInjected = columns
+
+		if (!cst.isDimensionNotContainDate()) {
+			columnsInjected = columnsInjected
+				.filter((g) => g != 'date_fiscal')
+				.concat(['date_fiscal'])
+		}
+
+		columnsInjected.forEach((e) => {
 			col[e] = v[0][e]
 		})
 
