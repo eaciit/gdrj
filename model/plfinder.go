@@ -704,6 +704,17 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		groups[other] = bson.M{"$sum": field}
 	}
 
+	sgagroups := []string{"R&D", "Sales", "General Service", "General Management", "Manufacturing",
+		"Finance", "Marketing", "Logistic Overhead", "Human Resource", "Other"}
+	sgapl := []string{"PL33", "PL34", "PL35"}
+	for _, sga := range sgagroups {
+		for _, pl := range sgapl {
+			dbfield := fmt.Sprintf("%s_%s", pl, sga)
+			pdbfield := fmt.Sprintf("$%s", dbfield)
+			groups[dbfield] = bson.M{"$sum": pdbfield}
+		}
+	}
+
 	// groups["totalOutlet"] = bson.M{"$size": "$outlets"}
 	pipe := []bson.M{{"$match": matches}, {"$group": groups}} //, {"$project": projects}} //
 
