@@ -54,7 +54,7 @@ cst.getConfigLocal = function () {
 			cst.fiscalYears(rpt.optionFiscalYears());
 			cst.breakdown(['customer.channelname']);
 			cst.sortOrder('desc');
-			cst.putTotalOf('');
+			cst.putTotalOf('customer.channelname');
 			cst.dimensionPNL([]);
 
 			cst.initCategory();
@@ -232,7 +232,7 @@ cst.refresh = function () {
 
 cst.build = function () {
 	var breakdown = cst.breakdownClean();
-	console.log('breakdown', breakdown);
+	// console.log('breakdown', breakdown)
 
 	var keys = _.orderBy(cst.dimensionPNL(), function (d) {
 		var plmodel = rpt.allowedPL().find(function (e) {
@@ -263,8 +263,32 @@ cst.build = function () {
 
 	// BUILD WELL STRUCTURED DATA
 
+	var opj1 = _.groupBy(cst.data(), function (d) {
+		var keys = [];
+		cst.breakdownClean().forEach(function (e) {
+			var key = d._id['_id_' + toolkit.replace(e, '.', '_')];
+			keys.push(key);
+		});
+		return keys.join('_');
+	});
+	var opj2 = _.map(opj1, function (v, k) {
+		var o = v[0];
+
+		for (var i = 1; i < v.length; i++) {
+			var each = v[i];
+			for (var p in o) {
+				if (o.hasOwnProperty(p) && p.indexOf('PL') > -1) {
+					o[p] += each[p];
+				}
+			}
+		}
+
+		return o;
+	});
+	var dataRaw = opj2;
+
 	var allRaw = [];
-	cst.data().forEach(function (d) {
+	dataRaw.forEach(function (d) {
 		var o = {};
 
 		for (var key in d._id) {
@@ -355,6 +379,7 @@ cst.build = function () {
 			// console.log("cst.breakdown", breakdown)
 			// console.log("group", group)
 			// console.log("groupOther", groupOther)
+			console.log("allprev", all.slice(0));
 
 			all.forEach(function (d, i) {
 				var currentKey = group.map(function (f) {
@@ -385,11 +410,17 @@ cst.build = function () {
 									o[toolkit.replace(g, '.', '_')] = '&nbsp;';
 								});
 
-								sample.rows.forEach(function (g, b) {
+								sample.rows.forEach(function (g) {
 									var row = {};
 									row.pnl = g.pnl;
-									row.value = toolkit.sum(currentData, function (d) {
-										return d.rows[b].value;
+									row.value = toolkit.sum(currentData, function (h) {
+										var r = h.rows.find(function (f) {
+											return f.pnl == g.pnl;
+										});
+										if (toolkit.isUndefined(r)) {
+											return 0;
+										}
+										return r.value;
 									});
 									o.rows.push(row);
 								});
@@ -409,8 +440,9 @@ cst.build = function () {
 							})();
 						}
 
-						console.log('---currentKey', currentKey);
-						console.log('---currentData', currentData);
+						// console.log('---sample', sample)
+						// console.log('---currentKey', currentKey)
+						// console.log('---currentData', currentData)
 
 						cache[currentKey] = true;
 					})();
@@ -423,10 +455,10 @@ cst.build = function () {
 		})();
 	}
 
-	console.log('columns', columns);
-	console.log('plmodels', rpt.allowedPL());
-	console.log('keys', keys);
-	console.log("all", all);
+	// console.log('columns', columns)
+	// console.log('plmodels', rpt.allowedPL())
+	// console.log('keys', keys)
+	// console.log("all", all)
 
 	// PREPARE TEMPLATE
 
@@ -493,7 +525,7 @@ cst.build = function () {
 	}, function (groups, counter, what, k, v) {
 		var calculatedColumnWidth = 100;
 
-		var tdHeaderTableContent = toolkit.newEl('td').addClass('align-center title').html(k).appendTo(what);
+		var tdHeaderTableContent = toolkit.newEl('td').addClass('align-center title').html(k.replace(/\ /g, '&nbsp;')).appendTo(what);
 
 		if (v.length > 1) {
 			tdHeaderTableContent.attr('colspan', v.length);
