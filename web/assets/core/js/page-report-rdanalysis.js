@@ -77,6 +77,7 @@ rd.refresh = function () {
 				return;
 			}
 
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels);
 			var data = rd.buildStructure(res.Data.Data);
 			rd.data(data);
 			rpt.plmodels(res.Data.PLModels);
@@ -393,6 +394,7 @@ rd.clickExpand = function (e) {
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[statusvaltemp=hide]').css('display', 'none');
 		rpt.refreshHeight(e.attr('idheaderpl'));
+		rpt.refreshchildadd(e.attr('idheaderpl'));
 	}
 	if (down > 0) {
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {

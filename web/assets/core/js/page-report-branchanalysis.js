@@ -515,7 +515,7 @@ ba.refresh = function () {
 				ba.contentIsLoading(false);
 				return;
 			}
-
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels);
 			var data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data);
 			ba.data(data);
 			var date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss");
@@ -553,6 +553,7 @@ ba.clickExpand = function (e) {
 		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[statusvaltemp=hide]').css('display', 'none');
+		rpt.refreshchildadd(e.attr('idheaderpl'));
 	}
 	if (down > 0) {
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {

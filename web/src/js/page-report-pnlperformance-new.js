@@ -194,6 +194,7 @@ let bkd = viewModel.breakdown
 				let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 				bkd.breakdownNote(`Last refreshed on: ${date}`)
 
+				res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 				let data = bkd.buildStructure(res.Data.Data)
 				bkd.data(data)
 				rpt.plmodels(res.Data.PLModels)
@@ -227,6 +228,7 @@ let bkd = viewModel.breakdown
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[statusvaltemp=hide]`).css('display', 'none')
 			rpt.refreshHeight(e.attr('idheaderpl'))
+			rpt.refreshchildadd(e.attr('idheaderpl'))
 		}
 		if (down > 0) {
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
@@ -1081,7 +1083,7 @@ let v2 = viewModel.RDvsBranchView2
 					v2.contentIsLoading(false)
 					return
 				}
-
+				res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 				v2.data(v2.buildStructure(res.Data.Data))
 				rpt.plmodels(res.Data.PLModels)
 				v2.emptyGrid()
@@ -1112,6 +1114,7 @@ let v2 = viewModel.RDvsBranchView2
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[statusvaltemp=hide]`).css('display', 'none')
 			rpt.refreshHeight(e.attr('idheaderpl'))
+			rpt.refreshchildadd(e.attr('idheaderpl'))
 		}
 		if (down > 0) {
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
@@ -1590,16 +1593,18 @@ let v2 = viewModel.RDvsBranchView2
 							if (PLCodeChange != "")
 								PLyo.PLCode = PLCodeChange
 							if (child > 1){
-								let $parenttr = container.find(`tr[idheaderpl=${PLyo.PLCode}]`)
-								let $parenttrcontent = container.find(`tr[idpl=${PLyo.PLCode}]`)
 								// $trElem.insertAfter(container.find(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
 								// $columnElem.insertAfter(container.find(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-								$trElem.insertAfter($parenttr)
-								$columnElem.insertAfter($parenttrcontent)
+								$trElem.insertAfter(container.find(`tr[idheaderpl=${PLyo.PLCode}]`))
+								$columnElem.insertAfter(container.find(`tr[idpl=${PLyo.PLCode}]`))
 							}
 							else{
 								$trElem.insertAfter(container.find(`tr.header${PLyo.PLCode}`))
 								$columnElem.insertAfter(container.find(`tr.column${PLyo.PLCode}`))
+							}
+							if ($trElem.attr('idparent') == "PL33" || $trElem.attr('idparent') == "PL34" || $trElem.attr('idparent') == "PL35"){
+								let texthtml = $trElem.find('td:eq(0)').text()
+								$trElem.find('td:eq(0)').text(texthtml.substring(5,texthtml.length))
 							}
 						}
 					}
@@ -1708,6 +1713,7 @@ let v1 = viewModel.RDvsBranchView1
 					return
 				}
 
+				res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 				v1.data(v1.buildStructure(res.Data.Data))
 				rpt.plmodels(res.Data.PLModels)
 				v1.emptyGrid()
@@ -1738,6 +1744,7 @@ let v1 = viewModel.RDvsBranchView1
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[statusvaltemp=hide]`).css('display', 'none')
 			rpt.refreshHeight(e.attr('idheaderpl'))
+			rpt.refreshchildadd(e.attr('idheaderpl'))
 		}
 		if (down > 0) {
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
@@ -2247,6 +2254,7 @@ let kac = viewModel.keyAccount
 				let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 				kac.breakdownNote(`Last refreshed on: ${date}`)
 
+				res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 				kac.data(res.Data.Data)
 				rpt.plmodels(res.Data.PLModels)
 				kac.emptyGrid()
@@ -2278,6 +2286,7 @@ let kac = viewModel.keyAccount
 			$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[statusvaltemp=hide]`).css('display', 'none')
+			rpt.refreshchildadd(e.attr('idheaderpl'))
 		}
 		if (down > 0) {
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
@@ -2775,6 +2784,7 @@ let subchan = viewModel.subChannel
 					return
 				}
 
+				res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 				let data = subchan.buildStructure(res.Data.Data)
 				subchan.data(data)
 				rpt.plmodels(res.Data.PLModels)
@@ -2806,6 +2816,7 @@ let subchan = viewModel.subChannel
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[statusvaltemp=hide]`).css('display', 'none')
 			rpt.refreshHeight(e.attr('idheaderpl'))
+			rpt.refreshchildadd(e.attr('idheaderpl'))
 		}
 		if (down > 0) {
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
