@@ -651,7 +651,7 @@ cst.optionDimensionBreakdownForChart = ko.computed(function () {
 		return cst.breakdown().indexOf(d.field) > -1;
 	});
 }, cst.breakdown);
-cst.optionUnit = ko.observableArray([{ field: '1', name: 'real', suffix: '' }, { field: '1000', name: 'hundreds', suffix: 'K' }, { field: '1000000', name: 'millions', suffix: 'M' }, { field: '1000000000', name: 'billions', suffix: 'B' }]);
+cst.optionUnit = ko.observableArray([{ field: '1', name: 'actual', suffix: '' }, { field: '1000', name: 'hundreds', suffix: 'K' }, { field: '1000000', name: 'millions', suffix: 'M' }, { field: '1000000000', name: 'billions', suffix: 'B' }]);
 cst.unit = ko.observable('1000000000');
 cst.category = ko.observable('');
 cst.series = ko.observableArray([]);
