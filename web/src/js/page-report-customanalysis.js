@@ -78,7 +78,7 @@ cst.getConfigLocal = () => {
 			cst.fiscalYears(rpt.optionFiscalYears())
 			cst.breakdown(['customer.channelname'])
 			cst.sortOrder('desc')
-			cst.putTotalOf('')
+			cst.putTotalOf('customer.channelname')
 			cst.dimensionPNL([])
 
 			cst.initCategory()
@@ -240,7 +240,7 @@ cst.refresh = () => {
 
 cst.build = () => {
 	let breakdown = cst.breakdownClean()
-	console.log('breakdown', breakdown)
+	// console.log('breakdown', breakdown)
 
 	let keys = _.orderBy(cst.dimensionPNL(), (d) => {
 		let plmodel = rpt.allowedPL().find((e) => e._id == d)
@@ -261,8 +261,31 @@ cst.build = () => {
 
 	// BUILD WELL STRUCTURED DATA
 
+	let opj1 = _.groupBy(cst.data(), (d) => {
+		let keys = []
+		cst.breakdownClean().forEach((e) => {
+			let key = d._id[`_id_${toolkit.replace(e, '.', '_')}`]
+			keys.push(key)
+		})
+		return keys.join('_')
+	})
+	let opj2 = _.map(opj1, (v, k) => {
+		let o = v[0]
+
+		for (let i = 1; i < v.length; i++) {
+			let each = v[i]
+			for (let p in o) if (o.hasOwnProperty(p) && p.indexOf('PL') > -1) {
+				o[p] += each[p]
+			}
+		}
+
+		return o
+	})
+	let dataRaw = opj2
+
+
 	let allRaw = []
-	cst.data().forEach((d) => {
+	dataRaw.forEach((d) => {
 		let o = {}
 
 		for (let key in d._id) if (d._id.hasOwnProperty(key)) {
@@ -342,6 +365,7 @@ cst.build = () => {
 		// console.log("cst.breakdown", breakdown)
 		// console.log("group", group)
 		// console.log("groupOther", groupOther)
+		console.log("allprev", all.slice(0))
 
 		all.forEach((d, i) => {
 			let currentKey = group.map((f) => d[toolkit.replace(f, '.', '_')]).join('_')
@@ -366,10 +390,18 @@ cst.build = () => {
 						o[toolkit.replace(g, '.', '_')] = '&nbsp;'
 					})
 
-					sample.rows.forEach((g, b) => {
+					
+
+					sample.rows.forEach((g) => {
 						let row = {}
 						row.pnl = g.pnl
-						row.value = toolkit.sum(currentData, (d) => d.rows[b].value)
+						row.value = toolkit.sum(currentData, (h) => {
+							let r = h.rows.find((f) => f.pnl == g.pnl)
+							if (toolkit.isUndefined(r)) {
+								return 0
+							}
+							return r.value
+						})
 						o.rows.push(row)
 					})
 
@@ -385,8 +417,9 @@ cst.build = () => {
 					allCloned.push(o)
 				}
 
-				console.log('---currentKey', currentKey)
-				console.log('---currentData', currentData)
+				// console.log('---sample', sample)
+				// console.log('---currentKey', currentKey)
+				// console.log('---currentData', currentData)
 
 				cache[currentKey] = true
 			}
@@ -397,10 +430,10 @@ cst.build = () => {
 		all = allCloned
 	}
 
-	console.log('columns', columns)
-	console.log('plmodels', rpt.allowedPL())
-	console.log('keys', keys)
-	console.log("all", all)
+	// console.log('columns', columns)
+	// console.log('plmodels', rpt.allowedPL())
+	// console.log('keys', keys)
+	// console.log("all", all)
 
 	// PREPARE TEMPLATE
 
@@ -474,7 +507,7 @@ cst.build = () => {
 
 			let tdHeaderTableContent = toolkit.newEl('td')
 				.addClass('align-center title')
-				.html(k)
+				.html(k.replace(/\ /g, '&nbsp;'))
 				.appendTo(what)
 
 			if (v.length > 1) {
