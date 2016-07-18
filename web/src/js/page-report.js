@@ -922,6 +922,8 @@ rpt.export = (target, title, mode) => {
 				if ($(e).attr('rowspan')){
 					if (title == 'Distribution Analysis')
 						cellval['rowSpan'] = parseInt($(e).attr('rowspan')) + 2
+					else if (title == 'Summary P&L Analysis')
+						cellval['rowSpan'] = parseInt($(e).attr('rowspan')) + 1
 					else
 						cellval['rowSpan'] = parseInt($(e).attr('rowspan'))
 				}
