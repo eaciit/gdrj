@@ -854,8 +854,8 @@ func main() {
 	// prepmasterrevfreight()
 	// prepmasterrevadv()
 	// prepreclasspromospgtordmt()
-	prepmasterrollback_adv()
-	prepmasterrollback_sumbrand()
+	// prepmasterrollback_adv()
+	// prepmasterrollback_sumbrand()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
@@ -1179,6 +1179,16 @@ func CalcSgaRev(tkm toolkit.M) {
 	return
 }
 
+func CleanUpdateCOGSAdjustRdtoMt(tkm toolkit.M) {
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	if dtkm.GetString("customer_channelid") == "I1" && dtkm.GetString("ref") == "COGSMATERIALADJUST" {
+		dtkm.Set("customer_channelid", "I3")
+		dtkm.Set("customer_reportchannel", "MT")
+		dtkm.Set("customer_reportsubchannel", "Hyper")
+		tkm.Set("key", dtkm)
+	}
+}
+
 func CalcSum(tkm toolkit.M) {
 	var netsales, cogs, grossmargin, sellingexpense,
 		sga, opincome, directexpense, indirectexpense,
@@ -1368,8 +1378,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CleanUpdateCustomerGroupName(trx)
 
-		CleanUpdateOldExport(trx)
-		RollbackSalesplsAdvertisement(trx)
+		// CleanUpdateOldExport(trx)
+		// RollbackSalesplsAdvertisement(trx)
+
+		CleanUpdateCOGSAdjustRdtoMt(trx)
 
 		// AllocateDiscountActivity(trx)
 		CalcSum(trx)
