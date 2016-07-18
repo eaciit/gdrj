@@ -702,7 +702,9 @@ let series = ko.mapping.toJS(cst.series())
 			labels: { 
 				visible: true,
 				// position: 'top',
-				format: `{0:n2} ${suffix}`
+            	template: (d) => {
+            		return `${d.series.name}\n${kendo.toString(d.value, 'n2')} ${suffix}`
+            	}
 			},
 			line: {
 				border: {

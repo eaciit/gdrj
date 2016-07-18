@@ -693,7 +693,9 @@ cst.renderChart = function () {
 			labels: {
 				visible: true,
 				// position: 'top',
-				format: '{0:n2} ' + suffix
+				template: function template(d) {
+					return d.series.name + '\n' + kendo.toString(d.value, 'n2') + ' ' + suffix;
+				}
 			},
 			line: {
 				border: {
