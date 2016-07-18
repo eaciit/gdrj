@@ -206,6 +206,7 @@ cst.refresh = function () {
 
 			rpt.plmodels(res.Data.PLModels);
 			cst.data(res.Data.Data);
+			window.res = res;
 
 			var opl1 = _.orderBy(rpt.allowedPL(), function (d) {
 				return d.OrderIndex;
@@ -272,18 +273,22 @@ cst.build = function () {
 		return keys.join('_');
 	});
 	var opj2 = _.map(opj1, function (v, k) {
-		var o = v[0];
+		var o = {};
+		o._id = toolkit.clone(v[0]._id);
 
-		for (var i = 1; i < v.length; i++) {
-			var each = v[i];
-			for (var p in o) {
-				if (o.hasOwnProperty(p) && p.indexOf('PL') > -1) {
-					o[p] += each[p];
-				}
+		var sample = v[0];
+
+		var _loop = function _loop(p) {
+			if (sample.hasOwnProperty(p) && p.indexOf('_id') == -1) {
+				o[p] = toolkit.sum(v, function (g) {
+					return g[p];
+				});
 			}
-		}
+		};
 
-		return o;
+		for (var p in sample) {
+			_loop(p);
+		}return o;
 	});
 	var dataRaw = opj2;
 
@@ -668,13 +673,15 @@ cst.renderChart = function () {
 			var o = {};
 			o.key = $.trim(k);
 
-			var sample = v[0];
-			for (var p in sample) {
-				if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
-					o[p + '_orig'] = sample[p];
-					o[p] = toolkit.safeDiv(sample[p], billion);
-				}
-			}return o;
+			cst.dimensionPNL().forEach(function (g) {
+				var sumVal = toolkit.sum(v, function (h) {
+					return h[g];
+				});
+				o[g + '_orig'] = sumVal;
+				o[g] = toolkit.safeDiv(sumVal, billion);
+			});
+
+			return o;
 		});
 		var op3 = op2;
 		if (cst.breakdown() == 'date.fiscal') {
