@@ -6,7 +6,7 @@
 
 <div class="panel ez no-padding hardcore">
 	<div class="panel-heading">
-		<h3 class="no-margin" data-bind="html: cst.title"></h3>
+		<h3 class="no-margin">Grid</h3>
 		<div class="panel-nav-button" data-bind="visible: !cst.contentIsLoading()">
 			<div class="form-inline">
 				<!-- <button class="btn btn-sm btn-success tooltipster" data-bind="click: cst.saveConfigLocal" title="Save config">
@@ -77,7 +77,7 @@
 				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 					<span class="input-group-addon align-right">Choose P&L</span>
 					<div class="width-full">
-						<select type="text" style="width: 500px; height: 60px;" data-bind="kendoMultiSelect: { data: cst.optionDimensionPNL, dataValueField: 'field', dataTextField: 'name', value: cst.dimensionPNL }"></select>
+						<select type="text" style="width: 500px; height: 60px;" data-bind="kendoMultiSelect: { data: cst.optionDimensionPNL, dataValueField: 'field', dataTextField: 'name', value: cst.dimensionPNL, change: cst.changeDimensionPNL }"></select>
 					</div>
 					<div class="clearfix"></div>
 				</div>
@@ -94,6 +94,114 @@
 		</div>
 	</div>
 </div>
+
+
+
+
+
+
+
+
+<div class="panel ez no-padding hardcore">
+	<div class="panel-heading">
+		<h3 class="no-margin">Chart</h3>
+
+		<!-- Nav tabs -->
+		<ul class="nav nav-pills nav-custom-analysis" role="tablist" data-bind="visible: !cst.contentIsLoading()">
+			<li role="presentation" class="active">
+				<a href="#view" role="tab" data-toggle="tab">Show Chart View</a>
+			</li>
+			<li role="presentation">
+				<a href="#config" role="tab" data-toggle="tab">Show Chart configuration</a>
+			</li>
+		</ul>
+
+		<div class="panel-nav-button" data-bind="visible: !cst.contentIsLoading()">
+			<div class="form-inline">
+				<button class="btn btn-sm btn-primary tooltipster" data-bind="click: cst.refresh" title="Refresh">
+					<i class="fa fa-refresh"></i> Refresh
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel-body">
+		<!-- Tab panes -->
+		<div class="tab-content" data-bind="visible: !cst.contentIsLoading()">
+			<div role="tabpanel" class="tab-pane" id="config" style="min-height: 425px;">
+				<div class="filter" data-bind="visible: !cst.contentIsLoading()">
+					<p>General Configuration</p>
+
+					<div class="form-inline">
+						<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+							<span class="input-group-addon align-right">Breakdown by</span>
+							<div class="width-full">
+								<select type="text" style="width: 200px;" data-bind="kendoDropDownList: { data: cst.optionDimensionBreakdownForChart, dataValueField: 'field', dataTextField: 'name', value: cst.category, filter: 'contains' }"></select>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+						<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+							<span class="input-group-addon align-right">Unit</span>
+							<div class="width-full">
+								<select type="text" style="width: 200px;" data-bind="kendoDropDownList: { data: cst.optionUnit, dataValueField: 'field', dataTextField: 'name', value: cst.unit }"></select>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+					</div>
+
+					<p>Series Configuration</p>
+
+					<div data-bind="foreach: cst.series">
+						<div class="form-inline">
+							<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+								<span class="input-group-addon align-left" style="min-width: 200px;">
+									Series <b data-bind="html: $data.name"></b>
+								</span>
+								<div class="clearfix"></div>
+							</div>
+							<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+								<span class="input-group-addon align-right">
+									Visible
+								</span>
+								<div class="width-full">
+									<input type="checkbox" class="form-control" data-bind="checked: $data.visible" />
+								</div>
+								<div class="clearfix"></div>
+							</div>
+							<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+								<span class="input-group-addon align-right">
+									Type
+								</span>
+								<div class="width-full">
+									<select type="text" style="width: 200px;" data-bind="kendoDropDownList: { data: cst.seriesTypes, value: $data.type }"></select>
+								</div>
+								<div class="clearfix"></div>
+							</div>
+						</div>
+					</div>
+					<div class="clearfix"></div>
+				</div>
+			</div>
+
+			<div role="tabpanel" class="tab-pane active" id="view">
+				<div class="wrapper" style="overflow: auto; overflow-x: scroll; padding-bottom: 10px;">
+					<div id="custom-chart"></div>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+
+		<div data-bind="visible: cst.contentIsLoading">
+			{{template "_loader.html"}}
+		</div>
+	</div>
+</div>
+
+
+
+
+
+
 
 	</div>
 

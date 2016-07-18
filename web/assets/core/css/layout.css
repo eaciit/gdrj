@@ -829,3 +829,14 @@ body {
 .nav-pills li a:hover {
   background-color: rgba(51, 122, 183, 0.4);
 }
+.nav-custom-analysis {
+  position: absolute;
+  right: 140px;
+  top: 5px;
+}
+.nav-custom-analysis li {
+  float: right;
+}
+.nav-custom-analysis li a {
+  padding: 6px 12px 7px;
+}
