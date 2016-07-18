@@ -56,6 +56,10 @@ cst.getConfigLocal = function () {
 			cst.sortOrder('desc');
 			cst.putTotalOf('');
 			cst.dimensionPNL([]);
+
+			cst.initCategory();
+			cst.initSeries();
+
 			cst.refresh();
 		} else {
 			var getconfig = _.find(cst.dataconfig(), function (e) {
@@ -66,6 +70,10 @@ cst.getConfigLocal = function () {
 			cst.sortOrder(getconfig.sortOrder);
 			cst.putTotalOf(getconfig.putTotalOf);
 			cst.dimensionPNL(getconfig.dimensionPNL);
+
+			cst.initCategory();
+			cst.initSeries();
+
 			cst.refresh();
 		}
 
@@ -100,7 +108,7 @@ cst.optionDimensionBreakdownForTotal = ko.computed(function () {
 }, cst.breakdown);
 
 cst.changeBreakdown = function () {
-	setTimeout(function () {
+	toolkit.runAfter(function () {
 		cst.putTotalOf('');
 
 		if (cst.breakdown().indexOf(cst.putTotalOf()) == -1) {
@@ -111,6 +119,14 @@ cst.changeBreakdown = function () {
 		}).length > 0) {
 			cst.putTotalOf('customer.reportsubchannel');
 		}
+
+		cst.initCategory();
+	}, 300);
+};
+
+cst.changeDimensionPNL = function () {
+	toolkit.runAfter(function () {
+		cst.initSeries();
 	}, 300);
 };
 
@@ -200,9 +216,11 @@ cst.refresh = function () {
 			cst.optionDimensionPNL(opl2);
 			if (cst.dimensionPNL().length == 0) {
 				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL44B"]);
+				cst.initSeries();
 			}
 
 			cst.build();
+			cst.renderChart();
 		}, function () {
 			pvt.contentIsLoading(false);
 		});
@@ -538,6 +556,174 @@ cst.build = function () {
 	container.height(tableContent.height());
 };
 
+cst.initCategory = function () {
+	if (cst.breakdown().length == 0) {
+		cst.category('');
+		return;
+	}
+
+	if (cst.category() == '') {
+		cst.category(cst.breakdown()[0]);
+	} else {
+		if (cst.breakdown().indexOf(cst.category()) == -1) {
+			cst.category('');
+		}
+	}
+};
+cst.initSeries = function () {
+	if (cst.dimensionPNL().length == 0) {
+		cst.series([]);
+		return;
+	}
+
+	var series = [];
+	var prevSeries = ko.mapping.toJS(cst.series());
+	cst.dimensionPNL().forEach(function (d) {
+		var serie = {};
+		var prevSerie = prevSeries.find(function (e) {
+			return e.field == d;
+		});
+		if (toolkit.isDefined(prevSerie)) {
+			serie = prevSerie;
+		} else {
+			var pl = rpt.plmodels().find(function (e) {
+				return e._id == d;
+			});
+			serie.field = d;
+			serie.name = pl.PLHeader3;
+			serie.type = 'column';
+			serie.visible = true;
+		}
+
+		series.push(ko.mapping.fromJS(serie));
+	});
+
+	cst.series(series);
+};
+cst.optionDimensionBreakdownForChart = ko.computed(function () {
+	return cst.optionDimensionBreakdown().filter(function (d) {
+		return cst.breakdown().indexOf(d.field) > -1;
+	});
+}, cst.breakdown);
+cst.optionUnit = ko.observableArray([{ field: '1', name: 'real', suffix: '' }, { field: '1000', name: 'hundreds', suffix: 'K' }, { field: '1000000', name: 'millions', suffix: 'M' }, { field: '1000000000', name: 'billions', suffix: 'B' }]);
+cst.unit = ko.observable('1000000000');
+cst.category = ko.observable('');
+cst.series = ko.observableArray([]);
+cst.seriesTypes = ko.observableArray(['line', 'column']);
+cst.renderChart = function () {
+	$('[href="#view"]').trigger('click');
+
+	var suffix = cst.optionUnit().find(function (d) {
+		return d.field == cst.unit();
+	}).suffix;
+	var billion = toolkit.toInt(cst.unit());
+	var data = function () {
+		var dimensionBreakdown = '_id_' + toolkit.replace(cst.category().split('|')[0], '.', '_');
+
+		var op1 = _.groupBy(cst.data(), function (d) {
+			return d._id[dimensionBreakdown];
+		});
+		var op2 = _.map(op1, function (v, k) {
+			var o = {};
+			o.key = $.trim(k);
+
+			var sample = v[0];
+			for (var p in sample) {
+				if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
+					o[p + '_orig'] = sample[p];
+					o[p] = toolkit.safeDiv(sample[p], billion);
+				}
+			}return o;
+		});
+		var op3 = op2;
+		if (cst.breakdown() == 'date.fiscal') {
+			op3 = _.orderBy(op2, function (d) {
+				return toolkit.toInt(d.key.split('-')[0]);
+			}, 'asc');
+		} else if (cst.breakdown() == 'date.quartertxt') {
+			op3 = _.orderBy(op2, function (d) {
+				return d.key;
+			}, 'asc');
+		} else if (cst.breakdown() == 'date.month') {
+			op3 = _.orderBy(op2, function (d) {
+				return toolkit.toInt(d.key);
+			}, 'asc');
+		} else {
+			op3 = _.orderBy(op2, function (d) {
+				return d[cst.dimensionPNL()[0] + '_orig'];
+			}, 'desc');
+		}
+
+		return op3;
+	}();
+
+	var width = '100%';
+	if (data.length > 6) {
+		width = data.length * 200 + 'px';
+	}
+
+	var series = ko.mapping.toJS(cst.series()).filter(function (d) {
+		return d.visible;
+	}).map(function (d) {
+		d.tooltip = {};
+		d.tooltip.visible = true;
+		d.tooltip.template = function (e) {
+			return [e.category.replace('\n', ' '), e.series.name, kendo.toString(e.dataItem[e.series.field + '_orig'], 'n0')].join('<br />');
+		};
+
+		return d;
+	});
+	var config = {
+		dataSource: {
+			data: data
+		},
+		seriesDefaults: {
+			type: "column",
+			style: "smooth",
+			missingValues: "gap",
+			labels: {
+				visible: true,
+				// position: 'top',
+				format: '{0:n2} ' + suffix
+			},
+			line: {
+				border: {
+					width: 1,
+					color: 'white'
+				}
+			}
+		},
+		legend: {
+			visible: true,
+			position: "bottom"
+		},
+		series: series,
+		valueAxis: {
+			majorGridLines: { color: '#fafafa' },
+			labels: {
+				font: '"Source Sans Pro" 11px',
+				format: '{0:n2} ' + suffix
+			}
+		},
+		categoryAxis: {
+			field: 'key',
+			labels: {
+				font: '"Source Sans Pro" 11px',
+				background: '#f0f3f4',
+				border: {
+					width: 1,
+					color: 'gray'
+				},
+				padding: 3
+			},
+			majorGridLines: { color: '#fafafa' }
+		}
+	};
+
+	$('#custom-chart').replaceWith('<div id="custom-chart" style="width: ' + width + '"></div>');
+	$('#custom-chart').kendoChart(config);
+};
+
 vm.currentMenu('Analysis');
 vm.currentTitle('Custom Analysis');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Custom Analysis', href: '#' }]);
@@ -545,6 +731,7 @@ vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { 
 cst.title('&nbsp;');
 
 $(function () {
+	cst.initCategory();
 	cst.refresh();
 	rpt.showExport(true);
 	cst.loadLocalStorage();

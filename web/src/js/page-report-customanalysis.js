@@ -80,6 +80,10 @@ cst.getConfigLocal = () => {
 			cst.sortOrder('desc')
 			cst.putTotalOf('')
 			cst.dimensionPNL([])
+
+			cst.initCategory()
+			cst.initSeries()
+			
 			cst.refresh()
 		} else {
 			let getconfig = _.find(cst.dataconfig(), function(e){ return e.title == cst.selectconfig() })
@@ -88,6 +92,10 @@ cst.getConfigLocal = () => {
 			cst.sortOrder(getconfig.sortOrder)
 			cst.putTotalOf(getconfig.putTotalOf)
 			cst.dimensionPNL(getconfig.dimensionPNL)
+
+			cst.initCategory()
+			cst.initSeries()
+			
 			cst.refresh()
 		}
 
@@ -119,7 +127,7 @@ cst.optionDimensionBreakdownForTotal = ko.computed(() => {
 }, cst.breakdown)
 
 cst.changeBreakdown = () => {
-	setTimeout(() => {
+	toolkit.runAfter(() => {
 		cst.putTotalOf('')
 
 		if (cst.breakdown().indexOf(cst.putTotalOf()) == -1) {
@@ -128,6 +136,14 @@ cst.changeBreakdown = () => {
 		if (cst.breakdown().filter((d) => d.indexOf('|') > -1).length > 0) {
 			cst.putTotalOf('customer.reportsubchannel')
 		}
+
+		cst.initCategory()
+	}, 300)
+}
+
+cst.changeDimensionPNL = () => {
+	toolkit.runAfter(() => {
+		cst.initSeries()
 	}, 300)
 }
 
@@ -208,9 +224,11 @@ cst.refresh = () => {
 			cst.optionDimensionPNL(opl2)
 			if (cst.dimensionPNL().length == 0) {
 				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL44B"])
+				cst.initSeries()
 			}
 
 			cst.build()
+			cst.renderChart()
 		}, () => {
 			pvt.contentIsLoading(false)
 		})
@@ -533,6 +551,206 @@ cst.build = () => {
 	container.height(tableContent.height())
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+cst.initCategory = () => {
+	if (cst.breakdown().length == 0) {
+		cst.category('')
+		return
+	}
+
+	if (cst.category() == '') {
+		cst.category(cst.breakdown()[0])
+	} else {
+		if (cst.breakdown().indexOf(cst.category()) == -1) {
+			cst.category('')
+		}
+	}
+}
+cst.initSeries = () => {
+	if (cst.dimensionPNL().length == 0) {
+		cst.series([])
+		return
+	}
+
+	let series = []
+	let prevSeries = ko.mapping.toJS(cst.series())
+	cst.dimensionPNL().forEach((d) => {
+		let serie = {}
+		let prevSerie = prevSeries.find((e) => e.field == d)
+		if (toolkit.isDefined(prevSerie)) {
+			serie = prevSerie
+		} else {
+			let pl = rpt.plmodels().find((e) => e._id == d)
+			serie.field = d
+			serie.name = pl.PLHeader3
+			serie.type = 'column'
+			serie.visible = true
+		}
+
+		series.push(ko.mapping.fromJS(serie))
+	})
+
+	cst.series(series)
+}
+cst.optionDimensionBreakdownForChart = ko.computed(() => {
+	return cst.optionDimensionBreakdown()
+		.filter((d) => cst.breakdown().indexOf(d.field) > -1)
+}, cst.breakdown)
+cst.optionUnit = ko.observableArray([
+	{ field: '1', name: 'real', suffix: '' },
+	{ field: '1000', name: 'hundreds', suffix: 'K' },
+	{ field: '1000000', name: 'millions', suffix: 'M' },
+	{ field: '1000000000', name: 'billions', suffix: 'B' },
+])
+cst.unit = ko.observable('1000000000')
+cst.category = ko.observable('')
+cst.series = ko.observableArray([])
+cst.seriesTypes = ko.observableArray(['line', 'column'])
+cst.renderChart = () => {
+	$(`[href="#view"]`).trigger('click')
+
+	let suffix = cst.optionUnit().find((d) => d.field == cst.unit()).suffix
+	let billion = toolkit.toInt(cst.unit())
+	let data = (() => {
+		let dimensionBreakdown = `_id_${toolkit.replace(cst.category().split('|')[0], '.', '_')}`
+
+		let op1 = _.groupBy(cst.data(), (d) => d._id[dimensionBreakdown])
+		let op2 = _.map(op1, (v, k) => {
+			let o = {}
+			o.key = $.trim(k)
+
+			let sample = v[0]
+			for (let p in sample) if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
+				o[`${p}_orig`] = sample[p]
+				o[p] = toolkit.safeDiv(sample[p], billion)
+			}
+
+			return o
+		})
+		let op3 = op2
+		if (cst.breakdown() == 'date.fiscal') {
+			op3 = _.orderBy(op2, (d) => {
+				return toolkit.toInt(d.key.split('-')[0])
+			}, 'asc')
+		} else if (cst.breakdown() == 'date.quartertxt') {
+			op3 = _.orderBy(op2, (d) => {
+				return d.key
+			}, 'asc')
+		} else if (cst.breakdown() == 'date.month') {
+			op3 = _.orderBy(op2, (d) => {
+				return toolkit.toInt(d.key)
+			}, 'asc')
+		} else {
+			op3 = _.orderBy(op2, (d) => {
+				return d[`${cst.dimensionPNL()[0]}_orig`]
+			}, 'desc')
+		}
+
+		return op3
+	})()
+
+	let width = `100%`
+	if (data.length > 6) {
+		width = `${data.length * 200}px`
+	}
+
+let series = ko.mapping.toJS(cst.series())
+	.filter((d) => d.visible)
+	.map((d) => {
+		d.tooltip = {}
+		d.tooltip.visible = true
+		d.tooltip.template = (e) => {
+			return [
+				e.category.replace('\n', ' '),
+				e.series.name,
+				kendo.toString(e.dataItem[`${e.series.field}_orig`], 'n0')
+			].join('<br />')
+		}
+
+		return d
+	})
+	let config = {
+		dataSource: {
+			data: data
+		},
+        seriesDefaults: {
+            type: "column",
+            style: "smooth",
+            missingValues: "gap",
+			labels: { 
+				visible: true,
+				// position: 'top',
+				format: `{0:n2} ${suffix}`
+			},
+			line: {
+				border: {
+					width: 1,
+					color: 'white'
+				},
+			},
+        },
+        legend: {
+            visible: true,
+            position: "bottom"
+        },
+		series: series,
+        valueAxis: {
+			majorGridLines: { color: '#fafafa' },
+            labels: { 
+				font: '"Source Sans Pro" 11px',
+            	format: `{0:n2} ${suffix}`
+            }
+        },
+        categoryAxis: {
+			field: 'key',
+            labels: {
+				font: '"Source Sans Pro" 11px',
+				background: '#f0f3f4',
+				border: {
+					width: 1,
+					color: 'gray'
+				},
+				padding: 3
+            },
+			majorGridLines: { color: '#fafafa' }
+		}
+	}
+
+
+	$('#custom-chart').replaceWith(`<div id="custom-chart" style="width: ${width}"></div>`)
+	$('#custom-chart').kendoChart(config)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 vm.currentMenu('Analysis')
 vm.currentTitle('Custom Analysis')
 vm.breadcrumb([
@@ -545,6 +763,7 @@ cst.title('&nbsp;')
 
 
 $(() => {
+	cst.initCategory()
 	cst.refresh()
 	rpt.showExport(true)
 	cst.loadLocalStorage()
