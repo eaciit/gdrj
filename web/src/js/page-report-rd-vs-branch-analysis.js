@@ -41,7 +41,7 @@ v1.refresh = (useCache = false) => {
 				v1.contentIsLoading(false)
 				return
 			}
-
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 			v1.data(v1.buildStructure(res.Data.Data))
 			rpt.plmodels(res.Data.PLModels)
 			v1.emptyGrid()
@@ -523,7 +523,7 @@ v2.refresh = (useCache = false) => {
 				v2.contentIsLoading(false)
 				return
 			}
-
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 			v2.data(v2.buildStructure(res.Data.Data))
 			rpt.plmodels(res.Data.PLModels)
 			v2.emptyGrid()
@@ -1019,6 +1019,7 @@ v3.refresh = (useCache = false) => {
 				return
 			}
 
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 			v3.data(v3.buildStructure(res.Data.Data))
 			rpt.plmodels(res.Data.PLModels)
 			v3.emptyGrid()

@@ -1083,7 +1083,7 @@ let v2 = viewModel.RDvsBranchView2
 					v2.contentIsLoading(false)
 					return
 				}
-
+				res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 				v2.data(v2.buildStructure(res.Data.Data))
 				rpt.plmodels(res.Data.PLModels)
 				v2.emptyGrid()
@@ -1713,6 +1713,7 @@ let v1 = viewModel.RDvsBranchView1
 					return
 				}
 
+				res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 				v1.data(v1.buildStructure(res.Data.Data))
 				rpt.plmodels(res.Data.PLModels)
 				v1.emptyGrid()
@@ -2253,6 +2254,7 @@ let kac = viewModel.keyAccount
 				let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 				kac.breakdownNote(`Last refreshed on: ${date}`)
 
+				res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 				kac.data(res.Data.Data)
 				rpt.plmodels(res.Data.PLModels)
 				kac.emptyGrid()
@@ -2782,6 +2784,7 @@ let subchan = viewModel.subChannel
 					return
 				}
 
+				res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 				let data = subchan.buildStructure(res.Data.Data)
 				subchan.data(data)
 				rpt.plmodels(res.Data.PLModels)

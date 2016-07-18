@@ -43,7 +43,7 @@ cbt.refresh = function () {
 				cbt.contentIsLoading(false);
 				return;
 			}
-
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels);
 			cbt.data(cbt.buildStructure(res.Data.Data));
 			rpt.plmodels(res.Data.PLModels);
 			cbt.emptyGrid();

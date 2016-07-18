@@ -69,6 +69,7 @@ rd.refresh = (useCache = false) => {
 				return
 			}
 
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 			let data = rd.buildStructure(res.Data.Data)
 			rd.data(data)
 			rpt.plmodels(res.Data.PLModels)

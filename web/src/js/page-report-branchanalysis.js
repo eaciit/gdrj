@@ -438,12 +438,12 @@ ba.refresh = (useCache = false) => {
 				ba.contentIsLoading(false)
 				return
 			}
-
+			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 			let data = ba.buildStructure(ba.breakdownRD(), ba.expand(), res.Data.Data)
 			ba.data(data)
 			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
 			ba.breakdownNote(`Last refreshed on: ${date}`)
-
+			
 			rpt.plmodels(res.Data.PLModels)
 			ba.emptyGrid()
 			ba.contentIsLoading(false)
