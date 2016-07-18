@@ -72,6 +72,7 @@ v1.clickExpand = (e) => {
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
 		rpt.refreshHeight(e.attr('idheaderpl'))
+		rpt.refreshchildadd(e.attr('idheaderpl'))
 	}
 	if (down > 0) {
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
@@ -553,6 +554,7 @@ v2.clickExpand = (e) => {
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
 		rpt.refreshHeight(e.attr('idheaderpl'))
+		rpt.refreshchildadd(e.attr('idheaderpl'))
 	}
 	if (down > 0) {
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
@@ -1047,6 +1049,7 @@ v3.clickExpand = (e) => {
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
 		rpt.refreshHeight(e.attr('idheaderpl'))
+		rpt.refreshchildadd(e.attr('idheaderpl'))
 	}
 	if (down > 0) {
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
@@ -1468,16 +1471,18 @@ v3.buildGridLevels = (container, rows) => {
 						if (PLCodeChange != "")
 							PLyo.PLCode = PLCodeChange
 						if (child > 1){
-							let $parenttr = container.find(`tr[idheaderpl=${PLyo.PLCode}]`)
-							let $parenttrcontent = container.find(`tr[idpl=${PLyo.PLCode}]`)
 							// $trElem.insertAfter(container.find(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
 							// $columnElem.insertAfter(container.find(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-							$trElem.insertAfter($parenttr)
-							$columnElem.insertAfter($parenttrcontent)
+							$trElem.insertAfter(container.find(`tr[idheaderpl=${PLyo.PLCode}]`))
+							$columnElem.insertAfter(container.find(`tr[idpl=${PLyo.PLCode}]`))
 						}
 						else{
 							$trElem.insertAfter(container.find(`tr.header${PLyo.PLCode}`))
 							$columnElem.insertAfter(container.find(`tr.column${PLyo.PLCode}`))
+						}
+						if ($trElem.attr('idparent') == "PL33" || $trElem.attr('idparent') == "PL34" || $trElem.attr('idparent') == "PL35"){
+							let texthtml = $trElem.find('td:eq(0)').text()
+							$trElem.find('td:eq(0)').text(texthtml.substring(5,texthtml.length))
 						}
 					}
 				}

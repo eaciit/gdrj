@@ -100,6 +100,7 @@ kac.clickExpand = (e) => {
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
+		rpt.refreshchildadd(e.attr('idheaderpl'))
 	}
 	if (down > 0) {
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {

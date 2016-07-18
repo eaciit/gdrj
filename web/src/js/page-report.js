@@ -592,7 +592,7 @@ rpt.tabbedContent = () => {
 
 rpt.plmodels = ko.observableArray([])
 rpt.allowedPL = ko.computed(() => {
-	let plmodels = ["PL0", "PL6A", "PL7A", "PL8", "PL7", "PL8A", "PL6", "PL2", "PL1", "PL14A", "PL14", "PL9", "PL74A", "PL74", "PL21", "PL74B", "PL74C", "PL23", "PL26A", "PL25", "PL32A", "PL31", "PL31E", "PL31D", "PL31C", "PL31B", "PL31A", "PL29A", "PL29A32", "PL29A31", "PL29A30", "PL29A29", "PL29A27", "PL29A26", "PL29A25", "PL29A24", "PL29A23", "PL29A22", "PL29A20", "PL29A19", "PL29A18", "PL29A17", "PL29A16", "PL29A15", "PL29A14", "PL29A13", "PL29A12", "PL29A11", "PL29A10", "PL29A9", "PL29A8", "PL29A6", "PL29A5", "PL29A4", "PL29A3", "PL29A2", "PL28", "PL28I", "PL28G", "PL28F", "PL28E", "PL28D", "PL28C", "PL28B", "PL28A", "PL32B", "PL94A", "PL94B", "PL44B", "PL44", "PL43", "PL42", "PL44C", "PL44E", "PL44D", "PL44F"]
+	let plmodels = ["PL0", "PL6A", "PL7A", "PL8", "PL7", "PL8A", "PL6", "PL2", "PL1", "PL14A", "PL14", "PL9", "PL74A", "PL74", "PL21", "PL74B", "PL74C", "PL23", "PL26A", "PL25", "PL32A", "PL31", "PL31E", "PL31D", "PL31C", "PL31B", "PL31A", "PL29A", "PL29A32", "PL29A31", "PL29A30", "PL29A29", "PL29A27", "PL29A26", "PL29A25", "PL29A24", "PL29A23", "PL29A22", "PL29A20", "PL29A19", "PL29A18", "PL29A17", "PL29A16", "PL29A15", "PL29A14", "PL29A13", "PL29A12", "PL29A11", "PL29A10", "PL29A9", "PL29A8", "PL29A6", "PL29A5", "PL29A4", "PL29A3", "PL29A2", "PL28", "PL28I", "PL28G", "PL28F", "PL28E", "PL28D", "PL28C", "PL28B", "PL28A", "PL32B", "PL94A", "PL94B", "PL44B", "PL44", "PL43", "PL42", "PL44C", "PL44E", "PL44D", "PL44F", "PL33", "PL34", "PL35"]
 	return rpt.plmodels().filter((d) => plmodels.indexOf(d._id) > -1)
 }, rpt.plmodels)
 rpt.idarrayhide = ko.observableArray(['PL44A'])
@@ -607,6 +607,37 @@ rpt.prepareEvents = () => {
 	$('.breakdown-view').parent().off('mouseleave').on('mouseleave', 'tr', function () {
 		$('.breakdown-view tr.hover').removeClass('hover')
 	})
+}
+
+rpt.hardcodePLGA = (data, plmodels) => {
+	let dataChildGa = ["PL33", "PL34", "PL35"], searchPL, replaceKey = ""
+	for (var i in data) {
+		for (var key in data[i]) {
+			replaceKey = key.replace(/ /g,'').replace('&', '')
+			if (key.substring(0, 4) == "PL33"){
+				searchPL = _.find(plmodels, (e) => { return e._id == replaceKey })
+				if (searchPL == undefined)
+					plmodels.push({ Amount :0, GLReff : "", OrderIndex : "PL0000", PLHeader1 : "G&A Expenses", PLHeader2 : "Personnel  Exp - Office", PLHeader3 : key.replace('&', ''), _id : replaceKey })
+				data[i]["PL33"] += data[i][key]
+				data[i][replaceKey] = data[i][key]
+			}
+			if (key.substring(0, 4) == "PL34"){
+				searchPL = _.find(plmodels, (e) => { return e._id == replaceKey })
+				if (searchPL == undefined)
+					plmodels.push({ Amount :0, GLReff : "", OrderIndex : "PL0000", PLHeader1 : "G&A Expenses", PLHeader2 : "General Exp - Office", PLHeader3 : key.replace('&', ''), _id : replaceKey })
+				data[i]["PL34"] += data[i][key]
+				data[i][replaceKey] = data[i][key]
+			}
+			if (key.substring(0, 4) == "PL35"){
+				searchPL = _.find(plmodels, (e) => { return e._id == replaceKey })
+				if (searchPL == undefined)
+					plmodels.push({ Amount :0, GLReff : "", OrderIndex : "PL0000", PLHeader1 : "G&A Expenses", PLHeader2 : "Depr & A Exp - Office", PLHeader3 : key.replace('&', ''), _id : replaceKey })
+				data[i]["PL35"] += data[i][key]
+				data[i][replaceKey] = data[i][key]
+			}
+		}
+	}
+	return {Data: data, PLModels: plmodels}
 }
 
 rpt.showExpandAll = (a) => {
@@ -791,8 +822,8 @@ rpt.buildGridLevels = (rows) => {
 						$columnElem.insertAfter($parenttrcontent)
 					}
 					else{
-						$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
-						$columnElem.insertAfter($(`tr.column${PLyo.PLCode}`))
+						$trElem.insertAfter($(`tr[idheaderpl=${PLyo.PLCode}]`))
+						$columnElem.insertAfter($(`tr[idpl=${PLyo.PLCode}]`))
 					}
 				} else if (resg2 == undefined){
 					if (resg3 != undefined){
@@ -812,16 +843,18 @@ rpt.buildGridLevels = (rows) => {
 						if (PLCodeChange != "")
 							PLyo.PLCode = PLCodeChange
 						if (child > 1){
-							let $parenttr = $(`tr[idheaderpl=${PLyo.PLCode}]`)
-							let $parenttrcontent = $(`tr[idpl=${PLyo.PLCode}]`)
 							// $trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
 							// $columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-							$trElem.insertAfter($parenttr)
-							$columnElem.insertAfter($parenttrcontent)
+							$trElem.insertAfter($(`tr[idheaderpl=${PLyo.PLCode}]`))
+							$columnElem.insertAfter($(`tr[idpl=${PLyo.PLCode}]`))
 						}
 						else{
-							$trElem.insertAfter($(`tr.header${PLyo.PLCode}`))
-							$columnElem.insertAfter($(`tr.column${PLyo.PLCode}`))
+							$trElem.insertAfter($(`tr[idheaderpl=${PLyo.PLCode}]`))
+							$columnElem.insertAfter($(`tr[idpl=${PLyo.PLCode}]`))
+						}
+						if ($trElem.attr('idparent') == "PL33" || $trElem.attr('idparent') == "PL34" || $trElem.attr('idparent') == "PL35"){
+							let texthtml = $trElem.find('td:eq(0)').text()
+							$trElem.find('td:eq(0)').text(texthtml.substring(5,texthtml.length))
 						}
 					}
 				}
@@ -867,12 +900,21 @@ rpt.buildGridLevels = (rows) => {
 				$trElem.find(`td:eq(0)`).css('padding-left', '20px')
 		}
 	})
-
 	rpt.showZeroValue(false)
 	rpt.hideSubGrowthValue()
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
 	rpt.refreshHeight()
 	rpt.addScrollBottom()
+}
+
+rpt.refreshchildadd = (e) => {
+	let $columnElem, $trElem
+	$(`.table-header tbody>tr[idparent=${e}]`).each(function( i ) {
+		$trElem = $(this)
+		$columnElem = $(`.table-content tbody>tr[idpl=${$trElem.attr('idheaderpl')}]`)
+		$trElem.insertAfter($(`tr[idheaderpl=${$trElem.attr('idparent')}]`))
+		$columnElem.insertAfter($(`tr[idpl=${$trElem.attr('idparent')}]`))
+	})
 }
 
 rpt.hideSubGrowthValue = () => {
