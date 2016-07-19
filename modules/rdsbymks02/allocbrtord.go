@@ -163,6 +163,9 @@ func makeProgressLog(reference string, i, count, step int, current *int, tstart 
 }
 
 func processTable(tn string) error {
+	connsave, _ := modules.GetDboxIConnection("db_godrej")
+	defer connsave.Close()
+
 	toolkit.Printfn("Start processing allocation")
 	cursor, _ := conn.NewQuery().From(calctablename).
 		Where(dbox.And(
@@ -175,7 +178,7 @@ func processTable(tn string) error {
 	defer cursor.Close()
 
 	//plmodels := masters["plmodel"].(map[string]*gdrj.PLModel)
-	qsave := conn.NewQuery().SetConfig("multiexec", true).From(desttablename).Save()
+	qsave := connsave.NewQuery().SetConfig("multiexec", true).From(desttablename).Save()
 
 	count := cursor.Count()
 	i := 0
