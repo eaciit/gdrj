@@ -150,7 +150,9 @@ func makeProgressLog(reference string, i, count, step int, current *int, tstart 
 func processTable(tn string) error {
 	toolkit.Printfn("Start processing allocation")
 	cursor, _ := conn.NewQuery().From(calctablename).
-		Where(dbox.And(dbox.Ne("key.customer_channelid", "I1"),
+		Where(dbox.And(
+		dbox.Ne("key.customer_channelid", "I1"),
+		dbox.Ne("key.customer_trxsrc", "rdsbymkselem"),
 		dbox.Or(dbox.Eq("key.customer_branchid", "CD04"),
 			dbox.Eq("key.customer_branchid", "CD11")))).
 		Select().
@@ -175,6 +177,7 @@ func processTable(tn string) error {
 		//-- logging
 		i++
 		makeProgressLog("Processing", i, count, 5, &mstone, t0)
+		toolkit.Printfn("Processing: %s", toolkit.JsonString(mr))
 
 		//-- keyes
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
@@ -206,13 +209,15 @@ func processTable(tn string) error {
 				codevalid := false
 				if strings.HasSuffix(plcode, "*") {
 					trimmedplcode := strings.Replace(plcode, "*", "", -1)
-					codevalid = trimmedplcode == k
+					codevalid = strings.HasPrefix(k, trimmedplcode)
 				} else {
 					codevalid = plcode == k
 				}
 
 				if codevalid {
 					plvalue := -v.(float64) * ratio
+					toolkit.Printfn("plvalue: %v - %v - %v", v, plvalue, ratio)
+					return nil
 					mrr.Set(k, plvalue)
 				}
 			}
@@ -242,7 +247,7 @@ func processTable(tn string) error {
 				codevalid := false
 				if strings.HasSuffix(plcode, "*") {
 					trimmedplcode := strings.Replace(plcode, "*", "", -1)
-					codevalid = trimmedplcode == k
+					codevalid = strings.HasPrefix(k, trimmedplcode)
 				} else {
 					codevalid = plcode == k
 				}
