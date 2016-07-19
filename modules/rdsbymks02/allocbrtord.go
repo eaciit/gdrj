@@ -40,15 +40,20 @@ type plalloc struct {
 }
 
 func validplcode(k string) bool {
-	if k == "PL7A" {
-		return true
-	} else if k == "PL28" {
-		return true
-	} else if strings.HasPrefix(k, "PL29A") ||
-		strings.HasPrefix(k, "PL31") ||
-		strings.HasPrefix(k, "PL33") ||
-		strings.HasPrefix(k, "PL34") ||
-		strings.HasPrefix(k, "PL35") {
+	/*
+		    if k == "PL7A" {
+				return true
+			} else if k == "PL28" {
+				return true
+			} else if strings.HasPrefix(k, "PL29A") ||
+				strings.HasPrefix(k, "PL31") ||
+				strings.HasPrefix(k, "PL33") ||
+				strings.HasPrefix(k, "PL34") ||
+				strings.HasPrefix(k, "PL35") {
+				return true
+			}
+	*/
+	if strings.HasPrefix(k, "PL") {
 		return true
 	}
 	return false
