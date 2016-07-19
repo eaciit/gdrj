@@ -138,7 +138,7 @@
 			<h3 class="no-margin" data-bind="text: bkd.title"></h3>
 			<div class="panel-nav-button" data-bind="visible: !bkd.contentIsLoading()">
 				<div class="form-inline">
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: bkd.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: bkd.refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#pnl-analysis', 'P&L Analysis', 'header-content')">
@@ -262,7 +262,7 @@
 						</div>
 					</div>
 
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v2.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v2.refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('.grid-breakdown-channel', 'Channels by Branch/RD', 'header-content')">
@@ -303,7 +303,7 @@
 						</div>
 					</div>
 
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v1.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v1.refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('.grid-breakdown-branch-rd', 'Branches by Channel', 'header-content')">
@@ -337,7 +337,7 @@
 			<h3 class="no-margin" data-bind="html: bkd.title"></h3>
 			<div class="panel-nav-button" data-bind="visible: !kac.contentIsLoading()">
 				<div class="form-inline">
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: kac.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: kac.refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#key-account-analysis', 'Key Account Analysis', 'header-content')">
@@ -406,7 +406,7 @@
 						</div>
 					</div>
 
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: subchan.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: subchan.refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#subchan', 'MT Sub Channel Analysis', 'header-content')">
@@ -499,7 +499,7 @@
 						</div>
 					</div>
 
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rank.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rank.refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
@@ -533,13 +533,13 @@
 		<div class="panel ez no-padding hardcore panel-fix">
 			<div class="panel-heading">
 				<h3 class="no-margin">Filter</h3>
-				<div class="panel-nav-button">
+				<!-- <div class="panel-nav-button">
 					<div class="form-group relative align-right no-margin no-padding hardcore" data-bind="visible: true">
-						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refresh" title="Refresh All">
+						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refresh">
 							<i class="fa fa-refresh"></i> Refresh
 						</button>
 					</div>
-				</div>
+				</div> -->
 			</div>
 			<div class="panel-body">
 				<div id="from-filter">
