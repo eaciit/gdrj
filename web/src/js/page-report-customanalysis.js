@@ -218,6 +218,7 @@ cst.refresh = () => {
 
 			rpt.plmodels(res.Data.PLModels)
 			cst.data(res.Data.Data)
+			window.res = res
 
 			let opl1 = _.orderBy(rpt.allowedPL(), (d) => d.OrderIndex)
 			let opl2 = _.map(opl1, (d) => ({ field: d._id, name: d.PLHeader3 }))
@@ -270,13 +271,12 @@ cst.build = () => {
 		return keys.join('_')
 	})
 	let opj2 = _.map(opj1, (v, k) => {
-		let o = v[0]
+		let o = {}
+		o._id = toolkit.clone(v[0]._id)
 
-		for (let i = 1; i < v.length; i++) {
-			let each = v[i]
-			for (let p in o) if (o.hasOwnProperty(p) && p.indexOf('PL') > -1) {
-				o[p] += each[p]
-			}
+		let sample = v[0]
+		for (let p in sample) if (sample.hasOwnProperty(p) && p.indexOf('_id') == -1) {
+			o[p] = toolkit.sum(v, (g) => g[p])
 		}
 
 		return o
@@ -390,7 +390,7 @@ cst.build = () => {
 						o[toolkit.replace(g, '.', '_')] = '&nbsp;'
 					})
 
-					
+
 
 					sample.rows.forEach((g) => {
 						let row = {}
@@ -652,7 +652,7 @@ cst.optionDimensionBreakdownForChart = ko.computed(() => {
 		.filter((d) => cst.breakdown().indexOf(d.field) > -1)
 }, cst.breakdown)
 cst.optionUnit = ko.observableArray([
-	{ field: '1', name: 'real', suffix: '' },
+	{ field: '1', name: 'actual', suffix: '' },
 	{ field: '1000', name: 'hundreds', suffix: 'K' },
 	{ field: '1000000', name: 'millions', suffix: 'M' },
 	{ field: '1000000000', name: 'billions', suffix: 'B' },
@@ -674,11 +674,11 @@ cst.renderChart = () => {
 			let o = {}
 			o.key = $.trim(k)
 
-			let sample = v[0]
-			for (let p in sample) if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
-				o[`${p}_orig`] = sample[p]
-				o[p] = toolkit.safeDiv(sample[p], billion)
-			}
+			cst.dimensionPNL().forEach((g) => {
+				let sumVal = toolkit.sum(v, (h) => h[g])
+				o[`${g}_orig`] = sumVal
+				o[g] = toolkit.safeDiv(sumVal, billion)
+			})
 
 			return o
 		})
