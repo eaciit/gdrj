@@ -16,6 +16,9 @@
 		<li role="presentation">
 			<a href="#summary" role="tab" data-toggle="tab" onclick="bkd.title('Summary'); dsbrd.refresh();">Summary</a>
 		</li>
+		<li role="presentation">
+			<a href="#ranking" role="tab" data-toggle="tab" onclick="bkd.title('Ranking'); rank.refresh();">Ranking</a>
+		</li>
 		<li role="presentation" class="active">
 			<a href="#by-channel" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Channels'); bkd.refresh();">Channels</a>
 		</li>
@@ -243,7 +246,6 @@
 	    </div>
 	</div>
 </div>
-<div class="clearfix"></div>
 		</div>
 
 		<div role="tabpanel" class="tab-pane" id="by-channel-then-branch-vs-rd">
@@ -470,6 +472,51 @@
 
 			<div data-bind="visible: !subchan.contentIsLoading()">
 				<div class="breakdown-view ez" id="subchan"></div>
+			</div>
+		</div>
+	</div>
+</div>
+		</div>
+
+		<div role="tabpanel" class="tab-pane" id="ranking">
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+				<h3 class="no-margin" data-bind="text: bkd.title"></h3>
+			<div class="panel-nav-button" data-bind="visible: !rank.contentIsLoading()">
+				<div class="form-inline">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: rank.fiscalYear }"></select>
+						</div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Breakdown by</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rank.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: rank.breakdown, filter: 'contains' }"></select>
+						</div>
+					</div>
+
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rank.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div data-bind="visible: rank.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !rank.contentIsLoading()">
+				<div class="grid-ranking"></div>
+				<div class="clearfix"></div>
 			</div>
 		</div>
 	</div>
