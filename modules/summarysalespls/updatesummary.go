@@ -578,6 +578,7 @@ func prepmastersgacalcrev() {
 	totalsga := float64(0)
 	totalsgach := map[string]float64{}
 	totalsalesch := map[string]float64{}
+	allsgakey := map[string]float64{}
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	sumnow, _ := diffConn.NewQuery().From("salespls-summary-4sga").
@@ -608,6 +609,7 @@ func prepmastersgacalcrev() {
 
 				totalsga += cvalsga
 				totalsgach[channelid] += cvalsga
+				allsgakey[sgakey] += cvalsga
 
 				dcsga, dcsgaexist := mchannel[sgakey]
 				if !dcsgaexist {
@@ -629,6 +631,10 @@ func prepmastersgacalcrev() {
 			dcsga.RatioNow = toolkit.Div(dcsga.TotalNow, totalsgach[chid])
 			// dcsga.TotalExpect = totalchexpect * toolkit.Div(dcsga.TotalSales, totalsalesch[chid])
 			dcsga.TotalExpect = totalchexpect * dcsga.RatioNow
+			if chid == "I1" {
+				dcsga.TotalExpect = allsgakey[dcid] * alloc[chid]
+			}
+
 			toolkit.Printfn("%s_%s : %v ", chid, dcid, dcsga.TotalExpect)
 		}
 	}
