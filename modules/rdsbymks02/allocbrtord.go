@@ -215,10 +215,13 @@ func processTable(tn string) error {
 				}
 
 				if codevalid {
-					plvalue := -v.(float64) * ratio
-					toolkit.Printfn("plvalue: %v - %v - %v", v, plvalue, ratio)
-					return nil
-					mrr.Set(k, plvalue)
+					value := v.(float64)
+					if value != 0 {
+						plvalue := -v.(float64) * ratio
+						toolkit.Printfn("plvalue: %v - %v - %v", v, plvalue, ratio)
+						return nil
+						mrr.Set(k, plvalue)
+					}
 				}
 			}
 		}
