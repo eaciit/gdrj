@@ -625,11 +625,12 @@ func prepmastersgacalcrev() {
 	for chid, challocs := range m {
 		totalchexpect := alloc[chid] * totalsga
 		for _, dcsga := range challocs {
-			dcsga.RatioNow = gdrj.SaveDiv(dcsga.TotalNow, totalsgach[chid])
-			dcsga.TotalExpect = totalchexpect * gdrj.SaveDiv(dcsga.TotalSales, totalsalesch[chid])
+			dcsga.RatioNow = toolkit.Div(dcsga.TotalNow, totalsgach[chid])
+			dcsga.TotalExpect = totalchexpect * toolkit.Div(dcsga.TotalSales, totalsalesch[chid]) * dcsga.RatioNow
 		}
 	}
 
+	toolkit.Println(m)
 	masters.Set("sgacalcrev", m)
 }
 
@@ -1239,7 +1240,7 @@ func CalcSgaRev(tkm toolkit.M) {
 		if strings.Contains(sgakey, "PL33_") || strings.Contains(sgakey, "PL34_") || strings.Contains(sgakey, "PL35_") {
 			sgadetail := gsgaratio[sgakey]
 			cvalsga := toolkit.ToFloat64(val, 0, toolkit.RoundingAuto)
-			cvalsga += (sgadetail.TotalExpect - sgadetail.TotalNow) * gdrj.SaveDiv(tkm.GetFloat64("PL8A"), sgadetail.TotalSales)
+			cvalsga += (sgadetail.TotalExpect - sgadetail.TotalNow) * toolkit.Div(tkm.GetFloat64("PL8A"), sgadetail.TotalSales)
 			tkm.Set(sgakey, cvalsga)
 		}
 	}
