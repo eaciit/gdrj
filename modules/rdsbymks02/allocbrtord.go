@@ -62,7 +62,8 @@ func validplcode(k string) bool {
 		k != "PL5" &&
 		k != "PL6" &&
 		k != "PL7" &&
-		k != "PL8" {
+		k != "PL8" &&
+		k != "PL8A" {
 		return true
 	}
 	return false
