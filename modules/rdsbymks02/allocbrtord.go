@@ -194,12 +194,14 @@ func processTable(tn string) error {
 		//--- reverse it
 		mrr := toolkit.M{}
 		mrrkey := toolkit.M{}
-		toolkit.CopyM(&key, &mrrkey, false, []string{})
+		for k, v := range key {
+			mrrkey.Set(k, v)
+		}
 		mrrkey.Set("trxsrc", "rdsbymkselem")
 		mrr.Set("key", mrrkey)
 		mrr.Set("_id", id+"_reverse")
 
-		for k, v := range mrr {
+		for k, v := range mr {
 			for _, plcode := range plcodes {
 				codevalid := false
 				if strings.HasSuffix(plcode, "*") {
@@ -225,7 +227,9 @@ func processTable(tn string) error {
 		//--- copy to rd
 		mrrd := toolkit.M{}
 		mrrdkey := toolkit.M{}
-		toolkit.CopyM(&key, &mrrdkey, false, []string{})
+		for k, v := range key {
+			mrrdkey.Set(k, v)
+		}
 		mrrdkey.Set("trxsrc", "rdsbymkselem")
 		mrrdkey.Set("customer_channelid", "I1")
 		mrrdkey.Set("customer_reportchannel", "RD")
@@ -233,7 +237,7 @@ func processTable(tn string) error {
 		mrrd.Set("key", mrrdkey)
 		mrrd.Set("_id", id+"_rd")
 
-		for k, v := range mrrd {
+		for k, v := range mr {
 			for _, plcode := range plcodes {
 				codevalid := false
 				if strings.HasSuffix(plcode, "*") {
