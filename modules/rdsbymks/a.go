@@ -178,7 +178,7 @@ func processTable(tn string) error {
 			mrk := toolkit.M{}
 			mrkkey := key
 			mrk.Set("key", mrkkey)
-			mrkkey.Set("trxsrc", "pushrdreverse")
+			mrkkey.Set("trxsrc", "pushrdreversesbymks")
 			mrkkey.Set("customer_reportchannel", channel)
 			mrkkey.Set("customer_channelname", channel)
 			if channel == "MT" {
@@ -212,6 +212,8 @@ func processTable(tn string) error {
 			}
 		}
 
+		key.Set("trxsrc", "rdsbymks")
+		mr.Set("key", key)
 		gdrj.CalcSum(mr, masters)
 		esave := qsave.Exec(toolkit.M{}.Set("data", mr))
 		if esave != nil {
