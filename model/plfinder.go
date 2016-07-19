@@ -324,6 +324,7 @@ func (s *PLFinderParam) GetTableName() string {
 	}
 
 	if len(sample) == 0 {
+		s.TableKey = "key"
 		return `salespls-summary`
 	}
 
@@ -714,6 +715,8 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 			groups[dbfield] = bson.M{"$sum": pdbfield}
 		}
 	}
+
+	fmt.Printf("-MATHCES %#v\n", matches)
 
 	// groups["totalOutlet"] = bson.M{"$size": "$outlets"}
 	pipe := []bson.M{{"$match": matches}, {"$group": groups}} //, {"$project": projects}} //
