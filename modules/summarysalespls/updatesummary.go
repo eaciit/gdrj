@@ -829,6 +829,28 @@ func prepmastertotaldiscactivity() {
 	masters.Set("totdiscactivity", totdiscactivity)
 }
 
+//totsalesrd2016vdist
+func prepmastertotsalesrd2016vdist() {
+	toolkit.Println("--> Get Total Sales RD 2016")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-2016-vdistrd").Cursor(nil)
+	defer csr.Close()
+	totsalesrd2016vdist := float64(0)
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		totsalesrd2016vdist += tkm.GetFloat64("grossamount")
+	}
+
+	masters.Set("totsalesrd2016vdist", totsalesrd2016vdist)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -841,6 +863,8 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
+	prepmastertotsalesrd2016vdist()
+
 	// prepmastertotaldiscactivity()
 	// prepmasterrollback()
 
@@ -859,7 +883,7 @@ func main() {
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-2016-vdistrd").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -1352,12 +1376,32 @@ func RollbackSalesplsAdvertisement(tkm toolkit.M) {
 	}
 }
 
+func CleanAndUpdateRD2016Vdist(tkm toolkit.M) {
+	if !masters.Has("totsalesrd2016vdist") {
+		return
+	}
+
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+
+	allocvalue := float64(511572928) //CD11
+	if dtkm.GetString("customer_branchid") == "CD04" {
+		allocvalue = float64(2149301417)
+	}
+	// CD04 := float64(2149301417)
+
+	totsalesrd2016vdist := masters.GetFloat64("totsalesrd2016vdist")
+	tkm.Set("PL8", float64(0))
+
+	val := tkm.GetFloat64("PL2") + (allocvalue * tkm.GetFloat64("PL2") / totsalesrd2016vdist)
+	tkm.Set("PL2", val)
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary").
+		From("salespls-summary-2016-vdistrd-upd").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1381,9 +1425,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CleanUpdateOldExport(trx)
 		// RollbackSalesplsAdvertisement(trx)
 
-		CleanUpdateCOGSAdjustRdtoMt(trx)
+		// CleanUpdateCOGSAdjustRdtoMt(trx)
 
 		// AllocateDiscountActivity(trx)
+		CleanAndUpdateRD2016Vdist(trx)
 		CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
