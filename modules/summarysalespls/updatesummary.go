@@ -836,7 +836,8 @@ func prepmastertotsalesrd2016vdist() {
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-2016-vdistrd").Cursor(nil)
 	defer csr.Close()
-	totsalesrd2016vdist := float64(0)
+	totsalesrd2016vdistcd11 := float64(0)
+	totsalesrd2016vdistcd04 := float64(0)
 
 	for {
 		tkm := toolkit.M{}
@@ -845,10 +846,18 @@ func prepmastertotsalesrd2016vdist() {
 			break
 		}
 
-		totsalesrd2016vdist += tkm.GetFloat64("grossamount")
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+
+		if dtkm.GetString("customer_branchid") == "CD04" {
+			totsalesrd2016vdistcd04 += tkm.GetFloat64("PL2")
+		} else {
+			totsalesrd2016vdistcd11 += tkm.GetFloat64("PL2")
+		}
+
 	}
 
-	masters.Set("totsalesrd2016vdist", totsalesrd2016vdist)
+	masters.Set("totsalesrd2016vdistcd04", totsalesrd2016vdistcd04)
+	masters.Set("totsalesrd2016vdistcd11", totsalesrd2016vdistcd11)
 }
 
 func main() {
@@ -1377,22 +1386,25 @@ func RollbackSalesplsAdvertisement(tkm toolkit.M) {
 }
 
 func CleanAndUpdateRD2016Vdist(tkm toolkit.M) {
-	if !masters.Has("totsalesrd2016vdist") {
+	if !masters.Has("totsalesrd2016vdistcd04") && !masters.Has("totsalesrd2016vdistcd11") {
 		return
 	}
-
+	// masters.Set("totsalesrd2016vdistcd04", totsalesrd2016vdistcd04)
+	// 	masters.Set("totsalesrd2016vdistcd11", totsalesrd2016vdistcd11)
 	dtkm, _ := toolkit.ToM(tkm.Get("key"))
 
 	allocvalue := float64(511572928) //CD11
+	totdiv := masters.GetFloat64("totsalesrd2016vdistcd11")
 	if dtkm.GetString("customer_branchid") == "CD04" {
 		allocvalue = float64(2149301417)
+		totdiv = masters.GetFloat64("totsalesrd2016vdistcd04")
 	}
 	// CD04 := float64(2149301417)
 
-	totsalesrd2016vdist := masters.GetFloat64("totsalesrd2016vdist")
+	// totsalesrd2016vdist := masters.GetFloat64("totsalesrd2016vdist")
 	tkm.Set("PL8", float64(0))
 
-	val := tkm.GetFloat64("PL2") + (allocvalue * tkm.GetFloat64("PL2") / totsalesrd2016vdist)
+	val := tkm.GetFloat64("PL2") + (allocvalue * tkm.GetFloat64("PL2") / totdiv)
 	tkm.Set("PL2", val)
 }
 
