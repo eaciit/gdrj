@@ -239,12 +239,9 @@ func processTable(tn string) error {
 		for k, v := range mr {
 			codevalid := validplcode(k)
 			if codevalid {
-				value := v.(float64)
-				if value != 0 {
-					plvalue := -v.(float64) * ratio
-					//toolkit.Printfn("plvalue: %v - %v - %v", v, plvalue, ratio)
-					mrr.Set(k, plvalue)
-				}
+				plvalue := -v.(float64) * ratio
+				//toolkit.Printfn("plvalue: %v - %v - %v", v, plvalue, ratio)
+				mrr.Set(k, plvalue)
 			}
 		}
 
@@ -270,11 +267,9 @@ func processTable(tn string) error {
 		for k, v := range mr {
 			codevalid := validplcode(k)
 			if codevalid {
-				value := v.(float64)
-				if value != 0 {
-					plvalue := v.(float64) * ratio
-					mrrd.Set(k, plvalue)
-				}
+				plvalue := v.(float64) * ratio
+				//toolkit.Printfn("plvalue: %v - %v - %v", v, plvalue, ratio)
+				mrrd.Set(k, plvalue)
 			}
 		}
 
