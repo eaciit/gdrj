@@ -24,6 +24,18 @@
             "program": "${workspaceRoot}/modules/updactivity",
             "env": {},
             "args": ["-test.v"]
+        },
+        {
+            "name": "RDSBYMKS",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "remotePath": "",
+            "port": 2345,
+            "host": "127.0.0.1",
+            "program": "${workspaceRoot}/modules/rdsbymks",
+            "env": {},
+            "args": ["-test.v"]
         },{
             "name": "TrfRD",
             "type": "go",
