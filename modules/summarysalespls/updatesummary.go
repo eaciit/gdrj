@@ -580,10 +580,10 @@ func prepmastersgacalcrev() {
 	totalsalesch := map[string]float64{}
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	sumnow, _ := diffConn.NewQuery().From("salespls-summary").
+	sumnow, _ := diffConn.NewQuery().From("salespls-summary-4sga").
 		Where(filter).
 		Cursor(nil)
-	// count := sumnow.Count()
+
 	i := 0
 
 	for {
@@ -909,11 +909,11 @@ func main() {
 	// prepmastertotsalesrd2016vdist()
 
 	// prepmastertotaldiscactivity()
-	prepmasterrollback()
+	// prepmasterrollback()
 
 	// prepmastercustomergroup()
 
-	// prepmastersgacalcrev()
+	prepmastersgacalcrev()
 	// prepmasterratiomapsalesreturn2016()
 	// prepmasterdiffsalesreturn2016()
 	// prepmastersalesreturn()
@@ -926,7 +926,7 @@ func main() {
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4sga").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -1470,7 +1470,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-checksga").
+		From("salespls-summary-4sgaalloc").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1487,7 +1487,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
 		// CalcSalesVDist20142015(trx)
-		// CalcSgaRev(trx)
+		CalcSgaRev(trx)
 
 		// CleanUpdateCustomerGroupName(trx)
 
@@ -1499,7 +1499,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// AllocateDiscountActivity(trx)
 		// CleanAndUpdateRD2016Vdist(trx)
 
-		RollbackSalesplsSga(trx)
+		// RollbackSalesplsSga(trx)
 		CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
