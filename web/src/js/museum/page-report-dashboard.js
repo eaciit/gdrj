@@ -657,15 +657,15 @@ sd.render = (res) => {
 		if (sd.sortVal[index] == ''){
 			channelgroup = _.orderBy(channelgroup, ['key'], ['asc'])
 			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-up')
-			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-down')
+			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-up')
 		} else if (sd.sortVal[index] == 'asc'){
 			channelgroup = _.orderBy(channelgroup, ['totalyo'], ['asc'])
 			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-up')
-			$(`.sortsales:eq(${index})>i`).addClass('fa-chevron-down')
+			$(`.sortsales:eq(${index})>i`).addClass('fa-chevron-up')
 		} else if (sd.sortVal[index] == 'desc'){
 			channelgroup = _.orderBy(channelgroup, ['totalyo'], ['desc'])
 			$(`.sortsales:eq(${index})>i`).addClass('fa-chevron-up')
-			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-down')
+			$(`.sortsales:eq(${index})>i`).removeClass('fa-chevron-up')
 		}
 
 		// let op2 = _.orderBy(channelgroup, (e) => e.totalyo, 'desc')
