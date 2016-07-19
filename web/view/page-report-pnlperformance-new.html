@@ -16,6 +16,9 @@
 		<li role="presentation">
 			<a href="#summary" role="tab" data-toggle="tab" onclick="bkd.title('Summary'); dsbrd.refresh();">Summary</a>
 		</li>
+		<li role="presentation">
+			<a href="#ranking" role="tab" data-toggle="tab" onclick="bkd.title('Ranking'); rank.refresh();">Ranking</a>
+		</li>
 		<li role="presentation" class="active">
 			<a href="#by-channel" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Channels'); bkd.refresh();">Channels</a>
 		</li>
@@ -135,7 +138,7 @@
 			<h3 class="no-margin" data-bind="text: bkd.title"></h3>
 			<div class="panel-nav-button" data-bind="visible: !bkd.contentIsLoading()">
 				<div class="form-inline">
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: bkd.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: bkd.refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#pnl-analysis', 'P&L Analysis', 'header-content')">
@@ -243,7 +246,6 @@
 	    </div>
 	</div>
 </div>
-<div class="clearfix"></div>
 		</div>
 
 		<div role="tabpanel" class="tab-pane" id="by-channel-then-branch-vs-rd">
@@ -260,7 +262,7 @@
 						</div>
 					</div>
 
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v2.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v2.refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('.grid-breakdown-channel', 'Channels by Branch/RD', 'header-content')">
@@ -301,7 +303,7 @@
 						</div>
 					</div>
 
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v1.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: v1.refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('.grid-breakdown-branch-rd', 'Branches by Channel', 'header-content')">
@@ -335,7 +337,7 @@
 			<h3 class="no-margin" data-bind="html: bkd.title"></h3>
 			<div class="panel-nav-button" data-bind="visible: !kac.contentIsLoading()">
 				<div class="form-inline">
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: kac.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: kac.refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#key-account-analysis', 'Key Account Analysis', 'header-content')">
@@ -404,7 +406,7 @@
 						</div>
 					</div>
 
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: subchan.refresh" title="Refresh P&L Analysis">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: subchan.refresh">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
 					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#subchan', 'MT Sub Channel Analysis', 'header-content')">
@@ -475,6 +477,51 @@
 	</div>
 </div>
 		</div>
+
+		<div role="tabpanel" class="tab-pane" id="ranking">
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+				<h3 class="no-margin" data-bind="text: bkd.title"></h3>
+			<div class="panel-nav-button" data-bind="visible: !rank.contentIsLoading()">
+				<div class="form-inline">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: rank.fiscalYear }"></select>
+						</div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Breakdown by</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rank.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: rank.breakdown, filter: 'contains' }"></select>
+						</div>
+					</div>
+
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rank.refresh">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div data-bind="visible: rank.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !rank.contentIsLoading()">
+				<div class="grid-ranking"></div>
+				<div class="clearfix"></div>
+			</div>
+		</div>
+	</div>
+</div>
+		</div>
 	</div>
 
 
@@ -486,13 +533,13 @@
 		<div class="panel ez no-padding hardcore panel-fix">
 			<div class="panel-heading">
 				<h3 class="no-margin">Filter</h3>
-				<div class="panel-nav-button">
+				<!-- <div class="panel-nav-button">
 					<div class="form-group relative align-right no-margin no-padding hardcore" data-bind="visible: true">
-						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refresh" title="Refresh All">
+						<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rpt.refresh">
 							<i class="fa fa-refresh"></i> Refresh
 						</button>
 					</div>
-				</div>
+				</div> -->
 			</div>
 			<div class="panel-body">
 				<div id="from-filter">
@@ -502,7 +549,7 @@
 							<div class="panel">
 								<div class="panel-heading" role="tab" id="h-0">
 									<h4 class="panel-title">
-										<a class="tooltipster tooltipstered" role="button" data-toggle="collapse" data-parent=".ez-collapse" href="#c-0">
+										<a role="button" data-toggle="collapse" data-parent=".ez-collapse" href="#c-0">
 											<span class="pull-left">Filter</span>
 											<span class="pull-right">
 												<i class="fa fa-angle-left"></i>

@@ -3804,17 +3804,148 @@ let dsbrd = viewModel.dashboard
 
 
 
+viewModel.dashboardRanking = {}
+let rank = viewModel.dashboardRanking
+
+;(() => {
+	rank.optionDimensions = ko.observableArray([
+		{ field: 'NonRD', name: 'Non RD Sales' },
+		{ field: 'OnlyRD', name: 'Only RD Sales' },
+		{ field: 'customer.keyaccount', name: 'Key Account' },
+	].concat(rpt.optionDimensions().slice(0)))
+	rank.breakdown = ko.observable('customer.channelname')
+	rank.columns = ko.observableArray([
+		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
+		{ field: 'gmPercentage', template: (d) => `${kendo.toString(d.gmPercentage, 'n2')} %`, title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ field: 'cogsPercentage', template: (d) => `${kendo.toString(d.cogsPercentage, 'n2')} %`, title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ field: 'ebitPercentage', template: (d) => `${kendo.toString(d.ebitPercentage, 'n2')} %`, title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ field: 'ebitdaPercentage', template: (d) => `${kendo.toString(d.ebitdaPercentage, 'n2')} %`, title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' },
+		{ field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' },
+	])
+	rank.contentIsLoading = ko.observable(false)
+	rank.data = ko.observableArray([])
+	rank.fiscalYear = ko.observable(rpt.value.FiscalYear())
+
+	rank.refresh = () => {
+		let breakdown = rank.breakdown()
+		let isRDNonRD = (['OnlyRD', 'NonRD'].indexOf(rank.breakdown()) > -1)
+
+		if (isRDNonRD) {
+			breakdown = 'customer.channelname'
+		}
+
+		let param = {}
+		param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
+		param.groups = rpt.parseGroups([breakdown])
+		param.aggr = 'sum'
+		param.filters = rpt.getFilterValue(false, rank.fiscalYear)
+
+		if (isRDNonRD) {
+			let values = ('OnlyRD' == rank.breakdown()) ? 
+				['I1'] : ["EXP", "I2", "I4", "I6", "I3"]
+
+			param.filters.push({
+				Field: 'customer.channelname',
+				Op: '$in',
+				Value: values
+			})
+		}
+
+		let fetch = () => {
+			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
+				if (res.Status == "NOK") {
+					setTimeout(() => { fetch() }, 1000 * 5)
+					return
+				}
+
+				rank.contentIsLoading(false)
+				rank.render(breakdown, res)
+			}, () => {
+				rank.contentIsLoading(false)
+			})
+		}
+
+		rank.contentIsLoading(true)
+		fetch()
+	}
+
+	rank.render = (breakdown, res) => {
+		let data = _.sortBy(res.Data.Data, (d) => toolkit.redefine(d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`], ''))
+
+		let rows = []
+		data.forEach((d) => {
+			let row = {}
+			row.original = d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`]
+			row.pnl = d._id[`_id_${toolkit.replace(breakdown, '.', '_')}`]
+			if ($.trim(row.pnl) == '') {
+				row.original = ''
+				row.pnl = ''
+			}
+			if (breakdown == 'date.month') {
+				row.original = (parseInt(row.pnl, 10) - 1)
+				row.pnl = moment(new Date(2015, row.original, 1)).format('MMMM')
+			}
+
+
+			row.gmPercentage = toolkit.number(d.PL74C / d.PL8A) * 100
+			row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A) * 100
+			row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A) * 100
+			row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A) * 100
+			row.netSales = d.PL8A
+			row.ebit = d.PL44B
+			rows.push(row)
+		})
+
+		rank.data(_.orderBy(rows, (d) => d.netSales, 'desc'))
+
+		let config = {
+			dataSource: {
+				data: rank.data(),
+				pageSize: 10,
+			},
+			columns: rank.columns(),
+			resizabl: false,
+			sortable: true, 
+			pageable: true,
+			filterable: false,
+			dataBound: app.gridBoundTooltipster('.grid-ranking')
+		}
+
+		$('.grid-ranking').replaceWith('<div class="grid-ranking sortable"></div>')
+		$('.grid-ranking').kendoGrid(config)
+	}
+})()
+
+
+
+
+
+
+
+
 // ===== JENERATE KOMBINASYON FOR DIS MODUL =====
 
 let MEJIK_FUNC = (() => {
 	combinations([
+		"date.quartertxt",
+		"date.month",
+
 		"customer.reportsubchannel",
 		"customer.reportchannel",
+
 		"customer.channelid",
+
+		"customer.region",
+		"customer.zone",
+		"customer.areaname",
+		"customer.branchname",
+
 		"customer.keyaccount",
+		"customer.customergroup",
+		"customer.customergroupname",
+
 		"product.brand",
-		"customer.branch",
-		"customer.customergroupname"
 	]).map((d) => {
 		if (d.indexOf("customer.channelid") > -1) {
 			d.push("customer.channelname")
@@ -3829,22 +3960,22 @@ let MEJIK_FUNC = (() => {
 		"date_quartertxt",
 		"date_month",
 
-		"customer_reportchannel",
-		"customer_reportsubchannel",
+		"customer_reportchannel", // OK
+		"customer_reportsubchannel", // OK
 
-		"customer_channelid",
-		"customer_channelname",
+		"customer_channelid", // OK
+		"customer_channelname", // OK
 
 		"customer_region",
 		"customer_zone",
 		"customer_areaname",
-		"customer_branchname",
+		"customer_branchname", // OK
 
-		"customer_keyaccount",
-		"customer_customergroup",
-		"customer_customergroupname",
+		"customer_keyaccount", // OK
+		"customer_customergroup", // OK
+		"customer_customergroupname", // OK
 
-		"product_brand",
+		"product_brand", // OK
 	]
 })
 

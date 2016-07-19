@@ -324,7 +324,7 @@ func (s *PLFinderParam) GetTableName() string {
 	}
 
 	if len(sample) == 0 {
-		return tableName
+		return `salespls-summary`
 	}
 
 	if sample[0].Has("key") {
