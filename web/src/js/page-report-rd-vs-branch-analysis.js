@@ -59,7 +59,7 @@ v1.refresh = (useCache = false) => {
 
 v1.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
-	let down = $(e).find('i.fa-chevron-down').length
+	let down = $(e).find('i.fa-chevron-up').length
 	if (right > 0){
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 			$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -67,7 +67,7 @@ v1.clickExpand = (e) => {
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right')
-		$(e).find('i').addClass('fa-chevron-down')
+		$(e).find('i').addClass('fa-chevron-up')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
@@ -80,7 +80,7 @@ v1.clickExpand = (e) => {
 			$('.pivot-pnl .table-content').css('margin-left', '')
 		}
 		
-		$(e).find('i').removeClass('fa-chevron-down')
+		$(e).find('i').removeClass('fa-chevron-up')
 		$(e).find('i').addClass('fa-chevron-right')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
@@ -541,7 +541,7 @@ v2.refresh = (useCache = false) => {
 
 v2.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
-	let down = $(e).find('i.fa-chevron-down').length
+	let down = $(e).find('i.fa-chevron-up').length
 	if (right > 0){
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 			$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -549,7 +549,7 @@ v2.clickExpand = (e) => {
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right')
-		$(e).find('i').addClass('fa-chevron-down')
+		$(e).find('i').addClass('fa-chevron-up')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
@@ -562,7 +562,7 @@ v2.clickExpand = (e) => {
 			$('.pivot-pnl .table-content').css('margin-left', '')
 		}
 		
-		$(e).find('i').removeClass('fa-chevron-down')
+		$(e).find('i').removeClass('fa-chevron-up')
 		$(e).find('i').addClass('fa-chevron-right')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
@@ -1037,7 +1037,7 @@ v3.refresh = (useCache = false) => {
 
 v3.clickExpand = (e) => {
 	let right = $(e).find('i.fa-chevron-right').length
-	let down = $(e).find('i.fa-chevron-down').length
+	let down = $(e).find('i.fa-chevron-up').length
 	if (right > 0){
 		if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 			$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -1045,7 +1045,7 @@ v3.clickExpand = (e) => {
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right')
-		$(e).find('i').addClass('fa-chevron-down')
+		$(e).find('i').addClass('fa-chevron-up')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
@@ -1058,7 +1058,7 @@ v3.clickExpand = (e) => {
 			$('.pivot-pnl .table-content').css('margin-left', '')
 		}
 		
-		$(e).find('i').removeClass('fa-chevron-down')
+		$(e).find('i').removeClass('fa-chevron-up')
 		$(e).find('i').addClass('fa-chevron-right')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')

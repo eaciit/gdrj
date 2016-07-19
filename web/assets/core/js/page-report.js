@@ -527,12 +527,12 @@ rpt.hardcodePLGA = function (data, plmodels) {
 rpt.showExpandAll = function (a) {
 	if (a == true) {
 		$('tr.dd').find('i').removeClass('fa-chevron-right');
-		$('tr.dd').find('i').addClass('fa-chevron-down');
+		$('tr.dd').find('i').addClass('fa-chevron-up');
 		$('tr[idparent]').css('display', '');
 		$('tr[idcontparent]').css('display', '');
 		$('tr[statusvaltemp=hide]').css('display', 'none');
 	} else {
-		$('tr.dd').find('i').removeClass('fa-chevron-down');
+		$('tr.dd').find('i').removeClass('fa-chevron-up');
 		$('tr.dd').find('i').addClass('fa-chevron-right');
 		$('tr[idparent]').css('display', 'none');
 		$('tr[idcontparent]').css('display', 'none');
@@ -822,8 +822,8 @@ rpt.refreshchildadd = function (e) {
 	$('.table-header tbody>tr[idparent=' + e + ']').each(function (i) {
 		$trElem = $(this);
 		$columnElem = $('.table-content tbody>tr[idpl=' + $trElem.attr('idheaderpl') + ']');
-		$trElem.insertAfter($('tr[idheaderpl=' + $trElem.attr('idparent') + ']'));
-		$columnElem.insertAfter($('tr[idpl=' + $trElem.attr('idparent') + ']'));
+		$trElem.insertBefore($('tr[idheaderpl=' + $trElem.attr('idparent') + ']'));
+		$columnElem.insertBefore($('tr[idpl=' + $trElem.attr('idparent') + ']'));
 	});
 };
 
@@ -840,7 +840,7 @@ rpt.hideAllChild = function (PLCode) {
 		var child = $('tr[idparent=' + $trElem.attr('idheaderpl') + ']').length;
 		if (child > 0) {
 			var $c = $('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']');
-			$($c).find('i').removeClass('fa-chevron-down');
+			$($c).find('i').removeClass('fa-chevron-up');
 			$($c).find('i').addClass('fa-chevron-right');
 			$('tr[idparent=' + $c.attr('idheaderpl') + ']').css('display', 'none');
 			$('tr[idcontparent=' + $c.attr('idheaderpl') + ']').css('display', 'none');
@@ -866,7 +866,8 @@ rpt.export = function (target, title, mode) {
 		var _ret2 = function () {
 			var rowdata = [],
 			    cellval = {},
-			    cells = [];
+			    cells = [],
+			    headertype = "";
 			var tableHeaderLock = target.find('.k-grid-header-locked');
 			var tableHeader = target.find('.k-grid-header-wrap');
 			var tableContentLock = target.find('.k-grid-content-locked');
@@ -899,12 +900,14 @@ rpt.export = function (target, title, mode) {
 				cells = [];
 				$(e).find('td').each(function (i, e) {
 					cellval = {};
-					cellval['value'] = $(e).html();
+					headertype = parseFloat($(e).html().replace(/,/g, ""));
+					if (isNaN(parseFloat(headertype)) == true) headertype = $(e).html();
+					cellval['value'] = headertype;
 					cells.push(cellval);
 				});
 				tableContent.find('tr:eq(' + i + ') td').each(function (i, e) {
 					cellval = {};
-					cellval['value'] = $(e).html().replace(/,/g, "");
+					cellval['value'] = parseFloat($(e).html().replace(/,/g, ""));
 					cells.push(cellval);
 				});
 				rowdata.push({ cells: cells });
