@@ -54,7 +54,6 @@ func validplcode(k string) bool {
 			}
 	*/
 	if strings.HasPrefix(k, "PL") &&
-		k != "PL8A" &&
 		k != "PL1" &&
 		k != "PL2" &&
 		k != "PL3" &&
