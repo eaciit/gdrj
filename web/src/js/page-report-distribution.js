@@ -445,6 +445,10 @@ sd.refresh = () => {
 				sd.contentIsLoading(false)
 				return
 			}
+
+			if (res.Data.Data.length == 0) {
+				$('.grid-sales-dist').html('No data found')
+			}
 	
 			sd.oldData(res)
 			sd.contentIsLoading(false)
