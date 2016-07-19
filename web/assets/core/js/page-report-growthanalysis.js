@@ -1343,7 +1343,7 @@ vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { 
 $(function () {
 	$('#modal-detail-annual-diff').appendTo($('body'));
 	$('#modal-detail-quarter-diff').appendTo($('body'));
-	grw.refresh();
+	// grw.refresh()
 	ag.refresh();
 	qg.refresh();
 });

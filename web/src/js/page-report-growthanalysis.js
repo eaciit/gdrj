@@ -1328,7 +1328,7 @@ vm.breadcrumb([
 $(() => {
 	$('#modal-detail-annual-diff').appendTo($('body'))
 	$('#modal-detail-quarter-diff').appendTo($('body'))
-	grw.refresh()
+	// grw.refresh()
 	ag.refresh()
 	qg.refresh()
 })
