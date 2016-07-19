@@ -217,6 +217,7 @@ func processTable(tn string) error {
 
 		key.Set("trxsrc", "rdsbymks")
 		mr.Set("key", key)
+		mr.Set("_id", mrid+"|rdsbymks")
 		gdrj.CalcSum(mr, masters)
 		esave := qsave.Exec(toolkit.M{}.Set("data", mr))
 		if esave != nil {
