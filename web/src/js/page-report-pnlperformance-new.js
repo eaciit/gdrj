@@ -215,7 +215,7 @@ let bkd = viewModel.breakdown
 
 	bkd.clickExpand = (e) => {
 		let right = $(e).find('i.fa-chevron-right').length
-		let down = $(e).find('i.fa-chevron-down').length
+		let down = $(e).find('i.fa-chevron-up').length
 		if (right > 0){
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -223,7 +223,7 @@ let bkd = viewModel.breakdown
 			}
 
 			$(e).find('i').removeClass('fa-chevron-right')
-			$(e).find('i').addClass('fa-chevron-down')
+			$(e).find('i').addClass('fa-chevron-up')
 			$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[statusvaltemp=hide]`).css('display', 'none')
@@ -236,7 +236,7 @@ let bkd = viewModel.breakdown
 				$('.pivot-pnl .table-content').css('margin-left', '')
 			}
 			
-			$(e).find('i').removeClass('fa-chevron-down')
+			$(e).find('i').removeClass('fa-chevron-up')
 			$(e).find('i').addClass('fa-chevron-right')
 			$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
@@ -1101,7 +1101,7 @@ let v2 = viewModel.RDvsBranchView2
 
 	v2.clickExpand = (e) => {
 		let right = $(e).find('i.fa-chevron-right').length
-		let down = $(e).find('i.fa-chevron-down').length
+		let down = $(e).find('i.fa-chevron-up').length
 		if (right > 0){
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -1109,7 +1109,7 @@ let v2 = viewModel.RDvsBranchView2
 			}
 
 			$(e).find('i').removeClass('fa-chevron-right')
-			$(e).find('i').addClass('fa-chevron-down')
+			$(e).find('i').addClass('fa-chevron-up')
 			$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[statusvaltemp=hide]`).css('display', 'none')
@@ -1122,7 +1122,7 @@ let v2 = viewModel.RDvsBranchView2
 				$('.pivot-pnl .table-content').css('margin-left', '')
 			}
 			
-			$(e).find('i').removeClass('fa-chevron-down')
+			$(e).find('i').removeClass('fa-chevron-up')
 			$(e).find('i').addClass('fa-chevron-right')
 			$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
@@ -1731,7 +1731,7 @@ let v1 = viewModel.RDvsBranchView1
 
 	v1.clickExpand = (e) => {
 		let right = $(e).find('i.fa-chevron-right').length
-		let down = $(e).find('i.fa-chevron-down').length
+		let down = $(e).find('i.fa-chevron-up').length
 		if (right > 0){
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -1739,7 +1739,7 @@ let v1 = viewModel.RDvsBranchView1
 			}
 
 			$(e).find('i').removeClass('fa-chevron-right')
-			$(e).find('i').addClass('fa-chevron-down')
+			$(e).find('i').addClass('fa-chevron-up')
 			$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[statusvaltemp=hide]`).css('display', 'none')
@@ -1752,7 +1752,7 @@ let v1 = viewModel.RDvsBranchView1
 				$('.pivot-pnl .table-content').css('margin-left', '')
 			}
 			
-			$(e).find('i').removeClass('fa-chevron-down')
+			$(e).find('i').removeClass('fa-chevron-up')
 			$(e).find('i').addClass('fa-chevron-right')
 			$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
@@ -2274,7 +2274,7 @@ let kac = viewModel.keyAccount
 
 	kac.clickExpand = (e) => {
 		let right = $(e).find('i.fa-chevron-right').length
-		let down = $(e).find('i.fa-chevron-down').length
+		let down = $(e).find('i.fa-chevron-up').length
 		if (right > 0){
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -2282,7 +2282,7 @@ let kac = viewModel.keyAccount
 			}
 			
 			$(e).find('i').removeClass('fa-chevron-right')
-			$(e).find('i').addClass('fa-chevron-down')
+			$(e).find('i').addClass('fa-chevron-up')
 			$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[statusvaltemp=hide]`).css('display', 'none')
@@ -2294,7 +2294,7 @@ let kac = viewModel.keyAccount
 				$('.pivot-pnl .table-content').css('margin-left', '')
 			}
 			
-			$(e).find('i').removeClass('fa-chevron-down')
+			$(e).find('i').removeClass('fa-chevron-up')
 			$(e).find('i').addClass('fa-chevron-right')
 			$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
@@ -2542,7 +2542,6 @@ let kac = viewModel.keyAccount
 
 			let boolStatus = false
 			trContent.find('td').each((a,e) => {
-				// console.log(trHeader.find('td:eq(0)').text(),$(e).text())
 				if ($(e).text() != '0' && $(e).text() != '0.00 %') {
 					boolStatus = true
 				}
@@ -2803,7 +2802,7 @@ let subchan = viewModel.subChannel
 
 	subchan.clickExpand = (e) => {
 		let right = $(e).find('i.fa-chevron-right').length
-		let down = $(e).find('i.fa-chevron-down').length
+		let down = $(e).find('i.fa-chevron-up').length
 		if (right > 0){
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -2811,7 +2810,7 @@ let subchan = viewModel.subChannel
 			}
 
 			$(e).find('i').removeClass('fa-chevron-right')
-			$(e).find('i').addClass('fa-chevron-down')
+			$(e).find('i').addClass('fa-chevron-up')
 			$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 			$(`tr[statusvaltemp=hide]`).css('display', 'none')
@@ -2824,7 +2823,7 @@ let subchan = viewModel.subChannel
 				$('.pivot-pnl .table-content').css('margin-left', '')
 			}
 			
-			$(e).find('i').removeClass('fa-chevron-down')
+			$(e).find('i').removeClass('fa-chevron-up')
 			$(e).find('i').addClass('fa-chevron-right')
 			$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 			$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
@@ -3781,7 +3780,6 @@ let dsbrd = viewModel.dashboard
 
 				$(sel).on('mouseenter', function () {
 					let index = $(this).index()
-					console.log(this, index)
 			        let elh = $(`.grid-dashboard .k-grid-content-locked tr:eq(${index})`).addClass('hover')
 			        let elc = $(`.grid-dashboard .k-grid-content tr:eq(${index})`).addClass('hover')
 				})

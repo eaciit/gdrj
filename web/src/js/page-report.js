@@ -643,12 +643,12 @@ rpt.hardcodePLGA = (data, plmodels) => {
 rpt.showExpandAll = (a) => {
 	if (a == true) {
 		$(`tr.dd`).find('i').removeClass('fa-chevron-right')
-		$(`tr.dd`).find('i').addClass('fa-chevron-down')
+		$(`tr.dd`).find('i').addClass('fa-chevron-up')
 		$(`tr[idparent]`).css('display', '')
 		$(`tr[idcontparent]`).css('display', '')
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
 	} else {
-		$(`tr.dd`).find('i').removeClass('fa-chevron-down')
+		$(`tr.dd`).find('i').removeClass('fa-chevron-up')
 		$(`tr.dd`).find('i').addClass('fa-chevron-right')
 		$(`tr[idparent]`).css('display', 'none')
 		$(`tr[idcontparent]`).css('display', 'none')
@@ -912,8 +912,8 @@ rpt.refreshchildadd = (e) => {
 	$(`.table-header tbody>tr[idparent=${e}]`).each(function( i ) {
 		$trElem = $(this)
 		$columnElem = $(`.table-content tbody>tr[idpl=${$trElem.attr('idheaderpl')}]`)
-		$trElem.insertAfter($(`tr[idheaderpl=${$trElem.attr('idparent')}]`))
-		$columnElem.insertAfter($(`tr[idpl=${$trElem.attr('idparent')}]`))
+		$trElem.insertBefore($(`tr[idheaderpl=${$trElem.attr('idparent')}]`))
+		$columnElem.insertBefore($(`tr[idpl=${$trElem.attr('idparent')}]`))
 	})
 }
 
@@ -930,7 +930,7 @@ rpt.hideAllChild = (PLCode) => {
 		let child = $(`tr[idparent=${$trElem.attr('idheaderpl')}]`).length
 		if (child > 0) {
 			let $c = $(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`)
-			$($c).find('i').removeClass('fa-chevron-down')
+			$($c).find('i').removeClass('fa-chevron-up')
 			$($c).find('i').addClass('fa-chevron-right')
 			$(`tr[idparent=${$c.attr('idheaderpl')}]`).css('display', 'none')
 			$(`tr[idcontparent=${$c.attr('idheaderpl')}]`).css('display', 'none')
@@ -951,7 +951,7 @@ rpt.export = (target, title, mode) => {
 	target = toolkit.$(target)
 
 	if (mode == 'kendo') {
-		let rowdata = [], cellval = {}, cells = []
+		let rowdata = [], cellval = {}, cells = [], headertype = ""
 		let tableHeaderLock = target.find('.k-grid-header-locked')
 		let tableHeader = target.find('.k-grid-header-wrap')
 		let tableContentLock = target.find('.k-grid-content-locked')
@@ -996,12 +996,15 @@ rpt.export = (target, title, mode) => {
 			cells = []
 			$(e).find('td').each((i, e) => {
 				cellval = {}
-				cellval['value'] = $(e).html()
+				headertype = parseFloat($(e).html().replace(/,/g , ""))
+				if (isNaN(parseFloat(headertype)) == true)
+					headertype = $(e).html()
+				cellval['value'] = headertype
 				cells.push(cellval)
 			})
 			tableContent.find(`tr:eq(${i}) td`).each((i, e) => {
 				cellval = {}
-				cellval['value'] = $(e).html().replace(/,/g , "")
+				cellval['value'] = parseFloat($(e).html().replace(/,/g , ""))
 				cells.push(cellval)
 			})
 			rowdata.push({cells:cells})
