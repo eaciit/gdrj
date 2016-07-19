@@ -176,8 +176,10 @@ func processTable(tn string) error {
 
 		for channel, total := range totals {
 			mrk := toolkit.M{}
-			mrkkey := key
-			mrk.Set("key", mrkkey)
+			mrkkey := toolkit.M{}
+			for k, v := range key {
+				mrkkey.Set(k, v)
+			}
 			mrkkey.Set("trxsrc", "pushrdreversesbymks")
 			mrkkey.Set("customer_reportchannel", channel)
 			mrkkey.Set("customer_channelname", channel)
@@ -190,6 +192,7 @@ func processTable(tn string) error {
 			mrsales := -salesvalue * total.Expect
 			mrgross := -grossvalue * total.Expect
 			mrdiscount := mrsales - mrgross
+			mrk.Set("key", mrkkey)
 			mrk.Set("PL1", mrgross)
 			mrk.Set("PL7", mrdiscount)
 			mrk.Set("PL8A", mrsales)
