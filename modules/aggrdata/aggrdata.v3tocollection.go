@@ -107,7 +107,7 @@ func main() {
 			// toolkit.Println(k)
 			tkm.Set("_id", k)
 			_ = conn.NewQuery().
-				From("salespls-summary-exp").
+				From("salespls-summary-2016-vdistrd").
 				SetConfig("multiexec", true).
 				Save().Exec(toolkit.M{}.Set("data", tkm))
 		}
