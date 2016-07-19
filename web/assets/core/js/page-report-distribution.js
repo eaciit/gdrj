@@ -484,6 +484,10 @@ sd.refresh = function () {
 				return;
 			}
 
+			if (res.Data.Data.length == 0) {
+				$('.grid-sales-dist').html('No data found');
+			}
+
 			sd.oldData(res);
 			sd.contentIsLoading(false);
 			sd.render(res);
