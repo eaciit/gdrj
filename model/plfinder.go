@@ -324,14 +324,14 @@ func (s *PLFinderParam) GetTableName() string {
 	}
 
 	if len(sample) == 0 {
-		return tableName
+		return `salespls-summary`
 	}
 
 	if sample[0].Has("key") {
 		s.TableKey = "key"
 	}
 
-	return tableName
+	return `salespls-summary`
 }
 
 func (s *PLFinderParam) ConnectToDB() (*mgo.Database, *mgo.Session, error) {

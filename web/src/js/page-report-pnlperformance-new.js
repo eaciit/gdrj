@@ -3928,13 +3928,24 @@ let rank = viewModel.dashboardRanking
 
 let MEJIK_FUNC = (() => {
 	combinations([
+		"date.quartertxt",
+		"date.month",
+
 		"customer.reportsubchannel",
 		"customer.reportchannel",
+
 		"customer.channelid",
+
+		"customer.region",
+		"customer.zone",
+		"customer.areaname",
+		"customer.branchname",
+
 		"customer.keyaccount",
+		"customer.customergroup",
+		"customer.customergroupname",
+
 		"product.brand",
-		"customer.branch",
-		"customer.customergroupname"
 	]).map((d) => {
 		if (d.indexOf("customer.channelid") > -1) {
 			d.push("customer.channelname")
@@ -3949,22 +3960,22 @@ let MEJIK_FUNC = (() => {
 		"date_quartertxt",
 		"date_month",
 
-		"customer_reportchannel",
-		"customer_reportsubchannel",
+		"customer_reportchannel", // OK
+		"customer_reportsubchannel", // OK
 
-		"customer_channelid",
-		"customer_channelname",
+		"customer_channelid", // OK
+		"customer_channelname", // OK
 
 		"customer_region",
 		"customer_zone",
 		"customer_areaname",
-		"customer_branchname",
+		"customer_branchname", // OK
 
-		"customer_keyaccount",
-		"customer_customergroup",
-		"customer_customergroupname",
+		"customer_keyaccount", // OK
+		"customer_customergroup", // OK
+		"customer_customergroupname", // OK
 
-		"product_brand",
+		"product_brand", // OK
 	]
 })
 
