@@ -179,8 +179,8 @@ func processTable(tn string) error {
 			mrkkey := key
 			mrk.Set("key", mrkkey)
 			mrkkey.Set("trxsrc", "pushrdreverse")
-			mrk.Set("customer_reportchannel", channel)
-			mrk.Set("customer_channelname", channel)
+			mrkkey.Set("customer_reportchannel", channel)
+			mrkkey.Set("customer_channelname", channel)
 			if channel == "MT" {
 				mrk.Set("customer_channelid", "I3")
 			} else if channel == "GT" {
