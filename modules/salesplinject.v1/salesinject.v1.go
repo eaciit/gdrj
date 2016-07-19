@@ -179,7 +179,7 @@ func prepmastercalc() {
 
 	toolkit.Println("--> RAW DATA PL")
 	promos, freight, depreciation := map[string]toolkit.M{}, map[string]*gdrj.RawDataPL{}, map[string]float64{}
-	royalties, royaltiesamount, damages := map[string]float64{}, float64, map[string]float64{}
+	royalties, royaltiesamount, damages := map[string]float64{}, float64(0), map[string]float64{}
 	sgapls := map[string]toolkit.M{}
 
 	csrpromo, _ := gdrj.Find(new(gdrj.RawDataPL), f, nil)
@@ -491,7 +491,7 @@ func prepmastergrossproc() {
 	grossbymonthchannel, grossbymonthbrandchannel := toolkit.M{}, toolkit.M{}
 
 	toolkit.Println("--> Trx Gross Proc")
-	csr01, _ := conn.NewQuery().From("salestrxs-grossproc").
+	csr01, _ := conn.NewQuery().From("salestrxs2016vdistrd-grossproc").
 		Where(dbox.Ne("src", "DISCOUNT")).
 		// Where(dbox.And(dbox.Eq("custcheck", true), dbox.Ne("src", "DISCOUNT"))).
 		Cursor(nil)
@@ -585,7 +585,12 @@ func main() {
 
 	toolkit.Printfn("Run : %v", t0)
 
-	c, _ := gdrj.Find(new(gdrj.SalesTrx), f, nil)
+	// c, _ := gdrj.Find(new(gdrj.SalesTrx), f, nil)
+	c, _ := conn.NewQuery().Select().
+		From("salestrxs2016vdistrd").
+		Where(f).
+		Cursor(nil)
+
 	defer c.Close()
 
 	count := c.Count()
@@ -666,24 +671,24 @@ func workerproc(wi int, jobs <-chan *gdrj.SalesTrx, result chan<- string) {
 		pl.RatioCalc(masters)
 
 		//calculate process -- better not re-run
-		pl.CalcCOGSRev(masters) //check	0 value
+		// pl.CalcCOGSRev(masters) //check	0 value
 
-		pl.CalcSGARev(masters)
+		// pl.CalcSGARev(masters)
 
 		//calculate process
-		pl.CalcFreight(masters)
-		pl.CalcDepre(masters)
-		pl.CalcDamage(masters)
-		pl.CalcDepre(masters)
-		pl.CalcRoyalties(masters)
-		pl.CalcDiscountActivity(masters) //check 0 value
-		pl.CalcPromo(masters)
-		pl.CalcSum(masters)
+		// pl.CalcFreight(masters)
+		// pl.CalcDepre(masters)
+		// pl.CalcDamage(masters)
+		// pl.CalcDepre(masters)
+		pl.CalcRoyalties2016(masters)
+		// pl.CalcDiscountActivity(masters) //check 0 value
+		// pl.CalcPromo(masters)
+		// pl.CalcSum(masters)
 
 		pl.CalcSales(masters)
 		pl.CalcSum(masters)
 
-		tablename := toolkit.Sprintf("%v-1", pl.TableName())
+		tablename := toolkit.Sprintf("%v-2016vdistrd", pl.TableName())
 		workerconn.NewQuery().From(tablename).
 			Save().Exec(toolkit.M{}.Set("data", pl))
 
