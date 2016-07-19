@@ -16,26 +16,26 @@ rpt.filter = [
 		{ _id: 'Branch', from: 'Branch', title: 'Branch' },
 		{ _id: 'Brand', from: 'Brand', title: 'Brand' },
 		{ _id: 'Channel', from: 'Channel', title: 'Channel' },
-		{ _id: 'RegionC', from: 'Region', title: 'Region' },
+		{ _id: 'Region', from: 'Region', title: 'Region' },
 		// { _id: 'From', from: 'From' },
 		// { _id: 'To', from: 'To' },
 	] },
 	{ _id: 'geo', group: 'Geographical', sub: [
 		{ _id: 'Zone', from: 'Zone', title: 'Zone' },
-		{ _id: 'Region', from: 'Region', title: 'Region' },
+		// { _id: 'Region', from: 'Region', title: 'Region' },
 		{ _id: 'Area', from: 'MasterArea', title: 'City' }
 	] },
 	{ _id: 'customer', group: 'Customer', sub: [
-		{ _id: 'ChannelC', from: 'Channel', title: 'Channel' },
+		// { _id: 'ChannelC', from: 'Channel', title: 'Channel' },
 		{ _id: 'KeyAccount', from: 'KeyAccount', title: 'Key Account' },
 		{ _id: 'CustomerGroup', from: 'CustomerGroup', title: 'Group' },
-		{ _id: 'Customer', from: 'Customer', title: 'Outlet' },
+		// { _id: 'Customer', from: 'Customer', title: 'Outlet' },
 		{ _id: 'Distributor', from: 'MasterDistributor', title: 'Distributor' }
 	] },
 	{ _id: 'product', group: 'Product', sub: [
 		{ _id: 'HBrandCategory', from: 'HBrandCategory', title: 'Group' },
-		{ _id: 'BrandP', from: 'Brand', title: 'Brand' },
-		{ _id: 'Product', from: 'Product', title: 'SKU' }
+		// { _id: 'BrandP', from: 'Brand', title: 'Brand' },
+		// { _id: 'Product', from: 'Product', title: 'SKU' }
 	] },
 	// { _id: 'profit_center', group: 'Profit Center', sub: [
 	// 	{ _id: 'Entity', from: 'Entity', title: 'Entity' },
@@ -129,9 +129,9 @@ rpt.pivotModel = [
 rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYear) => {
 	let res = [
 		{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() },
-		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat(rpt.value.BrandP()) },
-		{ 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat(rpt.value.ChannelC()) },
-		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat(rpt.value.RegionC()) },
+		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat([]) },
+		{ 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat([]) },
+		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat([]) },
 		// { 'Field': 'date.year', 'Op': '$gte', 'Value': rpt.value.From() },
 		// { 'Field': 'date.year', 'Op': '$lte', 'Value': rpt.value.To() },
 		
@@ -142,12 +142,12 @@ rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYea
 		// ---> Channel OK
 		{ 'Field': 'customer.keyaccount', 'Op': '$in', 'Value': rpt.value.KeyAccount() },
 		{ 'Field': 'customer.customergroup', 'Op': '$in', 'Value': rpt.value.CustomerGroup() },
-		{ 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
+		// { 'Field': 'customer.name', 'Op': '$in', 'Value': rpt.value.Customer() },
 		{ 'Field': 'customer.reportsubchannel', 'Op': '$in', 'Value': rpt.value.Distributor() },
 
 		{ 'Field': 'product.brandcategoryid', 'Op': '$in', Value: rpt.value.HBrandCategory() },
 		// ---> Brand OK
-		{ 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() },
+		// { 'Field': 'product.name', 'Op': '$in', 'Value': rpt.value.Product() },
 	]
 
 	if (fiscalField !== false) {
@@ -456,7 +456,7 @@ rpt.filterMultiSelect = (d) => {
 					rpt.masterData[e].push({ _id: "OTHER", Name: "OTHER" })
 				})
 
-				rpt.masterData.RegionC(rpt.masterData.Region())
+				// rpt.masterData.RegionC(rpt.masterData.Region())
 			})
 		}
 	} else {
