@@ -21,7 +21,7 @@ var (
 	yearttxt                    = "2016"
 	sourcetablename             = "salespls-summary-" + yearttxt + "-vdistrd"
 	calctablename               = "salespls-summary"
-	desttablename               = "salespls-summary-afterrdcopy"
+	desttablename               = "salespls-summary"
 	t0                          time.Time
 	fiscalyear, iscount, scount int
 	data                        map[string]float64
