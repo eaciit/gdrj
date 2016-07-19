@@ -39,6 +39,21 @@ type plalloc struct {
 	Absorbed float64
 }
 
+func validplcode(k string) bool {
+	if k == "PL7A" {
+		return true
+	} else if k == "PL28" {
+		return true
+	} else if strings.HasPrefix(k, "PL29A") ||
+		strings.HasPrefix(k, "PL31") ||
+		strings.HasPrefix(k, "PL33") ||
+		strings.HasPrefix(k, "PL34") ||
+		strings.HasPrefix(k, "PL35") {
+		return true
+	}
+	return false
+}
+
 type allocmap map[string]*plalloc
 
 var plallocs = allocmap{}
@@ -205,23 +220,13 @@ func processTable(tn string) error {
 		mrr.Set("_id", id+"_reverse")
 
 		for k, v := range mr {
-			for _, plcode := range plcodes {
-				codevalid := false
-				if strings.HasSuffix(plcode, "*") {
-					trimmedplcode := strings.Replace(plcode, "*", "", -1)
-					codevalid = strings.HasPrefix(k, trimmedplcode)
-				} else {
-					codevalid = plcode == k
-				}
-
-				if codevalid {
-					value := v.(float64)
-					if value != 0 {
-						plvalue := -v.(float64) * ratio
-						toolkit.Printfn("plvalue: %v - %v - %v", v, plvalue, ratio)
-						return nil
-						mrr.Set(k, plvalue)
-					}
+			codevalid := validplcode(k)
+			if codevalid {
+				value := v.(float64)
+				if value != 0 {
+					plvalue := -v.(float64) * ratio
+					toolkit.Printfn("plvalue: %v - %v - %v", v, plvalue, ratio)
+					mrr.Set(k, plvalue)
 				}
 			}
 		}
@@ -246,16 +251,10 @@ func processTable(tn string) error {
 		mrrd.Set("_id", id+"_rd")
 
 		for k, v := range mr {
-			for _, plcode := range plcodes {
-				codevalid := false
-				if strings.HasSuffix(plcode, "*") {
-					trimmedplcode := strings.Replace(plcode, "*", "", -1)
-					codevalid = strings.HasPrefix(k, trimmedplcode)
-				} else {
-					codevalid = plcode == k
-				}
-
-				if codevalid {
+			codevalid := validplcode(k)
+			if codevalid {
+				value := v.(float64)
+				if value != 0 {
 					plvalue := v.(float64) * ratio
 					mrrd.Set(k, plvalue)
 				}
