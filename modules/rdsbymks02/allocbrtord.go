@@ -225,7 +225,7 @@ func processTable(tn string) error {
 				value := v.(float64)
 				if value != 0 {
 					plvalue := -v.(float64) * ratio
-					toolkit.Printfn("plvalue: %v - %v - %v", v, plvalue, ratio)
+					//toolkit.Printfn("plvalue: %v - %v - %v", v, plvalue, ratio)
 					mrr.Set(k, plvalue)
 				}
 			}
