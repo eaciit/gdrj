@@ -860,6 +860,40 @@ func prepmastertotsalesrd2016vdist() {
 	masters.Set("totsalesrd2016vdistcd11", totsalesrd2016vdistcd11)
 }
 
+func prepmasterrollback() {
+	toolkit.Println("--> Roll back data to for salespls-summary")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-s12072016").Cursor(nil)
+	defer csr.Close()
+
+	salesplssummary := toolkit.M{}
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		// dtkm, _ := toolkit.ToM(tkm.Get("key"))
+
+		// brand := dtkm.GetString("product_brand")
+		// // v := salesplsbrand.GetFloat64(brand) + tkm.GetFloat64("PL8A")
+		// // salesplsbrand.Set(brand, v)
+		// arrpladv := []string{"PL28I", "PL28A", "PL28B", "PL28C", "PL28D", "PL28E", "PL28F", "PL28G", "PL28H"}
+		// for _, str := range arrpladv {
+		// 	skey := toolkit.Sprintf("%s_%s", brand, str)
+		// 	v := salesplsadvbrand.GetFloat64(skey) + tkm.GetFloat64(str)
+		// 	salesplsadvbrand.Set(skey, v)
+		// }
+
+		salesplssummary.Set(tkm.GetString("_id"), tkm)
+	}
+
+	masters.Set("salesplssummary", salesplssummary)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -872,10 +906,10 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
-	prepmastertotsalesrd2016vdist()
+	// prepmastertotsalesrd2016vdist()
 
 	// prepmastertotaldiscactivity()
-	// prepmasterrollback()
+	prepmasterrollback()
 
 	// prepmastercustomergroup()
 
@@ -892,7 +926,7 @@ func main() {
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-2016-vdistrd").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -1408,12 +1442,35 @@ func CleanAndUpdateRD2016Vdist(tkm toolkit.M) {
 	tkm.Set("PL2", val)
 }
 
+//RollbackSalesplsSga 19-07-2016, to 12-07-2016
+func RollbackSalesplsSga(tkm toolkit.M) {
+	if !masters.Has("salesplssummary") {
+		return
+	}
+
+	salesplssummary := masters["salesplssummary"].(toolkit.M)
+	if !salesplssummary.Has(tkm.GetString("_id")) {
+		return
+	}
+
+	salesplssummaryline := salesplssummary[tkm.GetString("_id")].(toolkit.M)
+	sgagroups := []string{"R&D", "Sales", "General Service", "General Management", "Manufacturing",
+		"Finance", "Marketing", "Logistic Overhead", "Human Resource", "Other"}
+	sgapl := []string{"PL33", "PL34", "PL35"}
+	for _, sga := range sgagroups {
+		for _, pl := range sgapl {
+			dbfield := toolkit.Sprintf("%s_%s", pl, sga)
+			tkm.Set(dbfield, salesplssummaryline.GetFloat64(dbfield))
+		}
+	}
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-2016-vdistrd-upd").
+		From("salespls-summary-checksga").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1440,7 +1497,9 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CleanUpdateCOGSAdjustRdtoMt(trx)
 
 		// AllocateDiscountActivity(trx)
-		CleanAndUpdateRD2016Vdist(trx)
+		// CleanAndUpdateRD2016Vdist(trx)
+
+		RollbackSalesplsSga(trx)
 		CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
