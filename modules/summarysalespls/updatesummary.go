@@ -624,9 +624,11 @@ func prepmastersgacalcrev() {
 
 	for chid, challocs := range m {
 		totalchexpect := alloc[chid] * totalsga
-		for _, dcsga := range challocs {
+		toolkit.Printfn("%s : %v ", chid, totalchexpect)
+		for dcid, dcsga := range challocs {
 			dcsga.RatioNow = toolkit.Div(dcsga.TotalNow, totalsgach[chid])
 			dcsga.TotalExpect = totalchexpect * toolkit.Div(dcsga.TotalSales, totalsalesch[chid])
+			toolkit.Printfn("%s_%s : %v ", chid, dcid, dcsga.TotalExpect)
 		}
 	}
 
