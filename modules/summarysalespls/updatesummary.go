@@ -859,9 +859,9 @@ func prepmastertotsalesrd2016vdist() {
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
 
 		if dtkm.GetString("customer_branchid") == "CD04" {
-			totsalesrd2016vdistcd04 += tkm.GetFloat64("PL2")
+			totsalesrd2016vdistcd04 += tkm.GetFloat64("grossamount")
 		} else {
-			totsalesrd2016vdistcd11 += tkm.GetFloat64("PL2")
+			totsalesrd2016vdistcd11 += tkm.GetFloat64("grossamount")
 		}
 
 	}
@@ -1435,16 +1435,16 @@ func CleanAndUpdateRD2016Vdist(tkm toolkit.M) {
 	}
 
 	dtkm, _ := toolkit.ToM(tkm.Get("key"))
-	allocvalue := float64(511572928) //CD11
+	expectvalue := float64(33378754839) //CD11
 	totdiv := masters.GetFloat64("totsalesrd2016vdistcd11")
 	if dtkm.GetString("customer_branchid") == "CD04" {
-		allocvalue = float64(2149301417)
+		expectvalue = float64(254724083443)
 		totdiv = masters.GetFloat64("totsalesrd2016vdistcd04")
 	}
 
 	tkm.Set("PL8", -tkm.GetFloat64("discountamount"))
 
-	val := tkm.GetFloat64("PL2") + (allocvalue * tkm.GetFloat64("PL2") / totdiv) + tkm.GetFloat64("discountamount")
+	val := tkm.GetFloat64("grossamount") + ((expectvalue - totdiv) * tkm.GetFloat64("grossamount") / totdiv) + tkm.GetFloat64("discountamount")
 	tkm.Set("PL2", val)
 }
 
