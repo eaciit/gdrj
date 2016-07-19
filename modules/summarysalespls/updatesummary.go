@@ -936,7 +936,7 @@ func main() {
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-2015-vdistrd").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-2016-vdistrd").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -1484,7 +1484,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-2015-vdistrd").
+		From("salespls-summary-2016-vdistrd").
 		SetConfig("multiexec", true).
 		Save()
 
