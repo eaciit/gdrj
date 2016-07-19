@@ -231,7 +231,7 @@ func processTable(tn string) error {
 		mrrdkey.Set("customer_reportchannel", "RD")
 		mrrdkey.Set("customer_channelname", "RD")
 		mrrd.Set("key", mrrdkey)
-		mrrd.Set("_id", id+"_reverse")
+		mrrd.Set("_id", id+"_rd")
 
 		for k, v := range mrrd {
 			for _, plcode := range plcodes {
