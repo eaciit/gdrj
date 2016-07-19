@@ -192,7 +192,7 @@ func processTable(tn string) error {
 		//-- logging
 		i++
 		makeProgressLog("Processing", i, count, 5, &mstone, t0)
-		toolkit.Printfn("Processing: %s", toolkit.JsonString(mr))
+		//toolkit.Printfn("Processing: %s", toolkit.JsonString(mr))
 
 		//-- keyes
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
