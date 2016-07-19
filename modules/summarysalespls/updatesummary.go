@@ -859,9 +859,9 @@ func prepmastertotsalesrd2016vdist() {
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
 
 		if dtkm.GetString("customer_branchid") == "CD04" {
-			totsalesrd2016vdistcd04 += tkm.GetFloat64("PL2")
+			totsalesrd2016vdistcd04 += tkm.GetFloat64("grossamount")
 		} else {
-			totsalesrd2016vdistcd11 += tkm.GetFloat64("PL2")
+			totsalesrd2016vdistcd11 += tkm.GetFloat64("grossamount")
 		}
 
 	}
@@ -916,7 +916,7 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
-	// prepmastertotsalesrd2016vdist()
+	prepmastertotsalesrd2016vdist()
 
 	// prepmastertotaldiscactivity()
 	// prepmasterrollback()
@@ -1433,22 +1433,18 @@ func CleanAndUpdateRD2016Vdist(tkm toolkit.M) {
 	if !masters.Has("totsalesrd2016vdistcd04") && !masters.Has("totsalesrd2016vdistcd11") {
 		return
 	}
-	// masters.Set("totsalesrd2016vdistcd04", totsalesrd2016vdistcd04)
-	// 	masters.Set("totsalesrd2016vdistcd11", totsalesrd2016vdistcd11)
-	dtkm, _ := toolkit.ToM(tkm.Get("key"))
 
-	allocvalue := float64(511572928) //CD11
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	expectvalue := float64(33378754839) //CD11
 	totdiv := masters.GetFloat64("totsalesrd2016vdistcd11")
 	if dtkm.GetString("customer_branchid") == "CD04" {
-		allocvalue = float64(2149301417)
+		expectvalue = float64(254724083443)
 		totdiv = masters.GetFloat64("totsalesrd2016vdistcd04")
 	}
-	// CD04 := float64(2149301417)
 
-	// totsalesrd2016vdist := masters.GetFloat64("totsalesrd2016vdist")
-	tkm.Set("PL8", float64(0))
+	tkm.Set("PL8", -tkm.GetFloat64("discountamount"))
 
-	val := tkm.GetFloat64("PL2") + (allocvalue * tkm.GetFloat64("PL2") / totdiv)
+	val := tkm.GetFloat64("grossamount") + ((expectvalue - totdiv) * tkm.GetFloat64("grossamount") / totdiv) + tkm.GetFloat64("discountamount")
 	tkm.Set("PL2", val)
 }
 
@@ -1484,7 +1480,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-2016-vdistrd").
+		From("salespls-summary-2016-vdistrd_upd").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1511,10 +1507,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CleanUpdateCOGSAdjustRdtoMt(trx)
 
 		// AllocateDiscountActivity(trx)
-		// CleanAndUpdateRD2016Vdist(trx)
+		CleanAndUpdateRD2016Vdist(trx)
 
 		// RollbackSalesplsSga(trx)
-		CalcSalesReturnMinusDiscount(trx)
+		// CalcSalesReturnMinusDiscount(trx)
 		CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
