@@ -331,7 +331,7 @@ func (s *PLFinderParam) GetTableName() string {
 		s.TableKey = "key"
 	}
 
-	return `salespls-summary`
+	return tableName
 }
 
 func (s *PLFinderParam) ConnectToDB() (*mgo.Database, *mgo.Session, error) {
