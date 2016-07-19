@@ -184,9 +184,9 @@ func processTable(tn string) error {
 			mrkkey.Set("customer_reportchannel", channel)
 			mrkkey.Set("customer_channelname", channel)
 			if channel == "MT" {
-				mrk.Set("customer_channelid", "I3")
+				mrkkey.Set("customer_channelid", "I3")
 			} else if channel == "GT" {
-				mrk.Set("customer_channelid", "I2")
+				mrkkey.Set("customer_channelid", "I2")
 			}
 
 			mrsales := -salesvalue * total.Expect
