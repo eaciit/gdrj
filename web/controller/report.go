@@ -43,6 +43,17 @@ func (m *ReportController) GetDataBranch(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, res, "")
 }
 
+func (m *ReportController) GetDataMasterBranchGroup(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.MasterBranchGroupGetAll()
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.MasterBranchGroup{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
 func (m *ReportController) GetDataBrand(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 

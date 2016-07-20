@@ -606,9 +606,18 @@
 
 										<div class="form-group">
 											<div class="input-group input-group-sm ez width-full">
-												<span class="input-group-addon align-right" style="width: 110px;">Branches</span>
+												<span class="input-group-addon align-right" style="width: 110px;">Branch</span>
 												<div class="width-full">
 													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionBranch, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterBranch, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Branch Group</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionBranchGroup, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterBranchGroup, placeholder: 'Select one', filter: 'contains' }"></select>
 												</div>
 											</div>
 										</div>
