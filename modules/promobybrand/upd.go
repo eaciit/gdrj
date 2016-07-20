@@ -212,12 +212,13 @@ func processTable(tn string) error {
 		keyalloc := toolkit.Sprintf("%s_%s_%s",
 			fiscal, keyaccountid, brandid)
 		alloc := plallocs[keyalloc]
-		if alloc == nil {
-			continue
-		}
-		adjustment := alloc.Expect - alloc.Current
+		adjustment := float64(0)
+		salesratio := float64(0)
 		sales := mr.GetFloat64("PL8A")
-		salesratio := toolkit.Div(sales, alloc.Ref1)
+		if alloc == nil {
+			adjustment = alloc.Expect - alloc.Current
+			salesratio = toolkit.Div(sales, alloc.Ref1)
+		}
 
 		spgpromototal := float64(0)
 		spgpromoratios := map[string]float64{}
