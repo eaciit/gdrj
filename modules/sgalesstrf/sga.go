@@ -90,10 +90,11 @@ func buildratio() {
 func processTable() {
 	connsave, _ := modules.GetDboxIConnection("db_godrej")
 	defer connsave.Close()
-	qsave := connsave.NewQuery().From(desttablename).Save()
+	qsave := connsave.NewQuery().SetConfig("multiexec", true).From(desttablename).Save()
 
 	connselect, _ := modules.GetDboxIConnection("db_godrej")
 	defer connselect.Close()
+
 	cursor, _ := connselect.NewQuery().From(calctablename).Select().Cursor(nil)
 	defer cursor.Close()
 
