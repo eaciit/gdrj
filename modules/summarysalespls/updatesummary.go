@@ -578,6 +578,7 @@ func prepmastersgacalcrev() {
 	totalsga := float64(0)
 	totalsgach := map[string]float64{}
 	totalsalesch := map[string]float64{}
+	allsgakey := map[string]float64{}
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	sumnow, _ := diffConn.NewQuery().From("salespls-summary-4sga").
@@ -608,6 +609,7 @@ func prepmastersgacalcrev() {
 
 				totalsga += cvalsga
 				totalsgach[channelid] += cvalsga
+				allsgakey[sgakey] += cvalsga
 
 				dcsga, dcsgaexist := mchannel[sgakey]
 				if !dcsgaexist {
@@ -629,6 +631,10 @@ func prepmastersgacalcrev() {
 			dcsga.RatioNow = toolkit.Div(dcsga.TotalNow, totalsgach[chid])
 			// dcsga.TotalExpect = totalchexpect * toolkit.Div(dcsga.TotalSales, totalsalesch[chid])
 			dcsga.TotalExpect = totalchexpect * dcsga.RatioNow
+			if chid == "I1" {
+				dcsga.TotalExpect = allsgakey[dcid] * alloc[chid]
+			}
+
 			toolkit.Printfn("%s_%s : %v ", chid, dcid, dcsga.TotalExpect)
 		}
 	}
@@ -853,9 +859,9 @@ func prepmastertotsalesrd2016vdist() {
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
 
 		if dtkm.GetString("customer_branchid") == "CD04" {
-			totsalesrd2016vdistcd04 += tkm.GetFloat64("PL2")
+			totsalesrd2016vdistcd04 += tkm.GetFloat64("grossamount")
 		} else {
-			totsalesrd2016vdistcd11 += tkm.GetFloat64("PL2")
+			totsalesrd2016vdistcd11 += tkm.GetFloat64("grossamount")
 		}
 
 	}
@@ -898,6 +904,27 @@ func prepmasterrollback() {
 	masters.Set("salesplssummary", salesplssummary)
 }
 
+func prepmasterbranchgroup() {
+	toolkit.Println("--> Prepare data to for branchgroup")
+
+	csr, _ := conn.NewQuery().Select().From("branchgroup").Cursor(nil)
+	defer csr.Close()
+
+	branchgroup := toolkit.M{}
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		branchgroup.Set(tkm.GetString("_id"), tkm)
+	}
+
+	masters.Set("branchgroup", branchgroup)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -910,6 +937,7 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
+	prepmasterbranchgroup()
 	// prepmastertotsalesrd2016vdist()
 
 	// prepmastertotaldiscactivity()
@@ -917,7 +945,7 @@ func main() {
 
 	// prepmastercustomergroup()
 
-	prepmastersgacalcrev()
+	// prepmastersgacalcrev()
 	// prepmasterratiomapsalesreturn2016()
 	// prepmasterdiffsalesreturn2016()
 	// prepmastersalesreturn()
@@ -930,7 +958,7 @@ func main() {
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4sga").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -1427,22 +1455,18 @@ func CleanAndUpdateRD2016Vdist(tkm toolkit.M) {
 	if !masters.Has("totsalesrd2016vdistcd04") && !masters.Has("totsalesrd2016vdistcd11") {
 		return
 	}
-	// masters.Set("totsalesrd2016vdistcd04", totsalesrd2016vdistcd04)
-	// 	masters.Set("totsalesrd2016vdistcd11", totsalesrd2016vdistcd11)
-	dtkm, _ := toolkit.ToM(tkm.Get("key"))
 
-	allocvalue := float64(511572928) //CD11
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	expectvalue := float64(33378754839) //CD11
 	totdiv := masters.GetFloat64("totsalesrd2016vdistcd11")
 	if dtkm.GetString("customer_branchid") == "CD04" {
-		allocvalue = float64(2149301417)
+		expectvalue = float64(254724083443)
 		totdiv = masters.GetFloat64("totsalesrd2016vdistcd04")
 	}
-	// CD04 := float64(2149301417)
 
-	// totsalesrd2016vdist := masters.GetFloat64("totsalesrd2016vdist")
-	tkm.Set("PL8", float64(0))
+	tkm.Set("PL8", -tkm.GetFloat64("discountamount"))
 
-	val := tkm.GetFloat64("PL2") + (allocvalue * tkm.GetFloat64("PL2") / totdiv)
+	val := tkm.GetFloat64("grossamount") + ((expectvalue - totdiv) * tkm.GetFloat64("grossamount") / totdiv) + tkm.GetFloat64("discountamount")
 	tkm.Set("PL2", val)
 }
 
@@ -1469,12 +1493,30 @@ func RollbackSalesplsSga(tkm toolkit.M) {
 	}
 }
 
+func CalcSalesReturnMinusDiscount(tkm toolkit.M) {
+	tkm.Set("PL8", -tkm.GetFloat64("discountamount"))
+}
+
+func CleanAddBranchGroup(tkm toolkit.M) {
+	if !masters.Has("branchgroup") {
+		return
+	}
+
+	branchgroups := masters["branchgroup"].(toolkit.M)
+
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	branchgroup := branchgroups.Get(dtkm.GetString("customer_branchid"), toolkit.M{}).(toolkit.M)
+
+	dtkm.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
+	tkm.Set("key", dtkm)
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4sgaalloc").
+		From("salespls-summary-afterbranch").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1491,7 +1533,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
 		// CalcSalesVDist20142015(trx)
-		CalcSgaRev(trx)
+		// CalcSgaRev(trx)
 
 		// CleanUpdateCustomerGroupName(trx)
 
@@ -1503,8 +1545,11 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// AllocateDiscountActivity(trx)
 		// CleanAndUpdateRD2016Vdist(trx)
 
+		CleanAddBranchGroup(trx)
+
 		// RollbackSalesplsSga(trx)
-		CalcSum(trx)
+		// CalcSalesReturnMinusDiscount(trx)
+		// CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
