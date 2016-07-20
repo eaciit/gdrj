@@ -215,7 +215,7 @@ func processTable(tn string) error {
 		adjustment := float64(0)
 		salesratio := float64(0)
 		sales := mr.GetFloat64("PL8A")
-		if alloc == nil {
+		if alloc != nil {
 			adjustment = alloc.Expect - alloc.Current
 			salesratio = toolkit.Div(sales, alloc.Ref1)
 		}
