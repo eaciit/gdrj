@@ -212,7 +212,7 @@ func processTable(tn string) error {
 		keyalloc := toolkit.Sprintf("%s_%s_%s",
 			fiscal, keyaccountid, brandid)
 		alloc := plallocs[keyalloc]
-		if alloc != nil {
+		if alloc == nil {
 			continue
 		}
 		adjustment := alloc.Expect - alloc.Current
