@@ -4,9 +4,10 @@ import (
 	"eaciit/gdrj/model"
 	"eaciit/gdrj/modules"
 	"os"
-	"strings"
 
 	"time"
+
+	"strings"
 
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/orm/v1"
@@ -21,7 +22,6 @@ var (
 	plcodes = []string{"PL7A", "PL29A*", "Pl31*", "PL28",
 		"PL33*", "PL34*", "PL35*"}
 	branchids                   = []string{"CD04", "CD11"}
-	trxsource                   = "rdsbymksadj"
 	sourcetablename             = "salespls-summary"
 	calctablename               = "salespls-summary"
 	desttablename               = "salespls-summary"
@@ -32,130 +32,101 @@ var (
 )
 
 type plalloc struct {
-	Key      string
-	Ref1     float64
-	Current  float64
-	Expect   float64
-	Absorbed float64
+	ID               string `bson:"_id" json:"_id"`
+	Key              string
+	Key1, Key2, Key3 string
+	Ref1             float64
+	Current          float64
+	Expect           float64
+	Absorbed         float64
 }
 
-type allocmap map[string]*plalloc
-
-var plallocs = allocmap{}
-var targets = allocmap{}
-var totals = allocmap{}
-
-func adjustAllocs(allocsmap *allocmap, key string, current, expect, absorbed, ref1 float64) {
-	allocs := *allocsmap
-	alloc := allocs[key]
-	if alloc == nil {
-		alloc = new(plalloc)
-		alloc.Key = key
+var (
+	spgpromoratio = map[string]map[string]float64{
+		"2015-2016": {
+			"spg":   0.222142232,
+			"promo": 0.777857768,
+		},
+		"2014-2015": {
+			"spg":   0.191526236,
+			"promo": 0.808473764,
+		},
 	}
-	alloc.Current += current
-	alloc.Expect += expect
-	alloc.Ref1 += ref1
-	alloc.Absorbed += absorbed
-	allocs[key] = alloc
-	*allocsmap = allocs
-}
+
+	destinationtable = "salespls-summary"
+	trxsource        = "promobybrand"
+	spgaccount       = "PL31C"
+	promoaccount     = "PL29A32"
+)
 
 func main() {
-	t0 = time.Now()
-
 	setinitialconnection()
-	defer gdrj.CloseDb()
 	prepmastercalc()
+	conn.NewQuery().From(destinationtable).Where(dbox.Eq("key.trxsrc", trxsource)).Delete().Exec(nil)
 
-	toolkit.Println("Start data query...")
-	tablenames := []string{
-		"salespls-summary"}
+	cursor, _ := conn.NewQuery().From("tmpsgpromobalancing").Select().Cursor(nil)
+	defer cursor.Close()
 
-	for _, tn := range tablenames {
-		e := buildRatio(calctablename)
+	for {
+		rm := toolkit.M{}
+		e := cursor.Fetch(&rm, 1, false)
 		if e != nil {
-			toolkit.Printfn("Build ratio error: %s - %s", tn, e.Error())
+			toolkit.Printfn("error: %s", e.Error())
 			return
 		}
 
-		e = processTable(tn)
-		if e != nil {
-			toolkit.Printfn("Process table error: %s - %s", tn, e.Error())
-			return
+		fiscal := rm.GetString("year")
+		brand := rm.GetString("brand")
+		value := rm.GetFloat64("inject")
+
+		if value != 0 {
+			processTable(fiscal, brand, value)
 		}
 	}
 }
 
-func buildRatio(tn string) error {
+func processTable(fiscal, brand string, value float64) error {
+	connsave, _ := modules.GetDboxIConnection("db_godrej")
+	defer connsave.Close()
 
-	cratios, _ := conn.NewQuery().From("rawpromobybrand").Select().Cursor(nil)
-	defer cratios.Close()
-	for {
-		mr := toolkit.M{}
-		eratio := cratios.Fetch(&mr, 1, false)
-		if eratio != nil {
-			break
+	qsave := connsave.NewQuery().SetConfig("multiexec", true).From(destinationtable).Save()
+	ratio := spgpromoratio[fiscal]
+	fiscals := strings.Split(fiscal, "-")
+	yr0 := toolkit.ToInt(fiscals[0], toolkit.RoundingAuto)
+	for i := 1; i <= 12; i++ {
+		dt := time.Date(yr0, time.Month(i), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
+		gddate := gdrj.NewDate(dt.Year(), int(dt.Month()), dt.Day())
+
+		trx := toolkit.M{}
+		trx.Set(spgaccount, ratio["spg"]*value)
+		trx.Set(promoaccount, ratio["promo"]*value)
+
+		trxkey := toolkit.M{}
+		trxkey.Set("report_channelid", "I2")
+		trxkey.Set("date_fiscal", fiscal)
+		trxkey.Set("date_year", dt.Year())
+		trxkey.Set("date_month", dt.Month())
+		trxkey.Set("date_quartertxt", gddate.QuarterTxt)
+		trxkey.Set("customer_custtype", "")
+		trxkey.Set("customer_branchid", "CD02")
+		trxkey.Set("customer_branchname", "JAKARTA")
+		trxkey.Set("customer_channelname", "GT")
+		trxkey.Set("customer_keyaccount", "GNT")
+		trxkey.Set("customer_reportchannel", "GT")
+		trxkey.Set("trxsrc", trxsource)
+		trxkey.Set("product_brand", brand)
+
+		id := toolkit.Sprintf("%d-%d-%d|%s|%s", dt.Year(), dt.Month(), dt.Day(), brand, trxsource)
+		trx.Set("key", trxkey)
+		trx.Set("_id", id)
+		toolkit.Printfn("Processing %s", id)
+
+		gdrj.CalcSum(trx, masters)
+		esave := qsave.Exec(toolkit.M{}.Set("data", trx))
+		if esave != nil {
+			return esave
 		}
-		keytarget := mr.GetString("_id")
-		value := mr.GetFloat64("target")
-		adjustAllocs(&targets, keytarget, value, 0, 0, 0)
 	}
-
-	cursor, _ := conn.NewQuery().From(calctablename).
-		Select().
-		Cursor(nil)
-	defer cursor.Close()
-
-	i := 0
-	count := cursor.Count()
-	t0 := time.Now()
-	mstone := 0
-
-	for {
-		mr := toolkit.M{}
-		efetch := cursor.Fetch(&mr, 1, false)
-		if efetch != nil {
-			break
-		}
-		i++
-		makeProgressLog("Build Ratio", i, count, 5, &mstone, t0)
-		//-- keyes
-		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		fiscal := key.GetString("date_fiscal")
-		keyaccountid := key.GetString("customer_customergroupname")
-		brandid := key.GetString("product_brand")
-
-		keytarget := toolkit.Sprintf("%s_%s",
-			fiscal, brandid)
-		target := targets[keytarget]
-		if target == nil {
-			continue
-		}
-
-		keyalloc := toolkit.Sprintf("%s_%s_%s",
-			fiscal, keyaccountid, brandid)
-		keyttotal := toolkit.Sprintf("%s_%s",
-			fiscal, keyaccountid)
-
-		sales := mr.GetFloat64("PL8A")
-		spg := mr.GetFloat64("PL31")
-		promo := mr.GetFloat64("PL29A")
-
-		adjustAllocs(&plallocs, keyalloc, spg+promo, 0, 0, sales)
-		adjustAllocs(&totals, keyttotal, spg+promo, 0, 0, sales)
-	}
-
-	for kalloc, valloc := range plallocs {
-		kallocs := strings.Split(kalloc, "_")
-		keyttotal := toolkit.Sprintf("%s_%s", kallocs[0], kallocs[1])
-		keytarget := toolkit.Sprintf("%s_%s", kallocs[0], kallocs[2])
-
-		total := totals[keyttotal]
-		target := targets[keytarget]
-		valloc.Expect = target.Current + valloc.Current/total.Current
-	}
-
-	toolkit.Printfn("PL Alloc:\n%s", toolkit.JsonStringIndent(plallocs, " "))
 	return nil
 }
 
@@ -173,85 +144,6 @@ func makeProgressLog(reference string, i, count, step int, current *int, tstart 
 	}
 	*current = icurrent
 	return icurrent
-}
-
-func processTable(tn string) error {
-	connsave, _ := modules.GetDboxIConnection("db_godrej")
-	defer connsave.Close()
-
-	toolkit.Printfn("Start processing allocation")
-	cursor, _ := conn.NewQuery().From(calctablename).
-		Cursor(nil)
-	defer cursor.Close()
-
-	plmodels := masters.Get("plmodel", map[string]*gdrj.PLModel{}).(map[string]*gdrj.PLModel)
-	qsave := connsave.NewQuery().SetConfig("multiexec", true).From(desttablename).Save()
-
-	count := cursor.Count()
-	i := 0
-	mstone := 0
-	t0 = time.Now()
-	for {
-		mr := toolkit.M{}
-		ef := cursor.Fetch(&mr, 1, false)
-		if ef != nil {
-			break
-		}
-
-		//-- logging
-		i++
-		makeProgressLog("Processing", i, count, 5, &mstone, t0)
-
-		//-- keyes
-		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		fiscal := key.GetString("date_fiscal")
-		keyaccountid := key.GetString("customer_customergroupname")
-		brandid := key.GetString("product_brand")
-
-		//--- scaledown
-		keyalloc := toolkit.Sprintf("%s_%s_%s",
-			fiscal, keyaccountid, brandid)
-		alloc := plallocs[keyalloc]
-		adjustment := float64(0)
-		salesratio := float64(0)
-		sales := mr.GetFloat64("PL8A")
-		if alloc != nil {
-			adjustment = alloc.Expect - alloc.Current
-			salesratio = toolkit.Div(sales, alloc.Ref1)
-		}
-
-		spgpromototal := float64(0)
-		spgpromoratios := map[string]float64{}
-		for plid, plvalue := range mr {
-			validpl := validatePLID(plid, plmodels)
-			if validpl {
-				f64plvalue := plvalue.(float64)
-				spgpromototal += f64plvalue
-				spgpromoratios[plid] = spgpromoratios[plid] + f64plvalue
-			}
-		}
-
-		for plid, plvalue := range mr {
-			validpl := validatePLID(plid, plmodels)
-			if validpl {
-				spgpromoratio := spgpromoratios[plid]
-				f64plvalue := plvalue.(float64)
-				newvalue := toolkit.Div(
-					spgpromoratio*salesratio*adjustment,
-					spgpromototal) + f64plvalue
-				mr.Set(plid, newvalue)
-			}
-		}
-
-		gdrj.CalcSum(mr, masters)
-		esave2 := qsave.Exec(toolkit.M{}.Set("data", mr))
-		if esave2 != nil {
-			return esave2
-		}
-		//key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		//fiscal := key.GetString("date_fiscal")
-	}
-	return nil
 }
 
 func buildmap(holder interface{},
@@ -303,24 +195,4 @@ func setinitialconnection() {
 		toolkit.Println("Initial connection found : ", err)
 		os.Exit(1)
 	}
-}
-
-func validatePLID(plid string, plmodels map[string]*gdrj.PLModel) bool {
-	//-- exit if summary
-	if plid == "PL29A" || plid == "31" {
-		return false
-	}
-
-	//-- gte plmodel and exit if no model
-	plmodel := plmodels[plid]
-	if plmodel == nil {
-		return false
-	}
-
-	if strings.HasPrefix(plmodel.PLHeader2, "SPG Exp") {
-		return true
-	} else if strings.HasPrefix(plmodel.PLHeader2, "Promotions Expense") {
-		return true
-	}
-	return false
 }
