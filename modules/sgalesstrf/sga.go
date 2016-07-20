@@ -123,6 +123,8 @@ func processTable() {
 			value := sales * total2.Expect / total2.Ref1
 			mr.Set("PL34_Other", value)
 		}
+
+		gdrj.CalcSum(mr, masters)
 		esave := qsave.Exec(toolkit.M{}.Set("data", mr))
 		if esave != nil {
 			toolkit.Printfn("Error: %s", esave.Error())
