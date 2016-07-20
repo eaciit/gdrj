@@ -171,7 +171,7 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 		payload.Breakdowns = strings.Split(str, ",")
 		tablename01 := toolkit.Sprintf("%v", payload.GetTableName())
 
-		toolkit.Println("saved tablename : ", tablename01)
+		// toolkit.Println("saved tablename : ", tablename01)
 
 		tkm := toolkit.M{}
 		for _, val := range alldata {
@@ -213,14 +213,14 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 			a := v.(toolkit.M)
 
 			a.Set("_id", k)
-			err := workerconn.NewQuery().
+			_ = workerconn.NewQuery().
 				From(tablename01).
 				SetConfig("multiexec", true).
 				Save().Exec(toolkit.M{}.Set("data", a))
 
-			if err != nil {
-				toolkit.Println("save : ", err)
-			}
+			// if err != nil {
+			// 	toolkit.Println("save : ", err)
+			// }
 		}
 
 		toolkit.Printfn("Saved dimension %v, %d rows", str, len(tkm))
