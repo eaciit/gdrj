@@ -599,6 +599,15 @@
 
 										<div class="form-group">
 											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Cities</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionCity, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterCity, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
 												<span class="input-group-addon align-right" style="width: 110px;">Distributor</span>
 												<div class="width-full">
 													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionDistributor, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterDistributor, placeholder: 'Select one', filter: 'contains' }"></select>
