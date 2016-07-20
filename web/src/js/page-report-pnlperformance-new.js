@@ -3390,6 +3390,12 @@ let subchan = viewModel.subChannel
 			), (d) => d.Name))
 		})
 
+		app.ajaxPost(viewModel.appName + "report/getdatamasterbranchgroup", {}, (res) => {
+			subchan.optionBranchGroup(_.orderBy(res.data.map((d) =>  
+				({ _id: d.Name, Name: d.Name })
+			), (d) => d.Name))
+		})
+
 		app.ajaxPost(viewModel.appName + "report/getdatahgeographi", {}, (res) => {
 			subchan.optionCity(_.orderBy(res.data.map((d) =>  
 				({ _id: d._id, Name: d._id })
@@ -3429,6 +3435,7 @@ let subchan = viewModel.subChannel
 			{ field: 'customer.keyaccount', holder: subchan.filterAccount },
 			{ field: 'product.brand', holder: subchan.filterBrand },
 			{ field: 'customer.branchname', holder: subchan.filterBranch },
+			{ field: 'customer.branchgroup', holder: subchan.filterBranchGroup },
 			{ field: 'customer.areaname', holder: subchan.filterCity },
 			{ field: 'customer.reportsubchannel', holder: subchan.filterDistributor },
 		]
