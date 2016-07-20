@@ -158,6 +158,7 @@ func main() {
 		"date.fiscal,customer.customergroupname",
 		"date.fiscal,date.month",
 		"date.fiscal,date.quartertxt",
+		"date.fiscal,customer.branchgroup",
 	}
 
 	// comblist := []string{"customer.branchname", "product.brand", "customer.channelname",
