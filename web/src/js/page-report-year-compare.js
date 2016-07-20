@@ -119,17 +119,17 @@ yc.render = () => {
 		toolkit.try(() => { o.v2015_ebit_value = data2015[0][plCodeEBIT] / divider })
 		toolkit.try(() => { 
 			o.v2015_ebit_prcnt = (() => {
-				let v2015 = toolkit.number(data2015[0][plCodeEBIT] / total2015_ebit) * 100
-				let v2014 = toolkit.number(data2014[0][plCodeEBIT] / total2014_ebit) * 100
-				return toolkit.number((v2015 - v2014) / v2015) * 100
+				let v2015 = data2015[0][plCodeEBIT]
+				let v2014 = data2014[0][plCodeEBIT]
+				return toolkit.number((v2015 - v2014) / v2014) * 100
 			})()
 		})
 		toolkit.try(() => { o.v2015_nsal_value = data2015[0][plCodeNetSales] / divider })
 		toolkit.try(() => { 
 			o.v2015_nsal_prcnt = (() => {
-				let v2015 = toolkit.number(data2015[0][plCodeNetSales] / total2015_netSales) * 100
-				let v2014 = toolkit.number(data2014[0][plCodeNetSales] / total2014_netSales) * 100
-				return toolkit.number((v2015 - v2014) / v2015) * 100
+				let v2015 = data2015[0][plCodeNetSales]
+				let v2014 = data2014[0][plCodeNetSales]
+				return toolkit.number((v2015 - v2014) / v2014) * 100
 			})()
 		})
 
@@ -138,49 +138,42 @@ yc.render = () => {
 	let op2 = _.orderBy(op1, (d) => d.sorter, 'desc')
 	let dataParsed = op2
 
+	let total = {
+		dimension: 'Total',
+		v2015_ebit_value: toolkit.sum(dataParsed, (d) => d.v2015_ebit_value),
+		v2015_nsal_value: toolkit.sum(dataParsed, (d) => d.v2015_nsal_value),
+		v2014_ebit_value: toolkit.sum(dataParsed, (d) => d.v2014_ebit_value),
+		v2014_nsal_value: toolkit.sum(dataParsed, (d) => d.v2014_nsal_value)
+	}
+	total.v2015_ebit_prcnt = toolkit.number((total.v2015_ebit_value - total.v2014_ebit_value) / total.v2014_ebit_value) * 100
+	total.v2015_nsal_prcnt = toolkit.number((total.v2015_nsal_value - total.v2014_nsal_value) / total.v2014_nsal_value) * 100
+
+	// dataParsed.push(total)
+
+	let dimensionWidth = 140
+	if (yc.breakdownBy() == 'customer.region') {
+		dimensionWidth = 160
+	}
+
+	let tableWidth = 700
+	if (yc.unit() == '1000') {
+		tableWidth += 100
+	}
+	if (yc.unit() == '1000000') {
+		tableWidth += 100
+	}
+	if (yc.unit() == '1000000000') {
+		tableWidth += 100
+	}
+
 	let columns = [{
 		title: dimensionTitle,
 		template: (d) => d.dimension,
 		headerAttributes: { style: 'vertical-align: middle;' },
+		footerTemplate: 'Total',
+		width: dimensionWidth
 		// width: 200,
 		// locked: true
-	}, {
-		title: 'FY 2014-2015',
-		columns: [{
-			title: 'Net Sales',
-			columns: [{
-				title: 'Value',
-				field: 'v2014_nsal_value',
-				format: `{0:n0}`, // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' },
-				// width: 130,
-				// locked: true
-			}, {
-				title: '% Growth',
-				field: 'v2014_nsal_prcnt',
-				format: '{0:n2} %',
-				attributes: { class: 'align-right' },
-				width: 80,
-				// locked: true
-			}]
-		}, {
-			title: 'EBIT',
-			columns: [{
-				title: 'Value',
-				field: 'v2014_ebit_value',
-				format: `{0:n0}`, // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' },
-				// width: 130,
-				// locked: true
-			}, {
-				title: '% Growth',
-				field: 'v2014_ebit_prcnt',
-				format: '{0:n2} %',
-				attributes: { class: 'align-right' },
-				width: 80,
-				// locked: true
-			}]
-		}]
 	}, {
 		title: 'FY 2015-2016',
 		columns: [{
@@ -190,14 +183,15 @@ yc.render = () => {
 				field: 'v2015_nsal_value',
 				format: `{0:n0}`, // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
+				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_value, 'n0')}</div>`,
 				// width: 130,
 				// locked: true
 			}, {
 				title: '% Growth',
 				field: 'v2015_nsal_prcnt',
-				format: '{0:n2} %',
+				format: '{0:n1} %',
 				attributes: { class: 'align-right' },
-				width: 80,
+				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_prcnt, 'n1')} %</div>`,
 				// locked: true
 			}]
 		}, {
@@ -207,14 +201,40 @@ yc.render = () => {
 				field: 'v2015_ebit_value',
 				format: `{0:n0}`, // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
+				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_value, 'n0')}</div>`,
 				// width: 130,
 				// locked: true
 			}, {
 				title: '% Growth',
 				field: 'v2015_ebit_prcnt',
-				format: '{0:n2} %',
+				format: '{0:n1} %',
 				attributes: { class: 'align-right' },
-				width: 80,
+				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_prcnt, 'n1')} %</div>`,
+				// locked: true
+			}]
+		}]
+	}, {
+		title: 'FY 2014-2015',
+		columns: [{
+			title: 'Net Sales',
+			columns: [{
+				title: 'Value',
+				field: 'v2014_nsal_value',
+				format: `{0:n0}`, // ` ${unitSuffix}`,
+				attributes: { class: 'align-right' },
+				footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_nsal_value, 'n0')}</div>`,
+				// width: 130,
+				// locked: true
+			}]
+		}, {
+			title: 'EBIT',
+			columns: [{
+				title: 'Value',
+				field: 'v2014_ebit_value',
+				format: `{0:n0}`, // ` ${unitSuffix}`,
+				attributes: { class: 'align-right' },
+				footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_ebit_value, 'n0')}</div>`,
+				// width: 130,
 				// locked: true
 			}]
 		}]
@@ -227,7 +247,7 @@ yc.render = () => {
 		columns: columns
 	}
 
-	$('#year-comparison').replaceWith(`<div class="breakdown-view ez" id="year-comparison" style="width: 1000px;"></div>`)
+	$('#year-comparison').replaceWith(`<div class="breakdown-view ez" id="year-comparison" style="width: ${tableWidth}px;"></div>`)
 	$('#year-comparison').kendoGrid(config)
 }
 
@@ -239,12 +259,12 @@ yc.changeDimension = (title, args) => {
 	if (args.indexOf('|') > -1) {
 		yc.flag(args.split('|')[1])
 	}
-	
+
 	yc.refresh()
 }
 
 
-vm.currentMenu('Analysis')
+vm.currentMenu('YoY Rev & EBIT')
 vm.currentTitle('&nbsp;')
 vm.breadcrumb([
 	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },

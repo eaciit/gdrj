@@ -5,6 +5,7 @@ vm.currentTitle = ko.observable('Dashboard')
 vm.menu = ko.observableArray([
 	{ title: 'Home', icon: 'home', href: viewModel.appName + 'page/home', submenu: [] },
 	{ title: 'P&L Performance', icon: 'tachometer', href: viewModel.appName + 'page/pnlperformance', submenu: [] },
+	{ title: 'YoY Rev & EBIT', icon: 'bar-chart-o', href: viewModel.appName + 'page/yearcompare', submenu: [] },
 	{ title: 'Analysis', icon: 'bar-chart-o', href: '#', submenu: [
 		{ title: 'Distribution Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/distributionanalysis', submenu: [] },
 		{ title: 'Contribution Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/contributionanalysis', submenu: [] },
@@ -14,7 +15,6 @@ vm.menu = ko.observableArray([
 		{ title: 'Branch Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/branchanalysis', submenu: [] },
 		{ title: 'RD Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/rdanalysis', submenu: [] },
 		{ title: 'Branch vs RD Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/rdvsbranchanalysis', submenu: [] },
-		{ title: 'YoY Rev & EBIT', icon: 'bar-chart-o', href: viewModel.appName + 'page/yearcompare', submenu: [] },
 		{ title: 'Custom Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/customanalysis', submenu: [] },
 	] },
 	// { title: 'Report', icon: 'file-text-o', href: viewModel.appName + 'page/report/list', submenu: [] },

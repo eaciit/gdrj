@@ -156,9 +156,9 @@ yc.render = function () {
 		});
 		toolkit.try(function () {
 			o.v2015_ebit_prcnt = function () {
-				var v2015 = toolkit.number(data2015[0][plCodeEBIT] / total2015_ebit) * 100;
-				var v2014 = toolkit.number(data2014[0][plCodeEBIT] / total2014_ebit) * 100;
-				return toolkit.number((v2015 - v2014) / v2015) * 100;
+				var v2015 = data2015[0][plCodeEBIT];
+				var v2014 = data2014[0][plCodeEBIT];
+				return toolkit.number((v2015 - v2014) / v2014) * 100;
 			}();
 		});
 		toolkit.try(function () {
@@ -166,9 +166,9 @@ yc.render = function () {
 		});
 		toolkit.try(function () {
 			o.v2015_nsal_prcnt = function () {
-				var v2015 = toolkit.number(data2015[0][plCodeNetSales] / total2015_netSales) * 100;
-				var v2014 = toolkit.number(data2014[0][plCodeNetSales] / total2014_netSales) * 100;
-				return toolkit.number((v2015 - v2014) / v2015) * 100;
+				var v2015 = data2015[0][plCodeNetSales];
+				var v2014 = data2014[0][plCodeNetSales];
+				return toolkit.number((v2015 - v2014) / v2014) * 100;
 			}();
 		});
 
@@ -179,43 +179,52 @@ yc.render = function () {
 	}, 'desc');
 	var dataParsed = op2;
 
+	var total = {
+		dimension: 'Total',
+		v2015_ebit_value: toolkit.sum(dataParsed, function (d) {
+			return d.v2015_ebit_value;
+		}),
+		v2015_nsal_value: toolkit.sum(dataParsed, function (d) {
+			return d.v2015_nsal_value;
+		}),
+		v2014_ebit_value: toolkit.sum(dataParsed, function (d) {
+			return d.v2014_ebit_value;
+		}),
+		v2014_nsal_value: toolkit.sum(dataParsed, function (d) {
+			return d.v2014_nsal_value;
+		})
+	};
+	total.v2015_ebit_prcnt = toolkit.number((total.v2015_ebit_value - total.v2014_ebit_value) / total.v2014_ebit_value) * 100;
+	total.v2015_nsal_prcnt = toolkit.number((total.v2015_nsal_value - total.v2014_nsal_value) / total.v2014_nsal_value) * 100;
+
+	// dataParsed.push(total)
+
+	var dimensionWidth = 140;
+	if (yc.breakdownBy() == 'customer.region') {
+		dimensionWidth = 160;
+	}
+
+	var tableWidth = 700;
+	if (yc.unit() == '1000') {
+		tableWidth += 100;
+	}
+	if (yc.unit() == '1000000') {
+		tableWidth += 100;
+	}
+	if (yc.unit() == '1000000000') {
+		tableWidth += 100;
+	}
+
 	var columns = [{
 		title: dimensionTitle,
 		template: function template(d) {
 			return d.dimension;
 		},
-		headerAttributes: { style: 'vertical-align: middle;' }
-	}, {
-		title: 'FY 2014-2015',
-		columns: [{
-			title: 'Net Sales',
-			columns: [{
-				title: 'Value',
-				field: 'v2014_nsal_value',
-				format: '{0:n0}', // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' }
-			}, {
-				title: '% Growth',
-				field: 'v2014_nsal_prcnt',
-				format: '{0:n2} %',
-				attributes: { class: 'align-right' },
-				width: 80
-			}]
-		}, {
-			title: 'EBIT',
-			columns: [{
-				title: 'Value',
-				field: 'v2014_ebit_value',
-				format: '{0:n0}', // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' }
-			}, {
-				title: '% Growth',
-				field: 'v2014_ebit_prcnt',
-				format: '{0:n2} %',
-				attributes: { class: 'align-right' },
-				width: 80
-			}]
-		}]
+		headerAttributes: { style: 'vertical-align: middle;' },
+		footerTemplate: 'Total',
+		width: dimensionWidth
+		// width: 200,
+		// locked: true
 	}, {
 		title: 'FY 2015-2016',
 		columns: [{
@@ -224,13 +233,14 @@ yc.render = function () {
 				title: 'Value',
 				field: 'v2015_nsal_value',
 				format: '{0:n0}', // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' }
+				attributes: { class: 'align-right' },
+				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_value, 'n0') + '</div>'
 			}, {
 				title: '% Growth',
 				field: 'v2015_nsal_prcnt',
-				format: '{0:n2} %',
+				format: '{0:n1} %',
 				attributes: { class: 'align-right' },
-				width: 80
+				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_prcnt, 'n1') + ' %</div>'
 			}]
 		}, {
 			title: 'EBIT',
@@ -238,13 +248,35 @@ yc.render = function () {
 				title: 'Value',
 				field: 'v2015_ebit_value',
 				format: '{0:n0}', // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' }
+				attributes: { class: 'align-right' },
+				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_value, 'n0') + '</div>'
 			}, {
 				title: '% Growth',
 				field: 'v2015_ebit_prcnt',
-				format: '{0:n2} %',
+				format: '{0:n1} %',
 				attributes: { class: 'align-right' },
-				width: 80
+				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_prcnt, 'n1') + ' %</div>'
+			}]
+		}]
+	}, {
+		title: 'FY 2014-2015',
+		columns: [{
+			title: 'Net Sales',
+			columns: [{
+				title: 'Value',
+				field: 'v2014_nsal_value',
+				format: '{0:n0}', // ` ${unitSuffix}`,
+				attributes: { class: 'align-right' },
+				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_nsal_value, 'n0') + '</div>'
+			}]
+		}, {
+			title: 'EBIT',
+			columns: [{
+				title: 'Value',
+				field: 'v2014_ebit_value',
+				format: '{0:n0}', // ` ${unitSuffix}`,
+				attributes: { class: 'align-right' },
+				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_ebit_value, 'n0') + '</div>'
 			}]
 		}]
 	}];
@@ -256,7 +288,7 @@ yc.render = function () {
 		columns: columns
 	};
 
-	$('#year-comparison').replaceWith('<div class="breakdown-view ez" id="year-comparison" style="width: 1000px;"></div>');
+	$('#year-comparison').replaceWith('<div class="breakdown-view ez" id="year-comparison" style="width: ' + tableWidth + 'px;"></div>');
 	$('#year-comparison').kendoGrid(config);
 };
 
@@ -272,7 +304,7 @@ yc.changeDimension = function (title, args) {
 	yc.refresh();
 };
 
-vm.currentMenu('Analysis');
+vm.currentMenu('YoY Rev & EBIT');
 vm.currentTitle('&nbsp;');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: yc.title(), href: '#' }]);
 
