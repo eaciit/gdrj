@@ -22,7 +22,7 @@ yc.breakdownKey = function () {
 
 yc.refresh = function () {
 	var param = {};
-	param.pls = [];
+	param.pls = ['PL44B', 'PL8A'];
 	param.groups = rpt.parseGroups([yc.breakdownBy()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(true, rpt.optionFiscalYears);
@@ -155,21 +155,23 @@ yc.render = function () {
 			o.v2015_ebit_value = data2015[0][plCodeEBIT] / divider;
 		});
 		toolkit.try(function () {
-			o.v2015_ebit_prcnt = function () {
-				var v2015 = data2015[0][plCodeEBIT];
-				var v2014 = data2014[0][plCodeEBIT];
-				return toolkit.number((v2015 - v2014) / v2014) * 100;
-			}();
+			var v2015 = data2015[0][plCodeEBIT];
+			var v2014 = data2014[0][plCodeEBIT];
+			if (v2015 <= 0 && v2014 <= 0) {
+				return;
+			}
+			o.v2015_ebit_prcnt = toolkit.number((v2015 - v2014) / v2014) * 100;
 		});
 		toolkit.try(function () {
 			o.v2015_nsal_value = data2015[0][plCodeNetSales] / divider;
 		});
 		toolkit.try(function () {
-			o.v2015_nsal_prcnt = function () {
-				var v2015 = data2015[0][plCodeNetSales];
-				var v2014 = data2014[0][plCodeNetSales];
-				return toolkit.number((v2015 - v2014) / v2014) * 100;
-			}();
+			var v2015 = data2015[0][plCodeNetSales];
+			var v2014 = data2014[0][plCodeNetSales];
+			if (v2015 <= 0 && v2014 <= 0) {
+				return;
+			}
+			o.v2015_nsal_prcnt = toolkit.number((v2015 - v2014) / v2014) * 100;
 		});
 
 		return o;
@@ -280,6 +282,8 @@ yc.render = function () {
 			}]
 		}]
 	}];
+
+	console.log('----', dataParsed);
 
 	var config = {
 		dataSource: {
