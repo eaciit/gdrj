@@ -71,48 +71,6 @@ func main() {
 
 	toolkit.Printfn("Buffered alldata, %d rows in %s", len(alldata), time.Since(t0).String())
 
-	//LIST01
-	// listdimension := []string{
-	// 	"date.fiscal,customer.channelid,customer.channelname,customer.areaname,customer.reportsubchannel",
-	// 	"date.fiscal,customer.channelid,customer.channelname,customer.branchname,customer.reportsubchannel",
-	// 	"date.fiscal,customer.channelid,customer.channelname,customer.zone,customer.reportsubchannel",
-	// 	"date.fiscal,customer.channelid,customer.channelname,customer.region,customer.reportsubchannel",
-	// 	"date.fiscal,customer.channelid,customer.channelname,product.brand,customer.reportsubchannel",
-	// 	"date.fiscal,customer.channelid,customer.channelname,customer.areaname,customer.customergroupname",
-	// 	"date.fiscal,customer.channelid,customer.channelname,customer.areaname",
-	// 	"date.fiscal,customer.channelid,customer.channelname,customer.branchname",
-	// 	"date.fiscal,customer.channelid,customer.channelname,customer.zone",
-	// 	"date.fiscal,customer.channelid,customer.channelname,customer.region",
-	// 	"date.fiscal,customer.channelid,customer.channelname,product.brand",
-	// 	"date.fiscal,customer.keyaccount,customer.customergroupname",
-	// 	"date.fiscal,customer.reportchannel,customer.reportsubchannel",
-	// 	"date.fiscal,customer.channelid,customer.channelname,customer.reportsubchannel",
-	// 	"date.fiscal,customer.channelname,customer.areaname",
-	// 	"date.fiscal,date.month,customer.channelid,customer.channelname",
-	// 	"date.fiscal,date.month,customer.branchname",
-	// 	"date.fiscal,date.month,customer.brand",
-	// 	"date.fiscal,date.month,customer.areaname",
-	// 	"date.fiscal,date.month,customer.region",
-	// 	"date.fiscal,date.month,customer.keyaccount",
-	// 	"date.fiscal,date.quartertxt,customer.branchname",
-	// 	"date.fiscal,date.quartertxt,product.brand",
-	// 	"date.fiscal,date.quartertxt,customer.areaname",
-	// 	"date.fiscal,date.quartertxt,customer.region",
-	// 	"date.fiscal,date.quartertxt,customer.keyaccount",
-	// 	"date.fiscal,date.quartertxt,customer.channelid,customer.channelname",
-	// 	"date.fiscal,customer.channelid,customer.channelname",
-	// 	"date.fiscal,customer.channelid", //add
-	// 	"date.fiscal,customer.areaname",
-	// 	"date.fiscal,customer.branchname",
-	// 	"date.fiscal,customer.zone",
-	// 	"date.fiscal,customer.region",
-	// 	"date.fiscal,customer.keyaccount",
-	// 	"date.fiscal,product.brand",
-	// 	"date.fiscal,customer.customergroupname",
-	// 	"date.fiscal,date.month",
-	// 	"date.fiscal,date.quartertxt",
-	// }
-
 	listdimension := []string{
 		"date.fiscal,customer.channelid,customer.channelname,customer.areaname,customer.reportsubchannel",
 		"date.fiscal,customer.channelid,customer.channelname,customer.branchname,customer.reportsubchannel",
@@ -253,10 +211,14 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 			a := v.(toolkit.M)
 
 			a.Set("_id", k)
-			_ = workerconn.NewQuery().
+			err := workerconn.NewQuery().
 				From(tablename01).
 				SetConfig("multiexec", true).
 				Save().Exec(toolkit.M{}.Set("data", a))
+
+			if err != nil {
+				toolkit.Println("save : ", err)
+			}
 		}
 
 		toolkit.Printfn("Saved dimension %v, %d rows", str, len(tkm))
