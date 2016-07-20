@@ -13,7 +13,8 @@ lgd.menu = ko.observableArray([
 	{ to: 'rdanalysis', title: 'RD Analysis', icon: 'fa-bar-chart', color: 'rgb(202, 40, 115)' },
 
 	{ to: 'rdvsbranchanalysis', title: 'Branch vs RD Analysis', icon: 'fa-bar-chart', color: '#3498DB' },
-	{ to: 'customanalysis', title: 'Custom Analysis', icon: 'fa-gear', color: '#28B463' },
+	{ to: 'yearcompare', title: 'YoY Rev & EBIT', icon: 'fa-bar-chart', color: '#28B463' },
+	{ to: 'customanalysis', title: 'Custom Analysis', icon: 'fa-gear', color: 'rgb(255, 183, 68)' },
 ])
 
 
