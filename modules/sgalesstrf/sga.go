@@ -120,7 +120,8 @@ func processTable() {
 			value := -sgaratio * sales
 			mr.Set("PL34_Other", value)
 		} else {
-			value := sales * total2.Expect / total2.Ref1
+			value := mr.GetFloat64("PL34_Other")
+			value += sales * total2.Expect / total2.Ref1
 			mr.Set("PL34_Other", value)
 		}
 
