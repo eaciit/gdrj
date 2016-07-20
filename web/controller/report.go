@@ -377,6 +377,7 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 	res := new(toolkit.Result)
 
 	payload := new(gdrj.PLFinderParam)
+	payload.WhenEmptyUseSalesPLSSummary = true
 	if err := payload.GetPayload(r); err != nil {
 		res.SetError(err)
 		return res
@@ -455,6 +456,7 @@ func (m *ReportController) GetPNLDataDetailNew(r *knot.WebContext) interface{} {
 	res := new(toolkit.Result)
 
 	payload := new(gdrj.PLFinderParam)
+	payload.WhenEmptyUseSalesPLSSummary = true
 	if err := r.GetPayload(payload); err != nil {
 		res.SetError(err)
 		return res
