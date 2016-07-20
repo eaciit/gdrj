@@ -60,12 +60,13 @@ type Filter struct {
 }
 
 type PLFinderParam struct {
-	PLs        []string  `json:"pls"`
-	Breakdowns []string  `json:"groups"`
-	Filters    []*Filter `json:"filters"`
-	Aggr       string    `json:"aggr"`
-	Flag       string    `json:"flag"`
-	TableKey   string    `json:"tablekey"`
+	PLs                         []string  `json:"pls"`
+	Breakdowns                  []string  `json:"groups"`
+	Filters                     []*Filter `json:"filters"`
+	Aggr                        string    `json:"aggr"`
+	Flag                        string    `json:"flag"`
+	TableKey                    string    `json:"tablekey"`
+	WhenEmptyUseSalesPLSSummary bool
 }
 
 func (s *PLFinderParam) GetPLCollections() ([]*toolkit.M, error) {
@@ -324,12 +325,14 @@ func (s *PLFinderParam) GetTableName() string {
 	}
 
 	if len(sample) == 0 {
-		s.TableKey = "key"
-		return `salespls-summary`
-	}
-
-	if sample[0].Has("key") {
-		s.TableKey = "key"
+		if s.WhenEmptyUseSalesPLSSummary {
+			s.TableKey = "key"
+			return `salespls-summary`
+		}
+	} else {
+		if sample[0].Has("key") {
+			s.TableKey = "key"
+		}
 	}
 
 	return tableName
