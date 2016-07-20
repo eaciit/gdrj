@@ -26,6 +26,15 @@
 			<a href="#by-channel-then-branch-vs-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Channels by Branch/RD'); v2.refresh();">Channels by Branch/RD</a>
 		</li>
 		<li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownDistributor(); subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Branch', 'branch');">Branch</a>
+		</li>
+		<li role="presentation">
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Branch Group', 'branch-group');">Branch Group</a>
+		</li>
+		<li role="presentation">
 			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Branches - All Channel'); v1.mode('Branch'); v1.refresh();">Branches - All Channel</a>
 		</li>
 		<li role="presentation">
