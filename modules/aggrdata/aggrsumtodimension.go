@@ -171,6 +171,8 @@ func workerbuilddimension(wi int, dimension <-chan string, resdimension chan<- i
 		payload.Breakdowns = strings.Split(str, ",")
 		tablename01 := toolkit.Sprintf("%v", payload.GetTableName())
 
+		toolkit.Println("saved tablename : ", tablename01)
+
 		tkm := toolkit.M{}
 		for _, val := range alldata {
 			t_id := ""
