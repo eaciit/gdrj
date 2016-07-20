@@ -3383,6 +3383,12 @@ let subchan = viewModel.subChannel
 			), (d) => d.Name))
 		})
 
+		app.ajaxPost(viewModel.appName + "report/getdatahgeographi", {}, (res) => {
+			subchan.optionCity(_.orderBy(res.data.map((d) =>  
+				({ _id: d._id, Name: d._id })
+			), (d) => d.Name))
+		})
+
 		app.ajaxPost(viewModel.appName + "report/getdatamasterdistributor", {}, (res) => {
 			subchan.optionDistributor(_.orderBy(res.data.map((d) =>  
 				({ _id: d.Name, Name: d.Name })
@@ -3406,14 +3412,16 @@ let subchan = viewModel.subChannel
 	subchan.filterAccount = ko.observableArray([])
 	subchan.filterBrand = ko.observableArray([])
 	subchan.filterBranch = ko.observableArray([])
+	subchan.filterCity = ko.observableArray([])
 	subchan.filterDistributor = ko.observableArray([])
 
 	subchan.injectFilters = (filters) => {
 		let DA_LORD_OF_DA_RING = [
 			{ field: 'customer.reportsubchannel', holder: subchan.filterMTBreakdown },
 			{ field: 'customer.keyaccount', holder: subchan.filterAccount },
-			{ field: 'customer.brand', holder: subchan.filterBrand },
+			{ field: 'product.brand', holder: subchan.filterBrand },
 			{ field: 'customer.branchname', holder: subchan.filterBranch },
+			{ field: 'customer.areaname', holder: subchan.filterCity },
 			{ field: 'customer.reportsubchannel', holder: subchan.filterDistributor },
 		]
 
