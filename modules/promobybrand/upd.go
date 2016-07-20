@@ -316,7 +316,6 @@ func validatePLID(plid string, plmodels map[string]*gdrj.PLModel) bool {
 		return false
 	}
 
-	group := ""
 	if strings.HasPrefix(plmodel.PLHeader2, "SPG Exp") {
 		return true
 	} else if strings.HasPrefix(plmodel.PLHeader2, "Promotions Expense") {
