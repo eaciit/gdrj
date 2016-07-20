@@ -73,7 +73,7 @@ func buildratio() {
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
-		channelid := key.GetString("report_channelid")
+		channelid := key.GetString("customer_channelid")
 		sales := mr.GetFloat64("PL8A")
 		keytotal := toolkit.Sprintf("%s_%s", fiscal, channelid)
 		if channelid == "EXP" || channelid == "I4" || channelid == "I6" {
@@ -113,13 +113,16 @@ func processTable() {
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
-		channelid := key.GetString("report_channelid")
+		channelid := key.GetString("customer_channelid")
 		sales := mr.GetFloat64("PL8A")
 		//keytotal := toolkit.Sprintf("%s_%s", fiscal, channelid)
 		//total1 := totals1[keytotal]
 		total2 := totals2[fiscal]
 		if channelid == "EXP" || channelid == "I4" || channelid == "I6" {
 			sgaratio := sgaalloc[channelid]
+			if channelid == "EXP" {
+				sgaratio = sgaalloc[channelid]
+			}
 			value := -sgaratio * sales
 			mr.Set("PL34_Other", value)
 		} else {
