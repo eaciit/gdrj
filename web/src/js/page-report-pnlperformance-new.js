@@ -3192,7 +3192,7 @@ let subchan = viewModel.subChannel
 
 		masterData = rpt.masterData.Brand()
 
-		toolkit.runUntil((i) => {
+		toolkit.callUntil((i) => {
 			subchan.optionBreakdownBrandValues([all].concat(
 				masterData.map((d) => { 
 					return { _id: d.Name, Name: d.Name } })
@@ -3235,7 +3235,7 @@ let subchan = viewModel.subChannel
 
 		masterData = subchan.optionDistributor()
 
-		toolkit.runUntil((i) => {
+		toolkit.callUntil((i) => {
 			subchan.optionBreakdownDistributorValues([all].concat(
 				masterData.map((d) => { 
 					return { _id: d.Name, Name: d.Name } })
@@ -3278,7 +3278,7 @@ let subchan = viewModel.subChannel
 
 		masterData = subchan.optionGeneralTrade()
 
-		toolkit.runUntil((i) => {
+		toolkit.callUntil((i) => {
 			subchan.optionBreakdownGeneralTradeValues([all].concat(
 				masterData.map((d) => { 
 					return { _id: d.Name, Name: d.Name } })
@@ -3321,7 +3321,7 @@ let subchan = viewModel.subChannel
 
 		masterData = subchan.optionCity()
 
-		toolkit.runUntil((i) => {
+		toolkit.callUntil((i) => {
 			subchan.optionBreakdownCityValues([all].concat(
 				masterData.map((d) => { 
 					return { _id: d.Name, Name: d.Name } })
@@ -4029,7 +4029,7 @@ $(() => {
 	subchan.changeBreakdownCity()
 	dsbrd.changeBreakdown()
 
-	toolkit.runAfter(() => { 
+	toolkit.callAfter(() => { 
 		kac.breakdownValue(['All'])
 		kac.breakdownGroupValue(['KEY'])
 		bkd.breakdownValue(['All'])
