@@ -2761,6 +2761,12 @@ let subchan = viewModel.subChannel
 					Value: breakdownCity
 				})
 			}
+		} else if (subchan.what() == 'branch') {
+			subchan.breakdownBy('customer.branchname')
+			groups.push(subchan.breakdownBy())
+		} else if (subchan.what() == 'branch-group') {
+			subchan.breakdownBy('customer.branchgroup')
+			groups.push(subchan.breakdownBy())
 		}
 
 		$('.breakdown-view:not(#subchan)').empty()
@@ -3354,6 +3360,7 @@ let subchan = viewModel.subChannel
 	subchan.optionAccount = ko.observableArray([])
 	subchan.optionBrand = ko.observableArray([])
 	subchan.optionBranch = ko.observableArray([])
+	subchan.optionBranchGroup = ko.observableArray([])
 	subchan.optionDistributor = ko.observableArray([])
 	subchan.optionGeneralTrade = ko.observableArray([])
 	subchan.optionCity = ko.observableArray([])
@@ -3412,6 +3419,7 @@ let subchan = viewModel.subChannel
 	subchan.filterAccount = ko.observableArray([])
 	subchan.filterBrand = ko.observableArray([])
 	subchan.filterBranch = ko.observableArray([])
+	subchan.filterBranchGroup = ko.observableArray([])
 	subchan.filterCity = ko.observableArray([])
 	subchan.filterDistributor = ko.observableArray([])
 
