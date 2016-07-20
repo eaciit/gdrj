@@ -1507,7 +1507,12 @@ func CleanAddBranchGroup(tkm toolkit.M) {
 	dtkm, _ := toolkit.ToM(tkm.Get("key"))
 	branchgroup := branchgroups.Get(dtkm.GetString("customer_branchid"), toolkit.M{}).(toolkit.M)
 
-	dtkm.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
+	val := branchgroup.GetString("branchgroup")
+	if val == "" {
+		val = "Other"
+	}
+
+	dtkm.Set("customer_branchgroup", val)
 	tkm.Set("key", dtkm)
 }
 
