@@ -1530,6 +1530,11 @@ func CleanAreanameNull(tkm toolkit.M) {
 	if dtkm.GetString("customer_areaname") == "" {
 		dtkm.Set("customer_areaname", dtkm.GetString("customer_branchname"))
 	}
+
+	if dtkm.GetString("customer_areaname") == "Jakarta" {
+		dtkm.Set("customer_areaname", "JAKARTA")
+	}
+
 	tkm.Set("key", dtkm)
 }
 
