@@ -121,8 +121,7 @@ me.render = () => {
 			tooltip: {
 				visible: true,
 				template: (d) => {
-					console.log('---', d)
-					return 'asdf'
+					return `${d.series.name} ${d.category.replace(/\n/g, ' ')} : ${kendo.format(seriesLabelFormat, d.value)}`
 				}
 			}
         },
