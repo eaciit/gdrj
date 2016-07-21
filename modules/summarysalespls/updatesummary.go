@@ -1535,6 +1535,10 @@ func CleanAreanameNull(tkm toolkit.M) {
 
 func CleanReportSubChannelBreakdownRD(tkm toolkit.M) {
 	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	if dtkm.GetString("customer_channelid") != "I1" {
+		return
+	}
+
 	listsubchannel := []string{"Hyper", "Super", "Mini", "Other", "R1 - Grosir Umum", "R10 - Tk.Perlengkapan Bayi",
 		"R11- Koperasi", "R12 - Bengkel/Accesories", "R13- Tk. Bangunan", "R14 -  Retail Minimarket",
 		"R15 - Grosir Kosmetik/Kelo", "R16 - Grosir Sembako", "R17 - Grosir Plastik", "R18 - Lain-lain", "R2 - Grosir Snack", "R4 - Toko Kosmetik", "R5 - Tk.Sembako/ Tk.Bumbu",
@@ -1600,7 +1604,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcSalesReturnMinusDiscount(trx)
 		// CalcSum(trx)
 
-		CleanAreanameNull(trx)
+		CleanReportSubChannelBreakdownRD(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
