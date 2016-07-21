@@ -13,16 +13,22 @@ me.optionUnit = ko.observableArray([{ _id: 'v1', Name: 'Actual', suffix: '' }, {
 me.time = ko.observable('date.month');
 me.optionTime = ko.observableArray([{ _id: 'date.month', Name: 'Month' }, { _id: 'date.quartertxt', Name: 'Quarter' }]);
 me.optionDropDownPNL = ko.observableArray([{ key: 'spg', field: 'PL31', name: 'SPG' }, { key: 'promo', field: 'PL29A', name: 'Promotions Expenses' }, { key: 'promoSpg', field: 'spg-promo', name: 'Total SPG & Promo' }, { key: 'adv', field: 'PL28', name: 'Advertising Expenses' }, { key: 'discount', field: 'PL7A', name: 'Discount Activity' }, { key: 'netSales', field: 'PL8A', name: 'Revenue' }]);
-
 me.valueDropDownPNL = ko.observableArray(me.optionDropDownPNL().map(function (d) {
 	return d.field;
 }));
-
 me.multiSelectPNL = {
 	data: me.optionDropDownPNL,
 	dataValueField: 'field',
 	dataTextField: 'name',
 	value: me.valueDropDownPNL
+};
+
+me.mode = ko.observable('efficiency');
+me.show = function (title, mode, unit) {
+	me.title(title);
+	me.mode(mode);
+	me.unit(unit);
+	me.refresh();
 };
 
 me.refresh = function () {
@@ -90,6 +96,7 @@ me.render = function () {
 	var months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 	var quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
 	var startDate = moment(new Date(2014, 3, 1));
+	var prev = null;
 
 	var inject = function inject(o, row) {
 		me.optionDropDownPNL().forEach(function (d) {
@@ -98,14 +105,48 @@ me.render = function () {
 
 		dataParsed.push(o);
 
-		toolkit.try(function () {
-			o.spg = Math.abs(row.PL31) / divider;
-			o.promo = Math.abs(row.PL29A) / divider;
-			o.promoSpg = Math.abs(row.PL31 + row.PL29A) / divider;
-			o.adv = Math.abs(row.PL28) / divider;
-			o.discount = Math.abs(row.PL7A) / divider;
-			o.netSales = Math.abs(row.PL8A) / divider;
-		});
+		if (me.mode() == 'efficiency') {
+			toolkit.try(function () {
+				o.spg = Math.abs(row.PL31) / divider;
+			});
+			toolkit.try(function () {
+				o.promo = Math.abs(row.PL29A) / divider;
+			});
+			toolkit.try(function () {
+				o.promoSpg = Math.abs(row.PL31 + row.PL29A) / divider;
+			});
+			toolkit.try(function () {
+				o.adv = Math.abs(row.PL28) / divider;
+			});
+			toolkit.try(function () {
+				o.discount = Math.abs(row.PL7A) / divider;
+			});
+			toolkit.try(function () {
+				o.netSales = Math.abs(row.PL8A) / divider;
+			});
+		} else {
+			if (prev != null) {
+				toolkit.try(function () {
+					o.spg = Math.abs(toolkit.number((row.PL31 - prev.PL31) / prev.PL31)) * 100;
+				});
+				toolkit.try(function () {
+					o.promo = Math.abs(toolkit.number((row.PL29A - prev.PL29A) / prev.PL29A)) * 100;
+				});
+				toolkit.try(function () {
+					o.promoSpg = Math.abs(toolkit.number((row.PL31 + row.PL29A - (prev.PL31 + prev.PL29A)) / (prev.PL31 + prev.PL29A))) * 100;
+				});
+				toolkit.try(function () {
+					o.adv = Math.abs(toolkit.number((row.PL28 - prev.PL28) / prev.PL28)) * 100;
+				});
+				toolkit.try(function () {
+					o.discount = Math.abs(toolkit.number((row.PL7A - prev.PL7A) / prev.PL7A)) * 100;
+				});
+				toolkit.try(function () {
+					o.netSales = Math.abs(toolkit.number((row.PL8A - prev.PL8A) / prev.PL8A)) * 100;
+				});
+			}
+			prev = row;
+		}
 	};
 
 	years.forEach(function (year) {
@@ -137,6 +178,12 @@ me.render = function () {
 	});
 
 	var seriesLabelFormat = '{0:n0}';
+	var netSalesLabelsFormat = '{0:n1}';
+	if (me.mode() == 'growth') {
+		unitSuffix = '';
+		seriesLabelFormat = '{0:n1} %';
+		netSalesLabelsFormat = '{0:n1} %';
+	}
 
 	var selectedPNL = me.valueDropDownPNL().map(function (d) {
 		return me.optionDropDownPNL().find(function (e) {
@@ -174,7 +221,7 @@ me.render = function () {
 		axis: 'right',
 		color: '#b9105e',
 		labels: {
-			format: '{0:n1}',
+			format: netSalesLabelsFormat,
 			font: '"Source Sans Pro" 8px'
 		}
 	}].filter(function (d) {
@@ -190,7 +237,7 @@ me.render = function () {
 		majorGridLines: { color: '#fafafa' },
 		labels: {
 			font: '"Source Sans Pro" 11px',
-			format: "{0:n2}"
+			format: "{0:n1}"
 		}
 	}, {
 		name: 'right',
@@ -198,7 +245,7 @@ me.render = function () {
 		majorGridLines: { color: '#fafafa' },
 		labels: {
 			font: '"Source Sans Pro" 11px',
-			format: "{0:n2}"
+			format: "{0:n1}"
 		},
 		color: '#b9105e'
 	}].filter(function (d) {
@@ -240,7 +287,7 @@ me.render = function () {
 			field: 'when',
 			labels: {
 				font: '"Source Sans Pro" 11px',
-				format: "{0:n2}"
+				format: "{0:n1}"
 			},
 			majorGridLines: { color: '#fafafa' },
 			axisCrossingValues: [0, 24]
@@ -254,6 +301,7 @@ me.render = function () {
 		width = 50 * 24 + 'px';
 	}
 
+	console.log('-----', config);
 	$('.chart').replaceWith('<div class="chart" style="width: ' + width + ';"></div>');
 	$('.chart').kendoChart(config);
 };
@@ -337,7 +385,7 @@ me.changeBreakdownValue = function () {
 };
 
 vm.currentMenu(me.title());
-vm.currentTitle(me.title());
+vm.currentTitle('&nbsp;');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: me.title(), href: '#' }]);
 
 $(function () {
