@@ -1524,6 +1524,15 @@ func CleanUpperBranchnameJakarta(tkm toolkit.M) {
 	tkm.Set("key", dtkm)
 }
 
+//customer_areaname
+func CleanAreanameNull(tkm toolkit.M) {
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	if dtkm.GetString("customer_areaname") == "" {
+		dtkm.Set("customer_areaname", dtkm.GetString("customer_branchname"))
+	}
+	tkm.Set("key", dtkm)
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
@@ -1559,10 +1568,12 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CleanAndUpdateRD2016Vdist(trx)
 
 		// CleanAddBranchGroup(trx)
-		CleanUpperBranchnameJakarta(trx)
+		// CleanUpperBranchnameJakarta(trx)
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
 		// CalcSum(trx)
+
+		CleanAreanameNull(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
