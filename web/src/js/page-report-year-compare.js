@@ -279,6 +279,7 @@ vm.breadcrumb([
 
 $(() => {
 	yc.refresh()
+	rpt.showExport(true)
 })
 
 

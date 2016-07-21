@@ -1027,6 +1027,78 @@ rpt.export = (target, title, mode) => {
 		    fileName: title+".xlsx"
 		});
 		return
+	} else if (mode == "kendonormal"){
+		let rowdata = [], cellval = {}, cells = [], headertype = ""
+		let tableHeader = target.find('.k-grid-header-wrap')
+		let tableContent = target.find('.k-grid-content')
+		let tableFooter = target.find('.k-grid-footer')
+		tableHeader.find('tr').each((i, e) => {
+			cells = []
+			$(e).find('th').each((i, e) => {
+				cellval = {}
+				cellval['value'] = $(e).attr('data-title')
+				if ($(e).attr('rowspan')){
+					if (title == 'Distribution Analysis')
+						cellval['rowSpan'] = parseInt($(e).attr('rowspan')) + 2
+					else if (title == 'Summary P&L Analysis')
+						cellval['rowSpan'] = parseInt($(e).attr('rowspan')) + 1
+					else
+						cellval['rowSpan'] = parseInt($(e).attr('rowspan'))
+				}
+				if ($(e).attr('colspan'))
+					cellval['colSpan'] = parseInt($(e).attr('colspan'))
+				cells.push(cellval)
+			})
+			rowdata.push({cells:cells})
+		})
+		tableContent.find('tr').each((i, e) => {
+			cells = []
+			$(e).find('td').each((i, e) => {
+				cellval = {}
+				headertype = parseFloat($(e).html().replace(/,/g , ""))
+				if (isNaN(parseFloat(headertype)) == true)
+					headertype = $(e).html()
+				cellval['value'] = headertype
+				cells.push(cellval)
+			})
+			if (cells.length > 0)
+				rowdata.push({cells:cells})
+		})
+		tableFooter.find('tr').each((i, e) => {
+			cells = []
+			$(e).find('td').each((i, e) => {
+				cellval = {}
+				if (i ==0)
+					headertype = parseFloat($(e).html().replace(/,/g , ""))
+				else
+					headertype = parseFloat($(e).find('div').html().replace(/,/g , ""))
+
+				if (isNaN(parseFloat(headertype)) == true)
+					headertype = $(e).html()
+				cellval['value'] = headertype
+				cells.push(cellval)
+			})
+			if (cells.length > 0)
+				rowdata.push({cells:cells})
+		})
+		// console.log(rowdata)
+		var workbook = new kendo.ooxml.Workbook({
+		  sheets: [
+		    {
+		      columns: [
+		        { autoWidth: true },
+		        { autoWidth: true }
+		      ],
+		      title: title,
+		      rows: rowdata
+		    }
+		  ]
+		});
+		kendo.saveAs({
+		    dataURI: workbook.toDataURL(),
+		    fileName: title+".xlsx"
+		});
+		return
 	} else if (mode == 'normal') {
 		$('#fake-table').remove()
 

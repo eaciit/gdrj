@@ -956,6 +956,72 @@ rpt.export = function (target, title, mode) {
 		}();
 
 		if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
+	} else if (mode == "kendonormal") {
+		var workbook;
+
+		var _ret3 = function () {
+			var rowdata = [],
+			    cellval = {},
+			    cells = [],
+			    headertype = "";
+			var tableHeader = target.find('.k-grid-header-wrap');
+			var tableContent = target.find('.k-grid-content');
+			var tableFooter = target.find('.k-grid-footer');
+			tableHeader.find('tr').each(function (i, e) {
+				cells = [];
+				$(e).find('th').each(function (i, e) {
+					cellval = {};
+					cellval['value'] = $(e).attr('data-title');
+					if ($(e).attr('rowspan')) {
+						if (title == 'Distribution Analysis') cellval['rowSpan'] = parseInt($(e).attr('rowspan')) + 2;else if (title == 'Summary P&L Analysis') cellval['rowSpan'] = parseInt($(e).attr('rowspan')) + 1;else cellval['rowSpan'] = parseInt($(e).attr('rowspan'));
+					}
+					if ($(e).attr('colspan')) cellval['colSpan'] = parseInt($(e).attr('colspan'));
+					cells.push(cellval);
+				});
+				rowdata.push({ cells: cells });
+			});
+			tableContent.find('tr').each(function (i, e) {
+				cells = [];
+				$(e).find('td').each(function (i, e) {
+					cellval = {};
+					headertype = parseFloat($(e).html().replace(/,/g, ""));
+					if (isNaN(parseFloat(headertype)) == true) headertype = $(e).html();
+					cellval['value'] = headertype;
+					cells.push(cellval);
+				});
+				if (cells.length > 0) rowdata.push({ cells: cells });
+			});
+			tableFooter.find('tr').each(function (i, e) {
+				cells = [];
+				$(e).find('td').each(function (i, e) {
+					cellval = {};
+					if (i == 0) headertype = parseFloat($(e).html().replace(/,/g, ""));else headertype = parseFloat($(e).find('div').html().replace(/,/g, ""));
+
+					if (isNaN(parseFloat(headertype)) == true) headertype = $(e).html();
+					cellval['value'] = headertype;
+					cells.push(cellval);
+				});
+				if (cells.length > 0) rowdata.push({ cells: cells });
+			});
+			// console.log(rowdata)
+			workbook = new kendo.ooxml.Workbook({
+				sheets: [{
+					columns: [{ autoWidth: true }, { autoWidth: true }],
+					title: title,
+					rows: rowdata
+				}]
+			});
+
+			kendo.saveAs({
+				dataURI: workbook.toDataURL(),
+				fileName: title + ".xlsx"
+			});
+			return {
+				v: void 0
+			};
+		}();
+
+		if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
 	} else if (mode == 'normal') {
 		(function () {
 			$('#fake-table').remove();
