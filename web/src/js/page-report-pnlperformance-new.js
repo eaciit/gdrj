@@ -3836,13 +3836,13 @@ let rank = viewModel.dashboardRanking
 	].concat(rpt.optionDimensions().slice(0)))
 	rank.breakdown = ko.observable('customer.channelname')
 	rank.columns = ko.observableArray([
-		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' } },
+		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' }, footerTemplate: 'Total' },
 		{ field: 'gmPercentage', template: (d) => `${kendo.toString(d.gmPercentage, 'n2')} %`, title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ field: 'cogsPercentage', template: (d) => `${kendo.toString(d.cogsPercentage, 'n2')} %`, title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ field: 'ebitPercentage', template: (d) => `${kendo.toString(d.ebitPercentage, 'n2')} %`, title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ field: 'ebitdaPercentage', template: (d) => `${kendo.toString(d.ebitdaPercentage, 'n2')} %`, title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
-		{ field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' },
-		{ field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, format: '{0:n0}' },
+		{ field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}' },
+		{ field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: `<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>`, format: '{0:n0}' },
 	])
 	rank.contentIsLoading = ko.observable(false)
 	rank.data = ko.observableArray([])
@@ -3924,6 +3924,10 @@ let rank = viewModel.dashboardRanking
 			dataSource: {
 				data: rank.data(),
 				pageSize: 10,
+				aggregate: [
+					{ field: "netSales", aggregate: "sum"},
+					{ field: "ebit", aggregate: "sum"}
+				]
 			},
 			columns: rank.columns(),
 			resizabl: false,
