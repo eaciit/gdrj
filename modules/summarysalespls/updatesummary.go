@@ -937,7 +937,7 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
-	prepmasterbranchgroup()
+	// prepmasterbranchgroup()
 	// prepmastertotsalesrd2016vdist()
 
 	// prepmastertotaldiscactivity()
@@ -1516,12 +1516,20 @@ func CleanAddBranchGroup(tkm toolkit.M) {
 	tkm.Set("key", dtkm)
 }
 
+func CleanUpperBranchnameJakarta(tkm toolkit.M) {
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	if dtkm.GetString("customer_branchname") == "JAKARTA" {
+		dtkm.Set("customer_branchname", "Jakarta")
+	}
+	tkm.Set("key", dtkm)
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-afterbranch").
+		From("salespls-summary").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1550,8 +1558,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// AllocateDiscountActivity(trx)
 		// CleanAndUpdateRD2016Vdist(trx)
 
-		CleanAddBranchGroup(trx)
-
+		// CleanAddBranchGroup(trx)
+		CleanUpperBranchnameJakarta(trx)
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
 		// CalcSum(trx)
