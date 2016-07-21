@@ -2,11 +2,8 @@ viewModel.yearCompare = {}
 let me = viewModel.yearCompare
 
 me.title = ko.observable('Marketing Efficiency')
-me.subTitle = ko.observable('Channel')
-me.breakdownBy = ko.observable('customer.channelname')
 me.contentIsLoading = ko.observable(false)
 me.data = ko.observableArray([])
-me.flag = ko.observable('')
 me.unit = ko.observable('v1000000000')
 me.optionUnit = ko.observableArray([
 	{ _id: 'v1', Name: 'Actual', suffix: '' },
@@ -18,20 +15,28 @@ me.plSPG = ko.observable('PL31')
 me.plPromo = ko.observable('PL29A')
 me.plNetSales = ko.observable('PL8A')
 
-me.groupMap = (arr, c, d) => {
-	return _.map(_.groupBy(arr, c), d)
-}
-
-me.breakdownKey = () => {
-	return `_id_${toolkit.replace(me.breakdownBy(), '.', '_')}`
-}
-
 me.refresh = () => {
+	let breakdownValues = me.breakdownValue().filter((d) => d != 'All')
+	// if (me.breakdownBy() != '') {
+	// 	if (breakdownValues.length == 0) {
+	// 		toolkit.showError('Breakdown value cannot be empty')
+	// 		return
+	// 	}
+	// }
+
 	let param = {}
 	param.pls = [me.plSPG(), me.plPromo(), me.plNetSales()]
 	param.groups = rpt.parseGroups(['date.month'])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(true, rpt.optionFiscalYears)
+
+	if (breakdownValues.length > 0) {
+		param.filters.push({
+			Field: me.breakdownBy(),
+			Op: '$in',
+			Value: breakdownValues
+		})
+	}
 
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
@@ -181,17 +186,88 @@ me.render = () => {
 	$('.chart').kendoChart(config)
 }
 
-me.changeDimension = (title, args) => {
-	me.subTitle(title)
-	me.breakdownBy(args.split('|')[0])
-	me.flag('')
+me.optionDimensions = ko.observableArray(
+	[{ field: '', name: 'Total' }].concat(rpt.optionDimensions())
+)
+me.breakdownBy = ko.observable('')
+me.breakdownValue = ko.observableArray([])
+me.optionBreakdownValues = ko.observableArray([])
+me.breakdownValueAll = { _id: 'All', Name: 'All' }
+me.changeBreakdown = () => {
+	let all = me.breakdownValueAll
+	let map = (arr) => arr.map((d) => {
+		if ("customer.channelname" == me.breakdownBy()) {
+			return d
+		}
+		if ("customer.keyaccount" == me.breakdownBy()) {
+			return { _id: d._id, Name: d._id }
+		}
 
-	if (args.indexOf('|') > -1) {
-		me.flag(args.split('|')[1])
-	}
+		return { _id: d.Name, Name: d.Name }
+	})
+	setTimeout(() => {
+		me.breakdownValue([])
 
-	me.refresh()
+		switch (me.breakdownBy()) {
+			case "customer.areaname":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Area())))
+				me.breakdownValue([all._id])
+			break;
+			case "customer.region":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Region())))
+				me.breakdownValue([all._id])
+			break;
+			case "customer.zone":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())))
+				me.breakdownValue([all._id])
+			break;
+			case "product.brand":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())))
+				me.breakdownValue([all._id])
+			break;
+			case "customer.branchname":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
+				me.breakdownValue([all._id])
+			break;
+			case "customer.channelname":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
+				me.breakdownValue([all._id])
+			break;
+			case "customer.keyaccount":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))
+				me.breakdownValue([all._id])
+			break;
+		}
+	}, 100)
 }
+me.changeBreakdownValue = () => {
+	let all = me.breakdownValueAll
+	setTimeout(() => {
+		let condA1 = me.breakdownValue().length == 2
+		let condA2 = me.breakdownValue().indexOf(all._id) == 0
+		if (condA1 && condA2) {
+			me.breakdownValue.remove(all._id)
+			return
+		}
+
+		let condB1 = me.breakdownValue().length > 1
+		let condB2 = me.breakdownValue().reverse()[0] == all._id
+		if (condB1 && condB2) {
+			me.breakdownValue([all._id])
+			return
+		}
+
+		let condC1 = me.breakdownValue().length == 0
+		if (condC1) {
+			me.breakdownValue([all._id])
+		}
+	}, 100)
+}
+
+
+
+
+
 
 
 vm.currentMenu('Analysis')
@@ -204,6 +280,12 @@ vm.breadcrumb([
 
 
 $(() => {
-	me.refresh()
+	me.changeBreakdown()
+
+	toolkit.runAfter(() => { 
+		me.breakdownValue(['All'])
+		me.refresh()
+	}, 200)
+
 	rpt.showExport(true)
 })
