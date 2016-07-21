@@ -1,5 +1,7 @@
 'use strict';
 
+// MAKE NEW TAB, DUPLICATE THE CHART, THE VALUE WILL BE THE GROWTH OF EACH MONTH / QUARTER
+
 viewModel.yearCompare = {};
 var me = viewModel.yearCompare;
 
@@ -8,24 +10,38 @@ me.contentIsLoading = ko.observable(false);
 me.data = ko.observableArray([]);
 me.unit = ko.observable('v1000000000');
 me.optionUnit = ko.observableArray([{ _id: 'v1', Name: 'Actual', suffix: '' }, { _id: 'v1000', Name: 'Hundreds', suffix: 'K' }, { _id: 'v1000000', Name: 'Millions', suffix: 'M' }, { _id: 'v1000000000', Name: 'Billions', suffix: 'B' }]);
-me.plSPG = ko.observable('PL31');
-me.plPromo = ko.observable('PL29A');
-me.plNetSales = ko.observable('PL8A');
+me.time = ko.observable('date.month');
+me.optionTime = ko.observableArray([{ _id: 'date.month', Name: 'Month' }, { _id: 'date.quartertxt', Name: 'Quarter' }]);
+me.optionDropDownPNL = ko.observableArray([{ key: 'spg', field: 'PL31', name: 'SPG' }, { key: 'promo', field: 'PL29A', name: 'Promotions Expenses' }, { key: 'promoSpg', field: 'spg-promo', name: 'Total SPG & Promo' }, { key: 'adv', field: 'PL28', name: 'Advertising Expenses' }, { key: 'discount', field: 'PL7A', name: 'Discount Activity' }, { key: 'netSales', field: 'PL8A', name: 'Revenue' }]);
+
+me.valueDropDownPNL = ko.observableArray(me.optionDropDownPNL().map(function (d) {
+	return d.field;
+}));
+
+me.multiSelectPNL = {
+	data: me.optionDropDownPNL,
+	dataValueField: 'field',
+	dataTextField: 'name',
+	value: me.valueDropDownPNL
+};
 
 me.refresh = function () {
+	if (me.valueDropDownPNL().length == 0) {
+		toolkit.showError('Select at least one PNL');
+		return;
+	}
+
 	var breakdownValues = me.breakdownValue().filter(function (d) {
 		return d != 'All';
 	});
-	// if (me.breakdownBy() != '') {
-	// 	if (breakdownValues.length == 0) {
-	// 		toolkit.showError('Breakdown value cannot be empty')
-	// 		return
-	// 	}
-	// }
 
 	var param = {};
-	param.pls = [me.plSPG(), me.plPromo(), me.plNetSales()];
-	param.groups = rpt.parseGroups(['date.month']);
+	param.pls = me.optionDropDownPNL().map(function (d) {
+		return d.field;
+	}).filter(function (d) {
+		return d.indexOf('-') == -1;
+	});
+	param.groups = rpt.parseGroups([me.time()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(true, rpt.optionFiscalYears);
 
@@ -72,38 +88,121 @@ me.render = function () {
 	var dataParsed = [];
 	var years = rpt.optionFiscalYears();
 	var months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+	var quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
 	var startDate = moment(new Date(2014, 3, 1));
 
-	years.forEach(function (year) {
-		months.forEach(function (month) {
-			var row = me.data().find(function (d) {
-				var cond1 = d._id._id_date_fiscal === year;
-				var cond2 = parseInt(d._id._id_date_month, 10) === month;
-				return cond1 && cond2;
-			});
-
-			var o = {};
-			o.when = startDate.add(1, 'months').format('MMMM YYYY').replace(/ /g, '\n');
-			o.promo = 0;
-			o.spg = 0;
-			o.promoSpg = 0;
-			o.netSales = 0;
-
-			dataParsed.push(o);
-
-			toolkit.try(function () {
-				o.promo = Math.abs(row[me.plPromo()]) / divider;
-				o.spg = Math.abs(row[me.plSPG()]) / divider;
-				o.promoSpg = Math.abs(row[me.plPromo()] + row[me.plSPG()]) / divider;
-				o.netSales = Math.abs(row[me.plNetSales()]) / divider;
-			});
+	var inject = function inject(o, row) {
+		me.optionDropDownPNL().forEach(function (d) {
+			o[d.key] = 0;
 		});
+
+		dataParsed.push(o);
+
+		toolkit.try(function () {
+			o.spg = Math.abs(row.PL31) / divider;
+			o.promo = Math.abs(row.PL29A) / divider;
+			o.promoSpg = Math.abs(row.PL31 + row.PL29A) / divider;
+			o.adv = Math.abs(row.PL28) / divider;
+			o.discount = Math.abs(row.PL7A) / divider;
+			o.netSales = Math.abs(row.PL8A) / divider;
+		});
+	};
+
+	years.forEach(function (year) {
+		if (me.time() === 'date.month') {
+			months.forEach(function (month) {
+				var row = me.data().find(function (d) {
+					var cond1 = d._id._id_date_fiscal === year;
+					var cond2 = parseInt(d._id._id_date_month, 10) === month;
+					return cond1 && cond2;
+				});
+
+				var o = {};
+				o.when = startDate.add(1, 'months').format('MMM YYYY').replace(/ /g, '\n');
+				inject(o, row);
+			});
+		} else {
+			quarters.forEach(function (quarter) {
+				var row = me.data().find(function (d) {
+					var cond1 = d._id._id_date_fiscal === year;
+					var cond2 = d._id._id_date_quartertxt === year + ' ' + quarter;
+					return cond1 && cond2;
+				});
+
+				var o = {};
+				o.when = row._id._id_date_quartertxt.split(' ').reverse().join('\n');
+				inject(o, row);
+			});
+		}
 	});
 
 	var seriesLabelFormat = '{0:n0}';
 	if (divider > 1) {
 		seriesLabelFormat = '{0:n1} ' + unitSuffix;
 	}
+
+	var selectedPNL = me.valueDropDownPNL().map(function (d) {
+		return me.optionDropDownPNL().find(function (e) {
+			return e.field == d;
+		}).key;
+	});
+	var series = [{
+		field: 'spg',
+		name: 'SPG',
+		axis: 'left',
+		color: toolkit.seriesColorsGodrej[0]
+	}, {
+		field: 'promo',
+		name: 'Promotions Expenses',
+		axis: 'left',
+		color: toolkit.seriesColorsGodrej[1]
+	}, {
+		field: 'promoSpg',
+		name: 'Total (SPG + Promo)',
+		axis: 'left',
+		color: toolkit.seriesColorsGodrej[2]
+	}, {
+		field: 'adv',
+		name: 'Advertising Expenses',
+		axis: 'left',
+		color: '#f00'
+	}, {
+		field: 'discount',
+		name: 'Discount Activity',
+		axis: 'left',
+		color: '#5e331a'
+	}, {
+		field: 'netSales',
+		name: 'Revenue',
+		axis: 'right',
+		color: '#b9105e'
+	}].filter(function (d) {
+		return selectedPNL.indexOf(d.field) > -1;
+	});
+
+	var selectedAxis = _.uniq(series.map(function (d) {
+		return d.axis;
+	}));
+	var valueAxes = [{
+		name: 'left',
+		title: { text: "Cost Scale" },
+		majorGridLines: { color: '#fafafa' },
+		labels: {
+			font: '"Source Sans Pro" 11px',
+			format: "{0:n2}"
+		}
+	}, {
+		name: 'right',
+		title: { text: "Revenue Scale" },
+		majorGridLines: { color: '#fafafa' },
+		labels: {
+			font: '"Source Sans Pro" 11px',
+			format: "{0:n2}"
+		},
+		color: '#b9105e'
+	}].filter(function (d) {
+		return selectedAxis.indexOf(d.name) > -1;
+	});
 
 	var config = {
 		dataSource: { data: dataParsed },
@@ -118,7 +217,8 @@ me.render = function () {
 			labels: {
 				visible: true,
 				position: 'top',
-				format: seriesLabelFormat
+				format: seriesLabelFormat,
+				font: '"Source Sans Pro" 8px'
 			},
 			line: {
 				border: {
@@ -133,45 +233,8 @@ me.render = function () {
 				}
 			}
 		},
-		series: [{
-			field: 'spg',
-			name: 'SPG',
-			axis: 'left',
-			color: toolkit.seriesColorsGodrej[0]
-		}, {
-			field: 'promo',
-			name: 'Promotions Expenses',
-			axis: 'left',
-			color: toolkit.seriesColorsGodrej[1]
-		}, {
-			field: 'promoSpg',
-			name: 'Total (SPG + Promo)',
-			axis: 'left',
-			color: toolkit.seriesColorsGodrej[2]
-		}, {
-			field: 'netSales',
-			name: 'Revenue',
-			axis: 'right',
-			color: '#b9105e'
-		}],
-		valueAxes: [{
-			name: 'left',
-			title: { text: "Cost Scale" },
-			majorGridLines: { color: '#fafafa' },
-			labels: {
-				font: '"Source Sans Pro" 11px',
-				format: "{0:n2}"
-			}
-		}, {
-			name: 'right',
-			title: { text: "Revenue Scale" },
-			majorGridLines: { color: '#fafafa' },
-			labels: {
-				font: '"Source Sans Pro" 11px',
-				format: "{0:n2}"
-			},
-			color: '#b9105e'
-		}],
+		series: series,
+		valueAxes: valueAxes,
 		categoryAxes: [{
 			field: 'when',
 			labels: {
@@ -185,7 +248,12 @@ me.render = function () {
 		}]
 	};
 
-	$('.chart').replaceWith('<div class="chart" style="width: ' + 80 * 24 + 'px;"></div>');
+	var width = 'auto';
+	if (me.time() == 'date.month') {
+		width = 50 * 24 + 'px';
+	}
+
+	$('.chart').replaceWith('<div class="chart" style="width: ' + width + ';"></div>');
 	$('.chart').kendoChart(config);
 };
 
@@ -267,8 +335,8 @@ me.changeBreakdownValue = function () {
 	}, 100);
 };
 
-vm.currentMenu('Analysis');
-vm.currentTitle('Marketing Efficiency');
+vm.currentMenu(me.title());
+vm.currentTitle(me.title());
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: me.title(), href: '#' }]);
 
 $(function () {
