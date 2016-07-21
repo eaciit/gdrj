@@ -1530,6 +1530,11 @@ func CleanAreanameNull(tkm toolkit.M) {
 	if dtkm.GetString("customer_areaname") == "" {
 		dtkm.Set("customer_areaname", dtkm.GetString("customer_branchname"))
 	}
+
+	if dtkm.GetString("customer_areaname") == "Jakarta" {
+		dtkm.Set("customer_areaname", "JAKARTA")
+	}
+
 	tkm.Set("key", dtkm)
 }
 
@@ -1569,7 +1574,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-rdbreak").
+		From("salespls-summary").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1604,8 +1609,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcSalesReturnMinusDiscount(trx)
 		// CalcSum(trx)
 
-		CleanReportSubChannelBreakdownRD(trx)
-
+		// CleanReportSubChannelBreakdownRD(trx)
+		CleanAreanameNull(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
