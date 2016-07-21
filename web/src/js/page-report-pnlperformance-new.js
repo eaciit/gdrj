@@ -3794,7 +3794,7 @@ let dsbrd = viewModel.dashboard
 				data: dsbrd.data()
 			},
 			columns: dsbrd.columns(),
-			resizable: false,
+			resizable: false, 
 			sortable: false, 
 			pageable: false,
 			filterable: false,

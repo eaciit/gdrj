@@ -15,6 +15,7 @@ lgd.menu = ko.observableArray([
 	{ to: 'rdvsbranchanalysis', title: 'Branch vs RD Analysis', icon: 'fa-bar-chart', color: '#3498DB' },
 	{ to: 'yearcompare', title: 'YoY Rev & EBIT', icon: 'fa-bar-chart', color: '#28B463' },
 	{ to: 'customanalysis', title: 'Custom Analysis', icon: 'fa-gear', color: 'rgb(255, 183, 68)' },
+	{ to: 'marketingefficiency', title: 'Marketing Efficiency', icon: 'fa-bar-chart', color: 'rgb(222, 68, 139)' }
 ])
 
 

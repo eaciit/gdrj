@@ -252,3 +252,12 @@ func (w *PageController) YearCompare(r *knot.WebContext) interface{} {
 
 	return w.Params
 }
+
+func (w *PageController) MarketingEfficiency(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.ViewName = "page-report-marketing-efficiency.html"
+
+	return w.Params
+}

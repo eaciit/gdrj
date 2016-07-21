@@ -1524,6 +1524,51 @@ func CleanUpperBranchnameJakarta(tkm toolkit.M) {
 	tkm.Set("key", dtkm)
 }
 
+//customer_areaname
+func CleanAreanameNull(tkm toolkit.M) {
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	if dtkm.GetString("customer_areaname") == "" {
+		dtkm.Set("customer_areaname", dtkm.GetString("customer_branchname"))
+	}
+
+	if dtkm.GetString("customer_areaname") == "Jakarta" {
+		dtkm.Set("customer_areaname", "JAKARTA")
+	}
+
+	tkm.Set("key", dtkm)
+}
+
+func CleanReportSubChannelBreakdownRD(tkm toolkit.M) {
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	if dtkm.GetString("customer_channelid") != "I1" {
+		return
+	}
+
+	listsubchannel := []string{"Hyper", "Super", "Mini", "Other", "R1 - Grosir Umum", "R10 - Tk.Perlengkapan Bayi",
+		"R11- Koperasi", "R12 - Bengkel/Accesories", "R13- Tk. Bangunan", "R14 -  Retail Minimarket",
+		"R15 - Grosir Kosmetik/Kelo", "R16 - Grosir Sembako", "R17 - Grosir Plastik", "R18 - Lain-lain", "R2 - Grosir Snack", "R4 - Toko Kosmetik", "R5 - Tk.Sembako/ Tk.Bumbu",
+		"R7 - Toko Obat / Apotek", "R9 - Toko Listrik", "S2 - Restoran/Cafe/Catering", "S3 - Salon / Spa", "S5 - Pest Control/Cleaning", "S6 - Industri",
+		"S8 - Lain lain", "R3 - Retailer Umum", "R6 - Toko Plastik", "R8 - Toko Alat Tulis", "S1 - Hotel", "S4 - Rumah Sakit", "S7 - Night Outlet"}
+
+	subch := dtkm.GetString("customer_reportsubchannel")
+	inslist := func(str string) bool {
+		x := false
+		for _, dt := range listsubchannel {
+			if str == dt {
+				x = true
+			}
+		}
+
+		return x
+	}
+
+	if inslist(subch) {
+		dtkm.Set("customer_reportsubchannel", "PT. EVERBRIGHT")
+	}
+
+	tkm.Set("key", dtkm)
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
@@ -1559,11 +1604,13 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CleanAndUpdateRD2016Vdist(trx)
 
 		// CleanAddBranchGroup(trx)
-		CleanUpperBranchnameJakarta(trx)
+		// CleanUpperBranchnameJakarta(trx)
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
 		// CalcSum(trx)
 
+		// CleanReportSubChannelBreakdownRD(trx)
+		CleanAreanameNull(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
