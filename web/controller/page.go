@@ -246,32 +246,11 @@ func (w *PageController) SalesReturnAnalysis(r *knot.WebContext) interface{} {
 	return w.Params
 }
 
-// func (w *PageController) PageReport(r *knot.WebContext, args []string) interface{} {
-// 	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
-// 	r.Config.OutputType = knot.OutputTemplate
-// 	r.Config.LayoutTemplate = LayoutFile
-// 	r.Config.ViewName = "page-report.html"
+func (w *PageController) YearCompare(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.ViewName = "page-report-year-compare.html"
 
-// 	if len(args) == 0 {
-// 		return toolkit.M{"subreport": false}
-// 	}
-
-// 	var id, name string = args[0], ""
-// 	var value1, value2, value3 string
-
-// 	switch id {
-// 	case "gross_sales_discount_and_net_sales":
-// 		name = "Gross Sales, Discount, and Net Sales"
-// 		value1 = "Gross Sales"
-// 		value2 = "Discount"
-// 		value3 = "Net Sales"
-// 	}
-
-// 	return toolkit.M{
-// 		"id":     id,
-// 		"name":   name,
-// 		"value1": value1,
-// 		"value2": value2,
-// 		"value3": value3,
-// 	}
-// }
+	return w.Params
+}
