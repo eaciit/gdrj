@@ -128,7 +128,7 @@ me.render = function () {
 		},
 		series: [{
 			field: 'spg',
-			name: 'SPG Exp / Export Cost',
+			name: 'SPG',
 			axis: 'left',
 			color: toolkit.seriesColorsGodrej[0]
 		}, {
@@ -149,6 +149,7 @@ me.render = function () {
 		}],
 		valueAxes: [{
 			name: 'left',
+			title: { text: "Cost Scale" },
 			majorGridLines: { color: '#fafafa' },
 			labels: {
 				font: '"Source Sans Pro" 11px',
@@ -156,6 +157,7 @@ me.render = function () {
 			}
 		}, {
 			name: 'right',
+			title: { text: "Revenue Scale" },
 			majorGridLines: { color: '#fafafa' },
 			labels: {
 				font: '"Source Sans Pro" 11px',
@@ -192,8 +194,8 @@ me.changeDimension = function (title, args) {
 	me.refresh();
 };
 
-vm.currentMenu('YoY Rev & EBIT');
-vm.currentTitle('&nbsp;');
+vm.currentMenu('Analysis');
+vm.currentTitle('Marketing Efficiency');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: me.title(), href: '#' }]);
 
 $(function () {
