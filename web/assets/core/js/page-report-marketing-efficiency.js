@@ -1,34 +1,57 @@
 'use strict';
 
+// MAKE NEW TAB, DUPLICATE THE CHART, THE VALUE WILL BE THE GROWTH OF EACH MONTH / QUARTER
+
 viewModel.yearCompare = {};
 var me = viewModel.yearCompare;
 
 me.title = ko.observable('Marketing Efficiency');
-me.subTitle = ko.observable('Channel');
-me.breakdownBy = ko.observable('customer.channelname');
 me.contentIsLoading = ko.observable(false);
 me.data = ko.observableArray([]);
-me.flag = ko.observable('');
 me.unit = ko.observable('v1000000000');
 me.optionUnit = ko.observableArray([{ _id: 'v1', Name: 'Actual', suffix: '' }, { _id: 'v1000', Name: 'Hundreds', suffix: 'K' }, { _id: 'v1000000', Name: 'Millions', suffix: 'M' }, { _id: 'v1000000000', Name: 'Billions', suffix: 'B' }]);
-me.plSPG = ko.observable('PL31');
-me.plPromo = ko.observable('PL29A');
-me.plNetSales = ko.observable('PL8A');
+me.time = ko.observable('date.month');
+me.optionTime = ko.observableArray([{ _id: 'date.month', Name: 'Month' }, { _id: 'date.quartertxt', Name: 'Quarter' }]);
+me.optionDropDownPNL = ko.observableArray([{ key: 'spg', field: 'PL31', name: 'SPG' }, { key: 'promo', field: 'PL29A', name: 'Promotions Expenses' }, { key: 'promoSpg', field: 'spg-promo', name: 'Total SPG & Promo' }, { key: 'adv', field: 'PL28', name: 'Advertising Expenses' }, { key: 'discount', field: 'PL7A', name: 'Discount Activity' }, { key: 'netSales', field: 'PL8A', name: 'Revenue' }]);
 
-me.groupMap = function (arr, c, d) {
-	return _.map(_.groupBy(arr, c), d);
-};
+me.valueDropDownPNL = ko.observableArray(me.optionDropDownPNL().map(function (d) {
+	return d.field;
+}));
 
-me.breakdownKey = function () {
-	return '_id_' + toolkit.replace(me.breakdownBy(), '.', '_');
+me.multiSelectPNL = {
+	data: me.optionDropDownPNL,
+	dataValueField: 'field',
+	dataTextField: 'name',
+	value: me.valueDropDownPNL
 };
 
 me.refresh = function () {
+	if (me.valueDropDownPNL().length == 0) {
+		toolkit.showError('Select at least one PNL');
+		return;
+	}
+
+	var breakdownValues = me.breakdownValue().filter(function (d) {
+		return d != 'All';
+	});
+
 	var param = {};
-	param.pls = [me.plSPG(), me.plPromo(), me.plNetSales()];
-	param.groups = rpt.parseGroups(['date.month']);
+	param.pls = me.optionDropDownPNL().map(function (d) {
+		return d.field;
+	}).filter(function (d) {
+		return d.indexOf('-') == -1;
+	});
+	param.groups = rpt.parseGroups([me.time()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(true, rpt.optionFiscalYears);
+
+	if (breakdownValues.length > 0) {
+		param.filters.push({
+			Field: me.breakdownBy(),
+			Op: '$in',
+			Value: breakdownValues
+		});
+	}
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
@@ -65,38 +88,121 @@ me.render = function () {
 	var dataParsed = [];
 	var years = rpt.optionFiscalYears();
 	var months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+	var quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
 	var startDate = moment(new Date(2014, 3, 1));
 
-	years.forEach(function (year) {
-		months.forEach(function (month) {
-			var row = me.data().find(function (d) {
-				var cond1 = d._id._id_date_fiscal === year;
-				var cond2 = parseInt(d._id._id_date_month, 10) === month;
-				return cond1 && cond2;
-			});
-
-			var o = {};
-			o.when = startDate.add(1, 'months').format('MMMM YYYY').replace(/ /g, '\n');
-			o.promo = 0;
-			o.spg = 0;
-			o.promoSpg = 0;
-			o.netSales = 0;
-
-			dataParsed.push(o);
-
-			toolkit.try(function () {
-				o.promo = Math.abs(row[me.plPromo()]) / divider;
-				o.spg = Math.abs(row[me.plSPG()]) / divider;
-				o.promoSpg = Math.abs(row[me.plPromo()] + row[me.plSPG()]) / divider;
-				o.netSales = Math.abs(row[me.plNetSales()]) / divider;
-			});
+	var inject = function inject(o, row) {
+		me.optionDropDownPNL().forEach(function (d) {
+			o[d.key] = 0;
 		});
+
+		dataParsed.push(o);
+
+		toolkit.try(function () {
+			o.spg = Math.abs(row.PL31) / divider;
+			o.promo = Math.abs(row.PL29A) / divider;
+			o.promoSpg = Math.abs(row.PL31 + row.PL29A) / divider;
+			o.adv = Math.abs(row.PL28) / divider;
+			o.discount = Math.abs(row.PL7A) / divider;
+			o.netSales = Math.abs(row.PL8A) / divider;
+		});
+	};
+
+	years.forEach(function (year) {
+		if (me.time() === 'date.month') {
+			months.forEach(function (month) {
+				var row = me.data().find(function (d) {
+					var cond1 = d._id._id_date_fiscal === year;
+					var cond2 = parseInt(d._id._id_date_month, 10) === month;
+					return cond1 && cond2;
+				});
+
+				var o = {};
+				o.when = startDate.add(1, 'months').format('MMM YYYY').replace(/ /g, '\n');
+				inject(o, row);
+			});
+		} else {
+			quarters.forEach(function (quarter) {
+				var row = me.data().find(function (d) {
+					var cond1 = d._id._id_date_fiscal === year;
+					var cond2 = d._id._id_date_quartertxt === year + ' ' + quarter;
+					return cond1 && cond2;
+				});
+
+				var o = {};
+				o.when = row._id._id_date_quartertxt.split(' ').reverse().join('\n');
+				inject(o, row);
+			});
+		}
 	});
 
 	var seriesLabelFormat = '{0:n0}';
 	if (divider > 1) {
 		seriesLabelFormat = '{0:n1} ' + unitSuffix;
 	}
+
+	var selectedPNL = me.valueDropDownPNL().map(function (d) {
+		return me.optionDropDownPNL().find(function (e) {
+			return e.field == d;
+		}).key;
+	});
+	var series = [{
+		field: 'spg',
+		name: 'SPG',
+		axis: 'left',
+		color: toolkit.seriesColorsGodrej[0]
+	}, {
+		field: 'promo',
+		name: 'Promotions Expenses',
+		axis: 'left',
+		color: toolkit.seriesColorsGodrej[1]
+	}, {
+		field: 'promoSpg',
+		name: 'Total (SPG + Promo)',
+		axis: 'left',
+		color: toolkit.seriesColorsGodrej[2]
+	}, {
+		field: 'adv',
+		name: 'Advertising Expenses',
+		axis: 'left',
+		color: '#f00'
+	}, {
+		field: 'discount',
+		name: 'Discount Activity',
+		axis: 'left',
+		color: '#5e331a'
+	}, {
+		field: 'netSales',
+		name: 'Revenue',
+		axis: 'right',
+		color: '#b9105e'
+	}].filter(function (d) {
+		return selectedPNL.indexOf(d.field) > -1;
+	});
+
+	var selectedAxis = _.uniq(series.map(function (d) {
+		return d.axis;
+	}));
+	var valueAxes = [{
+		name: 'left',
+		title: { text: "Cost Scale" },
+		majorGridLines: { color: '#fafafa' },
+		labels: {
+			font: '"Source Sans Pro" 11px',
+			format: "{0:n2}"
+		}
+	}, {
+		name: 'right',
+		title: { text: "Revenue Scale" },
+		majorGridLines: { color: '#fafafa' },
+		labels: {
+			font: '"Source Sans Pro" 11px',
+			format: "{0:n2}"
+		},
+		color: '#b9105e'
+	}].filter(function (d) {
+		return selectedAxis.indexOf(d.name) > -1;
+	});
 
 	var config = {
 		dataSource: { data: dataParsed },
@@ -111,7 +217,8 @@ me.render = function () {
 			labels: {
 				visible: true,
 				position: 'top',
-				format: seriesLabelFormat
+				format: seriesLabelFormat,
+				font: '"Source Sans Pro" 8px'
 			},
 			line: {
 				border: {
@@ -126,45 +233,8 @@ me.render = function () {
 				}
 			}
 		},
-		series: [{
-			field: 'spg',
-			name: 'SPG',
-			axis: 'left',
-			color: toolkit.seriesColorsGodrej[0]
-		}, {
-			field: 'promo',
-			name: 'Promotions Expenses',
-			axis: 'left',
-			color: toolkit.seriesColorsGodrej[1]
-		}, {
-			field: 'promoSpg',
-			name: 'Total (SPG + Promo)',
-			axis: 'left',
-			color: toolkit.seriesColorsGodrej[2]
-		}, {
-			field: 'netSales',
-			name: 'Revenue',
-			axis: 'right',
-			color: '#b9105e'
-		}],
-		valueAxes: [{
-			name: 'left',
-			title: { text: "Cost Scale" },
-			majorGridLines: { color: '#fafafa' },
-			labels: {
-				font: '"Source Sans Pro" 11px',
-				format: "{0:n2}"
-			}
-		}, {
-			name: 'right',
-			title: { text: "Revenue Scale" },
-			majorGridLines: { color: '#fafafa' },
-			labels: {
-				font: '"Source Sans Pro" 11px',
-				format: "{0:n2}"
-			},
-			color: '#b9105e'
-		}],
+		series: series,
+		valueAxes: valueAxes,
 		categoryAxes: [{
 			field: 'when',
 			labels: {
@@ -178,27 +248,104 @@ me.render = function () {
 		}]
 	};
 
-	$('.chart').replaceWith('<div class="chart" style="width: ' + 80 * 24 + 'px;"></div>');
+	var width = 'auto';
+	if (me.time() == 'date.month') {
+		width = 50 * 24 + 'px';
+	}
+
+	$('.chart').replaceWith('<div class="chart" style="width: ' + width + ';"></div>');
 	$('.chart').kendoChart(config);
 };
 
-me.changeDimension = function (title, args) {
-	me.subTitle(title);
-	me.breakdownBy(args.split('|')[0]);
-	me.flag('');
+me.optionDimensions = ko.observableArray([{ field: '', name: 'Total' }].concat(rpt.optionDimensions()));
+me.breakdownBy = ko.observable('');
+me.breakdownValue = ko.observableArray([]);
+me.optionBreakdownValues = ko.observableArray([]);
+me.breakdownValueAll = { _id: 'All', Name: 'All' };
+me.changeBreakdown = function () {
+	var all = me.breakdownValueAll;
+	var map = function map(arr) {
+		return arr.map(function (d) {
+			if ("customer.channelname" == me.breakdownBy()) {
+				return d;
+			}
+			if ("customer.keyaccount" == me.breakdownBy()) {
+				return { _id: d._id, Name: d._id };
+			}
 
-	if (args.indexOf('|') > -1) {
-		me.flag(args.split('|')[1]);
-	}
+			return { _id: d.Name, Name: d.Name };
+		});
+	};
+	setTimeout(function () {
+		me.breakdownValue([]);
 
-	me.refresh();
+		switch (me.breakdownBy()) {
+			case "customer.areaname":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Area())));
+				me.breakdownValue([all._id]);
+				break;
+			case "customer.region":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Region())));
+				me.breakdownValue([all._id]);
+				break;
+			case "customer.zone":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())));
+				me.breakdownValue([all._id]);
+				break;
+			case "product.brand":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())));
+				me.breakdownValue([all._id]);
+				break;
+			case "customer.branchname":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())));
+				me.breakdownValue([all._id]);
+				break;
+			case "customer.channelname":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())));
+				me.breakdownValue([all._id]);
+				break;
+			case "customer.keyaccount":
+				me.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())));
+				me.breakdownValue([all._id]);
+				break;
+		}
+	}, 100);
+};
+me.changeBreakdownValue = function () {
+	var all = me.breakdownValueAll;
+	setTimeout(function () {
+		var condA1 = me.breakdownValue().length == 2;
+		var condA2 = me.breakdownValue().indexOf(all._id) == 0;
+		if (condA1 && condA2) {
+			me.breakdownValue.remove(all._id);
+			return;
+		}
+
+		var condB1 = me.breakdownValue().length > 1;
+		var condB2 = me.breakdownValue().reverse()[0] == all._id;
+		if (condB1 && condB2) {
+			me.breakdownValue([all._id]);
+			return;
+		}
+
+		var condC1 = me.breakdownValue().length == 0;
+		if (condC1) {
+			me.breakdownValue([all._id]);
+		}
+	}, 100);
 };
 
-vm.currentMenu('Analysis');
-vm.currentTitle('Marketing Efficiency');
+vm.currentMenu(me.title());
+vm.currentTitle(me.title());
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: me.title(), href: '#' }]);
 
 $(function () {
-	me.refresh();
+	me.changeBreakdown();
+
+	toolkit.runAfter(function () {
+		me.breakdownValue(['All']);
+		me.refresh();
+	}, 200);
+
 	rpt.showExport(true);
 });
