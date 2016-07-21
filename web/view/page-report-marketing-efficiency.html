@@ -13,15 +13,23 @@
 <div>
 	<div class="col-md-12 col-sm-12 ez panel-content">
 
+	<!-- Nav tabs -->
+	<ul class="nav nav-pills nav-replace-title" role="tablist">
+		<li role="presentation" class="active">
+			<a role="tab" data-toggle="tab" onclick="me.show('Marketing Efficiency', 'efficiency', 'v1000000000')">Marketing Efficiency</a>
+		</li>
+		<li role="presentation">
+			<a role="tab" data-toggle="tab" onclick="me.show('Growth Efficiency', 'growth', 'v1')">Growth Efficiency</a>
+		</li>
+	</ul>
+
 <script src="{{BaseUrl}}res/core/js/page-report.js"></script>
 <script src="{{BaseUrl}}res/core/js/page-report-marketing-efficiency.js"></script>
 
 <div class="col-md-12 col-sm-12 no-padding hardcore">
 	<div class="panel ez no-padding hardcore">
 		<div class="panel-heading">
-			<h3 class="no-margin">
-				&nbsp;
-			</h3>
+			<h3 class="no-margin" data-bind="html: me.title">&nbsp;</h3>
 			<div class="panel-nav-button" data-bind="visible: !me.contentIsLoading()">
 				<div class="form-inline">
 					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: me.refresh" title="Refresh P&L Analysis">
@@ -54,7 +62,7 @@
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right">Unit</span>
 						<div class="width-full">
-							<input type="text" style="width: 100px;" data-bind="kendoDropDownList: { data: me.optionUnit, value: me.unit, dataTextField: 'Name', dataValueField: '_id' }" />
+							<input type="text" style="width: 100px;" data-bind="kendoDropDownList: { data: me.optionUnit, value: me.unit, dataTextField: 'Name', dataValueField: '_id', enabled: ko.computed(function () { return me.mode() === 'efficiency' }, me.mode) }" />
 						</div>
 					</div>
 

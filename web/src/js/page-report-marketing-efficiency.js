@@ -27,9 +27,7 @@ me.optionDropDownPNL = ko.observableArray([
 	{ key: 'discount', field: 'PL7A', name: 'Discount Activity' },
 	{ key: 'netSales', field: 'PL8A', name: 'Revenue' },
 ])
-
 me.valueDropDownPNL = ko.observableArray(me.optionDropDownPNL().map((d) => d.field))
-
 me.multiSelectPNL = {
 	data: me.optionDropDownPNL,
 	dataValueField: 'field',
@@ -38,6 +36,14 @@ me.multiSelectPNL = {
 	// itemTemplate: '<span class="k-state-default" style="background-image: url(\'../content/web/Customers/#:data.CustomerID#.jpg\')"></span>' +
  //                                  '<span class="k-state-default"><h3>#: data.ContactName #</h3><p>#: data.CompanyName #</p></span>',
  //    tagTemplate:  '<span class="selected-value" style="background-image: url(\'../content/web/Customers/#:data.CustomerID#.jpg\')"></span><span>#:data.ContactName#</span>',
+}
+
+me.mode = ko.observable('efficiency')
+me.show = (title, mode, unit) => {
+	me.title(title)
+	me.mode(mode)
+	me.unit(unit)
+	me.refresh()
 }
 
 me.refresh = () => {
@@ -95,6 +101,7 @@ me.render = () => {
 	let months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 	let quarters = ['Q1', 'Q2', 'Q3', 'Q4']
 	let startDate = moment(new Date(2014, 3, 1))
+	let prev = null
 
 	let inject = (o, row) => {
 		me.optionDropDownPNL().forEach((d) => {
@@ -103,14 +110,48 @@ me.render = () => {
 
 		dataParsed.push(o)
 
-		toolkit.try(() => {
-			o.spg = Math.abs(row.PL31) / divider
-			o.promo = Math.abs(row.PL29A) / divider
-			o.promoSpg = Math.abs(row.PL31 + row.PL29A) / divider
-			o.adv = Math.abs(row.PL28) / divider
-			o.discount = Math.abs(row.PL7A) / divider
-			o.netSales = Math.abs(row.PL8A) / divider
-		})
+		if (me.mode() == 'efficiency') {
+			toolkit.try(() => {
+				o.spg = Math.abs(row.PL31) / divider
+			})
+			toolkit.try(() => {
+				o.promo = Math.abs(row.PL29A) / divider
+			})
+			toolkit.try(() => {
+				o.promoSpg = Math.abs(row.PL31 + row.PL29A) / divider
+			})
+			toolkit.try(() => {
+				o.adv = Math.abs(row.PL28) / divider
+			})
+			toolkit.try(() => {
+				o.discount = Math.abs(row.PL7A) / divider
+			})
+			toolkit.try(() => {
+				o.netSales = Math.abs(row.PL8A) / divider
+			})
+		} else {
+			if (prev != null) {
+				toolkit.try(() => {
+					o.spg = Math.abs(toolkit.number((row.PL31 - prev.PL31) / prev.PL31)) * 100
+				})
+				toolkit.try(() => {
+					o.promo = Math.abs(toolkit.number((row.PL29A - prev.PL29A) / prev.PL29A)) * 100
+				})
+				toolkit.try(() => {
+					o.promoSpg = Math.abs(toolkit.number(((row.PL31 + row.PL29A) - (prev.PL31 + prev.PL29A)) / (prev.PL31 + prev.PL29A))) * 100
+				})
+				toolkit.try(() => {
+					o.adv = Math.abs(toolkit.number((row.PL28 - prev.PL28) / prev.PL28)) * 100
+				})
+				toolkit.try(() => {
+					o.discount = Math.abs(toolkit.number((row.PL7A - prev.PL7A) / prev.PL7A)) * 100
+				})
+				toolkit.try(() => {
+					o.netSales = Math.abs(toolkit.number((row.PL8A - prev.PL8A) / prev.PL8A)) * 100
+				})
+			}
+			prev = row
+		}
 	}
 
 	years.forEach((year) => {
@@ -142,6 +183,12 @@ me.render = () => {
 	})
 
 	let seriesLabelFormat = '{0:n0}'
+	let netSalesLabelsFormat = '{0:n1}'
+	if (me.mode() == 'growth') {
+		unitSuffix = ''
+		seriesLabelFormat = `{0:n1} %`
+		netSalesLabelsFormat = `{0:n1} %`
+	}
 
 	let selectedPNL = me.valueDropDownPNL().map((d) => me.optionDropDownPNL().find((e) => e.field == d).key)
 	let series = [{
@@ -175,7 +222,7 @@ me.render = () => {
 		axis: 'right',
 		color: '#b9105e',
 		labels: { 
-			format: '{0:n1}',
+			format: netSalesLabelsFormat,
 			font: '"Source Sans Pro" 8px',
 		},
 	}].filter((d) => selectedPNL.indexOf(d.field) > -1)
@@ -187,7 +234,7 @@ me.render = () => {
 		majorGridLines: { color: '#fafafa' },
         labels: { 
 			font: '"Source Sans Pro" 11px',
-        	format: "{0:n2}"
+        	format: "{0:n1}"
         },
     }, {
     	name: 'right',
@@ -195,7 +242,7 @@ me.render = () => {
 		majorGridLines: { color: '#fafafa' },
         labels: { 
 			font: '"Source Sans Pro" 11px',
-        	format: "{0:n2}"
+        	format: "{0:n1}"
         },
         color: '#b9105e'
     }].filter((d) => selectedAxis.indexOf(d.name) > -1)
@@ -235,7 +282,7 @@ me.render = () => {
             field: 'when',
             labels: {
 				font: '"Source Sans Pro" 11px',
-            	format: "{0:n2}"
+            	format: "{0:n1}"
             },
 			majorGridLines: { color: '#fafafa' },
 			axisCrossingValues: [0, 24]
@@ -249,6 +296,7 @@ me.render = () => {
     	width = `${50 * 24}px`
     }
 
+    console.log('-----', config)
 	$('.chart').replaceWith(`<div class="chart" style="width: ${width};"></div>`)
 	$('.chart').kendoChart(config)
 }
@@ -338,7 +386,7 @@ me.changeBreakdownValue = () => {
 
 
 vm.currentMenu(me.title())
-vm.currentTitle(me.title())
+vm.currentTitle('&nbsp;')
 vm.breadcrumb([
 	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
 	{ title: 'Home', href: viewModel.appName + 'page/landing' },
