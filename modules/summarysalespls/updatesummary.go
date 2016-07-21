@@ -1604,8 +1604,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcSalesReturnMinusDiscount(trx)
 		// CalcSum(trx)
 
-		CleanReportSubChannelBreakdownRD(trx)
-
+		// CleanReportSubChannelBreakdownRD(trx)
+		CleanAreanameNull(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
