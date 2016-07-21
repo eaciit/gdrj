@@ -121,14 +121,13 @@ me.render = () => {
 			tooltip: {
 				visible: true,
 				template: (d) => {
-					console.log('---', d)
-					return 'asdf'
+					return `${d.series.name} ${d.category.replace(/\n/g, ' ')} : ${kendo.format(seriesLabelFormat, d.value)}`
 				}
 			}
         },
 		series: [{
 			field: 'spg',
-			name: 'SPG Exp / Export Cost',
+			name: 'SPG',
 			axis: 'left',
 			color: toolkit.seriesColorsGodrej[0]
 		}, {
@@ -149,6 +148,7 @@ me.render = () => {
 		}],
         valueAxes: [{
         	name: 'left',
+        	title: { text: "Cost Scale" },
 			majorGridLines: { color: '#fafafa' },
             labels: { 
 				font: '"Source Sans Pro" 11px',
@@ -156,6 +156,7 @@ me.render = () => {
             },
         }, {
         	name: 'right',
+        	title: { text: "Revenue Scale" },
 			majorGridLines: { color: '#fafafa' },
             labels: { 
 				font: '"Source Sans Pro" 11px',
@@ -193,8 +194,8 @@ me.changeDimension = (title, args) => {
 }
 
 
-vm.currentMenu('YoY Rev & EBIT')
-vm.currentTitle('&nbsp;')
+vm.currentMenu('Analysis')
+vm.currentTitle('Marketing Efficiency')
 vm.breadcrumb([
 	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
 	{ title: 'Home', href: viewModel.appName + 'page/landing' },

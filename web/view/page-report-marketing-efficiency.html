@@ -16,50 +16,11 @@
 <script src="{{BaseUrl}}res/core/js/page-report.js"></script>
 <script src="{{BaseUrl}}res/core/js/page-report-marketing-efficiency.js"></script>
 
-	<!-- Nav tabs -->
-	<ul class="nav nav-pills nav-replace-title" role="tablist">
-		<li role="presentation" class="active">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Channel', 'customer.channelname')">Channel</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Branch', 'customer.branchname')">Branch</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Branch Group', 'customer.branchgroup')">Branch Group</a>
-		</li>
-		<!-- <li role="presentation">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('MT Breakdown', 'customer.reportsubchannel|mt-breakdown')">MT Breakdown</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('GT Breakdown', 'customer.reportsubchannel|gt-breakdown')">GT Breakdown</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('RD Breakdown', 'customer.reportsubchannel|rd-breakdown')">RD Breakdown</a>
-		</li> -->
-		<li role="presentation">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Region', 'customer.region')">Region</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('City', 'customer.areaname')">City</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Brand', 'product.brand')">Brand</a>
-		</li>
-		<!-- <li role="presentation">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Key Account Group', 'customer.keyaccount')">Key Account Group</a>
-		</li> -->
-		<li role="presentation">
-			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Key Account', 'customer.customergroupname')">Key Account</a>
-		</li>
-	</ul>
-
 <div class="col-md-12 col-sm-12 no-padding hardcore">
 	<div class="panel ez no-padding hardcore">
 		<div class="panel-heading">
 			<h3 class="no-margin">
-				<span data-bind="html: me.title"></span>
-				<span> - by </span>
-				<span data-bind="html: me.subTitle"></span>
+				&nbsp;
 			</h3>
 			<div class="panel-nav-button" data-bind="visible: !me.contentIsLoading()">
 				<div class="form-inline">
@@ -89,7 +50,7 @@
 				{{template "_loader.html"}}
 			</div>
 
-			<div data-bind="visible: !me.contentIsLoading()">
+			<div data-bind="visible: !me.contentIsLoading()" style="overflow: scroll; padding-bottom: 10px;">
 				<div class="chart"></div>
 			</div>
 		</div>
