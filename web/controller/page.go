@@ -4,6 +4,7 @@ import (
 	"eaciit/gdrj/web/model"
 	"github.com/eaciit/knot/knot.v1"
 	"github.com/eaciit/toolkit"
+	"net/http"
 )
 
 type PageController struct {
@@ -175,10 +176,7 @@ func (w *PageController) RDAnalysis(r *knot.WebContext) interface{} {
 }
 
 func (w *PageController) Dashboard(r *knot.WebContext) interface{} {
-	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
-	r.Config.OutputType = knot.OutputTemplate
-	r.Config.LayoutTemplate = LayoutFile
-	r.Config.ViewName = "page-report-dashboard.html"
+	http.Redirect(r.Writer, r.Request, "home", http.StatusTemporaryRedirect)
 
 	return w.Params
 }

@@ -207,14 +207,14 @@ yc.render = function () {
 	}
 
 	var tableWidth = 700;
-	if (yc.unit() == '1000') {
-		tableWidth += 100;
+	if (yc.unit() == 'v1000000') {
+		tableWidth += 80 * 1;
 	}
-	if (yc.unit() == '1000000') {
-		tableWidth += 100;
+	if (yc.unit() == 'v1000') {
+		tableWidth += 80 * 2;
 	}
-	if (yc.unit() == '1000000000') {
-		tableWidth += 100;
+	if (yc.unit() == 'v1') {
+		tableWidth += 80 * 3;
 	}
 
 	var columns = [{
