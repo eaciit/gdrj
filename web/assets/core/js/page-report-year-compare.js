@@ -237,17 +237,14 @@ yc.render = function () {
 				format: '{0:n0}', // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_value, 'n0') + '</div>'
-			}, // width: 130,
-			// locked: true
-			{
+			}, {
 				title: '% Growth',
 				field: 'v2015_nsal_prcnt',
 				format: '{0:n1} %',
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_prcnt, 'n1') + ' %</div>'
 			}]
-		}, // locked: true
-		{
+		}, {
 			title: 'EBIT',
 			columns: [{
 				title: 'Value',
@@ -255,9 +252,7 @@ yc.render = function () {
 				format: '{0:n0}', // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_value, 'n0') + '</div>'
-			}, // width: 130,
-			// locked: true
-			{
+			}, {
 				title: '% Growth',
 				field: 'v2015_ebit_prcnt',
 				format: '{0:n1} %',
@@ -265,8 +260,7 @@ yc.render = function () {
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_prcnt, 'n1') + ' %</div>'
 			}]
 		}]
-	}, // locked: true
-	{
+	}, {
 		title: 'FY 2014-2015',
 		columns: [{
 			title: 'Net Sales',
@@ -277,9 +271,7 @@ yc.render = function () {
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_nsal_value, 'n0') + '</div>'
 			}]
-		}, // width: 130,
-		// locked: true
-		{
+		}, {
 			title: 'EBIT',
 			columns: [{
 				title: 'Value',
@@ -291,8 +283,6 @@ yc.render = function () {
 		}]
 	}];
 
-	// width: 130,
-	// locked: true
 	console.log('----', dataParsed);
 
 	var config = {
