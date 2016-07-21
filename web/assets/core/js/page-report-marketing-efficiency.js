@@ -137,9 +137,6 @@ me.render = function () {
 	});
 
 	var seriesLabelFormat = '{0:n0}';
-	if (divider > 1) {
-		seriesLabelFormat = '{0:n1} ' + unitSuffix;
-	}
 
 	var selectedPNL = me.valueDropDownPNL().map(function (d) {
 		return me.optionDropDownPNL().find(function (e) {
@@ -175,7 +172,11 @@ me.render = function () {
 		field: 'netSales',
 		name: 'Revenue',
 		axis: 'right',
-		color: '#b9105e'
+		color: '#b9105e',
+		labels: {
+			format: '{0:n1}',
+			font: '"Source Sans Pro" 8px'
+		}
 	}].filter(function (d) {
 		return selectedPNL.indexOf(d.field) > -1;
 	});
@@ -229,7 +230,7 @@ me.render = function () {
 			tooltip: {
 				visible: true,
 				template: function template(d) {
-					return d.series.name + ' ' + d.category.replace(/\n/g, ' ') + ' : ' + kendo.format(seriesLabelFormat, d.value);
+					return d.series.name + ' ' + d.category.replace(/\n/g, ' ') + ' : ' + kendo.format(seriesLabelFormat, d.value) + ' ' + unitSuffix;
 				}
 			}
 		},
