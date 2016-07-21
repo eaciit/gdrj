@@ -1,0 +1,102 @@
+<style>
+	.breakdown-view .k-grid-header .k-header {
+	    text-align: center;
+	    border-color: white;
+	    font-weight: bold;
+	}
+
+	.k-grid tr td {
+	    border-right: 1px solid #f0f3f4;
+	}
+</style>
+
+<div>
+	<div class="col-md-12 col-sm-12 ez panel-content">
+
+<script src="{{BaseUrl}}res/core/js/page-report.js"></script>
+<script src="{{BaseUrl}}res/core/js/page-report-marketing-efficiency.js"></script>
+
+	<!-- Nav tabs -->
+	<ul class="nav nav-pills nav-replace-title" role="tablist">
+		<li role="presentation" class="active">
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Channel', 'customer.channelname')">Channel</a>
+		</li>
+		<li role="presentation">
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Branch', 'customer.branchname')">Branch</a>
+		</li>
+		<li role="presentation">
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Branch Group', 'customer.branchgroup')">Branch Group</a>
+		</li>
+		<!-- <li role="presentation">
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('MT Breakdown', 'customer.reportsubchannel|mt-breakdown')">MT Breakdown</a>
+		</li>
+		<li role="presentation">
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('GT Breakdown', 'customer.reportsubchannel|gt-breakdown')">GT Breakdown</a>
+		</li>
+		<li role="presentation">
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('RD Breakdown', 'customer.reportsubchannel|rd-breakdown')">RD Breakdown</a>
+		</li> -->
+		<li role="presentation">
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Region', 'customer.region')">Region</a>
+		</li>
+		<li role="presentation">
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('City', 'customer.areaname')">City</a>
+		</li>
+		<li role="presentation">
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Brand', 'product.brand')">Brand</a>
+		</li>
+		<!-- <li role="presentation">
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Key Account Group', 'customer.keyaccount')">Key Account Group</a>
+		</li> -->
+		<li role="presentation">
+			<a href="#tab0" role="tab" data-toggle="tab" onclick="me.changeDimension('Key Account', 'customer.customergroupname')">Key Account</a>
+		</li>
+	</ul>
+
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin">
+				<span data-bind="html: me.title"></span>
+				<span> - by </span>
+				<span data-bind="html: me.subTitle"></span>
+			</h3>
+			<div class="panel-nav-button" data-bind="visible: !me.contentIsLoading()">
+				<div class="form-inline">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Unit</span>
+						<div class="width-full">
+							<input type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: me.optionUnit, value: me.unit, dataTextField: 'Name', dataValueField: '_id' }" />
+						</div>
+					</div>
+
+
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: me.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#year-comparison', `Year Comparison - ${me.subTitle()}`, 'kendonormal')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div data-bind="visible: me.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !me.contentIsLoading()">
+				<div class="chart"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+	</div>
+
+	{{template "_filter.html"}}
+</div>
