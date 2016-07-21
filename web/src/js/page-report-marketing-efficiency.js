@@ -142,9 +142,6 @@ me.render = () => {
 	})
 
 	let seriesLabelFormat = '{0:n0}'
-	if (divider > 1) {
-		seriesLabelFormat = `{0:n1} ${unitSuffix}`
-	}
 
 	let selectedPNL = me.valueDropDownPNL().map((d) => me.optionDropDownPNL().find((e) => e.field == d).key)
 	let series = [{
@@ -176,7 +173,11 @@ me.render = () => {
 		field: 'netSales',
 		name: 'Revenue',
 		axis: 'right',
-		color: '#b9105e'
+		color: '#b9105e',
+		labels: { 
+			format: '{0:n1}',
+			font: '"Source Sans Pro" 8px',
+		},
 	}].filter((d) => selectedPNL.indexOf(d.field) > -1)
 
 	let selectedAxis = _.uniq(series.map((d) => d.axis))
@@ -224,7 +225,7 @@ me.render = () => {
 			tooltip: {
 				visible: true,
 				template: (d) => {
-					return `${d.series.name} ${d.category.replace(/\n/g, ' ')} : ${kendo.format(seriesLabelFormat, d.value)}`
+					return `${d.series.name} ${d.category.replace(/\n/g, ' ')} : ${kendo.format(seriesLabelFormat, d.value)} ${unitSuffix}`
 				}
 			}
         },
