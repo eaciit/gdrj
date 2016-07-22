@@ -616,8 +616,7 @@ ag.render = function () {
 		},
 		series: series,
 		valueAxis: axes,
-		categoryAxis: categoryAxis,
-		seriesClick: ag.seriesClick
+		categoryAxis: categoryAxis
 	};
 
 	$('.annually-diff').replaceWith("<div class=\"annually-diff\" style=\"width: " + width + "px;\"></div>");
@@ -1126,8 +1125,7 @@ qg.render = function () {
 		},
 		series: series,
 		valueAxis: axes,
-		categoryAxis: categoryAxis,
-		seriesClick: qg.seriesClick
+		categoryAxis: categoryAxis
 	};
 
 	$('.quarterly-diff').replaceWith("<div class=\"quarterly-diff\" style=\"width: " + width + "px;\"></div>");
