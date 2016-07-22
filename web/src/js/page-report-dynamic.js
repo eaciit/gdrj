@@ -221,7 +221,7 @@ rd.setup = () => {
 				_id: 'salesdiscount', 
 				plheader: 'Sales Discount',
 				callback: (v, k) => {
-					let salesDiscount = Math.abs(toolkit.sum(v, (e) => (e) => 
+					let salesDiscount = Math.abs(toolkit.sum(v, (e) =>
 						toolkit.sum(['PL7', 'PL8'], (f) => toolkit.number(e[f]))
 					))
 
@@ -235,7 +235,7 @@ rd.setup = () => {
 				_id: 'prcnt', 
 				plheader: vm.currentTitle(),
 				callback: (v, k) => {
-					let salesDiscount = Math.abs(toolkit.sum(v, (e) => (e) => 
+					let salesDiscount = Math.abs(toolkit.sum(v, (e) =>
 						toolkit.sum(['PL7', 'PL8'], (f) => toolkit.number(e[f]))
 					))
 					let grossSales = Math.abs(toolkit.sum(v, (e) => e.PL0))
@@ -289,7 +289,7 @@ rd.setup = () => {
 				_id: 'salesdiscount', 
 				plheader: 'Sales Discount',
 				callback: (v, k) => {
-					let salesDiscount = Math.abs(toolkit.sum(v, (e) => (e) => 
+					let salesDiscount = Math.abs(toolkit.sum(v, (e) =>
 						toolkit.sum(['PL7', 'PL8'], (f) => toolkit.number(e[f]))
 					))
 
@@ -306,7 +306,7 @@ rd.setup = () => {
 				_id: 'prcnt', 
 				plheader: vm.currentTitle(),
 				callback: (v, k) => {
-					let salesDiscount = Math.abs(toolkit.sum(v, (e) => (e) => 
+					let salesDiscount = Math.abs(toolkit.sum(v, (e) =>
 						toolkit.sum(['PL7', 'PL8'], (f) => toolkit.number(e[f]))
 					))
 					let quantity = Math.abs(toolkit.sum(v, (e) => e.salesqty))
@@ -406,7 +406,38 @@ rd.setup = () => {
 		} break;
 
 
-		// ["PL29", "PL30", "PL31", "PL32"]
+
+		case 'freight-cost-by-sales': {
+			vm.currentTitle('Freight Cost by Sales')
+			rd.series = ko.observableArray([{ 
+				_id: 'freightcost', 
+				plheader: 'Freight Cost',
+				callback: (v, k) => {
+					let freightCost = Math.abs(toolkit.sum(v, (e) => e.PL23))
+
+					return freightCost / rd.divider()
+				}
+			}, { 
+				_id: 'netsales', 
+				plheader: 'Net Sales',
+				callback: (v, k) => {
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+
+					return netSales / rd.divider()
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {
+					let freightCost = Math.abs(toolkit.sum(v, (e) => e.PL23))
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+
+					return toolkit.number(freightCost / netSales) * 100
+				}
+			}])
+		} break;
+
+
 
 
 

@@ -233,11 +233,9 @@ rd.setup = function () {
 					plheader: 'Sales Discount',
 					callback: function callback(v, k) {
 						var salesDiscount = Math.abs(toolkit.sum(v, function (e) {
-							return function (e) {
-								return toolkit.sum(['PL7', 'PL8'], function (f) {
-									return toolkit.number(e[f]);
-								});
-							};
+							return toolkit.sum(['PL7', 'PL8'], function (f) {
+								return toolkit.number(e[f]);
+							});
 						}));
 
 						return salesDiscount / rd.divider();
@@ -251,11 +249,9 @@ rd.setup = function () {
 					plheader: vm.currentTitle(),
 					callback: function callback(v, k) {
 						var salesDiscount = Math.abs(toolkit.sum(v, function (e) {
-							return function (e) {
-								return toolkit.sum(['PL7', 'PL8'], function (f) {
-									return toolkit.number(e[f]);
-								});
-							};
+							return toolkit.sum(['PL7', 'PL8'], function (f) {
+								return toolkit.number(e[f]);
+							});
 						}));
 						var grossSales = Math.abs(toolkit.sum(v, function (e) {
 							return e.PL0;
@@ -315,11 +311,9 @@ rd.setup = function () {
 					plheader: 'Sales Discount',
 					callback: function callback(v, k) {
 						var salesDiscount = Math.abs(toolkit.sum(v, function (e) {
-							return function (e) {
-								return toolkit.sum(['PL7', 'PL8'], function (f) {
-									return toolkit.number(e[f]);
-								});
-							};
+							return toolkit.sum(['PL7', 'PL8'], function (f) {
+								return toolkit.number(e[f]);
+							});
 						}));
 
 						return salesDiscount / rd.divider();
@@ -338,11 +332,9 @@ rd.setup = function () {
 					plheader: vm.currentTitle(),
 					callback: function callback(v, k) {
 						var salesDiscount = Math.abs(toolkit.sum(v, function (e) {
-							return function (e) {
-								return toolkit.sum(['PL7', 'PL8'], function (f) {
-									return toolkit.number(e[f]);
-								});
-							};
+							return toolkit.sum(['PL7', 'PL8'], function (f) {
+								return toolkit.number(e[f]);
+							});
 						}));
 						var quantity = Math.abs(toolkit.sum(v, function (e) {
 							return e.salesqty;
@@ -456,7 +448,44 @@ rd.setup = function () {
 				};
 			}break;
 
-		// ["PL29", "PL30", "PL31", "PL32"]
+		case 'freight-cost-by-sales':
+			{
+				vm.currentTitle('Freight Cost by Sales');
+				rd.series = ko.observableArray([{
+					_id: 'freightcost',
+					plheader: 'Freight Cost',
+					callback: function callback(v, k) {
+						var freightCost = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL23;
+						}));
+
+						return freightCost / rd.divider();
+					}
+				}, {
+					_id: 'netsales',
+					plheader: 'Net Sales',
+					callback: function callback(v, k) {
+						var netSales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+
+						return netSales / rd.divider();
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var freightCost = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL23;
+						}));
+						var netSales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+
+						return toolkit.number(freightCost / netSales) * 100;
+					}
+				}]);
+			}break;
 
 		default:
 			{
