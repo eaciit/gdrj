@@ -1073,11 +1073,13 @@ func prepsalesplssummarymtwrongsubch() {
 		dtkm.Set("customer_reportsubchannel", arrsubch[ilnsubch])
 		tkm.Set("key", dtkm)
 
-		tkm.Set("PL1", tkm.GetFloat64("PL2"))
-		tkm.Set("PL2", 0)
+		val := tkm.GetFloat64("PL1") + tkm.GetFloat64("PL2")
+		tkm.Set("PL1", val)
+		tkm.Set("PL2", float64(0))
 
-		tkm.Set("PL7", tkm.GetFloat64("PL8"))
-		tkm.Set("PL8", 0)
+		val = tkm.GetFloat64("PL7") + tkm.GetFloat64("PL8")
+		tkm.Set("PL7", val)
+		tkm.Set("PL8", float64(0))
 
 		CalcSum(tkm)
 
