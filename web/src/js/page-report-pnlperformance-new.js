@@ -3570,6 +3570,7 @@ let dsbrd = viewModel.dashboard
 		{ pnl: "Gross Margin", plcodes: ["PL74C"] },
 		{ pnl: "SGA", plcodes: ["PL94A"] },
 		{ pnl: "Royalties", plcodes: ["PL26A"] },
+		{ pnl: "A&P", plcodes: ["PL32A"] },
 		{ pnl: "EBITDA", plcodes: ["PL44C"] },
 		{ pnl: "EBIT %", plcodes: [] },
 		{ pnl: "EBIT", plcodes: ["PL44B"] },
@@ -3936,6 +3937,7 @@ let rank = viewModel.dashboardRanking
 		{ field: 'cogsPercentage', template: (d) => `${kendo.toString(d.cogsPercentage, 'n2')} %`, title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ field: 'ebitPercentage', template: (d) => `${kendo.toString(d.ebitPercentage, 'n2')} %`, title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ field: 'ebitdaPercentage', template: (d) => `${kendo.toString(d.ebitdaPercentage, 'n2')} %`, title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ field: 'anpPercentage', template: (d) => `${kendo.toString(d.anpPercentage, 'n2')} %`, title: 'A & P %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}' },
 		{ field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: `<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>`, format: '{0:n0}' },
 	])
@@ -3952,7 +3954,7 @@ let rank = viewModel.dashboardRanking
 		}
 
 		let param = {}
-		param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
+		param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A", "PL32A"]
 		param.groups = rpt.parseGroups([breakdown])
 		param.aggr = 'sum'
 		param.filters = rpt.getFilterValue(false, rank.fiscalYear)
@@ -4008,13 +4010,14 @@ let rank = viewModel.dashboardRanking
 			row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A) * 100
 			row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A) * 100
 			row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A) * 100
+			row.anpPercentage = toolkit.number(d.PL32A / d.PL8A) * 100
 			row.netSales = d.PL8A
 			row.ebit = d.PL44B
 			rows.push(row)
 		})
 
 		rank.data(_.orderBy(rows, (d) => d.netSales, 'desc'))
-
+		rank.columns()[0].title = _.find(rank.optionDimensions(), (e) => { return e.field == rank.breakdown() }).name
 		let config = {
 			dataSource: {
 				data: rank.data(),
