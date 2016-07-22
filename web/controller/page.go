@@ -261,3 +261,21 @@ func (w *PageController) MarketingEfficiency(r *knot.WebContext) interface{} {
 
 	return w.Params
 }
+
+func (w *PageController) ReportDynamic(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.ViewName = "page-report-dynamic.html"
+
+	return w.Params
+}
+
+func (w *PageController) Report(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.ViewName = "page-report-other-analysis.html"
+
+	return w.Params
+}

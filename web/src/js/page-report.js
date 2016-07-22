@@ -14,6 +14,7 @@ let rpt = viewModel.report
 rpt.filter = [
 	{ _id: 'common', group: 'Base Filter', sub: [
 		{ _id: 'Branch', from: 'Branch', title: 'Branch' },
+		{ _id: 'BranchGroup', from: 'MasterBranchGroup', title: 'Branch Group' },
 		{ _id: 'Brand', from: 'Brand', title: 'Brand' },
 		{ _id: 'Channel', from: 'Channel', title: 'Channel' },
 		{ _id: 'Region', from: 'Region', title: 'Region' },
@@ -129,6 +130,7 @@ rpt.pivotModel = [
 rpt.getFilterValue = (multiFiscalYear = false, fiscalField = rpt.value.FiscalYear) => {
 	let res = [
 		{ 'Field': 'customer.branchname', 'Op': '$in', 'Value': rpt.value.Branch() },
+		{ 'Field': 'customer.branchgroup', 'Op': '$in', 'Value': rpt.value.BranchGroup() },
 		{ 'Field': 'product.brand', 'Op': '$in', 'Value': rpt.value.Brand().concat([]) },
 		{ 'Field': 'customer.channelname', 'Op': '$in', 'Value': rpt.value.Channel().concat([]) },
 		{ 'Field': 'customer.region', 'Op': '$in', 'Value': rpt.value.Region().concat([]) },
@@ -200,6 +202,7 @@ rpt.data = ko.observableArray([])
 rpt.optionDimensions = ko.observableArray([
 	// { field: "", name: 'None', title: '' },
 	{ field: "customer.branchname", name: 'Branch/RD', title: 'customer_branchname' },
+	{ field: "customer.branchgroup", name: 'Branch Group', title: 'customer_branchgroup' },
     { field: "product.brand", name: 'Brand', title: 'product_brand' },
 	{ field: 'customer.channelname', name: 'Channel', title: 'customer_channelname' },
     // { field: 'customer.name', name: 'Outlet', title: 'customer_name' },
@@ -401,7 +404,7 @@ rpt.filterMultiSelect = (d) => {
 			},
 			value: rpt.value[d._id]
 		})
-	} else if (['Branch', 'Brand', 'MasterArea', 'MasterDistributor', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
+	} else if (['Branch', 'Brand', 'MasterArea', 'MasterDistributor', 'MasterBranchGroup', 'HCostCenterGroup', 'Entity', 'Channel', 'HBrandCategory', 'Product', 'Type', 'KeyAccount', 'CustomerGroup', 'LedgerAccount'].indexOf(d.from) > -1) {
 		config = $.extend(true, config, {
 			data: rpt.masterData[d._id],
 			dataValueField: '_id',
@@ -429,7 +432,7 @@ rpt.filterMultiSelect = (d) => {
 
 			rpt.masterData[d._id](_.sortBy(res.data, (d) => d.Name))
 
-			if (['KeyAccount', 'Brand', 'Branch'].indexOf(d.from) > -1) {
+			if (['KeyAccount', 'Brand', 'Branch', 'BranchGroup'].indexOf(d.from) > -1) {
 				rpt.masterData[d._id].push({ _id: "OTHER", Name: "OTHER" })
 			}
 		})

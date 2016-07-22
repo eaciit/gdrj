@@ -45,7 +45,7 @@
 			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by RD - All Channel'); v1.mode('Regional Distributor'); v1.refresh();">RD - All Channel</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Key Accounts'); kac.refresh();">Key Accounts</a>
+			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="bkd.title('KA served by Branches only'); kac.refresh();">KA served by Branches only</a>
 		</li>
 		<!-- <li role="presentation">
 			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Key Account Groups', 'account');">Key Account Groups</a>
@@ -54,13 +54,13 @@
 			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Key Accounts'); kac.refresh();">Key Accounts</a>
 		</li> -->
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Modern Trade Breakdown', 'mt sub channel');">MT Breakdown</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('Branch Modern Trade', 'mt sub channel');">Branch Modern Trade</a>
 		</li>
 		<li role="presentation">
 			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownDistributor(); subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownGeneralTrade(); subchan.switchRefresh('P&L by General Trade Breakdown', 'gt');">GT Breakdown</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownGeneralTrade(); subchan.switchRefresh('Branch GT', 'gt');">Branch GT</a>
 		</li>
 		<li role="presentation">
 			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownBrand(); subchan.switchRefresh('P&L by Brand', 'brand');">Brand</a>
@@ -389,6 +389,13 @@
 						</div>
 						<div class="clearfix"></div>
 					</div>
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Channel</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: kac.optionBreakdownChannelValues, dataValueField: '_id', dataTextField: 'Name', value: kac.breakdownChannelValue, placeholder: 'Choose value', change: kac.changeBreakdownChannelValue }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
 				</div>
 				<div class="clearfix"></div>
 			</div>
@@ -450,6 +457,14 @@
 						</div>
 						<div class="clearfix"></div>
 					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'brand' || subchan.what() == 'city' || subchan.what() == 'branch-group')">
+						<span class="input-group-addon align-right">Channel</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownChannelValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownChannelValue, placeholder: 'Choose value', change: subchan.changeBreakdownChannelValue, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
 					
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'rd')">
 						<span class="input-group-addon align-right">Distributor</span>
@@ -468,7 +483,7 @@
 					</div>
 					
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'city')">
-						<span class="input-group-addon align-right">General Trade</span>
+						<span class="input-group-addon align-right">Select Cities</span>
 						<div class="width-full">
 							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownCityValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownCity, placeholder: 'Choose value', change: subchan.changeBreakdownCityValue, filter: 'contains' }"></select>
 						</div>
@@ -574,6 +589,15 @@
 								</div>
 								<div class="panel-collapse collapse in" role="tabpanel" id="c-0">
 									<div class="panel-body">
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Channel</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionChannel, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterChannel, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
 										<div class="form-group">
 											<div class="input-group input-group-sm ez width-full">
 												<span class="input-group-addon align-right" style="width: 110px;">MT Breakdown</span>
