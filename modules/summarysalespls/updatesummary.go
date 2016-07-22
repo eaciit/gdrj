@@ -925,6 +925,97 @@ func prepmasterbranchgroup() {
 	masters.Set("branchgroup", branchgroup)
 }
 
+func prepsalesplssummaryrdwrongsubch() {
+	//salespls-summary-rdwrongsubch
+
+	arrsubch := []string{"PT.BINTANG SRIWIJAYA", "PT.DUTAMASINDO LABORAJAYA", "PT.PULAU BARU JAYA",
+		"PT. EVERBRIGHT", "CV. MITRA NIAGA CEMERLANG", "PT.LAUT TIMUR ARDIPRIMA", "PT.ULTRAADILESTARI STELLAPERKASA",
+		"UD RODA MAS", "PT WILRIKA CITRA MANDIRI", "PT. SEGAR PRIMA LAKSANA", "PT. NATURAL ALTOVIRA",
+		"PT. Laut Timur Ardiprima", "UD.AJEKAADITAMA D/AGUS.JK", "SARIPIN", "CV. CAHAYA MAKMUR ABADI",
+		"PT.TIGASARI PRIMARAYA", "UD. TULUS JAYA", "PT. BINTANG SRIWIJAYA-BKL", "CV.MAJU MAKMUR", "PT.TULUS MAJU", "CV.MITRA SEJATI DISTRIBUSI",
+		"PT. PRESTASI SURYA BAHARI", "PT.ANUGERAH WAHYUDI SEJAHTERA", "CV. SUMBER BERKAT ABADI", "CV. SINAR MENTARI SUKSES-KEDIRI",
+		"UD. MODERN KAPAS", "PT.INDO PROSPEK PRATAMA", "PT. MESTIKA ACEH SEMESTA", "PT.MANDIRI ABADI JAYA UTOMO",
+		"PT HANSEL DUTA CIPTA P", "UD.TIGA JAYA", "UD. GEMA REJEKI", "PT.NUSANTARA JAYA S.M", "PT.TERUS JAYA ABADI", "PT. PANCA NIAGA JAYA LESTARI",
+		"UD.CAHAYA MITRA LESTARI"}
+
+	if fiscalyear == 2016 {
+		arrsubch = []string{"PT. EVERBRIGHT", "PT.DUTAMASINDO LABORAJAYA", "PT.BINTANG SRIWIJAYA", "CV. MITRA NIAGA CEMERLANG",
+			"PT.PULAU BARU JAYA", "PT.LAUT TIMUR ARDIPRIMA", "PT WILRIKA CITRA MANDIRI", "UD RODA MAS",
+			"PT. NATURAL ALTOVIRA", "CV. CAHAYA MAKMUR ABADI", "PT. SEGAR PRIMA LAKSANA", "UD.AJEKAADITAMA D/AGUS.JK",
+			"SARIPIN", "PT. Laut Timur Ardiprima", "UD. TULUS JAYA", "PT. BINTANG SRIWIJAYA-BKL",
+			"PT.TULUS MAJU", "PT.PRIMAJAYA MAJUBERSAMA", "PT.MANDIRI ABADI JAYA UTOMO", "CV. SUMBER BERKAT ABADI",
+			"UD. MODERN KAPAS", "PT. MESTIKA ACEH SEMESTA", "CV.MITRA SEJATI DISTRIBUSI", "PT.ANUGERAH WAHYUDI SEJAHTERA",
+			"PT. PRESTASI SURYA BAHARI", "UD. GEMA REJEKI", "UD.TIGA JAYA", "CV. SINAR MENTARI SUKSES-KEDIRI",
+			"PT. BANTEN RUBIARTA", "CV.MAJU MAKMUR", "PT.TERUS JAYA ABADI", "PT HANSEL DUTA CIPTA P",
+			"PT.NUSANTARA JAYA S.M", "CV. CITRA MANDIRI", "UD.CAHAYA MITRA LESTARI", "UD.SEJAHTERA",
+			"UD. TULUS JAYA", "CV. SUMBER BERKAT ABADI", "UD. MODERN KAPAS", "CV.MITRA SEJATI DISTRIBUSI",
+			"UD. GEMA REJEKI", "UD.TIGA JAYA", "CV. SINAR MENTARI SUKSES-KEDIRI", "PT.TERUS JAYA ABADI",
+			"UD.SEJAHTERA", "CV. MENADO PUTRA PERKASA", "UD. MITRA MAKASSAR", "PT.PUTRA NIAGA SEJAHTERA",
+			"UD.MANDIRI", "PT. ANEKA NIAGA", "TOKO GUDANG RABAT MANGGA DUA", "CV. SINAR MENTARI SUKSES-BLITAR",
+			"PT. FAJAR MAKMUR SENTOSA", "CV. SINAR MENTARI SUKSES-T.AGUNG", "PT.SURI DIANPERKASA", "CV. BERDIKARI", "PT.BERKAT BUDI BERSAMA",
+			"UD. BINTORO INDAH", "PT. SUHARTONO INTI PRAKARSA", "CV. FORTUNE MADURA SEJAHTERA", "UD. CAHAYA ADITAMA",
+			"CV. TIMUN MAS", "CV.JAYA ABADI", "UD.JAYA RAYA                       ", "PT.ANUTA KARYA PRIMA",
+			"ABADI SENTOSA, CV", "TOKO ALIF", "PT. MAKMUR SUMBER SENTOSA", "CV. FAROMAS TIMOR DISTRIBUTION", "UD. SINAR TANDUNG",
+			"CV. SINAR MOLINA ABADI", "CV. VITA PERMAI", "CV.PAPUA SEJAHTERA", "UD. PILAR JAYA MAKMUR",
+			"CV.GEMILANG", "CV. VITA PERMAI / TOKO ANEKA", "PD.BUKIT BARISAN                   ", "CV. SUMBER DINAR",
+			"CV. MUTHYA QUINSYAH", "UD. RODA MAS", "PT. KARTIKA PUTRA MANDIRI (SIGI)", "CV. PESONA MAKASSAR"}
+	}
+
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
+
+	qSave := workerconn.NewQuery().
+		From("salespls-summary").
+		SetConfig("multiexec", true).
+		Save()
+
+	toolkit.Println("--> Update data to salespls-summary from salespls-summary-rdwrongsubch")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-rdwrongsubch").
+		Order("-PL7A").
+		Cursor(nil)
+
+	defer csr.Close()
+
+	// salesplssummaryrdwrongsubch := []toolkit.M{}
+	scount = csr.Count()
+	step := getstep(scount) * 10
+	lnsubch := len(arrsubch)
+
+	i := int(0)
+	for {
+		i += 1
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		if i <= 10 {
+			toolkit.Println(tkm.GetFloat64("PL7A"))
+		}
+
+		if i%step == 0 {
+			toolkit.Printfn("Saving %d of %d (%d pct) in %s",
+				i, scount, i*100/scount, time.Since(t0).String())
+		}
+
+		ilnsubch := i % lnsubch
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		dtkm.Set("customer_reportsubchannel", arrsubch[ilnsubch])
+		tkm.Set("key", dtkm)
+
+		_ = qSave.Exec(toolkit.M{}.Set("data", tkm))
+
+		// salesplssummaryrdwrongsubch = append(salesplssummaryrdwrongsubch, tkm)
+		// salesplssummaryrdwrongsubch.Set(tkm.GetString("_id"), tkm)
+	}
+
+	// masters.Set("salesplssummaryrdwrongsubch", salesplssummaryrdwrongsubch)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -937,6 +1028,7 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
+	prepsalesplssummaryrdwrongsubch()
 	// prepmasterbranchgroup()
 	// prepmastertotsalesrd2016vdist()
 
@@ -955,6 +1047,8 @@ func main() {
 	// prepreclasspromospgtordmt()
 	// prepmasterrollback_adv()
 	// prepmasterrollback_sumbrand()
+
+	os.Exit(1)
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
@@ -1610,7 +1704,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcSum(trx)
 
 		// CleanReportSubChannelBreakdownRD(trx)
-		CleanAreanameNull(trx)
+		// CleanAreanameNull(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
