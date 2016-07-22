@@ -2021,9 +2021,11 @@ let v1 = viewModel.RDvsBranchView1
 
 				if (d._id == discountActivityPLCode) {
 					percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
-				} else if (d._id != netSalesPLCode) {
+				} else if (d._id == netSalesPLCode) {
+					percentage = 100
+				} else {
 					percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
-				}
+				} 
 
 				row[`${breakdown} %`] = percentage
 			})

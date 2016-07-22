@@ -169,25 +169,29 @@ yc.render = () => {
 		dimensionWidth = 160
 	}
 
+	let widthValue = 90
 	let tableWidth = 1200
 	if (yc.unit() == 'v1000000') {
-		tableWidth += (80 * 1)
+		tableWidth += (120 * 1)
+		widthValue += (10 * 1)
 	}
 	if (yc.unit() == 'v1000') {
-		tableWidth += (80 * 2)
+		tableWidth += (120 * 2)
+		widthValue += (10 * 2)
 	}
 	if (yc.unit() == 'v1') {
-		tableWidth += (80 * 3)
+		tableWidth += (120 * 3)
+		widthValue += (10 * 3)
 	}
+
 
 	let columns = [{
 		title: dimensionTitle,
 		template: (d) => d.dimension,
 		headerAttributes: { style: 'vertical-align: middle;' },
 		footerTemplate: 'Total',
-		width: dimensionWidth
-		// width: 200,
-		// locked: true
+		width: dimensionWidth,
+		locked: true
 	}, {
 		title: 'FY 2015-2016',
 		columns: [{
@@ -198,22 +202,23 @@ yc.render = () => {
 				format: `{0:n0}`, // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
 				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_value, 'n0')}</div>`,
-				// width: 130,
-				// locked: true
+				width: widthValue,
 			}, {
 				title: '% Growth',
 				field: 'v2015_nsal_prcnt',
 				format: '{0:n1} %',
 				attributes: { class: 'align-right' },
 				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_prcnt, 'n1')} %</div>`,
-				// locked: true
+				width: 90,
 			}]
 		}, {
 			title: "% Gross Margin",
 			field: "v2015_gs_prcnt",
 			format: '{0:n2} %',
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">100 %</div>`
+			footerTemplate: `<div class="align-right">100 %</div>`,
+			headerAttributes: { style: 'vertical-align: middle;' },
+			width: 100,
 		}, {
 			title: 'EBIT',
 			columns: [{
@@ -222,22 +227,23 @@ yc.render = () => {
 				format: `{0:n0}`, // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
 				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_value, 'n0')}</div>`,
-				// width: 130,
-				// locked: true
+				width: widthValue,
 			}, {
 				title: '% Growth',
 				field: 'v2015_ebit_prcnt',
 				format: '{0:n1} %',
 				attributes: { class: 'align-right' },
 				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_prcnt, 'n1')} %</div>`,
-				// locked: true
+				width: 90,
 			}]
 		}, {
-			title: "% Ebit",
+			title: "% EBIT",
 			field: "v2015_ebit_prcnt",
 			format: '{0:n2} %',
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">100 %</div>`
+			footerTemplate: `<div class="align-right">100 %</div>`,
+			headerAttributes: { style: 'vertical-align: middle;' },
+			width: 90,
 		}]
 	}, {
 		title: 'FY 2014-2015',
@@ -249,15 +255,16 @@ yc.render = () => {
 				format: `{0:n0}`, // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
 				footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_nsal_value, 'n0')}</div>`,
-				// width: 130,
-				// locked: true
+				width: widthValue,
 			}]
-		},{
+		}, {
 			title: "% Gross Margin",
 			field: "v2014_gs_prcnt",
 			format: '{0:n2} %',
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">100 %</div>`
+			footerTemplate: `<div class="align-right">100 %</div>`,
+			headerAttributes: { style: 'vertical-align: middle;' },
+			width: 100,
 		}, {
 			title: 'EBIT',
 			columns: [{
@@ -266,15 +273,16 @@ yc.render = () => {
 				format: `{0:n0}`, // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
 				footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_ebit_value, 'n0')}</div>`,
-				// width: 130,
-				// locked: true
+				width: widthValue,
 			}]
 		}, {
-			title: "% Ebit",
+			title: "% EBIT",
 			field: "v2014_ebit_prcnt",
 			format: '{0:n2} %',
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">100 %</div>`
+			footerTemplate: `<div class="align-right">100 %</div>`,
+			headerAttributes: { style: 'vertical-align: middle;' },
+			width: 90,
 		}]
 	}]
 
@@ -287,7 +295,7 @@ yc.render = () => {
 		columns: columns
 	}
 
-	$('#year-comparison').replaceWith(`<div class="breakdown-view ez" id="year-comparison" style="width: ${tableWidth}px;"></div>`)
+	$('#year-comparison').replaceWith(`<div class="breakdown-view ez" id="year-comparison"></div>`)
 	$('#year-comparison').kendoGrid(config)
 }
 
