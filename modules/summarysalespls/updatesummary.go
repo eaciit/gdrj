@@ -1019,6 +1019,69 @@ func prepsalesplssummaryrdwrongsubch() {
 	// masters.Set("salesplssummaryrdwrongsubch", salesplssummaryrdwrongsubch)
 }
 
+func prepsalesplssummarymtwrongsubch() {
+	//salespls-summary-rdwrongsubch
+
+	arrsubch := []string{"Mini", "Super", "Hyper"}
+
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
+
+	qSave := workerconn.NewQuery().
+		From("salespls-summary").
+		SetConfig("multiexec", true).
+		Save()
+
+	toolkit.Println("--> Update data to salespls-summary from salespls-summary-rdwrongsubch")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).
+		From("salespls-summary-mtwrongsubch").
+		Order("PL7A").
+		Cursor(nil)
+	defer csr.Close()
+
+	// salesplssummaryrdwrongsubch := []toolkit.M{}
+	scount = csr.Count()
+	step := getstep(scount)
+	lnsubch := len(arrsubch)
+	toolkit.Println("COUNT : ", scount)
+
+	i := int(0)
+	for {
+		i += 1
+		// toolkit.Println("i : ", i)
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			toolkit.Println(e)
+			break
+		}
+
+		if i <= 10 {
+			toolkit.Println(tkm.GetFloat64("PL7A"))
+		}
+
+		if i%step == 0 {
+			toolkit.Printfn("Saving %d of %d (%d pct) in %s",
+				i, scount, i*100/scount, time.Since(t0).String())
+		}
+
+		ilnsubch := i % lnsubch
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		dtkm.Set("customer_reportsubchannel", arrsubch[ilnsubch])
+		tkm.Set("key", dtkm)
+
+		_ = qSave.Exec(toolkit.M{}.Set("data", tkm))
+
+		// salesplssummaryrdwrongsubch = append(salesplssummaryrdwrongsubch, tkm)
+		// salesplssummaryrdwrongsubch.Set(tkm.GetString("_id"), tkm)
+	}
+
+	// masters.Set("salesplssummaryrdwrongsubch", salesplssummaryrdwrongsubch)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -1031,7 +1094,10 @@ func main() {
 	setinitialconnection()
 	defer gdrj.CloseDb()
 	prepmastercalc()
-	prepsalesplssummaryrdwrongsubch()
+
+	// prepsalesplssummaryrdwrongsubch()
+	prepsalesplssummarymtwrongsubch()
+
 	// prepmasterbranchgroup()
 	// prepmastertotsalesrd2016vdist()
 
