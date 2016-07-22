@@ -3453,6 +3453,7 @@ let subchan = viewModel.subChannel
 	}
 
 
+	subchan.optionChannel = ko.observableArray([])
 	subchan.optionMTBreakdown = ko.observableArray([])
 	subchan.optionAccount = ko.observableArray([])
 	subchan.optionBrand = ko.observableArray([])
@@ -3463,6 +3464,12 @@ let subchan = viewModel.subChannel
 	subchan.optionCity = ko.observableArray([])
 
 	subchan.fillOptionFilters = () => {
+		app.ajaxPost(viewModel.appName + "report/getdatachannel", {}, (res) => {
+			subchan.optionChannel(_.orderBy(res.data.map((d) => { 
+				return { _id: d._id, Name: d.Name }
+			}), (d) => d.Name))
+		})
+
 		app.ajaxPost(viewModel.appName + "report/getdatamasterhypersupermini", {}, (res) => {
 			subchan.optionMTBreakdown(_.orderBy(res.data.map((d) => { 
 				return { _id: d._id, Name: d.Name }
@@ -3518,6 +3525,7 @@ let subchan = viewModel.subChannel
 		})
 	}
 
+	subchan.filterChannel = ko.observableArray([])
 	subchan.filterMTBreakdown = ko.observableArray([])
 	subchan.filterAccount = ko.observableArray([])
 	subchan.filterBrand = ko.observableArray([])
@@ -3528,6 +3536,7 @@ let subchan = viewModel.subChannel
 
 	subchan.injectFilters = (filters) => {
 		let DA_LORD_OF_DA_RING = [
+			{ field: 'customer.channelname', holder: subchan.filterChannel },
 			{ field: 'customer.reportsubchannel', holder: subchan.filterMTBreakdown },
 			{ field: 'customer.keyaccount', holder: subchan.filterAccount },
 			{ field: 'product.brand', holder: subchan.filterBrand },
@@ -3542,7 +3551,7 @@ let subchan = viewModel.subChannel
 		.forEach((d) => {
 			let previousFilter = filters.find((e) => e.Field == d.field)
 			if (toolkit.isDefined(previousFilter)) {
-				previousFilter.Value.push(d.holder())
+				previousFilter.Value = previousFilter.Value.concat(d.holder())
 			} else {
 				filters.push({
 					Field: d.field,

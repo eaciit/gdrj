@@ -483,7 +483,7 @@
 					</div>
 					
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'city')">
-						<span class="input-group-addon align-right">General Trade</span>
+						<span class="input-group-addon align-right">Select Cities</span>
 						<div class="width-full">
 							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownCityValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownCity, placeholder: 'Choose value', change: subchan.changeBreakdownCityValue, filter: 'contains' }"></select>
 						</div>
@@ -589,6 +589,15 @@
 								</div>
 								<div class="panel-collapse collapse in" role="tabpanel" id="c-0">
 									<div class="panel-body">
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Channel</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionChannel, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterChannel, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
 										<div class="form-group">
 											<div class="input-group input-group-sm ez width-full">
 												<span class="input-group-addon align-right" style="width: 110px;">MT Breakdown</span>
