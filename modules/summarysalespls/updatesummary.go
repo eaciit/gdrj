@@ -988,6 +988,7 @@ func prepsalesplssummaryrdwrongsubch() {
 		tkm := toolkit.M{}
 		e := csr.Fetch(&tkm, 1, false)
 		if e != nil {
+			toolkit.Println(e)
 			break
 		}
 
