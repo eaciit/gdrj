@@ -977,7 +977,7 @@ func prepsalesplssummaryrdwrongsubch() {
 
 	// salesplssummaryrdwrongsubch := []toolkit.M{}
 	scount = csr.Count()
-	step := getstep(scount) * 10
+	step := getstep(scount)
 	lnsubch := len(arrsubch)
 	toolkit.Println("COUNT : ", scount)
 
