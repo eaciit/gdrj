@@ -494,7 +494,7 @@ rd.setup = function () {
 	}
 };
 
-vm.currentMenu('Analysis');
+vm.currentMenu('Analysis Ideas');
 vm.currentTitle('Report Dynamic');
 vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Growth Analysis', href: '#' }]);
 

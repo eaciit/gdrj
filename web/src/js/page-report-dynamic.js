@@ -455,7 +455,7 @@ rd.setup = () => {
 
 
 
-vm.currentMenu('Analysis')
+vm.currentMenu('Analysis Ideas')
 vm.currentTitle('Report Dynamic')
 vm.breadcrumb([
 	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
