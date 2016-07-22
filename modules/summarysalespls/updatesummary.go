@@ -972,7 +972,10 @@ func prepsalesplssummaryrdwrongsubch() {
 	toolkit.Println("--> Update data to salespls-summary from salespls-summary-rdwrongsubch")
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-rdwrongsubch").Order("-PL7A").Cursor(nil)
+	csr, _ := conn.NewQuery().Select().Where(filter).
+		From("salespls-summary-rdwrongsubch").
+		Order("-PL7A").
+		Cursor(nil)
 	defer csr.Close()
 
 	// salesplssummaryrdwrongsubch := []toolkit.M{}
@@ -984,7 +987,7 @@ func prepsalesplssummaryrdwrongsubch() {
 	i := int(0)
 	for {
 		i += 1
-		toolkit.Println("i : ", i)
+		// toolkit.Println("i : ", i)
 		tkm := toolkit.M{}
 		e := csr.Fetch(&tkm, 1, false)
 		if e != nil {
