@@ -1037,7 +1037,7 @@ func prepsalesplssummarymtwrongsubch() {
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	csr, _ := conn.NewQuery().Select().Where(filter).
 		From("salespls-summary-mtwrongsubch").
-		Order("PL7A").
+		Order("-PL7A").
 		Cursor(nil)
 	defer csr.Close()
 
