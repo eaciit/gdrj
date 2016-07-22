@@ -984,6 +984,7 @@ func prepsalesplssummaryrdwrongsubch() {
 	i := int(0)
 	for {
 		i += 1
+		toolkit.Println("i : ", i)
 		tkm := toolkit.M{}
 		e := csr.Fetch(&tkm, 1, false)
 		if e != nil {
