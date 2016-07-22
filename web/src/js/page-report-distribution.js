@@ -128,7 +128,8 @@ rve.render = (res) => {
 		title: '&nbsp;',
 		field: 'name',
 		locked: true,
-		width: 120
+		width: 120,
+		footerTemplate: 'Total',
 	}, {
 		title: compare1.PLHeader3,
 		headerAttributes: { class: 'align-center color-0' },
@@ -138,27 +139,29 @@ rve.render = (res) => {
 			width: 120,
 			field: 'netSalesTotal',
 			attributes: { class: 'align-right' },
-			format: '{0:n0}'
+			format: '{0:n0}',
+			aggregates: ["sum"],
+			footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>"
 		}, {
 			title: 'GT',
 			headerAttributes: { class: 'align-center' },
 			columns: [
-				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesGT', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'netSalesGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesGT', attributes: { class: 'align-right' }, format: '{0:n0}', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>" },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'netSalesGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n2')#%</div>" }
 			]
 		}, {
 			title: 'MT',
 			headerAttributes: { class: 'align-center' },
 			columns: [
-				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesMT', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'netSalesMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesMT', attributes: { class: 'align-right' }, format: '{0:n0}', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>" },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'netSalesMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n2')#%</div>" },
 			]
 		}, {
 			title: 'Other',
 			headerAttributes: { class: 'align-center' },
 			columns: [
-				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesOther', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'netSalesOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'netSalesOther', attributes: { class: 'align-right' }, format: '{0:n0}', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>" },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'netSalesOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n2')#%</div>" },
 			]
 		}]
 	}, {
@@ -170,34 +173,52 @@ rve.render = (res) => {
 			width: 120,
 			field: 'ebitTotal',
 			attributes: { class: 'align-right' },
-			format: '{0:n0}'
+			format: '{0:n0}',
+			aggregates: ["sum"],
+			footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>"
 		}, {
 			title: 'GT',
 			headerAttributes: { class: 'align-center' },
 			columns: [
-				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitGT', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'ebitGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitGT', attributes: { class: 'align-right' }, format: '{0:n0}', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>" },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'ebitGTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n2')#%</div>" },
 			]
 		}, {
 			title: 'MT',
 			headerAttributes: { class: 'align-center' },
 			columns: [
-				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitMT', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'ebitMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitMT', attributes: { class: 'align-right' }, format: '{0:n0}', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>" },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'ebitMTPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n2')#%</div>" },
 			]
 		}, {
 			title: 'Other',
 			headerAttributes: { class: 'align-center' },
 			columns: [
-				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitOther', attributes: { class: 'align-right' }, format: '{0:n0}' },
-				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'ebitOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %' },
+				{ headerAttributes: { style: 'text-align: center;' }, width: 120, title: 'Value', field: 'ebitOther', attributes: { class: 'align-right' }, format: '{0:n0}', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>" },
+				{ headerAttributes: { style: 'text-align: center; font-style: italic;' }, width: 80, title: '% of Total', field: 'ebitOtherPercentage', attributes: { class: 'align-right', style: 'border-right: 1px solid rgb(240, 243, 244);' }, format: '{0:n2} %', aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n2')#%</div>" },
 			]
 		}]
 	}]
 
 	let config = {
 		dataSource: {
-			data: dataParsed
+			data: dataParsed,
+			aggregate: [
+				{ field: "netSalesTotal", aggregate: "sum"},
+				{ field: "netSalesGT", aggregate: "sum"},
+				{ field: "netSalesGTPercentage", aggregate: "sum"},
+				{ field: "netSalesMT", aggregate: "sum"},
+				{ field: "netSalesMTPercentage", aggregate: "sum"},
+				{ field: "ebitTotal", aggregate: "sum"},
+				{ field: "netSalesOther", aggregate: "sum"},
+				{ field: "netSalesOtherPercentage", aggregate: "sum"},
+				{ field: "ebitGT", aggregate: "sum"},
+				{ field: "ebitGTPercentage", aggregate: "sum"},
+				{ field: "ebitMT", aggregate: "sum"},
+				{ field: "ebitMTPercentage", aggregate: "sum"},
+				{ field: "ebitOther", aggregate: "sum"},
+				{ field: "ebitOtherPercentage", aggregate: "sum"},
+			]
 		},
 		columns: columns,
 		resizable: false,

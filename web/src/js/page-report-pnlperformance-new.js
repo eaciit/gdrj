@@ -2197,6 +2197,7 @@ let kac = viewModel.keyAccount
 	kac.data = ko.observableArray([])
 	kac.fiscalYear = ko.observable(rpt.value.FiscalYear())
 	kac.breakdownValue = ko.observableArray([])
+	kac.breakdownChannelValue = ko.observableArray([])
 	kac.breakdownGroupValue = ko.observableArray([])
 
 	kac.refresh = (useCache = false) => {
@@ -2207,10 +2208,10 @@ let kac = viewModel.keyAccount
 			return
 		}
 
-		let breakdownKeyAccount = 'customer.keyaccount'
+		let breakdownKeyAccount = 'customer.keyaccount', breakdownKeyChannel = 'customer.channelname'
 		let param = {}
 		param.pls = []
-		param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount])
+		param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount, breakdownKeyChannel])
 		param.aggr = 'sum'
 		param.filters = rpt.getFilterValue(false, kac.fiscalYear)
 
@@ -2229,6 +2230,15 @@ let kac = viewModel.keyAccount
 				Field: kac.breakdownBy(),
 				Op: '$in',
 				Value: kac.breakdownValue()
+			})
+		}
+
+		let breakdownChannel = kac.breakdownChannelValue().filter((d) => d != 'All')
+		if (breakdownChannel.length > 0) {
+			param.filters.push({
+				Field: breakdownKeyChannel,
+				Op: '$in',
+				Value: kac.breakdownChannelValue()
 			})
 		}
 		console.log("bdk", param.filters)
@@ -2560,6 +2570,7 @@ let kac = viewModel.keyAccount
 
 	kac.optionBreakdownValues = ko.observableArray([])
 	kac.breakdownValueAll = { _id: 'All', Name: 'All' }
+	kac.optionBreakdownChannelValues = ko.observableArray([])
 	kac.changeBreakdown = () => {
 		let all = kac.breakdownValueAll
 		setTimeout(() => {
@@ -2569,6 +2580,8 @@ let kac = viewModel.keyAccount
 				)
 			)
 			kac.breakdownValue([all._id])
+			kac.optionBreakdownChannelValues([all].concat(rpt.masterData.Channel()))
+			kac.breakdownChannelValue([all._id])
 		}, 100)
 	}
 	kac.changeBreakdownValue = () => {
@@ -2591,6 +2604,30 @@ let kac = viewModel.keyAccount
 			let condC1 = kac.breakdownValue().length == 0
 			if (condC1) {
 				kac.breakdownValue([all._id])
+			}
+		}, 100)
+	}
+
+	kac.changeBreakdownChannelValue = () => {
+		let all = kac.breakdownValueAll
+		setTimeout(() => {
+			let condA1 = kac.breakdownChannelValue().length == 2
+			let condA2 = kac.breakdownChannelValue().indexOf(all._id) == 0
+			if (condA1 && condA2) {
+				kac.breakdownChannelValue.remove(all._id)
+				return
+			}
+
+			let condB1 = kac.breakdownChannelValue().length > 1
+			let condB2 = kac.breakdownChannelValue().reverse()[0] == all._id
+			if (condB1 && condB2) {
+				kac.breakdownChannelValue([all._id])
+				return
+			}
+
+			let condC1 = kac.breakdownChannelValue().length == 0
+			if (condC1) {
+				kac.breakdownChannelValue([all._id])
 			}
 		}, 100)
 	}
@@ -2661,6 +2698,7 @@ let subchan = viewModel.subChannel
 	subchan.data = ko.observableArray([])
 	subchan.fiscalYear = ko.observable(rpt.value.FiscalYear())
 	subchan.breakdownValue = ko.observableArray([])
+	subchan.breakdownChannelValue = ko.observableArray([])
 	subchan.level = ko.observable(1)
 	subchan.what = ko.observable('mt sub channel')
 	subchan.isInlineFilter = ko.observable(true)
@@ -2704,6 +2742,15 @@ let subchan = viewModel.subChannel
 					Field: subchan.breakdownBy(),
 					Op: '$in',
 					Value: breakdownBrand
+				})
+			}
+			let breakdownChannel = subchan.breakdownChannelValue().filter((d) => d != 'All')
+			groups.push("customer.channelname")
+			if (breakdownChannel.length > 0) {
+				param.filters.push({
+					Field: "customer.channelname",
+					Op: '$in',
+					Value: subchan.breakdownChannelValue()
 				})
 			}
 		} else if (subchan.what() == 'rd') {
@@ -2761,12 +2808,31 @@ let subchan = viewModel.subChannel
 					Value: breakdownCity
 				})
 			}
+			let breakdownChannel = subchan.breakdownChannelValue().filter((d) => d != 'All')
+			groups.push("customer.channelname")
+			if (breakdownChannel.length > 0) {
+				param.filters.push({
+					Field: "customer.channelname",
+					Op: '$in',
+					Value: subchan.breakdownChannelValue()
+				})
+			}
 		} else if (subchan.what() == 'branch') {
 			subchan.breakdownBy('customer.branchname')
 			groups.push(subchan.breakdownBy())
 		} else if (subchan.what() == 'branch-group') {
+			subchan.isInlineFilter(false)
 			subchan.breakdownBy('customer.branchgroup')
 			groups.push(subchan.breakdownBy())
+			let breakdownChannel = subchan.breakdownChannelValue().filter((d) => d != 'All')
+			groups.push("customer.channelname")
+			if (breakdownChannel.length > 0) {
+				param.filters.push({
+					Field: "customer.channelname",
+					Op: '$in',
+					Value: subchan.breakdownChannelValue()
+				})
+			}
 		}
 
 		$('.breakdown-view:not(#subchan)').empty()
@@ -3186,6 +3252,7 @@ let subchan = viewModel.subChannel
 
 	subchan.breakdownBrand = ko.observableArray([])
 	subchan.optionBreakdownBrandValues = ko.observableArray([])
+	subchan.optionBreakdownChannelValues = ko.observableArray([])
 	subchan.changeBreakdownBrand = () => {
 		let all = kac.breakdownValueAll
 		let masterData = []
@@ -3200,8 +3267,12 @@ let subchan = viewModel.subChannel
 			)
 
 			subchan.breakdownBrand([all._id])
+
+			subchan.optionBreakdownChannelValues([all].concat(rpt.masterData.Channel()))
+			subchan.breakdownChannelValue([all._id])
 		}, (i) => (i > 10) || (masterData.length > 0))
 	}
+
 	subchan.changeBreakdownBrandValue = () => {
 		let all = kac.breakdownValueAll
 		setTimeout(() => {
@@ -3222,6 +3293,30 @@ let subchan = viewModel.subChannel
 			let condC1 = subchan.breakdownBrand().length == 0
 			if (condC1) {
 				subchan.breakdownBrand([all._id])
+			}
+		}, 100)
+	}
+
+	subchan.changeBreakdownChannelValue = () => {
+		let all = kac.breakdownValueAll
+		setTimeout(() => {
+			let condA1 = subchan.breakdownChannelValue().length == 2
+			let condA2 = subchan.breakdownChannelValue().indexOf(all._id) == 0
+			if (condA1 && condA2) {
+				subchan.breakdownChannelValue.remove(all._id)
+				return
+			}
+
+			let condB1 = subchan.breakdownChannelValue().length > 1
+			let condB2 = subchan.breakdownChannelValue().reverse()[0] == all._id
+			if (condB1 && condB2) {
+				subchan.breakdownChannelValue([all._id])
+				return
+			}
+
+			let condC1 = subchan.breakdownChannelValue().length == 0
+			if (condC1) {
+				subchan.breakdownChannelValue([all._id])
 			}
 		}, 100)
 	}
@@ -3475,6 +3570,7 @@ let dsbrd = viewModel.dashboard
 		{ pnl: "Gross Margin", plcodes: ["PL74C"] },
 		{ pnl: "SGA", plcodes: ["PL94A"] },
 		{ pnl: "Royalties", plcodes: ["PL26A"] },
+		{ pnl: "A&P", plcodes: ["PL32A"] },
 		{ pnl: "EBITDA", plcodes: ["PL44C"] },
 		{ pnl: "EBIT %", plcodes: [] },
 		{ pnl: "EBIT", plcodes: ["PL44B"] },
@@ -3841,6 +3937,7 @@ let rank = viewModel.dashboardRanking
 		{ field: 'cogsPercentage', template: (d) => `${kendo.toString(d.cogsPercentage, 'n2')} %`, title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ field: 'ebitPercentage', template: (d) => `${kendo.toString(d.ebitPercentage, 'n2')} %`, title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ field: 'ebitdaPercentage', template: (d) => `${kendo.toString(d.ebitdaPercentage, 'n2')} %`, title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ field: 'anpPercentage', template: (d) => `${kendo.toString(d.anpPercentage, 'n2')} %`, title: 'A & P %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}' },
 		{ field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: `<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>`, format: '{0:n0}' },
 	])
@@ -3857,7 +3954,7 @@ let rank = viewModel.dashboardRanking
 		}
 
 		let param = {}
-		param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A"]
+		param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A", "PL32A"]
 		param.groups = rpt.parseGroups([breakdown])
 		param.aggr = 'sum'
 		param.filters = rpt.getFilterValue(false, rank.fiscalYear)
@@ -3913,13 +4010,14 @@ let rank = viewModel.dashboardRanking
 			row.cogsPercentage = toolkit.number(d.PL74B / d.PL8A) * 100
 			row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A) * 100
 			row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A) * 100
+			row.anpPercentage = toolkit.number(d.PL32A / d.PL8A) * 100
 			row.netSales = d.PL8A
 			row.ebit = d.PL44B
 			rows.push(row)
 		})
 
 		rank.data(_.orderBy(rows, (d) => d.netSales, 'desc'))
-
+		rank.columns()[0].title = _.find(rank.optionDimensions(), (e) => { return e.field == rank.breakdown() }).name
 		let config = {
 			dataSource: {
 				data: rank.data(),
