@@ -22,7 +22,7 @@ yc.breakdownKey = function () {
 
 yc.refresh = function () {
 	var param = {};
-	param.pls = ['PL44B', 'PL8A'];
+	param.pls = ['PL44B', 'PL8A', 'PL74C'];
 	param.groups = rpt.parseGroups([yc.breakdownBy()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(true, rpt.optionFiscalYears);
@@ -88,6 +88,7 @@ yc.render = function () {
 
 	var plCodeEBIT = 'PL44B';
 	var plCodeNetSales = 'PL8A';
+	var plGrossMargin = 'PL74C';
 
 	var total2015_ebit = toolkit.sum(yc.data().filter(function (d) {
 		return d._id._id_date_fiscal === '2015-2016';
@@ -110,6 +111,17 @@ yc.render = function () {
 		return d[plCodeNetSales];
 	});
 
+	var total2015_GrossMargin = toolkit.sum(yc.data().filter(function (d) {
+		return d._id._id_date_fiscal === '2015-2016';
+	}), function (d) {
+		return d[plGrossMargin];
+	});
+	var total2014_GrossMargin = toolkit.sum(yc.data().filter(function (d) {
+		return d._id._id_date_fiscal === '2014-2015';
+	}), function (d) {
+		return d[plGrossMargin];
+	});
+
 	var op1 = yc.groupMap(yc.data(), function (d) {
 		return d._id[yc.breakdownKey()];
 	}, function (v, k) {
@@ -121,11 +133,15 @@ yc.render = function () {
 		o.v2015_ebit_prcnt = 0;
 		o.v2015_nsal_value = 0;
 		o.v2015_nsal_prcnt = 0;
+		o.v2015_gs_prcnt = 0;
+		o.v2015_ebit_prcnt = 0;
 
 		o.v2014_ebit_value = 0;
 		o.v2014_ebit_prcnt = 0;
 		o.v2014_nsal_value = 0;
 		o.v2014_nsal_prcnt = 0;
+		o.v2014_gs_prcnt = 0;
+		o.v2014_ebit_prcnt = 0;
 
 		var data2015 = v.filter(function (e) {
 			return e._id._id_date_fiscal === '2015-2016';
@@ -150,6 +166,12 @@ yc.render = function () {
 		toolkit.try(function () {
 			o.v2014_nsal_prcnt = 0;
 		});
+		toolkit.try(function () {
+			o.v2014_gs_prcnt = data2014[0][plGrossMargin] / total2014_GrossMargin * 100;
+		});
+		toolkit.try(function () {
+			o.v2014_ebit_prcnt = data2014[0][plCodeEBIT] / total2014_ebit * 100;
+		});
 
 		toolkit.try(function () {
 			o.v2015_ebit_value = data2015[0][plCodeEBIT] / divider;
@@ -164,6 +186,12 @@ yc.render = function () {
 		});
 		toolkit.try(function () {
 			o.v2015_nsal_value = data2015[0][plCodeNetSales] / divider;
+		});
+		toolkit.try(function () {
+			o.v2015_gs_prcnt = data2015[0][plGrossMargin] / total2015_GrossMargin * 100;
+		});
+		toolkit.try(function () {
+			o.v2015_ebit_prcnt = data2015[0][plCodeEBIT] / total2015_ebit * 100;
 		});
 		toolkit.try(function () {
 			var v2015 = data2015[0][plCodeNetSales];
@@ -206,7 +234,7 @@ yc.render = function () {
 		dimensionWidth = 160;
 	}
 
-	var tableWidth = 700;
+	var tableWidth = 1200;
 	if (yc.unit() == 'v1000000') {
 		tableWidth += 80 * 1;
 	}
@@ -237,13 +265,22 @@ yc.render = function () {
 				format: '{0:n0}', // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_value, 'n0') + '</div>'
-			}, {
+			}, // width: 130,
+			// locked: true
+			{
 				title: '% Growth',
 				field: 'v2015_nsal_prcnt',
 				format: '{0:n1} %',
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_prcnt, 'n1') + ' %</div>'
 			}]
+		}, // locked: true
+		{
+			title: "% Gross Margin",
+			field: "v2015_gs_prcnt",
+			format: '{0:n2} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">100 %</div>'
 		}, {
 			title: 'EBIT',
 			columns: [{
@@ -252,13 +289,22 @@ yc.render = function () {
 				format: '{0:n0}', // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_value, 'n0') + '</div>'
-			}, {
+			}, // width: 130,
+			// locked: true
+			{
 				title: '% Growth',
 				field: 'v2015_ebit_prcnt',
 				format: '{0:n1} %',
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_prcnt, 'n1') + ' %</div>'
 			}]
+		}, // locked: true
+		{
+			title: "% Ebit",
+			field: "v2015_ebit_prcnt",
+			format: '{0:n2} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">100 %</div>'
 		}]
 	}, {
 		title: 'FY 2014-2015',
@@ -271,6 +317,14 @@ yc.render = function () {
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_nsal_value, 'n0') + '</div>'
 			}]
+		}, // width: 130,
+		// locked: true
+		{
+			title: "% Gross Margin",
+			field: "v2014_gs_prcnt",
+			format: '{0:n2} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">100 %</div>'
 		}, {
 			title: 'EBIT',
 			columns: [{
@@ -280,6 +334,14 @@ yc.render = function () {
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_ebit_value, 'n0') + '</div>'
 			}]
+		}, // width: 130,
+		// locked: true
+		{
+			title: "% Ebit",
+			field: "v2014_ebit_prcnt",
+			format: '{0:n2} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">100 %</div>'
 		}]
 	}];
 

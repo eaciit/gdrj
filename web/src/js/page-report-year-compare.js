@@ -25,7 +25,7 @@ yc.breakdownKey = () => {
 
 yc.refresh = () => {
 	let param = {}
-	param.pls = ['PL44B', 'PL8A']
+	param.pls = ['PL44B', 'PL8A', 'PL74C']
 	param.groups = rpt.parseGroups([yc.breakdownBy()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(true, rpt.optionFiscalYears)
@@ -85,11 +85,15 @@ yc.render = () => {
 
 	let plCodeEBIT = 'PL44B'
 	let plCodeNetSales = 'PL8A'
+	let plGrossMargin = 'PL74C'
 
 	let total2015_ebit     = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2015-2016'), (d) => d[plCodeEBIT])
 	let total2015_netSales = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2015-2016'), (d) => d[plCodeNetSales])
 	let total2014_ebit     = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2014-2015'), (d) => d[plCodeEBIT])
 	let total2014_netSales = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2014-2015'), (d) => d[plCodeNetSales])
+
+	let total2015_GrossMargin = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2015-2016'), (d) => d[plGrossMargin])
+	let total2014_GrossMargin = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2014-2015'), (d) => d[plGrossMargin])
 
 	let op1 = yc.groupMap(yc.data(), (d) => d._id[yc.breakdownKey()], (v, k) => {
 		let o = {}
@@ -100,11 +104,15 @@ yc.render = () => {
 		o.v2015_ebit_prcnt = 0
 		o.v2015_nsal_value = 0
 		o.v2015_nsal_prcnt = 0
+		o.v2015_gs_prcnt = 0
+		o.v2015_ebit_prcnt = 0
 
 		o.v2014_ebit_value = 0
 		o.v2014_ebit_prcnt = 0
 		o.v2014_nsal_value = 0
 		o.v2014_nsal_prcnt = 0
+		o.v2014_gs_prcnt = 0
+		o.v2014_ebit_prcnt = 0
 
 		let data2015 = v.filter((e) => e._id._id_date_fiscal === '2015-2016')
 		let data2014 = v.filter((e) => e._id._id_date_fiscal === '2014-2015')
@@ -115,6 +123,8 @@ yc.render = () => {
 		toolkit.try(() => { o.v2014_ebit_prcnt = 0 })
 		toolkit.try(() => { o.v2014_nsal_value = data2014[0][plCodeNetSales] / divider })
 		toolkit.try(() => { o.v2014_nsal_prcnt = 0 })
+		toolkit.try(() => { o.v2014_gs_prcnt = data2014[0][plGrossMargin]/total2014_GrossMargin*100 })
+		toolkit.try(() => { o.v2014_ebit_prcnt = data2014[0][plCodeEBIT]/total2014_ebit*100 })
 
 		toolkit.try(() => { o.v2015_ebit_value = data2015[0][plCodeEBIT] / divider })
 		toolkit.try(() => { 
@@ -126,6 +136,8 @@ yc.render = () => {
 			o.v2015_ebit_prcnt = toolkit.number((v2015 - v2014) / v2014) * 100
 		})
 		toolkit.try(() => { o.v2015_nsal_value = data2015[0][plCodeNetSales] / divider })
+		toolkit.try(() => { o.v2015_gs_prcnt = data2015[0][plGrossMargin] / total2015_GrossMargin*100 })
+		toolkit.try(() => { o.v2015_ebit_prcnt = data2015[0][plCodeEBIT] / total2015_ebit*100 })
 		toolkit.try(() => { 
 			let v2015 = data2015[0][plCodeNetSales]
 			let v2014 = data2014[0][plCodeNetSales]
@@ -157,7 +169,7 @@ yc.render = () => {
 		dimensionWidth = 160
 	}
 
-	let tableWidth = 700
+	let tableWidth = 1200
 	if (yc.unit() == 'v1000000') {
 		tableWidth += (80 * 1)
 	}
@@ -197,6 +209,12 @@ yc.render = () => {
 				// locked: true
 			}]
 		}, {
+			title: "% Gross Margin",
+			field: "v2015_gs_prcnt",
+			format: '{0:n2} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">100 %</div>`
+		}, {
 			title: 'EBIT',
 			columns: [{
 				title: 'Value',
@@ -214,6 +232,12 @@ yc.render = () => {
 				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_prcnt, 'n1')} %</div>`,
 				// locked: true
 			}]
+		}, {
+			title: "% Ebit",
+			field: "v2015_ebit_prcnt",
+			format: '{0:n2} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">100 %</div>`
 		}]
 	}, {
 		title: 'FY 2014-2015',
@@ -228,6 +252,12 @@ yc.render = () => {
 				// width: 130,
 				// locked: true
 			}]
+		},{
+			title: "% Gross Margin",
+			field: "v2014_gs_prcnt",
+			format: '{0:n2} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">100 %</div>`
 		}, {
 			title: 'EBIT',
 			columns: [{
@@ -239,6 +269,12 @@ yc.render = () => {
 				// width: 130,
 				// locked: true
 			}]
+		}, {
+			title: "% Ebit",
+			field: "v2014_ebit_prcnt",
+			format: '{0:n2} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">100 %</div>`
 		}]
 	}]
 
