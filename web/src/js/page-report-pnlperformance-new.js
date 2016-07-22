@@ -3695,6 +3695,7 @@ let dsbrd = viewModel.dashboard
 		}
 
 		let fetch = () => {
+			subchan.injectFilters(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => { fetch() }, 1000 * 5)
@@ -3982,6 +3983,7 @@ let rank = viewModel.dashboardRanking
 		}
 
 		let fetch = () => {
+			subchan.injectFilters(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => { fetch() }, 1000 * 5)
