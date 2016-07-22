@@ -265,17 +265,14 @@ yc.render = function () {
 				format: '{0:n0}', // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_value, 'n0') + '</div>'
-			}, // width: 130,
-			// locked: true
-			{
+			}, {
 				title: '% Growth',
 				field: 'v2015_nsal_prcnt',
 				format: '{0:n1} %',
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_prcnt, 'n1') + ' %</div>'
 			}]
-		}, // locked: true
-		{
+		}, {
 			title: "% Gross Margin",
 			field: "v2015_gs_prcnt",
 			format: '{0:n2} %',
@@ -289,17 +286,14 @@ yc.render = function () {
 				format: '{0:n0}', // ` ${unitSuffix}`,
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_value, 'n0') + '</div>'
-			}, // width: 130,
-			// locked: true
-			{
+			}, {
 				title: '% Growth',
 				field: 'v2015_ebit_prcnt',
 				format: '{0:n1} %',
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_prcnt, 'n1') + ' %</div>'
 			}]
-		}, // locked: true
-		{
+		}, {
 			title: "% Ebit",
 			field: "v2015_ebit_prcnt",
 			format: '{0:n2} %',
@@ -317,9 +311,7 @@ yc.render = function () {
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_nsal_value, 'n0') + '</div>'
 			}]
-		}, // width: 130,
-		// locked: true
-		{
+		}, {
 			title: "% Gross Margin",
 			field: "v2014_gs_prcnt",
 			format: '{0:n2} %',
@@ -334,9 +326,7 @@ yc.render = function () {
 				attributes: { class: 'align-right' },
 				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_ebit_value, 'n0') + '</div>'
 			}]
-		}, // width: 130,
-		// locked: true
-		{
+		}, {
 			title: "% Ebit",
 			field: "v2014_ebit_prcnt",
 			format: '{0:n2} %',
