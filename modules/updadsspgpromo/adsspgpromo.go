@@ -107,7 +107,7 @@ func buildratio() {
 
 		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
 
-		sales := mr.GetFloat64("PL28A")
+		sales := mr.GetFloat64("PL28I")
 
 		adjustAllocs(&advtotals, keyperiodbrand, 0, 0, 0, sales)
 	}
