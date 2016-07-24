@@ -267,18 +267,18 @@ func processTable() {
 				} else
 				//-- spg
 				if k == "PL31C" {
-					total := spgyrkas[keyperiodaccount]
+					total := spgyrkas[keyfiscalka]
 					if total != nil {
 						newv = sales * total.Expect / total.Ref1
-						adjustAllocs(&spgyrkas, keyfiscalka, 0, 0, 0, newv)
+						//adjustAllocs(&spgyrkas, keyfiscalka, 0, 0, 0, newv)
 					}
 				} else
 				//-- promo
 				if k == "PL29A32" {
-					total := promoyrkas[keyperiodaccount]
+					total := promoyrkas[keyfiscalka]
 					if total != nil {
 						newv = sales * total.Expect / total.Ref1
-						adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, newv)
+						//adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, newv)
 					}
 				}
 
