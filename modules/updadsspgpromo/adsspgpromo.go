@@ -131,7 +131,7 @@ func buildratio() {
 		makeProgressLog("SPG & Promo by KA Ratio Monthhly", i, count, 5, &mstone, t0)
 		dt := mr.Get("gdrjdate", toolkit.M{}).(toolkit.M)
 		fiscal := dt.GetString("fiscal")
-		month := dt.GetInt("period")
+		month := dt.GetInt("month")
 		amt := -mr.GetFloat64("amountinidr")
 		keyperiod := toolkit.Sprintf("%s_%d", fiscal, month)
 		grouping := strings.ToLower(mr.GetString("grouping"))
@@ -164,8 +164,8 @@ func buildratio() {
 			keysyrka := strings.Split(v1.Key, "_")
 			newkey := toolkit.Sprintf("%s_%s", v.Key, keysyrka[1])
 			valloc := v.Ratio1 * v1.Expect
-			adjustAllocs(&promototals, newkey, valloc, 0, 0, 0)
-			toolkit.Printf("Allocation for %s => ratio:%f alloc:%f",
+			//adjustAllocs(&promototals, newkey, valloc, 0, 0, 0)
+			toolkit.Printfn("Allocation for %s => ratio:%f alloc:%f",
 				newkey, v.Ratio1, valloc)
 		}
 	}
