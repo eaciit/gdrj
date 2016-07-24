@@ -58,7 +58,56 @@ func main() {
 }
 
 func buildratio() {
+	connratio, _ := modules.GetDboxIConnection("db_godrej")
+	defer connratio.Close()
 
+	csr, _ := connratio.NewQuery().From("rawdatapl_ads30062016").Select().Cursor(nil)
+	defer csr.Close()
+	i := 0
+	count := csr.Count()
+	t0 := time.Now()
+	mstone := 0
+	for {
+		mr := toolkit.M{}
+		if ef := csr.Fetch(&mr, 1, false); ef != nil {
+			break
+		}
+		i++
+		makeProgressLog("Build ads ratio", i, count, 5, &mstone, t0)
+
+		gdrjdate := mr.Get("gdrjdate", gdrj.Date{}).(gdrj.Date)
+		fiscal := gdrjdate.Fiscal
+		month := gdrjdate.Month
+		brand := mr.GetString("brand")
+		value := mr.GetFloat64("amountinidr")
+		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
+		adjustAllocs(&disctotals, keyperiodbrand, 0, value, 0, 0)
+	}
+
+	ctrx, _ := connratio.NewQuery().From(calctablename).Select().Cursor(nil)
+	i = 0
+	count = ctrx.Count()
+	t0 = time.Now()
+	mstone = 0
+	for {
+		mr := toolkit.M{}
+		if ef := csr.Fetch(&mr, 1, false); ef != nil {
+			break
+		}
+		i++
+		makeProgressLog("Finalizing", i, count, 5, &mstone, t0)
+
+		key := mr.Get("key", toolkit.M{}).(toolkit.M)
+		fiscal := key.GetString("date_fiscal")
+		month := key.GetInt("date_month")
+		brand := key.GetString("product_brand")
+
+		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
+
+		sales := mr.GetFloat64("PL8A")
+
+		adjustAllocs(&disctotals, keyperiodbrand, 0, 0, 0, sales)
+	}
 }
 
 func processTable() {
