@@ -2267,7 +2267,7 @@ let kac = viewModel.keyAccount
 				kac.breakdownNote(`Last refreshed on: ${date}`)
 
 				res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
-				kac.data(res.Data.Data)
+				kac.data(kac.buildStructure(res.Data.Data))
 				rpt.plmodels(res.Data.PLModels)
 				kac.emptyGrid()
 				kac.contentIsLoading(false)
@@ -2317,30 +2317,47 @@ let kac = viewModel.keyAccount
 		$('#key-account-analysis').replaceWith(`<div class="breakdown-view ez" id="key-account-analysis"></div>`)
 	}
 
+	kac.buildStructure = (data) => {
+		let groupThenMap = (data, group) => {
+			let op1 = _.groupBy(data, (d) => group(d))
+			let op2 = _.map(op1, (v, k) => {
+				let key = { _id: k, subs: v }
+				let sample = v[0]
+
+				for (let prop in sample) {
+					if (sample.hasOwnProperty(prop) && prop != '_id') {
+						key[prop] = toolkit.sum(v, (d) => d[prop])
+					}
+				}
+
+				return key
+			})
+
+			return op2
+		}
+
+		let parsed = groupThenMap(data, (d) => {
+			return d._id[`_id_${toolkit.replace(kac.breakdownBy(), '.', '_')}`]
+		}).map((d) => {
+			d.breakdowns = d.subs[0]._id
+			d.count = 1
+
+			return d
+		})
+
+		let newParsed = _.orderBy(parsed, (d) => d.PL8A, 'desc')
+		return newParsed
+	}
+
 	kac.render = () => {
 		if (kac.data().length == 0) {
 			$('#key-account-analysis').html('No data found.')
 			return
 		}
 		
-		let breakdowns = [kac.breakdownBy() /** , 'date.year' */]
 		let rows = []
 		
-		let data = _.map(kac.data(), (d) => {
-			d.breakdowns = {}
-			let titleParts = []
-
-			breakdowns.forEach((e) => {
-				let title = d._id[`_id_${toolkit.replace(e, '.', '_')}`]
-				title = toolkit.whenEmptyString(title, '')
-				d.breakdowns[e] = title
-				titleParts.push(title)
-			})
-			
-			d._id = titleParts.join(' ')
-			return d 
-		})
-		
+		let data = kac.data()
 		let plmodels = _.sortBy(rpt.plmodels(), (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
 		let exceptions = ["PL94C" /* "Operating Income" */, "PL39B" /* "Earning Before Tax" */, "PL41C" /* "Earning After Tax" */, "PL6A" /* "Discount" */]
 		let netSalesPLCode = 'PL8A'
@@ -2541,10 +2558,6 @@ let kac = viewModel.keyAccount
 					.html(value)
 					.addClass('align-right')
 					.appendTo(trContent)
-
-				cell.on('click', () => {
-					kac.renderDetail(d.PLCode, e.breakdowns)
-				})
 
 				toolkit.newEl('td')
 					.html(`${percentage} %`)
