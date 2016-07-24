@@ -152,7 +152,7 @@ func buildratio() {
 			keysyrka := strings.Split(v1.Key, "_")
 			newkey := toolkit.Sprintf("%s_%s", v.Key, keysyrka[1])
 			valloc := v.Ratio1 * v1.Expect
-			adjustAllocs(&spgtotals, newkey, valloc, 0, 0, 0)
+			adjustAllocs(&spgtotals, newkey, 0, valloc, 0, 0)
 		}
 	}
 
@@ -164,7 +164,7 @@ func buildratio() {
 			keysyrka := strings.Split(v1.Key, "_")
 			newkey := toolkit.Sprintf("%s_%s", v.Key, keysyrka[1])
 			valloc := v.Ratio1 * v1.Expect
-			//adjustAllocs(&promototals, newkey, valloc, 0, 0, 0)
+			adjustAllocs(&promototals, newkey, 0, valloc, 0, 0)
 			toolkit.Printfn("Allocation for %s => ratio:%f alloc:%f",
 				newkey, v.Ratio1, valloc)
 		}
