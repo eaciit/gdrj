@@ -78,7 +78,7 @@ kac.refresh = function () {
 			kac.breakdownNote('Last refreshed on: ' + date);
 
 			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels);
-			kac.data(res.Data.Data);
+			kac.data(kac.buildStructure(res.Data.Data));
 			rpt.plmodels(res.Data.PLModels);
 			kac.emptyGrid();
 			kac.contentIsLoading(false);
@@ -125,33 +125,60 @@ kac.clickExpand = function (e) {
 	}
 };
 kac.emptyGrid = function () {
-	$('.breakdown-view').replaceWith('<div class="breakdown-view ez" id="key-account-analysis"></div>');
+	$('#key-account-analysis').replaceWith('<div class="breakdown-view ez" id="key-account-analysis"></div>');
+};
+
+kac.buildStructure = function (data) {
+	var groupThenMap = function groupThenMap(data, group) {
+		var op1 = _.groupBy(data, function (d) {
+			return group(d);
+		});
+		var op2 = _.map(op1, function (v, k) {
+			var key = { _id: k, subs: v };
+			var sample = v[0];
+
+			var _loop = function _loop(prop) {
+				if (sample.hasOwnProperty(prop) && prop != '_id') {
+					key[prop] = toolkit.sum(v, function (d) {
+						return d[prop];
+					});
+				}
+			};
+
+			for (var prop in sample) {
+				_loop(prop);
+			}
+
+			return key;
+		});
+
+		return op2;
+	};
+
+	var parsed = groupThenMap(data, function (d) {
+		return d._id['_id_' + toolkit.replace(kac.breakdownBy(), '.', '_')];
+	}).map(function (d) {
+		d.breakdowns = d.subs[0]._id;
+		d.count = 1;
+
+		return d;
+	});
+
+	var newParsed = _.orderBy(parsed, function (d) {
+		return d.PL8A;
+	}, 'desc');
+	return newParsed;
 };
 
 kac.render = function () {
 	if (kac.data().length == 0) {
-		$('.breakdown-view').html('No data found.');
+		$('#key-account-analysis').html('No data found.');
 		return;
 	}
 
-	var breakdowns = [kac.breakdownBy() /** , 'date.year' */];
 	var rows = [];
 
-	var data = _.map(kac.data(), function (d) {
-		d.breakdowns = {};
-		var titleParts = [];
-
-		breakdowns.forEach(function (e) {
-			var title = d._id['_id_' + toolkit.replace(e, '.', '_')];
-			title = toolkit.whenEmptyString(title, '');
-			d.breakdowns[e] = title;
-			titleParts.push(title);
-		});
-
-		d._id = titleParts.join(' ');
-		return d;
-	});
-
+	var data = kac.data();
 	var plmodels = _.sortBy(rpt.plmodels(), function (d) {
 		return parseInt(d.OrderIndex.replace(/PL/g, ''));
 	});
@@ -223,7 +250,7 @@ kac.render = function () {
 
 	var percentageWidth = 100;
 
-	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('.breakdown-view'));
+	var wrapper = toolkit.newEl('div').addClass('pivot-pnl').appendTo($('#key-account-analysis'));
 
 	var tableHeaderWrap = toolkit.newEl('div').addClass('table-header').appendTo(wrapper);
 
@@ -300,16 +327,11 @@ kac.render = function () {
 
 			var cell = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trContent);
 
-			cell.on('click', function () {
-				kac.renderDetail(d.PLCode, e.breakdowns);
-			});
-
 			toolkit.newEl('td').html(percentage + ' %').addClass('align-right cell-percentage').appendTo(trContent);
 		});
 
 		var boolStatus = false;
 		trContent.find('td').each(function (a, e) {
-			// console.log(trHeader.find('td:eq(0)').text(),$(e).text())
 			if ($(e).text() != '0' && $(e).text() != '0.00 %') {
 				boolStatus = true;
 			}
