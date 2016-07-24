@@ -165,6 +165,8 @@ func buildratio() {
 			newkey := toolkit.Sprintf("%s_%s", v.Key, keysyrka[1])
 			valloc := v.Ratio1 * v1.Expect
 			adjustAllocs(&promototals, newkey, valloc, 0, 0, 0)
+			toolkit.Printf("Allocation for %s => ratio:%f alloc:%f",
+				newkey, v.Ratio1, valloc)
 		}
 	}
 
@@ -378,7 +380,7 @@ func makeProgressLog(reference string, i, count, step int, current *int, tstart 
 	}
 	pct := i * 100 / count
 	if i >= icurrent {
-		toolkit.Printfn("Processing %s, %d of %d [%d pct] in %s",
+		toolkit.Printfn("%s, %d of %d [%d pct] in %s",
 			reference, i, count, pct, time.Since(tstart).String())
 		icurrent += perstep
 	}
