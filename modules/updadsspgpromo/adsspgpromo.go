@@ -108,9 +108,7 @@ func buildratio() {
 		}
 
 		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
-
-		sales := mr.GetFloat64("PL28I")
-
+		sales := mr.GetFloat64("PL8A")
 		adjustAllocs(&advtotals, keyperiodbrand, 0, 0, 0, sales)
 	}
 }
@@ -170,7 +168,7 @@ func processTable() {
 				if strings.HasPrefix(k, "PL28") {
 					advtotal := advtotals[keyperiodbrand]
 					if advtotal != nil {
-						newv = -toolkit.Div(sales*advtotal.Expect, advtotal.Ref1)
+						newv = toolkit.Div(sales*advtotal.Expect, advtotal.Ref1)
 						adjustAllocs(&advyears, fiscal, 0, 0, 0, newv)
 					}
 				} else
