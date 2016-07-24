@@ -168,7 +168,7 @@ func processTable() {
 				if strings.HasPrefix(k, "PL28") {
 					advtotal := advtotals[keyperiodbrand]
 					if advtotal != nil {
-						newv = sales * advtotal.Expect / advtotal.Ref1
+						newv = toolkit.Div(sales*advtotal.Expect, advtotal.Ref1)
 					}
 				} else
 				//-- spg
