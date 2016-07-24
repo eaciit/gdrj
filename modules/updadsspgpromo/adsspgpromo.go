@@ -81,7 +81,7 @@ func buildratio() {
 		brand := mr.GetString("brand")
 		value := mr.GetFloat64("amountinidr")
 		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
-		adjustAllocs(&disctotals, keyperiodbrand, 0, value, 0, 0)
+		adjustAllocs(&advtotals, keyperiodbrand, 0, value, 0, 0)
 	}
 
 	ctrx, _ := connratio.NewQuery().From(calctablename).Select().Cursor(nil)
@@ -107,9 +107,9 @@ func buildratio() {
 
 		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
 
-		sales := mr.GetFloat64("PL8A")
+		sales := mr.GetFloat64("PL28A")
 
-		adjustAllocs(&disctotals, keyperiodbrand, 0, 0, 0, sales)
+		adjustAllocs(&advtotals, keyperiodbrand, 0, 0, 0, sales)
 	}
 }
 
