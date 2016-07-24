@@ -75,9 +75,9 @@ func buildratio() {
 		i++
 		makeProgressLog("Build ads ratio", i, count, 5, &mstone, t0)
 
-		gdrjdate := mr.Get("gdrjdate", gdrj.Date{}).(gdrj.Date)
-		fiscal := gdrjdate.Fiscal
-		month := gdrjdate.Month
+		gdrjdate := mr.Get("gdrjdate", toolkit.M{}).(toolkit.M)
+		fiscal := gdrjdate.GetString("fiscal")
+		month := gdrjdate.GetInt("month")
 		brand := mr.GetString("brand")
 		value := mr.GetFloat64("amountinidr")
 		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
