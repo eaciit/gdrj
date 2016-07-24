@@ -101,6 +101,9 @@ func buildratio() {
 		fiscal := key.GetString("date_fiscal")
 		month := key.GetInt("date_month")
 		brand := key.GetString("product_brand")
+		if brand == "" {
+			brand = "HIT"
+		}
 
 		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
 
@@ -157,7 +160,8 @@ func processTable() {
 				if strings.HasPrefix(k, "PL7A") {
 					disctotal := disctotals[keyperiodaccount]
 					if disctotal != nil {
-						newv = sales * disctotal.Expect / disctotal.Ref1
+						newv = toolkit.Div(sales*disctotal.Expect,
+							disctotal.Ref1)
 					}
 				} else
 				//-- advertisement
