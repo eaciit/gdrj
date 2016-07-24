@@ -91,7 +91,7 @@ func buildratio() {
 	mstone = 0
 	for {
 		mr := toolkit.M{}
-		if ef := csr.Fetch(&mr, 1, false); ef != nil {
+		if ef := ctrx.Fetch(&mr, 1, false); ef != nil {
 			break
 		}
 		i++
