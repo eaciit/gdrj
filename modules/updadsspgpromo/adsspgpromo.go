@@ -165,7 +165,7 @@ func processTable() {
 					}
 				} else
 				//-- advertisement
-				if strings.HasPrefix(k, "PL28") {
+				if k == "PL28I" {
 					advtotal := advtotals[keyperiodbrand]
 					if advtotal != nil {
 						newv = toolkit.Div(sales*advtotal.Expect, advtotal.Ref1)
@@ -236,7 +236,7 @@ func processTable() {
 				if isPL(k) {
 					newv := v.(float64)
 					//ads
-					if strings.HasPrefix(k, "PL28") {
+					if k == "PL28I" {
 						total := advyears[fiscal]
 						if total != nil {
 							newv = toolkit.Div(v.(float64)*total.Expect,
