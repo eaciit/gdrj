@@ -45,6 +45,7 @@ type allocmap map[string]*plalloc
 var (
 	plallocs    = allocmap{}
 	advtotals   = allocmap{}
+	advyears    = allocmap{}
 	spgtotals   = allocmap{}
 	promototals = allocmap{}
 	disctotals  = allocmap{}
@@ -79,9 +80,10 @@ func buildratio() {
 		fiscal := gdrjdate.GetString("fiscal")
 		month := gdrjdate.GetInt("month")
 		brand := mr.GetString("brand")
-		value := mr.GetFloat64("amountinidr")
+		value := -mr.GetFloat64("amountinidr")
 		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
 		adjustAllocs(&advtotals, keyperiodbrand, 0, value, 0, 0)
+		adjustAllocs(&advyears, fiscal, 0, value, 0, 0)
 	}
 
 	ctrx, _ := connratio.NewQuery().From(calctablename).Select().Cursor(nil)
@@ -168,7 +170,8 @@ func processTable() {
 				if strings.HasPrefix(k, "PL28") {
 					advtotal := advtotals[keyperiodbrand]
 					if advtotal != nil {
-						newv = toolkit.Div(sales*advtotal.Expect, advtotal.Ref1)
+						newv = -toolkit.Div(sales*advtotal.Expect, advtotal.Ref1)
+						adjustAllocs(&advyears, fiscal, 0, 0, 0, newv)
 					}
 				} else
 				//-- spg
@@ -203,6 +206,49 @@ func processTable() {
 		if isDeleted {
 			deletedids = append(deletedids, mrid)
 		} else {
+			esave := qsave.Exec(toolkit.M{}.Set("data", mr))
+			if esave != nil {
+				toolkit.Printfn("Error: %s", esave.Error())
+				return
+			}
+		}
+	}
+
+	//-- scale
+	cursor.ResetFetch()
+	i = 0
+	count = cursor.Count()
+	mstone = 0
+	t0 = time.Now()
+	for {
+		mr := toolkit.M{}
+		e := cursor.Fetch(&mr, 1, false)
+		if e != nil || i >= count {
+			break
+		}
+		i++
+		makeProgressLog("Scale", i, count, 5, &mstone, t0)
+
+		id := mr.GetString("_id")
+		key := mr.Get("key", toolkit.M{}).(toolkit.M)
+		fiscal := key.GetString("date_fiscal")
+
+		if !toolkit.HasMember(deletedids, id) {
+			for k, v := range mr {
+				if isPL(k) {
+					newv := v.(float64)
+					//ads
+					if strings.HasPrefix(k, "PL28") {
+						total := advyears[fiscal]
+						if total != nil {
+							newv = toolkit.Div(v.(float64)*total.Expect,
+								total.Ref1)
+						}
+					}
+					mr.Set(k, newv)
+				}
+			}
+
 			esave := qsave.Exec(toolkit.M{}.Set("data", mr))
 			if esave != nil {
 				toolkit.Printfn("Error: %s", esave.Error())
