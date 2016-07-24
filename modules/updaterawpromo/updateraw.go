@@ -107,7 +107,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From(gtable).
+		From(toolkit.Sprintf("%s-date", gtable)).
 		SetConfig("multiexec", true).
 		Save()
 
