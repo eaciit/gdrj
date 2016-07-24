@@ -247,6 +247,7 @@ func processTable() {
 				}
 			}
 
+			gdrj.CalcSum(mr, masters)
 			esave := qsave.Exec(toolkit.M{}.Set("data", mr))
 			if esave != nil {
 				toolkit.Printfn("Error: %s", esave.Error())
