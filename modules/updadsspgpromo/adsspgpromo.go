@@ -110,8 +110,8 @@ func buildratio() {
 		fiscal := mr.GetString("fiscal")
 		kaid := mr.GetString("kaid")
 		keyfiscalka := toolkit.Sprintf("%s_%s", fiscal, kaid)
-		spgv := mr.GetFloat64("newspgv")
-		promov := mr.GetFloat64("newpromov")
+		spgv := mr.GetFloat64("newspg")
+		promov := mr.GetFloat64("newpromo")
 		adjustAllocs(&spgyrkas, keyfiscalka, 0, spgv, 0, 0)
 		adjustAllocs(&promoyrkas, keyfiscalka, 0, promov, 0, 0)
 	}
