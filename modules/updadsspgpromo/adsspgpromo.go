@@ -296,8 +296,9 @@ func makeProgressLog(reference string, i, count, step int, current *int, tstart 
 }
 
 func isPL(id string) bool {
-	if strings.HasPrefix(id, "PL7A") ||
-		strings.HasPrefix(id, "PL28") ||
+	if
+	//strings.HasPrefix(id, "PL7A") ||
+	strings.HasPrefix(id, "PL28") ||
 		strings.HasPrefix(id, "PL29A") ||
 		strings.HasPrefix(id, "PL31") {
 		return true
