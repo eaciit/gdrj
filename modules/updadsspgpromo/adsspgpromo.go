@@ -138,7 +138,7 @@ func buildratio() {
 		if strings.Contains(grouping, "spg") {
 			adjustAllocs(&spgmths, keyperiod, 0, amt, 0, 0)
 			adjustAllocs(&spgyrs, fiscal, 0, 0, 0, amt)
-		} else {
+		} else if strings.Contains(grouping, "promo") {
 			adjustAllocs(&promomths, keyperiod, 0, amt, 0, 0)
 			adjustAllocs(&promoyrs, fiscal, 0, 0, 0, amt)
 		}
@@ -267,7 +267,7 @@ func processTable() {
 				} else
 				//-- spg
 				if k == "PL31C" {
-					total := spgtotals[keyperiodaccount]
+					total := spgyrkas[keyperiodaccount]
 					if total != nil {
 						newv = sales * total.Expect / total.Ref1
 						adjustAllocs(&spgyrkas, keyfiscalka, 0, 0, 0, newv)
@@ -275,7 +275,7 @@ func processTable() {
 				} else
 				//-- promo
 				if k == "PL29A32" {
-					total := promototals[keyperiodaccount]
+					total := promoyrkas[keyperiodaccount]
 					if total != nil {
 						newv = sales * total.Expect / total.Ref1
 						adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, newv)
@@ -325,9 +325,9 @@ func processTable() {
 		id := mr.GetString("_id")
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
-		ka := key.GetString("customer_customergroup")
+		//ka := key.GetString("customer_customergroup")
 
-		keyfiscalka := toolkit.Sprintf("%s_%s", fiscal, ka)
+		//keyfiscalka := toolkit.Sprintf("%s_%s", fiscal, ka)
 		if !toolkit.HasMember(deletedids, id) {
 			for k, v := range mr {
 				if isPL(k) {
@@ -339,7 +339,7 @@ func processTable() {
 							newv = toolkit.Div(v.(float64)*total.Expect,
 								total.Ref1)
 						}
-					} else //-- spg
+					} /*else //-- spg
 					if k == "PL31C" {
 						total := spgyrkas[keyfiscalka]
 						if total != nil {
@@ -355,6 +355,7 @@ func processTable() {
 								total.Ref1)
 						}
 					}
+					*/
 					mr.Set(k, newv)
 				}
 			}
