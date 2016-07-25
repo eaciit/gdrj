@@ -18,6 +18,7 @@ var count int
 var ratioTableName string
 
 var (
+	ratiototrf      = float64(0.392)
 	sourcetablename = "salespls-summary"
 	calctablename   = "salespls-summary"
 	desttablename   = "salespls-summary"
@@ -141,9 +142,9 @@ func processTable() {
 		branchid := key.GetString("customer_branchid")
 		branchname := key.GetString("customer_branchname")
 
-		discount := mr.GetFloat64("PL7A")
-		spg := mr.GetFloat64("PL31")
-		promo := mr.GetFloat64("Pl29A")
+		discount := mr.GetFloat64("PL7A") * ratiototrf
+		spg := mr.GetFloat64("PL31") * ratiototrf
+		promo := mr.GetFloat64("Pl29A") * ratiototrf
 
 		if discount != 0 || spg != 0 || promo != 0 {
 			if branchid != "CD02" || branchid != "CD04" || branchid != "CD11" ||
