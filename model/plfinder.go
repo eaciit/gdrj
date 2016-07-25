@@ -427,11 +427,9 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 	res := []*toolkit.M{}
 
 	branchMTpercent := float64(0)
-	// discactrd := float64(0)
 
 	prepmastercalc()
 
-	// hasChannel := false
 	otherData := map[int]*toolkit.M{}
 
 	for i, each := range *data {
@@ -489,175 +487,170 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			each.Set(NetMarginPLCode, grossMargin+anp)
 		}
 
+		for key := range *each {
+			if strings.Contains(key, "PL") {
+				val := each.GetFloat64(key)
+				if math.IsNaN(val) {
+					each.Set(key, 0)
+				}
+			}
+		}
 	}
 
-	if s.Flag != "" {
-		if s.Flag == "branch-vs-rd" {
-			for _, each := range *data {
-				_id := (*each).Get("_id").(toolkit.M)
-				channelID := _id.GetString("_id_customer_channelid")
-
-				if toolkit.HasMember([]string{"I6", "I4", "I3", "I2"}, channelID) {
-					newEach := toolkit.M{}
-
-					for key, value := range *each {
-						newEach[key] = value
-					}
-
-					eachID := toolkit.M{"_id_branchrd": "Branch"}
-
-					for k, v := range newEach.Get("_id").(toolkit.M) {
-						eachID.Set(k, v)
-					}
-
-					newEach.Set("_id", eachID)
-					res = append(res, &newEach)
-				}
-
-				rdMT := float64(0)
-
-				if toolkit.HasMember([]string{"I1"}, channelID) {
-					breakdowns := map[string]float64{"Modern Trade": 0.62, "General Trade": 0.38}
-
-					for channelname, percentage := range breakdowns {
-						newEach := toolkit.M{}
-
-						for key, value := range *each {
-							newEach[key] = value
-
-							if strings.HasPrefix(key, "PL") {
-								newEach[key] = ((*each).GetFloat64(key) * percentage)
-
-								// === RD | MT 100% vs GT 0% ===
-
-								f := []string{"PL31", "PL30", "PL29"}
-								for _, forbidden := range f {
-									if strings.HasPrefix(key, forbidden) {
-										if channelname == "General Trade" {
-											newEach[key] = 0
-										} else if channelname == "Modern Trade" {
-											newEach[key] = (*each).GetFloat64(key)
-										}
-									}
-								}
-							}
-						}
-
-						// === DISCOUNT ACT === RD GT & RD MT ===
-						if channelname == "Modern Trade" {
-							rdMT = branchMTpercent * newEach.GetFloat64("PL0")
-							newEach["PL7A"] = rdMT
-						} else {
-							totalRD := each.GetFloat64("PL7A")
-							rdGT := totalRD - rdMT
-							newEach["PL7A"] = rdGT
-						}
-
-						eachID := toolkit.M{"_id_branchrd": "Regional Distributor"}
-
-						for k, v := range newEach.Get("_id").(toolkit.M) {
-							eachID.Set(k, v)
-						}
-
-						eachID.Set("_id_customer_channelname", channelname)
-						newEach.Set("_id", eachID)
-
-						//neweach final
-						CalcSum(newEach, masters)
-						res = append(res, &newEach)
-					}
-				}
-			}
-
-			return &res
-		} else if s.Flag == "branch-vs-rd-only-mt-gt" {
-			for _, each := range *data {
-				_id := (*each).Get("_id").(toolkit.M)
-				channelID := _id.GetString("_id_customer_channelid")
-
-				if toolkit.HasMember([]string{"I3", "I2"}, channelID) {
-					newEach := toolkit.M{}
-
-					for key, value := range *each {
-						newEach[key] = value
-					}
-
-					eachID := toolkit.M{"_id_branchrd": "Branch"}
-
-					for k, v := range newEach.Get("_id").(toolkit.M) {
-						eachID.Set(k, v)
-					}
-
-					newEach.Set("_id", eachID)
-					res = append(res, &newEach)
-				}
-
-				rdMT := float64(0)
-
-				if toolkit.HasMember([]string{"I1"}, channelID) {
-					breakdowns := map[string]float64{"Modern Trade": 0.62, "General Trade": 0.38}
-
-					for channelname, percentage := range breakdowns {
-						newEach := toolkit.M{}
-
-						for key, value := range *each {
-							newEach[key] = value
-
-							if strings.HasPrefix(key, "PL") {
-								newEach[key] = ((*each).GetFloat64(key) * percentage)
-
-								f := []string{"PL31", "PL30", "PL29"}
-								for _, forbidden := range f {
-									if strings.HasPrefix(key, forbidden) {
-										if channelname == "General Trade" {
-											newEach[key] = 0
-										} else if channelname == "Modern Trade" {
-											newEach[key] = (*each).GetFloat64(key)
-										}
-									}
-								}
-							}
-						}
-
-						// === DISCOUNT ACT === RD GT & RD MT ===
-						if channelname == "Modern Trade" {
-							rdMT = branchMTpercent * newEach.GetFloat64("PL0")
-							newEach["PL7A"] = rdMT
-						} else {
-							totalRD := each.GetFloat64("PL7A")
-							rdGT := totalRD - rdMT
-							newEach["PL7A"] = rdGT
-						}
-
-						eachID := toolkit.M{"_id_branchrd": "Regional Distributor"}
-
-						for k, v := range newEach.Get("_id").(toolkit.M) {
-							eachID.Set(k, v)
-						}
-
-						eachID.Set("_id_customer_channelname", channelname)
-						newEach.Set("_id", eachID)
-
-						//neweach final
-						CalcSum(newEach, masters)
-						res = append(res, &newEach)
-					}
-				}
-			}
-
-			return &res
-		}
-	} else {
+	if s.Flag == "branch-vs-rd" {
 		for _, each := range *data {
-			for key := range *each {
-				if strings.Contains(key, "PL") {
-					val := each.GetFloat64(key)
-					if math.IsNaN(val) {
-						each.Set(key, 0)
+			_id := (*each).Get("_id").(toolkit.M)
+			channelID := _id.GetString("_id_customer_channelid")
+
+			if toolkit.HasMember([]string{"I6", "I4", "I3", "I2"}, channelID) {
+				newEach := toolkit.M{}
+
+				for key, value := range *each {
+					newEach[key] = value
+				}
+
+				eachID := toolkit.M{"_id_branchrd": "Branch"}
+
+				for k, v := range newEach.Get("_id").(toolkit.M) {
+					eachID.Set(k, v)
+				}
+
+				newEach.Set("_id", eachID)
+				res = append(res, &newEach)
+			}
+
+			rdMT := float64(0)
+
+			if toolkit.HasMember([]string{"I1"}, channelID) {
+				breakdowns := map[string]float64{"Modern Trade": 0.62, "General Trade": 0.38}
+
+				for channelname, percentage := range breakdowns {
+					newEach := toolkit.M{}
+
+					for key, value := range *each {
+						newEach[key] = value
+
+						if strings.HasPrefix(key, "PL") {
+							newEach[key] = ((*each).GetFloat64(key) * percentage)
+
+							// === RD | MT 100% vs GT 0% ===
+
+							f := []string{"PL31", "PL30", "PL29"}
+							for _, forbidden := range f {
+								if strings.HasPrefix(key, forbidden) {
+									if channelname == "General Trade" {
+										newEach[key] = 0
+									} else if channelname == "Modern Trade" {
+										newEach[key] = (*each).GetFloat64(key)
+									}
+								}
+							}
+						}
 					}
+
+					// === DISCOUNT ACT === RD GT & RD MT ===
+					if channelname == "Modern Trade" {
+						rdMT = branchMTpercent * newEach.GetFloat64("PL0")
+						newEach["PL7A"] = rdMT
+					} else {
+						totalRD := each.GetFloat64("PL7A")
+						rdGT := totalRD - rdMT
+						newEach["PL7A"] = rdGT
+					}
+
+					eachID := toolkit.M{"_id_branchrd": "Regional Distributor"}
+
+					for k, v := range newEach.Get("_id").(toolkit.M) {
+						eachID.Set(k, v)
+					}
+
+					eachID.Set("_id_customer_channelname", channelname)
+					newEach.Set("_id", eachID)
+
+					//neweach final
+					CalcSum(newEach, masters)
+					res = append(res, &newEach)
 				}
 			}
 		}
+
+		return &res
+	} else if s.Flag == "branch-vs-rd-only-mt-gt" {
+		for _, each := range *data {
+			_id := (*each).Get("_id").(toolkit.M)
+			channelID := _id.GetString("_id_customer_channelid")
+
+			if toolkit.HasMember([]string{"I3", "I2"}, channelID) {
+				newEach := toolkit.M{}
+
+				for key, value := range *each {
+					newEach[key] = value
+				}
+
+				eachID := toolkit.M{"_id_branchrd": "Branch"}
+
+				for k, v := range newEach.Get("_id").(toolkit.M) {
+					eachID.Set(k, v)
+				}
+
+				newEach.Set("_id", eachID)
+				res = append(res, &newEach)
+			}
+
+			rdMT := float64(0)
+
+			if toolkit.HasMember([]string{"I1"}, channelID) {
+				breakdowns := map[string]float64{"Modern Trade": 0.62, "General Trade": 0.38}
+
+				for channelname, percentage := range breakdowns {
+					newEach := toolkit.M{}
+
+					for key, value := range *each {
+						newEach[key] = value
+
+						if strings.HasPrefix(key, "PL") {
+							newEach[key] = ((*each).GetFloat64(key) * percentage)
+
+							f := []string{"PL31", "PL30", "PL29"}
+							for _, forbidden := range f {
+								if strings.HasPrefix(key, forbidden) {
+									if channelname == "General Trade" {
+										newEach[key] = 0
+									} else if channelname == "Modern Trade" {
+										newEach[key] = (*each).GetFloat64(key)
+									}
+								}
+							}
+						}
+					}
+
+					// === DISCOUNT ACT === RD GT & RD MT ===
+					if channelname == "Modern Trade" {
+						rdMT = branchMTpercent * newEach.GetFloat64("PL0")
+						newEach["PL7A"] = rdMT
+					} else {
+						totalRD := each.GetFloat64("PL7A")
+						rdGT := totalRD - rdMT
+						newEach["PL7A"] = rdGT
+					}
+
+					eachID := toolkit.M{"_id_branchrd": "Regional Distributor"}
+
+					for k, v := range newEach.Get("_id").(toolkit.M) {
+						eachID.Set(k, v)
+					}
+
+					eachID.Set("_id_customer_channelname", channelname)
+					newEach.Set("_id", eachID)
+
+					//neweach final
+					CalcSum(newEach, masters)
+					res = append(res, &newEach)
+				}
+			}
+		}
+
+		return &res
 	}
 
 	return data
@@ -753,7 +746,7 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 func (s *PLFinderParam) GeneratePLData() error {
 	tableName := s.GetTableName()
 
-	plmodels, err := PLModelGetAll()
+	plmodels, err := PLModelGetAll(s)
 	if err != nil {
 		return err
 	}

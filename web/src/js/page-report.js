@@ -613,6 +613,12 @@ rpt.prepareEvents = () => {
 }
 
 rpt.hardcodePLGA = (data, plmodels) => {
+	// don't hardcode the GNA
+	let pl33 = plmodels.find((d) => d._id == "PL33")
+	if (typeof pl33 === 'undefined') {
+		return {Data: data, PLModels: plmodels}
+	}
+
 	let dataChildGa = ["PL33", "PL34", "PL35"], searchPL, replaceKey = ""
 	for (var i in data) {
 		for (var key in data[i]) {
