@@ -16,7 +16,7 @@ import (
 
 var (
 	masters                   = toolkit.M{}
-	forceSalesPLSSummary bool = true
+	forceSalesPLSSummary bool = false
 )
 
 func buildmap(holder interface{},
@@ -486,7 +486,7 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 			grossMargin := each.GetFloat64("PL74C")
 			anp := each.GetFloat64("PL32A")
 
-			each.Set(NetMarginPLCode, grossMargin-anp)
+			each.Set(NetMarginPLCode, grossMargin+anp)
 		}
 
 	}
