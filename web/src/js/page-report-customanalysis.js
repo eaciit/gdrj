@@ -202,6 +202,14 @@ cst.refresh = () => {
 		})
 	}
 
+	if (cst.dimensionPNL().indexOf('PL44BP') > -1) {
+		param.pls.push('PL44B')
+	}
+
+	if (cst.dimensionPNL().indexOf('PL74CP') > -1) {
+		param.pls.push('PL74C')
+	}
+
 	let fetch = () => {
 		app.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
@@ -220,13 +228,7 @@ cst.refresh = () => {
 			cst.data(cst.validateData(res.Data.Data))
 			window.res = res
 
-			let opl1 = _.orderBy(rpt.allowedPL(), (d) => d.OrderIndex)
-			let opl2 = _.map(opl1, (d) => ({ field: d._id, name: d.PLHeader3 }))
-			cst.optionDimensionPNL(opl2)
-			if (cst.dimensionPNL().length == 0) {
-				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL44B"])
-				cst.initSeries()
-			}
+			cst.setupDimensionPNL()
 
 			cst.build()
 			cst.renderChart()
@@ -239,7 +241,48 @@ cst.refresh = () => {
 	fetch()
 }
 
+cst.allowedPL = () => {
+	let pls = []
+	rpt.allowedPL().forEach((d) => {
+		pls.push(d)
+
+		if (d._id == 'PL74C') {
+			let o = {}
+			o._id = 'PL74CP'
+			o.PLHeader1 = 'Gross Margin %'
+			o.PLHeader2 = 'Gross Margin %'
+			o.PLHeader3 = 'Gross Margin %'
+			o.OrderIndex = 'PL0027A'
+			pls.push(o)
+		}
+
+		if (d._id == 'PL44B') {
+			let o = {}
+			o._id = 'PL44BP'
+			o.PLHeader1 = 'EBIT %'
+			o.PLHeader2 = 'EBIT %'
+			o.PLHeader3 = 'EBIT %'
+			o.OrderIndex = 'PL0058A'
+			pls.push(o)
+		}
+	})
+	return pls
+}
+
+cst.setupDimensionPNL = () => {
+	let pls = cst.allowedPL()
+	let opl1 = _.orderBy(pls, (d) => d.OrderIndex)
+	let opl2 = _.map(opl1, (d) => ({ field: d._id, name: d.PLHeader3 }))
+	cst.optionDimensionPNL(opl2)
+	if (cst.dimensionPNL().length == 0) {
+		cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL44B"])
+		cst.initSeries()
+	}
+}
+
 cst.validateData = (data) => {
+	let totalGrossMargin = toolkit.sum(data, (e) => e.PL74C)
+	let totalEBIT = toolkit.sum(data, (e) => e.PL44B)
 	let hasMonth = (cst.breakdownClean().indexOf('date.month') > -1)
 	return data.map((d) => {
 		if (hasMonth) {
@@ -247,6 +290,9 @@ cst.validateData = (data) => {
 			let yearMonth = `${year}${d._id._id_date_month}`
 			d._id._id_date_month = yearMonth
 		}
+
+		d.PL74CP = toolkit.number(d.PL74C / totalGrossMargin) * 100
+		d.PL44BP = toolkit.number(d.PL44B / totalEBIT) * 100
 
 		return d
 	})
@@ -257,7 +303,7 @@ cst.build = () => {
 	// console.log('breakdown', breakdown)
 
 	let keys = _.orderBy(cst.dimensionPNL(), (d) => {
-		let plmodel = rpt.allowedPL().find((e) => e._id == d)
+		let plmodel = cst.allowedPL().find((e) => e._id == d)
 	    return (plmodel != undefined) ? plmodel.OrderIndex : ''
 	}, 'asc')
 
@@ -306,7 +352,7 @@ cst.build = () => {
 		}
 
 		keys.map((e) => {
-			let pl = rpt.allowedPL().find((g) => g._id == e)
+			let pl = cst.allowedPL().find((g) => g._id == e)
 			let p = toolkit.clone(o)
 			p.pnl = pl.PLHeader3
 			p.value = d[e]
@@ -398,7 +444,7 @@ cst.build = () => {
 					})
 
 					o.rows = _.orderBy(o.rows, (d) => {
-						let pl = rpt.allowedPL().find((g) => g.PLHeader3 == d.pnl)
+						let pl = cst.allowedPL().find((g) => g.PLHeader3 == d.pnl)
 						if (pl != undefined) {
 							return pl.OrderIndex
 						}
@@ -423,7 +469,7 @@ cst.build = () => {
 	}
 
 	// console.log('columns', columns)
-	// console.log('plmodels', rpt.allowedPL())
+	// console.log('plmodels', cst.allowedPL())
 	// console.log('keys', keys)
 	// console.log("all", all)
 
@@ -612,9 +658,14 @@ cst.doGroup = (all, columns, rows, tableHeader, tableContent, totalWidth) => {
 						.attr('data-key', key)
 				}
 
+				let format = '{0:n0}'
+				if (key.indexOf('%') > -1) {
+					format = '{0:n2} %'
+				}
+
 				let rowTdContent = toolkit.newEl('td')
 					.addClass('align-right')
-					.html(kendo.toString(v[0].value, 'n0'))
+					.html(kendo.format(format, v[0].value))
 					.appendTo(rowTrContent)
 			})
 		})
@@ -663,7 +714,7 @@ cst.initSeries = () => {
 		if (toolkit.isDefined(prevSerie)) {
 			serie = prevSerie
 		} else {
-			let pl = rpt.plmodels().find((e) => e._id == d)
+			let pl = cst.allowedPL().find((e) => e._id == d)
 			serie.field = d
 			serie.name = pl.PLHeader3
 			serie.type = 'column'
@@ -712,9 +763,17 @@ cst.renderChart = () => {
 			}
 
 			cst.dimensionPNL().forEach((g) => {
+				let pl = cst.allowedPL().find((h) => h._id == g)
 				let sumVal = toolkit.sum(v, (h) => h[g])
+
 				o[`${g}_orig`] = sumVal
 				o[g] = toolkit.safeDiv(sumVal, billion)
+
+				if (typeof pl !== 'undefined') {
+					if (pl.PLHeader3.indexOf('%') > -1) {
+						o[g] = sumVal
+					}
+				}
 			})
 
 			return o
@@ -746,6 +805,7 @@ cst.renderChart = () => {
 		width = `${data.length * 200}px`
 	}
 
+	let useRightAxis = false
 let series = ko.mapping.toJS(cst.series())
 	.filter((d) => d.visible)
 	.map((d) => {
@@ -759,8 +819,38 @@ let series = ko.mapping.toJS(cst.series())
 			].join('<br />')
 		}
 
+		d.axis = 'left'
+		if (d.name.indexOf('%') > -1) {
+			d.axis = 'right'
+			useRightAxis = true
+		}
+
 		return d
 	})
+
+	let axes = [{
+		name: 'left',
+		majorGridLines: { color: '#fafafa' },
+        labels: { 
+			font: '"Source Sans Pro" 11px',
+        	format: `{0:n2} ${suffix}`
+        }
+    }]
+    let axisCrossingValues = [0]
+
+    if (useRightAxis) {
+    	axes.push({
+    		name: 'right',
+    		title: { text: 'Percentage' },
+			majorGridLines: { color: '#fafafa' },
+	        labels: { 
+				font: '"Source Sans Pro" 11px',
+	        	format: `{0:n2} %`
+	        }
+    	})
+    	axisCrossingValues.push(data.length)
+    }
+
 	let config = {
 		dataSource: {
 			data: data
@@ -773,7 +863,12 @@ let series = ko.mapping.toJS(cst.series())
 				visible: true,
 				// position: 'top',
             	template: (d) => {
-            		return `${d.series.name}\n${kendo.toString(d.value, 'n2')} ${suffix}`
+            		let labelSuffix = suffix
+            		if (d.series.name.indexOf('%') > -1) {
+            			labelSuffix = '%'
+            		}
+
+            		return `${d.series.name}\n${kendo.toString(d.value, 'n2')} ${labelSuffix}`
             	}
 			},
 			line: {
@@ -788,13 +883,7 @@ let series = ko.mapping.toJS(cst.series())
             position: "bottom"
         },
 		series: series,
-        valueAxis: {
-			majorGridLines: { color: '#fafafa' },
-            labels: { 
-				font: '"Source Sans Pro" 11px',
-            	format: `{0:n2} ${suffix}`
-            }
-        },
+        valueAxes: axes,
         categoryAxis: {
 			field: 'key',
             labels: {
@@ -806,9 +895,12 @@ let series = ko.mapping.toJS(cst.series())
 				},
 				padding: 3
             },
-			majorGridLines: { color: '#fafafa' }
+			majorGridLines: { color: '#fafafa' },
+			axisCrossingValues: axisCrossingValues
 		}
 	}
+
+	console.log('----config', config)
 
 
 	$('#custom-chart').replaceWith(`<div id="custom-chart" style="width: ${width}"></div>`)
