@@ -473,8 +473,16 @@
 						</div>
 						<div class="clearfix"></div>
 					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'city')">
+						<span class="input-group-addon align-right">Select Cities</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownCityValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownCity, placeholder: 'Choose value', change: subchan.changeBreakdownCityValue, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
 
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'brand' || subchan.what() == 'city' || subchan.what() == 'branch-group')">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'brand' || subchan.what() == 'city' || subchan.what() == 'branch' || subchan.what() == 'branch-group')">
 						<span class="input-group-addon align-right">Channel</span>
 						<div class="width-full">
 							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownChannelValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownChannelValue, placeholder: 'Choose value', change: subchan.changeBreakdownChannelValue, filter: 'contains' }"></select>
@@ -494,14 +502,6 @@
 						<span class="input-group-addon align-right">Breakdown Value</span>
 						<div class="width-full">
 							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownGeneralTradeValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownGeneralTrade, placeholder: 'Choose value', change: subchan.changeBreakdownGeneralTradeValue, filter: 'contains' }"></select>
-						</div>
-						<div class="clearfix"></div>
-					</div>
-					
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'city')">
-						<span class="input-group-addon align-right">Select Cities</span>
-						<div class="width-full">
-							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownCityValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownCity, placeholder: 'Choose value', change: subchan.changeBreakdownCityValue, filter: 'contains' }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>

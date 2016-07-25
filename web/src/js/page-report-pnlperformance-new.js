@@ -2747,6 +2747,14 @@ let subchan = viewModel.subChannel
 	subchan.isInlineFilter = ko.observable(true)
 
 	subchan.switchRefresh = (title, what) => {
+		subchan.breakdownBrand(['All'])
+		subchan.breakdownDistributor(['All'])
+		subchan.breakdownGeneralTrade(['All'])
+		subchan.breakdownCity(['All'])
+		subchan.breakdownBranch(['All'])
+		subchan.breakdownBranchGroup(['All'])
+		subchan.breakdownChannelValue(['All'])
+
 		bkd.title(title); 
 		subchan.what(what)
 		subchan.refresh()
@@ -2864,7 +2872,15 @@ let subchan = viewModel.subChannel
 			subchan.isInlineFilter(false)
 			subchan.breakdownBy('customer.branchname')
 			groups.push(subchan.breakdownBy())
-			
+
+			param.filters.push({
+				Field: "customer.channelname",
+				Op: "$in",
+				Value: rpt.masterData.Channel()
+					.map((d) => d._id)
+					.filter((d) => d != "EXP")
+			})
+
 			let breakdownBranch = subchan.breakdownBranch().filter((d) => d != 'All')
 			if (breakdownBranch.length > 0) {
 				param.filters.push({
@@ -2873,11 +2889,29 @@ let subchan = viewModel.subChannel
 					Value: breakdownBranch
 				})
 			}
+
+			let breakdownChannel = subchan.breakdownChannelValue().filter((d) => d != 'All')
+			groups.push("customer.channelname")
+			if (breakdownChannel.length > 0) {
+				param.filters.push({
+					Field: "customer.channelname",
+					Op: '$in',
+					Value: breakdownChannel
+				})
+			}
 		} else if (subchan.what() == 'branch-group') {
 			subchan.isInlineFilter(false)
 			subchan.breakdownBy('customer.branchgroup')
 			groups.push(subchan.breakdownBy())
 			
+			param.filters.push({
+				Field: "customer.channelname",
+				Op: "$in",
+				Value: rpt.masterData.Channel()
+					.map((d) => d._id)
+					.filter((d) => d != "EXP")
+			})
+
 			let breakdownBranchGroup = subchan.breakdownBranchGroup().filter((d) => d != 'All')
 			if (breakdownBranchGroup.length > 0) {
 				param.filters.push({
@@ -3882,13 +3916,13 @@ let dsbrd = viewModel.dashboard
 			title: 'PNL', 
 			attributes: { class: 'bold' }, 
 			headerAttributes: { style: 'font-weight: bold; vertical-align: middle;' }, 
-			width: 120
+			width: 130
 		}, { 
 			field: 'total', 
 			title: 'Total', 
 			attributes: { class: 'bold align-right bold' }, 
 			headerAttributes: { style: 'font-weight: bold; vertical-align: middle; text-align: right;' }, 
-			width: 150
+			width: 130
 		}]
 
 		let data = res.Data.Data
@@ -4113,11 +4147,12 @@ let rank = viewModel.dashboardRanking
 	rank.breakdown = ko.observable('customer.channelname')
 	rank.columns = ko.observableArray([
 		{ field: 'pnl', title: 'PNL', attributes: { class: 'bold' }, footerTemplate: 'Total' },
-		{ field: 'gmPercentage', template: (d) => `${kendo.toString(d.gmPercentage, 'n2')} %`, title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
-		{ field: 'cogsPercentage', template: (d) => `${kendo.toString(d.cogsPercentage, 'n2')} %`, title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
-		{ field: 'ebitPercentage', template: (d) => `${kendo.toString(d.ebitPercentage, 'n2')} %`, title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
-		{ field: 'ebitdaPercentage', template: (d) => `${kendo.toString(d.ebitdaPercentage, 'n2')} %`, title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
-		{ field: 'anpPercentage', template: (d) => `${kendo.toString(d.anpPercentage, 'n2')} %`, title: 'A&P %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ width: 90, field: 'gmPercentage', template: (d) => `${kendo.toString(d.gmPercentage, 'n2')} %`, title: 'GM %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ width: 90, field: 'cogsPercentage', template: (d) => `${kendo.toString(d.cogsPercentage, 'n2')} %`, title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ width: 90, field: 'ebitPercentage', template: (d) => `${kendo.toString(d.ebitPercentage, 'n2')} %`, title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ width: 90, field: 'ebitdaPercentage', template: (d) => `${kendo.toString(d.ebitdaPercentage, 'n2')} %`, title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ field: 'anp', title: 'A&P', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}' },
+		// { field: 'anpPercentage', template: (d) => `${kendo.toString(d.anpPercentage, 'n2')} %`, title: 'A&P %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ width: 120, field: 'ebitdaRoyalties', title: 'EBITDA & Royalties', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}' },
 		{ field: 'netMargin', title: 'Net Margin', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}' },
 		{ field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}' },
@@ -4194,8 +4229,9 @@ let rank = viewModel.dashboardRanking
 			row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A) * 100
 			row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A) * 100
 			row.anpPercentage = toolkit.number(d.PL32A / d.PL8A) * 100
+			row.anp = d.PL32A
 			row.ebitdaRoyalties = d.PL44D
-			row.netMargin = toolkit.number(d.PL74C) - toolkit.number(d.PL32A)
+			row.netMargin = d.PL74D
 			row.netSales = d.PL8A
 			row.ebit = d.PL44B
 			rows.push(row)
@@ -4211,7 +4247,8 @@ let rank = viewModel.dashboardRanking
 					{ field: 'ebitdaRoyalties', aggregate: 'sum' },
 					{ field: "netMargin", aggregate: "sum"},
 					{ field: "netSales", aggregate: "sum"},
-					{ field: "ebit", aggregate: "sum"}
+					{ field: "ebit", aggregate: "sum"},
+					{ field: "anp", aggregate: "sum"}
 				]
 			},
 			columns: rank.columns(),
@@ -4319,6 +4356,7 @@ $(() => {
 		subchan.changeBreakdownCity()
 		subchan.changeBreakdownBranch()
 		subchan.changeBreakdownBranchGroup()
+		subchan.changeBreakdownChannelValue()
 		dsbrd.changeBreakdown()
 
 		toolkit.runAfter(() => { 
@@ -4331,6 +4369,7 @@ $(() => {
 			subchan.breakdownCity(['All'])
 			subchan.breakdownBranch(['All'])
 			subchan.breakdownBranchGroup(['All'])
+			subchan.breakdownChannelValue(['All'])
 			dsbrd.breakdownValue(['All'])
 
 			bkd.refresh()
