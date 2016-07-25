@@ -18,6 +18,7 @@ vm.menu = ko.observableArray([
 		{ title: 'RD Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/rdanalysis', submenu: [] },
 		{ title: 'Branch vs RD Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/rdvsbranchanalysis', submenu: [] },
 		{ title: 'Brand Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/brandanalysis', submenu: [] },
+		{ title: 'GNA Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/gnaanalysis', submenu: [] },
 		{ title: 'Custom Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/customanalysis', submenu: [] }
 	] },
 	{ title: 'Analysis Ideas', icon: 'bar-chart-o', href: viewModel.appName + 'page/report', submenu: [] },

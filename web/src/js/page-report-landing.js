@@ -18,7 +18,8 @@ lgd.colors = [
 	'rgb(222, 68, 139)',
 
 	'rgb(70, 176, 247)',
-	'rgb(67, 206, 126)'
+	'rgb(67, 206, 126)',
+	'rgb(255, 183, 68)',
 ]
 
 lgd.menu = ko.observableArray([
@@ -38,6 +39,7 @@ lgd.menu = ko.observableArray([
 	{ to: 'marketingefficiency', title: 'Marketing Efficiency', icon: 'fa-bar-chart' },
 
 	{ to: 'brandanalysis', title: 'Brand Analysis', icon: 'fa-bar-chart' },
+	{ to: 'gnaanalysis', title: 'GNA Analysis', icon: 'fa-bar-chart' },
 	{ to: 'customanalysis', title: 'Custom Analysis', icon: 'fa-gear' },
 ].map((d, i) => {
 	d.color = lgd.colors[i % lgd.colors.length]
