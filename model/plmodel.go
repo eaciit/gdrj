@@ -37,7 +37,7 @@ func PLModelGetByID(id string) *PLModel {
 	return t
 }
 
-func PLModelGetAll() ([]*PLModel, error) {
+func PLModelGetAll(s *PLFinderParam) ([]*PLModel, error) {
 	cursor, err := DB().Find(new(PLModel), nil)
 	if err != nil {
 		return nil, err
@@ -73,6 +73,24 @@ func PLModelGetAll() ([]*PLModel, error) {
 		plNetMargin.PLHeader3 = plNetMargin.PLHeader1
 		plNetMargin.OrderIndex = "PL0027C"
 		result = append(result, plNetMargin)
+	}
+
+	isSGARequest := false
+	if s != nil {
+		if s.Flag == "gna" {
+			isSGARequest = true
+		}
+	}
+
+	if !isSGARequest {
+		parseResult := []*PLModel{}
+		for _, each := range result {
+			if each.PLHeader1 != "G&A Expenses" {
+				parseResult = append(parseResult, each)
+			}
+		}
+
+		result = parseResult
 	}
 
 	return result, nil

@@ -489,6 +489,14 @@ rpt.prepareEvents = function () {
 };
 
 rpt.hardcodePLGA = function (data, plmodels) {
+	// don't hardcode the GNA
+	var pl33 = plmodels.find(function (d) {
+		return d._id == "PL33";
+	});
+	if (typeof pl33 === 'undefined') {
+		return { Data: data, PLModels: plmodels };
+	}
+
 	var dataChildGa = ["PL33", "PL34", "PL35"],
 	    searchPL = void 0,
 	    replaceKey = "";

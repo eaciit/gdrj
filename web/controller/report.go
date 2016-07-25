@@ -241,7 +241,7 @@ func (m *ReportController) GetDataAnalysisIdea(r *knot.WebContext) interface{} {
 func (m *ReportController) GetPLModel(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
-	result, err := gdrj.PLModelGetAll()
+	result, err := gdrj.PLModelGetAll(nil)
 	if err != nil {
 		return helper.CreateResult(false, nil, err.Error())
 	}
@@ -416,7 +416,7 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 			return res
 		}
 
-		plmodels, err := gdrj.PLModelGetAll()
+		plmodels, err := gdrj.PLModelGetAll(payload)
 		if err != nil {
 			res.SetError(err)
 			return res

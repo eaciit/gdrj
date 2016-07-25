@@ -20,6 +20,7 @@ gna.refresh = function () {
 	var param = {};
 	param.pls = [];
 	param.aggr = 'sum';
+	param.flag = 'gna';
 	param.filters = rpt.getFilterValue(false, gna.fiscalYear);
 	param.groups = rpt.parseGroups([gna.breakdownBy()]);
 	gna.contentIsLoading(true);
