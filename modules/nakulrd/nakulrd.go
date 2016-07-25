@@ -51,7 +51,10 @@ var (
 
 func main() {
 	setinitialconnection()
-	conn.NewQuery().From(desttablename).Where(dbox.Eq("key.trxsrc", trxsrc)).Delete().Exec(nil)
+	conn.NewQuery().From(desttablename).
+		Where(dbox.Eq("key.trxsrc", trxsrc)).
+		Delete().
+		sExec(nil)
 
 	prepmastercalc()
 	//buildratio()
@@ -61,7 +64,7 @@ func main() {
 func processTable() {
 	connsave, _ := modules.GetDboxIConnection("db_godrej")
 	defer connsave.Close()
-	//qsave := connsave.NewQuery().SetConfig("multiexec", true).From(desttablename).Save()
+	qsave := connsave.NewQuery().SetConfig("multiexec", true).From(desttablename).Save()
 
 	connselect, _ := modules.GetDboxIConnection("db_godrej")
 	defer connselect.Close()
@@ -85,73 +88,71 @@ func processTable() {
 		i++
 		makeProgressLog("Processing", i, count, 5, &mstone, t0)
 
-		/*
-			        mrid := mr.GetString("_id")
-					key := mr.Get("key", toolkit.M{}).(toolkit.M)
-					branchid := key.GetString("customer_branchid")
-					branchname := key.GetString("customer_branchname")
+		mrid := mr.GetString("_id")
+		key := mr.Get("key", toolkit.M{}).(toolkit.M)
+		branchid := key.GetString("customer_branchid")
+		branchname := key.GetString("customer_branchname")
 
-					discount := mr.GetFloat64("PL7A") * ratiototrf
-					spg := mr.GetFloat64("PL31") * ratiototrf
-					promo := mr.GetFloat64("Pl29A") * ratiototrf
+		discount := mr.GetFloat64("PL7A") * ratiototrf
+		spg := mr.GetFloat64("PL31") * ratiototrf
+		promo := mr.GetFloat64("Pl29A") * ratiototrf
 
-					if discount != 0 || spg != 0 || promo != 0 {
-						if branchid != "CD02" || branchid != "CD04" || branchid != "CD11" ||
-							branchid != "CD09" {
-							branchid = "CD02"
-							branchname = "Jakarta"
-						}
+		if discount != 0 || spg != 0 || promo != 0 {
+			if branchid != "CD02" || branchid != "CD04" || branchid != "CD11" ||
+				branchid != "CD09" {
+				branchid = "CD02"
+				branchname = "Jakarta"
+			}
 
-						mreverse := toolkit.M{}
-						mreverse.Set("_id", mrid+"_rd_reverse")
-						mreversekey := toolkit.M{}
-						for k, v := range key {
-							mreversekey.Set(k, v)
-						}
-						mreversekey.Set("customer_customergroup", "")
-						mreversekey.Set("customer_customergroupname", "")
-						mreversekey.Set("trxsrc", trxsrc)
-						mreverse.Set("key", mreversekey)
-						//mreverse.Set("PL7A", -discount)
-						//mreverse.Set("PL29A32", -spg)
-						//mreverse.Set("PL31C", -promo)
-						gdrj.CalcSum(mreverse, masters)
-						esave := qsave.Exec(toolkit.M{}.Set("data", mreverse))
-						if esave != nil {
-							toolkit.Printfn("Error: " + esave.Error())
-							os.Exit(100)
-						}
+			mreverse := toolkit.M{}
+			mreverse.Set("_id", mrid+"_rd_reverse")
+			mreversekey := toolkit.M{}
+			for k, v := range key {
+				mreversekey.Set(k, v)
+			}
+			mreversekey.Set("customer_customergroup", "")
+			mreversekey.Set("customer_customergroupname", "")
+			mreversekey.Set("trxsrc", trxsrc)
+			mreverse.Set("key", mreversekey)
+			//mreverse.Set("PL7A", -discount)
+			//mreverse.Set("PL29A32", -spg)
+			//mreverse.Set("PL31C", -promo)
+			gdrj.CalcSum(mreverse, masters)
+			esave := qsave.Exec(toolkit.M{}.Set("data", mreverse))
+			if esave != nil {
+				toolkit.Printfn("Error: " + esave.Error())
+				os.Exit(100)
+			}
 
-						mrd := toolkit.M{}
-						mrd.Set("_id", mrid+"_rd")
-						mrdkey := toolkit.M{}
-						for k, v := range key {
-							mrdkey.Set(k, v)
-						}
-						mrdkey.Set("customer_channelid", "I1")
-						mrdkey.Set("customer_reportchannel", "RD")
-						mrdkey.Set("customer_customertype", "RD")
-						mrdkey.Set("customer_channelname", "RD")
-						mrdkey.Set("customer_branchid", branchid)
-						mrdkey.Set("customer_branchname", branchname)
-						mrdkey.Set("customer_branchgroup", branchname)
-						mrdkey.Set("customer_reportsubchannel", "SPG & Promo Allocation")
-						mrdkey.Set("customer_customergroup", "")
-						mrdkey.Set("customer_customergroupname", "")
-						mrdkey.Set("trxsrc", trxsrc)
+			mrd := toolkit.M{}
+			mrd.Set("_id", mrid+"_rd")
+			mrdkey := toolkit.M{}
+			for k, v := range key {
+				mrdkey.Set(k, v)
+			}
+			mrdkey.Set("customer_channelid", "I1")
+			mrdkey.Set("customer_reportchannel", "RD")
+			mrdkey.Set("customer_customertype", "RD")
+			mrdkey.Set("customer_channelname", "RD")
+			mrdkey.Set("customer_branchid", branchid)
+			mrdkey.Set("customer_branchname", branchname)
+			mrdkey.Set("customer_branchgroup", branchname)
+			mrdkey.Set("customer_reportsubchannel", "SPG & Promo Allocation")
+			mrdkey.Set("customer_customergroup", "")
+			mrdkey.Set("customer_customergroupname", "")
+			mrdkey.Set("trxsrc", trxsrc)
 
-						mrd.Set("key", mrdkey)
-						//mrd.Set("PL7A", discount)
-						//mrd.Set("PL29A32", spg)
-						//mrd.Set("PL31C", promo)
-						gdrj.CalcSum(mrd, masters)
-						esave = qsave.Exec(toolkit.M{}.Set("data", mrd))
-						if esave != nil {
-							toolkit.Printfn("Error: " + esave.Error())
-							os.Exit(100)
-						}
-					}
-		*/
+			mrd.Set("key", mrdkey)
+			//mrd.Set("PL7A", discount)
+			//mrd.Set("PL29A32", spg)
+			//mrd.Set("PL31C", promo)
+			gdrj.CalcSum(mrd, masters)
+			esave = qsave.Exec(toolkit.M{}.Set("data", mrd))
+			if esave != nil {
+				toolkit.Printfn("Error: " + esave.Error())
+				os.Exit(100)
+			}
+		}
 	}
 }
 
