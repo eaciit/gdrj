@@ -85,7 +85,7 @@ func PLModelGetAll(s *PLFinderParam) ([]*PLModel, error) {
 	if !isSGARequest {
 		parseResult := []*PLModel{}
 		for _, each := range result {
-			if each.PLHeader1 != "G&A Expenses" {
+			if each.ID == "PL94A" || each.PLHeader1 != "G&A Expenses" {
 				parseResult = append(parseResult, each)
 			}
 		}
