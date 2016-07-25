@@ -57,10 +57,10 @@
 			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('Branch Modern Trade', 'mt sub channel');">Branch Modern Trade</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownDistributor(); subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownGeneralTrade(); subchan.switchRefresh('Branch GT', 'gt');">Branch GT</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownGeneralTrade(); subchan.switchRefresh('Branch GT', 'gt');">Branch GT</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownDistributor(); subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
 		</li>
 		<li role="presentation">
 			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownBrand(); subchan.switchRefresh('P&L by Brand', 'brand');">Brand</a>
@@ -446,6 +446,22 @@
 						<span class="input-group-addon align-right">Fiscal Year</span>
 						<div class="width-full">
 							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: subchan.fiscalYear }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'branch')">
+						<span class="input-group-addon align-right">Branch</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownBranchValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownBranch, placeholder: 'Choose value', change: subchan.changeBreakdownBranchValue, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+					
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (subchan.what() == 'branch-group')">
+						<span class="input-group-addon align-right">Branch Group</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: subchan.optionBreakdownBranchGroupValues, dataValueField: '_id', dataTextField: 'Name', value: subchan.breakdownBranchGroup, placeholder: 'Choose value', change: subchan.changeBreakdownBranchGroupValue, filter: 'contains' }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
