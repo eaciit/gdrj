@@ -126,34 +126,36 @@ func processTable() {
 					os.Exit(100)
 				}
 
-				mrd := toolkit.M{}
-				mrd.Set("_id", mrid+"_rd")
-				mrdkey := toolkit.M{}
-				for k, v := range key {
-					mrdkey.Set(k, v)
-				}
-				mrdkey.Set("customer_channelid", "I1")
-				mrdkey.Set("customer_reportchannel", "RD")
-				mrdkey.Set("customer_customertype", "RD")
-				mrdkey.Set("customer_channelname", "RD")
-				mrdkey.Set("customer_branchid", branchid)
-				mrdkey.Set("customer_branchname", branchname)
-				mrdkey.Set("customer_branchgroup", branchname)
-				mrdkey.Set("customer_reportsubchannel", "SPG & Promo Allocation")
-				mrdkey.Set("customer_customergroup", "")
-				mrdkey.Set("customer_customergroupname", "")
-				mrdkey.Set("trxsrc", trxsrc)
+				/*
+					                mrd := toolkit.M{}
+									mrd.Set("_id", mrid+"_rd")
+									mrdkey := toolkit.M{}
+									for k, v := range key {
+										mrdkey.Set(k, v)
+									}
+									mrdkey.Set("customer_channelid", "I1")
+									mrdkey.Set("customer_reportchannel", "RD")
+									mrdkey.Set("customer_customertype", "RD")
+									mrdkey.Set("customer_channelname", "RD")
+									mrdkey.Set("customer_branchid", branchid)
+									mrdkey.Set("customer_branchname", branchname)
+									mrdkey.Set("customer_branchgroup", branchname)
+									mrdkey.Set("customer_reportsubchannel", "SPG & Promo Allocation")
+									mrdkey.Set("customer_customergroup", "")
+									mrdkey.Set("customer_customergroupname", "")
+									mrdkey.Set("trxsrc", trxsrc)
 
-				mrd.Set("key", mrdkey)
-				//mrd.Set("PL7A", discount)
-				//mrd.Set("PL29A32", spg)
-				//mrd.Set("PL31C", promo)
-				gdrj.CalcSum(mrd, masters)
-				esave = qsave.Exec(toolkit.M{}.Set("data", mrd))
-				if esave != nil {
-					toolkit.Printfn("Error: " + esave.Error())
-					os.Exit(100)
-				}
+									mrd.Set("key", mrdkey)
+									//mrd.Set("PL7A", discount)
+									//mrd.Set("PL29A32", spg)
+									//mrd.Set("PL31C", promo)
+									gdrj.CalcSum(mrd, masters)
+									esave = qsave.Exec(toolkit.M{}.Set("data", mrd))
+									if esave != nil {
+										toolkit.Printfn("Error: " + esave.Error())
+										os.Exit(100)
+									}
+				*/
 			}
 		}
 	}
