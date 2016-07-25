@@ -59,8 +59,8 @@ var (
 	spgmths    = allocmap{}
 	promomths  = allocmap{}
 	discgts    = map[string]float64{
-		"2014-2015": -60151910000,
-		"2015-2016": -13960280000,
+		"2014-2015": -60151910001,
+		"2015-2016": -13960282833,
 	}
 	gtsales = allocmap{}
 )
@@ -72,150 +72,11 @@ func main() {
 	processTable()
 }
 
-func buildratio_() {
-	connratio, _ := modules.GetDboxIConnection("db_godrej")
-	defer connratio.Close()
-
-	csr, _ := connratio.NewQuery().From("rawdatapl_ads30062016").Select().Cursor(nil)
-	defer csr.Close()
-	i := 0
-	count := csr.Count()
-	t0 := time.Now()
-	mstone := 0
-	for {
-		mr := toolkit.M{}
-		if ef := csr.Fetch(&mr, 1, false); ef != nil {
-			break
-		}
-		i++
-		makeProgressLog("Build ads ratio", i, count, 5, &mstone, t0)
-
-		gdrjdate := mr.Get("gdrjdate", toolkit.M{}).(toolkit.M)
-		fiscal := gdrjdate.GetString("fiscal")
-		month := gdrjdate.GetInt("month")
-		brand := mr.GetString("brand")
-		value := -mr.GetFloat64("amountinidr")
-		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
-		adjustAllocs(&advtotals, keyperiodbrand, 0, value, 0, 0)
-		adjustAllocs(&advyears, fiscal, 0, value, 0, 0)
-	}
-
-	csp, _ := connratio.NewQuery().From("tmppromodiscountjacobus").Select().Cursor(nil)
-	defer csp.Close()
-	i = 0
-	count = csp.Count()
-	t0 = time.Now()
-	mstone = 0
-	for {
-		mr := toolkit.M{}
-		if ef := csp.Fetch(&mr, 1, false); ef != nil {
-			break
-		}
-		i++
-		makeProgressLog("SPG & Promo by KA Ratio", i, count, 5, &mstone, t0)
-		fiscal := mr.GetString("fiscal")
-		kaid := mr.GetString("kaid")
-		keyfiscalka := toolkit.Sprintf("%s_%s", fiscal, kaid)
-		spgv := -mr.GetFloat64("newspg")
-		promov := -mr.GetFloat64("newpromo")
-		adjustAllocs(&spgyrkas, keyfiscalka, 0, spgv, 0, 0)
-		adjustAllocs(&promoyrkas, keyfiscalka, 0, promov, 0, 0)
-	}
-
-	cspm, _ := connratio.NewQuery().From("rawdatapl_promospg11072016").Select().Cursor(nil)
-	defer cspm.Close()
-	i = 0
-	count = cspm.Count()
-	t0 = time.Now()
-	mstone = 0
-	for {
-		mr := toolkit.M{}
-		if ef := cspm.Fetch(&mr, 1, false); ef != nil {
-			break
-		}
-		i++
-		makeProgressLog("SPG & Promo by KA Ratio Monthhly", i, count, 5, &mstone, t0)
-		dt := mr.Get("gdrjdate", toolkit.M{}).(toolkit.M)
-		fiscal := dt.GetString("fiscal")
-		month := dt.GetInt("month")
-		amt := -mr.GetFloat64("amountinidr")
-		keyperiod := toolkit.Sprintf("%s_%d", fiscal, month)
-		grouping := strings.ToLower(mr.GetString("grouping"))
-		if strings.Contains(grouping, "spg") {
-			adjustAllocs(&spgmths, keyperiod, 0, amt, 0, 0)
-			adjustAllocs(&spgyrs, fiscal, 0, 0, 0, amt)
-		} else if strings.Contains(grouping, "promo") {
-			adjustAllocs(&promomths, keyperiod, 0, amt, 0, 0)
-			adjustAllocs(&promoyrs, fiscal, 0, 0, 0, amt)
-		}
-	}
-
-	for _, v := range spgmths {
-		fiscal := strings.Split(v.Key, "_")[0]
-		spgyr := spgyrs[fiscal]
-		v.Ratio1 = toolkit.Div(v.Expect, spgyr.Ref1)
-		for _, v1 := range spgyrkas {
-			keysyrka := strings.Split(v1.Key, "_")
-			newkey := toolkit.Sprintf("%s_%s", v.Key, keysyrka[1])
-			valloc := v.Ratio1 * v1.Expect
-			adjustAllocs(&spgtotals, newkey, 0, valloc, 0, 0)
-		}
-	}
-
-	for _, v := range promomths {
-		fiscal := strings.Split(v.Key, "_")[0]
-		spgyr := promoyrs[fiscal]
-		v.Ratio1 = toolkit.Div(v.Expect, spgyr.Ref1)
-		for _, v1 := range promoyrkas {
-			keysyrka := strings.Split(v1.Key, "_")
-			newkey := toolkit.Sprintf("%s_%s", v.Key, keysyrka[1])
-			valloc := v.Ratio1 * v1.Expect
-			adjustAllocs(&promototals, newkey, 0, valloc, 0, 0)
-			toolkit.Printfn("Allocation for %s => ratio:%f alloc:%f",
-				newkey, v.Ratio1, valloc)
-		}
-	}
-
-	ctrx, _ := connratio.NewQuery().From(calctablename).Select().Cursor(nil)
-	i = 0
-	count = ctrx.Count()
-	t0 = time.Now()
-	mstone = 0
-	for {
-		mr := toolkit.M{}
-		if ef := ctrx.Fetch(&mr, 1, false); ef != nil {
-			break
-		}
-		i++
-		makeProgressLog("Finalizing", i, count, 5, &mstone, t0)
-
-		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		fiscal := key.GetString("date_fiscal")
-		month := key.GetInt("date_month")
-		kaid := key.GetString("customer_customergroup")
-		brand := key.GetString("product_brand")
-		if brand == "" {
-			brand = "HIT"
-		}
-
-		keyperiodka := toolkit.Sprintf("%s_%d_%s", fiscal, month, kaid)
-		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
-		keyfiscalka := toolkit.Sprintf("%s_%s", fiscal, kaid)
-
-		sales := mr.GetFloat64("PL8A")
-		adjustAllocs(&advtotals, keyperiodbrand, 0, 0, 0, sales)
-		adjustAllocs(&spgyrkas, keyfiscalka, 0, 0, 0, sales)
-		adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, sales)
-		adjustAllocs(&spgtotals, keyperiodka, 0, 0, 0, sales)
-		adjustAllocs(&promototals, keyperiodka, 0, 0, 0, sales)
-	}
-}
-
 func buildratio() {
 	connratio, _ := modules.GetDboxIConnection("db_godrej")
 	defer connratio.Close()
 
-	csp, _ := connratio.NewQuery().From("tmppromodiscountjacobus").Select().Cursor(nil)
+	csp, _ := connratio.NewQuery().From("rawnakul").Select().Cursor(nil)
 	defer csp.Close()
 	i := 0
 	count := csp.Count()
@@ -232,8 +93,8 @@ func buildratio() {
 		kaid := mr.GetString("kaid")
 		keyfiscalka := toolkit.Sprintf("%s_%s", fiscal, kaid)
 		disc := -mr.GetFloat64("discount")
-		spgv := -mr.GetFloat64("newspg")
-		promov := -mr.GetFloat64("newpromo")
+		spgv := -mr.GetFloat64("newspgv")
+		promov := -mr.GetFloat64("newpromov")
 		adjustAllocs(&discyrkas, keyfiscalka, 0, disc, 0, 0)
 		adjustAllocs(&spgyrkas, keyfiscalka, 0, spgv, 0, 0)
 		adjustAllocs(&promoyrkas, keyfiscalka, 0, promov, 0, 0)
@@ -250,17 +111,20 @@ func buildratio() {
 			break
 		}
 		i++
-		makeProgressLog("Finalizing", i, count, 5, &mstone, t0)
+		makeProgressLog("Update ratio sales", i, count, 5, &mstone, t0)
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
-		//month := key.GetInt("date_month")
+		channelid := key.GetString("customer_channelid")
 		kaid := key.GetString("customer_customergroup")
 		brand := key.GetString("product_brand")
 		if brand == "" {
 			brand = "HIT"
 		}
 
+		if channelid == "I1" {
+			continue
+		}
 		keyfiscalka := toolkit.Sprintf("%s_%s", fiscal, kaid)
 
 		gross := mr.GetFloat64("PL0")
@@ -271,10 +135,10 @@ func buildratio() {
 		adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, sales)
 
 		discyrka := discyrkas[keyfiscalka]
-		if discyrka == nil && key.GetString("customer_channelid") == "I2" {
-			adjustAllocs(&gtsales, fiscal, 0, 0, 0, gross)
-		} else if discyrka != nil {
+		if discyrka != nil {
 			adjustAllocs(&discyrkas, keyfiscalka, 0, 0, 0, gross)
+		} else if discyrka == nil && channelid == "I2" {
+			adjustAllocs(&gtsales, fiscal, 0, 0, 0, gross)
 		}
 	}
 }
@@ -328,31 +192,33 @@ func processTable() {
 			if isPL(k) {
 				newv := float64(0)
 
-				//--- discount
-				if strings.HasPrefix(k, "PL7A") {
-					disctotal := discyrkas[keyfiscalka]
-					if disctotal != nil {
-						newv = toolkit.Div(gross*disctotal.Expect,
-							disctotal.Ref1)
-					} else if channelid == "I2" {
-						newv += toolkit.Div(gross*discgts[fiscal],
-							gtsales[fiscal].Ref1)
-					}
-				} else
-				//-- spg
-				if k == "PL31C" {
-					total := spgyrkas[keyfiscalka]
-					if total != nil {
-						newv = sales * total.Expect / total.Ref1
-						//adjustAllocs(&spgyrkas, keyfiscalka, 0, 0, 0, newv)
-					}
-				} else
-				//-- promo
-				if k == "PL29A32" {
-					total := promoyrkas[keyfiscalka]
-					if total != nil {
-						newv = sales * total.Expect / total.Ref1
-						//adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, newv)
+				if channelid != "I1" {
+					//--- discount
+					if strings.HasPrefix(k, "PL7A") {
+						disctotal := discyrkas[keyfiscalka]
+						if disctotal != nil {
+							newv = toolkit.Div(gross*disctotal.Expect,
+								disctotal.Ref1)
+						} else if channelid == "I2" {
+							newv += toolkit.Div(gross*discgts[fiscal],
+								gtsales[fiscal].Ref1)
+						}
+					} else
+					//-- spg
+					if k == "PL31C" {
+						total := spgyrkas[keyfiscalka]
+						if total != nil {
+							newv = sales * total.Expect / total.Ref1
+							//adjustAllocs(&spgyrkas, keyfiscalka, 0, 0, 0, newv)
+						}
+					} else
+					//-- promo
+					if k == "PL29A32" {
+						total := promoyrkas[keyfiscalka]
+						if total != nil {
+							newv = sales * total.Expect / total.Ref1
+							//adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, newv)
+						}
 					}
 				}
 
