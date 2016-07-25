@@ -92,7 +92,7 @@ func processTable() {
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		channelid := key.GetString("customer_channelid")
 		branchid := key.GetString("customer_branchid")
-		branchname := key.GetString("customer_branchname")
+		//branchname := key.GetString("customer_branchname")
 
 		if channelid != "I1" {
 			discount := mr.GetFloat64("PL7A") * ratiototrf
@@ -103,7 +103,7 @@ func processTable() {
 				if branchid != "CD02" || branchid != "CD04" || branchid != "CD11" ||
 					branchid != "CD09" {
 					branchid = "CD02"
-					branchname = "Jakarta"
+					//branchname = "Jakarta"
 				}
 
 				mreverse := toolkit.M{}
