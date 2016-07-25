@@ -56,7 +56,7 @@ func main() {
 
 	prepmastercalc()
 	//buildratio()
-	processTable()
+	//processTable()
 }
 
 func buildratio() {
