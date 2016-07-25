@@ -80,8 +80,8 @@ func buildratio() {
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
 		channelid := key.GetString("customer_channelid")
-		kaid := key.GetString("customer_customergroup")
-		brand := key.GetString("product_brand")
+		//kaid := key.GetString("customer_customergroup")
+		//brand := key.GetString("product_brand")
 		branchid := key.GetString("customer_branchid")
 		subchannel := key.GetString("customer_reportsubchannel")
 
