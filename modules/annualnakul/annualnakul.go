@@ -294,8 +294,8 @@ func processTable() {
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
-		period := key.GetInt("date_month")
-		brand := key.GetString("product_brand")
+		//period := key.GetInt("date_month")
+		//brand := key.GetString("product_brand")
 		keyaccountid := key.GetString("customer_customergroup")
 
 		//keyperiod := toolkit.Sprintf("%s_%d", fiscal, period)
