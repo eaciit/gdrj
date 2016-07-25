@@ -58,6 +58,11 @@ var (
 	promoyrs   = allocmap{}
 	spgmths    = allocmap{}
 	promomths  = allocmap{}
+	discgts    = map[string]float64{
+		"2014-2015": 30601500000,
+		"2015-2016": 20754700000,
+	}
+	remainingsales = allocmap{}
 )
 
 func main() {
@@ -262,6 +267,12 @@ func buildratio() {
 		adjustAllocs(&discyrkas, keyfiscalka, 0, 0, 0, sales)
 		adjustAllocs(&spgyrkas, keyfiscalka, 0, 0, 0, sales)
 		adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, sales)
+		adjustAllocs(&remainingsales, fiscal, 0, 0, 0, sales)
+	}
+
+	for k, v := range discyrkas {
+		fiscal := strings.Split(k, "_")[0]
+		adjustAllocs(&remainingsales, fiscal, 0, 0, 0, -v.Ref1)
 	}
 }
 
@@ -317,6 +328,9 @@ func processTable() {
 					if disctotal != nil {
 						newv = toolkit.Div(sales*disctotal.Expect,
 							disctotal.Ref1)
+					} else {
+						newv = toolkit.Div(sales*discgts[fiscal],
+							remainingsales[fiscal].Ref1)
 					}
 				} else
 				//-- spg
