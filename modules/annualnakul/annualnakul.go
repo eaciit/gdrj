@@ -317,9 +317,9 @@ func processTable() {
 		//keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, period, brand)
 
 		sales := mr.GetFloat64("PL8A")
-		for k, _ := range mr {
+		for _, k := range []string{"PL7A", "PL31C", "PL29A32"} {
 			if isPL(k) {
-				newv := float64(0)
+				newv := mr.GetFloat64(k)
 
 				//--- discount
 				if strings.HasPrefix(k, "PL7A") {
