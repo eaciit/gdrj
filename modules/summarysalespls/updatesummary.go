@@ -1092,6 +1092,96 @@ func prepsalesplssummarymtwrongsubch() {
 	// masters.Set("salesplssummaryrdwrongsubch", salesplssummaryrdwrongsubch)
 }
 
+func prepsalesplssummarygtwrongsubch() {
+	//salespls-summary-rdwrongsubch
+
+	arrsubch := []string{"R3 - Retailer Umum",
+		"R1 - Grosir Umum",
+		"R14 -  Retail Minimarket",
+		"R5 - Tk.Sembako/ Tk.Bumbu",
+		"R4 - Toko Kosmetik",
+		"R6 - Toko Plastik",
+		"R12 - Bengkel/Accesories",
+		"R15 - Grosir Kosmetik/Kelo",
+		"R18 - Lain-lain",
+		"R16 - Grosir Sembako",
+		"R7 - Toko Obat / Apotek",
+		"R10 - Tk.Perlengkapan Bayi",
+		"R17 - Grosir Plastik",
+		"R13- Tk. Bangunan",
+		"R8 - Toko Alat Tulis",
+		"R2 - Grosir Snack",
+		"R9 - Toko Listrik",
+		"R11- Koperasi"}
+
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
+
+	qSave := workerconn.NewQuery().
+		From("salespls-summary").
+		SetConfig("multiexec", true).
+		Save()
+
+	toolkit.Println("--> Update data to salespls-summary from salespls-summary-gtwrongsubch")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).
+		From("salespls-summary-gtwrongsubch").
+		Order("-PL0").
+		Cursor(nil)
+	defer csr.Close()
+
+	// salesplssummaryrdwrongsubch := []toolkit.M{}
+	scount = csr.Count()
+	step := getstep(scount)
+	lnsubch := len(arrsubch)
+	toolkit.Println("COUNT : ", scount)
+
+	i := int(0)
+	for {
+		i += 1
+		// toolkit.Println("i : ", i)
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			toolkit.Println(e)
+			break
+		}
+
+		if i <= 10 {
+			toolkit.Println(tkm.GetFloat64("PL7A"))
+		}
+
+		if i%step == 0 {
+			toolkit.Printfn("Saving %d of %d (%d pct) in %s",
+				i, scount, i*100/scount, time.Since(t0).String())
+		}
+
+		ilnsubch := i % lnsubch
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		dtkm.Set("customer_reportsubchannel", arrsubch[ilnsubch])
+		tkm.Set("key", dtkm)
+
+		val := tkm.GetFloat64("PL1") + tkm.GetFloat64("PL2")
+		tkm.Set("PL1", val)
+		tkm.Set("PL2", float64(0))
+
+		val = tkm.GetFloat64("PL7") + tkm.GetFloat64("PL8")
+		tkm.Set("PL7", val)
+		tkm.Set("PL8", float64(0))
+
+		CalcSum(tkm)
+
+		_ = qSave.Exec(toolkit.M{}.Set("data", tkm))
+
+		// salesplssummaryrdwrongsubch = append(salesplssummaryrdwrongsubch, tkm)
+		// salesplssummaryrdwrongsubch.Set(tkm.GetString("_id"), tkm)
+	}
+
+	// masters.Set("salesplssummaryrdwrongsubch", salesplssummaryrdwrongsubch)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -1106,7 +1196,8 @@ func main() {
 	prepmastercalc()
 
 	// prepsalesplssummaryrdwrongsubch()
-	prepsalesplssummarymtwrongsubch()
+	// prepsalesplssummarymtwrongsubch()
+	prepsalesplssummarygtwrongsubch()
 
 	// prepmasterbranchgroup()
 	// prepmastertotsalesrd2016vdist()
@@ -1127,7 +1218,7 @@ func main() {
 	// prepmasterrollback_adv()
 	// prepmasterrollback_sumbrand()
 
-	os.Exit(1)
+	// os.Exit(1)
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
@@ -1462,132 +1553,137 @@ func CleanUpdateCOGSAdjustRdtoMt(tkm toolkit.M) {
 }
 
 func CalcSum(tkm toolkit.M) {
-	var netsales, cogs, grossmargin, sellingexpense,
-		sga, opincome, directexpense, indirectexpense,
-		royaltiestrademark, advtpromoexpense, operatingexpense,
-		freightexpense, nonoprincome, ebt, taxexpense,
-		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga,
-		grosssales, discount, advexp, promoexp, spgexp float64
 
-	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL39A", "PL41A", "PL44A",
-		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
-		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31", "PL94A"}
+	gdrj.CalcSum(tkm, masters)
+	/*
+		var netsales, cogs, grossmargin, sellingexpense,
+			sga, opincome, directexpense, indirectexpense,
+			royaltiestrademark, advtpromoexpense, operatingexpense,
+			freightexpense, nonoprincome, ebt, taxexpense,
+			percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga,
+			grosssales, discount, advexp, promoexp, spgexp float64
 
-	plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
+		exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL39A", "PL41A", "PL44A",
+			"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
+			"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31", "PL94A"}
 
-	inexclude := func(f string) bool {
-		for _, v := range exclude {
-			if v == f {
-				return true
+		plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
+
+		inexclude := func(f string) bool {
+			for _, v := range exclude {
+				if v == f {
+					return true
+				}
+			}
+
+			return false
+		}
+
+		for k, v := range tkm {
+			if k == "_id" || k == "key" {
+				continue
+			}
+
+			ar01k := strings.Split(k, "_")
+
+			if inexclude(ar01k[0]) {
+				continue
+			}
+
+			plmodel, exist := plmodels[ar01k[0]]
+			if !exist {
+				// toolkit.Println(k)
+				continue
+			}
+			Amount := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
+			switch plmodel.PLHeader1 {
+			case "Net Sales":
+				netsales += Amount
+			case "Direct Expense":
+				directexpense += Amount
+			case "Indirect Expense":
+				indirectexpense += Amount
+			case "Freight Expense":
+				freightexpense += Amount
+			case "Royalties & Trademark Exp":
+				royaltiestrademark += Amount
+			case "Advt & Promo Expenses":
+				advtpromoexpense += Amount
+			case "G&A Expenses":
+				sga += Amount
+			case "Non Operating (Income) / Exp":
+				nonoprincome += Amount
+			case "Tax Expense":
+				taxexpense += Amount
+			case "Total Depreciation Exp":
+				if plmodel.PLHeader2 == "Damaged Goods" {
+					damagegoods += Amount
+				} else {
+					totdepreexp += Amount
+				}
+			}
+
+			// switch v.Group2 {
+			switch plmodel.PLHeader2 {
+			case "Gross Sales":
+				grosssales += Amount
+			case "Discount":
+				discount += Amount
+			case "Advertising Expenses":
+				advexp += Amount
+			case "Promotions Expenses":
+				promoexp += Amount
+			case "SPG Exp / Export Cost":
+				spgexp += Amount
 			}
 		}
 
-		return false
-	}
-
-	for k, v := range tkm {
-		if k == "_id" || k == "key" {
-			continue
+		cogs = directexpense + indirectexpense
+		grossmargin = netsales + cogs
+		sellingexpense = freightexpense + royaltiestrademark + advtpromoexpense
+		operatingexpense = sellingexpense + sga
+		opincome = grossmargin + operatingexpense
+		ebt = opincome + nonoprincome //asume nonopriceincome already minus
+		percentpbt = 0
+		if ebt != 0 {
+			percentpbt = taxexpense / ebt * 100
 		}
+		eat = ebt + taxexpense
+		ebitda = totdepreexp + damagegoods + opincome
+		ebitdaroyalties = ebitda - royaltiestrademark
+		ebitsga = opincome - sga
+		ebitsgaroyalty := ebitsga - royaltiestrademark
 
-		ar01k := strings.Split(k, "_")
+		tkm.Set("PL0", grosssales)
+		tkm.Set("PL6A", discount)
+		tkm.Set("PL8A", netsales)
+		tkm.Set("PL14A", directexpense)
+		tkm.Set("PL74A", indirectexpense)
+		tkm.Set("PL26A", royaltiestrademark)
+		tkm.Set("PL32A", advtpromoexpense)
+		tkm.Set("PL94A", sga)
+		tkm.Set("PL39A", nonoprincome)
+		tkm.Set("PL41A", taxexpense)
+		tkm.Set("PL44A", totdepreexp)
 
-		if inexclude(ar01k[0]) {
-			continue
-		}
+		tkm.Set("PL28", advexp)
+		tkm.Set("PL29A", promoexp)
+		tkm.Set("PL31", spgexp)
+		tkm.Set("PL74B", cogs)
+		tkm.Set("PL74C", grossmargin)
+		tkm.Set("PL32B", sellingexpense)
+		tkm.Set("PL94B", operatingexpense)
+		tkm.Set("PL94C", opincome)
+		tkm.Set("PL39B", ebt)
+		tkm.Set("PL41B", percentpbt)
+		tkm.Set("PL41C", eat)
+		tkm.Set("PL44B", opincome)
+		tkm.Set("PL44C", ebitda)
+		tkm.Set("PL44D", ebitdaroyalties)
+		tkm.Set("PL44E", ebitsga)
+		tkm.Set("PL44F", ebitsgaroyalty)
+	*/
 
-		plmodel, exist := plmodels[ar01k[0]]
-		if !exist {
-			// toolkit.Println(k)
-			continue
-		}
-		Amount := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-		switch plmodel.PLHeader1 {
-		case "Net Sales":
-			netsales += Amount
-		case "Direct Expense":
-			directexpense += Amount
-		case "Indirect Expense":
-			indirectexpense += Amount
-		case "Freight Expense":
-			freightexpense += Amount
-		case "Royalties & Trademark Exp":
-			royaltiestrademark += Amount
-		case "Advt & Promo Expenses":
-			advtpromoexpense += Amount
-		case "G&A Expenses":
-			sga += Amount
-		case "Non Operating (Income) / Exp":
-			nonoprincome += Amount
-		case "Tax Expense":
-			taxexpense += Amount
-		case "Total Depreciation Exp":
-			if plmodel.PLHeader2 == "Damaged Goods" {
-				damagegoods += Amount
-			} else {
-				totdepreexp += Amount
-			}
-		}
-
-		// switch v.Group2 {
-		switch plmodel.PLHeader2 {
-		case "Gross Sales":
-			grosssales += Amount
-		case "Discount":
-			discount += Amount
-		case "Advertising Expenses":
-			advexp += Amount
-		case "Promotions Expenses":
-			promoexp += Amount
-		case "SPG Exp / Export Cost":
-			spgexp += Amount
-		}
-	}
-
-	cogs = directexpense + indirectexpense
-	grossmargin = netsales + cogs
-	sellingexpense = freightexpense + royaltiestrademark + advtpromoexpense
-	operatingexpense = sellingexpense + sga
-	opincome = grossmargin + operatingexpense
-	ebt = opincome + nonoprincome //asume nonopriceincome already minus
-	percentpbt = 0
-	if ebt != 0 {
-		percentpbt = taxexpense / ebt * 100
-	}
-	eat = ebt + taxexpense
-	ebitda = totdepreexp + damagegoods + opincome
-	ebitdaroyalties = ebitda - royaltiestrademark
-	ebitsga = opincome - sga
-	ebitsgaroyalty := ebitsga - royaltiestrademark
-
-	tkm.Set("PL0", grosssales)
-	tkm.Set("PL6A", discount)
-	tkm.Set("PL8A", netsales)
-	tkm.Set("PL14A", directexpense)
-	tkm.Set("PL74A", indirectexpense)
-	tkm.Set("PL26A", royaltiestrademark)
-	tkm.Set("PL32A", advtpromoexpense)
-	tkm.Set("PL94A", sga)
-	tkm.Set("PL39A", nonoprincome)
-	tkm.Set("PL41A", taxexpense)
-	tkm.Set("PL44A", totdepreexp)
-
-	tkm.Set("PL28", advexp)
-	tkm.Set("PL29A", promoexp)
-	tkm.Set("PL31", spgexp)
-	tkm.Set("PL74B", cogs)
-	tkm.Set("PL74C", grossmargin)
-	tkm.Set("PL32B", sellingexpense)
-	tkm.Set("PL94B", operatingexpense)
-	tkm.Set("PL94C", opincome)
-	tkm.Set("PL39B", ebt)
-	tkm.Set("PL41B", percentpbt)
-	tkm.Set("PL41C", eat)
-	tkm.Set("PL44B", opincome)
-	tkm.Set("PL44C", ebitda)
-	tkm.Set("PL44D", ebitdaroyalties)
-	tkm.Set("PL44E", ebitsga)
-	tkm.Set("PL44F", ebitsgaroyalty)
 }
 
 // masters.Set("totdiscactivity", totdiscactivity)
@@ -1747,7 +1843,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary").
+		From("salespls-summary-netmargin").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1780,7 +1876,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CleanUpperBranchnameJakarta(trx)
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
-		// CalcSum(trx)
+		CalcSum(trx)
 
 		// CleanReportSubChannelBreakdownRD(trx)
 		// CleanAreanameNull(trx)

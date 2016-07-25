@@ -16,10 +16,10 @@ func CalcSum(tkm toolkit.M, masters toolkit.M) {
 		royaltiestrademark, advtpromoexpense, operatingexpense,
 		freightexpense, nonoprincome, ebt, taxexpense,
 		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga,
-		grosssales, discount, advexp, promoexp, spgexp float64
+		grosssales, discount, advexp, promoexp, spgexp, netmargin float64
 
 	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL39A", "PL41A", "PL44A",
-		"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
+		"PL74B", "PL74C", "PL74D", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
 		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31", "PL94A"}
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
@@ -108,6 +108,7 @@ func CalcSum(tkm toolkit.M, masters toolkit.M) {
 	ebitdaroyalties = ebitda - royaltiestrademark
 	ebitsga = opincome - sga
 	ebitsgaroyalty := ebitsga - royaltiestrademark
+	netmargin = grossmargin + advtpromoexpense
 
 	tkm.Set("PL0", grosssales)
 	tkm.Set("PL6A", discount)
@@ -126,6 +127,7 @@ func CalcSum(tkm toolkit.M, masters toolkit.M) {
 	tkm.Set("PL31", spgexp)
 	tkm.Set("PL74B", cogs)
 	tkm.Set("PL74C", grossmargin)
+	tkm.Set("PL74D", netmargin)
 	tkm.Set("PL32B", sellingexpense)
 	tkm.Set("PL94B", operatingexpense)
 	tkm.Set("PL94C", opincome)
