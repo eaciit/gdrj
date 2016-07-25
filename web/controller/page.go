@@ -297,3 +297,12 @@ func (w *PageController) BrandAnalysis(r *knot.WebContext) interface{} {
 
 	return w.Params
 }
+
+func (w *PageController) GNAAnalysis(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.ViewName = "page-report-gna.html"
+
+	return w.Params
+}
