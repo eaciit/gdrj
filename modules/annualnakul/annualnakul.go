@@ -263,13 +263,18 @@ func buildratio() {
 
 		keyfiscalka := toolkit.Sprintf("%s_%s", fiscal, kaid)
 
+		gross := mr.GetFloat64("PL0")
 		sales := mr.GetFloat64("PL8A")
-		adjustAllocs(&discyrkas, keyfiscalka, 0, 0, 0, sales)
+
+		//adjustAllocs(&discyrkas, keyfiscalka, 0, 0, 0, gross)
 		adjustAllocs(&spgyrkas, keyfiscalka, 0, 0, 0, sales)
 		adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, sales)
 
-		if key.GetString("customer_channelid") == "I2" {
-			adjustAllocs(&gtsales, fiscal, 0, 0, 0, sales)
+		discyrka := discyrkas[keyfiscalka]
+		if discyrka == nil && key.GetString("customer_channelid") == "I2" {
+			adjustAllocs(&gtsales, fiscal, 0, 0, 0, gross)
+		} else if discyrka != nil {
+			adjustAllocs(&discyrkas, keyfiscalka, 0, 0, 0, gross)
 		}
 	}
 }
@@ -316,7 +321,9 @@ func processTable() {
 		*/
 		//keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, period, brand)
 
+		gross := mr.GetFloat64("PL0")
 		sales := mr.GetFloat64("PL8A")
+
 		for _, k := range []string{"PL7A", "PL31C", "PL29A32"} {
 			if isPL(k) {
 				newv := float64(0)
@@ -325,11 +332,10 @@ func processTable() {
 				if strings.HasPrefix(k, "PL7A") {
 					disctotal := discyrkas[keyfiscalka]
 					if disctotal != nil {
-						newv = toolkit.Div(sales*disctotal.Expect,
+						newv = toolkit.Div(gross*disctotal.Expect,
 							disctotal.Ref1)
-					}
-					if channelid == "I2" {
-						newv += toolkit.Div(sales*discgts[fiscal],
+					} else if channelid == "I2" {
+						newv += toolkit.Div(gross*discgts[fiscal],
 							gtsales[fiscal].Ref1)
 					}
 				} else
