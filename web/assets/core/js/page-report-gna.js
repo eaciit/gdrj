@@ -6,7 +6,7 @@ var gna = viewModel.gna;
 gna.contentIsLoading = ko.observable(false);
 gna.breakdownNote = ko.observable('');
 
-gna.breakdownBy = ko.observable('product.brand');
+gna.breakdownBy = ko.observable('customer.channelname');
 gna.breakdownValue = ko.observableArray([]);
 gna.breakdownByFiscalYear = ko.observable('date.fiscal');
 
