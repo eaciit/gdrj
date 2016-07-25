@@ -15,7 +15,8 @@ import (
 )
 
 var (
-	masters = toolkit.M{}
+	masters                   = toolkit.M{}
+	forceSalesPLSSummary bool = false
 )
 
 func buildmap(holder interface{},
@@ -324,6 +325,11 @@ func (s *PLFinderParam) GetTableName() string {
 		return tableName
 	}
 
+	if forceSalesPLSSummary {
+		s.TableKey = "key"
+		return `salespls-summary`
+	}
+
 	if len(sample) == 0 {
 		if s.WhenEmptyUseSalesPLSSummary {
 			s.TableKey = "key"
@@ -473,6 +479,16 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 				_id.Set(channelname, "Export")
 			}
 		}
+
+		// inject net margin if not exists
+		// the value is gross sales - a&p
+		if !each.Has(NetMarginPLCode) {
+			grossMargin := each.GetFloat64("PL74C")
+			anp := each.GetFloat64("PL32A")
+
+			each.Set(NetMarginPLCode, grossMargin+anp)
+		}
+
 	}
 
 	if s.Flag != "" {
