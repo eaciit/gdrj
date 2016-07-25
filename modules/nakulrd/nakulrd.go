@@ -56,7 +56,7 @@ func main() {
 
 	prepmastercalc()
 	//buildratio()
-	//processTable()
+	processTable()
 }
 
 func buildratio() {
@@ -164,8 +164,8 @@ func processTable() {
 			mreversekey.Set("trxsrc", trxsrc)
 			mreverse.Set("key", mreversekey)
 			mreverse.Set("PL7A", -discount)
-			mreverse.Set("PL29A32", -spg)
-			mreverse.Set("PL31C", -promo)
+			//mreverse.Set("PL29A32", -spg)
+			//mreverse.Set("PL31C", -promo)
 			gdrj.CalcSum(mreverse, masters)
 			esave := qsave.Exec(toolkit.M{}.Set("data", mreverse))
 			if esave != nil {
@@ -193,8 +193,8 @@ func processTable() {
 
 			mrd.Set("key", mrdkey)
 			mrd.Set("PL7A", discount)
-			mrd.Set("PL29A32", spg)
-			mrd.Set("PL31C", promo)
+			//mrd.Set("PL29A32", spg)
+			//mrd.Set("PL31C", promo)
 			gdrj.CalcSum(mrd, masters)
 			esave = qsave.Exec(toolkit.M{}.Set("data", mrd))
 			if esave != nil {
