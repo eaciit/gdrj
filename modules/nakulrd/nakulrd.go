@@ -52,16 +52,16 @@ var (
 
 func main() {
 	setinitialconnection()
+	conn.NewQuery().From(desttablename).Where(dbox.Eq("key.trxsrc", trxsrc)).Delete().Exec(nil)
+
 	prepmastercalc()
-	buildratio()
+	//buildratio()
 	processTable()
 }
 
 func buildratio() {
 	connratio, _ := modules.GetDboxIConnection("db_godrej")
 	defer connratio.Close()
-
-	connratio.NewQuery().From(desttablename).Where(dbox.Eq("key.trxsrc", trxsrc)).Delete().Exec(nil)
 
 	ctrx, _ := connratio.NewQuery().From(calctablename).
 		Where(dbox.Eq("key.customer_channelid", "I1")).
@@ -235,16 +235,6 @@ func makeProgressLog(reference string, i, count, step int, current *int, tstart 
 	}
 	*current = icurrent
 	return icurrent
-}
-
-func isPL(id string) bool {
-	if strings.HasPrefix(id, "PL7A") ||
-		//strings.HasPrefix(id, "PL28") ||
-		strings.HasPrefix(id, "PL29A") ||
-		strings.HasPrefix(id, "PL31") {
-		return true
-	}
-	return false
 }
 
 func buildmap(holder interface{},
