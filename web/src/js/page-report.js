@@ -915,8 +915,13 @@ rpt.refreshchildadd = (e) => {
 	$(`.table-header tbody>tr[idparent=${e}]`).each(function( i ) {
 		$trElem = $(this)
 		$columnElem = $(`.table-content tbody>tr[idpl=${$trElem.attr('idheaderpl')}]`)
-		$trElem.insertBefore($(`tr[idheaderpl=${$trElem.attr('idparent')}]`))
-		$columnElem.insertBefore($(`tr[idpl=${$trElem.attr('idparent')}]`))
+		if (e == 'PL0'){
+			$trElem.insertBefore($(`tr[idheaderpl=${$trElem.attr('idparent')}]`))
+			$columnElem.insertBefore($(`tr[idpl=${$trElem.attr('idparent')}]`))
+		} else {
+			$trElem.insertAfter($(`tr[idheaderpl=${$trElem.attr('idparent')}]`))
+			$columnElem.insertAfter($(`tr[idpl=${$trElem.attr('idparent')}]`))
+		}
 	})
 }
 
