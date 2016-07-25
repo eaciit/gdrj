@@ -133,7 +133,7 @@ cbt.buildStructure = function (data) {
 
 	cbt.level(1);
 	var newParsed = _.orderBy(parsed, function (d) {
-		return d.PL8A;
+		return rpt.orderByChannel(d._id, d.PL8A);
 	}, 'desc');
 	return newParsed;
 };

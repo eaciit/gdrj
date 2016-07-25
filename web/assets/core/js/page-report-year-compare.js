@@ -205,7 +205,7 @@ yc.render = function () {
 		return o;
 	});
 	var op2 = _.orderBy(op1, function (d) {
-		return d.sorter;
+		return rpt.orderByChannel(d.dimension, d.sorter);
 	}, 'desc');
 	var dataParsed = op2;
 

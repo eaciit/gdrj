@@ -1135,6 +1135,28 @@ rpt.panel_scrollrelocated = function () {
 	});
 };
 
+rpt.orderByChannel = function (what, defaultValue) {
+	toolkit.try(function () {
+		what = what.replace(/&nbsp;/g, ' ');
+	});
+
+	switch (what) {
+		case 'Branch Modern Trade':
+		case 'Modern Trade':
+		case 'MT':
+			return 2000000000005;
+		case 'Branch General Trade':
+		case 'General Trade':
+		case 'GT':
+			return 2000000000004;
+		case 'Regional Distributor':
+		case 'RD':
+			return 2000000000003;
+	}
+
+	return defaultValue;
+};
+
 $(function () {
 	$(window).on('scroll', function () {
 		rpt.panel_scrollrelocated();

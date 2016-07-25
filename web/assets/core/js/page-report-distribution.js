@@ -348,9 +348,9 @@ sd.render = function (res) {
 		return { key: k, values: v };
 	});
 	var op3 = _.orderBy(op2, function (d) {
-		return toolkit.sum(d.values, function (e) {
+		return rpt.orderByChannel(d.key, toolkit.sum(d.values, function (e) {
 			return e.percentage;
-		});
+		}));
 	}, 'desc');
 
 	// // hack IT, too much data

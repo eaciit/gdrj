@@ -149,7 +149,9 @@ yc.render = () => {
 
 		return o
 	})
-	let op2 = _.orderBy(op1, (d) => d.sorter, 'desc')
+	let op2 = _.orderBy(op1, (d) => {
+		return rpt.orderByChannel(d.dimension, d.sorter)
+	}, 'desc')
 	let dataParsed = op2
 
 	let total = {

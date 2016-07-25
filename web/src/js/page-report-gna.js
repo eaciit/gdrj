@@ -160,7 +160,9 @@ gna.buildStructure = (data) => {
 	})
 
 	gna.level(1)
-	let newParsed = _.orderBy(parsed, (d) => d.PL8A, 'desc')
+	let newParsed = _.orderBy(parsed, (d) => {
+		return rpt.orderByChannel(d._id, d.PL8A)
+	}, 'desc')
 	return newParsed
 }
 
