@@ -15,13 +15,16 @@ v1.fiscalYear = ko.observable(rpt.value.FiscalYear());
 v1.level = ko.observable(2);
 v1.title = ko.observable('Total Branch & RD');
 
-v1.changeTo = function (d, e) {
+v1.changeTo = function (d, e, c) {
 	v1.title(d);
+	c();
 	$(window).trigger('scroll');
 };
 
 v1.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
+	$('.breakdown-view').empty();
 
 	var param = {};
 	param.pls = [];
@@ -439,6 +442,8 @@ v2.level = ko.observable(2);
 
 v2.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
+	$('.breakdown-view').empty();
 
 	var param = {};
 	param.pls = [];
@@ -863,6 +868,8 @@ v3.level = ko.observable(1);
 v3.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
+	$('.breakdown-view').empty();
+
 	var param = {};
 	param.pls = [];
 	param.groups = rpt.parseGroups([v3.breakdownBy()]);
@@ -988,6 +995,8 @@ v3.render = function () {
 		return;
 	}
 
+	var percentageWidth = 100;
+
 	// ========================= TABLE STRUCTURE
 
 	var wrapper = toolkit.newEl('div').addClass('pivot-pnl-branch pivot-pnl').appendTo(container);
@@ -1021,7 +1030,6 @@ v3.render = function () {
 	var totalColumnWidth = 0;
 	var pnlTotalSum = 0;
 	var dataFlat = [];
-	var percentageWidth = 100;
 
 	var countWidthThenPush = function countWidthThenPush(thheader, each, key) {
 		var currentColumnWidth = columnWidth;
@@ -1362,7 +1370,5 @@ vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { 
 
 $(function () {
 	v3.refresh();
-	v1.refresh();
-	v2.refresh();
 	rpt.showExport(true);
 });
