@@ -205,7 +205,7 @@ cst.refresh = function () {
 			cst.contentIsLoading(false);
 
 			rpt.plmodels(res.Data.PLModels);
-			cst.data(res.Data.Data);
+			cst.data(cst.validateData(res.Data.Data));
 			window.res = res;
 
 			var opl1 = _.orderBy(rpt.allowedPL(), function (d) {
@@ -229,6 +229,19 @@ cst.refresh = function () {
 
 	cst.contentIsLoading(true);
 	fetch();
+};
+
+cst.validateData = function (data) {
+	var hasMonth = cst.breakdownClean().indexOf('date.month') > -1;
+	return data.map(function (d) {
+		if (hasMonth) {
+			var year = d._id._id_date_fiscal.split('-')[0];
+			var yearMonth = '' + year + d._id._id_date_month;
+			d._id._id_date_month = yearMonth;
+		}
+
+		return d;
+	});
 };
 
 cst.build = function () {
@@ -352,25 +365,6 @@ cst.build = function () {
 		return d.rows.length > 0 ? d.rows[0].value : d;
 	}, cst.sortOrder());
 
-	// REORDER
-
-	if (breakdown.indexOf('date.month') > -1) {
-		all = _.orderBy(all, function (d) {
-			return parseInt(d.date_month, 10);
-		}, 'asc'); // cst.sortOrder())
-
-		all.forEach(function (d) {
-			var m = d.date_month - 1 + 3;
-			var y = parseInt(d.date_fiscal.split('-')[0], 0);
-
-			d.date_month = moment(new Date(2015, m, 1)).format("MMMM YYYY");
-		});
-	} else if (breakdown.indexOf('date.quartertxt') > -1) {
-		all = _.orderBy(all, function (d) {
-			return d.date_quartertxt;
-		}, 'asc'); // cst.sortOrder())
-	}
-
 	// INJECT TOTAL
 	if (cst.putTotalOf() != '') {
 		(function () {
@@ -481,46 +475,86 @@ cst.build = function () {
 	var tableContentWrapper = toolkit.newEl('div').addClass('table-content').appendTo(container).css('left', tableHeaderWidth + 'px');
 	var tableContent = toolkit.newEl('table').appendTo(tableContentWrapper);
 
-	var groupThenLoop = function groupThenLoop(data, groups) {
-		var callbackStart = arguments.length <= 2 || arguments[2] === undefined ? app.noop : arguments[2];
-		var callbackEach = arguments.length <= 3 || arguments[3] === undefined ? app.noop : arguments[3];
-		var callbackLast = arguments.length <= 4 || arguments[4] === undefined ? app.noop : arguments[4];
+	cst.doGroup(all, columns, rows, tableHeader, tableContent, totalWidth);
 
-		var what = callbackStart(groups);
-		var counter = 0;
-		var op1 = _.groupBy(data, function (e) {
-			return e[groups[0]];
+	var tableClear = toolkit.newEl('div').addClass('clearfix').appendTo(container);
+
+	container.height(tableContent.height());
+};
+
+cst.groupThenLoop = function (data, groups) {
+	var callbackStart = arguments.length <= 2 || arguments[2] === undefined ? app.noop : arguments[2];
+	var callbackEach = arguments.length <= 3 || arguments[3] === undefined ? app.noop : arguments[3];
+	var callbackLast = arguments.length <= 4 || arguments[4] === undefined ? app.noop : arguments[4];
+
+	var currentGroup = groups[0];
+
+	// ===== REORDER EACH LEVEL
+
+	if (currentGroup == 'date_fiscal' || currentGroup == 'date_quartertxt') {
+		data = _.orderBy(data, function (d) {
+			return d[currentGroup];
+		}, 'asc');
+	} else if (currentGroup == 'date_month') {
+		data = data.map(function (d) {
+			var year = moment(d.date_month, 'YYYYM').year();
+			var month = moment(d.date_month, 'YYYYM').month();
+
+			var ouyea = moment(new Date(year, month + 3, 1));
+			d.date_month = ouyea.format("MMMM YYYY");
+			d.date_order = parseInt(ouyea.format("YYYYMM"), 10);
+
+			return d;
 		});
-		var op2 = _.map(op1, function (v, k) {
-			return toolkit.return({ key: k, val: v });
+		data = _.orderBy(data, function (d) {
+			return d.date_order;
+		}, 'asc');
+	} else {
+		// ===== SHOULD BE ORDER BY VALUE DESC
+
+		// data = _.orderBy(data, (d) => {
+		// 	return d[cst.dimensionPNL()[0]]
+		// }, 'desc')
+	}
+
+	console.log(groups, currentGroup, data);
+
+	var what = callbackStart(groups);
+	var counter = 0;
+	var op1 = _.groupBy(data, function (e) {
+		return e[currentGroup];
+	});
+	var op2 = _.map(op1, function (v, k) {
+		return toolkit.return({ key: k, val: v });
+	});
+
+	// console.log('columns', columns)
+	// console.log('op1', op1)
+	console.log('op2', op2);
+
+	var op3 = op2.forEach(function (g) {
+		var k = g.key,
+		    v = g.val;
+		callbackEach(groups, counter, what, k, v);
+
+		var groupsLeft = _.filter(groups, function (d, i) {
+			return i != 0;
 		});
+		if (groupsLeft.length > 0) {
+			cst.groupThenLoop(v, groupsLeft, callbackStart, callbackEach, callbackLast);
+		} else {
+			callbackLast(groups, counter, what, k, v);
+		}
 
-		// console.log('columns', columns)
-		// console.log('op1', op1)
-		// console.log('op2', op2)
+		counter++;
+	});
+};
 
-		var op3 = op2.forEach(function (g) {
-			var k = g.key,
-			    v = g.val;
-			callbackEach(groups, counter, what, k, v);
-
-			var groupsLeft = _.filter(groups, function (d, i) {
-				return i != 0;
-			});
-			if (groupsLeft.length > 0) {
-				groupThenLoop(v, groupsLeft, callbackStart, callbackEach, callbackLast);
-			} else {
-				callbackLast(groups, counter, what, k, v);
-			}
-
-			counter++;
-		});
-	};
-
+cst.doGroup = function (all, columns, rows, tableHeader, tableContent, totalWidth) {
 	// GENERATE TABLE CONTENT HEADER
 
 	// columns.forEach((d) => {
-	groupThenLoop(all, columns, function (groups) {
+	cst.groupThenLoop(all, columns, function (groups) {
 		var rowHeader = tableContent.find('tr[data-key=' + groups.length + ']');
 		if (rowHeader.size() == 0) {
 			rowHeader = toolkit.newEl('tr').appendTo(tableContent).attr('data-key', groups.length);
@@ -548,24 +582,24 @@ cst.build = function () {
 	}, function (groups, counter, what, k, v) {
 		// GENERATE CONTENT OF TABLE HEADER & TABLE CONTENT
 
-		groupThenLoop(v[0].rows, rows, app.noop, app.noop /* {
-                                                    w.forEach((x) => {
-                                                    let key = [k, String(counter)].join('_')
-                                                    console.log(k, counter, x, x, key)
-                                                    let rowTrContentHeader = tableHeader.find(`tr[data-key=${key}]`)
-                                                    if (rowTrContentHeader.size() == 0) {
-                                                    rowTrContentHeader = toolkit.newEl('tr')
-                                                    .appendTo(tableHeader)
-                                                    .attr('data-key', key)
-                                                    }
-                                                    let rowTdContentHeader = tableHeader.find(`tr[data-key=${key}]`)
-                                                    if (rowTdContentHeader.size() == 0) {
-                                                    rowTdContentHeader = toolkit.newEl('tr')
-                                                    .appendTo(rowTrContentHeader)
-                                                    .attr('data-key', key)
-                                                    }
-                                                    })
-                                                    } */, function (groups, counter, what, k, v) {
+		cst.groupThenLoop(v[0].rows, rows, app.noop, app.noop /* {
+                                                        w.forEach((x) => {
+                                                        let key = [k, String(counter)].join('_')
+                                                        console.log(k, counter, x, x, key)
+                                                        let rowTrContentHeader = tableHeader.find(`tr[data-key=${key}]`)
+                                                        if (rowTrContentHeader.size() == 0) {
+                                                        rowTrContentHeader = toolkit.newEl('tr')
+                                                        .appendTo(tableHeader)
+                                                        .attr('data-key', key)
+                                                        }
+                                                        let rowTdContentHeader = tableHeader.find(`tr[data-key=${key}]`)
+                                                        if (rowTdContentHeader.size() == 0) {
+                                                        rowTdContentHeader = toolkit.newEl('tr')
+                                                        .appendTo(rowTrContentHeader)
+                                                        .attr('data-key', key)
+                                                        }
+                                                        })
+                                                        } */, function (groups, counter, what, k, v) {
 			var key = rows.map(function (d) {
 				return v[0][d];
 			}).join("_");
@@ -596,10 +630,6 @@ cst.build = function () {
 
 	tableContent.width(totalWidth);
 	// })
-
-	var tableClear = toolkit.newEl('div').addClass('clearfix').appendTo(container);
-
-	container.height(tableContent.height());
 };
 
 cst.initCategory = function () {
@@ -672,6 +702,15 @@ cst.renderChart = function () {
 		var op2 = _.map(op1, function (v, k) {
 			var o = {};
 			o.key = $.trim(k);
+			o.order = $.trim(k);
+
+			if (cst.category().split('|')[0] == 'date.month') {
+				var year = moment(k, 'YYYYM').year();
+				var month = moment(k, 'YYYYM').month();
+
+				var ouyea = moment(new Date(year, month + 3, 1));
+				o.key = ouyea.format("MMMM YYYY");
+			}
 
 			cst.dimensionPNL().forEach(function (g) {
 				var sumVal = toolkit.sum(v, function (h) {
@@ -686,15 +725,15 @@ cst.renderChart = function () {
 		var op3 = op2;
 		if (cst.breakdown() == 'date.fiscal') {
 			op3 = _.orderBy(op2, function (d) {
-				return toolkit.toInt(d.key.split('-')[0]);
+				return toolkit.toInt(d.order.split('-')[0]);
 			}, 'asc');
 		} else if (cst.breakdown() == 'date.quartertxt') {
 			op3 = _.orderBy(op2, function (d) {
-				return d.key;
+				return d.order;
 			}, 'asc');
 		} else if (cst.breakdown() == 'date.month') {
 			op3 = _.orderBy(op2, function (d) {
-				return toolkit.toInt(d.key);
+				return toolkit.toInt(d.order);
 			}, 'asc');
 		} else {
 			op3 = _.orderBy(op2, function (d) {
