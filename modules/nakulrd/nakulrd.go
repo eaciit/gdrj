@@ -97,7 +97,7 @@ func processTable() {
 		if channelid != "I1" {
 			discount := mr.GetFloat64("PL7A") * ratiototrf
 			spg := mr.GetFloat64("PL31") * ratiototrf
-			promo := mr.GetFloat64("Pl29A") * ratiototrf
+			promo := mr.GetFloat64("PL29A") * ratiototrf
 
 			if discount != 0 || spg != 0 || promo != 0 {
 				if branchid != "CD02" || branchid != "CD04" || branchid != "CD11" ||
@@ -117,8 +117,8 @@ func processTable() {
 				mreversekey.Set("trxsrc", trxsrc)
 				mreverse.Set("key", mreversekey)
 				mreverse.Set("PL7A", -discount)
-				mreverse.Set("PL29A32", -spg)
-				mreverse.Set("PL31C", -promo)
+				mreverse.Set("PL29A32", -promo)
+				mreverse.Set("PL31C", -spg)
 				gdrj.CalcSum(mreverse, masters)
 				esave := qsave.Exec(toolkit.M{}.Set("data", mreverse))
 				if esave != nil {
@@ -145,8 +145,8 @@ func processTable() {
 				mrdkey.Set("trxsrc", trxsrc)
 				mrd.Set("key", mrdkey)
 				mrd.Set("PL7A", discount)
-				mrd.Set("PL29A32", spg)
-				mrd.Set("PL31C", promo)
+				mrd.Set("PL29A32", promo)
+				mrd.Set("PL31C", spg)
 				gdrj.CalcSum(mrd, masters)
 				esave = qsave.Exec(toolkit.M{}.Set("data", mrd))
 				if esave != nil {
