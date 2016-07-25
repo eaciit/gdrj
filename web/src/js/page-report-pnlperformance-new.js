@@ -214,8 +214,11 @@ let bkd = viewModel.breakdown
 	}
 
 	bkd.clickExpand = (e) => {
-		let right = $(e).find('i.fa-chevron-right').length
-		let down = $(e).find('i.fa-chevron-up').length
+		let right = $(e).find('i.fa-chevron-right').length, down = 0
+		if (e.attr('idheaderpl') == 'PL0')
+			down = $(e).find('i.fa-chevron-up').length
+		else
+			down = $(e).find('i.fa-chevron-down').length
 		if (right > 0){
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -1104,8 +1107,11 @@ let v2 = viewModel.RDvsBranchView2
 	}
 
 	v2.clickExpand = (e) => {
-		let right = $(e).find('i.fa-chevron-right').length
-		let down = $(e).find('i.fa-chevron-up').length
+		let right = $(e).find('i.fa-chevron-right').length, down = 0
+		if (e.attr('idheaderpl') == 'PL0')
+			down = $(e).find('i.fa-chevron-up').length
+		else
+			down = $(e).find('i.fa-chevron-down').length
 		if (right > 0){
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -1738,8 +1744,11 @@ let v1 = viewModel.RDvsBranchView1
 	}
 
 	v1.clickExpand = (e) => {
-		let right = $(e).find('i.fa-chevron-right').length
-		let down = $(e).find('i.fa-chevron-up').length
+		let right = $(e).find('i.fa-chevron-right').length, down = 0
+		if (e.attr('idheaderpl') == 'PL0')
+			down = $(e).find('i.fa-chevron-up').length
+		else
+			down = $(e).find('i.fa-chevron-down').length
 		if (right > 0){
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -2297,8 +2306,11 @@ let kac = viewModel.keyAccount
 	}
 
 	kac.clickExpand = (e) => {
-		let right = $(e).find('i.fa-chevron-right').length
-		let down = $(e).find('i.fa-chevron-up').length
+		let right = $(e).find('i.fa-chevron-right').length, down = 0
+		if (e.attr('idheaderpl') == 'PL0')
+			down = $(e).find('i.fa-chevron-up').length
+		else
+			down = $(e).find('i.fa-chevron-down').length
 		if (right > 0){
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
@@ -2924,8 +2936,11 @@ let subchan = viewModel.subChannel
 	}
 
 	subchan.clickExpand = (e) => {
-		let right = $(e).find('i.fa-chevron-right').length
-		let down = $(e).find('i.fa-chevron-up').length
+		let right = $(e).find('i.fa-chevron-right').length, down = 0
+		if (e.attr('idheaderpl') == 'PL0')
+			down = $(e).find('i.fa-chevron-up').length
+		else
+			down = $(e).find('i.fa-chevron-down').length
 		if (right > 0){
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
 				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
