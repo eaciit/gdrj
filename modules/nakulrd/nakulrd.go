@@ -5,7 +5,6 @@ import (
 	"eaciit/gdrj/modules"
 	"os"
 
-	"strings"
 	"time"
 
 	"github.com/eaciit/dbox"
@@ -57,57 +56,6 @@ func main() {
 	prepmastercalc()
 	//buildratio()
 	processTable()
-}
-
-func buildratio() {
-	connratio, _ := modules.GetDboxIConnection("db_godrej")
-	defer connratio.Close()
-
-	ctrx, _ := connratio.NewQuery().From(calctablename).
-		Where(dbox.Eq("key.customer_channelid", "I1")).
-		Select().Cursor(nil)
-	i := 0
-	count := ctrx.Count()
-	t0 := time.Now()
-	mstone := 0
-	for {
-		mr := toolkit.M{}
-		if ef := ctrx.Fetch(&mr, 1, false); ef != nil {
-			break
-		}
-		i++
-		makeProgressLog("Update ratio sales", i, count, 5, &mstone, t0)
-
-		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		fiscal := key.GetString("date_fiscal")
-		channelid := key.GetString("customer_channelid")
-		//kaid := key.GetString("customer_customergroup")
-		//brand := key.GetString("product_brand")
-		branchid := key.GetString("customer_branchid")
-		subchannel := key.GetString("customer_reportsubchannel")
-
-		sales := mr.GetFloat64("PL8A")
-		disc := mr.GetFloat64("PL7A")
-		spg := mr.GetFloat64("PL31")
-		promo := mr.GetFloat64("PL29A")
-
-		//-- non rd and has data pls make trfrd
-		if channelid != "I1" && (disc != 0 || spg != 0 || promo != 0) {
-
-		} else
-		//-- RD
-		if channelid == "I1" {
-			adjustAllocs(&branchtotals, fiscal+"_"+branchid+"_"+subchannel,
-				0, 0, 0, sales)
-			adjustAllocs(&rdfiscals, fiscal, 0, 0, 0, sales)
-		}
-	}
-
-	for k, v := range branchtotals {
-		fiscal := strings.Split(k, "_")[0]
-		rdfiscal := rdfiscals[fiscal]
-		v.Ratio1 = toolkit.Div(v.Ref1, rdfiscal.Ref1)
-	}
 }
 
 func processTable() {
@@ -163,7 +111,7 @@ func processTable() {
 			mreversekey.Set("customer_customergroupname", "")
 			mreversekey.Set("trxsrc", trxsrc)
 			mreverse.Set("key", mreversekey)
-			mreverse.Set("PL7A", -discount)
+			//mreverse.Set("PL7A", -discount)
 			//mreverse.Set("PL29A32", -spg)
 			//mreverse.Set("PL31C", -promo)
 			gdrj.CalcSum(mreverse, masters)
@@ -192,7 +140,7 @@ func processTable() {
 			mrdkey.Set("trxsrc", trxsrc)
 
 			mrd.Set("key", mrdkey)
-			mrd.Set("PL7A", discount)
+			//mrd.Set("PL7A", discount)
 			//mrd.Set("PL29A32", spg)
 			//mrd.Set("PL31C", promo)
 			gdrj.CalcSum(mrd, masters)
