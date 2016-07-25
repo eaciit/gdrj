@@ -13,12 +13,15 @@ v1.fiscalYear = ko.observable(rpt.value.FiscalYear())
 v1.level = ko.observable(2)
 v1.title = ko.observable('Total Branch & RD')
 
-v1.changeTo = (d,e) => {
+v1.changeTo = (d, e, c) => {
 	v1.title(d)
+	c()
 	$(window).trigger('scroll')
 }
 
 v1.refresh = (useCache = false) => {
+	$('.breakdown-view').empty()
+	
 	let param = {}
 	param.pls = []
 	param.groups = rpt.parseGroups([v1.breakdownBy()])
@@ -508,6 +511,8 @@ v2.fiscalYear = ko.observable(rpt.value.FiscalYear())
 v2.level = ko.observable(2)
 
 v2.refresh = (useCache = false) => {
+	$('.breakdown-view').empty()
+	
 	let param = {}
 	param.pls = []
 	param.groups = rpt.parseGroups([v2.breakdownBy()])
@@ -1010,6 +1015,8 @@ v3.fiscalYear = ko.observable(rpt.value.FiscalYear())
 v3.level = ko.observable(1)
 
 v3.refresh = (useCache = false) => {
+	$('.breakdown-view').empty()
+	
 	let param = {}
 	param.pls = []
 	param.groups = rpt.parseGroups([v3.breakdownBy()])
@@ -1130,6 +1137,7 @@ v3.render = () => {
 		return
 	}
 
+	let percentageWidth = 100
 
 	// ========================= TABLE STRUCTURE
 
@@ -1199,7 +1207,6 @@ v3.render = () => {
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
-	let percentageWidth = 100
 
 	let countWidthThenPush = (thheader, each, key) => {
 		let currentColumnWidth = columnWidth
@@ -1567,7 +1574,5 @@ vm.breadcrumb([
 
 $(() => {
 	v3.refresh()
-	v1.refresh()
-	v2.refresh()
 	rpt.showExport(true)
 })
