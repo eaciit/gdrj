@@ -81,7 +81,10 @@ brand.clickExpand = (e) => {
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right')
-		$(e).find('i').addClass('fa-chevron-up')
+		if (e.attr('idheaderpl') == 'PL0')
+			$(e).find('i').addClass('fa-chevron-up')
+		else
+			$(e).find('i').addClass('fa-chevron-down')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
@@ -95,6 +98,7 @@ brand.clickExpand = (e) => {
 		}
 		
 		$(e).find('i').removeClass('fa-chevron-up')
+		$(e).find('i').removeClass('fa-chevron-down')
 		$(e).find('i').addClass('fa-chevron-right')
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', 'none')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', 'none')
