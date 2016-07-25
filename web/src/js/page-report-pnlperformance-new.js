@@ -3761,7 +3761,7 @@ let dsbrd = viewModel.dashboard
 		{ pnl: 'Discount Activity', plcodes: ["PL7A"] },
 		{ pnl: "COGS", plcodes: ["PL74B"] },
 		{ pnl: "Gross Margin", plcodes: ["PL74C"] },
-		{ pnl: "SGA", plcodes: ["PL94A"] },
+		{ pnl: "G&A Expenses", plcodes: ["PL94A"] },
 		{ pnl: "Royalties", plcodes: ["PL26A"] },
 		{ pnl: "A&P", plcodes: ["PL32A"] },
 		{ pnl: "EBITDA", plcodes: ["PL44C"] },
