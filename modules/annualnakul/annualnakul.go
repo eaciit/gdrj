@@ -319,7 +319,7 @@ func processTable() {
 		sales := mr.GetFloat64("PL8A")
 		for _, k := range []string{"PL7A", "PL31C", "PL29A32"} {
 			if isPL(k) {
-				newv := mr.GetFloat64(k)
+				newv := float64(0)
 
 				//--- discount
 				if strings.HasPrefix(k, "PL7A") {
