@@ -217,7 +217,7 @@ cst.refresh = () => {
 			cst.contentIsLoading(false)
 
 			rpt.plmodels(res.Data.PLModels)
-			cst.data(res.Data.Data)
+			cst.data(cst.validateData(res.Data.Data))
 			window.res = res
 
 			let opl1 = _.orderBy(rpt.allowedPL(), (d) => d.OrderIndex)
@@ -237,6 +237,19 @@ cst.refresh = () => {
 	
 	cst.contentIsLoading(true)
 	fetch()
+}
+
+cst.validateData = (data) => {
+	let hasMonth = (cst.breakdownClean().indexOf('date.month') > -1)
+	return data.map((d) => {
+		if (hasMonth) {
+			let year = d._id._id_date_fiscal.split('-')[0]
+			let yearMonth = `${year}${d._id._id_date_month}`
+			d._id._id_date_month = yearMonth
+		}
+
+		return d
+	})
 }
 
 cst.build = () => {
@@ -333,27 +346,6 @@ cst.build = () => {
 	})
 
 	all = _.orderBy(all, (d) => (d.rows.length > 0) ? d.rows[0].value : d, cst.sortOrder())
-
-	// REORDER
-
-	if (breakdown.indexOf('date.month') > -1) {
-		all = _.orderBy(all, (d) => {
-			return parseInt(d.date_month, 10)
-		}, 'asc') // cst.sortOrder())
-
-		all.forEach((d) => {
-			let m = d.date_month - 1 + 3
-			let y = parseInt(d.date_fiscal.split('-')[0], 0)
-
-			d.date_month = moment(new Date(2015, m, 1)).format("MMMM YYYY")
-		})
-	} else 
-
-	if (breakdown.indexOf('date.quartertxt') > -1) {
-		all = _.orderBy(all, (d) => {
-			return d.date_quartertxt
-		}, 'asc') // cst.sortOrder())
-	}
 
 	// INJECT TOTAL
 	if (cst.putTotalOf() != '') {
@@ -465,35 +457,79 @@ cst.build = () => {
 	let tableContent = toolkit.newEl('table')
 		.appendTo(tableContentWrapper)
 
-	let groupThenLoop = (data, groups, callbackStart = app.noop, callbackEach = app.noop, callbackLast = app.noop) => {
-		let what = callbackStart(groups)
-		let counter = 0
-		let op1 = _.groupBy(data, (e) => e[groups[0]])
-		let op2 = _.map(op1, (v, k) => toolkit.return({ key: k, val: v }))
+	cst.doGroup(all, columns, rows, tableHeader, tableContent, totalWidth)
 
-		// console.log('columns', columns)
-		// console.log('op1', op1)
-		// console.log('op2', op2)
+	let tableClear = toolkit.newEl('div')
+		.addClass('clearfix')
+		.appendTo(container)
 
-		let op3 = op2.forEach((g) => {
-			let k = g.key, v = g.val
-			callbackEach(groups, counter, what, k, v)
+	container.height(tableContent.height())
+}
 
-			let groupsLeft = _.filter(groups, (d, i) => i != 0)
-			if (groupsLeft.length > 0) {
-				groupThenLoop(v, groupsLeft, callbackStart, callbackEach, callbackLast)
-			} else {
-				callbackLast(groups, counter, what, k, v)
-			}
+cst.groupThenLoop = (data, groups, callbackStart = app.noop, callbackEach = app.noop, callbackLast = app.noop) => {
+	let currentGroup = groups[0]
 
-			counter++
+	// ===== REORDER EACH LEVEL
+
+	if (currentGroup == 'date_fiscal' || currentGroup == 'date_quartertxt') {
+		data = _.orderBy(data, (d) => {
+			return d[currentGroup]
+		}, 'asc')
+	} else if (currentGroup == 'date_month') {
+		data = data.map((d) => {
+			let year = moment(d.date_month, 'YYYYM').year()
+			let month = moment(d.date_month, 'YYYYM').month()
+
+			let ouyea =  moment(new Date(year, month + 3, 1))
+			d.date_month = ouyea.format("MMMM YYYY")
+			d.date_order = parseInt(ouyea.format("YYYYMM"), 10)
+
+			return d
 		})
+		data = _.orderBy(data, (d) => {
+			return d.date_order
+		}, 'asc')
+	} else {
+		// ===== SHOULD BE ORDER BY VALUE DESC
+
+		// data = _.orderBy(data, (d) => {
+		// 	return d[cst.dimensionPNL()[0]]
+		// }, 'desc')
 	}
 
+	console.log(groups, currentGroup, data)
+
+	let what = callbackStart(groups)
+	let counter = 0
+	let op1 = _.groupBy(data, (e) => {
+		return e[currentGroup]
+	})
+	let op2 = _.map(op1, (v, k) => toolkit.return({ key: k, val: v }))
+
+	// console.log('columns', columns)
+	// console.log('op1', op1)
+	console.log('op2', op2)
+
+	let op3 = op2.forEach((g) => {
+		let k = g.key, v = g.val
+		callbackEach(groups, counter, what, k, v)
+
+		let groupsLeft = _.filter(groups, (d, i) => i != 0)
+		if (groupsLeft.length > 0) {
+			cst.groupThenLoop(v, groupsLeft, callbackStart, callbackEach, callbackLast)
+		} else {
+			callbackLast(groups, counter, what, k, v)
+		}
+
+		counter++
+	})
+}
+
+cst.doGroup = (all, columns, rows, tableHeader, tableContent, totalWidth) => {
 	// GENERATE TABLE CONTENT HEADER
 
 	// columns.forEach((d) => {
-		groupThenLoop(all, columns, (groups) => {
+		cst.groupThenLoop(all, columns, (groups) => {
 			let rowHeader = tableContent.find(`tr[data-key=${groups.length}]`)
 			if (rowHeader.size() == 0) {
 				rowHeader = toolkit.newEl('tr')
@@ -526,7 +562,7 @@ cst.build = () => {
 		}, (groups, counter, what, k, v) => {
 			// GENERATE CONTENT OF TABLE HEADER & TABLE CONTENT
 
-			groupThenLoop(v[0].rows, rows, app.noop, app.noop /* {
+			cst.groupThenLoop(v[0].rows, rows, app.noop, app.noop /* {
 				w.forEach((x) => {
 					let key = [k, String(counter)].join('_')
 					console.log(k, counter, x, x, key)
@@ -585,15 +621,7 @@ cst.build = () => {
 
 		tableContent.width(totalWidth)
 	// })
-
-	let tableClear = toolkit.newEl('div')
-		.addClass('clearfix')
-		.appendTo(container)
-
-	container.height(tableContent.height())
 }
-
-
 
 
 
@@ -673,6 +701,15 @@ cst.renderChart = () => {
 		let op2 = _.map(op1, (v, k) => {
 			let o = {}
 			o.key = $.trim(k)
+			o.order = $.trim(k)
+
+			if (cst.category().split('|')[0] == 'date.month') {
+				let year = moment(k, 'YYYYM').year()
+				let month = moment(k, 'YYYYM').month()
+
+				let ouyea =  moment(new Date(year, month + 3, 1))
+				o.key = ouyea.format("MMMM YYYY")
+			}
 
 			cst.dimensionPNL().forEach((g) => {
 				let sumVal = toolkit.sum(v, (h) => h[g])
@@ -685,15 +722,15 @@ cst.renderChart = () => {
 		let op3 = op2
 		if (cst.breakdown() == 'date.fiscal') {
 			op3 = _.orderBy(op2, (d) => {
-				return toolkit.toInt(d.key.split('-')[0])
+				return toolkit.toInt(d.order.split('-')[0])
 			}, 'asc')
 		} else if (cst.breakdown() == 'date.quartertxt') {
 			op3 = _.orderBy(op2, (d) => {
-				return d.key
+				return d.order
 			}, 'asc')
 		} else if (cst.breakdown() == 'date.month') {
 			op3 = _.orderBy(op2, (d) => {
-				return toolkit.toInt(d.key)
+				return toolkit.toInt(d.order)
 			}, 'asc')
 		} else {
 			op3 = _.orderBy(op2, (d) => {
