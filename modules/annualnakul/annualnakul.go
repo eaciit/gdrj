@@ -62,7 +62,7 @@ var (
 		"2014-2015": 30601500000,
 		"2015-2016": 20754700000,
 	}
-	remainingsales = allocmap{}
+	gtsales = allocmap{}
 )
 
 func main() {
@@ -267,12 +267,10 @@ func buildratio() {
 		adjustAllocs(&discyrkas, keyfiscalka, 0, 0, 0, sales)
 		adjustAllocs(&spgyrkas, keyfiscalka, 0, 0, 0, sales)
 		adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, sales)
-		adjustAllocs(&remainingsales, fiscal, 0, 0, 0, sales)
-	}
 
-	for k, v := range discyrkas {
-		fiscal := strings.Split(k, "_")[0]
-		adjustAllocs(&remainingsales, fiscal, 0, 0, 0, -v.Ref1)
+		if key.GetString("customer_channelid") == "I2" {
+			adjustAllocs(&gtsales, fiscal, 0, 0, 0, sales)
+		}
 	}
 }
 
@@ -305,6 +303,7 @@ func processTable() {
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
+		channelid := key.GetString("customer_channelid")
 		//period := key.GetInt("date_month")
 		//brand := key.GetString("product_brand")
 		keyaccountid := key.GetString("customer_customergroup")
@@ -328,9 +327,10 @@ func processTable() {
 					if disctotal != nil {
 						newv = toolkit.Div(sales*disctotal.Expect,
 							disctotal.Ref1)
-					} else {
-						newv = toolkit.Div(sales*discgts[fiscal],
-							remainingsales[fiscal].Ref1)
+					}
+					if channelid == "I2" {
+						newv += toolkit.Div(sales*discgts[fiscal],
+							gtsales[fiscal].Ref1)
 					}
 				} else
 				//-- spg
