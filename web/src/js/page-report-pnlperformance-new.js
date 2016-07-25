@@ -2765,7 +2765,7 @@ let subchan = viewModel.subChannel
 				param.filters.push({
 					Field: "customer.channelname",
 					Op: '$in',
-					Value: subchan.breakdownChannelValue()
+					Value: breakdownChannel
 				})
 			}
 		} else if (subchan.what() == 'rd') {
@@ -2829,23 +2829,43 @@ let subchan = viewModel.subChannel
 				param.filters.push({
 					Field: "customer.channelname",
 					Op: '$in',
-					Value: subchan.breakdownChannelValue()
+					Value: breakdownChannel
 				})
 			}
 		} else if (subchan.what() == 'branch') {
+			subchan.isInlineFilter(false)
 			subchan.breakdownBy('customer.branchname')
 			groups.push(subchan.breakdownBy())
+			
+			let breakdownBranch = subchan.breakdownBranch().filter((d) => d != 'All')
+			if (breakdownBranch.length > 0) {
+				param.filters.push({
+					Field: "customer.branchname",
+					Op: '$in',
+					Value: breakdownBranch
+				})
+			}
 		} else if (subchan.what() == 'branch-group') {
 			subchan.isInlineFilter(false)
 			subchan.breakdownBy('customer.branchgroup')
 			groups.push(subchan.breakdownBy())
+			
+			let breakdownBranchGroup = subchan.breakdownBranchGroup().filter((d) => d != 'All')
+			if (breakdownBranchGroup.length > 0) {
+				param.filters.push({
+					Field: "customer.branchgroup",
+					Op: '$in',
+					Value: breakdownBranchGroup
+				})
+			}
+
 			let breakdownChannel = subchan.breakdownChannelValue().filter((d) => d != 'All')
 			groups.push("customer.channelname")
 			if (breakdownChannel.length > 0) {
 				param.filters.push({
 					Field: "customer.channelname",
 					Op: '$in',
-					Value: subchan.breakdownChannelValue()
+					Value: breakdownChannel
 				})
 			}
 		}
@@ -3466,6 +3486,93 @@ let subchan = viewModel.subChannel
 	}
 
 
+
+	subchan.breakdownBranch = ko.observableArray([])
+	subchan.optionBreakdownBranchValues = ko.observableArray([])
+	subchan.changeBreakdownBranch = () => {
+		let all = kac.breakdownValueAll
+		let masterData = []
+
+		masterData = subchan.optionBranch()
+
+		toolkit.runUntil((i) => {
+			subchan.optionBreakdownBranchValues([all].concat(
+				masterData.map((d) => { 
+					return { _id: d.Name, Name: d.Name } })
+				)
+			)
+
+			subchan.breakdownBranch([all._id])
+		}, (i) => (i > 10) || (masterData.length > 0))
+	}
+	subchan.changeBreakdownBranchValue = () => {
+		let all = kac.breakdownValueAll
+		setTimeout(() => {
+			let condA1 = subchan.breakdownBranch().length == 2
+			let condA2 = subchan.breakdownBranch().indexOf(all._id) == 0
+			if (condA1 && condA2) {
+				subchan.breakdownBranch.remove(all._id)
+				return
+			}
+
+			let condB1 = subchan.breakdownBranch().length > 1
+			let condB2 = subchan.breakdownBranch().reverse()[0] == all._id
+			if (condB1 && condB2) {
+				subchan.breakdownBranch([all._id])
+				return
+			}
+
+			let condC1 = subchan.breakdownBranch().length == 0
+			if (condC1) {
+				subchan.breakdownBranch([all._id])
+			}
+		}, 100)
+	}
+
+
+	subchan.breakdownBranchGroup = ko.observableArray([])
+	subchan.optionBreakdownBranchGroupValues = ko.observableArray([])
+	subchan.changeBreakdownBranchGroup = () => {
+		let all = kac.breakdownValueAll
+		let masterData = []
+
+		masterData = subchan.optionBranchGroup()
+
+		toolkit.runUntil((i) => {
+			subchan.optionBreakdownBranchGroupValues([all].concat(
+				masterData.map((d) => { 
+					return { _id: d.Name, Name: d.Name } })
+				)
+			)
+
+			subchan.breakdownBranchGroup([all._id])
+		}, (i) => (i > 10) || (masterData.length > 0))
+	}
+	subchan.changeBreakdownBranchGroupValue = () => {
+		let all = kac.breakdownValueAll
+		setTimeout(() => {
+			let condA1 = subchan.breakdownBranchGroup().length == 2
+			let condA2 = subchan.breakdownBranchGroup().indexOf(all._id) == 0
+			if (condA1 && condA2) {
+				subchan.breakdownBranchGroup.remove(all._id)
+				return
+			}
+
+			let condB1 = subchan.breakdownBranchGroup().length > 1
+			let condB2 = subchan.breakdownBranchGroup().reverse()[0] == all._id
+			if (condB1 && condB2) {
+				subchan.breakdownBranchGroup([all._id])
+				return
+			}
+
+			let condC1 = subchan.breakdownBranchGroup().length == 0
+			if (condC1) {
+				subchan.breakdownBranchGroup([all._id])
+			}
+		}, 100)
+	}
+
+
 	subchan.optionChannel = ko.observableArray([])
 	subchan.optionMTBreakdown = ko.observableArray([])
 	subchan.optionAccount = ko.observableArray([])
@@ -3596,6 +3703,7 @@ let dsbrd = viewModel.dashboard
 		{ pnl: "Royalties", plcodes: ["PL26A"] },
 		{ pnl: "A&P", plcodes: ["PL32A"] },
 		{ pnl: "EBITDA", plcodes: ["PL44C"] },
+		{ pnl: "EBITDA & Royalties", plcodes: ["PL44D"] },
 		{ pnl: "EBIT %", plcodes: [] },
 		{ pnl: "EBIT", plcodes: ["PL44B"] },
 	])
@@ -3873,6 +3981,18 @@ let dsbrd = viewModel.dashboard
 				value = dataColumn.value
 			}
 
+			switch (d.title) {
+				case 'Modern Trade':
+				case 'MT':
+					return 2000000000005
+				case 'General Trade':
+				case 'GT':
+					return 2000000000004
+				case 'Regional Distributor':
+				case 'RD':
+					return 2000000000003
+			}
+
 			return value
 		}, 'desc')
 
@@ -3962,7 +4082,9 @@ let rank = viewModel.dashboardRanking
 		{ field: 'cogsPercentage', template: (d) => `${kendo.toString(d.cogsPercentage, 'n2')} %`, title: 'COGS %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ field: 'ebitPercentage', template: (d) => `${kendo.toString(d.ebitPercentage, 'n2')} %`, title: 'EBIT %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
 		{ field: 'ebitdaPercentage', template: (d) => `${kendo.toString(d.ebitdaPercentage, 'n2')} %`, title: 'EBITDA %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
-		{ field: 'anpPercentage', template: (d) => `${kendo.toString(d.anpPercentage, 'n2')} %`, title: 'A & P %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ field: 'anpPercentage', template: (d) => `${kendo.toString(d.anpPercentage, 'n2')} %`, title: 'A&P %', type: 'percentage', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' } },
+		{ width: 120, field: 'ebitdaRoyalties', title: 'EBITDA & Royalties', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}' },
+		{ field: 'netMargin', title: 'Net Margin', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}' },
 		{ field: 'netSales', title: 'Net Sales', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: "<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>", format: '{0:n0}' },
 		{ field: 'ebit', title: 'EBIT', type: 'number', attributes: { class: 'align-right' }, headerAttributes: { style: 'text-align: right !important;', class: 'bold tooltipster', title: 'Click to sort' }, aggregates: ["sum"],footerTemplate: `<div class='align-right'>#=kendo.toString(sum, 'n0')#</div>`, format: '{0:n0}' },
 	])
@@ -3979,7 +4101,7 @@ let rank = viewModel.dashboardRanking
 		}
 
 		let param = {}
-		param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A", "PL32A"]
+		param.pls = ["PL74C", "PL74B", "PL44B", "PL44C", "PL8A", "PL32A", 'PL44D']
 		param.groups = rpt.parseGroups([breakdown])
 		param.aggr = 'sum'
 		param.filters = rpt.getFilterValue(false, rank.fiscalYear)
@@ -4037,6 +4159,8 @@ let rank = viewModel.dashboardRanking
 			row.ebitPercentage = toolkit.number(d.PL44B / d.PL8A) * 100
 			row.ebitdaPercentage = toolkit.number(d.PL44C / d.PL8A) * 100
 			row.anpPercentage = toolkit.number(d.PL32A / d.PL8A) * 100
+			row.ebitdaRoyalties = d.PL44D
+			row.netMargin = toolkit.number(d.PL74C) - toolkit.number(d.PL32A)
 			row.netSales = d.PL8A
 			row.ebit = d.PL44B
 			rows.push(row)
@@ -4049,6 +4173,8 @@ let rank = viewModel.dashboardRanking
 				data: rank.data(),
 				pageSize: 10,
 				aggregate: [
+					{ field: 'ebitdaRoyalties', aggregate: 'sum' },
+					{ field: "netMargin", aggregate: "sum"},
 					{ field: "netSales", aggregate: "sum"},
 					{ field: "ebit", aggregate: "sum"}
 				]
@@ -4148,25 +4274,31 @@ $(() => {
 
 	subchan.fillOptionFilters()
 
-	bkd.changeBreakdown()
-	kac.changeBreakdown()
-	kac.changeBreakdownGroup()
-	subchan.changeBreakdownBrand()
-	subchan.changeBreakdownDistributor()
-	subchan.changeBreakdownGeneralTrade()
-	subchan.changeBreakdownCity()
-	dsbrd.changeBreakdown()
+	toolkit.runAfter(() => {
+		bkd.changeBreakdown()
+		kac.changeBreakdown()
+		kac.changeBreakdownGroup()
+		subchan.changeBreakdownBrand()
+		subchan.changeBreakdownDistributor()
+		subchan.changeBreakdownGeneralTrade()
+		subchan.changeBreakdownCity()
+		subchan.changeBreakdownBranch()
+		subchan.changeBreakdownBranchGroup()
+		dsbrd.changeBreakdown()
 
-	toolkit.runAfter(() => { 
-		kac.breakdownValue(['All'])
-		kac.breakdownGroupValue(['KEY'])
-		bkd.breakdownValue(['All'])
-		subchan.breakdownBrand(['All'])
-		subchan.breakdownDistributor(['All'])
-		subchan.breakdownGeneralTrade(['All'])
-		subchan.breakdownCity(['All'])
-		dsbrd.breakdownValue(['All'])
+		toolkit.runAfter(() => { 
+			kac.breakdownValue(['All'])
+			kac.breakdownGroupValue(['KEY'])
+			bkd.breakdownValue(['All'])
+			subchan.breakdownBrand(['All'])
+			subchan.breakdownDistributor(['All'])
+			subchan.breakdownGeneralTrade(['All'])
+			subchan.breakdownCity(['All'])
+			subchan.breakdownBranch(['All'])
+			subchan.breakdownBranchGroup(['All'])
+			dsbrd.breakdownValue(['All'])
 
-		bkd.refresh()
-	}, 200)
+			bkd.refresh()
+		}, 200)
+	}, 300)
 })
