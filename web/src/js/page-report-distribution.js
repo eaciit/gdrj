@@ -319,7 +319,9 @@ sd.render = (res) => {
 	let op0 = _.filter(sd.data(), (d) => d.percentage != 0 || d.value != 0)
 	let op1 = _.groupBy(op0, (d) => d[breakdown])
 	let op2 = _.map(op1, (v, k) => { return { key: k, values: v } })
-	let op3 = _.orderBy(op2, (d) => toolkit.sum(d.values, (e) => e.percentage), 'desc')
+	let op3 = _.orderBy(op2, (d) => {
+		return rpt.orderByChannel(d.key, toolkit.sum(d.values, (e) => e.percentage))
+	}, 'desc')
 
 	// // hack IT, too much data
 	// let it = op3.find((d) => d.key == "IT")

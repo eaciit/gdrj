@@ -629,14 +629,7 @@ let bkd = viewModel.breakdown
 		// reorder
 		if (bkd.breakdownBy() == "customer.channelname") {
 			let prev = _.orderBy(bkd.data(), (d) => {
-				if (d._id == "General Trade") {
-					let mt = bkd.data().find((e) => e._id == "Modern Trade")
-					if (toolkit.isDefined(mt)) {
-						return mt.PL8A - 10
-					}
-				}
-
-				return d.PL8A
+				return rpt.orderByChannel(d._id, d.PL8A)
 			}, 'desc')
 
 			let mt = bkd.data().find((e) => e._id == "Modern Trade")
@@ -4050,19 +4043,7 @@ let dsbrd = viewModel.dashboard
 				value = dataColumn.value
 			}
 
-			switch (d.title) {
-				case 'Modern Trade':
-				case 'MT':
-					return 2000000000005
-				case 'General Trade':
-				case 'GT':
-					return 2000000000004
-				case 'Regional Distributor':
-				case 'RD':
-					return 2000000000003
-			}
-
-			return value
+			return rpt.orderByChannel(d.title, value)
 		}, 'desc')
 
 		dsbrd.data(rowsAfter)
@@ -4237,7 +4218,9 @@ let rank = viewModel.dashboardRanking
 			rows.push(row)
 		})
 
-		rank.data(_.orderBy(rows, (d) => d.netSales, 'desc'))
+		rank.data(_.orderBy(rows, (d) => {
+			return rpt.orderByChannel(d.pnl, d.netSales)
+		}, 'desc'))
 		rank.columns()[0].title = _.find(rank.optionDimensions(), (e) => { return e.field == rank.breakdown() }).name
 		let config = {
 			dataSource: {
