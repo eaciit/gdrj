@@ -188,6 +188,14 @@ cst.refresh = function () {
 		});
 	}
 
+	if (cst.dimensionPNL().indexOf('PL44BP') > -1) {
+		param.pls.push('PL44B');
+	}
+
+	if (cst.dimensionPNL().indexOf('PL74CP') > -1) {
+		param.pls.push('PL74C');
+	}
+
 	var fetch = function fetch() {
 		app.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
@@ -208,17 +216,7 @@ cst.refresh = function () {
 			cst.data(cst.validateData(res.Data.Data));
 			window.res = res;
 
-			var opl1 = _.orderBy(rpt.allowedPL(), function (d) {
-				return d.OrderIndex;
-			});
-			var opl2 = _.map(opl1, function (d) {
-				return { field: d._id, name: d.PLHeader3 };
-			});
-			cst.optionDimensionPNL(opl2);
-			if (cst.dimensionPNL().length == 0) {
-				cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL44B"]);
-				cst.initSeries();
-			}
+			cst.setupDimensionPNL();
 
 			cst.build();
 			cst.renderChart();
@@ -231,7 +229,56 @@ cst.refresh = function () {
 	fetch();
 };
 
+cst.allowedPL = function () {
+	var pls = [];
+	rpt.allowedPL().forEach(function (d) {
+		pls.push(d);
+
+		if (d._id == 'PL74C') {
+			var o = {};
+			o._id = 'PL74CP';
+			o.PLHeader1 = 'Gross Margin %';
+			o.PLHeader2 = 'Gross Margin %';
+			o.PLHeader3 = 'Gross Margin %';
+			o.OrderIndex = 'PL0027A';
+			pls.push(o);
+		}
+
+		if (d._id == 'PL44B') {
+			var _o = {};
+			_o._id = 'PL44BP';
+			_o.PLHeader1 = 'EBIT %';
+			_o.PLHeader2 = 'EBIT %';
+			_o.PLHeader3 = 'EBIT %';
+			_o.OrderIndex = 'PL0058A';
+			pls.push(_o);
+		}
+	});
+	return pls;
+};
+
+cst.setupDimensionPNL = function () {
+	var pls = cst.allowedPL();
+	var opl1 = _.orderBy(pls, function (d) {
+		return d.OrderIndex;
+	});
+	var opl2 = _.map(opl1, function (d) {
+		return { field: d._id, name: d.PLHeader3 };
+	});
+	cst.optionDimensionPNL(opl2);
+	if (cst.dimensionPNL().length == 0) {
+		cst.dimensionPNL(['PL8A', "PL7", "PL74B", "PL44B"]);
+		cst.initSeries();
+	}
+};
+
 cst.validateData = function (data) {
+	var totalGrossMargin = toolkit.sum(data, function (e) {
+		return e.PL74C;
+	});
+	var totalEBIT = toolkit.sum(data, function (e) {
+		return e.PL44B;
+	});
 	var hasMonth = cst.breakdownClean().indexOf('date.month') > -1;
 	return data.map(function (d) {
 		if (hasMonth) {
@@ -239,6 +286,9 @@ cst.validateData = function (data) {
 			var yearMonth = '' + year + d._id._id_date_month;
 			d._id._id_date_month = yearMonth;
 		}
+
+		d.PL74CP = toolkit.number(d.PL74C / totalGrossMargin) * 100;
+		d.PL44BP = toolkit.number(d.PL44B / totalEBIT) * 100;
 
 		return d;
 	});
@@ -249,7 +299,7 @@ cst.build = function () {
 	// console.log('breakdown', breakdown)
 
 	var keys = _.orderBy(cst.dimensionPNL(), function (d) {
-		var plmodel = rpt.allowedPL().find(function (e) {
+		var plmodel = cst.allowedPL().find(function (e) {
 			return e._id == d;
 		});
 		return plmodel != undefined ? plmodel.OrderIndex : '';
@@ -314,7 +364,7 @@ cst.build = function () {
 				o[toolkit.replace(key, '_id_', '')] = d._id[key];
 			}
 		}keys.map(function (e) {
-			var pl = rpt.allowedPL().find(function (g) {
+			var pl = cst.allowedPL().find(function (g) {
 				return g._id == e;
 			});
 			var p = toolkit.clone(o);
@@ -425,7 +475,7 @@ cst.build = function () {
 								});
 
 								o.rows = _.orderBy(o.rows, function (d) {
-									var pl = rpt.allowedPL().find(function (g) {
+									var pl = cst.allowedPL().find(function (g) {
 										return g.PLHeader3 == d.pnl;
 									});
 									if (pl != undefined) {
@@ -455,7 +505,7 @@ cst.build = function () {
 	}
 
 	// console.log('columns', columns)
-	// console.log('plmodels', rpt.allowedPL())
+	// console.log('plmodels', cst.allowedPL())
 	// console.log('keys', keys)
 	// console.log("all", all)
 
@@ -624,7 +674,12 @@ cst.doGroup = function (all, columns, rows, tableHeader, tableContent, totalWidt
 				rowTrContent = toolkit.newEl('tr').appendTo(tableContent).attr('data-key', key);
 			}
 
-			var rowTdContent = toolkit.newEl('td').addClass('align-right').html(kendo.toString(v[0].value, 'n0')).appendTo(rowTrContent);
+			var format = '{0:n0}';
+			if (key.indexOf('%') > -1) {
+				format = '{0:n2} %';
+			}
+
+			var rowTdContent = toolkit.newEl('td').addClass('align-right').html(kendo.format(format, v[0].value)).appendTo(rowTrContent);
 		});
 	});
 
@@ -662,7 +717,7 @@ cst.initSeries = function () {
 		if (toolkit.isDefined(prevSerie)) {
 			serie = prevSerie;
 		} else {
-			var pl = rpt.plmodels().find(function (e) {
+			var pl = cst.allowedPL().find(function (e) {
 				return e._id == d;
 			});
 			serie.field = d;
@@ -713,11 +768,21 @@ cst.renderChart = function () {
 			}
 
 			cst.dimensionPNL().forEach(function (g) {
+				var pl = cst.allowedPL().find(function (h) {
+					return h._id == g;
+				});
 				var sumVal = toolkit.sum(v, function (h) {
 					return h[g];
 				});
+
 				o[g + '_orig'] = sumVal;
 				o[g] = toolkit.safeDiv(sumVal, billion);
+
+				if (typeof pl !== 'undefined') {
+					if (pl.PLHeader3.indexOf('%') > -1) {
+						o[g] = sumVal;
+					}
+				}
 			});
 
 			return o;
@@ -749,6 +814,7 @@ cst.renderChart = function () {
 		width = data.length * 200 + 'px';
 	}
 
+	var useRightAxis = false;
 	var series = ko.mapping.toJS(cst.series()).filter(function (d) {
 		return d.visible;
 	}).map(function (d) {
@@ -758,8 +824,38 @@ cst.renderChart = function () {
 			return [e.category.replace('\n', ' '), e.series.name, kendo.toString(e.dataItem[e.series.field + '_orig'], 'n0')].join('<br />');
 		};
 
+		d.axis = 'left';
+		if (d.name.indexOf('%') > -1) {
+			d.axis = 'right';
+			useRightAxis = true;
+		}
+
 		return d;
 	});
+
+	var axes = [{
+		name: 'left',
+		majorGridLines: { color: '#fafafa' },
+		labels: {
+			font: '"Source Sans Pro" 11px',
+			format: '{0:n2} ' + suffix
+		}
+	}];
+	var axisCrossingValues = [0];
+
+	if (useRightAxis) {
+		axes.push({
+			name: 'right',
+			title: { text: 'Percentage' },
+			majorGridLines: { color: '#fafafa' },
+			labels: {
+				font: '"Source Sans Pro" 11px',
+				format: '{0:n2} %'
+			}
+		});
+		axisCrossingValues.push(data.length);
+	}
+
 	var config = {
 		dataSource: {
 			data: data
@@ -772,7 +868,12 @@ cst.renderChart = function () {
 				visible: true,
 				// position: 'top',
 				template: function template(d) {
-					return d.series.name + '\n' + kendo.toString(d.value, 'n2') + ' ' + suffix;
+					var labelSuffix = suffix;
+					if (d.series.name.indexOf('%') > -1) {
+						labelSuffix = '%';
+					}
+
+					return d.series.name + '\n' + kendo.toString(d.value, 'n2') + ' ' + labelSuffix;
 				}
 			},
 			line: {
@@ -787,13 +888,7 @@ cst.renderChart = function () {
 			position: "bottom"
 		},
 		series: series,
-		valueAxis: {
-			majorGridLines: { color: '#fafafa' },
-			labels: {
-				font: '"Source Sans Pro" 11px',
-				format: '{0:n2} ' + suffix
-			}
-		},
+		valueAxes: axes,
 		categoryAxis: {
 			field: 'key',
 			labels: {
@@ -805,9 +900,12 @@ cst.renderChart = function () {
 				},
 				padding: 3
 			},
-			majorGridLines: { color: '#fafafa' }
+			majorGridLines: { color: '#fafafa' },
+			axisCrossingValues: axisCrossingValues
 		}
 	};
+
+	console.log('----config', config);
 
 	$('#custom-chart').replaceWith('<div id="custom-chart" style="width: ' + width + '"></div>');
 	$('#custom-chart').kendoChart(config);
