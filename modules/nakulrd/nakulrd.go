@@ -54,7 +54,7 @@ func main() {
 	conn.NewQuery().From(desttablename).
 		Where(dbox.Eq("key.trxsrc", trxsrc)).
 		Delete().
-		sExec(nil)
+		Exec(nil)
 
 	prepmastercalc()
 	//buildratio()
