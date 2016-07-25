@@ -487,6 +487,312 @@ rd.setup = function () {
 				}]);
 			}break;
 
+		case 'direct-labour-index':
+			{
+				vm.currentTitle('Direct Labour Index');
+				rd.series = ko.observableArray([{
+					_id: 'directlabour',
+					plheader: 'Direct Labour',
+					callback: function callback(v, k) {
+						var directlabour = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL14;
+						}));
+
+						return directlabour / rd.divider();
+					}
+				}, {
+					_id: 'cogs',
+					plheader: 'COGS',
+					callback: function callback(v, k) {
+						var cogs = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL74B;
+						}));
+
+						return cogs / rd.divider();
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var directlabour = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL14;
+						}));
+						var cogs = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL74B;
+						}));
+
+						return toolkit.number(directlabour / cogs) * 100;
+					}
+				}]);
+			}break;
+
+		case 'material-type-index':
+			{
+				vm.currentTitle('Material Type Index');
+				rd.series = ko.observableArray([{
+					_id: 'material',
+					plheader: 'Material',
+					callback: function callback(v, k) {
+						var material1 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL9;
+						}));
+						var material2 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL10;
+						}));
+						var material3 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL13;
+						}));
+
+						return (material1 + material2 + material3) / rd.divider();
+					}
+				}, {
+					_id: 'cogs',
+					plheader: 'COGS',
+					callback: function callback(v, k) {
+						var cogs = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL74B;
+						}));
+
+						return cogs / rd.divider();
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var material1 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL9;
+						}));
+						var material2 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL10;
+						}));
+						var material3 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL13;
+						}));
+						var cogs = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL74B;
+						}));
+
+						return toolkit.number((material1 + material2 + material3) / cogs) * 100;
+					}
+				}]);
+			}break;
+
+		case 'indirect-expense-index':
+			{
+				vm.currentTitle('Indirect Expense Index');
+				rd.series = ko.observableArray([{
+					_id: 'indirect',
+					plheader: 'Indirect',
+					callback: function callback(v, k) {
+						var indirect1 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL15;
+						}));
+						var indirect2 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL16;
+						}));
+						var indirect3 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL17;
+						}));
+						var indirect4 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL18;
+						}));
+						var indirect5 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL19;
+						}));
+						var indirect6 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL20;
+						}));
+						var indirect7 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL21;
+						}));
+						var indirect8 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL74;
+						}));
+
+						return (indirect1 + indirect2 + indirect3 + indirect4 + indirect5 + indirect6 + indirect7 + indirect8) / rd.divider();
+					}
+				}, {
+					_id: 'cogs',
+					plheader: 'COGS',
+					callback: function callback(v, k) {
+						var cogs = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL74B;
+						}));
+
+						return cogs / rd.divider();
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var indirect1 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL15;
+						}));
+						var indirect2 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL16;
+						}));
+						var indirect3 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL17;
+						}));
+						var indirect4 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL18;
+						}));
+						var indirect5 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL19;
+						}));
+						var indirect6 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL20;
+						}));
+						var indirect7 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL21;
+						}));
+						var indirect8 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL74;
+						}));
+						var cogs = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL74B;
+						}));
+
+						return toolkit.number((indirect1 + indirect2 + indirect3 + indirect4 + indirect5 + indirect6 + indirect7 + indirect8) / cogs) * 100;
+					}
+				}]);
+			}break;
+
+		case 'marketing-expense-index':
+			{
+				vm.currentTitle('Marketing Expense Index');
+				rd.series = ko.observableArray([{
+					_id: 'marketing',
+					plheader: 'Marketing',
+					callback: function callback(v, k) {
+						var marketing1 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL28;
+						}));
+						var marketing2 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL29;
+						}));
+						var marketing3 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL30;
+						}));
+						var marketing4 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL31;
+						}));
+
+						return (marketing1 + marketing2 + marketing3 + marketing4) / rd.divider();
+					}
+				}, {
+					_id: 'netsales',
+					plheader: 'Net Sales',
+					callback: function callback(v, k) {
+						var netsales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+
+						return netsales / rd.divider();
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var marketing1 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL28;
+						}));
+						var marketing2 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL29;
+						}));
+						var marketing3 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL30;
+						}));
+						var marketing4 = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL31;
+						}));
+						var netsales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+
+						return toolkit.number((marketing1 + marketing2 + marketing3 + marketing4) / netsales) * 100;
+					}
+				}]);
+			}break;
+
+		case 'sga-by-sales':
+			{
+				vm.currentTitle('SGA by Sales');
+				rd.series = ko.observableArray([{
+					_id: 'sga',
+					plheader: 'SGA',
+					callback: function callback(v, k) {
+						var sga = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL94A;
+						}));
+
+						return sga / rd.divider();
+					}
+				}, {
+					_id: 'netsales',
+					plheader: 'Net Sales',
+					callback: function callback(v, k) {
+						var netsales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+
+						return netsales / rd.divider();
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var sga = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL94A;
+						}));
+						var netsales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+
+						return toolkit.number(sga / netsales) * 100;
+					}
+				}]);
+			}break;
+
+		case 'cost-by-sales':
+			{
+				vm.currentTitle('Cost by Sales');
+				rd.series = ko.observableArray([{
+					_id: 'cost',
+					plheader: 'Cost',
+					callback: function callback(v, k) {
+						var cost = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL74B;
+						}));
+
+						return cost / rd.divider();
+					}
+				}, {
+					_id: 'netsales',
+					plheader: 'Net Sales',
+					callback: function callback(v, k) {
+						var netsales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+
+						return netsales / rd.divider();
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var cost = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL74B;
+						}));
+						var netsales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+
+						return toolkit.number(cost / netsales) * 100;
+					}
+				}]);
+			}break;
+
 		default:
 			{
 				location.href = viewModel.appName + "page/report";

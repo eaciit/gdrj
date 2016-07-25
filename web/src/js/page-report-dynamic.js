@@ -437,7 +437,209 @@ rd.setup = () => {
 			}])
 		} break;
 
+		case 'direct-labour-index': {
+			vm.currentTitle('Direct Labour Index')
+			rd.series = ko.observableArray([{ 
+				_id: 'directlabour', 
+				plheader: 'Direct Labour',
+				callback: (v, k) => {
+					let directlabour = Math.abs(toolkit.sum(v, (e) => e.PL14))
 
+					return directlabour / rd.divider()
+				}
+			}, { 
+				_id: 'cogs', 
+				plheader: 'COGS',
+				callback: (v, k) => {
+					let cogs = Math.abs(toolkit.sum(v, (e) => e.PL74B))
+
+					return cogs / rd.divider()
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {
+					let directlabour = Math.abs(toolkit.sum(v, (e) => e.PL14))
+					let cogs = Math.abs(toolkit.sum(v, (e) => e.PL74B))
+
+					return toolkit.number(directlabour / cogs) * 100
+				}
+			}])
+		} break;
+
+		case 'material-type-index': {
+			vm.currentTitle('Material Type Index')
+			rd.series = ko.observableArray([{ 
+				_id: 'material', 
+				plheader: 'Material',
+				callback: (v, k) => {
+					let material1 = Math.abs(toolkit.sum(v, (e) => e.PL9))
+					let material2 = Math.abs(toolkit.sum(v, (e) => e.PL10))
+					let material3 = Math.abs(toolkit.sum(v, (e) => e.PL13))
+
+					return (material1+material2+material3) / rd.divider()
+				}
+			}, { 
+				_id: 'cogs', 
+				plheader: 'COGS',
+				callback: (v, k) => {
+					let cogs = Math.abs(toolkit.sum(v, (e) => e.PL74B))
+
+					return cogs / rd.divider()
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {
+					let material1 = Math.abs(toolkit.sum(v, (e) => e.PL9))
+					let material2 = Math.abs(toolkit.sum(v, (e) => e.PL10))
+					let material3 = Math.abs(toolkit.sum(v, (e) => e.PL13))
+					let cogs = Math.abs(toolkit.sum(v, (e) => e.PL74B))
+
+					return toolkit.number((material1+material2+material3) / cogs) * 100
+				}
+			}])
+		} break;
+
+		case 'indirect-expense-index': {
+			vm.currentTitle('Indirect Expense Index')
+			rd.series = ko.observableArray([{ 
+				_id: 'indirect', 
+				plheader: 'Indirect',
+				callback: (v, k) => {
+					let indirect1 = Math.abs(toolkit.sum(v, (e) => e.PL15))
+					let indirect2 = Math.abs(toolkit.sum(v, (e) => e.PL16))
+					let indirect3 = Math.abs(toolkit.sum(v, (e) => e.PL17))
+					let indirect4 = Math.abs(toolkit.sum(v, (e) => e.PL18))
+					let indirect5 = Math.abs(toolkit.sum(v, (e) => e.PL19))
+					let indirect6 = Math.abs(toolkit.sum(v, (e) => e.PL20))
+					let indirect7 = Math.abs(toolkit.sum(v, (e) => e.PL21))
+					let indirect8 = Math.abs(toolkit.sum(v, (e) => e.PL74))
+
+					return (indirect1+indirect2+indirect3+indirect4+indirect5+indirect6+indirect7+indirect8) / rd.divider()
+				}
+			}, { 
+				_id: 'cogs', 
+				plheader: 'COGS',
+				callback: (v, k) => {
+					let cogs = Math.abs(toolkit.sum(v, (e) => e.PL74B))
+
+					return cogs / rd.divider()
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {
+					let indirect1 = Math.abs(toolkit.sum(v, (e) => e.PL15))
+					let indirect2 = Math.abs(toolkit.sum(v, (e) => e.PL16))
+					let indirect3 = Math.abs(toolkit.sum(v, (e) => e.PL17))
+					let indirect4 = Math.abs(toolkit.sum(v, (e) => e.PL18))
+					let indirect5 = Math.abs(toolkit.sum(v, (e) => e.PL19))
+					let indirect6 = Math.abs(toolkit.sum(v, (e) => e.PL20))
+					let indirect7 = Math.abs(toolkit.sum(v, (e) => e.PL21))
+					let indirect8 = Math.abs(toolkit.sum(v, (e) => e.PL74))
+					let cogs = Math.abs(toolkit.sum(v, (e) => e.PL74B))
+
+					return toolkit.number((indirect1+indirect2+indirect3+indirect4+indirect5+indirect6+indirect7+indirect8) / cogs) * 100
+				}
+			}])
+		} break;
+
+		case 'marketing-expense-index': {
+			vm.currentTitle('Marketing Expense Index')
+			rd.series = ko.observableArray([{ 
+				_id: 'marketing', 
+				plheader: 'Marketing',
+				callback: (v, k) => {
+					let marketing1 = Math.abs(toolkit.sum(v, (e) => e.PL28))
+					let marketing2 = Math.abs(toolkit.sum(v, (e) => e.PL29))
+					let marketing3 = Math.abs(toolkit.sum(v, (e) => e.PL30))
+					let marketing4 = Math.abs(toolkit.sum(v, (e) => e.PL31))
+
+					return (marketing1+marketing2+marketing3+marketing4) / rd.divider()
+				}
+			}, { 
+				_id: 'netsales', 
+				plheader: 'Net Sales',
+				callback: (v, k) => {
+					let netsales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+
+					return netsales / rd.divider()
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {
+					let marketing1 = Math.abs(toolkit.sum(v, (e) => e.PL28))
+					let marketing2 = Math.abs(toolkit.sum(v, (e) => e.PL29))
+					let marketing3 = Math.abs(toolkit.sum(v, (e) => e.PL30))
+					let marketing4 = Math.abs(toolkit.sum(v, (e) => e.PL31))
+					let netsales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+
+					return toolkit.number((marketing1+marketing2+marketing3+marketing4) / netsales) * 100
+				}
+			}])
+		} break;
+
+		case 'sga-by-sales': {
+			vm.currentTitle('SGA by Sales')
+			rd.series = ko.observableArray([{ 
+				_id: 'sga', 
+				plheader: 'SGA',
+				callback: (v, k) => {
+					let sga = Math.abs(toolkit.sum(v, (e) => e.PL94A))
+
+					return sga / rd.divider()
+				}
+			}, { 
+				_id: 'netsales', 
+				plheader: 'Net Sales',
+				callback: (v, k) => {
+					let netsales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+
+					return netsales / rd.divider()
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {
+					let sga = Math.abs(toolkit.sum(v, (e) => e.PL94A))
+					let netsales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+
+					return toolkit.number(sga / netsales) * 100
+				}
+			}])
+		} break;
+
+		case 'cost-by-sales': {
+			vm.currentTitle('Cost by Sales')
+			rd.series = ko.observableArray([{ 
+				_id: 'cost', 
+				plheader: 'Cost',
+				callback: (v, k) => {
+					let cost = Math.abs(toolkit.sum(v, (e) => e.PL74B))
+
+					return cost / rd.divider()
+				}
+			}, { 
+				_id: 'netsales', 
+				plheader: 'Net Sales',
+				callback: (v, k) => {
+					let netsales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+
+					return netsales / rd.divider()
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {
+					let cost = Math.abs(toolkit.sum(v, (e) => e.PL74B))
+					let netsales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+
+					return toolkit.number(cost / netsales) * 100
+				}
+			}])
+		} break;
 
 
 
