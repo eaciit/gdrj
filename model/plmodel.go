@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	NetMarginPLCode   string = "PL24NM"
+	NetMarginPLCode   string = "PL74D"
 	NetMarginPLHeader string = "Net Margin"
 )
 
@@ -71,7 +71,7 @@ func PLModelGetAll() ([]*PLModel, error) {
 		plNetMargin.PLHeader1 = NetMarginPLHeader
 		plNetMargin.PLHeader2 = plNetMargin.PLHeader1
 		plNetMargin.PLHeader3 = plNetMargin.PLHeader1
-		plNetMargin.OrderIndex = "PL0027B"
+		plNetMargin.OrderIndex = "PL0027C"
 		result = append(result, plNetMargin)
 	}
 
