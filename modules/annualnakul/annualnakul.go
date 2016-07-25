@@ -59,8 +59,8 @@ var (
 	spgmths    = allocmap{}
 	promomths  = allocmap{}
 	discgts    = map[string]float64{
-		"2014-2015": -30601500000,
-		"2015-2016": -20754700000,
+		"2014-2015": -60151910000,
+		"2015-2016": -13960280000,
 	}
 	gtsales = allocmap{}
 )
