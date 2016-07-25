@@ -206,7 +206,7 @@ func buildratio_() {
 	}
 }
 
-func buildratio_() {
+func buildratio() {
 	connratio, _ := modules.GetDboxIConnection("db_godrej")
 	defer connratio.Close()
 
@@ -234,22 +234,6 @@ func buildratio_() {
 		adjustAllocs(&promoyrkas, keyfiscalka, 0, promov, 0, 0)
 	}
 
-	/*
-		for _, v := range promomths {
-			fiscal := strings.Split(v.Key, "_")[0]
-			spgyr := promoyrs[fiscal]
-			v.Ratio1 = toolkit.Div(v.Expect, spgyr.Ref1)
-			for _, v1 := range promoyrkas {
-				keysyrka := strings.Split(v1.Key, "_")
-				newkey := toolkit.Sprintf("%s_%s", v.Key, keysyrka[1])
-				valloc := v.Ratio1 * v1.Expect
-				adjustAllocs(&promototals, newkey, 0, valloc, 0, 0)
-				toolkit.Printfn("Allocation for %s => ratio:%f alloc:%f",
-					newkey, v.Ratio1, valloc)
-			}
-		}
-	*/
-
 	ctrx, _ := connratio.NewQuery().From(calctablename).Select().Cursor(nil)
 	i = 0
 	count = ctrx.Count()
@@ -265,23 +249,19 @@ func buildratio_() {
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
-		month := key.GetInt("date_month")
+		//month := key.GetInt("date_month")
 		kaid := key.GetString("customer_customergroup")
 		brand := key.GetString("product_brand")
 		if brand == "" {
 			brand = "HIT"
 		}
 
-		keyperiodka := toolkit.Sprintf("%s_%d_%s", fiscal, month, kaid)
-		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, month, brand)
 		keyfiscalka := toolkit.Sprintf("%s_%s", fiscal, kaid)
 
 		sales := mr.GetFloat64("PL8A")
-		//adjustAllocs(&advtotals, keyperiodbrand, 0, 0, 0, sales)
-		//adjustAllocs(&spgyrkas, keyfiscalka, 0, 0, 0, sales)
-		//adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, sales)
-		//adjustAllocs(&spgtotals, keyperiodka, 0, 0, 0, sales)
-		//adjustAllocs(&promototals, keyperiodka, 0, 0, 0, sales)
+		adjustAllocs(&discyrkas, keyfiscalka, 0, 0, 0, sales)
+		adjustAllocs(&spgyrkas, keyfiscalka, 0, 0, 0, sales)
+		adjustAllocs(&promoyrkas, keyfiscalka, 0, 0, 0, sales)
 	}
 }
 
@@ -324,7 +304,7 @@ func processTable() {
 			keyperiodaccount := toolkit.Sprintf("%s_%d_%s",
 				fiscal, period, keyaccountid)
 		*/
-		keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, period, brand)
+		//keyperiodbrand := toolkit.Sprintf("%s_%d_%s", fiscal, period, brand)
 
 		sales := mr.GetFloat64("PL8A")
 		for k, _ := range mr {
@@ -333,18 +313,10 @@ func processTable() {
 
 				//--- discount
 				if strings.HasPrefix(k, "PL7A") {
-					disctotal := disctotals[keyfiscalka]
+					disctotal := discyrkas[keyfiscalka]
 					if disctotal != nil {
 						newv = toolkit.Div(sales*disctotal.Expect,
 							disctotal.Ref1)
-					}
-				} else
-				//-- advertisement
-				if k == "PL28I" {
-					advtotal := advtotals[keyperiodbrand]
-					if advtotal != nil {
-						newv = toolkit.Div(sales*advtotal.Expect, advtotal.Ref1)
-						adjustAllocs(&advyears, fiscal, 0, 0, 0, newv)
 					}
 				} else
 				//-- spg
