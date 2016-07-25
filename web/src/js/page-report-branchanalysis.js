@@ -421,7 +421,9 @@ ba.refresh = (useCache = false) => {
 		param.filters.push({
 			Field: 'customer.channelname',
 			Op: '$in',
-			Value: ba.optionSubBreakdown().map((d) => d._id)
+			Value: ba.optionSubBreakdown()
+				.map((d) => d._id)
+				.filter((d) => d !== 'EXP')
 		})
 	}
 

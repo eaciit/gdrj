@@ -498,6 +498,8 @@ ba.refresh = function () {
 			Op: '$in',
 			Value: ba.optionSubBreakdown().map(function (d) {
 				return d._id;
+			}).filter(function (d) {
+				return d !== 'EXP';
 			})
 		});
 	}
