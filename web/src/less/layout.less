@@ -1145,38 +1145,52 @@ html, body{
 
 // resize little bit, show EBIT could be fully visible
 
-.app-container .app-title {
-    padding: 10px 0px 5px;
+.app-container {
+    margin-top: 40px;
+    
+	.app-title {
+	    padding: 10px 0px 5px;
+	    height: 48px;
+
+	    h2 {
+	    	font-size: 26px;
+	    }
+	}
 }
 
 .panel-body {
 	padding: 5px 10px;
 }
 
-.nav-user .dropdown-toggle {
-    height: 40px;
-}
+.app-top {
+	.app-menu ul.nav.navbar-nav > li > a {
+	    padding: 10px 10px;
+	}
 
-.app-top .app-menu ul.nav.navbar-nav > li > a {
-    padding: 10px 10px;
+	.app-identity img {
+	    margin-top: 5px;
+	}
 }
 
 .navbar.navbar-fixed-top.app-top {
 	min-height: 40px;
 }
 
-.app-container {
-    margin-top: 40px;
+.nav-user {
+	.dropdown-toggle {
+	    height: 40px;
+	}
+
+	.avatar {
+		margin-top: 5px;
+	}
+
+	.name {
+	    margin-top: 10px;
+	}
 }
 
-.app-top .app-identity img {
-    margin-top: 5px;
-}
-
-.nav-user .avatar {
-	margin-top: 5px;
-}
-
-.nav-user .name {
-    margin-top: 10px;
+.breadcrumb {
+	margin-top: 0px;
+	font-size: 13px;
 }
