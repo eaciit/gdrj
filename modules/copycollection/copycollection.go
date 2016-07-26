@@ -7,6 +7,7 @@ import (
 	"github.com/eaciit/toolkit"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -118,7 +119,7 @@ func copycollection() {
 		hostdest = "52.220.25.190:27123"
 		dbdest = "ecgodrej"
 	case "prod":
-		hostdest = "-h go.eaciit.com:27123"
+		hostdest = "go.eaciit.com:27123"
 		dbdest = "ecgodrej_prod"
 	}
 
@@ -168,11 +169,18 @@ func copycollection() {
 	if errmsg != "" {
 		toolkit.Println(errmsg)
 	}
-	location := "/data/dump/godrej"
+	location := ""
+	if runtime.GOOS == "windows" {
+		location = filepath.Join("d:", "data", "dump", "godrej")
+	} else {
+		location = filepath.Join("/data", "dump", "godrej")
+	}
 	numcol := len(listofcol)
 	toolkit.Printfn("\nPrepare to dump & restore (%d) collections", numcol)
 	toolkit.Printfn("from %s/%s to %s/%s\n",
 		hostsource, dbsource, hostdest, dbdest)
+	var errdump error
+	var errrestore error
 
 	for i, col := range listofcol {
 		dump := toolkit.Sprintf("mongodump -h %s -d %s -c %s --out %s", hostsource, dbsource, col, location)
@@ -180,41 +188,25 @@ func copycollection() {
 			hostdest, dbdest, col, location, dbsource, col)
 
 		if runtime.GOOS == "windows" {
-			_, err := exec.Command("sh", "-c", dump).Output()
-
-			if err != nil {
-				toolkit.Println("dump error", err)
-				toolkit.Println("syntax", dump)
-			} else {
-				toolkit.Printfn("(%d of %d) dump : %s", i+1, numcol, col)
-			}
-
-			_, err = exec.Command("cmd", "-c", restore).Output()
-
-			if err != nil {
-				toolkit.Println("restore error", err)
-				toolkit.Println("syntax", restore)
-			} else {
-				toolkit.Printfn("(%d of %d) restore : %s", i+1, numcol, col)
-			}
+			_, errdump = exec.Command("sh", "-c", dump).Output()
+			_, errrestore = exec.Command("sh", "-c", restore).Output()
 		} else {
-			_, err := exec.Command("/bin/bash", "-c", dump).Output()
+			_, errdump = exec.Command("/bin/bash", "-c", dump).Output()
+			_, errrestore = exec.Command("/bin/bash", "-c", restore).Output()
+		}
 
-			if err != nil {
-				toolkit.Println("dump error", err)
-				toolkit.Println("syntax", dump)
-			} else {
-				toolkit.Printfn("(%d of %d) dump : %s", i+1, numcol, col)
-			}
+		if errdump != nil {
+			toolkit.Println("dump error", errdump)
+			toolkit.Println("syntax", dump)
+		} else {
+			toolkit.Printfn("(%d of %d) dump : %s", i+1, numcol, col)
+		}
 
-			_, err = exec.Command("/bin/bash", "-c", restore).Output()
-
-			if err != nil {
-				toolkit.Println("restore error", err)
-				toolkit.Println("syntax", restore)
-			} else {
-				toolkit.Printfn("(%d of %d) restore : %s", i+1, numcol, col)
-			}
+		if errrestore != nil {
+			toolkit.Println("restore error", errrestore)
+			toolkit.Println("syntax", restore)
+		} else {
+			toolkit.Printfn("(%d of %d) restore : %s", i+1, numcol, col)
 		}
 	}
 
