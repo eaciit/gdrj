@@ -56,10 +56,11 @@ func main() {
 	prepmastercalc()
 	buildratio()
 
-	for k, v := range ratios {
-		for sc, r := range v {
-			processTable("2014-2015", k, sc, r)
-			processTable("2015-2016", k, sc, r)
+	for _, fiscal := range []string{"2014-2015", "2015-2016"} {
+		for k, v := range ratios {
+			for sc, r := range v {
+				processTable(fiscal, k, sc, r)
+			}
 		}
 	}
 }
@@ -91,6 +92,8 @@ func buildratio() {
 }
 
 func processTable(fisclayr, branchid, subchannel string, ratio float64) {
+	toolkit.Printfn("Processing %s %s %s",
+		fisclayr, branchid, subchannel)
 	expected := ratio * totalsales[fisclayr+"_"+branchid]
 	if expected == 0 {
 		return
