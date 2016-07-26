@@ -660,6 +660,141 @@ func (s *PLFinderParam) CalculatePL(data *[]*toolkit.M) *[]*toolkit.M {
 	return data
 }
 
+func (s *PLFinderParam) CalculateOutlet(data *[]*toolkit.M) *[]*toolkit.M {
+	channelid := "_id_customer_channelid"
+	channelname := "_id_customer_channelname"
+
+	for _, each := range *data {
+		_id := each.Get("_id").(toolkit.M)
+
+		if _id.Has(channelid) {
+			channelid := strings.ToUpper(fmt.Sprintf("%v", _id[channelid]))
+
+			switch channelid {
+			case "I6":
+				_id.Set(channelname, "Motorist")
+			case "I4":
+				_id.Set(channelname, "Industrial")
+			case "I1":
+				_id.Set(channelname, "Regional Distributor")
+			case "I3":
+				_id.Set(channelname, "Modern Trade")
+			case "I2":
+				_id.Set(channelname, "General Trade")
+			case "EXP":
+				_id.Set(channelname, "Export")
+			}
+		}
+	}
+
+	return data
+}
+
+func (s *PLFinderParam) CountOutletData() (bool, string, error) {
+	tableName := s.GetOutletTable()
+
+	csr, err := DB().Connection.NewQuery().From(tableName).Take(2).Cursor(nil)
+	if err != nil {
+		return false, tableName, err
+	}
+	defer csr.Close()
+
+	return (csr.Count() > 0), tableName, nil
+}
+
+func (s *PLFinderParam) GetOutletTable() string {
+	cache := map[string]bool{}
+	filterKeys := []string{}
+	for _, filter := range s.Filters {
+		if _, ok := cache[filter.Field]; !ok {
+			cache[filter.Field] = true
+			filterKeys = append(filterKeys, filter.Field)
+		}
+	}
+	for _, breakdown := range s.Breakdowns {
+		if _, ok := cache[breakdown]; !ok {
+			cache[breakdown] = true
+			filterKeys = append(filterKeys, breakdown)
+		}
+	}
+
+	if toolkit.HasMember(filterKeys, "customer.channelid") && !toolkit.HasMember(filterKeys, "customer.channelname") {
+		filterKeys = append(filterKeys, "customer.channelname")
+	}
+
+	sort.Strings(filterKeys)
+	key := strings.Replace(strings.Join(filterKeys, "_"), ".", "_", -1)
+	tableName := fmt.Sprintf("outlet_number_%s", key)
+
+	s.TableKey = "_id"
+
+	// ========== get whether use `key` or `_id`
+
+	csr, err := DB().Connection.NewQuery().From(tableName).Take(2).Cursor(nil)
+	if err != nil {
+		return tableName
+	}
+	defer csr.Close()
+
+	sample := []toolkit.M{}
+	if err := csr.Fetch(&sample, 0, false); err != nil {
+		return tableName
+	}
+
+	if len(sample) > 0 {
+		if sample[0].Has("key") {
+			s.TableKey = "key"
+		}
+	}
+
+	return tableName
+}
+
+func (s *PLFinderParam) GetOutletData() ([]*toolkit.M, error) {
+	if s.Flag != "" {
+		s.PLs = []string{}
+	}
+
+	tableName := s.GetOutletTable()
+
+	db, session, err := s.ConnectToDB()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
+	groups := bson.M{}
+	groupIds := bson.M{}
+
+	fb := DB().Connection.Fb()
+	fb.AddFilter(s.ParseFilter())
+	matches, err := fb.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, breakdown := range s.Breakdowns {
+		field := fmt.Sprintf("$%s.%s", s.TableKey, strings.Replace(breakdown, ".", "_", -1))
+		alias := strings.Replace(fmt.Sprintf("_id.%s", breakdown), ".", "_", -1)
+		groupIds[alias] = field
+	}
+	groups["_id"] = groupIds
+	groups["qty"] = bson.M{"$sum": "$qty"}
+
+	fmt.Printf("-MATHCES %#v\n", matches)
+
+	pipe := []bson.M{{"$match": matches}, {"$group": groups}}
+
+	res := []*toolkit.M{}
+	err = db.C(tableName).Pipe(pipe).AllowDiskUse().All(&res)
+	if err != nil {
+		return nil, err
+	}
+
+	resFinal := *(s.CalculateOutlet(&res))
+	return resFinal, nil
+}
+
 func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	if s.Flag != "" {
 		s.PLs = []string{}
