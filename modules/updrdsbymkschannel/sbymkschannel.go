@@ -66,7 +66,7 @@ func processTable() {
 
 	cursor, _ := connselect.NewQuery().
 		From(calctablename).
-		Where(dbox.Ne("key.trxsrc", trxsrc)).
+		Where(dbox.Eq("key.trxsrc", trxsrc)).
 		Select().Cursor(nil)
 	defer cursor.Close()
 
