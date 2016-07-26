@@ -2,6 +2,7 @@ viewModel.distribution = {}
 let dsbt = viewModel.distribution
 
 dsbt.changeTo = (d) => {
+	rpt.resetMonthQuarter()
 	if (d == 'Revenue vs EBIT Distribution') {
 		toolkit.try(() => {
 			$('#tab1 .k-grid').data('kendoGrid').refresh()
@@ -30,6 +31,7 @@ rve.refresh = () => {
 	param.filters = rpt.getFilterValue(false, rve.fiscalYear)
 
 	let fetch = () => {
+		rpt.injectMonthQuarterFilter(param.filters)
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => { fetch() }, 1000 * 5)
@@ -458,6 +460,7 @@ sd.refresh = () => {
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear)
 
 	let fetch = () => {
+		rpt.injectMonthQuarterFilter(param.filters)
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => { fetch() }, 1000 * 5)

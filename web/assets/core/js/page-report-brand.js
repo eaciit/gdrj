@@ -48,6 +48,7 @@ brand.refresh = function () {
 	}
 
 	var fetch = function fetch() {
+		rpt.injectMonthQuarterFilter(param.filters);
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {

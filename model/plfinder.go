@@ -194,21 +194,23 @@ func (s *PLFinderParam) ParseFilter() *dbox.Filter {
 	for _, each := range s.Filters {
 		switch each.Op {
 		case dbox.FilterOpIn:
-			values := []string{}
+			values := []interface{}{}
 			field := fmt.Sprintf("%s.%s", s.TableKey, strings.Replace(each.Field, ".", "_", -1))
 			hasOther := false
 
 			if each.Value != nil {
 				for _, v := range each.Value.([]interface{}) {
-					if strings.ToLower(v.(string)) == "other" {
-						if !hasOther {
-							hasOther = true
-						}
+					if toolkit.TypeName(v) == "string" {
+						if strings.ToLower(v.(string)) == "other" {
+							if !hasOther {
+								hasOther = true
+							}
 
-						continue
+							continue
+						}
 					}
 
-					values = append(values, v.(string))
+					values = append(values, v)
 				}
 			}
 

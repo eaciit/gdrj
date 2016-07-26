@@ -12,6 +12,7 @@ cbt.level = ko.observable(1)
 cbt.title = ko.observable('Contribution by Channels')
 
 cbt.changeTo = (d, title) => {
+	rpt.resetMonthQuarter()
 	cbt.breakdownBy(d)
 	cbt.title(title)
 	cbt.refresh()
@@ -27,6 +28,7 @@ cbt.refresh = (useCache = false) => {
 	cbt.contentIsLoading(true)
 
 	let fetch = () => {
+		rpt.injectMonthQuarterFilter(param.filters)
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {

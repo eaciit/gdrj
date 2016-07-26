@@ -11,6 +11,7 @@ sr.title = ko.observable('Sales Return by Channels');
 sr.breakdownChannels = ko.observableArray([]);
 
 sr.changeTo = function (d, e) {
+	rpt.resetMonthQuarter();
 	sr.title(e);
 	sr.breakdown(d);
 	sr.refresh();
@@ -33,6 +34,7 @@ sr.refresh = function () {
 	}
 
 	var fetch = function fetch() {
+		rpt.injectMonthQuarterFilter(param.filters);
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {

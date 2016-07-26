@@ -4,6 +4,7 @@ viewModel.distribution = {};
 var dsbt = viewModel.distribution;
 
 dsbt.changeTo = function (d) {
+	rpt.resetMonthQuarter();
 	if (d == 'Revenue vs EBIT Distribution') {
 		toolkit.try(function () {
 			$('#tab1 .k-grid').data('kendoGrid').refresh();
@@ -28,6 +29,7 @@ rve.refresh = function () {
 	param.filters = rpt.getFilterValue(false, rve.fiscalYear);
 
 	var fetch = function fetch() {
+		rpt.injectMonthQuarterFilter(param.filters);
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
@@ -477,6 +479,7 @@ sd.refresh = function () {
 	param.filters = rpt.getFilterValue(false, sd.fiscalYear);
 
 	var fetch = function fetch() {
+		rpt.injectMonthQuarterFilter(param.filters);
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {

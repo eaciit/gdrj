@@ -248,22 +248,18 @@ rpt.date_quartertxt = ko.observableArray([
 	{ FiscalYear: '2015-2016', _id: '2015-2016 Q4', Name: '2015-2016 Q4' },
 ])
 rpt.date_month = ko.observableArray((() => {
-	let fy = ['2014-2015', '2015-2016']
 	let months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 	let res = []
-	fy.forEach((d) => {
-		months.forEach((e) => {
-			let year = parseInt(d.split('-')[0], 10)
-			let month = e - 1 + 3
-			let text = moment(new Date(year, month, 1)).format('MMM YYYY')
+	months.forEach((e) => {
+		let month = e - 1 + 3
+		let text = moment(new Date(2015, month, 1)).format('MMMM')
 
-			res.push({
-				FiscalYear: d,
-				_id: e,
-				Name: text
-			})
+		res.push({
+			_id: e,
+			Name: text
 		})
 	})
+
 	return res
 })())
 rpt.monthQuarter = ko.observable('')
@@ -272,21 +268,29 @@ rpt.optionMonthQuarters = ko.observableArray([
 	{ _id: 'date_month', Name: 'Month' }
 ])
 rpt.monthQuarterValues = ko.observableArray([])
-rpt.optionMonthsQuarterValues = (fiscalYearObservable) => {
+rpt.optionMonthsQuarterValues = (fiscalYearObservable = null) => {
 	return ko.computed(() => {
+		if (rpt.monthQuarter() == '') {
+			return []
+		}
+
+		if (fiscalYearObservable == null) {
+			return rpt[rpt.monthQuarter()]()
+		}
+
 		let fiscalYears = fiscalYearObservable()
 		if (!(fiscalYears instanceof Array)) {
 			fiscalYears = [fiscalYears]
 		}
 
-		if (rpt.monthQuarter() == '') {
-			return []
-		}
+		return rpt[rpt.monthQuarter()]()
+			.filter((d) => {
+				if (d.hasOwnProperty('FiscalYear')) {
+					return fiscalYears.indexOf(d.FiscalYear) > -1
+				}
 
-		let optionValues = rpt[rpt.monthQuarter()]()
-			.filter((d) => fiscalYears.indexOf(d.FiscalYear) > -1)
-
-		return optionValues
+				return true
+			})
 	}, rpt.monthQuarter)
 }
 rpt.resetMonthQuarter = () => {
@@ -297,6 +301,8 @@ rpt.changeMonthQuarter = () => {
 	rpt.monthQuarterValues([])
 }
 rpt.injectMonthQuarterFilter = (filters) => {
+	rpt.isUsingMonthQuarterFiter(true)
+
 	if (rpt.monthQuarter() == '') {
 		return filters
 	}
@@ -329,6 +335,7 @@ rpt.injectMonthQuarterFilter = (filters) => {
 rpt.isEnableMonthQuarterValues = ko.computed(() => {
 	return (rpt.monthQuarter() !== '')
 })
+rpt.isUsingMonthQuarterFiter = ko.observable(false)
 
 rpt.parseGroups = (what) => {
 	return what

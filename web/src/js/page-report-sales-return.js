@@ -10,6 +10,7 @@ sr.title = ko.observable('Sales Return by Channels')
 sr.breakdownChannels = ko.observableArray([])
 
 sr.changeTo = (d, e) => {
+	rpt.resetMonthQuarter()
 	sr.title(e)
 	sr.breakdown(d)
 	sr.refresh()
@@ -32,6 +33,7 @@ sr.refresh = () => {
 	}
 
 	let fetch = () => {
+		rpt.injectMonthQuarterFilter(param.filters)
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => { fetch() }, 1000 * 5)

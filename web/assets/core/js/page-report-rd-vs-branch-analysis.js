@@ -16,6 +16,7 @@ v1.level = ko.observable(2);
 v1.title = ko.observable('Total Branch & RD');
 
 v1.changeTo = function (d, e, c) {
+	rpt.resetMonthQuarter();
 	v1.title(d);
 	c();
 	$(window).trigger('scroll');
@@ -36,6 +37,7 @@ v1.refresh = function () {
 	v1.contentIsLoading(true);
 
 	var fetch = function fetch() {
+		rpt.injectMonthQuarterFilter(param.filters);
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
@@ -455,6 +457,7 @@ v2.refresh = function () {
 	v2.contentIsLoading(true);
 
 	var fetch = function fetch() {
+		rpt.injectMonthQuarterFilter(param.filters);
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
@@ -880,6 +883,7 @@ v3.refresh = function () {
 	v3.contentIsLoading(true);
 
 	var fetch = function fetch() {
+		rpt.injectMonthQuarterFilter(param.filters);
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
