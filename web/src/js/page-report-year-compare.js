@@ -142,7 +142,7 @@ yc.render = () => {
 		o.v2015_gs_ctb_value = 0
 		toolkit.try(() => { o.v2015_gs_ctb_value = data2015[0][plGrossMargin] / total2015_GrossMargin * 100 })
 		o.v2014_gs_ctb_value = 0
-		toolkit.try(() => { o.v2014_gs_ctb_value = data2014[0][plGrossMargin] / total2015_GrossMargin * 100 })
+		toolkit.try(() => { o.v2014_gs_ctb_value = data2014[0][plGrossMargin] / total2014_GrossMargin * 100 })
 
 		o.v2015_gs_ctb_growth = 0
 		toolkit.try(() => {
@@ -312,16 +312,16 @@ yc.render = () => {
 		}, {
 			headerTemplate: 'GM %<br />Value',
 			field: 'v2014_gs_ctb_value',
-			format: `{0:n0}`,
+			format: `{0:n1} %`,
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_gs_ctb_value, 'n0')}</div>`,
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_gs_ctb_value, 'n1')} %</div>`,
 			width: widthPrcnt,
 		}, {
 			title: "EBIT %<br />Value",
 			field: "v2014_ebit_ctb_value",
 			format: '{0:n2} %',
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">100 %</div>`,
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_ebit_ctb_value, 'n1')} %</div>`,
 			headerAttributes: { style: 'vertical-align: middle;' },
 			width: widthPrcnt,
 		}]
