@@ -980,7 +980,6 @@ func prepsalesplssummaryrdwrongsubch() {
 	filter = dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	csr, _ = conn.NewQuery().Select().Where(filter).
 		From("salespls-summary-rdwrongsubch").
-		Order("PL7A").
 		Cursor(nil)
 	defer csr.Close()
 
