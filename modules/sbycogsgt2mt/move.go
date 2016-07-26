@@ -23,7 +23,7 @@ var (
 	desttablename   = "salespls-summary"
 	t0              time.Time
 	masters         = toolkit.M{}
-	move            = float64(-5000000000)
+	move            = float64(-6750000000)
 )
 
 type plalloc struct {
