@@ -106,6 +106,7 @@ func processTable(fisclayr, branchid, subchannel string, ratio float64) {
 	cursor, _ := connselect.NewQuery().
 		From(calctablename).
 		Where(dbox.Eq("key.trxsrc", trxsrc),
+		dbox.Eq("key.date_fiscal", fisclayr),
 		dbox.Eq("key.customer_reportsubchannel", "Hyper"),
 		dbox.Eq("key.customer_branchid", branchid)).
 		Order("PL8A").
@@ -124,7 +125,8 @@ func processTable(fisclayr, branchid, subchannel string, ratio float64) {
 			break
 		}
 		i++
-		makeProgressLog(toolkit.Sprintf("Processing %s %s", branchid, subchannel),
+		makeProgressLog(toolkit.Sprintf("Processing %s %s %s",
+			fisclayr, branchid, subchannel),
 			i, count, 5, &mstone, t0)
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
