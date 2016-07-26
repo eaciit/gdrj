@@ -98,65 +98,74 @@ yc.render = () => {
 	let plCodeNetSales = 'PL8A'
 	let plGrossMargin = 'PL74C'
 
-	let total2015_ebit     = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2015-2016'), (d) => d[plCodeEBIT])
 	let total2015_netSales = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2015-2016'), (d) => d[plCodeNetSales])
-	let total2014_ebit     = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2014-2015'), (d) => d[plCodeEBIT])
 	let total2014_netSales = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2014-2015'), (d) => d[plCodeNetSales])
 
+	let total2015_ebit = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2015-2016'), (d) => d[plCodeEBIT])
+	let total2014_ebit = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2014-2015'), (d) => d[plCodeEBIT])
+	
 	let total2015_GrossMargin = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2015-2016'), (d) => d[plGrossMargin])
 	let total2014_GrossMargin = toolkit.sum(yc.data().filter((d) => d._id._id_date_fiscal === '2014-2015'), (d) => d[plGrossMargin])
+
+	let calcGrowth = (data2015, data2014, plcode) => {
+		let v2015 = data2015[0][plcode]
+		let v2014 = data2014[0][plcode]
+		if (v2015 <= 0 && v2014 <= 0) {
+			return 0
+		}
+
+		console.log('----', plcode, v2015, v2014)
+
+		return toolkit.number((v2015 - v2014) / v2014) * 100
+	}
 
 	let op1 = yc.groupMap(yc.data(), (d) => d._id[yc.breakdownKey()], (v, k) => {
 		let o = {}
 		o.dimension = k.replace(/ /g, '&nbsp;')
 		o.sorter = 0
 
-		o.v2015_ebit_value = 0
-		o.v2015_ebit_prcnt = 0
-		o.v2015_nsal_value = 0
-		o.v2015_nsal_prcnt = 0
-		o.v2015_gs_prcnt = 0
-		o.v2015_ebit_prcnt = 0
-
-		o.v2014_ebit_value = 0
-		o.v2014_ebit_prcnt = 0
-		o.v2014_nsal_value = 0
-		o.v2014_nsal_prcnt = 0
-		o.v2014_gs_prcnt = 0
-		o.v2014_ebit_prcnt = 0
-
 		let data2015 = v.filter((e) => e._id._id_date_fiscal === '2015-2016')
 		let data2014 = v.filter((e) => e._id._id_date_fiscal === '2014-2015')
 
-		toolkit.try(() => { o.sorter = data2015[0][plCodeEBIT] })
+		toolkit.try(() => { o.sorter = data2015[0][plCodeNetSales] })
 
-		toolkit.try(() => { o.v2014_ebit_value = data2014[0][plCodeEBIT] / divider })
-		toolkit.try(() => { o.v2014_ebit_prcnt = 0 })
-		toolkit.try(() => { o.v2014_nsal_value = data2014[0][plCodeNetSales] / divider })
-		toolkit.try(() => { o.v2014_nsal_prcnt = 0 })
-		toolkit.try(() => { o.v2014_gs_prcnt = data2014[0][plGrossMargin]/total2014_GrossMargin*100 })
-		toolkit.try(() => { o.v2014_ebit_prcnt = data2014[0][plCodeEBIT]/total2014_ebit*100 })
+		o.v2015_nsal_value = 0
+		o.v2015_nsal_growth = 0
+		toolkit.try(() => { o.v2015_nsal_value = data2015[0][plCodeNetSales] })
+		toolkit.try(() => { o.v2015_nsal_growth = calcGrowth(data2015, data2014, plCodeNetSales) })
 
-		toolkit.try(() => { o.v2015_ebit_value = data2015[0][plCodeEBIT] / divider })
-		toolkit.try(() => { 
-			let v2015 = data2015[0][plCodeEBIT]
-			let v2014 = data2014[0][plCodeEBIT]
-			if (v2015 <= 0 && v2014 <= 0) {
-				return
-			}
-			o.v2015_ebit_prcnt = toolkit.number((v2015 - v2014) / v2014) * 100
+		o.v2015_ebit_value = 0
+		o.v2015_ebit_growth = 0
+		toolkit.try(() => { o.v2015_ebit_value = data2015[0][plCodeEBIT] })
+		toolkit.try(() => { o.v2015_ebit_growth = calcGrowth(data2015, data2014, plCodeEBIT) })
+
+		o.v2015_gs_ctb_value = 0
+		toolkit.try(() => { o.v2015_gs_ctb_value = data2015[0][plGrossMargin] / total2015_GrossMargin * 100 })
+		o.v2014_gs_ctb_value = 0
+		toolkit.try(() => { o.v2014_gs_ctb_value = data2014[0][plGrossMargin] / total2014_GrossMargin * 100 })
+
+		o.v2015_gs_ctb_growth = 0
+		toolkit.try(() => {
+			let prcnt = (o.v2015_gs_ctb_value - o.v2014_gs_ctb_value) / o.v2014_gs_ctb_value * 100
+			o.v2015_gs_ctb_growth = prcnt
 		})
-		toolkit.try(() => { o.v2015_nsal_value = data2015[0][plCodeNetSales] / divider })
-		toolkit.try(() => { o.v2015_gs_prcnt = data2015[0][plGrossMargin] / total2015_GrossMargin*100 })
-		toolkit.try(() => { o.v2015_ebit_prcnt = data2015[0][plCodeEBIT] / total2015_ebit*100 })
-		toolkit.try(() => { 
-			let v2015 = data2015[0][plCodeNetSales]
-			let v2014 = data2014[0][plCodeNetSales]
-			if (v2015 <= 0 && v2014 <= 0) {
-				return
-			}
-			o.v2015_nsal_prcnt = toolkit.number((v2015 - v2014) / v2014) * 100
+
+		o.v2015_ebit_ctb_value = 0
+		toolkit.try(() => { o.v2015_ebit_ctb_value = data2015[0][plCodeEBIT] / total2015_ebit * 100 })
+		o.v2014_ebit_ctb_value = 0
+		toolkit.try(() => { o.v2014_ebit_ctb_value = data2014[0][plCodeEBIT] / total2014_ebit * 100 })
+		
+		o.v2015_ebit_ctb_growth = 0
+		toolkit.try(() => {
+			let prcnt = (o.v2015_ebit_ctb_value - o.v2014_ebit_ctb_value) / o.v2014_ebit_ctb_value * 100
+			o.v2015_ebit_ctb_growth = prcnt
 		})
+
+		o.v2014_nsal_value = 0
+		toolkit.try(() => { o.v2014_nsal_value = data2014[0][plCodeNetSales] })
+
+		o.v2014_ebit_value = 0
+		toolkit.try(() => { o.v2014_ebit_value = data2014[0][plCodeEBIT] })
 
 		return o
 	})
@@ -165,24 +174,35 @@ yc.render = () => {
 	}, 'desc')
 	let dataParsed = op2
 
-	let total = {
-		dimension: 'Total',
-		v2015_ebit_value: toolkit.sum(dataParsed, (d) => d.v2015_ebit_value),
-		v2015_nsal_value: toolkit.sum(dataParsed, (d) => d.v2015_nsal_value),
-		v2014_ebit_value: toolkit.sum(dataParsed, (d) => d.v2014_ebit_value),
-		v2014_nsal_value: toolkit.sum(dataParsed, (d) => d.v2014_nsal_value)
-	}
-	total.v2015_ebit_prcnt = toolkit.number((total.v2015_ebit_value - total.v2014_ebit_value) / total.v2014_ebit_value) * 100
-	total.v2015_nsal_prcnt = toolkit.number((total.v2015_nsal_value - total.v2014_nsal_value) / total.v2014_nsal_value) * 100
 
-	// dataParsed.push(total)
+
+	let total = {}
+	total.dimension = 'Total'
+
+	total.v2015_nsal_value = toolkit.sum(dataParsed, (d) => d.v2015_nsal_value)
+	total.v2015_ebit_value = toolkit.sum(dataParsed, (d) => d.v2015_ebit_value)
+	total.v2015_gs_ctb_value = toolkit.sum(dataParsed, (d) => d.v2015_gs_ctb_value)
+	total.v2015_ebit_ctb_value = toolkit.sum(dataParsed, (d) => d.v2015_ebit_ctb_value)
+
+	total.v2014_nsal_value = toolkit.sum(dataParsed, (d) => d.v2014_nsal_value)
+	total.v2014_ebit_value = toolkit.sum(dataParsed, (d) => d.v2014_ebit_value)
+	total.v2014_gs_ctb_value = toolkit.sum(dataParsed, (d) => d.v2014_gs_ctb_value)
+	total.v2014_ebit_ctb_value = toolkit.sum(dataParsed, (d) => d.v2014_ebit_ctb_value)
+
+	total.v2015_nsal_growth = toolkit.number((total.v2015_nsal_value - total.v2014_nsal_value) / total.v2014_nsal_value) * 100
+	total.v2015_ebit_growth = toolkit.number((total.v2015_ebit_value - total.v2014_ebit_value) / total.v2014_ebit_value) * 100
+	total.v2015_gs_ctb_growth = toolkit.number((total.v2015_gs_ctb_value - total.v2014_gs_ctb_value) / total.v2014_gs_ctb_value) * 100
+	total.v2015_ebit_ctb_growth = toolkit.number((total.v2015_ebit_ctb_value - total.v2014_ebit_ctb_value) / total.v2014_ebit_ctb_value) * 100
+
+
 
 	let dimensionWidth = 140
 	if (yc.breakdownBy() == 'customer.region') {
 		dimensionWidth = 160
 	}
 
-	let widthValue = 90
+	let widthValue = 120
+	let widthPrcnt = 90
 	let tableWidth = 1200
 	if (yc.unit() == 'v1000000') {
 		tableWidth += (120 * 1)
@@ -207,95 +227,103 @@ yc.render = () => {
 		locked: true
 	}, {
 		title: 'FY 2015-2016',
+		headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		columns: [{
-			title: 'Net Sales',
-			columns: [{
-				title: 'Value',
-				field: 'v2015_nsal_value',
-				format: `{0:n0}`, // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' },
-				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_value, 'n0')}</div>`,
-				width: widthValue,
-			}, {
-				title: '% Growth',
-				field: 'v2015_nsal_prcnt',
-				format: '{0:n1} %',
-				attributes: { class: 'align-right' },
-				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_prcnt, 'n1')} %</div>`,
-				width: 90,
-			}]
-		}, {
-			title: "% Gross Margin",
-			field: "v2015_gs_prcnt",
-			format: '{0:n2} %',
+			headerTemplate: 'Net Sales<br />Value',
+			field: 'v2015_nsal_value',
+			format: `{0:n0}`,
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">100 %</div>`,
-			headerAttributes: { style: 'vertical-align: middle;' },
-			width: 100,
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_value, 'n0')}</div>`,
+			width: widthValue,
 		}, {
-			title: 'EBIT',
-			columns: [{
-				title: 'Value',
-				field: 'v2015_ebit_value',
-				format: `{0:n0}`, // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' },
-				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_value, 'n0')}</div>`,
-				width: widthValue,
-			}, {
-				title: '% Growth',
-				field: 'v2015_ebit_prcnt',
-				format: '{0:n1} %',
-				attributes: { class: 'align-right' },
-				footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_prcnt, 'n1')} %</div>`,
-				width: 90,
-			}]
-		}, {
-			title: "% EBIT",
-			field: "v2015_ebit_prcnt",
-			format: '{0:n2} %',
+			headerTemplate: 'Net Sales<br />Growth',
+			field: 'v2015_nsal_growth',
+			format: '{0:n1} %',
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">100 %</div>`,
-			headerAttributes: { style: 'vertical-align: middle;' },
-			width: 90,
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_growth, 'n1')} %</div>`,
+			width: widthPrcnt,
+		},
+
+		{
+			headerTemplate: 'EBIT<br />Value',
+			field: 'v2015_ebit_value',
+			format: `{0:n0}`,
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_value, 'n0')}</div>`,
+			width: widthValue,
+		}, {
+			headerTemplate: 'EBIT<br />Growth',
+			field: 'v2015_ebit_growth',
+			format: '{0:n1} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_growth, 'n1')} %</div>`,
+			width: widthPrcnt,
+		},
+
+		{
+			headerTemplate: 'GM %<br />Value',
+			field: 'v2015_gs_ctb_value',
+			format: `{0:n1} %`,
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_gs_ctb_value, 'n0')} %</div>`,
+			width: widthPrcnt,
+		}, {
+			headerTemplate: 'GM %<br />Growth',
+			field: 'v2015_gs_ctb_growth',
+			format: '{0:n1} %',
+			attributes: { class: 'align-right' },
+			// footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_gs_ctb_growth, 'n1')} %</div>`,
+			width: widthPrcnt,
+		},
+
+		{
+			headerTemplate: 'EBIT %<br />Value',
+			field: 'v2015_ebit_ctb_value',
+			format: `{0:n1} %`,
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_ctb_value, 'n0')} %</div>`,
+			width: widthPrcnt,
+		}, {
+			headerTemplate: 'EBIT %<br />Growth',
+			field: 'v2015_ebit_ctb_growth',
+			format: '{0:n1} %',
+			attributes: { class: 'align-right', style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+			headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+			footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+			// footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_ctb_growth, 'n1')} %</div>`,
+			width: widthPrcnt,
 		}]
 	}, {
 		title: 'FY 2014-2015',
 		columns: [{
-			title: 'Net Sales',
-			columns: [{
-				title: 'Value',
-				field: 'v2014_nsal_value',
-				format: `{0:n0}`, // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' },
-				footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_nsal_value, 'n0')}</div>`,
-				width: widthValue,
-			}]
+			headerTemplate: 'Net Sales<br />Value',
+			field: 'v2014_nsal_value',
+			format: `{0:n0}`,
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_nsal_value, 'n0')}</div>`,
+			width: widthValue,
 		}, {
-			title: "% Gross Margin",
-			field: "v2014_gs_prcnt",
+			headerTemplate: 'EBIT<br />Value',
+			field: 'v2014_ebit_value',
+			format: `{0:n0}`,
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_ebit_value, 'n0')}</div>`,
+			width: widthValue,
+		}, {
+			headerTemplate: 'GM %<br />Value',
+			field: 'v2014_gs_ctb_value',
+			format: `{0:n1} %`,
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_gs_ctb_value, 'n1')} %</div>`,
+			width: widthPrcnt,
+		}, {
+			title: "EBIT %<br />Value",
+			field: "v2014_ebit_ctb_value",
 			format: '{0:n2} %',
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">100 %</div>`,
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_ebit_ctb_value, 'n1')} %</div>`,
 			headerAttributes: { style: 'vertical-align: middle;' },
-			width: 100,
-		}, {
-			title: 'EBIT',
-			columns: [{
-				title: 'Value',
-				field: 'v2014_ebit_value',
-				format: `{0:n0}`, // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' },
-				footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_ebit_value, 'n0')}</div>`,
-				width: widthValue,
-			}]
-		}, {
-			title: "% EBIT",
-			field: "v2014_ebit_prcnt",
-			format: '{0:n2} %',
-			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">100 %</div>`,
-			headerAttributes: { style: 'vertical-align: middle;' },
-			width: 90,
+			width: widthPrcnt,
 		}]
 	}]
 

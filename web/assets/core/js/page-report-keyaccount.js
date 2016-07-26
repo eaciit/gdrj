@@ -27,12 +27,23 @@ kac.refresh = function () {
 		return;
 	}
 
-	var breakdownKeyAccount = 'customer.keyaccount';
+	var breakdownKeyAccount = 'customer.keyaccount',
+	    breakdownKeyChannel = 'customer.channelname';
 	var param = {};
 	param.pls = [];
-	param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount]);
+	param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount, breakdownKeyChannel]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, kac.fiscalYear);
+
+	param.filters.push({
+		Field: "customer.channelname",
+		Op: "$in",
+		Value: rpt.masterData.Channel().map(function (d) {
+			return d._id;
+		}).filter(function (d) {
+			return d != "EXP";
+		})
+	});
 
 	var breakdownGroupValue = kac.breakdownGroupValue().filter(function (d) {
 		return d != 'All';
@@ -132,6 +143,13 @@ kac.emptyGrid = function () {
 };
 
 kac.buildStructure = function (data) {
+	data.filter(function (d) {
+		return d._id._id_customer_customergroupname === 'Other';
+	}).forEach(function (d) {
+		var otherChannelName = d._id._id_customer_customergroupname + ' - ' + d._id._id_customer_channelname;
+		d._id._id_customer_customergroupname = otherChannelName;
+	});
+
 	var groupThenMap = function groupThenMap(data, group) {
 		var op1 = _.groupBy(data, function (d) {
 			return group(d);
@@ -436,7 +454,7 @@ rpt.refresh = function () {
 	kac.changeBreakdownGroup();
 	setTimeout(function () {
 		kac.breakdownValue(['All']);
-		kac.breakdownGroupValue(['KEY']);
+		kac.breakdownGroupValue(['All']);
 		kac.refresh(false);
 	}, 200);
 };

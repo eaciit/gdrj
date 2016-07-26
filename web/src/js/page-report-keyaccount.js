@@ -23,12 +23,20 @@ kac.refresh = (useCache = false) => {
 		return
 	}
 
-	let breakdownKeyAccount = 'customer.keyaccount'
+	let breakdownKeyAccount = 'customer.keyaccount', breakdownKeyChannel = 'customer.channelname'
 	let param = {}
 	param.pls = []
-	param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount])
+	param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount, breakdownKeyChannel])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, kac.fiscalYear)
+		
+	param.filters.push({
+		Field: "customer.channelname",
+		Op: "$in",
+		Value: rpt.masterData.Channel()
+			.map((d) => d._id)
+			.filter((d) => d != "EXP")
+	})
 
 	let breakdownGroupValue = kac.breakdownGroupValue().filter((d) => d != 'All')
 	if (breakdownGroupValue.length > 0) {
@@ -129,6 +137,12 @@ kac.emptyGrid = () => {
 }
 
 kac.buildStructure = (data) => {
+	data.filter((d) => d._id._id_customer_customergroupname === 'Other')
+		.forEach((d) => {
+			let otherChannelName = `${d._id._id_customer_customergroupname} - ${d._id._id_customer_channelname}`
+			d._id._id_customer_customergroupname = otherChannelName
+		})
+
 	let groupThenMap = (data, group) => {
 		let op1 = _.groupBy(data, (d) => group(d))
 		let op2 = _.map(op1, (v, k) => {
@@ -488,7 +502,7 @@ rpt.refresh = () => {
 	kac.changeBreakdownGroup()
 	setTimeout(() => {
 		kac.breakdownValue(['All'])
-		kac.breakdownGroupValue(['KEY'])
+		kac.breakdownGroupValue(['All'])
 		kac.refresh(false)
 	}, 200)
 }

@@ -17,7 +17,7 @@
 <script src="{{BaseUrl}}res/core/js/page-report-year-compare.js?ANTI_CACHE={{.AntiCache}}"></script>
 
 	<!-- Nav tabs -->
-	<ul class="nav nav-pills nav-replace-title" role="tablist">
+	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: !yc.contentIsLoading()">
 		<li role="presentation" class="active">
 			<a href="#tab0" role="tab" data-toggle="tab" onclick="yc.changeDimension('Channel', 'customer.channelname')">Channel</a>
 		</li>
