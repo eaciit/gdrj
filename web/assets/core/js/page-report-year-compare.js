@@ -184,13 +184,19 @@ yc.render = function () {
 			o.v2015_ebit_growth = calcGrowth(data2015, data2014, plCodeEBIT);
 		});
 
-		o.v2015_gs_value = 0;
-		o.v2015_gs_growth = 0;
+		o.v2015_gs_ctb_value = 0;
 		toolkit.try(function () {
-			o.v2015_gs_value = data2015[0][plGrossMargin];
+			o.v2015_gs_ctb_value = data2015[0][plGrossMargin] / total2015_GrossMargin * 100;
 		});
+		o.v2014_gs_ctb_value = 0;
 		toolkit.try(function () {
-			o.v2015_gs_growth = calcGrowth(data2015, data2014, plGrossMargin);
+			o.v2014_gs_ctb_value = data2014[0][plGrossMargin] / total2015_GrossMargin * 100;
+		});
+
+		o.v2015_gs_ctb_growth = 0;
+		toolkit.try(function () {
+			var prcnt = (o.v2015_gs_ctb_value - o.v2014_gs_ctb_value) / o.v2014_gs_ctb_value * 100;
+			o.v2015_gs_ctb_growth = prcnt;
 		});
 
 		o.v2015_ebit_ctb_value = 0;
@@ -218,11 +224,6 @@ yc.render = function () {
 			o.v2014_ebit_value = data2014[0][plCodeEBIT];
 		});
 
-		o.v2014_gs_value = 0;
-		toolkit.try(function () {
-			o.v2014_gs_value = data2014[0][plGrossMargin];
-		});
-
 		return o;
 	});
 	var op2 = _.orderBy(op1, function (d) {
@@ -239,8 +240,8 @@ yc.render = function () {
 	total.v2015_ebit_value = toolkit.sum(dataParsed, function (d) {
 		return d.v2015_ebit_value;
 	});
-	total.v2015_gs_value = toolkit.sum(dataParsed, function (d) {
-		return d.v2015_gs_value;
+	total.v2015_gs_ctb_value = toolkit.sum(dataParsed, function (d) {
+		return d.v2015_gs_ctb_value;
 	});
 	total.v2015_ebit_ctb_value = toolkit.sum(dataParsed, function (d) {
 		return d.v2015_ebit_ctb_value;
@@ -252,8 +253,8 @@ yc.render = function () {
 	total.v2014_ebit_value = toolkit.sum(dataParsed, function (d) {
 		return d.v2014_ebit_value;
 	});
-	total.v2014_gs_value = toolkit.sum(dataParsed, function (d) {
-		return d.v2014_gs_value;
+	total.v2014_gs_ctb_value = toolkit.sum(dataParsed, function (d) {
+		return d.v2014_gs_ctb_value;
 	});
 	total.v2014_ebit_ctb_value = toolkit.sum(dataParsed, function (d) {
 		return d.v2014_ebit_ctb_value;
@@ -261,7 +262,7 @@ yc.render = function () {
 
 	total.v2015_nsal_growth = toolkit.number((total.v2015_nsal_value - total.v2014_nsal_value) / total.v2014_nsal_value) * 100;
 	total.v2015_ebit_growth = toolkit.number((total.v2015_ebit_value - total.v2014_ebit_value) / total.v2014_ebit_value) * 100;
-	total.v2015_gs_growth = toolkit.number((total.v2015_gs_value - total.v2014_gs_value) / total.v2014_gs_value) * 100;
+	total.v2015_gs_ctb_growth = toolkit.number((total.v2015_gs_ctb_value - total.v2014_gs_ctb_value) / total.v2014_gs_ctb_value) * 100;
 	total.v2015_ebit_ctb_growth = toolkit.number((total.v2015_ebit_ctb_value - total.v2014_ebit_ctb_value) / total.v2014_ebit_ctb_value) * 100;
 
 	var dimensionWidth = 140;
@@ -326,18 +327,18 @@ yc.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_growth, 'n1') + ' %</div>',
 			width: widthPrcnt
 		}, {
-			headerTemplate: 'Gross Margin<br />Value',
-			field: 'v2015_gs_value',
-			format: '{0:n0}',
-			attributes: { class: 'align-right' },
-			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_gs_value, 'n0') + '</div>',
-			width: widthValue
-		}, {
-			headerTemplate: 'Gross Margin<br />Growth',
-			field: 'v2015_gs_growth',
+			headerTemplate: 'GM %<br />Value',
+			field: 'v2015_gs_ctb_value',
 			format: '{0:n1} %',
 			attributes: { class: 'align-right' },
-			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_gs_growth, 'n1') + ' %</div>',
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_gs_ctb_value, 'n0') + ' %</div>',
+			width: widthPrcnt
+		}, {
+			headerTemplate: 'GM %<br />Growth',
+			field: 'v2015_gs_ctb_growth',
+			format: '{0:n1} %',
+			attributes: { class: 'align-right' },
+			// footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_gs_ctb_growth, 'n1')} %</div>`,
 			width: widthPrcnt
 		}, {
 			headerTemplate: 'EBIT %<br />Value',
@@ -373,12 +374,12 @@ yc.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_ebit_value, 'n0') + '</div>',
 			width: widthValue
 		}, {
-			headerTemplate: 'Gross Margin<br />Value',
-			field: 'v2014_gs_value',
+			headerTemplate: 'GM %<br />Value',
+			field: 'v2014_gs_ctb_value',
 			format: '{0:n0}',
 			attributes: { class: 'align-right' },
-			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_gs_value, 'n0') + '</div>',
-			width: widthValue
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_gs_ctb_value, 'n0') + '</div>',
+			width: widthPrcnt
 		}, {
 			title: "EBIT %<br />Value",
 			field: "v2014_ebit_ctb_value",
