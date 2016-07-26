@@ -70,7 +70,7 @@ var disctarget = map[string]float64{
 }
 
 var branchids = []string{"CD04", "CD11", "CD02"}
-var brandshare = []float64{0.215, 0.15, 1}
+var brandshare = []float64{0.215, 0.015, 1}
 
 func processTable(fiscalyr string) {
 	connsave, _ := modules.GetDboxIConnection("db_godrej")
