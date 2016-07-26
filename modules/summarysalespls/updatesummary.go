@@ -943,7 +943,7 @@ func prepsalesplssummaryrdwrongsubch() {
 	filter := dbox.Eq("date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	csr, _ := conn.NewQuery().Select().Where(filter).
 		From("salespls-summary-rdsum4wrongsubch").
-		Order("gross").
+		Order("-gross").
 		Cursor(nil)
 
 	for {
