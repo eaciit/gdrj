@@ -59,7 +59,16 @@ func main() {
 	prepmastercalc()
 	//buildratio()
 	processTable()
+	//processRDBranch()
 }
+
+var disctarget = map[string]float64{
+	"2014-2015": -5730800361,
+	"2015-2016": -62236716265,
+}
+
+var branchids = []string{"CD04", "CD11", "CD02"}
+var brandshare = []float64{0.215, 0.15, 1}
 
 func processTable() {
 	connsave, _ := modules.GetDboxIConnection("db_godrej")
@@ -72,6 +81,7 @@ func processTable() {
 	cursor, _ := connselect.NewQuery().
 		From(calctablename).
 		Where(dbox.Ne("key.trxsrc", trxsrc)).
+		Order("key.date_fiscal").
 		Select().Cursor(nil)
 	defer cursor.Close()
 
@@ -79,6 +89,10 @@ func processTable() {
 	count := cursor.Count()
 	mstone := 0
 	t0 = time.Now()
+	prevfiscal := ""
+	idxalloc := 0
+	expected := float64(0)
+	absorbed := float64(0)
 	for {
 		mr := toolkit.M{}
 		e := cursor.Fetch(&mr, 1, false)
@@ -90,9 +104,17 @@ func processTable() {
 
 		mrid := mr.GetString("_id")
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
+		fiscal := key.GetString("date_fiscal")
 		channelid := key.GetString("customer_channelid")
 		branchid := key.GetString("customer_branchid")
 		branchname := key.GetString("customer_branchname")
+
+		if fiscal != prevfiscal {
+			prevfiscal = fiscal
+			idxalloc = 0
+			expected = brandshare[idxalloc] * disctarget[fiscal]
+			absorbed = 0
+		}
 
 		if channelid != "I1" {
 			discount := mr.GetFloat64("PL7A") * ratiototrf
@@ -100,11 +122,14 @@ func processTable() {
 			promo := mr.GetFloat64("PL29A") * ratiototrf
 
 			if discount != 0 || spg != 0 || promo != 0 {
-
-				if branchid != "CD02" || branchid != "CD04" || branchid != "CD11" ||
-					branchid != "CD09" {
-					branchid = "CD02"
-				}
+				/*
+					if branchid != "CD02" || branchid != "CD04" || branchid != "CD11" ||
+						branchid != "CD09" {
+						branchid = "CD02"
+					}
+				*/
+				branchid = branchids[idxalloc]
+				absorbed += discount
 
 				branchname = branchgroups[branchid].GetString("branch")
 				branchgroup := branchgroups[branchid].GetString("branchgroup")
@@ -157,6 +182,11 @@ func processTable() {
 					os.Exit(100)
 				}
 			}
+		}
+
+		if absorbed <= expected {
+			idxalloc++
+			expected = brandshare[idxalloc] * disctarget[fiscal]
 		}
 	}
 }
