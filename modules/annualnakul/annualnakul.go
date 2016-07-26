@@ -67,6 +67,11 @@ var (
 
 func main() {
 	setinitialconnection()
+	conn.NewQuery().From(desttablename).
+		Where(dbox.Eq("key.trxsrc", "nakulrd")).
+		Delete().
+		Exec(nil)
+
 	prepmastercalc()
 	buildratio()
 	processTable()

@@ -100,11 +100,14 @@ func processTable() {
 			promo := mr.GetFloat64("PL29A") * ratiototrf
 
 			if discount != 0 || spg != 0 || promo != 0 {
+
 				if branchid != "CD02" || branchid != "CD04" || branchid != "CD11" ||
 					branchid != "CD09" {
 					branchid = "CD02"
-					//branchname = "Jakarta"
 				}
+
+				branchname = branchgroups[branchid].GetString("branch")
+				branchgroup := branchgroups[branchid].GetString("branchgroup")
 
 				mreverse := toolkit.M{}
 				mreverse.Set("_id", mrid+"_"+trxsrc+"_reverse")
@@ -138,7 +141,7 @@ func processTable() {
 				mrdkey.Set("customer_channelname", "RD")
 				mrdkey.Set("customer_branchid", branchid)
 				mrdkey.Set("customer_branchname", branchname)
-				mrdkey.Set("customer_branchgroup", branchname)
+				mrdkey.Set("customer_branchgroup", branchgroup)
 				mrdkey.Set("customer_reportsubchannel", "SPG & Promo Allocation")
 				mrdkey.Set("customer_customergroup", "")
 				mrdkey.Set("customer_customergroupname", "")
@@ -211,6 +214,8 @@ func buildmap(holder interface{},
 	return holder
 }
 
+var branchgroups = map[string]toolkit.M{}
+
 func prepmastercalc() {
 	toolkit.Println("--> PL MODEL")
 	masters.Set("plmodel", buildmap(map[string]*gdrj.PLModel{},
@@ -223,6 +228,18 @@ func prepmastercalc() {
 			o := obj.(*gdrj.PLModel)
 			h[o.ID] = o
 		}).(map[string]*gdrj.PLModel))
+
+	cbg, _ := conn.NewQuery().From("branchgroup").Select().Cursor(nil)
+	defer cbg.Close()
+
+	for {
+		bg := toolkit.M{}
+		if e := cbg.Fetch(&bg, 1, false); e != nil {
+			break
+		}
+		id := bg.GetString("_id")
+		branchgroups[id] = bg
+	}
 }
 
 func setinitialconnection() {
