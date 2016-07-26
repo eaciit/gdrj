@@ -218,7 +218,8 @@ kac.render = function () {
 		grossSalesRow[breakdown] = e[grossSalesPLCode];
 	});
 	data = _.orderBy(data, function (d) {
-		return netSalesRow[d._id];
+		var title = $.trim(d._id.split('-').reverse()[0]);
+		return rpt.orderByChannel(title, netSalesRow[d._id]);
 	}, 'desc');
 
 	plmodels.forEach(function (d) {

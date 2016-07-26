@@ -1248,6 +1248,14 @@ rpt.orderByChannel = function (what, defaultValue) {
 		case 'Regional Distributor':
 		case 'RD':
 			return 2000000000003;
+		case 'Industrial Trade':
+		case 'Industrial':
+		case 'IT':
+			return 2000000000002;
+		case 'Motorist':
+			return 2000000000001;
+		case 'Export':
+			return 2000000000000;
 	}
 
 	return defaultValue;

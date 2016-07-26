@@ -332,20 +332,6 @@ yc.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_growth, 'n2') + ' %</div>',
 			width: widthPrcnt
 		}, {
-			headerTemplate: 'EBIT<br />Value',
-			field: 'v2015_ebit_value',
-			format: '{0:n0}',
-			attributes: { class: 'align-right' },
-			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_value, 'n0') + '</div>',
-			width: widthValue
-		}, {
-			headerTemplate: 'EBIT<br />Growth',
-			field: 'v2015_ebit_growth',
-			format: '{0:n2} %',
-			attributes: { class: 'align-right' },
-			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_growth, 'n2') + ' %</div>',
-			width: widthPrcnt
-		}, {
 			headerTemplate: 'GM<br />Value',
 			field: 'v2015_gs_value',
 			format: '{0:n0}',
@@ -367,6 +353,13 @@ yc.render = function () {
 			attributes: { class: 'align-right' },
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_gs_growth, 'n2') + ' %</div>',
 			width: widthPrcnt
+		}, {
+			headerTemplate: 'EBIT<br />Value',
+			field: 'v2015_ebit_value',
+			format: '{0:n0}',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_value, 'n0') + '</div>',
+			width: widthValue
 		}, {
 			headerTemplate: 'EBIT %',
 			headerAttributes: { style: 'vertical-align: middle !important;' },
@@ -395,13 +388,6 @@ yc.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_nsal_value, 'n0') + '</div>',
 			width: widthValue
 		}, {
-			headerTemplate: 'EBIT<br />Value',
-			field: 'v2014_ebit_value',
-			format: '{0:n0}',
-			attributes: { class: 'align-right' },
-			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_ebit_value, 'n0') + '</div>',
-			width: widthValue
-		}, {
 			headerTemplate: 'GM<br />Value',
 			field: 'v2014_gs_value',
 			format: '{0:n0}',
@@ -409,13 +395,20 @@ yc.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_gs_value, 'n0') + '</div>',
 			width: widthValue
 		}, {
-			headerTemplate: 'GM %',
+			title: 'GM %',
 			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: 'v2014_gs_ctb_value',
 			format: '{0:n2} %',
 			attributes: { class: 'align-right' },
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_gs_ctb_value, 'n2') + ' %</div>',
 			width: widthPrcnt
+		}, {
+			headerTemplate: 'EBIT<br />Value',
+			field: 'v2014_ebit_value',
+			format: '{0:n0}',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_ebit_value, 'n0') + '</div>',
+			width: widthValue
 		}, (_ref = {
 			title: "EBIT %",
 			headerAttributes: { style: 'vertical-align: middle !important;' },
