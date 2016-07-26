@@ -4078,7 +4078,7 @@ let dsbrd = viewModel.dashboard
 		dsbrd.columns(columnsPlaceholder.concat(columnGrouped))
 
 		let grossSales = dsbrd.data().find((d) => d.pnl == "Net Sales")
-		let growth = dsbrd.data().find((d) => d.pnl == "Growth")
+		let growth = dsbrd.data().find((d) => d.pnl == "Net Sales Growth")
 
 		let counter = 0
 		let prevIndex = 0
