@@ -969,6 +969,8 @@ func prepsalesplssummaryrdwrongsubch() {
 		ratio = math.Abs(toolkit.Div(69236716246.87997, total))
 	}
 
+	ratio = ratio - 0.05
+
 	csr.Close()
 
 	qSave := workerconn.NewQuery().
@@ -1042,7 +1044,11 @@ func prepsalesplssummaryrdwrongsubch() {
 	for {
 
 		if arrsubch[pointer].subgross == 0 {
+			arrsubch[pointer].plusdisc = subdisc
 			pointer += 1
+			if pointer > len(arrsubch) {
+				pointer = 1
+			}
 			subdisc = arrsubch[pointer].plusdisc
 		}
 
@@ -1076,7 +1082,11 @@ func prepsalesplssummaryrdwrongsubch() {
 
 		tpercentage := math.Abs(toolkit.Div(xsubdisc, arrsubch[pointer].subgross))
 		if tpercentage > ratio {
+			arrsubch[pointer].plusdisc = subdisc
 			pointer += 1
+			if pointer > len(arrsubch) {
+				pointer = 1
+			}
 			subdisc = arrsubch[pointer].plusdisc
 		}
 
