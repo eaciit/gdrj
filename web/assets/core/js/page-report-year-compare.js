@@ -278,6 +278,7 @@ yc.render = function () {
 
 	total.v2015_nsal_growth = toolkit.number((total.v2015_nsal_value - total.v2014_nsal_value) / total.v2014_nsal_value) * 100;
 	total.v2015_ebit_growth = toolkit.number((total.v2015_ebit_value - total.v2014_ebit_value) / total.v2014_ebit_value) * 100;
+	total.v2015_gs_growth = toolkit.number((total.v2015_gs_value - total.v2014_gs_value) / total.v2014_gs_value) * 100;
 	total.v2015_gs_ctb_growth = toolkit.number((total.v2015_gs_ctb_value - total.v2014_gs_ctb_value) / total.v2014_gs_ctb_value) * 100;
 	total.v2015_ebit_ctb_growth = toolkit.number((total.v2015_ebit_ctb_value - total.v2014_ebit_ctb_value) / total.v2014_ebit_ctb_value) * 100;
 
@@ -360,11 +361,11 @@ yc.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_gs_ctb_value, 'n2') + ' %</div>',
 			width: widthPrcnt
 		}, {
-			headerTemplate: 'GM %<br />Growth',
-			field: 'v2015_gs_ctb_growth',
+			headerTemplate: 'GM<br />Growth',
+			field: 'v2015_gs_growth',
 			format: '{0:n2} %',
 			attributes: { class: 'align-right' },
-			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_gs_ctb_growth, 'n2') + ' %</div>',
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_gs_growth, 'n2') + ' %</div>',
 			width: widthPrcnt
 		}, {
 			headerTemplate: 'EBIT %',
@@ -375,13 +376,13 @@ yc.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_ctb_value, 'n2') + ' %</div>',
 			width: widthPrcnt
 		}, {
-			headerTemplate: 'EBIT %<br />Growth',
-			field: 'v2015_ebit_ctb_growth',
+			headerTemplate: 'EBIT<br />Growth',
+			field: 'v2015_ebit_growth',
 			format: '{0:n2} %',
 			attributes: { class: 'align-right', style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 			headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 			footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
-			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_ctb_growth, 'n2') + ' %</div>',
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_growth, 'n2') + ' %</div>',
 			width: widthPrcnt
 		}]
 	}, {
