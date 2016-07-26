@@ -930,6 +930,7 @@ func prepsalesplssummaryrdwrongsubch() {
 	//salespls-summary-rdwrongsubch
 	type rdlist struct {
 		subch    string
+		plusdisc float64
 		subgross float64
 	}
 
@@ -941,7 +942,7 @@ func prepsalesplssummaryrdwrongsubch() {
 
 	filter := dbox.Eq("date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	csr, _ := conn.NewQuery().Select().Where(filter).
-		From("salespls-summary-sum4rdwrongsubch").
+		From("salespls-summary-rdsum4wrongsubch").
 		Order("gross").
 		Cursor(nil)
 
@@ -963,9 +964,9 @@ func prepsalesplssummaryrdwrongsubch() {
 		total += tkm.GetFloat64("gross")
 	}
 
-	ratio := math.Abs(toolkit.Div(63745639125.27964, total))
+	ratio := math.Abs(toolkit.Div(63745639125.279884, total))
 	if fiscalyear == 2016 {
-		ratio = math.Abs(toolkit.Div(69237042923.99994, total))
+		ratio = math.Abs(toolkit.Div(69236716246.87997, total))
 	}
 
 	csr.Close()
@@ -976,26 +977,73 @@ func prepsalesplssummaryrdwrongsubch() {
 		Save()
 
 	toolkit.Println("--> Update data to salespls-summary from salespls-summary-rdwrongsubch")
+	filter = dbox.And(dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear)),
+		dbox.Gt("PL7A", 0))
 
-	filter = dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	csr, _ = conn.NewQuery().Select().Where(filter).
 		From("salespls-summary-rdwrongsubch").
+		Order("-PL7A").
+		Cursor(nil)
+
+	// salesplssummaryrdwrongsubch := []toolkit.M{} plus value
+	scount = csr.Count()
+	step := getstep(scount)
+	toolkit.Println("PLUS COUNT : ", scount)
+
+	i := int(0)
+	for {
+
+		i += 1
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			toolkit.Println(e)
+			break
+		}
+
+		if i <= 10 {
+			toolkit.Println(tkm.GetFloat64("PL7A"))
+		}
+
+		ix := i % 10
+		arrsubch[ix].plusdisc += tkm.GetFloat64("PL7A")
+
+		if i%step == 0 {
+			toolkit.Printfn("Saving %d of %d (%d pct) in %s",
+				i, scount, i*100/scount, time.Since(t0).String())
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		dtkm.Set("customer_reportsubchannel", arrsubch[ix].subch)
+		tkm.Set("key", dtkm)
+
+		_ = qSave.Exec(toolkit.M{}.Set("data", tkm))
+
+	}
+	csr.Close()
+
+	filter = dbox.And(dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear)),
+		dbox.Lte("PL7A", 0))
+
+	csr, _ = conn.NewQuery().Select().Where(filter).
+		From("salespls-summary-rdwrongsubch").
+		Order("PL7A").
 		Cursor(nil)
 	defer csr.Close()
 
-	// salesplssummaryrdwrongsubch := []toolkit.M{}
+	// salesplssummaryrdwrongsubch := []toolkit.M{} minus value
 	scount = csr.Count()
-	step := getstep(scount)
+	step = getstep(scount)
 	toolkit.Println("COUNT : ", scount)
 
-	i := int(0)
+	i = int(0)
 	pointer := int(0)
-	subdisc := float64(0)
+	subdisc := arrsubch[pointer].plusdisc
 	for {
 
 		if arrsubch[pointer].subgross == 0 {
 			pointer += 1
-			subdisc = float64(0)
+			subdisc = arrsubch[pointer].plusdisc
 		}
 
 		i += 1
@@ -1021,16 +1069,19 @@ func prepsalesplssummaryrdwrongsubch() {
 		dtkm.Set("customer_reportsubchannel", arrsubch[pointer].subch)
 		tkm.Set("key", dtkm)
 
-		tpercentage := math.Abs(toolkit.Div(subdisc, arrsubch[pointer].subgross))
+		xsubdisc := subdisc
+		if subdisc > 0 {
+			xsubdisc = 0
+		}
+
+		tpercentage := math.Abs(toolkit.Div(xsubdisc, arrsubch[pointer].subgross))
 		if tpercentage > ratio {
 			pointer += 1
-			subdisc = float64(0)
+			subdisc = arrsubch[pointer].plusdisc
 		}
 
 		_ = qSave.Exec(toolkit.M{}.Set("data", tkm))
 	}
-
-	// masters.Set("salesplssummaryrdwrongsubch", salesplssummaryrdwrongsubch)
 }
 
 func prepsalesplssummarymtwrongsubch() {
