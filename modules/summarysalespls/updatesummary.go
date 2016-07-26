@@ -1046,7 +1046,7 @@ func prepsalesplssummaryrdwrongsubch() {
 		if arrsubch[pointer].subgross == 0 {
 			arrsubch[pointer].plusdisc = subdisc
 			pointer += 1
-			if pointer > len(arrsubch) {
+			if pointer >= len(arrsubch) {
 				pointer = 1
 			}
 			subdisc = arrsubch[pointer].plusdisc
@@ -1084,7 +1084,7 @@ func prepsalesplssummaryrdwrongsubch() {
 		if tpercentage > ratio {
 			arrsubch[pointer].plusdisc = subdisc
 			pointer += 1
-			if pointer > len(arrsubch) {
+			if pointer >= len(arrsubch) {
 				pointer = 1
 			}
 			subdisc = arrsubch[pointer].plusdisc
