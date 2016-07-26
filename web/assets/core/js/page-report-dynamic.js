@@ -220,7 +220,7 @@ rd.setup = function () {
 						var netsales = Math.abs(toolkit.sum(v, function (e) {
 							return e.PL8A;
 						})) / rd.divider();
-						return toolkit.number(salesreturn / netsales) * 100;
+						return toolkit.number(salesreturn / netsales);
 					}
 				}]);
 			}break;
@@ -257,7 +257,7 @@ rd.setup = function () {
 							return e.PL0;
 						}));
 
-						return toolkit.number(salesDiscount / grossSales) * 100;
+						return toolkit.number(salesDiscount / grossSales);
 					}
 				}]);
 			}break;
@@ -290,7 +290,7 @@ rd.setup = function () {
 							return e.salesqty;
 						}));
 
-						return toolkit.number(grossSales / quantity) * 100;
+						return toolkit.number(grossSales / quantity);
 					}
 				}]);
 
@@ -340,7 +340,7 @@ rd.setup = function () {
 							return e.salesqty;
 						}));
 
-						return toolkit.number(salesDiscount / quantity) * 100;
+						return toolkit.number(salesDiscount / quantity);
 					}
 				}]);
 
@@ -386,7 +386,7 @@ rd.setup = function () {
 							return e.salesqty;
 						}));
 
-						return toolkit.number(amount / quantity) * 100;
+						return toolkit.number(amount / quantity);
 					}
 				}]);
 
@@ -436,7 +436,7 @@ rd.setup = function () {
 							return e.salesqty;
 						}));
 
-						return toolkit.number(btl / quantity) * 100;
+						return toolkit.number(btl / quantity);
 					}
 				}]);
 
@@ -482,7 +482,7 @@ rd.setup = function () {
 							return e.PL8A;
 						}));
 
-						return toolkit.number(freightCost / netSales) * 100;
+						return toolkit.number(freightCost / netSales);
 					}
 				}]);
 			}break;
@@ -521,7 +521,7 @@ rd.setup = function () {
 							return e.PL74B;
 						}));
 
-						return toolkit.number(directlabour / cogs) * 100;
+						return toolkit.number(directlabour / cogs);
 					}
 				}]);
 			}break;
@@ -572,7 +572,7 @@ rd.setup = function () {
 							return e.PL74B;
 						}));
 
-						return toolkit.number((material1 + material2 + material3) / cogs) * 100;
+						return toolkit.number((material1 + material2 + material3) / cogs);
 					}
 				}]);
 			}break;
@@ -653,7 +653,7 @@ rd.setup = function () {
 							return e.PL74B;
 						}));
 
-						return toolkit.number((indirect1 + indirect2 + indirect3 + indirect4 + indirect5 + indirect6 + indirect7 + indirect8) / cogs) * 100;
+						return toolkit.number((indirect1 + indirect2 + indirect3 + indirect4 + indirect5 + indirect6 + indirect7 + indirect8) / cogs);
 					}
 				}]);
 			}break;
@@ -710,7 +710,7 @@ rd.setup = function () {
 							return e.PL8A;
 						}));
 
-						return toolkit.number((marketing1 + marketing2 + marketing3 + marketing4) / netsales) * 100;
+						return toolkit.number((marketing1 + marketing2 + marketing3 + marketing4) / netsales);
 					}
 				}]);
 			}break;
@@ -749,7 +749,7 @@ rd.setup = function () {
 							return e.PL8A;
 						}));
 
-						return toolkit.number(sga / netsales) * 100;
+						return toolkit.number(sga / netsales);
 					}
 				}]);
 			}break;
@@ -788,7 +788,7 @@ rd.setup = function () {
 							return e.PL8A;
 						}));
 
-						return toolkit.number(cost / netsales) * 100;
+						return toolkit.number(cost / netsales);
 					}
 				}]);
 			}break;
