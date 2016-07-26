@@ -103,25 +103,26 @@ yc.render = function () {
 	var plCodeNetSales = 'PL8A';
 	var plGrossMargin = 'PL74C';
 
-	var total2015_ebit = toolkit.sum(yc.data().filter(function (d) {
-		return d._id._id_date_fiscal === '2015-2016';
-	}), function (d) {
-		return d[plCodeEBIT];
-	});
 	var total2015_netSales = toolkit.sum(yc.data().filter(function (d) {
 		return d._id._id_date_fiscal === '2015-2016';
 	}), function (d) {
 		return d[plCodeNetSales];
 	});
-	var total2014_ebit = toolkit.sum(yc.data().filter(function (d) {
-		return d._id._id_date_fiscal === '2014-2015';
-	}), function (d) {
-		return d[plCodeEBIT];
-	});
 	var total2014_netSales = toolkit.sum(yc.data().filter(function (d) {
 		return d._id._id_date_fiscal === '2014-2015';
 	}), function (d) {
 		return d[plCodeNetSales];
+	});
+
+	var total2015_ebit = toolkit.sum(yc.data().filter(function (d) {
+		return d._id._id_date_fiscal === '2015-2016';
+	}), function (d) {
+		return d[plCodeEBIT];
+	});
+	var total2014_ebit = toolkit.sum(yc.data().filter(function (d) {
+		return d._id._id_date_fiscal === '2014-2015';
+	}), function (d) {
+		return d[plCodeEBIT];
 	});
 
 	var total2015_GrossMargin = toolkit.sum(yc.data().filter(function (d) {
@@ -135,26 +136,24 @@ yc.render = function () {
 		return d[plGrossMargin];
 	});
 
+	var calcGrowth = function calcGrowth(data2015, data2014, plcode) {
+		var v2015 = data2015[0][plcode];
+		var v2014 = data2014[0][plcode];
+		if (v2015 <= 0 && v2014 <= 0) {
+			return 0;
+		}
+
+		console.log('----', plcode, v2015, v2014);
+
+		return toolkit.number((v2015 - v2014) / v2014) * 100;
+	};
+
 	var op1 = yc.groupMap(yc.data(), function (d) {
 		return d._id[yc.breakdownKey()];
 	}, function (v, k) {
 		var o = {};
 		o.dimension = k.replace(/ /g, '&nbsp;');
 		o.sorter = 0;
-
-		o.v2015_ebit_value = 0;
-		o.v2015_ebit_prcnt = 0;
-		o.v2015_nsal_value = 0;
-		o.v2015_nsal_prcnt = 0;
-		o.v2015_gs_prcnt = 0;
-		o.v2015_ebit_prcnt = 0;
-
-		o.v2014_ebit_value = 0;
-		o.v2014_ebit_prcnt = 0;
-		o.v2014_nsal_value = 0;
-		o.v2014_nsal_prcnt = 0;
-		o.v2014_gs_prcnt = 0;
-		o.v2014_ebit_prcnt = 0;
 
 		var data2015 = v.filter(function (e) {
 			return e._id._id_date_fiscal === '2015-2016';
@@ -164,55 +163,64 @@ yc.render = function () {
 		});
 
 		toolkit.try(function () {
-			o.sorter = data2015[0][plCodeEBIT];
+			o.sorter = data2015[0][plCodeNetSales];
 		});
 
+		o.v2015_nsal_value = 0;
+		o.v2015_nsal_growth = 0;
 		toolkit.try(function () {
-			o.v2014_ebit_value = data2014[0][plCodeEBIT] / divider;
+			o.v2015_nsal_value = data2015[0][plCodeNetSales];
 		});
 		toolkit.try(function () {
-			o.v2014_ebit_prcnt = 0;
-		});
-		toolkit.try(function () {
-			o.v2014_nsal_value = data2014[0][plCodeNetSales] / divider;
-		});
-		toolkit.try(function () {
-			o.v2014_nsal_prcnt = 0;
-		});
-		toolkit.try(function () {
-			o.v2014_gs_prcnt = data2014[0][plGrossMargin] / total2014_GrossMargin * 100;
-		});
-		toolkit.try(function () {
-			o.v2014_ebit_prcnt = data2014[0][plCodeEBIT] / total2014_ebit * 100;
+			o.v2015_nsal_growth = calcGrowth(data2015, data2014, plCodeNetSales);
 		});
 
+		o.v2015_ebit_value = 0;
+		o.v2015_ebit_growth = 0;
 		toolkit.try(function () {
-			o.v2015_ebit_value = data2015[0][plCodeEBIT] / divider;
+			o.v2015_ebit_value = data2015[0][plCodeEBIT];
 		});
 		toolkit.try(function () {
-			var v2015 = data2015[0][plCodeEBIT];
-			var v2014 = data2014[0][plCodeEBIT];
-			if (v2015 <= 0 && v2014 <= 0) {
-				return;
-			}
-			o.v2015_ebit_prcnt = toolkit.number((v2015 - v2014) / v2014) * 100;
+			o.v2015_ebit_growth = calcGrowth(data2015, data2014, plCodeEBIT);
+		});
+
+		o.v2015_gs_value = 0;
+		o.v2015_gs_growth = 0;
+		toolkit.try(function () {
+			o.v2015_gs_value = data2015[0][plGrossMargin];
 		});
 		toolkit.try(function () {
-			o.v2015_nsal_value = data2015[0][plCodeNetSales] / divider;
+			o.v2015_gs_growth = calcGrowth(data2015, data2014, plGrossMargin);
 		});
+
+		o.v2015_ebit_ctb_value = 0;
 		toolkit.try(function () {
-			o.v2015_gs_prcnt = data2015[0][plGrossMargin] / total2015_GrossMargin * 100;
+			o.v2015_ebit_ctb_value = data2015[0][plCodeEBIT] / total2015_ebit * 100;
 		});
+		o.v2014_ebit_ctb_value = 0;
 		toolkit.try(function () {
-			o.v2015_ebit_prcnt = data2015[0][plCodeEBIT] / total2015_ebit * 100;
+			o.v2014_ebit_ctb_value = data2014[0][plCodeEBIT] / total2014_ebit * 100;
 		});
+
+		o.v2015_ebit_ctb_growth = 0;
 		toolkit.try(function () {
-			var v2015 = data2015[0][plCodeNetSales];
-			var v2014 = data2014[0][plCodeNetSales];
-			if (v2015 <= 0 && v2014 <= 0) {
-				return;
-			}
-			o.v2015_nsal_prcnt = toolkit.number((v2015 - v2014) / v2014) * 100;
+			var prcnt = (o.v2015_ebit_ctb_value - o.v2014_ebit_ctb_value) / o.v2014_ebit_ctb_value * 100;
+			o.v2015_ebit_ctb_growth = prcnt;
+		});
+
+		o.v2014_nsal_value = 0;
+		toolkit.try(function () {
+			o.v2014_nsal_value = data2014[0][plCodeNetSales];
+		});
+
+		o.v2014_ebit_value = 0;
+		toolkit.try(function () {
+			o.v2014_ebit_value = data2014[0][plCodeEBIT];
+		});
+
+		o.v2014_gs_value = 0;
+		toolkit.try(function () {
+			o.v2014_gs_value = data2014[0][plGrossMargin];
 		});
 
 		return o;
@@ -222,32 +230,47 @@ yc.render = function () {
 	}, 'desc');
 	var dataParsed = op2;
 
-	var total = {
-		dimension: 'Total',
-		v2015_ebit_value: toolkit.sum(dataParsed, function (d) {
-			return d.v2015_ebit_value;
-		}),
-		v2015_nsal_value: toolkit.sum(dataParsed, function (d) {
-			return d.v2015_nsal_value;
-		}),
-		v2014_ebit_value: toolkit.sum(dataParsed, function (d) {
-			return d.v2014_ebit_value;
-		}),
-		v2014_nsal_value: toolkit.sum(dataParsed, function (d) {
-			return d.v2014_nsal_value;
-		})
-	};
-	total.v2015_ebit_prcnt = toolkit.number((total.v2015_ebit_value - total.v2014_ebit_value) / total.v2014_ebit_value) * 100;
-	total.v2015_nsal_prcnt = toolkit.number((total.v2015_nsal_value - total.v2014_nsal_value) / total.v2014_nsal_value) * 100;
+	var total = {};
+	total.dimension = 'Total';
 
-	// dataParsed.push(total)
+	total.v2015_nsal_value = toolkit.sum(dataParsed, function (d) {
+		return d.v2015_nsal_value;
+	});
+	total.v2015_ebit_value = toolkit.sum(dataParsed, function (d) {
+		return d.v2015_ebit_value;
+	});
+	total.v2015_gs_value = toolkit.sum(dataParsed, function (d) {
+		return d.v2015_gs_value;
+	});
+	total.v2015_ebit_ctb_value = toolkit.sum(dataParsed, function (d) {
+		return d.v2015_ebit_ctb_value;
+	});
+
+	total.v2014_nsal_value = toolkit.sum(dataParsed, function (d) {
+		return d.v2014_nsal_value;
+	});
+	total.v2014_ebit_value = toolkit.sum(dataParsed, function (d) {
+		return d.v2014_ebit_value;
+	});
+	total.v2014_gs_value = toolkit.sum(dataParsed, function (d) {
+		return d.v2014_gs_value;
+	});
+	total.v2014_ebit_ctb_value = toolkit.sum(dataParsed, function (d) {
+		return d.v2014_ebit_ctb_value;
+	});
+
+	total.v2015_nsal_growth = toolkit.number((total.v2015_nsal_value - total.v2014_nsal_value) / total.v2014_nsal_value) * 100;
+	total.v2015_ebit_growth = toolkit.number((total.v2015_ebit_value - total.v2014_ebit_value) / total.v2014_ebit_value) * 100;
+	total.v2015_gs_growth = toolkit.number((total.v2015_gs_value - total.v2014_gs_value) / total.v2014_gs_value) * 100;
+	total.v2015_ebit_ctb_growth = toolkit.number((total.v2015_ebit_ctb_value - total.v2014_ebit_ctb_value) / total.v2014_ebit_ctb_value) * 100;
 
 	var dimensionWidth = 140;
 	if (yc.breakdownBy() == 'customer.region') {
 		dimensionWidth = 160;
 	}
 
-	var widthValue = 90;
+	var widthValue = 120;
+	var widthPrcnt = 90;
 	var tableWidth = 1200;
 	if (yc.unit() == 'v1000000') {
 		tableWidth += 120 * 1;
@@ -273,95 +296,97 @@ yc.render = function () {
 		locked: true
 	}, {
 		title: 'FY 2015-2016',
+		headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		columns: [{
-			title: 'Net Sales',
-			columns: [{
-				title: 'Value',
-				field: 'v2015_nsal_value',
-				format: '{0:n0}', // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' },
-				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_value, 'n0') + '</div>',
-				width: widthValue
-			}, {
-				title: '% Growth',
-				field: 'v2015_nsal_prcnt',
-				format: '{0:n1} %',
-				attributes: { class: 'align-right' },
-				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_prcnt, 'n1') + ' %</div>',
-				width: 90
-			}]
-		}, {
-			title: "% Gross Margin",
-			field: "v2015_gs_prcnt",
-			format: '{0:n2} %',
+			headerTemplate: 'Net Sales<br />Value',
+			field: 'v2015_nsal_value',
+			format: '{0:n0}',
 			attributes: { class: 'align-right' },
-			footerTemplate: '<div class="align-right">100 %</div>',
-			headerAttributes: { style: 'vertical-align: middle;' },
-			width: 100
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_value, 'n0') + '</div>',
+			width: widthValue
 		}, {
-			title: 'EBIT',
-			columns: [{
-				title: 'Value',
-				field: 'v2015_ebit_value',
-				format: '{0:n0}', // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' },
-				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_value, 'n0') + '</div>',
-				width: widthValue
-			}, {
-				title: '% Growth',
-				field: 'v2015_ebit_prcnt',
-				format: '{0:n1} %',
-				attributes: { class: 'align-right' },
-				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_prcnt, 'n1') + ' %</div>',
-				width: 90
-			}]
-		}, {
-			title: "% EBIT",
-			field: "v2015_ebit_prcnt",
-			format: '{0:n2} %',
+			headerTemplate: 'Net Sales<br />Growth',
+			field: 'v2015_nsal_growth',
+			format: '{0:n1} %',
 			attributes: { class: 'align-right' },
-			footerTemplate: '<div class="align-right">100 %</div>',
-			headerAttributes: { style: 'vertical-align: middle;' },
-			width: 90
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_growth, 'n1') + ' %</div>',
+			width: widthPrcnt
+		}, {
+			headerTemplate: 'EBIT<br />Value',
+			field: 'v2015_ebit_value',
+			format: '{0:n0}',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_value, 'n0') + '</div>',
+			width: widthValue
+		}, {
+			headerTemplate: 'EBIT<br />Growth',
+			field: 'v2015_ebit_growth',
+			format: '{0:n1} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_growth, 'n1') + ' %</div>',
+			width: widthPrcnt
+		}, {
+			headerTemplate: 'Gross Margin<br />Value',
+			field: 'v2015_gs_value',
+			format: '{0:n0}',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_gs_value, 'n0') + '</div>',
+			width: widthValue
+		}, {
+			headerTemplate: 'Gross Margin<br />Growth',
+			field: 'v2015_gs_growth',
+			format: '{0:n1} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_gs_growth, 'n1') + ' %</div>',
+			width: widthPrcnt
+		}, {
+			headerTemplate: 'EBIT %<br />Value',
+			field: 'v2015_ebit_ctb_value',
+			format: '{0:n1} %',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_ctb_value, 'n0') + ' %</div>',
+			width: widthPrcnt
+		}, {
+			headerTemplate: 'EBIT %<br />Growth',
+			field: 'v2015_ebit_ctb_growth',
+			format: '{0:n1} %',
+			attributes: { class: 'align-right', style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+			headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+			footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+			// footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_ctb_growth, 'n1')} %</div>`,
+			width: widthPrcnt
 		}]
 	}, {
 		title: 'FY 2014-2015',
 		columns: [{
-			title: 'Net Sales',
-			columns: [{
-				title: 'Value',
-				field: 'v2014_nsal_value',
-				format: '{0:n0}', // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' },
-				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_nsal_value, 'n0') + '</div>',
-				width: widthValue
-			}]
+			headerTemplate: 'Net Sales<br />Value',
+			field: 'v2014_nsal_value',
+			format: '{0:n0}',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_nsal_value, 'n0') + '</div>',
+			width: widthValue
 		}, {
-			title: "% Gross Margin",
-			field: "v2014_gs_prcnt",
+			headerTemplate: 'EBIT<br />Value',
+			field: 'v2014_ebit_value',
+			format: '{0:n0}',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_ebit_value, 'n0') + '</div>',
+			width: widthValue
+		}, {
+			headerTemplate: 'Gross Margin<br />Value',
+			field: 'v2014_gs_value',
+			format: '{0:n0}',
+			attributes: { class: 'align-right' },
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_gs_value, 'n0') + '</div>',
+			width: widthValue
+		}, {
+			title: "EBIT %<br />Value",
+			field: "v2014_ebit_ctb_value",
 			format: '{0:n2} %',
 			attributes: { class: 'align-right' },
 			footerTemplate: '<div class="align-right">100 %</div>',
 			headerAttributes: { style: 'vertical-align: middle;' },
-			width: 100
-		}, {
-			title: 'EBIT',
-			columns: [{
-				title: 'Value',
-				field: 'v2014_ebit_value',
-				format: '{0:n0}', // ` ${unitSuffix}`,
-				attributes: { class: 'align-right' },
-				footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_ebit_value, 'n0') + '</div>',
-				width: widthValue
-			}]
-		}, {
-			title: "% EBIT",
-			field: "v2014_ebit_prcnt",
-			format: '{0:n2} %',
-			attributes: { class: 'align-right' },
-			footerTemplate: '<div class="align-right">100 %</div>',
-			headerAttributes: { style: 'vertical-align: middle;' },
-			width: 90
+			width: widthPrcnt
 		}]
 	}];
 
