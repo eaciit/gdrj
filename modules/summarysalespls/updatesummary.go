@@ -969,7 +969,7 @@ func prepsalesplssummaryrdwrongsubch() {
 		ratio = math.Abs(toolkit.Div(69236716246.87997, total))
 	}
 
-	ratio = ratio - 0.05
+	ratio = ratio - 0.0005
 
 	csr.Close()
 
