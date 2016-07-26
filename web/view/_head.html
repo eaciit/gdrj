@@ -93,9 +93,9 @@
 
 <!-- spinkit -->
 <link rel="stylesheet" href="{{BaseUrl}}res/spinkit/spinkit.css" />
-
+{{.}}
 <!-- core -->
-<script src="{{BaseUrl}}res/core/js/app.js"></script>
-<script src="{{BaseUrl}}res/core/js/layout.js"></script>
-<link rel="stylesheet" href="{{BaseUrl}}res/core/css/bootstrap-ext.css" />
-<link rel="stylesheet" href="{{BaseUrl}}res/core/css/layout.css" />
+<script src="{{BaseUrl}}res/core/js/app.js?ANTI_CACHE={{.AntiCache}}"></script>
+<script src="{{BaseUrl}}res/core/js/layout.js?ANTI_CACHE={{.AntiCache}}"></script>
+<link rel="stylesheet" href="{{BaseUrl}}res/core/css/bootstrap-ext.css?ANTI_CACHE={{.AntiCache}}" />
+<link rel="stylesheet" href="{{BaseUrl}}res/core/css/layout.css?ANTI_CACHE={{.AntiCache}}" />
