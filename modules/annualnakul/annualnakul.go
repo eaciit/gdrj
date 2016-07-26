@@ -119,6 +119,7 @@ func buildratio() {
 		makeProgressLog("Update ratio sales", i, count, 5, &mstone, t0)
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
+		src := key.GetString("trxsrc")
 		fiscal := key.GetString("date_fiscal")
 		channelid := key.GetString("customer_channelid")
 		kaid := key.GetString("customer_customergroup")
@@ -142,7 +143,7 @@ func buildratio() {
 		discyrka := discyrkas[keyfiscalka]
 		if discyrka != nil {
 			adjustAllocs(&discyrkas, keyfiscalka, 0, 0, 0, gross)
-		} else if discyrka == nil && channelid == "I2" {
+		} else if discyrka == nil && channelid == "I2" && src == "VDIST" {
 			adjustAllocs(&gtsales, fiscal, 0, 0, 0, gross)
 		}
 	}
@@ -178,6 +179,7 @@ func processTable() {
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
 		fiscal := key.GetString("date_fiscal")
 		channelid := key.GetString("customer_channelid")
+		src := key.GetString("trxsrc")
 		//period := key.GetInt("date_month")
 		//brand := key.GetString("product_brand")
 		keyaccountid := key.GetString("customer_customergroup")
@@ -204,9 +206,25 @@ func processTable() {
 						if disctotal != nil {
 							newv = toolkit.Div(gross*disctotal.Expect,
 								disctotal.Ref1)
-						} else if channelid == "I2" {
+							/*
+								if gross > 0 && newv > 0 {
+									toolkit.Printfn(
+										"Disc k:%s g:%f t:%f tg:%f v:%f",
+										keyfiscalka,
+										gross, disctotal.Expect,
+										disctotal.Ref1, newv)
+								}
+							*/
+						} else if channelid == "I2" && src == "VDIST" {
 							newv += toolkit.Div(gross*discgts[fiscal],
 								gtsales[fiscal].Ref1)
+							/*
+								toolkit.Printfn("GT k:%s g:%f t:%f tg:%f v:%f",
+									keyfiscalka,
+									gross, discgts[fiscal],
+									gtsales[fiscal].Ref1,
+									newv)
+							*/
 						}
 					} else
 					//-- spg
