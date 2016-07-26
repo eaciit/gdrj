@@ -190,6 +190,9 @@ func processTable(fiscalyr string) {
 
 		if absorbed <= expected {
 			idxalloc++
+			if idxalloc == len(branchids) {
+				idxalloc = len(branchids) - 1
+			}
 			expected = brandshare[idxalloc] * disctarget[fiscal]
 		}
 	}
