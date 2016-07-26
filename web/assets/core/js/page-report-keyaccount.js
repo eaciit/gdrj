@@ -28,10 +28,11 @@ kac.refresh = function () {
 	}
 
 	var breakdownKeyAccount = 'customer.keyaccount',
-	    breakdownKeyChannel = 'customer.channelname';
+	    breakdownKeyChannel = 'customer.channelname',
+	    breakdownTransactionSource = 'trxsrc';
 	var param = {};
 	param.pls = [];
-	param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount, breakdownKeyChannel]);
+	param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount, breakdownKeyChannel, breakdownTransactionSource]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, kac.fiscalYear);
 
@@ -146,8 +147,16 @@ kac.buildStructure = function (data) {
 	data.filter(function (d) {
 		return d._id._id_customer_customergroupname === 'Other';
 	}).forEach(function (d) {
-		var otherChannelName = d._id._id_customer_customergroupname + ' - ' + d._id._id_customer_channelname;
-		d._id._id_customer_customergroupname = otherChannelName;
+		if (d._id._id_trxsrc == 'VDIST') {
+			switch (d._id._id_customer_channelname) {
+				case 'General Trade':
+				case 'Modern Trade':
+					d._id._id_customer_customergroupname = 'Other - ' + d._id._id_customer_channelname;
+					return;
+			}
+		}
+
+		d._id._id_customer_customergroupname = 'Other';
 	});
 
 	var groupThenMap = function groupThenMap(data, group) {

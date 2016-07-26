@@ -2227,10 +2227,13 @@ let kac = viewModel.keyAccount
 			return
 		}
 
-		let breakdownKeyAccount = 'customer.keyaccount', breakdownKeyChannel = 'customer.channelname'
+		let breakdownKeyAccount = 'customer.keyaccount',
+			breakdownKeyChannel = 'customer.channelname',
+			breakdownTransactionSource = 'trxsrc'
+
 		let param = {}
 		param.pls = []
-		param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount, breakdownKeyChannel])
+		param.groups = rpt.parseGroups([kac.breakdownBy(), breakdownKeyAccount, breakdownKeyChannel, breakdownTransactionSource])
 		param.aggr = 'sum'
 		param.filters = rpt.getFilterValue(false, kac.fiscalYear)
 		
@@ -2353,8 +2356,16 @@ let kac = viewModel.keyAccount
 	kac.buildStructure = (data) => {
 		data.filter((d) => d._id._id_customer_customergroupname === 'Other')
 			.forEach((d) => {
-				let otherChannelName = `${d._id._id_customer_customergroupname} - ${d._id._id_customer_channelname}`
-				d._id._id_customer_customergroupname = otherChannelName
+				if (d._id._id_trxsrc == 'VDIST') {
+					switch (d._id._id_customer_channelname) {
+						case 'General Trade':
+						case 'Modern Trade':
+							d._id._id_customer_customergroupname = `Other - ${d._id._id_customer_channelname}`
+							return
+					}
+				}
+
+				d._id._id_customer_customergroupname = 'Other' 
 			})
 
 		let groupThenMap = (data, group) => {
@@ -2412,7 +2423,10 @@ let kac = viewModel.keyAccount
 			netSalesRow[breakdown] = e[netSalesPLCode]
 			grossSalesRow[breakdown] = e[grossSalesPLCode]
 		})
-		data = _.orderBy(data, (d) => netSalesRow[d._id], 'desc')
+		data = _.orderBy(data, (d) => {
+			let title = $.trim(d._id.split('-').reverse()[0])
+			return rpt.orderByChannel(title, netSalesRow[d._id])
+		}, 'desc')
 
 		plmodels.forEach((d) => {
 			let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
@@ -3776,7 +3790,7 @@ let dsbrd = viewModel.dashboard
 ;(() => {
 	dsbrd.rows = ko.observableArray([
 		{ pnl: "Net Sales", plcodes: ["PL8A"] },
-		{ pnl: 'Growth', plcodes: [] }, // NOT YET
+		{ pnl: 'Net Sales Growth', plcodes: [] }, // NOT YET
 		{ pnl: 'Discount Activity', plcodes: ["PL7A"] },
 		{ pnl: "COGS", plcodes: ["PL74B"] },
 		{ pnl: "Gross Margin", plcodes: ["PL74C"] },
