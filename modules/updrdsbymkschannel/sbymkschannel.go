@@ -94,7 +94,7 @@ func processTable() {
 				key.Set("customer_channename", "GT")
 				key.Set("customer_reportsubchannel", "R3")
 			}
-			mr.Set("key", "key")
+			mr.Set("key", key)
 
 			esave := qsave.Exec(toolkit.M{}.Set("data", mr))
 			if esave != nil {
