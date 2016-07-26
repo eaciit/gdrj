@@ -1043,8 +1043,7 @@ func prepsalesplssummaryrdwrongsubch() {
 	subdisc := arrsubch[pointer].plusdisc
 	for {
 
-		if arrsubch[pointer].subgross == 0 {
-			arrsubch[pointer].plusdisc = subdisc
+		for arrsubch[pointer].subgross < 0 {
 			pointer += 1
 			if pointer >= len(arrsubch) {
 				pointer = 1
