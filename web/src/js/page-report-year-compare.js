@@ -139,10 +139,15 @@ yc.render = () => {
 		toolkit.try(() => { o.v2015_ebit_value = data2015[0][plCodeEBIT] })
 		toolkit.try(() => { o.v2015_ebit_growth = calcGrowth(data2015, data2014, plCodeEBIT) })
 
+		o.v2015_gs_value = 0
+		o.v2015_gs_growth = 0
+		toolkit.try(() => { o.v2015_gs_value = data2015[0][plGrossMargin] })
+		toolkit.try(() => { o.v2015_gs_growth = calcGrowth(data2015, data2014, plGrossMargin) })
+
 		o.v2015_gs_ctb_value = 0
-		toolkit.try(() => { o.v2015_gs_ctb_value = data2015[0][plGrossMargin] / total2015_GrossMargin * 100 })
+		toolkit.try(() => { o.v2015_gs_ctb_value = data2015[0][plGrossMargin] / data2015[0][plCodeNetSales] * 100 })
 		o.v2014_gs_ctb_value = 0
-		toolkit.try(() => { o.v2014_gs_ctb_value = data2014[0][plGrossMargin] / total2014_GrossMargin * 100 })
+		toolkit.try(() => { o.v2014_gs_ctb_value = data2014[0][plGrossMargin] / data2014[0][plCodeNetSales] * 100 })
 
 		o.v2015_gs_ctb_growth = 0
 		toolkit.try(() => {
@@ -151,9 +156,9 @@ yc.render = () => {
 		})
 
 		o.v2015_ebit_ctb_value = 0
-		toolkit.try(() => { o.v2015_ebit_ctb_value = data2015[0][plCodeEBIT] / total2015_ebit * 100 })
+		toolkit.try(() => { o.v2015_ebit_ctb_value = data2015[0][plCodeEBIT] / data2015[0][plCodeNetSales] * 100 })
 		o.v2014_ebit_ctb_value = 0
-		toolkit.try(() => { o.v2014_ebit_ctb_value = data2014[0][plCodeEBIT] / total2014_ebit * 100 })
+		toolkit.try(() => { o.v2014_ebit_ctb_value = data2014[0][plCodeEBIT] / data2014[0][plCodeNetSales] * 100 })
 		
 		o.v2015_ebit_ctb_growth = 0
 		toolkit.try(() => {
@@ -166,6 +171,9 @@ yc.render = () => {
 
 		o.v2014_ebit_value = 0
 		toolkit.try(() => { o.v2014_ebit_value = data2014[0][plCodeEBIT] })
+
+		o.v2014_gs_value = 0
+		toolkit.try(() => { o.v2014_gs_value = data2014[0][plGrossMargin] })
 
 		return o
 	})
@@ -181,19 +189,22 @@ yc.render = () => {
 
 	total.v2015_nsal_value = toolkit.sum(dataParsed, (d) => d.v2015_nsal_value)
 	total.v2015_ebit_value = toolkit.sum(dataParsed, (d) => d.v2015_ebit_value)
-	total.v2015_gs_ctb_value = toolkit.sum(dataParsed, (d) => d.v2015_gs_ctb_value)
-	total.v2015_ebit_ctb_value = toolkit.sum(dataParsed, (d) => d.v2015_ebit_ctb_value)
+	total.v2015_gs_value = toolkit.sum(dataParsed, (d) => d.v2015_gs_value)
+	total.v2015_gs_ctb_value = toolkit.safeDiv(total.v2015_gs_value, total.v2015_nsal_value) * 100
+	total.v2015_ebit_ctb_value = toolkit.safeDiv(total.v2015_ebit_value, total.v2015_nsal_value) * 100
 
 	total.v2014_nsal_value = toolkit.sum(dataParsed, (d) => d.v2014_nsal_value)
 	total.v2014_ebit_value = toolkit.sum(dataParsed, (d) => d.v2014_ebit_value)
-	total.v2014_gs_ctb_value = toolkit.sum(dataParsed, (d) => d.v2014_gs_ctb_value)
-	total.v2014_ebit_ctb_value = toolkit.sum(dataParsed, (d) => d.v2014_ebit_ctb_value)
+	total.v2014_gs_value = toolkit.sum(dataParsed, (d) => d.v2014_gs_value)
+	total.v2014_gs_ctb_value = toolkit.safeDiv(total.v2014_gs_value, total.v2014_nsal_value) * 100
+	total.v2014_ebit_ctb_value = toolkit.safeDiv(total.v2014_ebit_value, total.v2014_nsal_value) * 100
 
 	total.v2015_nsal_growth = toolkit.number((total.v2015_nsal_value - total.v2014_nsal_value) / total.v2014_nsal_value) * 100
 	total.v2015_ebit_growth = toolkit.number((total.v2015_ebit_value - total.v2014_ebit_value) / total.v2014_ebit_value) * 100
 	total.v2015_gs_ctb_growth = toolkit.number((total.v2015_gs_ctb_value - total.v2014_gs_ctb_value) / total.v2014_gs_ctb_value) * 100
 	total.v2015_ebit_ctb_growth = toolkit.number((total.v2015_ebit_ctb_value - total.v2014_ebit_ctb_value) / total.v2014_ebit_ctb_value) * 100
 
+	console.log('total', total)
 
 
 	let dimensionWidth = 140
@@ -261,19 +272,26 @@ yc.render = () => {
 		},
 
 		{
+			headerTemplate: 'GM<br />Value',
+			field: 'v2015_gs_value',
+			format: `{0:n0}`,
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_gs_value, 'n0')}</div>`,
+			width: widthValue,
+		}, {
 			headerTemplate: 'GM %',
 			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: 'v2015_gs_ctb_value',
 			format: `{0:n1} %`,
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_gs_ctb_value, 'n0')} %</div>`,
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_gs_ctb_value, 'n1')} %</div>`,
 			width: widthPrcnt,
 		}, {
 			headerTemplate: 'GM %<br />Growth',
 			field: 'v2015_gs_ctb_growth',
 			format: '{0:n1} %',
 			attributes: { class: 'align-right' },
-			// footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_gs_ctb_growth, 'n1')} %</div>`,
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_gs_ctb_growth, 'n1')} %</div>`,
 			width: widthPrcnt,
 		},
 
@@ -283,7 +301,7 @@ yc.render = () => {
 			field: 'v2015_ebit_ctb_value',
 			format: `{0:n1} %`,
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_ctb_value, 'n0')} %</div>`,
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_ctb_value, 'n1')} %</div>`,
 			width: widthPrcnt,
 		}, {
 			headerTemplate: 'EBIT %<br />Growth',
@@ -292,7 +310,7 @@ yc.render = () => {
 			attributes: { class: 'align-right', style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 			headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 			footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
-			// footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_ctb_growth, 'n1')} %</div>`,
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_ctb_growth, 'n1')} %</div>`,
 			width: widthPrcnt,
 		}]
 	}, {
@@ -310,6 +328,13 @@ yc.render = () => {
 			format: `{0:n0}`,
 			attributes: { class: 'align-right' },
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_ebit_value, 'n0')}</div>`,
+			width: widthValue,
+		}, {
+			headerTemplate: 'GM<br />Value',
+			field: 'v2014_gs_value',
+			format: `{0:n0}`,
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_gs_value, 'n0')}</div>`,
 			width: widthValue,
 		}, {
 			headerTemplate: 'GM %',
@@ -330,8 +355,6 @@ yc.render = () => {
 			width: widthPrcnt,
 		}]
 	}]
-
-	console.log('----', dataParsed)
 
 	let config = {
 		dataSource: {
