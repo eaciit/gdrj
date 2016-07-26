@@ -23,10 +23,12 @@ var (
 	desttablename   = "salespls-summary"
 	t0              time.Time
 	masters         = toolkit.M{}
-	sgaalloc        = map[string]float64{
-		"EXP": 0.08,
-		"I4":  0.08,
-		"I6":  0.105,
+
+	totalsales = map[string]float64{}
+
+	ratios = map[string]map[string]float64{
+		"CD04": {"GT": 0.1875, "Mini": 0.6094},
+		"CD11": {"Super": 0.4, "Mini": 0.5},
 	}
 )
 
@@ -52,11 +54,48 @@ var (
 func main() {
 	setinitialconnection()
 	prepmastercalc()
-	//buildratio()
-	processTable()
+	buildratio()
+
+	for k, v := range ratios {
+		for sc, r := range v {
+			processTable("2014-2015", k, sc, r)
+			processTable("2015-2016", k, sc, r)
+		}
+	}
 }
 
-func processTable() {
+func buildratio() {
+	toolkit.Printfn("Build Ratio")
+	cursor, _ := conn.NewQuery().
+		From(calctablename).
+		Where(dbox.Eq("key.trxsrc", trxsrc)).
+		Select().Cursor(nil)
+	defer cursor.Close()
+
+	for {
+		mr := toolkit.M{}
+		if e := cursor.Fetch(&mr, 1, false); e != nil {
+			break
+		}
+		key := mr.Get("key", toolkit.M{}).(toolkit.M)
+		fiscal := key.GetString("date_fiscal")
+		subchannel := key.GetString("customer_reportsubchannel")
+
+		if subchannel == "Hyper" {
+			branchid := key.GetString("customer_branchid")
+			keyfiscalbranch := fiscal + "_" + branchid
+			sales := mr.GetFloat64("PL8A")
+			totalsales[keyfiscalbranch] = totalsales[keyfiscalbranch] + sales
+		}
+	}
+}
+
+func processTable(fisclayr, branchid, subchannel string, ratio float64) {
+	expected := ratio * totalsales[fisclayr+"_"+branchid]
+	if expected == 0 {
+		return
+	}
+
 	connsave, _ := modules.GetDboxIConnection("db_godrej")
 	defer connsave.Close()
 	qsave := connsave.NewQuery().SetConfig("multiexec", true).From(desttablename).Save()
@@ -66,7 +105,10 @@ func processTable() {
 
 	cursor, _ := connselect.NewQuery().
 		From(calctablename).
-		Where(dbox.Eq("key.trxsrc", trxsrc)).
+		Where(dbox.Eq("key.trxsrc", trxsrc),
+		dbox.Eq("key.customer_reportsubchannel", "Hyper"),
+		dbox.Eq("key.customer_branchid", branchid)).
+		Order("PL8A").
 		Select().Cursor(nil)
 	defer cursor.Close()
 
@@ -74,6 +116,7 @@ func processTable() {
 	count := cursor.Count()
 	mstone := 0
 	t0 = time.Now()
+	absorbed := float64(0)
 	for {
 		mr := toolkit.M{}
 		e := cursor.Fetch(&mr, 1, false)
@@ -81,24 +124,41 @@ func processTable() {
 			break
 		}
 		i++
-		makeProgressLog("Processing", i, count, 5, &mstone, t0)
+		makeProgressLog(toolkit.Sprintf("Processing %s %s", branchid, subchannel),
+			i, count, 5, &mstone, t0)
 
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		subchannel := key.GetString("customer_reportsubchannel")
-		keyaccounttype := key.GetString("customer_keyaccount")
 
-		if subchannel == "Hyper" && keyaccounttype == "GNT" {
-			key.Set("customer_channelid", "I2")
-			key.Set("customer_reportchannel", "I2")
-			key.Set("customer_channename", "GT")
-			key.Set("customer_reportsubchannel", "R3")
+		channelid := "I2"
+		channelname := "GT"
+		subchannelcode := "R3"
+		if subchannel == "Mini" {
+			channelid = "I3"
+			channelname = "MT"
+			subchannelcode = "Mini"
+		} else if subchannel == "Super" {
+			channelid = "I3"
+			channelname = "MT"
+			subchannelcode = "Super"
 		}
+
+		key.Set("customer_channelid", channelid)
+		key.Set("customer_reportchannel", channelid)
+		key.Set("customer_channename", channelname)
+		key.Set("customer_reportsubchannel", subchannelcode)
+
+		sales := mr.GetFloat64("PL8A")
+		absorbed += sales
 		mr.Set("key", key)
 
 		esave := qsave.Exec(toolkit.M{}.Set("data", mr))
 		if esave != nil {
 			toolkit.Printfn("Error saving: %s", esave.Error())
 			os.Exit(100)
+		}
+
+		if absorbed < expected {
+			break
 		}
 	}
 }
