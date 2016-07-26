@@ -1283,7 +1283,7 @@ func main() {
 	// prepmasterrollback_adv()
 	// prepmasterrollback_sumbrand()
 
-	os.Exit(1)
+	// os.Exit(1)
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
@@ -1908,7 +1908,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-cleanrd").
+		From("salespls-summary").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1941,7 +1941,14 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CleanUpperBranchnameJakarta(trx)
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
-		CalcSum(trx)
+
+		// CalcSum(trx)
+
+		dtkm, _ := toolkit.ToM(trx.Get("key"))
+		if dtkm.GetString("customer_reportsubchannel") == "R3" {
+			dtkm.Set("customer_reportsubchannel", "R3 - Retailer Umum")
+		}
+		trx.Set("key", dtkm)
 
 		// CleanReportSubChannelBreakdownRD(trx)
 		// CleanAreanameNull(trx)
