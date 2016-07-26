@@ -87,20 +87,18 @@ func processTable() {
 		subchannel := key.GetString("customer_reportsubchannel")
 		keyaccounttype := key.GetString("customer_keyaccount")
 
-		if subchannel == "Hyper" {
-			if keyaccounttype == "GNT" {
-				key.Set("customer_channelid", "I2")
-				key.Set("customer_reportchannel", "I2")
-				key.Set("customer_channename", "GT")
-				key.Set("customer_reportsubchannel", "R3")
-			}
-			mr.Set("key", key)
+		if subchannel == "Hyper" && keyaccounttype == "GNT" {
+			key.Set("customer_channelid", "I2")
+			key.Set("customer_reportchannel", "I2")
+			key.Set("customer_channename", "GT")
+			key.Set("customer_reportsubchannel", "R3")
+		}
+		mr.Set("key", key)
 
-			esave := qsave.Exec(toolkit.M{}.Set("data", mr))
-			if esave != nil {
-				toolkit.Printfn("Error saving: %s", esave.Error())
-				os.Exit(100)
-			}
+		esave := qsave.Exec(toolkit.M{}.Set("data", mr))
+		if esave != nil {
+			toolkit.Printfn("Error saving: %s", esave.Error())
+			os.Exit(100)
 		}
 	}
 }
