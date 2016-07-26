@@ -17,7 +17,7 @@ var count int
 var ratioTableName string
 
 var (
-	ratiototrf      = float64(0.352)
+	ratiototrf      = float64(0.352367849)
 	sourcetablename = "salespls-summary"
 	calctablename   = "salespls-summary"
 	desttablename   = "salespls-summary"
