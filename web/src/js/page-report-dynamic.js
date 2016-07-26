@@ -180,6 +180,10 @@ rd.configure = (config) => {
 		let val = kendo.toString(e.value, 'n1')
 		return `${val} %`
 	}
+	config.series[2].tooltip.template = (e) => {
+		let val = kendo.toString(e.value, 'n1')
+		return `${e.series.name} : ${val} %`
+	}
 }
 
 rd.getQueryStringValue = (key) => {
@@ -271,13 +275,6 @@ rd.setup = () => {
 					return toolkit.number(grossSales / quantity)
 				}
 			}])
-
-			rd.configure = (config) => {
-				config.series[2].labels.template = (e) => {
-					let val = kendo.toString(e.value, 'n1')
-					return `${val} %`
-				}
-			}
 		} break;
 
 
@@ -314,13 +311,6 @@ rd.setup = () => {
 					return toolkit.number(salesDiscount / quantity)
 				}
 			}])
-
-			rd.configure = (config) => {
-				config.series[2].labels.template = (e) => {
-					let val = kendo.toString(e.value, 'n1')
-					return `${val} %`
-				}
-			}
 		} break;
 
 
@@ -353,13 +343,6 @@ rd.setup = () => {
 					return toolkit.number(amount / quantity)
 				}
 			}])
-
-			rd.configure = (config) => {
-				config.series[2].labels.template = (e) => {
-					let val = kendo.toString(e.value, 'n1')
-					return `${val} %`
-				}
-			}
 		} break;
 
 
@@ -396,13 +379,6 @@ rd.setup = () => {
 					return toolkit.number(btl / quantity)
 				}
 			}])
-
-			rd.configure = (config) => {
-				config.series[2].labels.template = (e) => {
-					let val = kendo.toString(e.value, 'n1')
-					return `${val} %`
-				}
-			}
 		} break;
 
 
