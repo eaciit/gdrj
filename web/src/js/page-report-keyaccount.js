@@ -198,7 +198,10 @@ kac.render = () => {
 		netSalesRow[breakdown] = e[netSalesPLCode]
 		grossSalesRow[breakdown] = e[grossSalesPLCode]
 	})
-	data = _.orderBy(data, (d) => netSalesRow[d._id], 'desc')
+	data = _.orderBy(data, (d) => {
+		let title = $.trim(d._id.split('-').reverse()[0])
+		return rpt.orderByChannel(title, netSalesRow[d._id])
+	}, 'desc')
 
 	plmodels.forEach((d) => {
 		let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
