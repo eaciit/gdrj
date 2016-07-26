@@ -1074,9 +1074,13 @@ rpt.export = function (target, title, mode) {
 				cells = [];
 				$(e).find('td').each(function (i, e) {
 					cellval = {};
-					if (i == 0) headertype = parseFloat($(e).html().replace(/,/g, ""));else headertype = parseFloat($(e).find('div').html().replace(/,/g, ""));
+					if (i == 0) headertype = parseFloat($(e).html().replace(/,/g, ""));else {
+						if ($(e).find('div').length > 0) headertype = parseFloat($(e).find('div').html().replace(/,/g, ""));else headertype = parseFloat($(e).html().replace(/,/g, ""));
+					}
 
-					if (isNaN(parseFloat(headertype)) == true) headertype = $(e).html();
+					if (isNaN(parseFloat(headertype)) == true) {
+						headertype = $(e).text();
+					}
 					cellval['value'] = headertype;
 					cells.push(cellval);
 				});
@@ -1207,7 +1211,7 @@ rpt.addScrollBottom = function (container) {
 
 rpt.panel_scrollrelocated = function () {
 	$(".scroll-grid-bottom").each(function (i) {
-		$(this).find('.content-grid-bottom').css("min-width", $(this).parent().find('.table-content>.table').width() - 48);
+		$(this).find('.content-grid-bottom').css("min-width", $(this).parent().find('.table-content>.table').width());
 		if ($(this).parent().find('.scroll-grid-bottom-yo').size() == 0) {
 			return;
 		}
@@ -1219,9 +1223,10 @@ rpt.panel_scrollrelocated = function () {
 			$(this).hide();
 			$(this).css("width", "100%");
 		} else {
-			$(this).addClass('viewscrollfix');
 			$(this).show();
 			$(this).css("width", $(this).parent().find('.table-content').width());
+			if (!$(this).hasClass('viewscrollfix')) $(this)[0].scrollLeft = $(this).parent().find(".table-content")[0].scrollLeft;
+			$(this).addClass('viewscrollfix');
 		}
 	});
 };
