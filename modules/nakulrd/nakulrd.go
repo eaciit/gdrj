@@ -103,7 +103,7 @@ func processTable(fiscalyr string) {
 			break
 		}
 		i++
-		makeProgressLog("Processing "+fiscalyr, i, count, 5, &mstone, t0)
+		makeProgressLog("Processing "+fiscalyr+" "+branchids[idxalloc], i, count, 5, &mstone, t0)
 
 		mrid := mr.GetString("_id")
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
@@ -191,9 +191,10 @@ func processTable(fiscalyr string) {
 		if absorbed <= expected {
 			idxalloc++
 			if idxalloc == len(branchids) {
-				idxalloc = len(branchids) - 1
+				idxalloc = 0
 			}
 			expected = brandshare[idxalloc] * disctarget[fiscal]
+			absorbed = 0
 		}
 	}
 }
