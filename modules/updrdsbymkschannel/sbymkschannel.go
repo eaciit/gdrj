@@ -87,7 +87,7 @@ func processTable() {
 		subchannel := key.GetString("customer_reportsubchannel")
 		keyaccounttype := key.GetString("customer_keyaccount")
 
-		if subchannel != "Hyper" {
+		if subchannel == "Hyper" {
 			if keyaccounttype == "GNT" {
 				key.Set("customer_channelid", "I2")
 				key.Set("customer_reportchannel", "I2")
