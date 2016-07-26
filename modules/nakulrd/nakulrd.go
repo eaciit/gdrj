@@ -58,7 +58,9 @@ func main() {
 
 	prepmastercalc()
 	//buildratio()
-	processTable()
+	for _, v := range []string{"2015-2016", "2014-2015"} {
+		processTable(v)
+	}
 	//processRDBranch()
 }
 
@@ -70,7 +72,7 @@ var disctarget = map[string]float64{
 var branchids = []string{"CD04", "CD11", "CD02"}
 var brandshare = []float64{0.215, 0.15, 1}
 
-func processTable() {
+func processTable(fiscalyr string) {
 	connsave, _ := modules.GetDboxIConnection("db_godrej")
 	defer connsave.Close()
 	qsave := connsave.NewQuery().SetConfig("multiexec", true).From(desttablename).Save()
@@ -80,13 +82,13 @@ func processTable() {
 
 	cursor, _ := connselect.NewQuery().
 		From(calctablename).
-		Where(dbox.Ne("key.trxsrc", trxsrc)).
-		Order("key.date_fiscal").
+		Where(dbox.Ne("key.trxsrc", trxsrc), dbox.Eq("key.date_fiscal", fiscalyr)).
 		Select().Cursor(nil)
 	defer cursor.Close()
 
 	i := 0
 	count := cursor.Count()
+	toolkit.Printfn("Record found: %d", count)
 	mstone := 0
 	t0 = time.Now()
 	prevfiscal := ""
@@ -96,11 +98,12 @@ func processTable() {
 	for {
 		mr := toolkit.M{}
 		e := cursor.Fetch(&mr, 1, false)
-		if e != nil || i >= count {
+		if e != nil {
+			toolkit.Printfn("Break: %s", e.Error())
 			break
 		}
 		i++
-		makeProgressLog("Processing", i, count, 5, &mstone, t0)
+		makeProgressLog("Processing "+fiscalyr, i, count, 5, &mstone, t0)
 
 		mrid := mr.GetString("_id")
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
@@ -114,6 +117,7 @@ func processTable() {
 			idxalloc = 0
 			expected = brandshare[idxalloc] * disctarget[fiscal]
 			absorbed = 0
+			toolkit.Printfn("Processing %s", fiscal)
 		}
 
 		if channelid != "I1" {
