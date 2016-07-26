@@ -112,7 +112,8 @@ rpt.date_month = ko.observableArray(function () {
 		months.forEach(function (e) {
 			var year = parseInt(d.split('-')[0], 10);
 			var month = e - 1 + 3;
-			var text = moment(new Date(year, month, 1)).format('MMM YYYY');
+			// let text = moment(new Date(year, month, 1)).format('MMM YYYY')
+			var text = moment(new Date(year, month, 1)).format('MMMM');
 
 			res.push({
 				FiscalYear: d,
@@ -121,7 +122,11 @@ rpt.date_month = ko.observableArray(function () {
 			});
 		});
 	});
-	return res;
+
+	return _.uniq(res, function (d) {
+		return d._id;
+	});
+	// return res
 }());
 rpt.monthQuarter = ko.observable('');
 rpt.optionMonthQuarters = ko.observableArray([{ _id: 'date_quartertxt', Name: 'Quarter' }, { _id: 'date_month', Name: 'Month' }]);

@@ -255,7 +255,8 @@ rpt.date_month = ko.observableArray((() => {
 		months.forEach((e) => {
 			let year = parseInt(d.split('-')[0], 10)
 			let month = e - 1 + 3
-			let text = moment(new Date(year, month, 1)).format('MMM YYYY')
+			// let text = moment(new Date(year, month, 1)).format('MMM YYYY')
+			let text = moment(new Date(year, month, 1)).format('MMMM')
 
 			res.push({
 				FiscalYear: d,
@@ -264,7 +265,9 @@ rpt.date_month = ko.observableArray((() => {
 			})
 		})
 	})
-	return res
+
+	return _.uniq(res, (d) => d._id)
+	// return res
 })())
 rpt.monthQuarter = ko.observable('')
 rpt.optionMonthQuarters = ko.observableArray([
