@@ -1,8 +1,6 @@
 package main
 
 import (
-	"eaciit/gdrj/model"
-	"eaciit/gdrj/modules"
 	"flag"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/mongo"
@@ -23,27 +21,30 @@ var (
 	sourcedest     = []string{"devel", "prod", "ba"}
 )
 
-func setinitialconnection() {
+func setinitialconnection(hostsource, dbsource string) {
 	var err error
-	conn, err = modules.GetDboxIConnection("db_godrej")
+	ci := &dbox.ConnectionInfo{
+		hostsource,
+		dbsource,
+		"",
+		"",
+		toolkit.M{}.Set("timeout", 300),
+	}
+
+	conn, err = dbox.NewConnection("mongo", ci)
 
 	if err != nil {
 		toolkit.Println("Initial connection found : ", err)
 		os.Exit(1)
 	}
 
-	err = gdrj.SetDb(conn)
-	if err != nil {
+	if err = conn.Connect(); err != nil {
 		toolkit.Println("Initial connection found : ", err)
 		os.Exit(1)
 	}
 }
 
 func main() {
-
-	setinitialconnection()
-	defer gdrj.CloseDb()
-
 	flag.StringVar(&tablegroup, "tablegroup", "", "group of collection")
 	flag.StringVar(&tablename, "tablename", "", "collection name")
 	flag.StringVar(&source, "from", "", "source location of dumped collection")
@@ -54,8 +55,6 @@ func main() {
 }
 
 func copycollection() {
-	conn, _ := modules.GetDboxIConnection("db_godrej")
-	defer conn.Close()
 	if source == "" || dest == "" {
 		errmsg := ""
 		if source == "" {
@@ -93,6 +92,38 @@ func copycollection() {
 			return
 		}
 	}
+
+	hostsource := ""
+	dbsource := ""
+	hostdest := ""
+	dbdest := ""
+
+	switch source {
+	case "ba":
+		hostsource = "go.eaciit.com:27123"
+		dbsource = "ecgodrej"
+	case "devel":
+		hostsource = "52.220.25.190:27123"
+		dbsource = "ecgodrej"
+	case "prod":
+		hostsource = "go.eaciit.com:27123"
+		dbsource = "ecgodrej_prod"
+	}
+
+	switch dest {
+	case "ba":
+		hostdest = "go.eaciit.com:27123"
+		dbdest = "ecgodrej"
+	case "devel":
+		hostdest = "52.220.25.190:27123"
+		dbdest = "ecgodrej"
+	case "prod":
+		hostdest = "-h go.eaciit.com:27123"
+		dbdest = "ecgodrej_prod"
+	}
+
+	setinitialconnection(hostsource, dbsource)
+	defer conn.Close()
 
 	tablelist := conn.ObjectNames(dbox.ObjTypeTable)
 	errmsg := ""
@@ -134,35 +165,6 @@ func copycollection() {
 		}
 	}
 
-	hostsource := ""
-	dbsource := ""
-	hostdest := ""
-	dbdest := ""
-
-	switch source {
-	case "ba":
-		hostsource = "go.eaciit.com:27123"
-		dbsource = "ecgodrej"
-	case "devel":
-		hostsource = "52.220.25.190:27123"
-		dbsource = "ecgodrej"
-	case "prod":
-		hostsource = "go.eaciit.com:27123"
-		dbsource = "ecgodrej_prod"
-	}
-
-	switch dest {
-	case "ba":
-		hostdest = "go.eaciit.com:27123"
-		dbdest = "ecgodrej"
-	case "devel":
-		hostdest = "52.220.25.190:27123"
-		dbdest = "ecgodrej"
-	case "prod":
-		hostdest = "-h go.eaciit.com:27123"
-		dbdest = "ecgodrej_prod"
-	}
-
 	if errmsg != "" {
 		toolkit.Println(errmsg)
 	}
@@ -181,33 +183,37 @@ func copycollection() {
 			_, err := exec.Command("sh", "-c", dump).Output()
 
 			if err != nil {
-				toolkit.Println("error", err)
+				toolkit.Println("dump error", err)
+				toolkit.Println("syntax", dump)
 			} else {
-				toolkit.Printfn("(%d of %d) dump : %s", i, numcol, col)
+				toolkit.Printfn("(%d of %d) dump : %s", i+1, numcol, col)
 			}
 
 			_, err = exec.Command("cmd", "-c", restore).Output()
 
 			if err != nil {
-				toolkit.Println(err)
+				toolkit.Println("restore error", err)
+				toolkit.Println("syntax", restore)
 			} else {
-				toolkit.Printfn("(%d of %d) restore : %s", i, numcol, col)
+				toolkit.Printfn("(%d of %d) restore : %s", i+1, numcol, col)
 			}
 		} else {
 			_, err := exec.Command("/bin/bash", "-c", dump).Output()
 
 			if err != nil {
-				toolkit.Println(err)
+				toolkit.Println("dump error", err)
+				toolkit.Println("syntax", dump)
 			} else {
-				toolkit.Printfn("(%d of %d) dump : %s", i, numcol, col)
+				toolkit.Printfn("(%d of %d) dump : %s", i+1, numcol, col)
 			}
 
 			_, err = exec.Command("/bin/bash", "-c", restore).Output()
 
 			if err != nil {
-				toolkit.Println(err)
+				toolkit.Println("restore error", err)
+				toolkit.Println("syntax", restore)
 			} else {
-				toolkit.Printfn("(%d of %d) restore : %s", i, numcol, col)
+				toolkit.Printfn("(%d of %d) restore : %s", i+1, numcol, col)
 			}
 		}
 	}
