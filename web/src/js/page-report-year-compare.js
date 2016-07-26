@@ -261,7 +261,8 @@ yc.render = () => {
 		},
 
 		{
-			headerTemplate: 'GM %<br />Value',
+			headerTemplate: 'GM %',
+			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: 'v2015_gs_ctb_value',
 			format: `{0:n1} %`,
 			attributes: { class: 'align-right' },
@@ -277,7 +278,8 @@ yc.render = () => {
 		},
 
 		{
-			headerTemplate: 'EBIT %<br />Value',
+			headerTemplate: 'EBIT %',
+			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: 'v2015_ebit_ctb_value',
 			format: `{0:n1} %`,
 			attributes: { class: 'align-right' },
@@ -310,14 +312,16 @@ yc.render = () => {
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_ebit_value, 'n0')}</div>`,
 			width: widthValue,
 		}, {
-			headerTemplate: 'GM %<br />Value',
+			headerTemplate: 'GM %',
+			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: 'v2014_gs_ctb_value',
 			format: `{0:n1} %`,
 			attributes: { class: 'align-right' },
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_gs_ctb_value, 'n1')} %</div>`,
 			width: widthPrcnt,
 		}, {
-			title: "EBIT %<br />Value",
+			title: "EBIT %",
+			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: "v2014_ebit_ctb_value",
 			format: '{0:n2} %',
 			attributes: { class: 'align-right' },

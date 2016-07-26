@@ -1,5 +1,7 @@
 'use strict';
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 viewModel.yearCompare = {};
 var yc = viewModel.yearCompare;
 
@@ -87,6 +89,8 @@ yc.refresh = function () {
 };
 
 yc.render = function () {
+	var _ref;
+
 	var divider = parseInt(yc.unit().replace(/v/g, ''), 10);
 	var unitSuffix = yc.optionUnit().find(function (d) {
 		return d._id == yc.unit();
@@ -190,7 +194,7 @@ yc.render = function () {
 		});
 		o.v2014_gs_ctb_value = 0;
 		toolkit.try(function () {
-			o.v2014_gs_ctb_value = data2014[0][plGrossMargin] / total2015_GrossMargin * 100;
+			o.v2014_gs_ctb_value = data2014[0][plGrossMargin] / total2014_GrossMargin * 100;
 		});
 
 		o.v2015_gs_ctb_growth = 0;
@@ -327,7 +331,8 @@ yc.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_ebit_growth, 'n1') + ' %</div>',
 			width: widthPrcnt
 		}, {
-			headerTemplate: 'GM %<br />Value',
+			headerTemplate: 'GM %',
+			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: 'v2015_gs_ctb_value',
 			format: '{0:n1} %',
 			attributes: { class: 'align-right' },
@@ -341,7 +346,8 @@ yc.render = function () {
 			// footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_gs_ctb_growth, 'n1')} %</div>`,
 			width: widthPrcnt
 		}, {
-			headerTemplate: 'EBIT %<br />Value',
+			headerTemplate: 'EBIT %',
+			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: 'v2015_ebit_ctb_value',
 			format: '{0:n1} %',
 			attributes: { class: 'align-right' },
@@ -374,21 +380,21 @@ yc.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_ebit_value, 'n0') + '</div>',
 			width: widthValue
 		}, {
-			headerTemplate: 'GM %<br />Value',
+			headerTemplate: 'GM %',
+			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: 'v2014_gs_ctb_value',
 			format: '{0:n1} %',
 			attributes: { class: 'align-right' },
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_gs_ctb_value, 'n1') + ' %</div>',
 			width: widthPrcnt
-		}, {
-			title: "EBIT %<br />Value",
+		}, (_ref = {
+			title: "EBIT %",
+			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: "v2014_ebit_ctb_value",
 			format: '{0:n2} %',
 			attributes: { class: 'align-right' },
-			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_ebit_ctb_value, 'n1') + ' %</div>',
-			headerAttributes: { style: 'vertical-align: middle;' },
-			width: widthPrcnt
-		}]
+			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_ebit_ctb_value, 'n1') + ' %</div>'
+		}, _defineProperty(_ref, 'headerAttributes', { style: 'vertical-align: middle;' }), _defineProperty(_ref, 'width', widthPrcnt), _ref)]
 	}];
 
 	console.log('----', dataParsed);
