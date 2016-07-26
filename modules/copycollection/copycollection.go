@@ -1,14 +1,13 @@
 package main
 
 import (
-	"eaciit/gdrj/model"
-	"eaciit/gdrj/modules"
 	"flag"
 	"github.com/eaciit/dbox"
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	"github.com/eaciit/toolkit"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -23,27 +22,30 @@ var (
 	sourcedest     = []string{"devel", "prod", "ba"}
 )
 
-func setinitialconnection() {
+func setinitialconnection(hostsource, dbsource string) {
 	var err error
-	conn, err = modules.GetDboxIConnection("db_godrej")
+	ci := &dbox.ConnectionInfo{
+		hostsource,
+		dbsource,
+		"",
+		"",
+		toolkit.M{}.Set("timeout", 300),
+	}
+
+	conn, err = dbox.NewConnection("mongo", ci)
 
 	if err != nil {
 		toolkit.Println("Initial connection found : ", err)
 		os.Exit(1)
 	}
 
-	err = gdrj.SetDb(conn)
-	if err != nil {
+	if err = conn.Connect(); err != nil {
 		toolkit.Println("Initial connection found : ", err)
 		os.Exit(1)
 	}
 }
 
 func main() {
-
-	setinitialconnection()
-	defer gdrj.CloseDb()
-
 	flag.StringVar(&tablegroup, "tablegroup", "", "group of collection")
 	flag.StringVar(&tablename, "tablename", "", "collection name")
 	flag.StringVar(&source, "from", "", "source location of dumped collection")
@@ -54,8 +56,6 @@ func main() {
 }
 
 func copycollection() {
-	conn, _ := modules.GetDboxIConnection("db_godrej")
-	defer conn.Close()
 	if source == "" || dest == "" {
 		errmsg := ""
 		if source == "" {
@@ -93,6 +93,38 @@ func copycollection() {
 			return
 		}
 	}
+
+	hostsource := ""
+	dbsource := ""
+	hostdest := ""
+	dbdest := ""
+
+	switch source {
+	case "ba":
+		hostsource = "go.eaciit.com:27123"
+		dbsource = "ecgodrej"
+	case "devel":
+		hostsource = "52.220.25.190:27123"
+		dbsource = "ecgodrej"
+	case "prod":
+		hostsource = "go.eaciit.com:27123"
+		dbsource = "ecgodrej_prod"
+	}
+
+	switch dest {
+	case "ba":
+		hostdest = "go.eaciit.com:27123"
+		dbdest = "ecgodrej"
+	case "devel":
+		hostdest = "52.220.25.190:27123"
+		dbdest = "ecgodrej"
+	case "prod":
+		hostdest = "go.eaciit.com:27123"
+		dbdest = "ecgodrej_prod"
+	}
+
+	setinitialconnection(hostsource, dbsource)
+	defer conn.Close()
 
 	tablelist := conn.ObjectNames(dbox.ObjTypeTable)
 	errmsg := ""
@@ -134,43 +166,21 @@ func copycollection() {
 		}
 	}
 
-	hostsource := ""
-	dbsource := ""
-	hostdest := ""
-	dbdest := ""
-
-	switch source {
-	case "ba":
-		hostsource = "go.eaciit.com:27123"
-		dbsource = "ecgodrej"
-	case "devel":
-		hostsource = "52.220.25.190:27123"
-		dbsource = "ecgodrej"
-	case "prod":
-		hostsource = "go.eaciit.com:27123"
-		dbsource = "ecgodrej_prod"
-	}
-
-	switch dest {
-	case "ba":
-		hostdest = "go.eaciit.com:27123"
-		dbdest = "ecgodrej"
-	case "devel":
-		hostdest = "52.220.25.190:27123"
-		dbdest = "ecgodrej"
-	case "prod":
-		hostdest = "-h go.eaciit.com:27123"
-		dbdest = "ecgodrej_prod"
-	}
-
 	if errmsg != "" {
 		toolkit.Println(errmsg)
 	}
-	location := "/data/dump/godrej"
+	location := ""
+	if runtime.GOOS == "windows" {
+		location = filepath.Join("d:", "data", "dump", "godrej")
+	} else {
+		location = filepath.Join("/data", "dump", "godrej")
+	}
 	numcol := len(listofcol)
 	toolkit.Printfn("\nPrepare to dump & restore (%d) collections", numcol)
 	toolkit.Printfn("from %s/%s to %s/%s\n",
 		hostsource, dbsource, hostdest, dbdest)
+	var errdump error
+	var errrestore error
 
 	for i, col := range listofcol {
 		dump := toolkit.Sprintf("mongodump -h %s -d %s -c %s --out %s", hostsource, dbsource, col, location)
@@ -178,37 +188,25 @@ func copycollection() {
 			hostdest, dbdest, col, location, dbsource, col)
 
 		if runtime.GOOS == "windows" {
-			_, err := exec.Command("sh", "-c", dump).Output()
-
-			if err != nil {
-				toolkit.Println("error", err)
-			} else {
-				toolkit.Printfn("(%d of %d) dump : %s", i, numcol, col)
-			}
-
-			_, err = exec.Command("cmd", "-c", restore).Output()
-
-			if err != nil {
-				toolkit.Println(err)
-			} else {
-				toolkit.Printfn("(%d of %d) restore : %s", i, numcol, col)
-			}
+			_, errdump = exec.Command("sh", "-c", dump).Output()
+			_, errrestore = exec.Command("sh", "-c", restore).Output()
 		} else {
-			_, err := exec.Command("/bin/bash", "-c", dump).Output()
+			_, errdump = exec.Command("/bin/bash", "-c", dump).Output()
+			_, errrestore = exec.Command("/bin/bash", "-c", restore).Output()
+		}
 
-			if err != nil {
-				toolkit.Println(err)
-			} else {
-				toolkit.Printfn("(%d of %d) dump : %s", i, numcol, col)
-			}
+		if errdump != nil {
+			toolkit.Println("dump error", errdump)
+			toolkit.Println("syntax", dump)
+		} else {
+			toolkit.Printfn("(%d of %d) dump : %s", i+1, numcol, col)
+		}
 
-			_, err = exec.Command("/bin/bash", "-c", restore).Output()
-
-			if err != nil {
-				toolkit.Println(err)
-			} else {
-				toolkit.Printfn("(%d of %d) restore : %s", i, numcol, col)
-			}
+		if errrestore != nil {
+			toolkit.Println("restore error", errrestore)
+			toolkit.Println("syntax", restore)
+		} else {
+			toolkit.Printfn("(%d of %d) restore : %s", i+1, numcol, col)
 		}
 	}
 

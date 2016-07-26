@@ -103,6 +103,90 @@ rpt.optionDimensions = ko.observableArray([
 rpt.optionAggregates = ko.observableArray([{ aggr: 'sum', name: 'Sum' }, { aggr: 'avg', name: 'Avg' }, { aggr: 'max', name: 'Max' }, { aggr: 'min', name: 'Min' }]);
 rpt.optionsChannels = ko.observableArray([{ _id: 'EXP', Name: 'Export' }, { _id: 'I2', Name: 'General Trade (GT)' }, { _id: 'I4', Name: 'Industrial Trade (IT)' }, { _id: 'I3', Name: 'Modern Trade (MT)' }, { _id: 'I6', Name: 'Motorist' }, { _id: 'I1', Name: 'Regional Distributor (RD)' }]);
 
+rpt.date_quartertxt = ko.observableArray([{ FiscalYear: '2014-2015', _id: '2014-2015 Q1', Name: '2014-2015 Q1' }, { FiscalYear: '2014-2015', _id: '2014-2015 Q2', Name: '2014-2015 Q2' }, { FiscalYear: '2014-2015', _id: '2014-2015 Q3', Name: '2014-2015 Q3' }, { FiscalYear: '2014-2015', _id: '2014-2015 Q4', Name: '2014-2015 Q4' }, { FiscalYear: '2015-2016', _id: '2015-2016 Q1', Name: '2015-2016 Q1' }, { FiscalYear: '2015-2016', _id: '2015-2016 Q2', Name: '2015-2016 Q2' }, { FiscalYear: '2015-2016', _id: '2015-2016 Q3', Name: '2015-2016 Q3' }, { FiscalYear: '2015-2016', _id: '2015-2016 Q4', Name: '2015-2016 Q4' }]);
+rpt.date_month = ko.observableArray(function () {
+	var fy = ['2014-2015', '2015-2016'];
+	var months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+	var res = [];
+	fy.forEach(function (d) {
+		months.forEach(function (e) {
+			var year = parseInt(d.split('-')[0], 10);
+			var month = e - 1 + 3;
+			var text = moment(new Date(year, month, 1)).format('MMM YYYY');
+
+			res.push({
+				FiscalYear: d,
+				_id: e,
+				Name: text
+			});
+		});
+	});
+	return res;
+}());
+rpt.monthQuarter = ko.observable('');
+rpt.optionMonthQuarters = ko.observableArray([{ _id: 'date_quartertxt', Name: 'Quarter' }, { _id: 'date_month', Name: 'Month' }]);
+rpt.monthQuarterValues = ko.observableArray([]);
+rpt.optionMonthsQuarterValues = function (fiscalYearObservable) {
+	return ko.computed(function () {
+		var fiscalYears = fiscalYearObservable();
+		if (!(fiscalYears instanceof Array)) {
+			fiscalYears = [fiscalYears];
+		}
+
+		if (rpt.monthQuarter() == '') {
+			return [];
+		}
+
+		var optionValues = rpt[rpt.monthQuarter()]().filter(function (d) {
+			return fiscalYears.indexOf(d.FiscalYear) > -1;
+		});
+
+		return optionValues;
+	}, rpt.monthQuarter);
+};
+rpt.resetMonthQuarter = function () {
+	rpt.monthQuarter('');
+	rpt.monthQuarterValues([]);
+};
+rpt.changeMonthQuarter = function () {
+	rpt.monthQuarterValues([]);
+};
+rpt.injectMonthQuarterFilter = function (filters) {
+	if (rpt.monthQuarter() == '') {
+		return filters;
+	}
+
+	if (rpt.monthQuarterValues().length == 0) {
+		return filters;
+	}
+
+	var field = rpt.monthQuarter().replace(/_/g, '.');
+	var prev = filters.find(function (d) {
+		return d.Field == field;
+	});
+
+	if (toolkit.isDefined(prev)) {
+		var prevValues = prev.Value;
+		if (typeof prevValues === 'string') {
+			prevValues = [prevValues];
+		}
+
+		prev.Op = '$in';
+		prev.Value = prevValues.concat(rpt.monthQuarterValues());
+	} else {
+		filters.push({
+			Field: field,
+			Op: '$in',
+			Value: rpt.monthQuarterValues()
+		});
+	}
+
+	return filters;
+};
+rpt.isEnableMonthQuarterValues = ko.computed(function () {
+	return rpt.monthQuarter() !== '';
+});
+
 rpt.parseGroups = function (what) {
 	return what;
 

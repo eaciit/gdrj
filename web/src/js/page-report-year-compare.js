@@ -30,6 +30,17 @@ yc.refresh = () => {
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(true, rpt.optionFiscalYears)
 
+	if (['customer.branchname', 'customer.branchgroup'].indexOf(yc.breakdownBy()) > -1) {
+		let noExport = {
+			Field: 'customer.channelname',
+			Op: '$in',
+			Value: rpt.masterData.Channel()
+				.map((d) => d._id)
+				.filter((d) => d != "EXP")
+		}
+		param.filters = [noExport].concat(param.filters)
+	}
+
 	if (yc.flag() === 'gt-breakdown') {
 		param.filters.push({
 			Field: 'customer.channelname',
