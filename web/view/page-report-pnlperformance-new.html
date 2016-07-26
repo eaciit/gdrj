@@ -21,52 +21,52 @@
 	<!-- Nav tabs -->
 	<ul class="nav nav-pills nav-replace-title" role="tablist">
 		<li role="presentation">
-			<a href="#summary" role="tab" data-toggle="tab" onclick="bkd.title('Summary'); dsbrd.refresh();">Summary</a>
+			<a href="#summary" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('Summary'); dsbrd.refresh();">Summary</a>
 		</li>
 		<li role="presentation">
-			<a href="#ranking" role="tab" data-toggle="tab" onclick="bkd.title('Ranking'); rank.refresh();">Ranking</a>
+			<a href="#ranking" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('Ranking'); rank.refresh();">Ranking</a>
 		</li>
 		<li role="presentation" class="active">
-			<a href="#by-channel" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Channels'); bkd.refresh();">Channels</a>
+			<a href="#by-channel" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('P&L by Channels'); bkd.refresh();">Channels</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-then-branch-vs-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Channels by Branch/RD'); v2.refresh();">Channels by Branch/RD</a>
+			<a href="#by-channel-then-branch-vs-rd" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('P&L by Channels by Branch/RD'); v2.refresh();">Channels by Branch/RD</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Branch', 'branch');">Branch</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.switchRefresh('P&L by Branch', 'branch');">Branch</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Branch Group', 'branch-group');">Branch Group</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.switchRefresh('P&L by Branch Group', 'branch-group');">Branch Group</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Branches - All Channel'); v1.mode('Branch'); v1.refresh();">Branches - All Channel</a>
+			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('P&L by Branches - All Channel'); v1.mode('Branch'); v1.refresh();">Branches - All Channel</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="bkd.title('P&L by RD - All Channel'); v1.mode('Regional Distributor'); v1.refresh();">RD - All Channel</a>
+			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('P&L by RD - All Channel'); v1.mode('Regional Distributor'); v1.refresh();">RD - All Channel</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="bkd.title('Key Accounts'); kac.refresh();">Key Accounts</a>
+			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('Key Accounts'); kac.refresh();">Key Accounts</a>
 		</li>
 		<!-- <li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('P&L by Key Account Groups', 'account');">Key Account Groups</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.switchRefresh('P&L by Key Account Groups', 'account');">Key Account Groups</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="bkd.title('P&L by Key Accounts'); kac.refresh();">Key Accounts</a>
+			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('P&L by Key Accounts'); kac.refresh();">Key Accounts</a>
 		</li> -->
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.switchRefresh('Branch Modern Trade', 'mt sub channel');">Branch Modern Trade</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.switchRefresh('Branch Modern Trade', 'mt sub channel');">Branch Modern Trade</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownGeneralTrade(); subchan.switchRefresh('Branch GT', 'gt');">Branch GT</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.changeBreakdownGeneralTrade(); subchan.switchRefresh('Branch GT', 'gt');">Branch GT</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownDistributor(); subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.changeBreakdownDistributor(); subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownBrand(); subchan.switchRefresh('P&L by Brand', 'brand');">Brand</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.changeBreakdownBrand(); subchan.switchRefresh('P&L by Brand', 'brand');">Brand</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.changeBreakdownCity(); subchan.switchRefresh('P&L by City', 'city');">City</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.changeBreakdownCity(); subchan.switchRefresh('P&L by City', 'city');">City</a>
 		</li>
 	</ul>
 
@@ -102,10 +102,10 @@
 				<div class="form-inline pull-right breakdown-filter">
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right">Structure</span>
-							<div class="width-full">
+						<div class="width-full">
 								<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: dsbrd.optionStructures, dataValueField: 'field', dataTextField: 'name', value: dsbrd.structure }"></select>
-							</div>
 					</div>
+				</div>
 
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right">Fiscal Year</span>
@@ -174,7 +174,7 @@
 						</div>
 						<div class="clearfix"></div>
 					</div>
-
+					
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right">Breakdown Value</span>
 						<div class="width-full">
@@ -535,7 +535,7 @@
 							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: rank.fiscalYear }"></select>
 						</div>
 					</div>
-
+					
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon width-100 align-right">Breakdown by</span>
 						<div class="width-full">
@@ -551,7 +551,7 @@
 					</button>
 				</div>
 			</div>
-		</div>
+				</div>
 
 		<div class="panel-body">
 			<div data-bind="visible: rank.contentIsLoading">
@@ -676,6 +676,27 @@
 												</div>
 											</div>
 										</div>
+
+										<div class="form-group">&nbsp;</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">By month/quarter</span>
+												<div class="width-full">
+													<select type="text" style="width: 135px;" data-bind="kendoDropDownList: { data: rpt.optionMonthQuarters, dataValueField: '_id', dataTextField: 'Name', value: rpt.monthQuarter, optionLabel: 'Not used', change: rpt.changeMonthQuarter }"></select>
+												</div>
+											</div>
+										</div>
+										
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Value</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: rpt.optionMonthsQuarterValues(), dataValueField: '_id', dataTextField: 'Name', value: rpt.monthQuarterValues, placeholder: 'Choose values', filter: 'contains', enabled: rpt.isEnableMonthQuarterValues }"></select>
+												</div>
+											</div>
+										</div>
+
 									</div>
 								</div>
 							</div>

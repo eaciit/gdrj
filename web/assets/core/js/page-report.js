@@ -131,18 +131,26 @@ rpt.date_month = ko.observableArray(function () {
 rpt.monthQuarter = ko.observable('');
 rpt.optionMonthQuarters = ko.observableArray([{ _id: 'date_quartertxt', Name: 'Quarter' }, { _id: 'date_month', Name: 'Month' }]);
 rpt.monthQuarterValues = ko.observableArray([]);
-rpt.optionMonthsQuarterValues = function (fiscalYearObservable) {
+rpt.optionMonthsQuarterValues = function () {
+	var fiscalYearObservable = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+
 	return ko.computed(function () {
+		if (rpt.monthQuarter() == '') {
+			return [];
+		}
+
+		var optionValues = rpt[rpt.monthQuarter()]();
+
+		if (fiscalYearObservable == null) {
+			return optionValues;
+		}
+
 		var fiscalYears = fiscalYearObservable();
 		if (!(fiscalYears instanceof Array)) {
 			fiscalYears = [fiscalYears];
 		}
 
-		if (rpt.monthQuarter() == '') {
-			return [];
-		}
-
-		var optionValues = rpt[rpt.monthQuarter()]().filter(function (d) {
+		optionValues = optionValues.filter(function (d) {
 			return fiscalYears.indexOf(d.FiscalYear) > -1;
 		});
 

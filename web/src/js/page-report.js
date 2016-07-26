@@ -275,18 +275,24 @@ rpt.optionMonthQuarters = ko.observableArray([
 	{ _id: 'date_month', Name: 'Month' }
 ])
 rpt.monthQuarterValues = ko.observableArray([])
-rpt.optionMonthsQuarterValues = (fiscalYearObservable) => {
+rpt.optionMonthsQuarterValues = (fiscalYearObservable = null) => {
 	return ko.computed(() => {
+		if (rpt.monthQuarter() == '') {
+			return []
+		}
+		
+		let optionValues = rpt[rpt.monthQuarter()]()
+
+		if (fiscalYearObservable == null) {
+			return optionValues
+		}
+
 		let fiscalYears = fiscalYearObservable()
 		if (!(fiscalYears instanceof Array)) {
 			fiscalYears = [fiscalYears]
 		}
 
-		if (rpt.monthQuarter() == '') {
-			return []
-		}
-
-		let optionValues = rpt[rpt.monthQuarter()]()
+		optionValues = optionValues 
 			.filter((d) => fiscalYears.indexOf(d.FiscalYear) > -1)
 
 		return optionValues

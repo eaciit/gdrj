@@ -14,6 +14,7 @@ cbt.level = ko.observable(1);
 cbt.title = ko.observable('Contribution by Channels');
 
 cbt.changeTo = function (d, title) {
+	rpt.resetMonthQuarter();
 	cbt.breakdownBy(d);
 	cbt.title(title);
 	cbt.refresh();
@@ -31,6 +32,7 @@ cbt.refresh = function () {
 	cbt.contentIsLoading(true);
 
 	var fetch = function fetch() {
+		rpt.injectMonthQuarterFilter(param.filters);
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {

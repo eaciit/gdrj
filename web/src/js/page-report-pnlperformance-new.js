@@ -178,6 +178,7 @@ let bkd = viewModel.breakdown
 
 		let fetch = () => {
 			subchan.injectFilters(param.filters)
+			rpt.injectMonthQuarterFilter(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -1071,6 +1072,7 @@ let v2 = viewModel.RDvsBranchView2
 
 		let fetch = () => {
 			subchan.injectFilters(param.filters)
+			rpt.injectMonthQuarterFilter(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -1707,6 +1709,7 @@ let v1 = viewModel.RDvsBranchView1
 
 		let fetch = () => {
 			subchan.injectFilters(param.filters)
+			rpt.injectMonthQuarterFilter(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -2264,6 +2267,7 @@ let kac = viewModel.keyAccount
 
 		let fetch = () => {
 			subchan.injectFilters(param.filters)
+			rpt.injectMonthQuarterFilter(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -2932,6 +2936,7 @@ let subchan = viewModel.subChannel
 
 		let fetch = () => {
 			subchan.injectFilters(param.filters)
+			rpt.injectMonthQuarterFilter(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => {
@@ -3879,6 +3884,7 @@ let dsbrd = viewModel.dashboard
 
 		let fetch = () => {
 			subchan.injectFilters(param.filters)
+			rpt.injectMonthQuarterFilter(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => { fetch() }, 1000 * 5)
@@ -4164,6 +4170,7 @@ let rank = viewModel.dashboardRanking
 
 		let fetch = () => {
 			subchan.injectFilters(param.filters)
+			rpt.injectMonthQuarterFilter(param.filters)
 			toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 				if (res.Status == "NOK") {
 					setTimeout(() => { fetch() }, 1000 * 5)

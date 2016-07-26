@@ -53,6 +53,7 @@ kac.refresh = (useCache = false) => {
 	kac.contentIsLoading(true)
 
 	let fetch = () => {
+		rpt.injectMonthQuarterFilter(param.filters)
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {

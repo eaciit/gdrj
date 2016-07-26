@@ -41,6 +41,7 @@ brand.refresh = (useCache = false) => {
 	}
 
 	let fetch = () => {
+		rpt.injectMonthQuarterFilter(param.filters)
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {

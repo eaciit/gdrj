@@ -14,6 +14,7 @@ v1.level = ko.observable(2)
 v1.title = ko.observable('Total Branch & RD')
 
 v1.changeTo = (d, e, c) => {
+	rpt.resetMonthQuarter()
 	v1.title(d)
 	c()
 	$(window).trigger('scroll')
@@ -32,6 +33,7 @@ v1.refresh = (useCache = false) => {
 	v1.contentIsLoading(true)
 
 	let fetch = () => {
+		rpt.injectMonthQuarterFilter(param.filters)
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {
@@ -523,6 +525,7 @@ v2.refresh = (useCache = false) => {
 	v2.contentIsLoading(true)
 
 	let fetch = () => {
+		rpt.injectMonthQuarterFilter(param.filters)
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {
@@ -1027,6 +1030,7 @@ v3.refresh = (useCache = false) => {
 	v3.contentIsLoading(true)
 
 	let fetch = () => {
+		rpt.injectMonthQuarterFilter(param.filters)
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
 				setTimeout(() => {
