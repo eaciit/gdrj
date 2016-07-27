@@ -232,7 +232,7 @@ sr.render = function (res) {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('&nbsp;');
-vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Sales Return Analysis', href: '#' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Analysis', href: '#' }, { title: 'Sales Return Analysis', href: '#' }]);
 
 $(function () {
 	rpt.tabbedContent();

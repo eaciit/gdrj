@@ -1336,7 +1336,7 @@ qg.renderDetail = function (data) {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('&nbsp;');
-vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Growth Analysis', href: '#' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Analysis', href: '#' }, { title: 'Growth Analysis', href: '#' }]);
 
 $(function () {
 	$('#modal-detail-annual-diff').appendTo($('body'));

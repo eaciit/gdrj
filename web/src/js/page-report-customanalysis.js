@@ -927,8 +927,8 @@ let series = ko.mapping.toJS(cst.series())
 vm.currentMenu('Analysis')
 vm.currentTitle('Custom Analysis')
 vm.breadcrumb([
-	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
-	{ title: 'Home', href: viewModel.appName + 'page/landing' },
+	{ title: 'Godrej', href: '' },
+	{ title: 'Analysis', href: '' },
 	{ title: 'Custom Analysis', href: '#' }
 ])
 

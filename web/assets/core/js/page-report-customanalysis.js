@@ -913,7 +913,7 @@ cst.renderChart = function () {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('Custom Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Custom Analysis', href: '#' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '' }, { title: 'Analysis', href: '' }, { title: 'Custom Analysis', href: '#' }]);
 
 cst.title('&nbsp;');
 

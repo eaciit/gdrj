@@ -448,7 +448,7 @@ rd.changeBreakdownValue = function () {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('RD Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'RD Analysis', href: '#' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Analysis', href: '#' }, { title: 'RD Analysis', href: '#' }]);
 
 rd.title('&nbsp;');
 

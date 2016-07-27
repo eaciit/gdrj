@@ -1571,8 +1571,8 @@ v3.buildGridLevels = (container, rows) => {
 vm.currentMenu('Analysis')
 vm.currentTitle('&nbsp;')
 vm.breadcrumb([
-	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
-	{ title: 'Home', href: viewModel.appName + 'page/landing' },
+	{ title: 'Godrej', href: '#' },
+	{ title: 'Analysis', href: '#' },
 	{ title: 'Branch vs RD Analysis', href: '#' }
 ])
 

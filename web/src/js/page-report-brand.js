@@ -522,8 +522,8 @@ brand.changeBreakdownBrand = () => {
 vm.currentMenu('Analysis')
 vm.currentTitle('Brand Analysis')
 vm.breadcrumb([
-	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
-	{ title: 'Home', href: viewModel.appName + 'page/landing' },
+	{ title: 'Godrej', href: '#' },
+	{ title: 'Analysis', href: '#' },
 	{ title: 'Brand Analysis', href: '#' }
 ])
 

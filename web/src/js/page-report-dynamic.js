@@ -694,11 +694,14 @@ rd.setup = () => {
 
 
 vm.currentMenu('Analysis Ideas')
-vm.currentTitle('Report Dynamic')
-vm.breadcrumb([
-	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
-	{ title: 'Analysis Ideas', href: viewModel.appName + 'page/landing' }
-])
+vm.currentTitle('&nbsp;')
+vm.currentTitle.subscribe((d) => {
+	vm.breadcrumb([
+		{ title: 'Godrej', href: '#' },
+		{ title: 'Analysis Ideas', href: '#' },
+		{ title: d, href: '#' }
+	])
+})
 
 
 $(() => {

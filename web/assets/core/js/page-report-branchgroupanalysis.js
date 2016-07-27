@@ -870,7 +870,7 @@ ba.changeBreakdownValue = function () {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('Branch Group Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Branch Group Analysis', href: '#' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Analysis', href: '#' }, { title: 'Branch Group Analysis', href: '#' }]);
 
 ba.title('&nbsp;');
 
