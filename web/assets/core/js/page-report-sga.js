@@ -12,37 +12,42 @@ sga.getAlphaNumeric = function (what) {
 	return what.replace(/\W/g, '');
 };
 
-sga.constructData = function () {
+sga.constructData = function (raw) {
 	sga.data([]);
 
-	var op1 = _.groupBy(sga.rawData(), function (d) {
-		return [d.account, d.accountGroup].join('|');
-	});
-	var op2 = _.map(op1, function (v, k) {
-		return {
-			_id: sga.getAlphaNumeric(k),
-			PLHeader1: v[0].accountGroup,
-			PLHeader2: v[0].accountGroup,
-			PLHeader3: v[0].account
-		};
-	});
+	// let op1 = _.groupBy(raw, (d) => [d.account, d.accountGroup].join('|'))
+	// let op2 = _.map(op1, (v, k) => ({
+	// 	_id: sga.getAlphaNumeric(k),
+	// 	PLHeader1: v[0].accountGroup,
+	// 	PLHeader2: v[0].accountGroup,
+	// 	PLHeader3: v[0].account,
+	// }))
 
-	var oq1 = _.groupBy(sga.rawData(), function (d) {
-		return d.accountGroup;
+	// let oq1 = _.groupBy(sga.rawData(), (d) => d.accountGroup)
+	// let oq2 = _.map(oq1, (v, k) => ({
+	// 	_id: sga.getAlphaNumeric(k),
+	// 	PLHeader1: v[0].accountGroup,
+	// 	PLHeader2: v[0].accountGroup,
+	// 	PLHeader3: v[0].accountGroup,
+	// }))
+	// rpt.plmodels(op2.concat(oq2))
+
+	var oq1 = _.groupBy(raw, function (d) {
+		return d.AccountDescription;
 	});
 	var oq2 = _.map(oq1, function (v, k) {
 		return {
 			_id: sga.getAlphaNumeric(k),
-			PLHeader1: v[0].accountGroup,
-			PLHeader2: v[0].accountGroup,
-			PLHeader3: v[0].accountGroup
+			PLHeader1: v[0].AccountDescription,
+			PLHeader2: v[0].AccountDescription,
+			PLHeader3: v[0].AccountDescription
 		};
 	});
-	rpt.plmodels(op2.concat(oq2));
+	rpt.plmodels(oq2);
 
 	var key = sga.breakdownBy();
 	var rawData = [];
-	sga.rawData().forEach(function (d) {
+	raw.forEach(function (d) {
 		var breakdown = d[key];
 		var o = rawData.find(function (e) {
 			return e._id['_id_' + key] === breakdown;
@@ -54,24 +59,30 @@ sga.constructData = function () {
 			rawData.push(o);
 		}
 
-		var plID = sga.getAlphaNumeric([d.account, d.accountGroup].join('|'));
+		// let plID = sga.getAlphaNumeric([d.account, d.accountGroup].join('|'))
+		// let plmodel = rpt.plmodels().find((e) => e._id == plID)
+		// if (o.hasOwnProperty(plmodel._id)) {
+		// 	o[plmodel._id] += d.value
+		// } else {
+		// 	o[plmodel._id] = d.value
+		// }
+
+		// let plIDHeader = sga.getAlphaNumeric(d.accountGroup)
+		// let plmodelHeader = rpt.plmodels().find((e) => e._id == plIDHeader)
+		// if (o.hasOwnProperty(plmodelHeader._id)) {
+		// 	o[plmodelHeader._id] += d.value
+		// } else {
+		// 	o[plmodelHeader._id] = d.value
+		// }
+
+		var plID = sga.getAlphaNumeric(d.AccountDescription);
 		var plmodel = rpt.plmodels().find(function (e) {
 			return e._id == plID;
 		});
 		if (o.hasOwnProperty(plmodel._id)) {
-			o[plmodel._id] += d.value;
+			o[plmodel._id] += d.Amount;
 		} else {
-			o[plmodel._id] = d.value;
-		}
-
-		var plIDHeader = sga.getAlphaNumeric(d.accountGroup);
-		var plmodelHeader = rpt.plmodels().find(function (e) {
-			return e._id == plIDHeader;
-		});
-		if (o.hasOwnProperty(plmodelHeader._id)) {
-			o[plmodelHeader._id] += d.value;
-		} else {
-			o[plmodelHeader._id] = d.value;
+			o[plmodel._id] = d.Amount;
 		}
 	});
 	sga.data(rawData);
@@ -82,7 +93,7 @@ sga.constructData = function () {
 sga.contentIsLoading = ko.observable(false);
 sga.breakdownNote = ko.observable('');
 
-sga.breakdownBy = ko.observable('function');
+sga.breakdownBy = ko.observable('BranchName');
 sga.breakdownValue = ko.observableArray([]);
 sga.breakdownByFiscalYear = ko.observable('date.fiscal');
 
@@ -90,39 +101,44 @@ sga.data = ko.observableArray([]);
 sga.fiscalYear = ko.observable(rpt.value.FiscalYear());
 sga.level = ko.observable(1);
 
+sga.filterBranch = ko.observableArray([]);
+sga.filterCostGroup = ko.observableArray([]);
+
+sga.optionFilterCostGroups = ko.observableArray([]);
+
+rpt.fillFilterCostGroup = function () {
+	toolkit.ajaxPost(viewModel.appName + "report/getdatafunction", {}, function (res) {
+		sga.optionFilterCostGroups(_.orderBy(res.data, function (d) {
+			return d.Name;
+		}));
+	});
+};
+
+sga.changeAndRefresh = function (what) {
+	sga.filterBranch([]);
+	sga.filterCostGroup([]);
+
+	sga.breakdownBy(what);
+	sga.refresh();
+};
+
 sga.refresh = function () {
 	var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
-	sga.constructData();
-	sga.data(sga.buildStructure(sga.data()));
-	sga.emptyGrid();
-	sga.render();
-	rpt.showExpandAll(true);
-	rpt.prepareEvents();
-	return;
-
 	var param = {};
-	param.pls = [];
-	param.aggr = 'sum';
-	param.flag = 'sga';
-	param.filters = rpt.getFilterValue(false, sga.fiscalYear);
-	param.groups = rpt.parseGroups([sga.breakdownBy()]);
-	sga.contentIsLoading(true);
+	param.year = parseInt(sga.fiscalYear().split('-')[0], 10);
 
-	var breakdownValue = sga.breakdownValue().filter(function (d) {
-		return d !== 'All';
-	});
-	if (breakdownValue.length > 0) {
-		param.filters.push({
-			Field: sga.breakdownBy(),
-			Op: '$in',
-			Value: breakdownValue
-		});
+	if (sga.filterBranch().length > 0) {
+		param.branchnames = sga.filterBranch();
+	}
+	if (sga.filterCostGroup().length > 0) {
+		param.costgroups = sga.filterCostGroup();
 	}
 
+	sga.contentIsLoading(true);
+
 	var fetch = function fetch() {
-		rpt.injectMonthQuarterFilter(param.filters);
-		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
+		toolkit.ajaxPost(viewModel.appName + "report/getdatasga", param, function (res) {
 			if (res.Status == "NOK") {
 				setTimeout(function () {
 					fetch();
@@ -130,18 +146,10 @@ sga.refresh = function () {
 				return;
 			}
 
-			if (rpt.isEmptyData(res)) {
-				sga.contentIsLoading(false);
-				return;
-			}
-
-			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels);
-			var data = sga.buildStructure(res.Data.Data);
-			sga.data(data);
-			var plmodels = sga.buildPLModels(res.Data.PLModels);
-			rpt.plmodels(plmodels);
-			sga.emptyGrid();
 			sga.contentIsLoading(false);
+			sga.constructData(res.data);
+			sga.data(sga.buildStructure(sga.data()));
+			sga.emptyGrid();
 			sga.render();
 			rpt.showExpandAll(true);
 			rpt.prepareEvents();
@@ -196,7 +204,7 @@ sga.buildStructure = function (data) {
 
 	sga.level(1);
 	var newParsed = _.orderBy(parsed, function (d) {
-		return rpt.orderByChannel(d._id, d.PL8A);
+		return d.AMCITHARDWARE;
 	}, 'desc');
 	return newParsed;
 };
@@ -339,23 +347,24 @@ sga.render = function () {
 				return;
 			}
 
-			row.PNLTotal += value;
+			row.PNLTotal += toolkit.number(value);
 		});
-		dataFlat.forEach(function (e) {
-			var breakdown = e.key;
-			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
-			percentage = toolkit.number(percentage);
+		// dataFlat.forEach((e) => {
+		// 	let breakdown = e.key
+		// 	let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
+		// 	percentage = toolkit.number(percentage)
 
-			if (d._id == discountActivityPLCode) {
-				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100;
-			} else if (d._id != netSalesPLCode) {
-				percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
-			}
+		// 	if (d._id == discountActivityPLCode) {
+		// 		percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
+		// 	} else if (d._id != netSalesPLCode) {
+		// 		percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
+		// 	}
 
-			if (percentage < 0) percentage = percentage * -1;
+		// 	if (percentage < 0)
+		// 		percentage = percentage * -1
 
-			row[breakdown + ' %'] = percentage;
-		});
+		// 	row[`${breakdown} %`] = percentage
+		// })
 
 		rows.push(row);
 	});
@@ -364,21 +373,23 @@ sga.render = function () {
 
 	// let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 	// let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
-	rows.forEach(function (d, e) {
-		// let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
-		// if (d.PLCode == discountActivityPLCode) {
-		// 	TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
-		// }
+	// rows.forEach((d, e) => {
+	// 	// let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
+	// 	// if (d.PLCode == discountActivityPLCode) {
+	// 	// 	TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
+	// 	// }
 
-		// if (TotalPercentage < 0)
-		// 	TotalPercentage = TotalPercentage * -1
-		// rows[e].Percentage = toolkit.number(TotalPercentage)
-		rows[e].Percentage = 0;
-	});
+	// 	// if (TotalPercentage < 0)
+	// 	// 	TotalPercentage = TotalPercentage * -1
+	// 	// rows[e].Percentage = toolkit.number(TotalPercentage)
+	// 	rows[e].Percentage = 0
+	// })
 
 	// ========================= PLOT DATA
 
-	rows.forEach(function (d, i) {
+	_.orderBy(rows, function (d) {
+		return d.PNL;
+	}).forEach(function (d, i) {
 		pnlTotalSum += d.PNLTotal;
 
 		var PL = d.PLCode;
@@ -438,99 +449,16 @@ sga.render = function () {
 	rpt.buildGridLevels(rows);
 };
 
-sga.optionBreakdownValues = ko.observableArray([]);
-sga.breakdownValueAll = { _id: 'All', Name: 'All' };
-sga.changeBreakdown = function () {
-	var all = sga.breakdownValueAll;
-	var map = function map(arr) {
-		return arr.map(function (d) {
-			if ("customer.channelname" == sga.breakdownBy()) {
-				return d;
-			}
-			if ("customer.keyaccount" == sga.breakdownBy()) {
-				return { _id: d._id, Name: d._id };
-			}
-
-			return { _id: d.Name, Name: d.Name };
-		});
-	};
-	setTimeout(function () {
-		sga.breakdownValue([]);
-
-		switch (sga.breakdownBy()) {
-			case "customer.areaname":
-				sga.optionBreakdownValues([all].concat(map(rpt.masterData.Area())));
-				sga.breakdownValue([all._id]);
-				break;
-			case "customer.region":
-				sga.optionBreakdownValues([all].concat(map(rpt.masterData.Region())));
-				sga.breakdownValue([all._id]);
-				break;
-			case "customer.zone":
-				sga.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())));
-				sga.breakdownValue([all._id]);
-				break;
-			case "product.brand":
-				sga.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())));
-				sga.breakdownValue([all._id]);
-				break;
-			case "customer.branchname":
-				sga.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())));
-				sga.breakdownValue([all._id]);
-				break;
-			case "customer.branchgroup":
-				sga.optionBreakdownValues([all].concat(map(rpt.masterData.BranchGroup())));
-				sga.breakdownValue([all._id]);
-				break;
-			case "customer.channelname":
-				sga.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())));
-				sga.breakdownValue([all._id]);
-				break;
-			case "customer.keyaccount":
-				sga.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())));
-				sga.breakdownValue([all._id]);
-				break;
-		}
-	}, 100);
-};
-sga.changeBreakdownValue = function () {
-	var all = sga.breakdownValueAll;
-	setTimeout(function () {
-		var condA1 = sga.breakdownValue().length == 2;
-		var condA2 = sga.breakdownValue().indexOf(all._id) == 0;
-		if (condA1 && condA2) {
-			sga.breakdownValue.remove(all._id);
-			return;
-		}
-
-		var condB1 = sga.breakdownValue().length > 1;
-		var condB2 = sga.breakdownValue().reverse()[0] == all._id;
-		if (condB1 && condB2) {
-			sga.breakdownValue([all._id]);
-			return;
-		}
-
-		var condC1 = sga.breakdownValue().length == 0;
-		if (condC1) {
-			sga.breakdownValue([all._id]);
-		}
-	}, 100);
-};
-
 vm.currentMenu('Analysis');
-vm.currentTitle('SG&A Analysis');
+vm.currentTitle('&nbsp;');
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Analysis', href: '#' }, { title: 'SG&A Analysis', href: '#' }]);
 
 rpt.refresh = function () {
-	sga.changeBreakdown();
-	sga.changeBreakdownValue();
-	setTimeout(function () {
-		sga.breakdownValue(['All']);
-		sga.refresh();
-	}, 200);
+	sga.refresh();
 };
 
 $(function () {
+	rpt.fillFilterCostGroup();
 	rpt.refresh();
 	rpt.showExport(true);
 });

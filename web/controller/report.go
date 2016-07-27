@@ -21,6 +21,22 @@ func CreateReportController() *ReportController {
 	return controller
 }
 
+func (m *ReportController) GetDataSGA(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	payload := new(gdrj.SGAPayload)
+	if err := r.GetPayload(payload); err != nil {
+		return helper.CreateResult(false, []*gdrj.SGA{}, err.Error())
+	}
+
+	res, err := gdrj.SGAGetAll(payload)
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.SGA{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
 func (m *ReportController) GetDataSubChannel(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
@@ -38,6 +54,17 @@ func (m *ReportController) GetDataBranch(r *knot.WebContext) interface{} {
 	res, err := gdrj.MasterBranchGetAll()
 	if err != nil {
 		return helper.CreateResult(false, []*gdrj.Branch{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
+func (m *ReportController) GetDataFunction(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.MasterFunctionGetAll()
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.MasterFunction{}, err.Error())
 	}
 
 	return helper.CreateResult(true, res, "")
