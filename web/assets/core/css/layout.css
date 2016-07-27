@@ -782,22 +782,21 @@ body {
 }
 .scroll-grid-bottom.viewscrollfix {
   position: fixed;
-  bottom: 0px;
+  bottom: 4px;
   z-index: 10000;
 }
 .scroll-grid-bottom {
   margin-left: 390px;
-  height: 14px;
+  height: 18px;
   overflow-x: scroll;
   background-color: #F0F3F4;
 }
 .scroll-grid-bottom.viewscrollfix.arrow {
-  display: block;
-  margin-left: 360px;
-  height: 30px !important;
-  padding: 6px 9px;
+  margin-left: 366px;
+  height: 22px !important;
+  padding: 2px 5px;
   bottom: 2px;
-  width: 30px !important;
+  width: 22px !important;
   border-radius: 2px;
   background-color: #74b841;
   color: white;
@@ -806,7 +805,7 @@ body {
 }
 .scroll-grid-bottom.viewscrollfix.arrow.arrow-right {
   margin-left: inherit;
-  right: 16px;
+  right: 23px;
 }
 .scroll-grid-bottom.viewscrollfix.arrow:hover {
   background-color: #52981e;
@@ -827,10 +826,10 @@ body {
   -webkit-appearance: none;
 }
 .scroll-grid-bottom::-webkit-scrollbar:horizontal {
-  height: 15px;
+  height: 18px;
 }
 .table-content::-webkit-scrollbar:horizontal {
-  height: 15px;
+  height: 18px;
 }
 .scroll-grid-bottom::-webkit-scrollbar-thumb {
   border-radius: 8px;
