@@ -385,8 +385,10 @@ sga.render = function () {
 
 	// ========================= PLOT DATA
 
-	// _.orderBy(rows, (d) => d.PNL).forEach((d, i) => {
-	rows.forEach(function (d, i) {
+	_.orderBy(rows, function (d) {
+		return d.PNLTotal;
+	}, 'desc').forEach(function (d, i) {
+		// rows.forEach((d, i) => {
 		pnlTotalSum += d.PNLTotal;
 
 		var PL = d.PLCode;
