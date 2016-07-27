@@ -155,10 +155,11 @@ kac.buildStructure = function (data) {
 					return;
 			}
 			// } else if (d._id._id_trxsrc == 'pushrdreversesbymks') {
-			d._id._id_customer_customergroupname = 'Other - Reclass to RD';
-			// return
+			// 	d._id._id_customer_customergroupname = 'Other - Reclass to RD'
+			// 	return
 		}
 
+		d._id._id_customer_customergroupname = 'Other - Reclass to RD';
 		// d._id._id_customer_customergroupname = 'Other'
 	});
 
