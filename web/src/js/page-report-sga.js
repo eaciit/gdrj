@@ -432,8 +432,8 @@ sga.render = () => {
 
 	// ========================= PLOT DATA
 
-	// _.orderBy(rows, (d) => d.PNL).forEach((d, i) => {
-	rows.forEach((d, i) => {
+	_.orderBy(rows, (d) => d.PNLTotal, 'desc').forEach((d, i) => {
+	// rows.forEach((d, i) => {
 		pnlTotalSum += d.PNLTotal
 
 		let PL = d.PLCode
