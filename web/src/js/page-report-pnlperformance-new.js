@@ -3797,10 +3797,10 @@ let dsbrd = viewModel.dashboard
 		{ pnl: "G&A Expenses", plcodes: ["PL94A"] },
 		{ pnl: "Royalties", plcodes: ["PL26A"] },
 		{ pnl: "Advt & Promo", plcodes: ["PL32A"] },
+		{ pnl: "EBIT", plcodes: ["PL44B"] },
+		{ pnl: "EBIT %", plcodes: [] },
 		{ pnl: "EBITDA", plcodes: ["PL44C"] },
 		{ pnl: "EBITDA & Royalties", plcodes: ["PL44D"] },
-		{ pnl: "EBIT %", plcodes: [] },
-		{ pnl: "EBIT", plcodes: ["PL44B"] },
 	])
 
 	dsbrd.data = ko.observableArray([])
