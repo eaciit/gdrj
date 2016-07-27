@@ -46,18 +46,18 @@ sga.constructData = function (raw) {
 	rpt.plmodels(oq2);
 
 	var key = sga.breakdownBy();
+	var cache = {};
 	var rawData = [];
 	raw.forEach(function (d) {
 		var breakdown = d[key];
-		var o = rawData.find(function (e) {
-			return e._id['_id_' + key] === breakdown;
-		});
-		if (typeof o == 'undefined') {
+		var o = cache[breakdown];
+		if (typeof o === 'undefined') {
 			o = {};
 			o._id = {};
 			o._id['_id_' + key] = breakdown;
 			rawData.push(o);
 		}
+		cache[breakdown] = o;
 
 		// let plID = sga.getAlphaNumeric([d.account, d.accountGroup].join('|'))
 		// let plmodel = rpt.plmodels().find((e) => e._id == plID)
@@ -203,10 +203,8 @@ sga.buildStructure = function (data) {
 	});
 
 	sga.level(1);
-	var newParsed = _.orderBy(parsed, function (d) {
-		return d.AMCITHARDWARE;
-	}, 'desc');
-	return newParsed;
+	// let newParsed = _.orderBy(parsed, (d) => d._id, 'asc')
+	return parsed;
 };
 
 sga.render = function () {
@@ -387,9 +385,8 @@ sga.render = function () {
 
 	// ========================= PLOT DATA
 
-	_.orderBy(rows, function (d) {
-		return d.PNL;
-	}).forEach(function (d, i) {
+	// _.orderBy(rows, (d) => d.PNL).forEach((d, i) => {
+	rows.forEach(function (d, i) {
 		pnlTotalSum += d.PNLTotal;
 
 		var PL = d.PLCode;
