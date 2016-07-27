@@ -1288,13 +1288,13 @@ let v2 = viewModel.RDvsBranchView2
 			each.key = key.join('_')
 			dataFlat.push(each)
 
-			totalColumnWidth += currentColumnWidth
+			totalColumnWidth += currentColumnWidth + percentageWidth
 			thheader.width(currentColumnWidth)
 		}
 
 		data.forEach((lvl1, i) => {
 			let thheader1 = toolkit.newEl('th')
-				.html(lvl1._id)
+				.html(lvl1._id.replace(/\ /g, '&nbsp;'))
 				.attr('colspan', lvl1.count)
 				.addClass('align-center')
 				.appendTo(trContents[0])
@@ -1307,7 +1307,7 @@ let v2 = viewModel.RDvsBranchView2
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of N Sales')
+					.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 					.css('font-weight', 'normal')
 					.css('font-style', 'italic')
 					.width(percentageWidth)
@@ -1321,7 +1321,7 @@ let v2 = viewModel.RDvsBranchView2
 
 			lvl1.subs.forEach((lvl2, j) => {
 				let thheader2 = toolkit.newEl('th')
-					.html(lvl2._id)
+					.html(lvl2._id.replace(/\ /g, '&nbsp;'))
 					.addClass('align-center')
 					.appendTo(trContents[1])
 
@@ -1335,7 +1335,7 @@ let v2 = viewModel.RDvsBranchView2
 
 					totalColumnWidth += percentageWidth
 					let thheader1p = toolkit.newEl('th')
-						.html('% of N Sales')
+						.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 						.css('font-weight', 'normal')
 						.css('font-style', 'italic')
 						.width(percentageWidth)

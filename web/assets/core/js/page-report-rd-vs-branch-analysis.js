@@ -650,25 +650,25 @@ v2.render = function () {
 		each.key = key.join('_');
 		dataFlat.push(each);
 
-		totalColumnWidth += currentColumnWidth;
+		totalColumnWidth += currentColumnWidth + percentageWidth;
 		thheader.width(currentColumnWidth);
 	};
 
 	data.forEach(function (lvl1, i) {
-		var thheader1 = toolkit.newEl('th').html(lvl1._id).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white').css('border-top', 'none');
+		var thheader1 = toolkit.newEl('th').html(lvl1._id.replace(/\ /g, '&nbsp;')).attr('colspan', lvl1.count).addClass('align-center').appendTo(trContents[0]).css('background-color', colors[i]).css('color', 'white').css('border-top', 'none');
 
 		if (v2.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('border-top', 'none');
+			var thheader1p = toolkit.newEl('th').html('% of N Sales'.replace(/\ /g, '&nbsp;')).css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[0]).css('border-top', 'none');
 
 			return;
 		}
 		thheader1.attr('colspan', lvl1.count * 2);
 
 		lvl1.subs.forEach(function (lvl2, j) {
-			var thheader2 = toolkit.newEl('th').html(lvl2._id).addClass('align-center').appendTo(trContents[1]);
+			var thheader2 = toolkit.newEl('th').html(lvl2._id.replace(/\ /g, '&nbsp;')).addClass('align-center').appendTo(trContents[1]);
 
 			if (lvl2._id == 'Total') {
 				thheader2.css('background-color', 'rgb(116, 149, 160)');
@@ -679,7 +679,7 @@ v2.render = function () {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id]);
 
 				totalColumnWidth += percentageWidth;
-				var _thheader1p2 = toolkit.newEl('th').html('% of N Sales').css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
+				var _thheader1p2 = toolkit.newEl('th').html('% of N Sales'.replace(/\ /g, '&nbsp;')).css('font-weight', 'normal').css('font-style', 'italic').width(percentageWidth).addClass('align-center').appendTo(trContents[1]);
 
 				if (lvl2._id == 'Total') {
 					_thheader1p2.css('background-color', 'rgb(116, 149, 160)');
