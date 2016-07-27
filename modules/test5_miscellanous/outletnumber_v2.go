@@ -101,7 +101,7 @@ func getoutletdata() {
 	shutdownChannel := make(chan string, count)
 	toolkit.Println("Prepare Worker for ", group)
 
-	for wi := 0; wi < 4; wi++ {
+	for wi := 0; wi < 10; wi++ {
 		go workerOutlet(wi, jobs, shutdownChannel)
 	}
 	var err error
@@ -134,7 +134,7 @@ func getoutletdata() {
 		}
 	}
 
-	tablename := "_outlet_number_date_fiscal_" + group
+	tablename := "test_outlet_number_date_fiscal_" + group
 	outletnumbConn.NewQuery().
 		From(tablename).
 		SetConfig("multiexec", true).
@@ -144,15 +144,15 @@ func getoutletdata() {
 }
 
 func workerOutlet(wi int, jobs <-chan *gdrj.OutletNumber, shutdownChannel chan<- string) {
-	/*workerconn, _ := modules.GetDboxIConnection("db_godrej")
-	defer workerconn.Close()*/
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
 
-	// tablename := "_outlet_number_date_fiscal_" + group
+	/*tablename := "test_outlet_number_date_fiscal_" + group
 
-	/*qSave := workerconn.NewQuery().
-	From(tablename).
-	SetConfig("multiexec", true).
-	Save()*/
+	qSave := workerconn.NewQuery().
+		From(tablename).
+		SetConfig("multiexec", true).
+		Save()*/
 	outletdata := new(gdrj.OutletNumber)
 	for outletdata = range jobs {
 		// defer func() { shutdownChannel <- true }()
@@ -223,7 +223,7 @@ func workerOutlet(wi int, jobs <-chan *gdrj.OutletNumber, shutdownChannel chan<-
 		repordata.Set("key", key)
 		mutex.Unlock()
 
-		// qSave.Exec(toolkit.M{}.Set("data", report))
+		// qSave.Exec(toolkit.M{}.Set("data", repordata))
 		/*if err != nil {
 			toolkit.Printfn("Unable to save %s = %s",
 				report["_id"], err.Error())
