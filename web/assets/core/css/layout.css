@@ -791,6 +791,26 @@ body {
   overflow-x: scroll;
   background-color: #F0F3F4;
 }
+.scroll-grid-bottom.viewscrollfix.arrow {
+  display: block;
+  margin-left: 360px;
+  height: 30px !important;
+  padding: 6px 9px;
+  bottom: 2px;
+  width: 30px !important;
+  border-radius: 2px;
+  background-color: #74b841;
+  color: white;
+  overflow: hidden;
+  cursor: pointer;
+}
+.scroll-grid-bottom.viewscrollfix.arrow.arrow-right {
+  margin-left: inherit;
+  right: 16px;
+}
+.scroll-grid-bottom.viewscrollfix.arrow:hover {
+  background-color: #52981e;
+}
 .table-content::-webkit-scrollbar {
   -webkit-appearance: none;
 }
@@ -825,7 +845,7 @@ body {
 }
 .nav-pills li {
   margin-left: 2px;
-  margin-right: 2px;
+  margin-right: 0px;
   margin-bottom: 2px;
 }
 .nav-pills li a {

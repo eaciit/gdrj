@@ -1288,13 +1288,13 @@ let v2 = viewModel.RDvsBranchView2
 			each.key = key.join('_')
 			dataFlat.push(each)
 
-			totalColumnWidth += currentColumnWidth
+			totalColumnWidth += currentColumnWidth + percentageWidth
 			thheader.width(currentColumnWidth)
 		}
 
 		data.forEach((lvl1, i) => {
 			let thheader1 = toolkit.newEl('th')
-				.html(lvl1._id)
+				.html(lvl1._id.replace(/\ /g, '&nbsp;'))
 				.attr('colspan', lvl1.count)
 				.addClass('align-center')
 				.appendTo(trContents[0])
@@ -1307,7 +1307,7 @@ let v2 = viewModel.RDvsBranchView2
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of N Sales')
+					.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 					.css('font-weight', 'normal')
 					.css('font-style', 'italic')
 					.width(percentageWidth)
@@ -1321,7 +1321,7 @@ let v2 = viewModel.RDvsBranchView2
 
 			lvl1.subs.forEach((lvl2, j) => {
 				let thheader2 = toolkit.newEl('th')
-					.html(lvl2._id)
+					.html(lvl2._id.replace(/\ /g, '&nbsp;'))
 					.addClass('align-center')
 					.appendTo(trContents[1])
 
@@ -1335,7 +1335,7 @@ let v2 = viewModel.RDvsBranchView2
 
 					totalColumnWidth += percentageWidth
 					let thheader1p = toolkit.newEl('th')
-						.html('% of N Sales')
+						.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 						.css('font-weight', 'normal')
 						.css('font-style', 'italic')
 						.width(percentageWidth)
@@ -2240,9 +2240,10 @@ let kac = viewModel.keyAccount
 		param.filters.push({
 			Field: "customer.channelname",
 			Op: "$in",
-			Value: rpt.masterData.Channel()
-				.map((d) => d._id)
-				.filter((d) => d != "EXP")
+			Value: ['I3']
+			// Value: rpt.masterData.Channel()
+			// 	.map((d) => d._id)
+			// 	.filter((d) => d != "EXP")
 		})
 
 		let breakdownGroupValue = kac.breakdownGroupValue().filter((d) => d != 'All')
@@ -2363,9 +2364,13 @@ let kac = viewModel.keyAccount
 							d._id._id_customer_customergroupname = `Other - ${d._id._id_customer_channelname}`
 							return
 					}
+				// } else if (d._id._id_trxsrc == 'pushrdreversesbymks') {
+				// 	d._id._id_customer_customergroupname = 'Other - Reclass to RD'
+				// 	return
 				}
 
-				d._id._id_customer_customergroupname = 'Other' 
+				d._id._id_customer_customergroupname = 'Other - Reclass to RD'
+				// d._id._id_customer_customergroupname = 'Other' 
 			})
 
 		let groupThenMap = (data, group) => {
@@ -2428,8 +2433,10 @@ let kac = viewModel.keyAccount
 				return -100000000000
 			} else if (d._id == 'Other - General Trade') {
 				return -100000000001
-			} else if (d._id == 'Other') {
+			} else if (d._id == 'Other - Reclass to RD') {
 				return -100000000002
+			} else if (d._id == 'Other') {
+				return -100000000003
 			}
 
 			return netSalesRow[d._id]
@@ -2791,14 +2798,18 @@ let subchan = viewModel.subChannel
 		subchan.useFilterAccount(true)
 		subchan.useFilterBranch(true)
 		subchan.useFilterDistributor(true)
+		subchan.optionAccount(rpt.masterData
+			.KeyAccount())
 	}
 
 	subchan.switchRefresh = (title, what) => {
 		if (what == 'mt sub channel') {
 			subchan.useFilterChannel(false)
-			subchan.useFilterAccount(false)
 			subchan.useFilterBranch(false)
 			subchan.useFilterDistributor(false)
+			subchan.optionAccount(rpt.masterData
+				.KeyAccount()
+				.filter((d) => d._id != "GNT"))
 		}
 
 		subchan.breakdownBrand(['All'])
