@@ -14,6 +14,10 @@ yc.flag = ko.observable('');
 yc.unit = ko.observable('v1000000000');
 yc.optionUnit = ko.observableArray([{ _id: 'v1', Name: 'Actual', suffix: '' }, { _id: 'v1000', Name: 'Hundreds', suffix: 'K' }, { _id: 'v1000000', Name: 'Millions', suffix: 'M' }, { _id: 'v1000000000', Name: 'Billions', suffix: 'B' }]);
 
+yc.getDivider = function () {
+	return parseInt(yc.unit().replace(/v/g, ''), 10);
+};
+
 yc.groupMap = function (arr, c, d) {
 	return _.map(_.groupBy(arr, c), d);
 };
@@ -90,11 +94,6 @@ yc.refresh = function () {
 
 yc.render = function () {
 	var _ref;
-
-	var divider = parseInt(yc.unit().replace(/v/g, ''), 10);
-	var unitSuffix = yc.optionUnit().find(function (d) {
-		return d._id == yc.unit();
-	}).suffix;
 
 	var dimensionTitle = 'Dimension';
 	toolkit.try(function () {
@@ -173,7 +172,7 @@ yc.render = function () {
 		o.v2015_nsal_value = 0;
 		o.v2015_nsal_growth = 0;
 		toolkit.try(function () {
-			o.v2015_nsal_value = data2015[0][plCodeNetSales];
+			o.v2015_nsal_value = data2015[0][plCodeNetSales] / yc.getDivider();
 		});
 		toolkit.try(function () {
 			o.v2015_nsal_growth = calcGrowth(data2015, data2014, plCodeNetSales);
@@ -182,7 +181,7 @@ yc.render = function () {
 		o.v2015_ebit_value = 0;
 		o.v2015_ebit_growth = 0;
 		toolkit.try(function () {
-			o.v2015_ebit_value = data2015[0][plCodeEBIT];
+			o.v2015_ebit_value = data2015[0][plCodeEBIT] / yc.getDivider();
 		});
 		toolkit.try(function () {
 			o.v2015_ebit_growth = calcGrowth(data2015, data2014, plCodeEBIT);
@@ -191,7 +190,7 @@ yc.render = function () {
 		o.v2015_gs_value = 0;
 		o.v2015_gs_growth = 0;
 		toolkit.try(function () {
-			o.v2015_gs_value = data2015[0][plGrossMargin];
+			o.v2015_gs_value = data2015[0][plGrossMargin] / yc.getDivider();
 		});
 		toolkit.try(function () {
 			o.v2015_gs_growth = calcGrowth(data2015, data2014, plGrossMargin);
@@ -229,17 +228,17 @@ yc.render = function () {
 
 		o.v2014_nsal_value = 0;
 		toolkit.try(function () {
-			o.v2014_nsal_value = data2014[0][plCodeNetSales];
+			o.v2014_nsal_value = data2014[0][plCodeNetSales] / yc.getDivider();
 		});
 
 		o.v2014_ebit_value = 0;
 		toolkit.try(function () {
-			o.v2014_ebit_value = data2014[0][plCodeEBIT];
+			o.v2014_ebit_value = data2014[0][plCodeEBIT] / yc.getDivider();
 		});
 
 		o.v2014_gs_value = 0;
 		toolkit.try(function () {
-			o.v2014_gs_value = data2014[0][plGrossMargin];
+			o.v2014_gs_value = data2014[0][plGrossMargin] / yc.getDivider();
 		});
 
 		return o;
@@ -289,7 +288,7 @@ yc.render = function () {
 		dimensionWidth = 160;
 	}
 
-	var widthValue = 120;
+	var widthValue = 90;
 	var widthPrcnt = 90;
 	var tableWidth = 1200;
 	if (yc.unit() == 'v1000000') {
