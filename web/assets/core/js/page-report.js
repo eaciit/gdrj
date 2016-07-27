@@ -1209,7 +1209,7 @@ rpt.addScrollBottom = function (container) {
 		target2.scrollLeft = this.scrollLeft;
 	});
 
-	var walkLength = 30;
+	var walkLength = 50;
 
 	arrowLeft.on('click', function () {
 		var newVal = target.scrollLeft - walkLength;
