@@ -964,9 +964,9 @@ func prepsalesplssummaryrdwrongsubch() {
 		total += tkm.GetFloat64("gross")
 	}
 
-	ratio := math.Abs(toolkit.Div(63745639125.279884, total))
+	ratio := math.Abs(toolkit.Div(57300800361.49201, total))
 	if fiscalyear == 2016 {
-		ratio = math.Abs(toolkit.Div(69236716246.87997, total))
+		ratio = math.Abs(toolkit.Div(62236716264.63395, total))
 	}
 
 	ratio = ratio - 0.0005
@@ -1956,6 +1956,18 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		dtkm, _ := toolkit.ToM(trx.Get("key"))
 		if dtkm.GetString("customer_reportsubchannel") == "R3" {
 			dtkm.Set("customer_reportsubchannel", "R3 - Retailer Umum")
+		}
+
+		if dtkm.GetString("customer_branchgroup") == "" {
+			dtkm.Set("customer_branchgroup", "Other")
+		}
+
+		if dtkm.GetString("customer_region") == "" || dtkm.GetString("customer_region") == "Other" {
+			dtkm.Set("customer_region", "OTHER")
+		}
+
+		if dtkm.GetString("customer_zone") == "" || dtkm.GetString("customer_zone") == "Other" {
+			dtkm.Set("customer_zone", "OTHER")
 		}
 		trx.Set("key", dtkm)
 

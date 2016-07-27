@@ -23,4 +23,17 @@
         	"timeout":3000
         }
     }
+},
+{
+    "_id": "db_godrej_test",
+    "data": {
+        "db": "ecgodrej",
+        "driver": "mongo",
+        "host": "52.220.25.190:27123",
+        "pass": "",
+        "user": "",
+        "setting": {
+        	"timeout":3000
+        }
+    }
 }]
