@@ -444,7 +444,13 @@ rpt.getOtherMasterData = () => {
 }
 
 rpt.isEmptyData = (res) => {
-	// return false
+	if (res == null || typeof res === 'undefined') {
+		return true
+	}
+
+	if (res.Data == null) {
+		return true
+	}
 
 	if (res.Data.length == 0) {
 		toolkit.showError('The UI data is not ready')
