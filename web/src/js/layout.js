@@ -21,7 +21,7 @@ vm.menu = ko.observableArray([
 		{ title: 'GNA Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/gnaanalysis', submenu: [] },
 		{ title: 'Custom Analysis', icon: 'bar-chart-o', href: viewModel.appName + 'page/customanalysis', submenu: [] }
 	] },
-	{ title: 'Analysis Ideas', icon: 'bar-chart-o', href: viewModel.appName + 'page/report', submenu: [] },
+	{ title: 'Analysis Ideas', icon: 'bar-chart-o', href: viewModel.appName + 'page/reportdynamic?p=sales-by-outlet', submenu: [] },
 	// { title: 'Report', icon: 'file-text-o', href: viewModel.appName + 'page/report/list', submenu: [] },
 	{ title: 'Data Manager', icon: 'database', href: '#', submenu: [
 		{ title: 'Data Browser', icon: 'list', href: viewModel.appName + 'page/databrowser', submenu: [] },
