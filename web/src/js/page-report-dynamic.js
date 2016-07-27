@@ -42,14 +42,19 @@ rd.doToggleAnalysisFilter = (which) => {
 rd.toggleAnalysisFilter = () => {
 	rd.doToggleAnalysisFilter(!rd.isFilterShown())
 }
+rd.hasOutlet = () => {
+	return rd.getParameterByName('p').toLowerCase().indexOf('outlet') > -1
+}
 
 rd.refresh = () => {
 	let param = {}
 	param.pls = []
 	param.groups = rpt.parseGroups([rd.breakdownBy()])
 	param.aggr = 'sum'
-	param.flag = 'hasoutlet'
 	param.filters = rpt.getFilterValue(false, rd.fiscalYear)
+	if (rd.hasOutlet()) {
+		param.flag = "hasoutlet"
+	}
 
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
@@ -66,8 +71,12 @@ rd.refresh = () => {
 			}
 
 			rd.contentIsLoading(false)
-			let addoutlet = rd.addTotalOutlet(res.Data.Data, res.Data.Outlet)
-			rd.data(addoutlet)
+			if (rd.hasOutlet()) {
+				let addoutlet = rd.addTotalOutlet(res.Data.Data, res.Data.Outlet)
+				rd.data(addoutlet)
+			} else {
+				rd.data(res.Data.Data)
+			}
 			rd.render()
 
 			// if ($('.list-analysis').is(':visible')) {
@@ -80,6 +89,15 @@ rd.refresh = () => {
 
 	rd.contentIsLoading(true)
 	fetch()
+}
+
+rd.getParameterByName = (name, url) => {
+    if (!url) url = window.location.href
+    name = name.replace(/[\[\]]/g, "\\$&")
+    let regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"), results = regex.exec(url);
+    if (!results) return null
+    if (!results[2]) return ''
+    return decodeURIComponent(results[2].replace(/\+/g, " "))
 }
 
 rd.addTotalOutlet = (data, outlet) => {
@@ -663,7 +681,7 @@ rd.setup = () => {
 				plheader: 'Total Outlet',
 				callback: (v, k) => {
 					let totaloutlet = Math.abs(toolkit.sum(v, (e) => e.totaloutlet))
-					return totaloutlet
+					return totaloutlet / rd.divider()
 				}
 			}, { 
 				_id: 'prcnt', 
@@ -672,7 +690,7 @@ rd.setup = () => {
 					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
 					let totaloutlet = Math.abs(toolkit.sum(v, (e) => e.totaloutlet))
 
-					return toolkit.number(netSales / totaloutlet)
+					return toolkit.number(netSales / totaloutlet) / rd.divider()
 				}
 			}])
 		} break;

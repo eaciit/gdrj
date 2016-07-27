@@ -39,14 +39,19 @@ rd.doToggleAnalysisFilter = function (which) {
 rd.toggleAnalysisFilter = function () {
 	rd.doToggleAnalysisFilter(!rd.isFilterShown());
 };
+rd.hasOutlet = function () {
+	return rd.getParameterByName('p').toLowerCase().indexOf('outlet') > -1;
+};
 
 rd.refresh = function () {
 	var param = {};
 	param.pls = [];
 	param.groups = rpt.parseGroups([rd.breakdownBy()]);
 	param.aggr = 'sum';
-	param.flag = 'hasoutlet';
 	param.filters = rpt.getFilterValue(false, rd.fiscalYear);
+	if (rd.hasOutlet()) {
+		param.flag = "hasoutlet";
+	}
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
@@ -63,8 +68,12 @@ rd.refresh = function () {
 			}
 
 			rd.contentIsLoading(false);
-			var addoutlet = rd.addTotalOutlet(res.Data.Data, res.Data.Outlet);
-			rd.data(addoutlet);
+			if (rd.hasOutlet()) {
+				var addoutlet = rd.addTotalOutlet(res.Data.Data, res.Data.Outlet);
+				rd.data(addoutlet);
+			} else {
+				rd.data(res.Data.Data);
+			}
 			rd.render();
 
 			// if ($('.list-analysis').is(':visible')) {
@@ -77,6 +86,16 @@ rd.refresh = function () {
 
 	rd.contentIsLoading(true);
 	fetch();
+};
+
+rd.getParameterByName = function (name, url) {
+	if (!url) url = window.location.href;
+	name = name.replace(/[\[\]]/g, "\\$&");
+	var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+	    results = regex.exec(url);
+	if (!results) return null;
+	if (!results[2]) return '';
+	return decodeURIComponent(results[2].replace(/\+/g, " "));
 };
 
 rd.addTotalOutlet = function (data, outlet) {
@@ -822,7 +841,7 @@ rd.setup = function () {
 						var totaloutlet = Math.abs(toolkit.sum(v, function (e) {
 							return e.totaloutlet;
 						}));
-						return totaloutlet;
+						return totaloutlet / rd.divider();
 					}
 				}, {
 					_id: 'prcnt',
@@ -835,7 +854,7 @@ rd.setup = function () {
 							return e.totaloutlet;
 						}));
 
-						return toolkit.number(netSales / totaloutlet);
+						return toolkit.number(netSales / totaloutlet) / rd.divider();
 					}
 				}]);
 			}break;
