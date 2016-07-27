@@ -3,17 +3,19 @@
 	<div class="col-md-12 col-sm-12 ez panel-content">
 
 <div class="panel ez no-padding hardcore">
-	<div class="panel-heading">
-		<p style="margin: 0px; cursor: pointer;" onclick="rd.toggleAnalysisFilter()">
-			<!-- Click to -->
-			<span style="display: none; text-decoration: underline;" data-bind="visible: !rd.isFilterShown()">Show</span>
-			<span style="display: none; text-decoration: underline;" data-bind="visible: rd.isFilterShown()">Hide</span>
-			list of analysis ideas
-		</p>
-	</div>
+	<div class="panel-body" style="position: relative; min-height: 50px;">
+		<div class="panel-nav-button" style="position: absolute; right: 10px; top: 10px;">
+			<div class="form-inline">
+				<button class="btn btn-sm btn-success tooltipster tooltipstered" data-bind="click: rd.toggleAnalysisFilter, visible: !rd.isFilterShown()" style="display: none;">
+					<i class="fa fa-folder-open-o"></i> Show filter
+				</button>
+				<button class="btn btn-sm btn-success tooltipster tooltipstered" data-bind="click: rd.toggleAnalysisFilter, visible: rd.isFilterShown()">
+					<i class="fa fa-folder-o"></i> Hide filter
+				</button>
+			</div>
+		</div>
 
-	<div class="panel-body">
-		<div class="list-analysis" style="margin: 5px 0px;">
+		<div class="list-analysis" style="margin: 5px 0px; margin: 5px 0px; margin-right: 58px;">
 			<div class="col-md-3">
 				<div class="wrapper">
 					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=sales-by-outlet' }">
