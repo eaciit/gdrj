@@ -57,11 +57,6 @@ var (
 
 func main() {
 	setinitialconnection()
-	conn.NewQuery().From(desttablename).
-		Where(dbox.Eq("key.trxsrc", "nakulrd")).
-		Delete().
-		Exec(nil)
-
 	prepmastercalc()
 	buildratio()
 	for _, v := range []string{"2015-2016", "2014-2015"} {
