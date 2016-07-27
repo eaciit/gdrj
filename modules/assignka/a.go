@@ -166,7 +166,7 @@ func processTable(fiscal string) {
 		key.Set("customer_customergroupname", groupname)
 		mr.Set("key", key)
 
-		gdrj.CalcSum(mr, masters)
+		//gdrj.CalcSum(mr, masters)
 		esave := qsave.Exec(toolkit.M{}.Set("data", mr))
 		if esave != nil {
 			toolkit.Printfn("Erorr: %s", esave.Error())
