@@ -2240,10 +2240,10 @@ let kac = viewModel.keyAccount
 		param.filters.push({
 			Field: "customer.channelname",
 			Op: "$in",
-			Value: ['I3']
-			// Value: rpt.masterData.Channel()
-			// 	.map((d) => d._id)
-			// 	.filter((d) => d != "EXP")
+			// Value: ['I3']
+			Value: rpt.masterData.Channel()
+				.map((d) => d._id)
+				.filter((d) => d != "EXP")
 		})
 
 		let breakdownGroupValue = kac.breakdownGroupValue().filter((d) => d != 'All')
