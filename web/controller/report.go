@@ -424,16 +424,23 @@ func (m *ReportController) GetPNLDataNew(r *knot.WebContext) interface{} {
 
 		/*==================== outlet data =================*/
 		if payload.Flag == "hasoutlet" {
-			outletdata, err := payload.GetOutletData()
-			if err != nil {
+			oke, _, erot := payload.CountOutletData()
+			if erot != nil {
 				res.SetError(err)
 				return res
 			}
-			res.SetData(toolkit.M{
-				"Data":     data,
-				"PLModels": plmodels,
-				"Outlet":   outletdata,
-			})
+			if oke {
+				outletdata, err := payload.GetOutletData()
+				if err != nil {
+					res.SetError(err)
+					return res
+				}
+				res.SetData(toolkit.M{
+					"Data":     data,
+					"PLModels": plmodels,
+					"Outlet":   outletdata,
+				})
+			}
 		} else {
 			res.SetData(toolkit.M{
 				"Data":     data,
