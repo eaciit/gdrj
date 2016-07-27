@@ -30,6 +30,7 @@ rd.refresh = function () {
 	param.pls = [];
 	param.groups = rpt.parseGroups([rd.breakdownBy()]);
 	param.aggr = 'sum';
+	param.flag = 'hasoutlet';
 	param.filters = rpt.getFilterValue(false, rd.fiscalYear);
 
 	var fetch = function fetch() {
@@ -61,9 +62,12 @@ rd.refresh = function () {
 
 rd.addTotalOutlet = function (data, outlet) {
 	for (var i in data) {
-		data[i]['totaloutlet'] = _.find(outlet, function (d) {
-			return d._id['_id_' + toolkit.replace(rd.breakdownBy(), '.', '_')] == data[i]._id['_id_' + toolkit.replace(rd.breakdownBy(), '.', '_')];
-		}).qty;
+		data[i]['totaloutlet'] = 0;
+		toolkit.try(function () {
+			data[i]['totaloutlet'] = _.find(outlet, function (d) {
+				return d._id['_id_' + toolkit.replace(rd.breakdownBy(), '.', '_')] == data[i]._id['_id_' + toolkit.replace(rd.breakdownBy(), '.', '_')];
+			}).qty;
+		});
 	}
 	return data;
 };

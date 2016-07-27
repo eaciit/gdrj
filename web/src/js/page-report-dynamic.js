@@ -33,6 +33,7 @@ rd.refresh = () => {
 	param.pls = []
 	param.groups = rpt.parseGroups([rd.breakdownBy()])
 	param.aggr = 'sum'
+	param.flag = 'hasoutlet'
 	param.filters = rpt.getFilterValue(false, rd.fiscalYear)
 
 	let fetch = () => {
@@ -64,7 +65,10 @@ rd.refresh = () => {
 
 rd.addTotalOutlet = (data, outlet) => {
 	for (var i in data){
-		data[i]['totaloutlet'] = _.find(outlet, (d) => { return d._id[`_id_${toolkit.replace(rd.breakdownBy(), '.', '_')}`] == data[i]._id[`_id_${toolkit.replace(rd.breakdownBy(), '.', '_')}`] }).qty
+		data[i]['totaloutlet'] = 0
+		toolkit.try(() => {
+			data[i]['totaloutlet'] = _.find(outlet, (d) => { return d._id[`_id_${toolkit.replace(rd.breakdownBy(), '.', '_')}`] == data[i]._id[`_id_${toolkit.replace(rd.breakdownBy(), '.', '_')}`] }).qty
+		})
 	}
 	return data
 }
