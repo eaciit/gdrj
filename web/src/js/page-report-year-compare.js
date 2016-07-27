@@ -353,7 +353,19 @@ yc.render = () => {
 		dataSource: {
 			data: dataParsed
 		},
-		columns: columns
+		columns: columns,
+		dataBound: () => {
+			let sel = '#year-comparison .k-grid-content-locked tr, #year-comparison .k-grid-content tr'
+
+			$(sel).on('mouseenter', function () {
+				let index = $(this).index()
+		        let elh = $(`#year-comparison .k-grid-content-locked tr:eq(${index})`).addClass('hover')
+		        let elc = $(`#year-comparison .k-grid-content tr:eq(${index})`).addClass('hover')
+			})
+			$(sel).on('mouseleave', function () {
+				$('#year-comparison tr.hover').removeClass('hover')
+			})
+		}
 	}
 
 	$('#year-comparison').replaceWith(`<div class="breakdown-view ez" id="year-comparison"></div>`)

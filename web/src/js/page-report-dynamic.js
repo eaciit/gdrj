@@ -50,7 +50,8 @@ rd.refresh = () => {
 			}
 
 			rd.contentIsLoading(false)
-			rd.data(res.Data.Data)
+			let addoutlet = rd.addTotalOutlet(res.Data.Data, res.Data.Outlet)
+			rd.data(addoutlet)
 			rd.render()
 		}, () => {
 			rd.contentIsLoading(false)
@@ -59,6 +60,13 @@ rd.refresh = () => {
 
 	rd.contentIsLoading(true)
 	fetch()
+}
+
+rd.addTotalOutlet = (data, outlet) => {
+	for (var i in data){
+		data[i]['totaloutlet'] = _.find(outlet, (d) => { return d._id[`_id_${toolkit.replace(rd.breakdownBy(), '.', '_')}`] == data[i]._id[`_id_${toolkit.replace(rd.breakdownBy(), '.', '_')}`] }).qty
+	}
+	return data
 }
 
 rd.render = () => {
@@ -613,6 +621,35 @@ rd.setup = () => {
 					let netsales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
 
 					return toolkit.number(cost / netsales)
+				}
+			}])
+		} break;
+
+		case 'sales-by-outlet': {
+			vm.currentTitle('Sales by Outlet')
+			rd.series = ko.observableArray([{ 
+				_id: 'netSales', 
+				plheader: 'Net Sales',
+				callback: (v, k) => {
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+
+					return netSales / rd.divider()
+				}
+			}, { 
+				_id: 'totaloutlet', 
+				plheader: 'Total Outlet',
+				callback: (v, k) => {
+					let totaloutlet = Math.abs(toolkit.sum(v, (e) => e.totaloutlet))
+					return totaloutlet
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {					
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+					let totaloutlet = Math.abs(toolkit.sum(v, (e) => e.totaloutlet))
+
+					return toolkit.number(netSales / totaloutlet)
 				}
 			}])
 		} break;
