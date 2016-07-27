@@ -84,7 +84,7 @@ func buildratio() {
 
 	csp, _ := connratio.NewQuery().From(calctablename).
 		Where(dbox.Eq("key.customer_channelid", "I3"),
-		dbox.Eq("key.customer_customergroup", "")).
+		dbox.Ne("key.customer_customergroup", "")).
 		Select().Cursor(nil)
 	defer csp.Close()
 
