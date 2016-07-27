@@ -73,12 +73,14 @@ func buildratio() {
 	connratio, _ := modules.GetDboxIConnection("db_godrej")
 	defer connratio.Close()
 
-	ftrx := &dbox.Filter{}
-	if reforsrc == "ref" {
-		ftrx = dbox.Eq("key.ref", trxsrc)
-	} else {
-		dbox.Eq("key.trxsrc", trxsrc)
-	}
+	/*
+		    ftrx := &dbox.Filter{}
+			if reforsrc == "ref" {
+				ftrx = dbox.Eq("key.ref", trxsrc)
+			} else {
+				dbox.Eq("key.trxsrc", trxsrc)
+			}
+	*/
 
 	csp, _ := connratio.NewQuery().From(calctablename).
 		Where(dbox.Eq("key.customer_channelid", "I3"),
