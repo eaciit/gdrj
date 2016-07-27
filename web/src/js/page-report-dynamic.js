@@ -33,7 +33,6 @@ rd.refresh = () => {
 	param.pls = []
 	param.groups = rpt.parseGroups([rd.breakdownBy()])
 	param.aggr = 'sum'
-	param.flag = 'hasoutlet'
 	param.filters = rpt.getFilterValue(false, rd.fiscalYear)
 	let outlet = rd.getParameterByName('p')
 	if (outlet == 'sales-by-outlet'){
@@ -72,13 +71,12 @@ rd.refresh = () => {
 }
 
 rd.getParameterByName = (name, url) => {
-    if (!url) url = window.location.href;
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-        results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
+    if (!url) url = window.location.href
+    name = name.replace(/[\[\]]/g, "\\$&")
+    let regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"), results = regex.exec(url);
+    if (!results) return null
+    if (!results[2]) return ''
+    return decodeURIComponent(results[2].replace(/\+/g, " "))
 }
 
 rd.addTotalOutlet = (data, outlet) => {
@@ -662,7 +660,7 @@ rd.setup = () => {
 				plheader: 'Total Outlet',
 				callback: (v, k) => {
 					let totaloutlet = Math.abs(toolkit.sum(v, (e) => e.totaloutlet))
-					return totaloutlet
+					return totaloutlet / rd.divider()
 				}
 			}, { 
 				_id: 'prcnt', 

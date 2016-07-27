@@ -30,7 +30,6 @@ rd.refresh = function () {
 	param.pls = [];
 	param.groups = rpt.parseGroups([rd.breakdownBy()]);
 	param.aggr = 'sum';
-	param.flag = 'hasoutlet';
 	param.filters = rpt.getFilterValue(false, rd.fiscalYear);
 	var outlet = rd.getParameterByName('p');
 	if (outlet == 'sales-by-outlet') {
@@ -821,7 +820,7 @@ rd.setup = function () {
 						var totaloutlet = Math.abs(toolkit.sum(v, function (e) {
 							return e.totaloutlet;
 						}));
-						return totaloutlet;
+						return totaloutlet / rd.divider();
 					}
 				}, {
 					_id: 'prcnt',
