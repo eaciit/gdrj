@@ -42,7 +42,7 @@ var breakdownList = map[int][]string{}
 func setinitialconnection() {
 	var err error
 	ci := &dbox.ConnectionInfo{
-		"localhost:27017",
+		"52.220.25.190:27123",
 		"ecgodrej",
 		"",
 		"",
