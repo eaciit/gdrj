@@ -585,10 +585,12 @@ rpt.toggleFilter = () => {
 		panelFilter.hide()
 		panelContent.attr('class', 'col-md-12 col-sm-12 ez panel-content')
 		$(`.breakdown-filter`).removeAttr('style')
+		$('.scroll-grid-bottom.arrow-right').css('right', 23)
 	} else {
 		panelFilter.show()
 		panelContent.attr('class', 'col-md-9 col-sm-9 ez panel-content')
 		$(`.breakdown-filter`).css('width', '60%')
+		$('.scroll-grid-bottom.arrow-right').css('right', 320)
 	}
 
 	$('.k-grid').each((i, d) => {
@@ -602,6 +604,8 @@ rpt.toggleFilter = () => {
 	$('.k-chart').each((i, d) => {
 		$(d).data('kendoChart').redraw()
 	})
+
+	$('.table-content').trigger('scroll')
 }
 
 // rpt.getIdeas = () => {
