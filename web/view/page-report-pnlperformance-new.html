@@ -21,52 +21,52 @@
 	<!-- Nav tabs -->
 	<ul class="nav nav-pills nav-replace-title" role="tablist">
 		<li role="presentation">
-			<a href="#summary" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('Summary'); dsbrd.refresh();">Summary</a>
+			<a href="#summary" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); bkd.title('Summary'); dsbrd.refresh();">Summary</a>
 		</li>
 		<li role="presentation">
-			<a href="#ranking" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('Ranking'); rank.refresh();">Ranking</a>
+			<a href="#ranking" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); bkd.title('Ranking'); rank.refresh();">Ranking</a>
 		</li>
 		<li role="presentation" class="active">
-			<a href="#by-channel" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('P&L by Channels'); bkd.refresh();">Channels</a>
+			<a href="#by-channel" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); bkd.title('P&L by Channels'); bkd.refresh();">Channels</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-then-branch-vs-rd" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('P&L by Channels by Branch/RD'); v2.refresh();">Channels by Branch/RD</a>
+			<a href="#by-channel-then-branch-vs-rd" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); bkd.title('P&L by Channels by Branch/RD'); v2.refresh();">Channels by Branch/RD</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.switchRefresh('P&L by Branch', 'branch');">Branch</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); subchan.switchRefresh('P&L by Branch', 'branch');">Branch</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.switchRefresh('P&L by Branch Group', 'branch-group');">Branch Group</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); subchan.switchRefresh('P&L by Branch Group', 'branch-group');">Branch Group</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('P&L by Branches - All Channel'); v1.mode('Branch'); v1.refresh();">Branches - All Channel</a>
+			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); bkd.title('P&L by Branches - All Channel'); v1.mode('Branch'); v1.refresh();">Branches - All Channel</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('P&L by RD - All Channel'); v1.mode('Regional Distributor'); v1.refresh();">RD - All Channel</a>
+			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); bkd.title('P&L by RD - All Channel'); v1.mode('Regional Distributor'); v1.refresh();">RD - All Channel</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('Key Accounts'); kac.refresh();">Key Accounts</a>
+			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); bkd.title('Key Accounts'); kac.refresh();">Key Accounts</a>
 		</li>
 		<!-- <li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.switchRefresh('P&L by Key Account Groups', 'account');">Key Account Groups</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); subchan.switchRefresh('P&L by Key Account Groups', 'account');">Key Account Groups</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); bkd.title('P&L by Key Accounts'); kac.refresh();">Key Accounts</a>
+			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); bkd.title('P&L by Key Accounts'); kac.refresh();">Key Accounts</a>
 		</li> -->
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.switchRefresh('Branch Modern Trade', 'mt sub channel');">Branch Modern Trade</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); subchan.switchRefresh('Branch Modern Trade', 'mt sub channel');">Branch Modern Trade</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.changeBreakdownGeneralTrade(); subchan.switchRefresh('Branch GT', 'gt');">Branch GT</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); subchan.changeBreakdownGeneralTrade(); subchan.switchRefresh('Branch GT', 'gt');">Branch GT</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.changeBreakdownDistributor(); subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); subchan.changeBreakdownDistributor(); subchan.switchRefresh('P&L by Regional Distributor Breakdown', 'rd');">RD Breakdown</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.changeBreakdownBrand(); subchan.switchRefresh('P&L by Brand', 'brand');">Brand</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); subchan.changeBreakdownBrand(); subchan.switchRefresh('P&L by Brand', 'brand');">Brand</a>
 		</li>
 		<li role="presentation">
-			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="rpt.resetMonthQuarter(); subchan.changeBreakdownCity(); subchan.switchRefresh('P&L by City', 'city');">City</a>
+			<a href="#by-channel-mt-breakdown" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); subchan.changeBreakdownCity(); subchan.switchRefresh('P&L by City', 'city');">City</a>
 		</li>
 	</ul>
 

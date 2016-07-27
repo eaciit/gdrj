@@ -2424,8 +2424,15 @@ let kac = viewModel.keyAccount
 			grossSalesRow[breakdown] = e[grossSalesPLCode]
 		})
 		data = _.orderBy(data, (d) => {
-			let title = $.trim(d._id.split('-').reverse()[0])
-			return rpt.orderByChannel(title, netSalesRow[d._id])
+			if (d._id == 'Other - Modern Trade') {
+				return -100000000000
+			} else if (d._id == 'Other - General Trade') {
+				return -100000000001
+			} else if (d._id == 'Other') {
+				return -100000000002
+			}
+
+			return netSalesRow[d._id]
 		}, 'desc')
 
 		plmodels.forEach((d) => {
@@ -2779,13 +2786,14 @@ let subchan = viewModel.subChannel
 	subchan.useFilterBranch = ko.observable(true)
 	subchan.useFilterDistributor = ko.observable(true)
 
-
-	subchan.switchRefresh = (title, what) => {
+	subchan.resetFilterVisibility = () => {
 		subchan.useFilterChannel(true)
 		subchan.useFilterAccount(true)
 		subchan.useFilterBranch(true)
 		subchan.useFilterDistributor(true)
+	}
 
+	subchan.switchRefresh = (title, what) => {
 		if (what == 'mt sub channel') {
 			subchan.useFilterChannel(false)
 			subchan.useFilterAccount(false)
