@@ -41,7 +41,7 @@ func prepdatacostcenter() {
 }
 
 func prepdatabranch() {
-	toolkit.Println("--> Get Data cost center")
+	toolkit.Println("--> Get branch center")
 
 	// filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	csr, _ := conn.NewQuery().Select().From("branch").Cursor(nil)
@@ -54,7 +54,7 @@ func prepdatabranch() {
 			break
 		}
 
-		mastercostcenter.Set(tkm.GetString("_id"), tkm)
+		masterbranch.Set(tkm.GetString("_id"), tkm)
 	}
 }
 
