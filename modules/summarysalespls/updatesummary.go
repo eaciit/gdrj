@@ -964,9 +964,9 @@ func prepsalesplssummaryrdwrongsubch() {
 		total += tkm.GetFloat64("gross")
 	}
 
-	ratio := math.Abs(toolkit.Div(63745639125.279884, total))
+	ratio := math.Abs(toolkit.Div(57300800361.49201, total))
 	if fiscalyear == 2016 {
-		ratio = math.Abs(toolkit.Div(69236716246.87997, total))
+		ratio = math.Abs(toolkit.Div(62236716264.63395, total))
 	}
 
 	ratio = ratio - 0.0005
