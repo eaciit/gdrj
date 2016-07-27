@@ -7,9 +7,7 @@ import (
 
 	"flag"
 	"github.com/eaciit/dbox"
-	// "github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	// "strings"
 	"time"
 )
 
@@ -20,6 +18,45 @@ var (
 	t0     time.Time
 	gtable string
 )
+
+var mastercostcenter = toolkit.M{}
+var masterbranch = toolkit.M{}
+
+func prepdatacostcenter() {
+	toolkit.Println("--> Get Data cost center")
+
+	// filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().From("costcenter").Cursor(nil)
+	defer csr.Close()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		mastercostcenter.Set(tkm.GetString("_id"), tkm)
+	}
+}
+
+func prepdatabranch() {
+	toolkit.Println("--> Get Data cost center")
+
+	// filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().From("branch").Cursor(nil)
+	defer csr.Close()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		mastercostcenter.Set(tkm.GetString("_id"), tkm)
+	}
+}
 
 func setinitialconnection() {
 	var err error
@@ -47,7 +84,6 @@ func getstep(count int) int {
 
 func main() {
 	t0 = time.Now()
-	// data = make(map[string]float64)
 	flag.StringVar(&gtable, "table", "", "tablename")
 	flag.Parse()
 
@@ -113,11 +149,28 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 	trx := toolkit.M{}
 	for trx = range jobs {
-		tdate := time.Date(trx.GetInt("year"), time.Month(trx.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).
-			AddDate(0, 3, 0)
-		gdrjdate := gdrj.SetDate(tdate)
+		// tdate := time.Date(trx.GetInt("year"), time.Month(trx.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).
+		// 	AddDate(0, 3, 0)
+		// gdrjdate := gdrj.SetDate(tdate)
 
-		trx.Set("gdrjdate", gdrjdate)
+		// trx.Set("gdrjdate", gdrjdate)
+
+		cc := trx.GetString("ccid")
+		trx.Set("branchid", "CD00")
+		trx.Set("branchname", "OTHER")
+		trx.Set("costgroup", "OTHER")
+
+		if mastercostcenter.Has(cc) {
+			mcc := mastercostcenter[cc].(toolkit.M)
+			brid := mcc.GetString("branchid")
+
+			trx.Set("branchid", brid)
+			trx.Set("costgroup", mcc.GetString("costgroup01"))
+
+			if masterbranch.Has(brid) {
+				trx.Set("branchname", masterbranch[brid].(toolkit.M).GetString("branch"))
+			}
+		}
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
