@@ -122,6 +122,7 @@ func buildratio() {
 
 		miles[fiscal] = append(miles[fiscal], v)
 	}
+	toolkit.Printfn("Ratio: %s", toolkit.JsonString(miles))
 }
 
 func processTable(fiscal string) {
