@@ -27,6 +27,21 @@ rd.useLimit = ko.computed(() => {
 			return true
 	}
 }, rd.breakdownBy)
+rd.isFilterShown = ko.observable(true)
+rd.doToggleAnalysisFilter = (which) => {
+	if (which) {
+		$('.list-analysis').slideDown(300, () => {
+			rd.isFilterShown(true)
+		})
+	} else {
+		$('.list-analysis').slideUp(300, () => {
+			rd.isFilterShown(false)
+		})
+	}
+}
+rd.toggleAnalysisFilter = () => {
+	rd.doToggleAnalysisFilter(!rd.isFilterShown())
+}
 
 rd.refresh = () => {
 	let param = {}
@@ -54,6 +69,10 @@ rd.refresh = () => {
 			let addoutlet = rd.addTotalOutlet(res.Data.Data, res.Data.Outlet)
 			rd.data(addoutlet)
 			rd.render()
+
+			// if ($('.list-analysis').is(':visible')) {
+			// 	rd.doToggleAnalysisFilter(false)
+			// }
 		}, () => {
 			rd.contentIsLoading(false)
 		})
@@ -678,8 +697,7 @@ vm.currentMenu('Analysis Ideas')
 vm.currentTitle('Report Dynamic')
 vm.breadcrumb([
 	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
-	{ title: 'Home', href: viewModel.appName + 'page/landing' },
-	{ title: 'Growth Analysis', href: '#' }
+	{ title: 'Analysis Ideas', href: viewModel.appName + 'page/landing' }
 ])
 
 

@@ -24,6 +24,21 @@ rd.useLimit = ko.computed(function () {
 			return true;
 	}
 }, rd.breakdownBy);
+rd.isFilterShown = ko.observable(true);
+rd.doToggleAnalysisFilter = function (which) {
+	if (which) {
+		$('.list-analysis').slideDown(300, function () {
+			rd.isFilterShown(true);
+		});
+	} else {
+		$('.list-analysis').slideUp(300, function () {
+			rd.isFilterShown(false);
+		});
+	}
+};
+rd.toggleAnalysisFilter = function () {
+	rd.doToggleAnalysisFilter(!rd.isFilterShown());
+};
 
 rd.refresh = function () {
 	var param = {};
@@ -51,6 +66,10 @@ rd.refresh = function () {
 			var addoutlet = rd.addTotalOutlet(res.Data.Data, res.Data.Outlet);
 			rd.data(addoutlet);
 			rd.render();
+
+			// if ($('.list-analysis').is(':visible')) {
+			// 	rd.doToggleAnalysisFilter(false)
+			// }
 		}, function () {
 			rd.contentIsLoading(false);
 		});
@@ -830,7 +849,7 @@ rd.setup = function () {
 
 vm.currentMenu('Analysis Ideas');
 vm.currentTitle('Report Dynamic');
-vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'Growth Analysis', href: '#' }]);
+vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Analysis Ideas', href: viewModel.appName + 'page/landing' }]);
 
 $(function () {
 	rd.setup();
