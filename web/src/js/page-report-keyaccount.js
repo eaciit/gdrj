@@ -148,9 +148,12 @@ kac.buildStructure = (data) => {
 						d._id._id_customer_customergroupname = `Other - ${d._id._id_customer_channelname}`
 						return
 				}
+			// } else if (d._id._id_trxsrc == 'pushrdreversesbymks') {
+				d._id._id_customer_customergroupname = 'Other - Reclass to RD'
+				// return
 			}
 
-			d._id._id_customer_customergroupname = 'Other' 
+			// d._id._id_customer_customergroupname = 'Other' 
 		})
 
 	let groupThenMap = (data, group) => {
@@ -213,8 +216,10 @@ kac.render = () => {
 			return -100000000000
 		} else if (d._id == 'Other - General Trade') {
 			return -100000000001
-		} else if (d._id == 'Other') {
+		} else if (d._id == 'Other - Reclass to RD') {
 			return -100000000002
+		} else if (d._id == 'Other') {
+			return -100000000003
 		}
 
 		return netSalesRow[d._id]

@@ -1344,7 +1344,7 @@ rpt.addScrollBottom = (container) => {
 		target2.scrollLeft = this.scrollLeft
 	})
 
-	let walkLength = 30
+	let walkLength = 50
 
 	arrowLeft.on('click', () => {
 		let newVal = target.scrollLeft - walkLength
