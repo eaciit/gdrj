@@ -44,7 +44,7 @@ func prepdatabranch() {
 	toolkit.Println("--> Get branch center")
 
 	// filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select().From("branch").Cursor(nil)
+	csr, _ := conn.NewQuery().Select().From("masterbranch").Cursor(nil)
 	defer csr.Close()
 
 	for {
@@ -163,6 +163,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		cc := trx.GetString("ccid")
 		trx.Set("branchid", "CD00")
 		trx.Set("branchname", "OTHER")
+		trx.Set("brancharea", "OTHER")
 		trx.Set("costgroup", "OTHER")
 
 		if mastercostcenter.Has(cc) {
@@ -173,7 +174,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 			trx.Set("costgroup", mcc.GetString("costgroup01"))
 
 			if masterbranch.Has(brid) {
-				trx.Set("branchname", masterbranch[brid].(toolkit.M).GetString("branch"))
+				trx.Set("branchname", masterbranch[brid].(toolkit.M).GetString("name"))
+				trx.Set("brancharea", masterbranch[brid].(toolkit.M).GetString("area"))
 			}
 		}
 
