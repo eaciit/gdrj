@@ -58,16 +58,18 @@ sga.constructData = (raw) => {
 	rpt.plmodels(oq2)
 
 	let key = sga.breakdownBy()
+	let cache = {}
 	let rawData = []
 	raw.forEach((d) => {
 		let breakdown = d[key]
-		let o = rawData.find((e) => e._id[`_id_${key}`] === breakdown)
-		if (typeof o == 'undefined') {
+		let o = cache[breakdown]
+		if (typeof o === 'undefined') {
 			o = {}
 			o._id = {}
 			o._id[`_id_${key}`] = breakdown
 			rawData.push(o)
 		}
+		cache[breakdown] = o
 
 		// let plID = sga.getAlphaNumeric([d.account, d.accountGroup].join('|'))
 		// let plmodel = rpt.plmodels().find((e) => e._id == plID)
@@ -201,8 +203,8 @@ sga.buildStructure = (data) => {
 	})
 
 	sga.level(1)
-	let newParsed = _.orderBy(parsed, (d) => d.AMCITHARDWARE, 'desc')
-	return newParsed
+	// let newParsed = _.orderBy(parsed, (d) => d._id, 'asc')
+	return parsed
 }
 
 sga.render = () => {
@@ -430,7 +432,8 @@ sga.render = () => {
 
 	// ========================= PLOT DATA
 
-	_.orderBy(rows, (d) => d.PNL).forEach((d, i) => {
+	// _.orderBy(rows, (d) => d.PNL).forEach((d, i) => {
+	rows.forEach((d, i) => {
 		pnlTotalSum += d.PNLTotal
 
 		let PL = d.PLCode
