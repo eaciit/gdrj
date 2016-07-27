@@ -857,8 +857,8 @@ ba.changeBreakdownValue = () => {
 vm.currentMenu('Analysis')
 vm.currentTitle('Branch Analysis')
 vm.breadcrumb([
-	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
-	{ title: 'Home', href: viewModel.appName + 'page/landing' },
+	{ title: 'Godrej', href: '#' },
+	{ title: 'Analysis', href: '#' },
 	{ title: 'Branch Analysis', href: '#' }
 ])
 

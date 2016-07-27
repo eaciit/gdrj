@@ -388,11 +388,9 @@ me.changeBreakdownValue = () => {
 vm.currentMenu(me.title())
 vm.currentTitle('&nbsp;')
 vm.breadcrumb([
-	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
-	{ title: 'Home', href: viewModel.appName + 'page/landing' },
-	{ title: me.title(), href: '#' }
+	{ title: 'Godrej', href: '#' },
+	{ title: 'Marketing Efficiency', href: '#' },
 ])
-
 
 $(() => {
 	me.changeBreakdown()

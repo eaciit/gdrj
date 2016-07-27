@@ -388,8 +388,8 @@ yc.changeDimension = (title, args) => {
 vm.currentMenu('YoY Rev & EBIT')
 vm.currentTitle('&nbsp;')
 vm.breadcrumb([
-	{ title: 'Godrej', href: viewModel.appName + 'page/landing' },
-	{ title: 'Home', href: viewModel.appName + 'page/landing' },
+	{ title: 'Godrej', href: '#' },
+	{ title: 'Analysis', href: '#' },
 	{ title: yc.title(), href: '#' }
 ])
 

@@ -480,7 +480,7 @@ gna.changeBreakdownValue = function () {
 
 vm.currentMenu('Analysis');
 vm.currentTitle('G&A Analysis');
-vm.breadcrumb([{ title: 'Godrej', href: viewModel.appName + 'page/landing' }, { title: 'Home', href: viewModel.appName + 'page/landing' }, { title: 'G&A Analysis', href: '#' }]);
+vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Analysis', href: '#' }, { title: 'G&A Analysis', href: '#' }]);
 
 rpt.refresh = function () {
 	gna.changeBreakdown();
