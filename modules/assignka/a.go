@@ -182,8 +182,8 @@ func processTable(fiscal string) {
 				allocidx = 0
 			}
 			absorbed = float64(0)
-			group = allocs[0].Txt1
-			groupname = allocs[1].Txt2
+			group = allocs[allocidx].Txt1
+			groupname = allocs[allocidx].Txt2
 		}
 	}
 }
