@@ -2771,7 +2771,28 @@ let subchan = viewModel.subChannel
 	subchan.what = ko.observable('mt sub channel')
 	subchan.isInlineFilter = ko.observable(true)
 
+
+	// channel, account, branch, distributor
+	// put key account
+	subchan.useFilterChannel = ko.observable(true)
+	subchan.useFilterAccount = ko.observable(true)
+	subchan.useFilterBranch = ko.observable(true)
+	subchan.useFilterDistributor = ko.observable(true)
+
+
 	subchan.switchRefresh = (title, what) => {
+		subchan.useFilterChannel(true)
+		subchan.useFilterAccount(true)
+		subchan.useFilterBranch(true)
+		subchan.useFilterDistributor(true)
+
+		if (what == 'mt sub channel') {
+			subchan.useFilterChannel(false)
+			subchan.useFilterAccount(false)
+			subchan.useFilterBranch(false)
+			subchan.useFilterDistributor(false)
+		}
+
 		subchan.breakdownBrand(['All'])
 		subchan.breakdownDistributor(['All'])
 		subchan.breakdownGeneralTrade(['All'])
@@ -3671,6 +3692,7 @@ let subchan = viewModel.subChannel
 	subchan.optionChannel = ko.observableArray([])
 	subchan.optionMTBreakdown = ko.observableArray([])
 	subchan.optionAccount = ko.observableArray([])
+	subchan.optionKeyAccount = ko.observableArray([])
 	subchan.optionBrand = ko.observableArray([])
 	subchan.optionBranch = ko.observableArray([])
 	subchan.optionBranchGroup = ko.observableArray([])
@@ -3694,6 +3716,12 @@ let subchan = viewModel.subChannel
 		app.ajaxPost(viewModel.appName + "report/getdatakeyaccount", {}, (res) => {
 			subchan.optionAccount(_.orderBy(res.data.map((d) => { 
 				return { _id: d._id, Name: d.Name }
+			}).concat({ _id: 'OHTER', Name: 'OHTER' }), (d) => d.Name))
+		})
+
+		app.ajaxPost(viewModel.appName + "report/getdatacustomergroup", {}, (res) => {
+			subchan.optionKeyAccount(_.orderBy(res.data.map((d) => { 
+				return { _id: d.Name, Name: d.Name }
 			}).concat({ _id: 'OHTER', Name: 'OHTER' }), (d) => d.Name))
 		})
 
@@ -3743,6 +3771,7 @@ let subchan = viewModel.subChannel
 	subchan.filterChannel = ko.observableArray([])
 	subchan.filterMTBreakdown = ko.observableArray([])
 	subchan.filterAccount = ko.observableArray([])
+	subchan.filterKeyAccount = ko.observableArray([])
 	subchan.filterBrand = ko.observableArray([])
 	subchan.filterBranch = ko.observableArray([])
 	subchan.filterBranchGroup = ko.observableArray([])
@@ -3754,6 +3783,7 @@ let subchan = viewModel.subChannel
 			{ field: 'customer.channelname', holder: subchan.filterChannel },
 			{ field: 'customer.reportsubchannel', holder: subchan.filterMTBreakdown },
 			{ field: 'customer.keyaccount', holder: subchan.filterAccount },
+			{ field: 'customer.customergroupname', holder: subchan.filterKeyAccount },
 			{ field: 'product.brand', holder: subchan.filterBrand },
 			{ field: 'customer.branchname', holder: subchan.filterBranch },
 			{ field: 'customer.branchgroup', holder: subchan.filterBranchGroup },

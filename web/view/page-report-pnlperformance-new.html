@@ -608,7 +608,7 @@
 								</div>
 								<div class="panel-collapse collapse in" role="tabpanel" id="c-0">
 									<div class="panel-body">
-										<div class="form-group">
+										<div class="form-group" data-bind="visible: subchan.useFilterChannel">
 											<div class="input-group input-group-sm ez width-full">
 												<span class="input-group-addon align-right" style="width: 110px;">Channel</span>
 												<div class="width-full">
@@ -626,11 +626,20 @@
 											</div>
 										</div>
 
-										<div class="form-group">
+										<div class="form-group" data-bind="visible: subchan.useFilterAccount">
 											<div class="input-group input-group-sm ez width-full">
-												<span class="input-group-addon align-right" style="width: 110px;">Account</span>
+												<span class="input-group-addon align-right" style="width: 110px;">Account Group</span>
 												<div class="width-full">
 													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionAccount, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterAccount, placeholder: 'Select one', filter: 'contains' }"></select>
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="input-group input-group-sm ez width-full">
+												<span class="input-group-addon align-right" style="width: 110px;">Key Account</span>
+												<div class="width-full">
+													<select type="text" data-bind="kendoMultiSelect: { data: subchan.optionKeyAccount, dataValueField: '_id', dataTextField: 'Name', value: subchan.filterKeyAccount, placeholder: 'Select one', filter: 'contains' }"></select>
 												</div>
 											</div>
 										</div>
@@ -644,7 +653,7 @@
 											</div>
 										</div>
 
-										<div class="form-group">
+										<div class="form-group" data-bind="visible: subchan.useFilterBranch">
 											<div class="input-group input-group-sm ez width-full">
 												<span class="input-group-addon align-right" style="width: 110px;">Branch</span>
 												<div class="width-full">
@@ -671,7 +680,7 @@
 											</div>
 										</div>
 
-										<div class="form-group">
+										<div class="form-group" data-bind="visible: subchan.useFilterDistributor">
 											<div class="input-group input-group-sm ez width-full">
 												<span class="input-group-addon align-right" style="width: 110px;">Distributor</span>
 												<div class="width-full">
