@@ -2793,13 +2793,17 @@ let subchan = viewModel.subChannel
 	subchan.useFilterBranch = ko.observable(true)
 	subchan.useFilterDistributor = ko.observable(true)
 
-	subchan.resetFilterVisibility = () => {
+	subchan.resetFilterVisibility = (title,e) => {
 		subchan.useFilterChannel(true)
 		subchan.useFilterAccount(true)
 		subchan.useFilterBranch(true)
 		subchan.useFilterDistributor(true)
 		subchan.optionAccount(rpt.masterData
 			.KeyAccount())
+		$('.nav-pills li[role=presentation]').removeClass('active')
+		$(e).parent().addClass('active')
+		$(`.tab-content>div`).removeClass('active')
+		$(`.tab-content>div#${title}`).addClass('active')
 	}
 
 	subchan.switchRefresh = (title, what) => {
@@ -4433,7 +4437,11 @@ $(() => {
 			subchan.breakdownChannelValue(['All'])
 			dsbrd.breakdownValue(['All'])
 
-			bkd.refresh()
+			if(window.location.hash != '') {
+				$(`.nav-pills>li[role=presentation]>a[href=${window.location.hash}]`).click()
+			} else {
+				bkd.refresh()
+			}
 		}, 200)
 	}, 300)
 })
