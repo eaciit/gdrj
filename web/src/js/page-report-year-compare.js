@@ -15,6 +15,10 @@ yc.optionUnit = ko.observableArray([
 	{ _id: 'v1000000000', Name: 'Billions', suffix: 'B' },
 ])
 
+yc.getDivider = () => {
+	return parseInt(yc.unit().replace(/v/g, ''), 10)
+}
+
 yc.groupMap = (arr, c, d) => {
 	return _.map(_.groupBy(arr, c), d)
 }
@@ -131,17 +135,17 @@ yc.render = () => {
 
 		o.v2015_nsal_value = 0
 		o.v2015_nsal_growth = 0
-		toolkit.try(() => { o.v2015_nsal_value = data2015[0][plCodeNetSales] })
+		toolkit.try(() => { o.v2015_nsal_value = data2015[0][plCodeNetSales] / yc.getDivider() })
 		toolkit.try(() => { o.v2015_nsal_growth = calcGrowth(data2015, data2014, plCodeNetSales) })
 
 		o.v2015_ebit_value = 0
 		o.v2015_ebit_growth = 0
-		toolkit.try(() => { o.v2015_ebit_value = data2015[0][plCodeEBIT] })
+		toolkit.try(() => { o.v2015_ebit_value = data2015[0][plCodeEBIT] / yc.getDivider() })
 		toolkit.try(() => { o.v2015_ebit_growth = calcGrowth(data2015, data2014, plCodeEBIT) })
 
 		o.v2015_gs_value = 0
 		o.v2015_gs_growth = 0
-		toolkit.try(() => { o.v2015_gs_value = data2015[0][plGrossMargin] })
+		toolkit.try(() => { o.v2015_gs_value = data2015[0][plGrossMargin] / yc.getDivider() })
 		toolkit.try(() => { o.v2015_gs_growth = calcGrowth(data2015, data2014, plGrossMargin) })
 
 		o.v2015_gs_ctb_value = 0
@@ -167,13 +171,13 @@ yc.render = () => {
 		})
 
 		o.v2014_nsal_value = 0
-		toolkit.try(() => { o.v2014_nsal_value = data2014[0][plCodeNetSales] })
+		toolkit.try(() => { o.v2014_nsal_value = data2014[0][plCodeNetSales] / yc.getDivider() })
 
 		o.v2014_ebit_value = 0
-		toolkit.try(() => { o.v2014_ebit_value = data2014[0][plCodeEBIT] })
+		toolkit.try(() => { o.v2014_ebit_value = data2014[0][plCodeEBIT] / yc.getDivider() })
 
 		o.v2014_gs_value = 0
-		toolkit.try(() => { o.v2014_gs_value = data2014[0][plGrossMargin] })
+		toolkit.try(() => { o.v2014_gs_value = data2014[0][plGrossMargin] / yc.getDivider() })
 
 		return o
 	})
@@ -187,15 +191,15 @@ yc.render = () => {
 	let total = {}
 	total.dimension = 'Total'
 
-	total.v2015_nsal_value = toolkit.sum(dataParsed, (d) => d.v2015_nsal_value)
-	total.v2015_ebit_value = toolkit.sum(dataParsed, (d) => d.v2015_ebit_value)
-	total.v2015_gs_value = toolkit.sum(dataParsed, (d) => d.v2015_gs_value)
+	total.v2015_nsal_value = toolkit.sum(dataParsed, (d) => d.v2015_nsal_value) / yc.getDivider()
+	total.v2015_ebit_value = toolkit.sum(dataParsed, (d) => d.v2015_ebit_value) / yc.getDivider()
+	total.v2015_gs_value = toolkit.sum(dataParsed, (d) => d.v2015_gs_value) / yc.getDivider()
 	total.v2015_gs_ctb_value = toolkit.safeDiv(total.v2015_gs_value, total.v2015_nsal_value) * 100
 	total.v2015_ebit_ctb_value = toolkit.safeDiv(total.v2015_ebit_value, total.v2015_nsal_value) * 100
 
-	total.v2014_nsal_value = toolkit.sum(dataParsed, (d) => d.v2014_nsal_value)
-	total.v2014_ebit_value = toolkit.sum(dataParsed, (d) => d.v2014_ebit_value)
-	total.v2014_gs_value = toolkit.sum(dataParsed, (d) => d.v2014_gs_value)
+	total.v2014_nsal_value = toolkit.sum(dataParsed, (d) => d.v2014_nsal_value) / yc.getDivider()
+	total.v2014_ebit_value = toolkit.sum(dataParsed, (d) => d.v2014_ebit_value) / yc.getDivider()
+	total.v2014_gs_value = toolkit.sum(dataParsed, (d) => d.v2014_gs_value) / yc.getDivider()
 	total.v2014_gs_ctb_value = toolkit.safeDiv(total.v2014_gs_value, total.v2014_nsal_value) * 100
 	total.v2014_ebit_ctb_value = toolkit.safeDiv(total.v2014_ebit_value, total.v2014_nsal_value) * 100
 
@@ -213,7 +217,7 @@ yc.render = () => {
 		dimensionWidth = 160
 	}
 
-	let widthValue = 120
+	let widthValue = 90
 	let widthPrcnt = 90
 	let tableWidth = 1200
 	if (yc.unit() == 'v1000000') {
