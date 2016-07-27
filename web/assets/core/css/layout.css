@@ -787,7 +787,7 @@ body {
 }
 .scroll-grid-bottom {
   margin-left: 390px;
-  height: 10px;
+  height: 14px;
   overflow-x: scroll;
   background-color: #F0F3F4;
 }
@@ -827,7 +827,10 @@ body {
   -webkit-appearance: none;
 }
 .scroll-grid-bottom::-webkit-scrollbar:horizontal {
-  height: 11px;
+  height: 15px;
+}
+.table-content::-webkit-scrollbar:horizontal {
+  height: 15px;
 }
 .scroll-grid-bottom::-webkit-scrollbar-thumb {
   border-radius: 8px;
