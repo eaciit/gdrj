@@ -1080,6 +1080,29 @@ html, body{
     background-color: @color-base-grey;
 }
 
+.scroll-grid-bottom.viewscrollfix.arrow {
+	display: block;
+	margin-left: 360px;
+	height: 30px !important;
+	padding: 6px 9px;
+	bottom: 2px;
+	width: 30px !important;
+	border-radius: 2px;
+	background-color: #74b841;
+	color: white;
+	overflow: hidden;
+	cursor: pointer;
+
+	&.arrow-right {
+		margin-left: inherit;
+	    right: 16px;
+	}
+
+	&:hover {
+		background-color: rgb(82, 152, 30);
+	}
+}
+
 .table-content::-webkit-scrollbar {
     -webkit-appearance: none;
 }
@@ -1115,7 +1138,7 @@ html, body{
 
 	li {
 	    margin-left: 2px;
-	    margin-right: 2px;
+        margin-right: 0px;
 	    margin-bottom: 2px;
 
 	    a {

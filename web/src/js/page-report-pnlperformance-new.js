@@ -2240,9 +2240,10 @@ let kac = viewModel.keyAccount
 		param.filters.push({
 			Field: "customer.channelname",
 			Op: "$in",
-			Value: rpt.masterData.Channel()
-				.map((d) => d._id)
-				.filter((d) => d != "EXP")
+			Value: ['I3']
+			// Value: rpt.masterData.Channel()
+			// 	.map((d) => d._id)
+			// 	.filter((d) => d != "EXP")
 		})
 
 		let breakdownGroupValue = kac.breakdownGroupValue().filter((d) => d != 'All')
@@ -2791,14 +2792,18 @@ let subchan = viewModel.subChannel
 		subchan.useFilterAccount(true)
 		subchan.useFilterBranch(true)
 		subchan.useFilterDistributor(true)
+		subchan.optionAccount(rpt.masterData
+			.KeyAccount())
 	}
 
 	subchan.switchRefresh = (title, what) => {
 		if (what == 'mt sub channel') {
 			subchan.useFilterChannel(false)
-			subchan.useFilterAccount(false)
 			subchan.useFilterBranch(false)
 			subchan.useFilterDistributor(false)
+			subchan.optionAccount(rpt.masterData
+				.KeyAccount()
+				.filter((d) => d._id != "GNT"))
 		}
 
 		subchan.breakdownBrand(['All'])

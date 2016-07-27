@@ -1311,13 +1311,22 @@ rpt.export = (target, title, mode) => {
 rpt.addScrollBottom = (container) => {
 	if (container == undefined)
 		container = $(".breakdown-view")
-	// $(".breakdown-view").each(function( i ) {
 	toolkit.newEl('div')
 		.addClass('scroll-grid-bottom-yo')
 		.appendTo(container.find(".pivot-pnl"))
 		
 	let tableContent = toolkit.newEl('div')
 		.addClass('scroll-grid-bottom')
+		.appendTo(container.find(".pivot-pnl"))
+
+	let arrowLeft = toolkit.newEl('div')
+		.addClass('scroll-grid-bottom arrow arrow-left viewscrollfix')
+		.html(`<i class="fa fa-arrow-left"></i>`)
+		.appendTo(container.find(".pivot-pnl"))
+
+	let arrowRight = toolkit.newEl('div')
+		.addClass('scroll-grid-bottom arrow arrow-right viewscrollfix')
+		.html(`<i class="fa fa-arrow-right"></i>`)
 		.appendTo(container.find(".pivot-pnl"))
 		
 	toolkit.newEl('div')
@@ -1334,7 +1343,26 @@ rpt.addScrollBottom = (container) => {
 	container.find(".scroll-grid-bottom").scroll(function() {
 		target2.scrollLeft = this.scrollLeft
 	})
-	// });
+
+	let walkLength = 30
+
+	arrowLeft.on('click', () => {
+		let newVal = target.scrollLeft - walkLength
+		if (newVal < 0) {
+			newVal = 0
+		}
+
+		target.scrollLeft = newVal
+	})
+	arrowRight.on('click', () => {
+		let newVal = target.scrollLeft + walkLength
+		if (newVal < 0) {
+			newVal = 0
+		}
+
+		target.scrollLeft = newVal
+	})
+
 	rpt.panel_scrollrelocated()
 }
 
