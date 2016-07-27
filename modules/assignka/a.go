@@ -101,7 +101,7 @@ func buildratio() {
 		i++
 		makeProgressLog("Disc, SPG & Promo by KA Ratio", i, count, 5, &mstone, t0)
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		fiscal := key.GetString("fiscal")
+		fiscal := key.GetString("date_fiscal")
 		ka := key.GetString("customer_customergroup")
 		name := key.GetString("customer_customergroupname")
 		if ka != "" {
