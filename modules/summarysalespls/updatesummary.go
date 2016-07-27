@@ -1957,6 +1957,18 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		if dtkm.GetString("customer_reportsubchannel") == "R3" {
 			dtkm.Set("customer_reportsubchannel", "R3 - Retailer Umum")
 		}
+
+		if dtkm.GetString("customer_branchgroup") == "" {
+			dtkm.Set("customer_branchgroup", "Other")
+		}
+
+		if dtkm.GetString("customer_region") == "" || dtkm.GetString("customer_region") == "Other" {
+			dtkm.Set("customer_region", "OTHER")
+		}
+
+		if dtkm.GetString("customer_zone") == "" || dtkm.GetString("customer_zone") == "Other" {
+			dtkm.Set("customer_zone", "OTHER")
+		}
 		trx.Set("key", dtkm)
 
 		// CleanReportSubChannelBreakdownRD(trx)
