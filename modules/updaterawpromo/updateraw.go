@@ -87,6 +87,11 @@ func main() {
 	flag.StringVar(&gtable, "table", "", "tablename")
 	flag.Parse()
 
+	setinitialconnection()
+
+	prepdatabranch()
+	prepdatacostcenter()
+
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
