@@ -34,6 +34,10 @@ rd.refresh = () => {
 	param.groups = rpt.parseGroups([rd.breakdownBy()])
 	param.aggr = 'sum'
 	param.filters = rpt.getFilterValue(false, rd.fiscalYear)
+	let outlet = rd.getParameterByName('p')
+	if (outlet == 'sales-by-outlet'){
+		param.flag = "hasoutlet"
+	}
 
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
@@ -50,8 +54,12 @@ rd.refresh = () => {
 			}
 
 			rd.contentIsLoading(false)
-			let addoutlet = rd.addTotalOutlet(res.Data.Data, res.Data.Outlet)
-			rd.data(addoutlet)
+			if (outlet == 'sales-by-outlet'){
+				let addoutlet = rd.addTotalOutlet(res.Data.Data, res.Data.Outlet)
+				rd.data(addoutlet)
+			} else {
+				rd.data(res.Data.Data)
+			}
 			rd.render()
 		}, () => {
 			rd.contentIsLoading(false)
@@ -60,6 +68,16 @@ rd.refresh = () => {
 
 	rd.contentIsLoading(true)
 	fetch()
+}
+
+rd.getParameterByName = (name, url) => {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
 rd.addTotalOutlet = (data, outlet) => {

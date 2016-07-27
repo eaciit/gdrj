@@ -31,6 +31,10 @@ rd.refresh = function () {
 	param.groups = rpt.parseGroups([rd.breakdownBy()]);
 	param.aggr = 'sum';
 	param.filters = rpt.getFilterValue(false, rd.fiscalYear);
+	var outlet = rd.getParameterByName('p');
+	if (outlet == 'sales-by-outlet') {
+		param.flag = "hasoutlet";
+	}
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
@@ -47,8 +51,12 @@ rd.refresh = function () {
 			}
 
 			rd.contentIsLoading(false);
-			var addoutlet = rd.addTotalOutlet(res.Data.Data, res.Data.Outlet);
-			rd.data(addoutlet);
+			if (outlet == 'sales-by-outlet') {
+				var addoutlet = rd.addTotalOutlet(res.Data.Data, res.Data.Outlet);
+				rd.data(addoutlet);
+			} else {
+				rd.data(res.Data.Data);
+			}
 			rd.render();
 		}, function () {
 			rd.contentIsLoading(false);
@@ -57,6 +65,16 @@ rd.refresh = function () {
 
 	rd.contentIsLoading(true);
 	fetch();
+};
+
+rd.getParameterByName = function (name, url) {
+	if (!url) url = window.location.href;
+	name = name.replace(/[\[\]]/g, "\\$&");
+	var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+	    results = regex.exec(url);
+	if (!results) return null;
+	if (!results[2]) return '';
+	return decodeURIComponent(results[2].replace(/\+/g, " "));
 };
 
 rd.addTotalOutlet = function (data, outlet) {
