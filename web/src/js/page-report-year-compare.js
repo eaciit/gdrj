@@ -90,9 +90,6 @@ yc.refresh = () => {
 }
 
 yc.render = () => {
-	let divider = parseInt(yc.unit().replace(/v/g, ''), 10)
-	let unitSuffix = yc.optionUnit().find((d) => d._id == yc.unit()).suffix
-
 	let dimensionTitle = 'Dimension'
 	toolkit.try(() => {
 		dimensionTitle = rpt.optionDimensions().find((d) => d.field == yc.breakdownBy()).name
@@ -191,15 +188,15 @@ yc.render = () => {
 	let total = {}
 	total.dimension = 'Total'
 
-	total.v2015_nsal_value = toolkit.sum(dataParsed, (d) => d.v2015_nsal_value) / yc.getDivider()
-	total.v2015_ebit_value = toolkit.sum(dataParsed, (d) => d.v2015_ebit_value) / yc.getDivider()
-	total.v2015_gs_value = toolkit.sum(dataParsed, (d) => d.v2015_gs_value) / yc.getDivider()
+	total.v2015_nsal_value = toolkit.sum(dataParsed, (d) => d.v2015_nsal_value)
+	total.v2015_ebit_value = toolkit.sum(dataParsed, (d) => d.v2015_ebit_value)
+	total.v2015_gs_value = toolkit.sum(dataParsed, (d) => d.v2015_gs_value)
 	total.v2015_gs_ctb_value = toolkit.safeDiv(total.v2015_gs_value, total.v2015_nsal_value) * 100
 	total.v2015_ebit_ctb_value = toolkit.safeDiv(total.v2015_ebit_value, total.v2015_nsal_value) * 100
 
-	total.v2014_nsal_value = toolkit.sum(dataParsed, (d) => d.v2014_nsal_value) / yc.getDivider()
-	total.v2014_ebit_value = toolkit.sum(dataParsed, (d) => d.v2014_ebit_value) / yc.getDivider()
-	total.v2014_gs_value = toolkit.sum(dataParsed, (d) => d.v2014_gs_value) / yc.getDivider()
+	total.v2014_nsal_value = toolkit.sum(dataParsed, (d) => d.v2014_nsal_value)
+	total.v2014_ebit_value = toolkit.sum(dataParsed, (d) => d.v2014_ebit_value)
+	total.v2014_gs_value = toolkit.sum(dataParsed, (d) => d.v2014_gs_value)
 	total.v2014_gs_ctb_value = toolkit.safeDiv(total.v2014_gs_value, total.v2014_nsal_value) * 100
 	total.v2014_ebit_ctb_value = toolkit.safeDiv(total.v2014_ebit_value, total.v2014_nsal_value) * 100
 

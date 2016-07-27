@@ -95,11 +95,6 @@ yc.refresh = function () {
 yc.render = function () {
 	var _ref;
 
-	var divider = parseInt(yc.unit().replace(/v/g, ''), 10);
-	var unitSuffix = yc.optionUnit().find(function (d) {
-		return d._id == yc.unit();
-	}).suffix;
-
 	var dimensionTitle = 'Dimension';
 	toolkit.try(function () {
 		dimensionTitle = rpt.optionDimensions().find(function (d) {
@@ -258,25 +253,25 @@ yc.render = function () {
 
 	total.v2015_nsal_value = toolkit.sum(dataParsed, function (d) {
 		return d.v2015_nsal_value;
-	}) / yc.getDivider();
+	});
 	total.v2015_ebit_value = toolkit.sum(dataParsed, function (d) {
 		return d.v2015_ebit_value;
-	}) / yc.getDivider();
+	});
 	total.v2015_gs_value = toolkit.sum(dataParsed, function (d) {
 		return d.v2015_gs_value;
-	}) / yc.getDivider();
+	});
 	total.v2015_gs_ctb_value = toolkit.safeDiv(total.v2015_gs_value, total.v2015_nsal_value) * 100;
 	total.v2015_ebit_ctb_value = toolkit.safeDiv(total.v2015_ebit_value, total.v2015_nsal_value) * 100;
 
 	total.v2014_nsal_value = toolkit.sum(dataParsed, function (d) {
 		return d.v2014_nsal_value;
-	}) / yc.getDivider();
+	});
 	total.v2014_ebit_value = toolkit.sum(dataParsed, function (d) {
 		return d.v2014_ebit_value;
-	}) / yc.getDivider();
+	});
 	total.v2014_gs_value = toolkit.sum(dataParsed, function (d) {
 		return d.v2014_gs_value;
-	}) / yc.getDivider();
+	});
 	total.v2014_gs_ctb_value = toolkit.safeDiv(total.v2014_gs_value, total.v2014_nsal_value) * 100;
 	total.v2014_ebit_ctb_value = toolkit.safeDiv(total.v2014_ebit_value, total.v2014_nsal_value) * 100;
 
