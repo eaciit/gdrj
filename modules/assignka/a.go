@@ -57,11 +57,6 @@ var (
 
 func main() {
 	setinitialconnection()
-	conn.NewQuery().From(desttablename).
-		Where(dbox.Eq("key.trxsrc", "nakulrd")).
-		Delete().
-		Exec(nil)
-
 	prepmastercalc()
 	buildratio()
 	for _, v := range []string{"2015-2016", "2014-2015"} {
@@ -166,7 +161,7 @@ func processTable(fiscal string) {
 		key.Set("customer_customergroupname", groupname)
 		mr.Set("key", key)
 
-		gdrj.CalcSum(mr, masters)
+		//gdrj.CalcSum(mr, masters)
 		esave := qsave.Exec(toolkit.M{}.Set("data", mr))
 		if esave != nil {
 			toolkit.Printfn("Erorr: %s", esave.Error())
@@ -182,8 +177,8 @@ func processTable(fiscal string) {
 				allocidx = 0
 			}
 			absorbed = float64(0)
-			group = allocs[0].Txt1
-			groupname = allocs[1].Txt2
+			group = allocs[allocidx].Txt1
+			groupname = allocs[allocidx].Txt2
 		}
 	}
 }
