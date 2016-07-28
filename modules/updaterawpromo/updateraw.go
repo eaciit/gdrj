@@ -74,7 +74,7 @@ func prepdataaccountgroup() {
 			break
 		}
 
-		masterbranch.Set(tkm.GetString("accountdescription"), tkm.GetString("accountgroup"))
+		masteraccountgroup.Set(tkm.GetString("accountdescription"), tkm.GetString("accountgroup"))
 	}
 }
 
