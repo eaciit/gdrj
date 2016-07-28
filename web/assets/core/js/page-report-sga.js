@@ -534,6 +534,7 @@ var au = viewModel.allocated;(function () {
 				au.render();
 				rpt.showZeroValue(true);
 				rpt.prepareEvents();
+				$('.fa.fa-chevron-right').trigger('click');
 			}, function () {
 				au.emptyGrid();
 				au.contentIsLoading(false);
@@ -946,8 +947,6 @@ var au = viewModel.allocated;(function () {
 
 		$("#au .table-header tr:gt(70)").hide();
 		$("#au .table-content tr:gt(70)").hide();
-
-		$('.fa.fa-chevron-right').trigger('click');
 	};
 
 	au.optionBreakdownValues = ko.observableArray([]);

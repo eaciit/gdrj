@@ -619,6 +619,16 @@ let au = viewModel.allocated
 				au.render()
 				rpt.showZeroValue(true)
 				rpt.prepareEvents()
+
+				// HHHHHHAAAA
+
+				$("#au .table-header tr:gt(0):lt(88)").hide()
+				$("#au .table-content tr:gt(0):lt(88)").hide()
+
+				$("#au .table-header tr:gt(70)").hide()
+				$("#au .table-content tr:gt(70)").hide()
+
+				$('.fa.fa-chevron-right').trigger('click')
 			}, () => {
 				au.emptyGrid()
 				au.contentIsLoading(false)
@@ -1086,14 +1096,6 @@ let au = viewModel.allocated
 
 		// ========================= CONFIGURE THE HIRARCHY
 		rpt.buildGridLevels(rows)
-
-		$("#au .table-header tr:gt(0):lt(88)").hide()
-		$("#au .table-content tr:gt(0):lt(88)").hide()
-
-		$("#au .table-header tr:gt(70)").hide()
-		$("#au .table-content tr:gt(70)").hide()
-
-		$('.fa.fa-chevron-right').trigger('click')
 	}
 
 
