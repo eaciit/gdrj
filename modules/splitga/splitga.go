@@ -125,17 +125,17 @@ func processTable(key string, totalvalue float64) {
 	defer cursor.Close()
 
 	i := 0
-	count := cursor.Count()
-	toolkit.Printfn("Processing: %s Record found: %d", key, count)
+	//count := cursor.Count()
+	//toolkit.Printfn("Processing: %s Record found: %d", key, count)
 	//mstone := 0
 	t0 = time.Now()
-	expected := directratios[keyfiscal] * sgayrs[key]
+	expected := directratios[keyfiscal] * totalvalue
 	absorbed := float64(0)
 	for {
 		mr := toolkit.M{}
 		e := cursor.Fetch(&mr, 1, false)
 		if e != nil {
-			toolkit.Printfn("Break: %s", e.Error())
+			//toolkit.Printfn("Break: %s", e.Error())
 			break
 		}
 		i++
