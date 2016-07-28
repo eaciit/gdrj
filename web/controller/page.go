@@ -307,16 +307,16 @@ func (w *PageController) GNAAnalysis(r *knot.WebContext) interface{} {
 	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
-	r.Config.ViewName = "page-report-gna.html"
+	r.Config.ViewName = "page-report-sga.html"
 
 	return w.GetParams()
 }
 
-func (w *PageController) SGAAnalysis(r *knot.WebContext) interface{} {
+func (w *PageController) GNAAnalysisOld(r *knot.WebContext) interface{} {
 	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
 	r.Config.OutputType = knot.OutputTemplate
 	r.Config.LayoutTemplate = LayoutFile
-	r.Config.ViewName = "page-report-sga.html"
+	r.Config.ViewName = "page-report-gna.html"
 
 	return w.GetParams()
 }
