@@ -32,20 +32,20 @@
 
 	<!-- Nav tabs -->
 	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: !sga.contentIsLoading()">
-		<li role="presentation">
+		<li role="presentation" class="active">
 			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.showFilter(false); sga.changeAndRefresh('BranchName');">Branch</a>
 		</li>
 		<li role="presentation">
 			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.showFilter(false); sga.changeAndRefresh('CostGroup');">Function</a>
 		</li>
-		<li role="presentation" class="active">
+		<li role="presentation">
 			<a href="#tab2" role="tab" data-toggle="tab" onclick="sga.showFilter(true); au.refresh();">Direct & Allocated</a>
 		</li>
 	</ul>
 
 	<!-- Tab panes -->
 	<div class="tab-content">
-		<div role="tabpanel" class="tab-pane" id="tab1">
+		<div role="tabpanel" class="tab-pane active" id="tab1">
 
 
 
@@ -116,7 +116,7 @@
 
 
 		</div>
-		<div role="tabpanel" class="tab-pane active" id="tab2">
+		<div role="tabpanel" class="tab-pane" id="tab2">
 
 
 
