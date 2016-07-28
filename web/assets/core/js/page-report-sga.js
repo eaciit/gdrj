@@ -1037,8 +1037,8 @@ vm.currentTitle('&nbsp;');
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Analysis', href: '#' }, { title: 'G&A Analysis', href: '#' }]);
 
 rpt.refresh = function () {
-	// sga.refresh()
-	au.refresh();
+	sga.refresh();
+	// au.refresh()
 };
 
 $(function () {

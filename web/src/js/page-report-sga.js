@@ -1192,8 +1192,8 @@ vm.breadcrumb([
 ])
 
 rpt.refresh = () => {
-	// sga.refresh()
-	au.refresh()
+	sga.refresh()
+	// au.refresh()
 }
 
 $(() => {
