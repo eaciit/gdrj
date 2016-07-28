@@ -444,8 +444,6 @@ var sga = viewModel.sga;(function () {
 
 		// ======= TOTAL
 
-		var trFooterContainer = void 0;
-
 		var trFooterLeft = toolkit.newEl('tr').addClass('footerTotal').attr('idheaderpl', 'Total').attr('data-row', 'row-' + rows.length).css('height', rpt.rowContentHeight() + 'px').appendTo(tableHeader);
 
 		toolkit.newEl('td').html('<i></i> Total').appendTo(trFooterLeft);
@@ -821,7 +819,7 @@ var au = viewModel.allocated;(function () {
 
 		rpt.fixRowValue(dataFlat);
 
-		// console.log("dataFlat", dataFlat)
+		console.log("dataFlat", dataFlat);
 
 		// dataFlat.forEach((e) => {
 		// 	let breakdown = e.key
@@ -870,7 +868,7 @@ var au = viewModel.allocated;(function () {
 			rows.push(row);
 		});
 
-		// console.log("rows", rows)
+		console.log("rows", rows);
 
 		// let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 		// // let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
@@ -945,6 +943,35 @@ var au = viewModel.allocated;(function () {
 				trContent.attr('statusval', 'hide');
 				trHeader.attr('statusval', 'hide');
 			}
+		});
+
+		// ======= TOTAL
+
+		var rowsForTotal = rows.filter(function (d) {
+			return d.PLCode.indexOf('PL94A') > -1;
+		});
+
+		var trFooterLeft = toolkit.newEl('tr').addClass('footerTotal').attr('idheaderpl', 'Total').attr('data-row', 'row-' + rows.length).css('height', rpt.rowContentHeight() + 'px').appendTo(tableHeader);
+
+		toolkit.newEl('td').html('<i></i> Total').appendTo(trFooterLeft);
+
+		var pnlTotal = kendo.toString(toolkit.sum(rowsForTotal, function (d) {
+			return d.PNLTotal;
+		}), 'n0');
+		toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trFooterLeft);
+
+		var trFooterRight = toolkit.newEl('tr').addClass('footerTotal').attr('idpl', 'Total').attr('data-row', 'row-' + rows.length).css('height', rpt.rowContentHeight() + 'px').appendTo(tableContent);
+
+		dataFlat.forEach(function (e, f) {
+			var value = kendo.toString(toolkit.sum(rowsForTotal, function (d) {
+				return d[e.key];
+			}), 'n0');
+
+			if ($.trim(value) == '') {
+				value = 0;
+			}
+
+			var cell = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trFooterRight);
 		});
 
 		// ========================= CONFIGURE THE HIRARCHY

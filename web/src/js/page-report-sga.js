@@ -511,8 +511,6 @@ let sga = viewModel.sga
 
 		// ======= TOTAL
 
-		let trFooterContainer
-
 		let trFooterLeft = toolkit.newEl('tr')
 			.addClass(`footerTotal`)
 			.attr(`idheaderpl`, 'Total')
@@ -945,7 +943,7 @@ let au = viewModel.allocated
 
 		rpt.fixRowValue(dataFlat)
 
-		// console.log("dataFlat", dataFlat)
+		console.log("dataFlat", dataFlat)
 
 		// dataFlat.forEach((e) => {
 		// 	let breakdown = e.key
@@ -994,7 +992,7 @@ let au = viewModel.allocated
 			rows.push(row)
 		})
 
-		// console.log("rows", rows)
+		console.log("rows", rows)
 		
 		// let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 		// // let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
@@ -1090,6 +1088,48 @@ let au = viewModel.allocated
 				trContent.attr('statusval', 'hide')
 				trHeader.attr('statusval', 'hide')
 			}
+		})
+
+
+		// ======= TOTAL
+
+		let rowsForTotal = rows.filter((d) => d.PLCode.indexOf('PL94A') > -1)
+
+		let trFooterLeft = toolkit.newEl('tr')
+			.addClass(`footerTotal`)
+			.attr(`idheaderpl`, 'Total')
+			.attr(`data-row`, `row-${rows.length}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
+			.appendTo(tableHeader)
+
+		toolkit.newEl('td')
+			.html('<i></i> Total')
+			.appendTo(trFooterLeft)
+
+		let pnlTotal = kendo.toString(toolkit.sum(rowsForTotal, (d) => d.PNLTotal), 'n0')
+		toolkit.newEl('td')
+			.html(pnlTotal)
+			.addClass('align-right')
+			.appendTo(trFooterLeft)
+
+		let trFooterRight = toolkit.newEl('tr')
+			.addClass(`footerTotal`)
+			.attr(`idpl`, 'Total')	
+			.attr(`data-row`, `row-${rows.length}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
+			.appendTo(tableContent)
+
+		dataFlat.forEach((e, f) => {
+			let value = kendo.toString(toolkit.sum(rowsForTotal, (d) => d[e.key]), 'n0')
+
+			if ($.trim(value) == '') {
+				value = 0
+			}
+
+			let cell = toolkit.newEl('td')
+				.html(value)
+				.addClass('align-right')
+				.appendTo(trFooterRight)
 		})
 		
 
