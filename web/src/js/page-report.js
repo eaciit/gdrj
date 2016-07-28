@@ -763,12 +763,14 @@ rpt.hardcodePLGA = (data, plmodels) => {
 rpt.showExpandAll = (a) => {
 	if (a == true) {
 		$(`tr.dd`).find('i').removeClass('fa-chevron-right')
-		$(`tr.dd`).find('i').addClass('fa-chevron-up')
+		$(`tr.dd[idheaderpl='PL0']`).find('i').addClass('fa-chevron-up')
+		$(`tr.dd[idheaderpl!='PL0']`).find('i').addClass('fa-chevron-down')
 		$(`tr[idparent]`).css('display', '')
 		$(`tr[idcontparent]`).css('display', '')
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
 	} else {
 		$(`tr.dd`).find('i').removeClass('fa-chevron-up')
+		$(`tr.dd`).find('i').removeClass('fa-chevron-down')
 		$(`tr.dd`).find('i').addClass('fa-chevron-right')
 		$(`tr[idparent]`).css('display', 'none')
 		$(`tr[idcontparent]`).css('display', 'none')
