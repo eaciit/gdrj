@@ -841,7 +841,7 @@ rd.setup = function () {
 						var totaloutlet = Math.abs(toolkit.sum(v, function (e) {
 							return e.totaloutlet;
 						}));
-						return totaloutlet / rd.divider();
+						return totaloutlet;
 					}
 				}, {
 					_id: 'prcnt',

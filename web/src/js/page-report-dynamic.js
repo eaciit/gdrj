@@ -681,7 +681,7 @@ rd.setup = () => {
 				plheader: 'Total Outlet',
 				callback: (v, k) => {
 					let totaloutlet = Math.abs(toolkit.sum(v, (e) => e.totaloutlet))
-					return totaloutlet / rd.divider()
+					return totaloutlet
 				}
 			}, { 
 				_id: 'prcnt', 
