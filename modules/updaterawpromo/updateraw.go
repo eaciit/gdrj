@@ -177,13 +177,14 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	for trx = range jobs {
 		key, _ := toolkit.ToM(trx["_id"])
 		trx.Set("key", key)
-		trx.Set("_id", toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|", key.GetInt("year"),
+		trx.Set("_id", toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|%s", key.GetInt("year"),
 			key.GetString("branchid"),
 			key.GetString("branchname"),
 			key.GetString("brancharea"),
 			key.GetString("account"),
 			key.GetString("accountdescription"),
-			key.GetString("costgroup")))
+			key.GetString("costgroup"),
+			key.GetString("src")))
 		// tdate := time.Date(trx.GetInt("year"), time.Month(trx.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).
 		// 	AddDate(0, 3, 0)
 		// gdrjdate := gdrj.SetDate(tdate)
