@@ -110,7 +110,6 @@ gna.clickExpand = function (e) {
 		$('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		$('tr[statusvaltemp=hide]').css('display', 'none');
-		rpt.refreshHeight(e.attr('idheaderpl'));
 		rpt.refreshchildadd(e.attr('idheaderpl'));
 	}
 	if (down > 0) {
