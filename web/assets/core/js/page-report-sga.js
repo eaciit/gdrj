@@ -444,6 +444,33 @@ sga.render = function () {
 		}
 	});
 
+	// ======= TOTAL
+
+	var trFooterContainer = void 0;
+
+	var trFooterLeft = toolkit.newEl('tr').addClass('footerTotal').attr('idheaderpl', 'Total').attr('data-row', 'row-' + rows.length).css('height', rpt.rowContentHeight() + 'px').appendTo(tableHeader);
+
+	toolkit.newEl('td').html('<i></i> Total').appendTo(trFooterLeft);
+
+	var pnlTotal = kendo.toString(toolkit.sum(rows, function (d) {
+		return d.PNLTotal;
+	}), 'n0');
+	toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trFooterLeft);
+
+	var trFooterRight = toolkit.newEl('tr').addClass('footerTotal').attr('idpl', 'Total').attr('data-row', 'row-' + rows.length).css('height', rpt.rowContentHeight() + 'px').appendTo(tableContent);
+
+	dataFlat.forEach(function (e, f) {
+		var value = kendo.toString(toolkit.sum(rows, function (d) {
+			return d[e.key];
+		}), 'n0');
+
+		if ($.trim(value) == '') {
+			value = 0;
+		}
+
+		var cell = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trFooterRight);
+	});
+
 	// ========================= CONFIGURE THE HIRARCHY
 	rpt.buildGridLevels(rows);
 };
