@@ -23,6 +23,9 @@ me.multiSelectPNL = {
 	value: me.valueDropDownPNL
 };
 
+// itemTemplate: '<span class="k-state-default" style="background-image: url(\'../content/web/Customers/#:data.CustomerID#.jpg\')"></span>' +
+//                                  '<span class="k-state-default"><h3>#: data.ContactName #</h3><p>#: data.CompanyName #</p></span>',
+//    tagTemplate:  '<span class="selected-value" style="background-image: url(\'../content/web/Customers/#:data.CustomerID#.jpg\')"></span><span>#:data.ContactName#</span>',
 me.mode = ko.observable('efficiency');
 me.show = function (title, mode, unit) {
 	me.title(title);
