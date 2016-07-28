@@ -20,6 +20,7 @@ type SGA struct {
 	BranchName         string
 	Account            string
 	AccountDescription string
+	AccountGroup       string
 	CostGroup          string
 	Year               int
 	Amount             float64
