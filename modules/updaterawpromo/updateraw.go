@@ -165,6 +165,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		trx.Set("branchname", "OTHER")
 		trx.Set("brancharea", "OTHER")
 		trx.Set("costgroup", "OTHER")
+		trx.Set("min_amountinidr", -trx.GetFloat64("amountinidr"))
 
 		if mastercostcenter.Has(cc) {
 			mcc := mastercostcenter[cc].(toolkit.M)
