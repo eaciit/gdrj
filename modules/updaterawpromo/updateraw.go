@@ -21,6 +21,8 @@ var (
 
 var mastercostcenter = toolkit.M{}
 var masterbranch = toolkit.M{}
+var masterbranchgroup = toolkit.M{}
+var masteraccountgroup = toolkit.M{}
 
 func prepdatacostcenter() {
 	toolkit.Println("--> Get Data cost center")
@@ -58,6 +60,24 @@ func prepdatabranch() {
 	}
 }
 
+func prepdataaccountgroup() {
+	toolkit.Println("--> Get account group")
+
+	// filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().From("masteraccountgroup").Cursor(nil)
+	defer csr.Close()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		masterbranch.Set(tkm.GetString("accountdescription"), tkm.GetString("accountgroup"))
+	}
+}
+
 func setinitialconnection() {
 	var err error
 	conn, err = modules.GetDboxIConnection("db_godrej")
@@ -89,8 +109,9 @@ func main() {
 
 	setinitialconnection()
 
-	prepdatabranch()
-	prepdatacostcenter()
+	// prepdatabranch()
+	// prepdatacostcenter()
+	prepdataaccountgroup()
 
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
@@ -160,36 +181,44 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// trx.Set("gdrjdate", gdrjdate)
 
-		cc := trx.GetString("ccid")
-		trx.Set("branchid", "CD00")
-		trx.Set("branchname", "OTHER")
-		trx.Set("brancharea", "OTHER")
-		trx.Set("costgroup", "OTHER")
-		trx.Set("min_amountinidr", -trx.GetFloat64("amountinidr"))
+		// cc := trx.GetString("ccid")
+		// trx.Set("branchid", "CD00")
+		// trx.Set("branchname", "OTHER")
+		// trx.Set("brancharea", "OTHER")
+		// trx.Set("costgroup", "OTHER")
+		trx.Set("accountgroup", "OTHER")
+		// trx.Set("min_amountinidr", -trx.GetFloat64("amountinidr"))
 
-		if mastercostcenter.Has(cc) {
-			mcc := mastercostcenter[cc].(toolkit.M)
-			brid := mcc.GetString("branchid")
+		// if mastercostcenter.Has(cc) {
+		// 	mcc := mastercostcenter[cc].(toolkit.M)
+		// 	brid := mcc.GetString("branchid")
 
-			trx.Set("branchid", brid)
-			trx.Set("costgroup", mcc.GetString("costgroup01"))
+		// 	trx.Set("branchid", brid)
+		// 	trx.Set("costgroup", mcc.GetString("costgroup01"))
 
-			if masterbranch.Has(brid) {
-				trx.Set("branchname", masterbranch[brid].(toolkit.M).GetString("name"))
-				trx.Set("brancharea", masterbranch[brid].(toolkit.M).GetString("area"))
-			}
-		}
+		// 	if masterbranch.Has(brid) {
+		// 		trx.Set("branchname", masterbranch[brid].(toolkit.M).GetString("name"))
+		// 		trx.Set("brancharea", masterbranch[brid].(toolkit.M).GetString("area"))
+		// 	}
+		// }
 
-		if trx.GetString("costgroup") == "" {
-			trx.Set("costgroup", "OTHER")
-		}
+		accdesc := trx.GetString("accountdescription")
+		trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
 
-		if trx.GetString("branchname") == "" {
-			trx.Set("branchname", "OTHER")
-		}
+		// if trx.GetString("costgroup") == "" {
+		// 	trx.Set("costgroup", "OTHER")
+		// }
 
-		if trx.GetString("brancharea") == "" {
-			trx.Set("brancharea", "OTHER")
+		// if trx.GetString("branchname") == "" {
+		// 	trx.Set("branchname", "OTHER")
+		// }
+
+		// if trx.GetString("brancharea") == "" {
+		// 	trx.Set("brancharea", "OTHER")
+		// }
+
+		if trx.GetString("accountgroup") == "" {
+			trx.Set("accountgroup", "OTHER")
 		}
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
