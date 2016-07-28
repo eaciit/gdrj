@@ -3,60 +3,36 @@ let sga = viewModel.sga
 
 ;(() => {
 	// ========== PARSE ======
-
-	sga.sampleData = [
-		{ function: 'Contr', account: 'SALARY BASIC', accountGroup: 'SALARY & BONUS', value: 182497000 },
-		{ function: 'Factory', account: 'SALARY BASIC', accountGroup: 'SALARY & BONUS', value: 44948025651 },
-		{ function: 'FAD', account: 'SALARY BASIC', accountGroup: 'SALARY & BONUS', value: 5901941886 },
-
-		{ function: 'Contr', account: 'BONUS', accountGroup: 'SALARY & BONUS', value: 18687784590 },
-		{ function: 'Factory', account: 'BONUS', accountGroup: 'SALARY & BONUS', value: 178332727 },
-		{ function: 'FAD', account: 'BONUS', accountGroup: 'SALARY & BONUS', value: 0 },
-
-		{ function: 'Contr', account: 'OUTSOURSING EXPENSES', accountGroup: 'SALARY & BONUS', value: 162518906 },
-		{ function: 'Factory', account: 'OUTSOURSING EXPENSES', accountGroup: 'SALARY & BONUS', value: 2181389826 },
-		{ function: 'FAD', account: 'OUTSOURSING EXPENSES', accountGroup: 'SALARY & BONUS', value: 3455862907 },
-
-		{ function: 'Contr', account: 'SALARY BASIC-FOH', accountGroup: 'SALARY & BONUS', value: 14890082565 },
-		{ function: 'Factory', account: 'SALARY BASIC-FOH', accountGroup: 'SALARY & BONUS', value: 0 },
-		{ function: 'FAD', account: 'SALARY BASIC-FOH', accountGroup: 'SALARY & BONUS', value: 0 },
-
-		{ function: 'Contr', account: 'CON ST & SP-FOH', accountGroup: 'SALARY & BONUS', value: 11855798316 },
-		{ function: 'Factory', account: 'CON ST & SP-FOH', accountGroup: 'SALARY & BONUS', value: 0 },
-		{ function: 'FAD', account: 'CON ST & SP-FOH', accountGroup: 'SALARY & BONUS', value: 0 },
-	]
-
-	sga.rawData = ko.observableArray(sga.sampleData)
 	sga.getAlphaNumeric = (what) => what.replace(/\W/g, '')
 
 	sga.constructData = (raw) => {
 		sga.data([])
 
-		// let op1 = _.groupBy(raw, (d) => [d.account, d.accountGroup].join('|'))
-		// let op2 = _.map(op1, (v, k) => ({
-		// 	_id: sga.getAlphaNumeric(k),
-		// 	PLHeader1: v[0].accountGroup,
-		// 	PLHeader2: v[0].accountGroup,
-		// 	PLHeader3: v[0].account,
-		// }))
-
-		// let oq1 = _.groupBy(sga.rawData(), (d) => d.accountGroup)
-		// let oq2 = _.map(oq1, (v, k) => ({
-		// 	_id: sga.getAlphaNumeric(k),
-		// 	PLHeader1: v[0].accountGroup,
-		// 	PLHeader2: v[0].accountGroup,
-		// 	PLHeader3: v[0].accountGroup,
-		// }))
-		// rpt.plmodels(op2.concat(oq2))
-
-		let oq1 = _.groupBy(raw, (d) => d.AccountDescription)
-		let oq2 = _.map(oq1, (v, k) => ({
+		let op1 = _.groupBy(raw, (d) => [d.AccountDescription, d.AccountGroup].join('|'))
+		let op2 = _.map(op1, (v, k) => ({
 			_id: sga.getAlphaNumeric(k),
-			PLHeader1: v[0].AccountDescription,
-			PLHeader2: v[0].AccountDescription,
+			PLHeader1: v[0].AccountGroup,
+			PLHeader2: v[0].AccountGroup,
 			PLHeader3: v[0].AccountDescription,
 		}))
-		rpt.plmodels(oq2)
+
+		let oq1 = _.groupBy(raw, (d) => d.AccountGroup)
+		let oq2 = _.map(oq1, (v, k) => ({
+			_id: sga.getAlphaNumeric(k),
+			PLHeader1: v[0].AccountGroup,
+			PLHeader2: v[0].AccountGroup,
+			PLHeader3: v[0].AccountGroup,
+		}))
+		rpt.plmodels(op2.concat(oq2))
+
+		// let oq1 = _.groupBy(raw, (d) => d.AccountDescription)
+		// let oq2 = _.map(oq1, (v, k) => ({
+		// 	_id: sga.getAlphaNumeric(k),
+		// 	PLHeader1: v[0].AccountDescription,
+		// 	PLHeader2: v[0].AccountDescription,
+		// 	PLHeader3: v[0].AccountDescription,
+		// }))
+		// rpt.plmodels(oq2)
 
 		let key = sga.breakdownBy()
 		let cache = {}
@@ -72,31 +48,32 @@ let sga = viewModel.sga
 			}
 			cache[breakdown] = o
 
-			// let plID = sga.getAlphaNumeric([d.account, d.accountGroup].join('|'))
-			// let plmodel = rpt.plmodels().find((e) => e._id == plID)
-			// if (o.hasOwnProperty(plmodel._id)) {
-			// 	o[plmodel._id] += d.value
-			// } else {
-			// 	o[plmodel._id] = d.value
-			// }
-
-			// let plIDHeader = sga.getAlphaNumeric(d.accountGroup)
-			// let plmodelHeader = rpt.plmodels().find((e) => e._id == plIDHeader)
-			// if (o.hasOwnProperty(plmodelHeader._id)) {
-			// 	o[plmodelHeader._id] += d.value
-			// } else {
-			// 	o[plmodelHeader._id] = d.value
-			// }
-
-			let plID = sga.getAlphaNumeric(d.AccountDescription)
+			let plID = sga.getAlphaNumeric([d.AccountDescription, d.AccountGroup].join('|'))
 			let plmodel = rpt.plmodels().find((e) => e._id == plID)
 			if (o.hasOwnProperty(plmodel._id)) {
 				o[plmodel._id] += d.Amount
 			} else {
 				o[plmodel._id] = d.Amount
 			}
+
+			let plIDHeader = sga.getAlphaNumeric(d.AccountGroup)
+			let plmodelHeader = rpt.plmodels().find((e) => e._id == plIDHeader)
+			if (o.hasOwnProperty(plmodelHeader._id)) {
+				o[plmodelHeader._id] += d.Amount
+			} else {
+				o[plmodelHeader._id] = d.Amount
+			}
+
+			// let plID = sga.getAlphaNumeric(d.AccountDescription)
+			// let plmodel = rpt.plmodels().find((e) => e._id == plID)
+			// if (o.hasOwnProperty(plmodel._id)) {
+			// 	o[plmodel._id] += d.Amount
+			// } else {
+			// 	o[plmodel._id] = d.Amount
+			// }
 		})
 		sga.data(rawData)
+		console.log('rawData', rawData)
 	}
 
 	// ==========
@@ -160,8 +137,8 @@ let sga = viewModel.sga
 				sga.data(sga.buildStructure(sga.data()))
 				sga.emptyGrid()
 				sga.render()
-				rpt.showExpandAll(true)
 				rpt.prepareEvents()
+				rpt.showExpandAll(true)
 			}, () => {
 				sga.emptyGrid()
 				sga.contentIsLoading(false)
@@ -370,7 +347,7 @@ let sga = viewModel.sga
 
 		rpt.fixRowValue(dataFlat)
 
-		// console.log("dataFlat", dataFlat)
+		console.log("dataFlat", dataFlat)
 
 		dataFlat.forEach((e) => {
 			let breakdown = e.key
@@ -411,7 +388,7 @@ let sga = viewModel.sga
 			rows.push(row)
 		})
 
-		// console.log("rows", rows)
+		console.log("rows", rows)
 		
 		// let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 		// let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
@@ -432,7 +409,7 @@ let sga = viewModel.sga
 
 		// ========================= PLOT DATA
 
-		_.orderBy(rows, (d) => d.PNLTotal, 'desc').forEach((d, i) => {
+		_.orderBy(rows, (d) => d.PNLTotal, 'asc').forEach((d, i) => {
 		// rows.forEach((d, i) => {
 			pnlTotalSum += d.PNLTotal
 
@@ -642,8 +619,8 @@ let au = viewModel.allocated
 				down = $(e).find('i.fa-chevron-down').length
 		if (right > 0){
 			if (['PL28', 'PL29A', 'PL31'].indexOf($(e).attr('idheaderpl')) > -1) {
-				$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
-				$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth())
+				$('.pivot-pnl .table-header').css('width', 480)
+				$('.pivot-pnl .table-content').css('margin-left', 480)
 			}
 
 			$(e).find('i').removeClass('fa-chevron-right')
@@ -697,21 +674,25 @@ let au = viewModel.allocated
 			if (d.PLHeader1 == 'Direct' || d.PLHeader2 == 'Direct' || d.PLHeader3 == 'Direct') {
 				let c = toolkit.clone(d)
 				c._id = `${d._id}_allocated`
+
 				if (c.PLHeader1 == 'Direct') {
 					c.PLHeader1 = 'Allocated'
 				} else {
 					c.PLHeader1 = `${c.PLHeader1} `
 				}
+
 				if (c.PLHeader2 == 'Direct') {
 					c.PLHeader2 = 'Allocated'
 				} else {
 					c.PLHeader2 = `${c.PLHeader2} `
 				}
+
 				if (c.PLHeader3 == 'Direct') {
 					c.PLHeader3 = 'Allocated'
 				} else {
 					c.PLHeader3 = `${c.PLHeader3} `
 				}
+
 				plmodels.push(c)
 			}
 		})
