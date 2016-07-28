@@ -32,20 +32,20 @@
 
 	<!-- Nav tabs -->
 	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: !sga.contentIsLoading()">
-		<li role="presentation">
-			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.showFilter(false); sga.changeAndRefresh('BranchName');">Branch</a>
-		</li>
-		<li role="presentation">
-			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.showFilter(false); sga.changeAndRefresh('CostGroup');">Function</a>
-		</li>
 		<li role="presentation" class="active">
-			<a href="#tab2" role="tab" data-toggle="tab" onclick="sga.showFilter(true); au.refresh();">Direct & Allocated</a>
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchName');">Branch</a>
+		</li>
+		<li role="presentation">
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('CostGroup');">Function</a>
+		</li>
+		<li role="presentation">
+			<a href="#tab2" role="tab" data-toggle="tab" onclick="au.breakdownBranchGroup([]); au.refresh();">Direct & Allocated</a>
 		</li>
 	</ul>
 
 	<!-- Tab panes -->
 	<div class="tab-content">
-		<div role="tabpanel" class="tab-pane" id="tab1">
+		<div role="tabpanel" class="tab-pane active" id="tab1">
 
 
 
@@ -56,6 +56,19 @@
 			<h3 class="no-margin">&nbsp;</h3>
 			<div class="panel-nav-button" data-bind="visible: !sga.contentIsLoading()">
 				<div class="form-inline">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: sga.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#sga', 'G&A Analysis', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div class="filter" data-bind="visible: !sga.contentIsLoading()">
+				<div class="form-inline pull-right">
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right">Fiscal Year</span>
 						<div class="width-full">
@@ -80,23 +93,6 @@
 						<div class="clearfix"></div>
 					</div>
 
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: sga.refresh" title="Refresh P&L Analysis">
-						<i class="fa fa-refresh"></i> Refresh
-					</button>
-					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#sga', 'G&A Analysis', 'header-content')">
-						<i class="fa fa-download"></i> Export as Excel
-					</button>
-					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter, visible: sga.showFilter" title="Toggle Advanced Filter">
-						<i class="fa fa-server"></i> Show Filter
-					</button>
-				</div>
-			</div>
-		</div>
-
-		<div class="panel-body">
-			<div class="filter" data-bind="visible: !sga.contentIsLoading()">
-				<div class="form-inline pull-right">
-
 				</div>
 				<div class="clearfix"></div>
 			</div>
@@ -116,7 +112,7 @@
 
 
 		</div>
-		<div role="tabpanel" class="tab-pane active" id="tab2">
+		<div role="tabpanel" class="tab-pane" id="tab2">
 
 
 
@@ -127,6 +123,22 @@
 			<h3 class="no-margin">&nbsp;</h3>
 			<div class="panel-nav-button" data-bind="visible: !au.contentIsLoading()">
 				<div class="form-inline">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: au.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#sga', 'G&A Analysis', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div class="filter" data-bind="visible: !au.contentIsLoading()">
+				<div class="form-inline pull-right">
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right">Fiscal Year</span>
 						<div class="width-full">
@@ -143,39 +155,13 @@
 						<div class="clearfix"></div>
 					</div>
 
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (au.breakdownBy() == 'BranchName')">
-						<span class="input-group-addon align-right">Branch</span>
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (sga.breakdownBy() == 'BranchName')">
+						<span class="input-group-addon align-right">Branch Group</span>
 						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.masterData.Branch, value: au.filterBranch, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select branches' }"></select>
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.masterData.BranchGroup, value: sga.filterBranch, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select branches' }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
-
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (au.breakdownBy() == 'CostGroup')">
-						<span class="input-group-addon align-right">Function</span>
-						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: au.optionFilterCostGroups, value: au.filterCostGroup, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select functions' }"></select>
-						</div>
-						<div class="clearfix"></div>
-					</div>
-
-					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: au.refresh" title="Refresh P&L Analysis">
-						<i class="fa fa-refresh"></i> Refresh
-					</button>
-					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#sga', 'G&A Analysis', 'header-content')">
-						<i class="fa fa-download"></i> Export as Excel
-					</button>
-					<!-- <button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
-						<i class="fa fa-server"></i> Show Filter
-					</button> -->
-				</div>
-			</div>
-		</div>
-
-		<div class="panel-body">
-			<div class="filter" data-bind="visible: !au.contentIsLoading()">
-				<div class="form-inline pull-right">
-
 				</div>
 				<div class="clearfix"></div>
 			</div>
