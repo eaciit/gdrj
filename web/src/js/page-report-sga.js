@@ -622,11 +622,11 @@ let au = viewModel.allocated
 
 				// HHHHHHAAAA
 
-				$("#au .table-header tr:gt(0):lt(88)").hide()
-				$("#au .table-content tr:gt(0):lt(88)").hide()
+				// $("#au .table-header tr:gt(0):lt(88)").hide()
+				// $("#au .table-content tr:gt(0):lt(88)").hide()
 
-				$("#au .table-header tr:gt(70)").hide()
-				$("#au .table-content tr:gt(70)").hide()
+				// $("#au .table-header tr:gt(70)").hide()
+				// $("#au .table-content tr:gt(70)").hide()
 
 				$(`#au [idheaderpl="PL94A"],[idheaderpl="PL94A_allocated"]`).find('.fa').trigger('click')
 			}, () => {
