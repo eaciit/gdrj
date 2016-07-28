@@ -972,7 +972,7 @@ rpt.buildGridLevels = (rows) => {
 							$trElem.insertAfter($(`tr[idheaderpl=${PLyo.PLCode}]`))
 							$columnElem.insertAfter($(`tr[idpl=${PLyo.PLCode}]`))
 						}
-						if ($trElem.attr('idparent') == "PL33" || $trElem.attr('idparent') == "PL34" || $trElem.attr('idparent') == "PL35"){
+						if ($trElem.attr('idparent') == "PL33" || $trElem.attr('idparent') == "PL34" || $trElem.attr('idparent') == "PL35" || $trElem.attr('idparent') == 'PL33_allocated' || $trElem.attr('idparent') == 'PL34_allocated' || $trElem.attr('idparent') == 'PL35_allocated'){
 							let texthtml = $trElem.find('td:eq(0)').text()
 							$trElem.find('td:eq(0)').text(texthtml.substring(5,texthtml.length))
 						}
