@@ -1,0 +1,111 @@
+<style>
+	.pivot-pnl .table-header {
+		width: 430px;
+	}
+	.pivot-pnl .table-content {
+		margin-left: 430px;
+	}
+	.scroll-grid-bottom {
+	    margin-left: 430px;
+	}
+	.scroll-grid-bottom.viewscrollfix.arrow {
+		margin-left: 406px;
+	}
+</style>
+<div>
+	<div class="col-md-12 col-sm-12 ez panel-content">
+
+<script src="{{BaseUrl}}res/core/js/page-report.js?ANTI_CACHE={{.AntiCache}}"></script>
+<script src="{{BaseUrl}}res/core/js/page-report-sga.js?ANTI_CACHE={{.AntiCache}}"></script>
+
+	<!-- Nav tabs -->
+	<ul class="nav nav-pills nav-replace-title" role="tablist">
+		<li role="presentation" class="active">
+			<a href="#summary" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchName');">Branch</a>
+		</li>
+		<li role="presentation">
+			<a href="#summary" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('CostGroup');">Function</a>
+		</li>
+	</ul>
+
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin">&nbsp;</h3>
+			<div class="panel-nav-button" data-bind="visible: !sga.contentIsLoading()">
+				<div class="form-inline">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: sga.fiscalYear }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (sga.breakdownBy() == 'BranchName')">
+						<span class="input-group-addon align-right">Branch</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.masterData.Branch, value: sga.filterBranch, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select branches' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (sga.breakdownBy() == 'CostGroup')">
+						<span class="input-group-addon align-right">Function</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: sga.optionFilterCostGroups, value: sga.filterCostGroup, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select functions' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: sga.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#sga', 'SG&A Analysis', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+					<!-- <button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button> -->
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div class="filter" data-bind="visible: !sga.contentIsLoading()">
+				<div class="form-inline pull-right">
+<!-- 
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Breakdown By</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: sga.breakdownBy, change: sga.changeBreakdown, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Breakdown Value</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: sga.optionBreakdownValues, dataValueField: '_id', dataTextField: 'Name', value: sga.breakdownValue, placeholder: 'Choose value', change: sga.changeBreakdownValue, filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div> -->
+				</div>
+				<div class="clearfix"></div>
+			</div>
+
+			<div data-bind="visible: sga.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !sga.contentIsLoading()">
+				<div class="breakdown-view ez" id="sga"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+	</div>
+
+	{{template "_filter.html"}}
+</div>

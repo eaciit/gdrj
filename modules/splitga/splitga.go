@@ -5,6 +5,7 @@ import (
 	"eaciit/gdrj/modules"
 	"os"
 
+	"strings"
 	"time"
 
 	"github.com/eaciit/dbox"
@@ -20,10 +21,14 @@ var (
 	ratiototrf      = float64(0.352367849)
 	sourcetablename = "salespls-summary"
 	calctablename   = "salespls-summary"
-	desttablename   = "salespls-summary"
+	desttablename   = "sgadata"
 	t0              time.Time
 	masters         = toolkit.M{}
-	move            = float64(-6750000000)
+	sgayrs          = map[string]float64{}
+	directratios    = map[string]float64{
+		"2014-2015": 0.1979,
+		"2015-2016": 0.1763,
+	}
 )
 
 type plalloc struct {
@@ -42,36 +47,32 @@ type allocmap map[string]*plalloc
 var (
 	rdfiscals    = allocmap{}
 	branchtotals = allocmap{}
-	trxsrc       = "sbycogsmove2016"
 )
 
 func main() {
 	setinitialconnection()
-	conn.NewQuery().From(desttablename).
-		Where(dbox.Eq("key.trxsrc", trxsrc)).
-		Delete().
-		Exec(nil)
-
 	prepmastercalc()
-	//buildratio()
-	for _, v := range []string{"2015-2016"} {
-		processTable(v)
+	buildratio()
+	conn.NewQuery().From(desttablename).Delete().Exec(nil)
+	tstart := time.Now()
+	rcount := len(sgayrs)
+	i := 0
+	for k, v := range sgayrs {
+		i++
+		//makeProgressLog("Processing "+k, i, rcount, 100, &mstone, tstart)
+		toolkit.Printfn("Processing %d of %d %s",
+			i, rcount, time.Since(tstart).String())
+		processTable(k, v)
 	}
 	//processRDBranch()
 }
 
-func processTable(fiscalyr string) {
-	connsave, _ := modules.GetDboxIConnection("db_godrej")
-	defer connsave.Close()
-	qsave := connsave.NewQuery().SetConfig("multiexec", true).From(desttablename).Save()
-
+func buildratio() {
 	connselect, _ := modules.GetDboxIConnection("db_godrej")
 	defer connselect.Close()
 
 	cursor, _ := connselect.NewQuery().
 		From(calctablename).
-		Where(dbox.Ne("key.trxsrc", trxsrc), dbox.Eq("key.date_fiscal", fiscalyr),
-		dbox.Eq("key.customer_branchid", "CD04")).
 		Select().Cursor(nil)
 	defer cursor.Close()
 
@@ -80,8 +81,6 @@ func processTable(fiscalyr string) {
 	toolkit.Printfn("Record found: %d", count)
 	mstone := 0
 	t0 = time.Now()
-	expected := move
-	absorbed := float64(0)
 	for {
 		mr := toolkit.M{}
 		e := cursor.Fetch(&mr, 1, false)
@@ -90,59 +89,92 @@ func processTable(fiscalyr string) {
 			break
 		}
 		i++
-		makeProgressLog("Processing", i, count, 5, &mstone, t0)
+		makeProgressLog("Build Ratio", i, count, 5, &mstone, t0)
 
+		key := mr.Get("key", toolkit.M{}).(toolkit.M)
+		fiscal := key.GetString("date_fiscal")
+		mth := key.GetInt("date_month")
+		channelid := key.GetString("customer_channelid")
+		branchid := key.GetString("customer_branchid")
+		sga := mr.GetFloat64("PL94A")
+		if sga != 0 {
+			keysga := toolkit.Sprintf("%s_%d_%s_%s", fiscal, mth, branchid, channelid)
+			sgayrs[keysga] = sgayrs[keysga] + sga
+		}
+	}
+}
+
+func processTable(key string, totalvalue float64) {
+	connsave, _ := modules.GetDboxIConnection("db_godrej")
+	defer connsave.Close()
+	qsave := connsave.NewQuery().SetConfig("multiexec", true).From(desttablename).Save()
+
+	connselect, _ := modules.GetDboxIConnection("db_godrej")
+	defer connselect.Close()
+
+	keys := strings.Split(key, "_")
+	keyfiscal, keymonth, keybranch, keychannel := keys[0],
+		toolkit.ToInt(keys[1], toolkit.RoundingAuto),
+		keys[2], keys[3]
+
+	cursor, _ := connselect.NewQuery().
+		From(calctablename).
+		Where(dbox.Eq("key.date_fiscal", keyfiscal), dbox.Eq("key.date_month", keymonth),
+		dbox.Eq("key.customer_branchid", keybranch), dbox.Eq("key.customer_channelid", keychannel)).
+		Select().Cursor(nil)
+	defer cursor.Close()
+
+	i := 0
+	//count := cursor.Count()
+	//toolkit.Printfn("Processing: %s Record found: %d", key, count)
+	//mstone := 0
+	t0 = time.Now()
+	expected := directratios[keyfiscal] * totalvalue
+	absorbed := float64(0)
+	for {
+		mr := toolkit.M{}
+		e := cursor.Fetch(&mr, 1, false)
+		if e != nil {
+			//toolkit.Printfn("Break: %s", e.Error())
+			break
+		}
+		i++
+		/*
+			makeProgressLog(toolkit.Sprintf("Processing %s", key),
+				i, count, 5, &mstone, t0)
+		*/
 		mrid := mr.GetString("_id")
 		key := mr.Get("key", toolkit.M{}).(toolkit.M)
-		channelid := key.GetString("customer_channelid")
 
-		if channelid == "I2" {
-			matlocal := mr.GetFloat64("PL9")
-			absorbed += matlocal
+		hasSga := false
+		msga := toolkit.M{}
+		for k, v := range mr {
+			if strings.HasPrefix(k, "PL33") ||
+				strings.HasPrefix(k, "PL34") ||
+				strings.HasPrefix(k, "PL35") {
+				sgavalue := mr.GetFloat64(k)
+				if sgavalue != 0 {
+					hasSga = true
+				}
+				absorbed += sgavalue
+				msga.Set(k, v)
+			}
+		}
 
-			if matlocal != 0 {
-				mreverse := toolkit.M{}
-				mreverse.Set("_id", mrid+"_"+trxsrc+"_reverse")
-				mreversekey := toolkit.M{}
-				for k, v := range key {
-					mreversekey.Set(k, v)
-				}
-				mreversekey.Set("customer_customergroup", "")
-				mreversekey.Set("customer_customergroupname", "")
-				mreversekey.Set("trxsrc", trxsrc)
-				mreverse.Set("key", mreversekey)
-				mreverse.Set("PL9", -matlocal)
-				gdrj.CalcSum(mreverse, masters)
-				esave := qsave.Exec(toolkit.M{}.Set("data", mreverse))
-				if esave != nil {
-					toolkit.Printfn("Error: " + esave.Error())
-					os.Exit(100)
-				}
+		if absorbed <= expected {
+			key.Set("sgaalloc", "Direct")
+		} else {
+			key.Set("sgaalloc", "Allocated")
+		}
 
-				mrd := toolkit.M{}
-				mrd.Set("_id", mrid+"_"+trxsrc)
-				mrdkey := toolkit.M{}
-				for k, v := range key {
-					mrdkey.Set(k, v)
-				}
-				mrdkey.Set("customer_channelid", "I3")
-				mrdkey.Set("customer_reportchannel", "MT")
-				mrdkey.Set("customer_customertype", "MT")
-				mrdkey.Set("customer_channelname", "MT")
-				mrdkey.Set("customer_reportsubchannel", "Mini")
-				mrdkey.Set("trxsrc", trxsrc)
-				mrd.Set("key", mrdkey)
-				mrd.Set("PL9", matlocal)
-				gdrj.CalcSum(mrd, masters)
-				esave = qsave.Exec(toolkit.M{}.Set("data", mrd))
-				if esave != nil {
-					toolkit.Printfn("Error: " + esave.Error())
-					os.Exit(100)
-				}
-
-				if absorbed <= expected {
-					break
-				}
+		msga.Set("_id", mrid)
+		msga.Set("key", key)
+		if hasSga {
+			gdrj.CalcSum(msga, masters)
+			sgasave := qsave.Exec(toolkit.M{}.Set("data", msga))
+			if sgasave != nil {
+				toolkit.Printfn("Error: %s", sgasave.Error())
+				os.Exit(100)
 			}
 		}
 	}

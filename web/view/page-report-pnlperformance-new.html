@@ -44,7 +44,7 @@
 		<li role="presentation">
 			<a href="#by-branch-or-rd" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility('by-branch-or-rd', this); rpt.resetMonthQuarter(); bkd.title('P&L by RD - All Channel'); v1.mode('Regional Distributor'); v1.refresh();">RD - All Channel</a>
 		</li>
-		<li role="presentation">
+		<li role="presentation" style="display: none;">
 			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility('by-key-account', this); rpt.resetMonthQuarter(); bkd.title('Branch Key Accounts'); subchan.useFilterChannel(false); kac.refresh();">Branch Key Accounts</a>
 		</li>
 		<!-- <li role="presentation">
@@ -53,10 +53,10 @@
 		<li role="presentation">
 			<a href="#by-key-account" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility(); rpt.resetMonthQuarter(); bkd.title('P&L by Key Accounts'); kac.refresh();">Key Accounts</a>
 		</li> -->
-		<li role="presentation">
+		<li role="presentation" style="display: none;">
 			<a href="#by-channel-mt-breakdown-modern-trade" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility('by-channel-mt-breakdown', this); rpt.resetMonthQuarter(); subchan.switchRefresh('Branch Modern Trade', 'mt sub channel');">Branch Modern Trade</a>
 		</li>
-		<li role="presentation">
+		<li role="presentation" style="display: none;">
 			<a href="#by-channel-mt-breakdown-branch-gt" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility('by-channel-mt-breakdown', this); rpt.resetMonthQuarter(); subchan.changeBreakdownGeneralTrade(); subchan.switchRefresh('Branch GT', 'gt');">Branch GT</a>
 		</li>
 		<li role="presentation">
