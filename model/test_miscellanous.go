@@ -5,7 +5,6 @@ import (
 	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 	"gopkg.in/mgo.v2/bson"
-	"time"
 )
 
 type SalesRDManeh struct {
@@ -118,71 +117,6 @@ type DiscountActivity struct {
 	PCID, CustomerName, City, ChannelName                string
 	ChannelID, BranchID, KeyAccountGroup, KeyAccountCode string
 	Brand, Order, Material, LongTextOrder, BusinessArea  string
-}
-
-type OutletNumber struct {
-	orm.ModelBase `bson:"-" json:"-"`
-	ID            string     `bson:"_id" json:"_id"`
-	Month         time.Month `bson:"date_month" json:"date_month"`
-	Quarter       string     `bson:"date_quarter" json:"date_quarter"`
-	Fiscal        string     `bson:"date_fiscal" json:"date_fiscal"`
-	CustomerID    string     `bson:"customer_id" json:"customer_id"`
-	CustomerName  string     `bson:"customer_name" json:"customer_name"`
-	ChannelID     string     `bson:"customer_channelid" json:"customer_channelid"`
-	ChannelName   string     `bson:"customer_channelname" json:"customer_channelname"`
-	BranchName    string     `bson:"customer_branchname" json:"customer_branchname"`
-	Brand         string     `bson:"product_brand" json:"product_brand"`
-	Tablename     string
-}
-
-type SalesPL_2015 struct {
-	orm.ModelBase `bson:"-" json:"-"`
-	ID            string `bson:"_id" json:"_id"`
-
-	Date     *Date
-	Customer *Customer
-	Product  *Product
-}
-
-func (s *SalesPL_2015) TableName() string {
-	return "salespls-2015"
-}
-
-func (t *SalesPL_2015) RecordID() interface{} {
-	return t.ID
-}
-
-type SalesPL_2016 struct {
-	orm.ModelBase `bson:"-" json:"-"`
-	ID            string `bson:"_id" json:"_id"`
-
-	Date     *Date
-	Customer *Customer
-	Product  *Product
-}
-
-func (s *SalesPL_2016) TableName() string {
-	return "salespls-2016"
-}
-
-func (t *SalesPL_2016) RecordID() interface{} {
-	return t.ID
-}
-
-func (t *OutletNumber) RecordID() interface{} {
-	return t.ID
-}
-
-func (t *OutletNumber) TableName() string {
-	return t.Tablename
-}
-
-func (t *OutletNumber) Save() error {
-	e := Save(t)
-	if e != nil {
-		return errors.New(toolkit.Sprintf("[%v-%v] Error found : ", t.TableName(), "save", e.Error()))
-	}
-	return e
 }
 
 func (t *DiscountActivity) RecordID() interface{} {
