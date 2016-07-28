@@ -91,7 +91,6 @@ var sga = viewModel.sga;(function () {
 
 	sga.contentIsLoading = ko.observable(false);
 	sga.breakdownNote = ko.observable('');
-	sga.showFilter = ko.observable(false);
 
 	sga.breakdownBy = ko.observable('BranchName');
 	sga.breakdownValue = ko.observableArray([]);
@@ -482,8 +481,8 @@ var au = viewModel.allocated;(function () {
 
 	au.breakdownBy = ko.observable('customer.channelname');
 	au.breakdownSGA = ko.observable('sgaalloc');
-	au.breakdownValue = ko.observableArray([]);
 	au.breakdownByFiscalYear = ko.observable('date.fiscal');
+	au.breakdownBranchGroup = ko.observableArray([]);
 
 	au.data = ko.observableArray([]);
 	au.fiscalYear = ko.observable(rpt.value.FiscalYear());
@@ -500,12 +499,12 @@ var au = viewModel.allocated;(function () {
 		param.groups = rpt.parseGroups([au.breakdownBy(), au.breakdownSGA()]);
 		au.contentIsLoading(true);
 
-		var breakdownValue = au.breakdownValue().filter(function (d) {
+		var breakdownValue = au.breakdownBranchGroup().filter(function (d) {
 			return d !== 'All';
 		});
 		if (breakdownValue.length > 0) {
 			param.filters.push({
-				Field: au.breakdownBy(),
+				Field: 'customer.branchgroup',
 				Op: '$in',
 				Value: breakdownValue
 			});
@@ -950,85 +949,6 @@ var au = viewModel.allocated;(function () {
 
 		// ========================= CONFIGURE THE HIRARCHY
 		rpt.buildGridLevels(rows);
-	};
-
-	au.optionBreakdownValues = ko.observableArray([]);
-	au.breakdownValueAll = { _id: 'All', Name: 'All' };
-	au.changeBreakdown = function () {
-		var all = au.breakdownValueAll;
-		var map = function map(arr) {
-			return arr.map(function (d) {
-				if ("customer.channelname" == au.breakdownBy()) {
-					return d;
-				}
-				if ("customer.keyaccount" == au.breakdownBy()) {
-					return { _id: d._id, Name: d._id };
-				}
-
-				return { _id: d.Name, Name: d.Name };
-			});
-		};
-		setTimeout(function () {
-			au.breakdownValue([]);
-
-			switch (au.breakdownBy()) {
-				case "customer.areaname":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Area())));
-					au.breakdownValue([all._id]);
-					break;
-				case "customer.region":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Region())));
-					au.breakdownValue([all._id]);
-					break;
-				case "customer.zone":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())));
-					au.breakdownValue([all._id]);
-					break;
-				case "product.brand":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())));
-					au.breakdownValue([all._id]);
-					break;
-				case "customer.branchname":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())));
-					au.breakdownValue([all._id]);
-					break;
-				case "customer.branchgroup":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.BranchGroup())));
-					au.breakdownValue([all._id]);
-					break;
-				case "customer.channelname":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())));
-					au.breakdownValue([all._id]);
-					break;
-				case "customer.keyaccount":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())));
-					au.breakdownValue([all._id]);
-					break;
-			}
-		}, 100);
-	};
-	au.changeBreakdownValue = function () {
-		var all = au.breakdownValueAll;
-		setTimeout(function () {
-			var condA1 = au.breakdownValue().length == 2;
-			var condA2 = au.breakdownValue().indexOf(all._id) == 0;
-			if (condA1 && condA2) {
-				au.breakdownValue.remove(all._id);
-				return;
-			}
-
-			var condB1 = au.breakdownValue().length > 1;
-			var condB2 = au.breakdownValue().reverse()[0] == all._id;
-			if (condB1 && condB2) {
-				au.breakdownValue([all._id]);
-				return;
-			}
-
-			var condC1 = au.breakdownValue().length == 0;
-			if (condC1) {
-				au.breakdownValue([all._id]);
-			}
-		}, 100);
 	};
 })();
 

@@ -105,7 +105,6 @@ let sga = viewModel.sga
 
 	sga.contentIsLoading = ko.observable(false)
 	sga.breakdownNote = ko.observable('')
-	sga.showFilter = ko.observable(false)
 
 	sga.breakdownBy = ko.observable('BranchName')
 	sga.breakdownValue = ko.observableArray([])
@@ -571,8 +570,8 @@ let au = viewModel.allocated
 
 	au.breakdownBy = ko.observable('customer.channelname')
 	au.breakdownSGA = ko.observable('sgaalloc')
-	au.breakdownValue = ko.observableArray([])
 	au.breakdownByFiscalYear = ko.observable('date.fiscal')
+	au.breakdownBranchGroup = ko.observableArray([])
 
 	au.data = ko.observableArray([])
 	au.fiscalYear = ko.observable(rpt.value.FiscalYear())
@@ -587,10 +586,10 @@ let au = viewModel.allocated
 		param.groups = rpt.parseGroups([au.breakdownBy(), au.breakdownSGA()])
 		au.contentIsLoading(true)
 
-		let breakdownValue = au.breakdownValue().filter((d) => d !== 'All')
+		let breakdownValue = au.breakdownBranchGroup().filter((d) => d !== 'All')
 		if (breakdownValue.length > 0) {
 			param.filters.push({
-				Field: au.breakdownBy(),
+				Field: 'customer.branchgroup',
 				Op: '$in',
 				Value: breakdownValue
 			})
@@ -1096,89 +1095,6 @@ let au = viewModel.allocated
 
 		// ========================= CONFIGURE THE HIRARCHY
 		rpt.buildGridLevels(rows)
-	}
-
-
-
-
-
-
-
-	au.optionBreakdownValues = ko.observableArray([])
-	au.breakdownValueAll = { _id: 'All', Name: 'All' }
-	au.changeBreakdown = () => {
-		let all = au.breakdownValueAll
-		let map = (arr) => arr.map((d) => {
-			if ("customer.channelname" == au.breakdownBy()) {
-				return d
-			}
-			if ("customer.keyaccount" == au.breakdownBy()) {
-				return { _id: d._id, Name: d._id }
-			}
-
-			return { _id: d.Name, Name: d.Name }
-		})
-		setTimeout(() => {
-			au.breakdownValue([])
-
-			switch (au.breakdownBy()) {
-				case "customer.areaname":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Area())))
-					au.breakdownValue([all._id])
-				break;
-				case "customer.region":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Region())))
-					au.breakdownValue([all._id])
-				break;
-				case "customer.zone":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Zone())))
-					au.breakdownValue([all._id])
-				break;
-				case "product.brand":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Brand())))
-					au.breakdownValue([all._id])
-				break;
-				case "customer.branchname":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Branch())))
-					au.breakdownValue([all._id])
-				break;
-				case "customer.branchgroup":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.BranchGroup())))
-					au.breakdownValue([all._id])
-				break;
-				case "customer.channelname":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.Channel())))
-					au.breakdownValue([all._id])
-				break;
-				case "customer.keyaccount":
-					au.optionBreakdownValues([all].concat(map(rpt.masterData.KeyAccount())))
-					au.breakdownValue([all._id])
-				break;
-			}
-		}, 100)
-	}
-	au.changeBreakdownValue = () => {
-		let all = au.breakdownValueAll
-		setTimeout(() => {
-			let condA1 = au.breakdownValue().length == 2
-			let condA2 = au.breakdownValue().indexOf(all._id) == 0
-			if (condA1 && condA2) {
-				au.breakdownValue.remove(all._id)
-				return
-			}
-
-			let condB1 = au.breakdownValue().length > 1
-			let condB2 = au.breakdownValue().reverse()[0] == all._id
-			if (condB1 && condB2) {
-				au.breakdownValue([all._id])
-				return
-			}
-
-			let condC1 = au.breakdownValue().length == 0
-			if (condC1) {
-				au.breakdownValue([all._id])
-			}
-		}, 100)
 	}
 })()
 
