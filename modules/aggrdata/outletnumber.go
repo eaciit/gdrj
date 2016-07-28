@@ -43,6 +43,7 @@ func setinitialconnection() {
 	var err error
 	ci := &dbox.ConnectionInfo{
 		"localhost:27017",
+		// "52.220.25.190:27123",
 		"ecgodrej",
 		"",
 		"",
@@ -143,37 +144,32 @@ func main() {
 func (payload *OutletFinder) createCollection() interface{} {
 	res := new(toolkit.Result)
 
-	toolkit.Println("counting")
-
 	ok, err := payload.CountOutletData()
 	if err != nil {
 		res.SetError(err)
 		return res
 	}
 
-	toolkit.Println("counted", ok)
-
 	tableName := payload.GetOutletTable()
-	toolkit.Println("______ TABLENAME TABLENAME TABLENAME", tableName)
 
 	if ok {
+		toolkit.Println(tableName, "HAS BEEN CREATED")
 		res.Status = toolkit.Status_OK
 		return res
 	}
 
 	if gocore.GetConfig(tableName) == "otw" {
 		res.SetError(errors.New("still processing, might take a while"))
-		toolkit.Println("on progress")
+		toolkit.Println("creating >>>", tableName)
 		return res
 	}
 
 	go func() {
-		toolkit.Println("______", tableName, ok, gocore.GetConfig(tableName, ""))
 		err = payload.GenerateOutletData()
 		if err != nil {
 			toolkit.Println("done with error:", err.Error())
 		} else {
-			toolkit.Println("done")
+			toolkit.Printf("\nDONE ")
 		}
 
 		pnlMutex.Lock()
@@ -186,7 +182,7 @@ func (payload *OutletFinder) createCollection() interface{} {
 	pnlMutex.Unlock()
 
 	res.SetError(errors.New("still processing, might take a while"))
-	toolkit.Println("just start")
+	toolkit.Println("\nSTARTING to create", tableName, "\n")
 
 	return res
 }

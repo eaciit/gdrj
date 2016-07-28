@@ -329,6 +329,11 @@ func (s *PLFinderParam) GetTableName() string {
 		return tableName
 	}
 
+	if s.Flag == "gna" {
+		s.TableKey = "key"
+		return `sgadata`
+	}
+
 	if forceSalesPLSSummary {
 		s.TableKey = "key"
 		return `salespls-summary`
