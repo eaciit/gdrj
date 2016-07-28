@@ -325,7 +325,7 @@ var sga = viewModel.sga;(function () {
 
 		rpt.fixRowValue(dataFlat);
 
-		console.log("dataFlat", dataFlat);
+		// console.log("dataFlat", dataFlat)
 
 		dataFlat.forEach(function (e) {
 			var breakdown = e.key;
@@ -366,7 +366,7 @@ var sga = viewModel.sga;(function () {
 			rows.push(row);
 		});
 
-		console.log("rows", rows);
+		// console.log("rows", rows)
 
 		// let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 		// let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
@@ -534,7 +534,16 @@ var au = viewModel.allocated;(function () {
 				au.render();
 				rpt.showZeroValue(true);
 				rpt.prepareEvents();
-				$('.fa.fa-chevron-right').trigger('click');
+
+				// HHHHHHAAAA
+
+				$("#au .table-header tr:gt(0):lt(88)").hide();
+				$("#au .table-content tr:gt(0):lt(88)").hide();
+
+				$("#au .table-header tr:gt(70)").hide();
+				$("#au .table-content tr:gt(70)").hide();
+
+				$('#au [idheaderpl="PL94A"],[idheaderpl="PL94A_allocated"]').find('.fa').trigger('click');
 			}, function () {
 				au.emptyGrid();
 				au.contentIsLoading(false);
@@ -620,7 +629,7 @@ var au = viewModel.allocated;(function () {
 			}
 		});
 
-		console.log('plmodels', plmodels);
+		// console.log('plmodels', plmodels)
 		return plmodels;
 	};
 
@@ -825,7 +834,7 @@ var au = viewModel.allocated;(function () {
 
 		plmodels.forEach(function (d) {
 			var row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 };
-			console.log('-----', row.PNL, row.PLCode);
+			// console.log('-----', row.PNL, row.PLCode)
 
 			dataFlat.forEach(function (e) {
 				var breakdown = e.key;
@@ -862,7 +871,7 @@ var au = viewModel.allocated;(function () {
 			rows.push(row);
 		});
 
-		console.log("rows", rows);
+		// console.log("rows", rows)
 
 		// let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 		// // let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
@@ -941,12 +950,6 @@ var au = viewModel.allocated;(function () {
 
 		// ========================= CONFIGURE THE HIRARCHY
 		rpt.buildGridLevels(rows);
-
-		$("#au .table-header tr:gt(0):lt(88)").hide();
-		$("#au .table-content tr:gt(0):lt(88)").hide();
-
-		$("#au .table-header tr:gt(70)").hide();
-		$("#au .table-content tr:gt(70)").hide();
 	};
 
 	au.optionBreakdownValues = ko.observableArray([]);

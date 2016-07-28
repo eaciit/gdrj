@@ -371,7 +371,7 @@ let sga = viewModel.sga
 
 		rpt.fixRowValue(dataFlat)
 
-		console.log("dataFlat", dataFlat)
+		// console.log("dataFlat", dataFlat)
 
 		dataFlat.forEach((e) => {
 			let breakdown = e.key
@@ -412,7 +412,7 @@ let sga = viewModel.sga
 			rows.push(row)
 		})
 
-		console.log("rows", rows)
+		// console.log("rows", rows)
 		
 		// let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 		// let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
@@ -628,7 +628,7 @@ let au = viewModel.allocated
 				$("#au .table-header tr:gt(70)").hide()
 				$("#au .table-content tr:gt(70)").hide()
 
-				$('.fa.fa-chevron-right').trigger('click')
+				$(`#au [idheaderpl="PL94A"],[idheaderpl="PL94A_allocated"]`).find('.fa').trigger('click')
 			}, () => {
 				au.emptyGrid()
 				au.contentIsLoading(false)
@@ -719,7 +719,7 @@ let au = viewModel.allocated
 			}
 		})
 
-		console.log('plmodels', plmodels)
+		// console.log('plmodels', plmodels)
 		return plmodels
 	}
 
@@ -958,7 +958,7 @@ let au = viewModel.allocated
 
 		plmodels.forEach((d) => {
 			let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
-			console.log('-----', row.PNL, row.PLCode)
+			// console.log('-----', row.PNL, row.PLCode)
 
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
@@ -995,7 +995,7 @@ let au = viewModel.allocated
 			rows.push(row)
 		})
 
-		console.log("rows", rows)
+		// console.log("rows", rows)
 		
 		// let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 		// // let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
