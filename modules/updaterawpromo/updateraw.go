@@ -21,6 +21,8 @@ var (
 
 var mastercostcenter = toolkit.M{}
 var masterbranch = toolkit.M{}
+
+// var masterbranchgroup = toolkit.M{}
 var masterbranchgroup = toolkit.M{}
 var masteraccountgroup = toolkit.M{}
 
@@ -57,6 +59,24 @@ func prepdatabranch() {
 		}
 
 		masterbranch.Set(tkm.GetString("_id"), tkm)
+	}
+}
+
+func prepdatabranchgroup() {
+	toolkit.Println("--> Get branch group")
+
+	// filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().From("masterbranchgroup").Cursor(nil)
+	defer csr.Close()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		masterbranchgroup.Set(tkm.GetString("_id"), tkm)
 	}
 }
 
@@ -111,7 +131,8 @@ func main() {
 
 	// prepdatabranch()
 	// prepdatacostcenter()
-	prepdataaccountgroup()
+	// prepdataaccountgroup()
+	prepdatabranchgroup()
 
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
@@ -169,21 +190,23 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From(toolkit.Sprintf("%s-date", gtable)).
+		From(toolkit.Sprintf("%s-res", gtable)).
 		SetConfig("multiexec", true).
 		Save()
 
 	trx := toolkit.M{}
 	for trx = range jobs {
-		key, _ := toolkit.ToM(trx["_id"])
-		trx.Set("key", key)
-		trx.Set("_id", toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|", key.GetInt("year"),
-			key.GetString("branchid"),
-			key.GetString("branchname"),
-			key.GetString("brancharea"),
-			key.GetString("account"),
-			key.GetString("accountdescription"),
-			key.GetString("costgroup")))
+		// key, _ := toolkit.ToM(trx["_id"])
+		// trx.Set("key", key)
+		// trx.Set("_id", toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|%s", key.GetInt("year"),
+		// 	key.GetString("branchid"),
+		// 	key.GetString("branchname"),
+		// 	key.GetString("brancharea"),
+		// 	key.GetString("account"),
+		// 	key.GetString("accountdescription"),
+		// 	key.GetString("costgroup"),
+		// 	key.GetString("src")))
+
 		// tdate := time.Date(trx.GetInt("year"), time.Month(trx.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).
 		// 	AddDate(0, 3, 0)
 		// gdrjdate := gdrj.SetDate(tdate)
@@ -195,7 +218,9 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// trx.Set("branchname", "OTHER")
 		// trx.Set("brancharea", "OTHER")
 		// trx.Set("costgroup", "OTHER")
-		trx.Set("accountgroup", "OTHER")
+		// trx.Set("accountgroup", "OTHER")
+		trx.Set("branchgroup", "OTHER")
+
 		// trx.Set("min_amountinidr", -trx.GetFloat64("amountinidr"))
 
 		// if mastercostcenter.Has(cc) {
@@ -211,8 +236,12 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// 	}
 		// }
 
-		accdesc := trx.GetString("accountdescription")
-		trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
+		branchid := trx.GetString("branchid")
+		branchgroup := masterbranchgroup.Get(branchid, toolkit.M{}).(toolkit.M)
+		trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
+
+		// accdesc := trx.GetString("accountdescription")
+		// trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
 
 		// if trx.GetString("costgroup") == "" {
 		// 	trx.Set("costgroup", "OTHER")
@@ -226,8 +255,16 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// 	trx.Set("brancharea", "OTHER")
 		// }
 
-		if trx.GetString("accountgroup") == "" {
-			trx.Set("accountgroup", "OTHER")
+		// if trx.GetString("accountgroup") == "" {
+		// 	trx.Set("accountgroup", "OTHER")
+		// }
+
+		if trx.GetString("branchgroup") == "" {
+			trx.Set("branchgroup", "OTHER")
+		}
+
+		if trx.GetString("costgroup") == "Human Resource" {
+			trx.Set("costgroup", "HR & Common")
 		}
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))

@@ -589,20 +589,38 @@ let au = viewModel.allocated
 				rpt.plmodels(res.Data.PLModels)
 				au.data(au.buildStructure(res.Data.Data))
 				au.emptyGrid()
-				au.contentIsLoading(false)
-				au.render()
-				rpt.showZeroValue(true)
-				rpt.prepareEvents()
 
-				// HHHHHHAAAA
+				let callback = () => {
+					au.contentIsLoading(false)
+					au.render()
+					rpt.showZeroValue(true)
+					rpt.prepareEvents()
 
-				// $("#au .table-header tr:gt(0):lt(88)").hide()
-				// $("#au .table-content tr:gt(0):lt(88)").hide()
+					$(`#au [idheaderpl="PL94A"],[idheaderpl="PL94A_allocated"]`).find('.fa').trigger('click')
+				}
 
-				// $("#au .table-header tr:gt(70)").hide()
-				// $("#au .table-content tr:gt(70)").hide()
+				let param2 = {}
+				param2.pls = []
+				param2.aggr = 'sum'
+				param2.filters = rpt.getFilterValue(false, au.fiscalYear)
+				param2.groups = rpt.parseGroups([au.breakdownBy()])
+				toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param2, (res2) => {
+					au.data().forEach((d) => {
+						let key = `_id_${toolkit.replace(au.breakdownBy(), '.', '_')}`
+						let target = res2.Data.Data.find((e) => e._id[key] == d._id)
+						if (toolkit.isUndefined(target)) {
+							return
+						}
 
-				$(`#au [idheaderpl="PL94A"],[idheaderpl="PL94A_allocated"]`).find('.fa').trigger('click')
+						d.PL8A = target.PL8A
+					})
+
+					callback()
+				}, () => {
+					callback()
+				})
+
+				
 			}, () => {
 				au.emptyGrid()
 				au.contentIsLoading(false)
@@ -611,6 +629,7 @@ let au = viewModel.allocated
 
 		fetch()
 	}
+
 	au.clickExpand = (e) => {
 		let right = $(e).find('i.fa-chevron-right').length, down = 0
 			if (e.attr('idheaderpl') == 'PL0')
@@ -760,7 +779,11 @@ let au = viewModel.allocated
 		let plmodels = au.buildPLModels(rpt.plmodels())
 		plmodels = _.sortBy(plmodels, (d) => parseInt(d.OrderIndex.replace(/PL/g, '')))
 		plmodels = _.filter(plmodels, (d) => {
-			return (d._id.indexOf('PL33') > -1) || (d._id.indexOf('PL34') > -1) || (d._id.indexOf('PL35') > -1) || (d._id.indexOf('PL94A') > -1)
+			return (d._id.indexOf('PL33') > -1) 
+				|| (d._id.indexOf('PL34') > -1) 
+				|| (d._id.indexOf('PL35') > -1) 
+				|| (d._id.indexOf('PL94A') > -1)
+				|| (d._id.indexOf('PL8A') > -1)
 		})
 		rpt.plmodels(plmodels)
 
@@ -813,16 +836,16 @@ let au = viewModel.allocated
 			.addClass('cell-percentage-header align-right')
 			.appendTo(trHeader)
 
-		// toolkit.newEl('th')
-		// 	.html('% of N Sales')
-		// 	.css('height', `${rpt.rowHeaderHeight() * au.level()}px`)
-		// 	.css('vertical-align', 'middle')
-		// 	.css('font-weight', 'normal')
-		// 	.css('font-style', 'italic')
-		// 	.width(percentageWidth - 20)
-		// 	.attr('data-rowspan', au.level())
-		// 	.addClass('cell-percentage-header align-right')
-		// 	.appendTo(trHeader)
+		toolkit.newEl('th')
+			.html('% of N Sales')
+			.css('height', `${rpt.rowHeaderHeight() * au.level()}px`)
+			.css('vertical-align', 'middle')
+			.css('font-weight', 'normal')
+			.css('font-style', 'italic')
+			.width(percentageWidth - 20)
+			.attr('data-rowspan', au.level())
+			.addClass('cell-percentage-header align-right')
+			.appendTo(trHeader)
 
 		let trContents = []
 		for (let i = 0; i < au.level(); i++) {
@@ -843,7 +866,7 @@ let au = viewModel.allocated
 		let dataFlat = []
 
 		let countWidthThenPush = (thheader, each, key) => {
-			let currentColumnWidth = each._id.length * 10
+			let currentColumnWidth = each._id.length * 8
 			if (currentColumnWidth < columnWidth) {
 				currentColumnWidth = columnWidth
 			}
@@ -861,7 +884,7 @@ let au = viewModel.allocated
 
 		data.forEach((lvl1, i) => {
 			let thheader1 = toolkit.newEl('th')
-				.html(lvl1._id)
+				.html(lvl1._id.replace(/\ /g, '&nbsp;'))
 				.attr('colspan', lvl1.count)
 				.addClass('align-center')
 				.css('border-top', 'none')
@@ -878,34 +901,11 @@ let au = viewModel.allocated
 					.css('font-weight', 'normal')
 					.css('font-style', 'italic')
 					.css('border-top', 'none')
-					// .appendTo(trContents[0])
+					.appendTo(trContents[0])
 
 				return
 			}
 			thheader1.attr('colspan', lvl1.count * 2)
-
-			lvl1.subs.forEach((lvl2, j) => {
-				let thheader2 = toolkit.newEl('th')
-					.html(lvl2._id)
-					.addClass('align-center')
-					.appendTo(trContents[1])
-
-				if (au.level() == 2) {
-					countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id])
-
-					totalColumnWidth += percentageWidth
-					let thheader1p = toolkit.newEl('th')
-						.html('% of N Sales')
-						.width(percentageWidth)
-						.addClass('align-center')
-						.css('font-weight', 'normal')
-						.css('font-style', 'italic')
-						.appendTo(trContents[1])
-
-					return
-				}
-				thheader2.attr('colspan', lvl2.count)
-			})
 		})
 
 		tableContent.css('min-width', totalColumnWidth)
@@ -926,11 +926,10 @@ let au = viewModel.allocated
 
 		console.log("dataFlat", dataFlat)
 
-		// dataFlat.forEach((e) => {
-		// 	let breakdown = e.key
-		// 	netSalesRow[breakdown] = e[netSalesPLCode]
-		// 	grossSalesRow[breakdown] = e[grossSalesPLCode]
-		// })
+		dataFlat.forEach((e) => {
+			let breakdown = e.key
+			netSalesRow[breakdown] = e[netSalesPLCode]
+		})
 
 		// console.log('asdfasdfasdf', plmodels)
 
@@ -949,22 +948,20 @@ let au = viewModel.allocated
 
 				row.PNLTotal += value
 			})
-			// dataFlat.forEach((e) => {
-			// 	let breakdown = e.key
-			// 	let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-			// 	percentage = toolkit.number(percentage)
+			dataFlat.forEach((e) => {
+				let breakdown = e.key
+				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
+				percentage = toolkit.number(percentage)
 
-			// 	if (d._id == discountActivityPLCode) {
-			// 		percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
-			// 	} else if (d._id != netSalesPLCode) {
-			// 		percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
-			// 	}
+				if (d._id != netSalesPLCode) {
+					percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
+				}
 
-			// 	if (percentage < 0)
-			// 		percentage = percentage * -1
+				if (percentage < 0)
+					percentage = percentage * -1
 
-			// 	row[`${breakdown} %`] = percentage
-			// })
+				row[`${breakdown} %`] = percentage
+			})
 
 			if (exceptions.indexOf(row.PLCode) > -1) {
 				return
@@ -975,18 +972,14 @@ let au = viewModel.allocated
 
 		console.log("rows", rows)
 		
-		// let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
-		// // let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
-		// rows.forEach((d, e) => {
-		// 	let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
-		// 	// if (d.PLCode == discountActivityPLCode) {
-		// 	// 	TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
-		// 	// }
+		let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
+		rows.forEach((d, e) => {
+			let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
 
-		// 	if (TotalPercentage < 0)
-		// 		TotalPercentage = TotalPercentage * -1 
-		// 	rows[e].Percentage = toolkit.number(TotalPercentage)
-		// })
+			if (TotalPercentage < 0)
+				TotalPercentage = TotalPercentage * -1 
+			rows[e].Percentage = toolkit.number(TotalPercentage)
+		})
 
 
 
@@ -1019,10 +1012,10 @@ let au = viewModel.allocated
 				.addClass('align-right')
 				.appendTo(trHeader)
 
-			// toolkit.newEl('td')
-			// 	.html(kendo.toString(d.Percentage, 'n2') + ' %')
-			// 	.addClass('align-right')
-			// 	.appendTo(trHeader)
+			toolkit.newEl('td')
+				.html(kendo.toString(d.Percentage, 'n2') + ' %')
+				.addClass('align-right')
+				.appendTo(trHeader)
 
 			let trContent = toolkit.newEl('tr')
 				.addClass(`column${PL}`)
@@ -1045,10 +1038,10 @@ let au = viewModel.allocated
 					.addClass('align-right')
 					.appendTo(trContent)
 
-				// let cellPercentage = toolkit.newEl('td')
-				// 	.html(percentage)
-				// 	.addClass('align-right')
-				// 	.appendTo(trContent)
+				let cellPercentage = toolkit.newEl('td')
+					.html(percentage)
+					.addClass('align-right')
+					.appendTo(trContent)
 
 				// $([cell, cellPercentage]).on('click', () => {
 				// 	au.renderDetail(d.PLCode, e.breakdowns)
@@ -1084,12 +1077,18 @@ let au = viewModel.allocated
 			.appendTo(tableHeader)
 
 		toolkit.newEl('td')
-			.html('<i></i> Total')
+			.html('<i></i> Total G&A (Direct + Allocated)')
 			.appendTo(trFooterLeft)
 
-		let pnlTotal = kendo.toString(toolkit.sum(rowsForTotal, (d) => d.PNLTotal), 'n0')
+		let pnlTotal = toolkit.sum(rowsForTotal, (d) => d.PNLTotal)
+		let netSalesTotal = toolkit.sum(au.data(), (d) => d.PL8A)
 		toolkit.newEl('td')
-			.html(pnlTotal)
+			.html(kendo.toString(pnlTotal, 'n0'))
+			.addClass('align-right')
+			.appendTo(trFooterLeft)
+
+		toolkit.newEl('td')
+			.html(kendo.toString(pnlTotal / netSalesTotal * 100, 'n2') + ' %')
 			.addClass('align-right')
 			.appendTo(trFooterLeft)
 
@@ -1100,15 +1099,29 @@ let au = viewModel.allocated
 			.css('height', `${rpt.rowContentHeight()}px`)
 			.appendTo(tableContent)
 
-		dataFlat.forEach((e, f) => {
-			let value = kendo.toString(toolkit.sum(rowsForTotal, (d) => d[e.key]), 'n0')
+		dataFlat.forEach((e) => {
+			let netSales = 0 
+			let columnData = au.data().find((d) => d._id == e._id)
+			if (toolkit.isDefined(columnData)) {
+				netSales = columnData.PL8A
+			}
+
+			let value = toolkit.sum(rowsForTotal, (d) => d[e.key])
+			console.log('------', netSales, value, rowsForTotal)
 
 			if ($.trim(value) == '') {
 				value = 0
 			}
 
-			let cell = toolkit.newEl('td')
-				.html(value)
+			let percentage = toolkit.number(value / netSales) * 100
+
+			toolkit.newEl('td')
+				.html(kendo.toString(value, 'n0'))
+				.addClass('align-right')
+				.appendTo(trFooterRight)
+
+			toolkit.newEl('td')
+				.html(kendo.toString(percentage, 'n2') + ' %')
 				.addClass('align-right')
 				.appendTo(trFooterRight)
 		})

@@ -101,7 +101,7 @@ gna.clickExpand = (e) => {
 			$('.pivot-pnl .table-header').css('width', rpt.pnlTableHeaderWidth())
 			$('.pivot-pnl .table-content').css('margin-left', rpt.pnlTableHeaderWidth())
 		}
-
+		
 		$(e).find('i').removeClass('fa-chevron-right')
 		if (e.attr('idheaderpl') == 'PL0')
 			$(e).find('i').addClass('fa-chevron-up')
@@ -110,7 +110,6 @@ gna.clickExpand = (e) => {
 		$(`tr[idparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[idcontparent=${e.attr('idheaderpl')}]`).css('display', '')
 		$(`tr[statusvaltemp=hide]`).css('display', 'none')
-		rpt.refreshHeight(e.attr('idheaderpl'))
 		rpt.refreshchildadd(e.attr('idheaderpl'))
 	}
 	if (down > 0) {
