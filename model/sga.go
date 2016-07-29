@@ -7,9 +7,10 @@ import (
 )
 
 type SGAPayload struct {
-	Year        int
-	BranchNames []string
-	CostGroups  []string
+	Year         int
+	BranchNames  []string
+	BranchGroups []string
+	CostGroups   []string
 }
 
 type SGA struct {
@@ -18,6 +19,7 @@ type SGA struct {
 	BranchID           string
 	BranchArea         string
 	BranchName         string
+	BranchGroup        string
 	Account            string
 	AccountDescription string
 	AccountGroup       string
@@ -41,6 +43,13 @@ func SGAGetAll(payload *SGAPayload) ([]*SGA, error) {
 		subFilters := []*dbox.Filter{}
 		for _, each := range payload.BranchNames {
 			subFilters = append(subFilters, dbox.Eq("branchname", each))
+		}
+		filters = append(filters, dbox.Or(subFilters...))
+	}
+	if len(payload.BranchGroups) > 0 {
+		subFilters := []*dbox.Filter{}
+		for _, each := range payload.BranchGroups {
+			subFilters = append(subFilters, dbox.Eq("branchgroup", each))
 		}
 		filters = append(filters, dbox.Or(subFilters...))
 	}
