@@ -263,6 +263,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 			trx.Set("branchgroup", "OTHER")
 		}
 
+		if trx.GetString("costgroup") == "Human Resource" {
+			trx.Set("costgroup", "HR & Common")
+		}
+
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
