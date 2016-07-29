@@ -154,7 +154,7 @@ var sga = viewModel.sga;(function () {
 				sga.emptyGrid();
 				sga.render();
 				rpt.prepareEvents();
-				rpt.showExpandAll(true);
+				// rpt.showExpandAll(true)
 			}, function () {
 				sga.emptyGrid();
 				sga.contentIsLoading(false);
@@ -447,11 +447,20 @@ var sga = viewModel.sga;(function () {
 
 		// ======= TOTAL
 
+		var keys = _.map(_.groupBy(rpt.plmodels(), function (d) {
+			return d.PLHeader1;
+		}), function (v, k) {
+			return k;
+		});
+		var rowsForTotal = rows.filter(function (d) {
+			return keys.indexOf(d.PNL) > -1;
+		});
+
 		var trFooterLeft = toolkit.newEl('tr').addClass('footerTotal').attr('idheaderpl', 'Total').attr('data-row', 'row-' + rows.length).css('height', rpt.rowContentHeight() + 'px').appendTo(tableHeader);
 
 		toolkit.newEl('td').html('<i></i> Total').appendTo(trFooterLeft);
 
-		var pnlTotal = kendo.toString(toolkit.sum(rows, function (d) {
+		var pnlTotal = kendo.toString(toolkit.sum(rowsForTotal, function (d) {
 			return d.PNLTotal;
 		}), 'n0');
 		toolkit.newEl('td').html(pnlTotal).addClass('align-right').appendTo(trFooterLeft);
@@ -459,7 +468,7 @@ var sga = viewModel.sga;(function () {
 		var trFooterRight = toolkit.newEl('tr').addClass('footerTotal').attr('idpl', 'Total').attr('data-row', 'row-' + rows.length).css('height', rpt.rowContentHeight() + 'px').appendTo(tableContent);
 
 		dataFlat.forEach(function (e, f) {
-			var value = kendo.toString(toolkit.sum(rows, function (d) {
+			var value = kendo.toString(toolkit.sum(rowsForTotal, function (d) {
 				return d[e.key];
 			}), 'n0');
 

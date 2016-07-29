@@ -138,7 +138,7 @@ let sga = viewModel.sga
 				sga.emptyGrid()
 				sga.render()
 				rpt.prepareEvents()
-				rpt.showExpandAll(true)
+				// rpt.showExpandAll(true)
 			}, () => {
 				sga.emptyGrid()
 				sga.contentIsLoading(false)
@@ -488,6 +488,9 @@ let sga = viewModel.sga
 
 		// ======= TOTAL
 
+		let keys = _.map(_.groupBy(rpt.plmodels(), (d) => d.PLHeader1), (v, k) => k)
+		let rowsForTotal = rows.filter((d) => keys.indexOf(d.PNL) > -1)
+
 		let trFooterLeft = toolkit.newEl('tr')
 			.addClass(`footerTotal`)
 			.attr(`idheaderpl`, 'Total')
@@ -499,7 +502,7 @@ let sga = viewModel.sga
 			.html('<i></i> Total')
 			.appendTo(trFooterLeft)
 
-		let pnlTotal = kendo.toString(toolkit.sum(rows, (d) => d.PNLTotal), 'n0')
+		let pnlTotal = kendo.toString(toolkit.sum(rowsForTotal, (d) => d.PNLTotal), 'n0')
 		toolkit.newEl('td')
 			.html(pnlTotal)
 			.addClass('align-right')
@@ -513,7 +516,7 @@ let sga = viewModel.sga
 			.appendTo(tableContent)
 
 		dataFlat.forEach((e, f) => {
-			let value = kendo.toString(toolkit.sum(rows, (d) => d[e.key]), 'n0')
+			let value = kendo.toString(toolkit.sum(rowsForTotal, (d) => d[e.key]), 'n0')
 
 			if ($.trim(value) == '') {
 				value = 0
