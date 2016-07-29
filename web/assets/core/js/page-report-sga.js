@@ -188,12 +188,27 @@ var sga = viewModel.sga;(function () {
 
 						groups.push(groupBy);
 
-						// BranchID
 						var param2 = {};
 						param2.pls = [];
 						param2.aggr = 'sum';
 						param2.filters = rpt.getFilterValue(false, sga.fiscalYear);
 						param2.groups = rpt.parseGroups(groups);
+
+						if (sga.filterBranch().length > 0) {
+							param2.filters.push({
+								Field: 'customer.branchgroup',
+								Op: '$in',
+								Value: sga.filterBranch()
+							});
+						}
+						if (sga.filterBranchGroup().length > 0) {
+							param2.filters.push({
+								Field: 'customer.branchgroup',
+								Op: '$in',
+								Value: sga.filterBranchGroup()
+							});
+						}
+
 						toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param2, function (res2) {
 							rpt.plmodels([{
 								PLHeader1: 'Net Sales',
@@ -642,6 +657,18 @@ var au = viewModel.allocated;(function () {
 				param2.aggr = 'sum';
 				param2.filters = rpt.getFilterValue(false, au.fiscalYear);
 				param2.groups = rpt.parseGroups([au.breakdownBy()]);
+
+				var breakdownValue = au.breakdownBranchGroup().filter(function (d) {
+					return d !== 'All';
+				});
+				if (breakdownValue.length > 0) {
+					param2.filters.push({
+						Field: 'customer.branchgroup',
+						Op: '$in',
+						Value: breakdownValue
+					});
+				}
+
 				toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param2, function (res2) {
 					au.data().forEach(function (d) {
 						d.PL8A = 0;
