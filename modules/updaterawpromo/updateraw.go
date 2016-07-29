@@ -21,6 +21,8 @@ var (
 
 var mastercostcenter = toolkit.M{}
 var masterbranch = toolkit.M{}
+
+// var masterbranchgroup = toolkit.M{}
 var masterbranchgroup = toolkit.M{}
 var masteraccountgroup = toolkit.M{}
 
@@ -57,6 +59,24 @@ func prepdatabranch() {
 		}
 
 		masterbranch.Set(tkm.GetString("_id"), tkm)
+	}
+}
+
+func prepdatabranchgroup() {
+	toolkit.Println("--> Get branch group")
+
+	// filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().From("masterbranchgroup").Cursor(nil)
+	defer csr.Close()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		masterbranchgroup.Set(tkm.GetString("_id"), tkm)
 	}
 }
 
@@ -197,7 +217,9 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// trx.Set("branchname", "OTHER")
 		// trx.Set("brancharea", "OTHER")
 		// trx.Set("costgroup", "OTHER")
-		trx.Set("accountgroup", "OTHER")
+		// trx.Set("accountgroup", "OTHER")
+		trx.Set("branchgroup", "OTHER")
+
 		// trx.Set("min_amountinidr", -trx.GetFloat64("amountinidr"))
 
 		// if mastercostcenter.Has(cc) {
@@ -213,8 +235,12 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// 	}
 		// }
 
-		accdesc := trx.GetString("accountdescription")
-		trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
+		branchid := trx.GetString("branchid")
+		branchgroup := masterbranchgroup.Get(branchid, toolkit.M{}).(toolkit.M)
+		trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
+
+		// accdesc := trx.GetString("accountdescription")
+		// trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
 
 		// if trx.GetString("costgroup") == "" {
 		// 	trx.Set("costgroup", "OTHER")
@@ -228,8 +254,12 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// 	trx.Set("brancharea", "OTHER")
 		// }
 
-		if trx.GetString("accountgroup") == "" {
-			trx.Set("accountgroup", "OTHER")
+		// if trx.GetString("accountgroup") == "" {
+		// 	trx.Set("accountgroup", "OTHER")
+		// }
+
+		if trx.GetString("branchgroup") == "" {
+			trx.Set("branchgroup", "OTHER")
 		}
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
