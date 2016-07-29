@@ -169,12 +169,27 @@ let sga = viewModel.sga
 
 					groups.push(groupBy)
 
-// BranchID
 					let param2 = {}
 					param2.pls = []
 					param2.aggr = 'sum'
 					param2.filters = rpt.getFilterValue(false, sga.fiscalYear)
 					param2.groups = rpt.parseGroups(groups)
+
+					if (sga.filterBranch().length > 0) {
+						param2.filters.push({
+							Field: 'customer.branchgroup',
+							Op: '$in',
+							Value: sga.filterBranch()
+						})
+					}
+					if (sga.filterBranchGroup().length > 0) {
+						param2.filters.push({
+							Field: 'customer.branchgroup',
+							Op: '$in',
+							Value: sga.filterBranchGroup()
+						})
+					}
+					
 					toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param2, (res2) => {
 						rpt.plmodels([{
 							PLHeader1: 'Net Sales',
@@ -709,6 +724,16 @@ let au = viewModel.allocated
 				param2.aggr = 'sum'
 				param2.filters = rpt.getFilterValue(false, au.fiscalYear)
 				param2.groups = rpt.parseGroups([au.breakdownBy()])
+
+				let breakdownValue = au.breakdownBranchGroup().filter((d) => d !== 'All')
+				if (breakdownValue.length > 0) {
+					param2.filters.push({
+						Field: 'customer.branchgroup',
+						Op: '$in',
+						Value: breakdownValue
+					})
+				}
+
 				toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param2, (res2) => {
 					au.data().forEach((d) => {
 						d.PL8A = 0
