@@ -121,6 +121,10 @@ var sga = viewModel.sga;(function () {
 	};
 
 	sga.changeAndRefresh = function (what) {
+		if (what == 'CostGroup') {
+			sga.putNetSalesPercentage(false);
+		}
+
 		sga.filterBranch([]);
 		sga.filterBranchGroup([]);
 		sga.filterCostGroup([]);
@@ -170,23 +174,27 @@ var sga = viewModel.sga;(function () {
 
 				if (sga.putNetSalesPercentage()) {
 					var _ret = function () {
+						var groups = [];
 						var groupBy = '';
 						switch (sga.breakdownBy()) {
 							case 'BranchName':
 								groupBy = 'customer.branchname';
+								groups.push('customer.branchid');
 								break;
 							case 'BranchGroup':
 								groupBy = 'customer.branchgroup';
 								break;
 						}
 
+						groups.push(groupBy);
+
+						// BranchID
 						var param2 = {};
 						param2.pls = [];
 						param2.aggr = 'sum';
 						param2.filters = rpt.getFilterValue(false, sga.fiscalYear);
-						param2.groups = rpt.parseGroups([groupBy]);
+						param2.groups = rpt.parseGroups(groups);
 						toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param2, function (res2) {
-
 							rpt.plmodels([{
 								PLHeader1: 'Net Sales',
 								PLHeader2: 'Net Sales',
@@ -197,12 +205,16 @@ var sga = viewModel.sga;(function () {
 							sga.data().forEach(function (d) {
 								d.PL8A = 0;
 
+								var what = groupBy;
+								if (what == 'customer.branchname') {
+									what = groupBy;
+								}
+
 								var key = '_id_' + toolkit.replace(groupBy, '.', '_');
 								var target = res2.Data.Data.find(function (e) {
 									return e._id[key] == d._id;
 								});
 								if (toolkit.isUndefined(target)) {
-									console.log('--- not found', d._id);
 									return;
 								}
 

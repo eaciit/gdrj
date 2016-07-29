@@ -105,6 +105,10 @@ let sga = viewModel.sga
 	}
 
 	sga.changeAndRefresh = (what) => {
+		if (what == 'CostGroup') {
+			sga.putNetSalesPercentage(false)
+		}
+
 		sga.filterBranch([])
 		sga.filterBranchGroup([])
 		sga.filterCostGroup([])
@@ -151,23 +155,27 @@ let sga = viewModel.sga
 				}
 
 				if (sga.putNetSalesPercentage()) {
+					let groups = []
 					let groupBy = ''
 					switch (sga.breakdownBy()) {
 						case 'BranchName':
 							groupBy = 'customer.branchname';
+							groups.push('customer.branchid')
 						break;
 						case 'BranchGroup':
 							groupBy = 'customer.branchgroup';
 						break;
 					}
 
+					groups.push(groupBy)
+
+// BranchID
 					let param2 = {}
 					param2.pls = []
 					param2.aggr = 'sum'
 					param2.filters = rpt.getFilterValue(false, sga.fiscalYear)
-					param2.groups = rpt.parseGroups([groupBy])
+					param2.groups = rpt.parseGroups(groups)
 					toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param2, (res2) => {
-
 						rpt.plmodels([{
 							PLHeader1: 'Net Sales',
 							PLHeader2: 'Net Sales',
@@ -178,10 +186,14 @@ let sga = viewModel.sga
 						sga.data().forEach((d) => {
 							d.PL8A = 0
 
+							let what = groupBy
+							if (what == 'customer.branchname') {
+								what = groupBy
+							}
+
 							let key = `_id_${toolkit.replace(groupBy, '.', '_')}`
 							let target = res2.Data.Data.find((e) => e._id[key] == d._id)
 							if (toolkit.isUndefined(target)) {
-								console.log('--- not found', d._id)
 								return
 							}
 
