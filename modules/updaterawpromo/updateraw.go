@@ -131,7 +131,8 @@ func main() {
 
 	// prepdatabranch()
 	// prepdatacostcenter()
-	prepdataaccountgroup()
+	// prepdataaccountgroup()
+	prepdatabranchgroup()
 
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
