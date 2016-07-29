@@ -92,9 +92,11 @@ let sga = viewModel.sga
 	sga.level = ko.observable(1)
 
 	sga.filterBranch = ko.observableArray([])
+	sga.filterBranchGroup = ko.observableArray([])
 	sga.filterCostGroup = ko.observableArray([])
 
 	sga.optionFilterCostGroups = ko.observableArray([])
+	sga.putNetSalesPercentage = ko.observable(true)
 
 	rpt.fillFilterCostGroup = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getdatafunction", {}, (res) => {
@@ -103,7 +105,12 @@ let sga = viewModel.sga
 	}
 
 	sga.changeAndRefresh = (what) => {
+		if (what == 'CostGroup') {
+			sga.putNetSalesPercentage(false)
+		}
+
 		sga.filterBranch([])
+		sga.filterBranchGroup([])
 		sga.filterCostGroup([])
 
 		sga.breakdownBy(what)
@@ -116,6 +123,9 @@ let sga = viewModel.sga
 
 		if (sga.filterBranch().length > 0) {
 			param.branchnames = sga.filterBranch()
+		}
+		if (sga.filterBranchGroup().length > 0) {
+			param.branchgroups = sga.filterBranchGroup()
 		}
 		if (sga.filterCostGroup().length > 0) {
 			param.costgroups = sga.filterCostGroup()
@@ -132,13 +142,73 @@ let sga = viewModel.sga
 					return
 				}
 
-				sga.contentIsLoading(false)
 				sga.constructData(res.data)
 				sga.data(sga.buildStructure(sga.data()))
 				sga.emptyGrid()
-				sga.render()
-				rpt.prepareEvents()
-				rpt.showExpandAll(true)
+
+				let callback = () => {
+					sga.contentIsLoading(false)
+					sga.render()
+					rpt.prepareEvents()
+
+					$(`#au [idheaderpl="PL94A"],[idheaderpl="PL94A_allocated"]`).find('.fa').trigger('click')
+				}
+
+				if (sga.putNetSalesPercentage()) {
+					let groups = []
+					let groupBy = ''
+					switch (sga.breakdownBy()) {
+						case 'BranchName':
+							groupBy = 'customer.branchname';
+							groups.push('customer.branchid')
+						break;
+						case 'BranchGroup':
+							groupBy = 'customer.branchgroup';
+						break;
+					}
+
+					groups.push(groupBy)
+
+// BranchID
+					let param2 = {}
+					param2.pls = []
+					param2.aggr = 'sum'
+					param2.filters = rpt.getFilterValue(false, sga.fiscalYear)
+					param2.groups = rpt.parseGroups(groups)
+					toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param2, (res2) => {
+						rpt.plmodels([{
+							PLHeader1: 'Net Sales',
+							PLHeader2: 'Net Sales',
+							PLHeader3: 'Net Sales',
+							_id: 'PL8A'
+						}].concat(rpt.plmodels()))
+
+						sga.data().forEach((d) => {
+							d.PL8A = 0
+
+							let what = groupBy
+							if (what == 'customer.branchname') {
+								what = groupBy
+							}
+
+							let key = `_id_${toolkit.replace(groupBy, '.', '_')}`
+							let target = res2.Data.Data.find((e) => e._id[key] == d._id)
+							if (toolkit.isUndefined(target)) {
+								return
+							}
+
+							d.PL8A = target.PL8A
+						})
+
+						callback()
+					}, () => {
+						callback()
+					})
+
+					return
+				}
+
+				callback()
 			}, () => {
 				sga.emptyGrid()
 				sga.contentIsLoading(false)
@@ -236,16 +306,18 @@ let sga = viewModel.sga
 			.addClass('cell-percentage-header align-right')
 			.appendTo(trHeader)
 
-		// toolkit.newEl('th')
-		// 	.html('% of N Sales')
-		// 	.css('height', `${rpt.rowHeaderHeight() * sga.level()}px`)
-		// 	.css('vertical-align', 'middle')
-		// 	.css('font-weight', 'normal')
-		// 	.css('font-style', 'italic')
-		// 	.width(percentageWidth - 20)
-		// 	.attr('data-rowspan', sga.level())
-		// 	.addClass('cell-percentage-header align-right')
-		// 	.appendTo(trHeader)
+		if (sga.putNetSalesPercentage()) {
+			toolkit.newEl('th')
+				.html('% of N Sales')
+				.css('height', `${rpt.rowHeaderHeight() * sga.level()}px`)
+				.css('vertical-align', 'middle')
+				.css('font-weight', 'normal')
+				.css('font-style', 'italic')
+				.width(percentageWidth - 20)
+				.attr('data-rowspan', sga.level())
+				.addClass('cell-percentage-header align-right')
+				.appendTo(trHeader)
+		}
 
 		let trContents = []
 		for (let i = 0; i < sga.level(); i++) {
@@ -293,15 +365,17 @@ let sga = viewModel.sga
 			if (sga.level() == 1) {
 				countWidthThenPush(thheader1, lvl1, [lvl1._id])
 
-				// totalColumnWidth += percentageWidth
-				// let thheader1p = toolkit.newEl('th')
-				// 	.html('% of N Sales')
-				// 	.width(percentageWidth)
-				// 	.addClass('align-center')
-				// 	.css('font-weight', 'normal')
-				// 	.css('font-style', 'italic')
-				// 	.css('border-top', 'none')
-				// 	.appendTo(trContents[0])
+				if (sga.putNetSalesPercentage()) {
+					totalColumnWidth += percentageWidth
+					let thheader1p = toolkit.newEl('th')
+						.html('% of N Sales')
+						.width(percentageWidth)
+						.addClass('align-center')
+						.css('font-weight', 'normal')
+						.css('font-style', 'italic')
+						.css('border-top', 'none')
+						.appendTo(trContents[0])
+				}
 
 				return
 			}
@@ -368,48 +442,49 @@ let sga = viewModel.sga
 
 				row.PNLTotal += toolkit.number(value)
 			})
-			// dataFlat.forEach((e) => {
-			// 	let breakdown = e.key
-			// 	let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-			// 	percentage = toolkit.number(percentage)
+			dataFlat.forEach((e) => {
+				let breakdown = e.key
+				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
+				percentage = toolkit.number(percentage)
 
-			// 	if (d._id == discountActivityPLCode) {
-			// 		percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
-			// 	} else if (d._id != netSalesPLCode) {
-			// 		percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
-			// 	}
+				if (d._id != netSalesPLCode) {
+					percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
+				}
 
-			// 	if (percentage < 0)
-			// 		percentage = percentage * -1
+				if (percentage < 0)
+					percentage = percentage * -1
 
-			// 	row[`${breakdown} %`] = percentage
-			// })
+				row[`${breakdown} %`] = percentage
+			})
 
 			rows.push(row)
 		})
 
 		console.log("rows", rows)
 		
-		// let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
-		// let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
-		// rows.forEach((d, e) => {
-		// 	// let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
-		// 	// if (d.PLCode == discountActivityPLCode) {
-		// 	// 	TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
-		// 	// }
+		if (sga.putNetSalesPercentage()) {
+			let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
+			rows.forEach((d, e) => {
+				let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
 
-		// 	// if (TotalPercentage < 0)
-		// 	// 	TotalPercentage = TotalPercentage * -1 
-		// 	// rows[e].Percentage = toolkit.number(TotalPercentage)
-		// 	rows[e].Percentage = 0
-		// })
+				if (TotalPercentage < 0)
+					TotalPercentage = TotalPercentage * -1 
+				rows[e].Percentage = toolkit.number(TotalPercentage)
+			})
+		}
 
 
 
 
 		// ========================= PLOT DATA
 
-		_.orderBy(rows, (d) => d.PNLTotal, 'asc').forEach((d, i) => {
+		_.orderBy(rows, (d) => {
+			if (d.PLCode == netSalesPLCode) {
+				return -10000000000000
+			}
+
+			return d.PNLTotal
+		}, 'asc').forEach((d, i) => {
 		// rows.forEach((d, i) => {
 			pnlTotalSum += d.PNLTotal
 
@@ -436,10 +511,12 @@ let sga = viewModel.sga
 				.addClass('align-right')
 				.appendTo(trHeader)
 
-			// toolkit.newEl('td')
-			// 	.html(kendo.toString(d.Percentage, 'n2') + ' %')
-			// 	.addClass('align-right')
-			// 	.appendTo(trHeader)
+			if (sga.putNetSalesPercentage()) {
+				toolkit.newEl('td')
+					.html(kendo.toString(d.Percentage, 'n2') + ' %')
+					.addClass('align-right')
+					.appendTo(trHeader)
+			}
 
 			let trContent = toolkit.newEl('tr')
 				.addClass(`column${PL}`)
@@ -462,10 +539,12 @@ let sga = viewModel.sga
 					.addClass('align-right')
 					.appendTo(trContent)
 
-				// let cellPercentage = toolkit.newEl('td')
-				// 	.html(percentage)
-				// 	.addClass('align-right')
-				// 	.appendTo(trContent)
+				if (sga.putNetSalesPercentage()) {
+					let cellPercentage = toolkit.newEl('td')
+						.html(percentage)
+						.addClass('align-right')
+						.appendTo(trContent)
+				}
 
 			})
 
@@ -488,6 +567,9 @@ let sga = viewModel.sga
 
 		// ======= TOTAL
 
+		let keys = _.map(_.groupBy(rpt.plmodels(), (d) => d.PLHeader1), (v, k) => k)
+		let rowsForTotal = rows.filter((d) => keys.indexOf(d.PNL) > -1 && d.PLCode !== 'PL8A')
+
 		let trFooterLeft = toolkit.newEl('tr')
 			.addClass(`footerTotal`)
 			.attr(`idheaderpl`, 'Total')
@@ -496,14 +578,22 @@ let sga = viewModel.sga
 			.appendTo(tableHeader)
 
 		toolkit.newEl('td')
-			.html('<i></i> Total')
+			.html('<i></i> Total G&A')
 			.appendTo(trFooterLeft)
 
-		let pnlTotal = kendo.toString(toolkit.sum(rows, (d) => d.PNLTotal), 'n0')
+		let pnlTotal = toolkit.sum(rowsForTotal, (d) => d.PNLTotal)
+		let netSalesTotal = toolkit.sum(sga.data(), (d) => d.PL8A)
 		toolkit.newEl('td')
-			.html(pnlTotal)
+			.html(kendo.toString(pnlTotal, 'n0'))
 			.addClass('align-right')
 			.appendTo(trFooterLeft)
+
+		if (sga.putNetSalesPercentage()) {
+			toolkit.newEl('td')
+				.html(kendo.toString(pnlTotal / netSalesTotal * 100, 'n2') + ' %')
+				.addClass('align-right')
+				.appendTo(trFooterLeft)
+		}
 
 		let trFooterRight = toolkit.newEl('tr')
 			.addClass(`footerTotal`)
@@ -513,16 +603,31 @@ let sga = viewModel.sga
 			.appendTo(tableContent)
 
 		dataFlat.forEach((e, f) => {
-			let value = kendo.toString(toolkit.sum(rows, (d) => d[e.key]), 'n0')
+			let netSales = 0 
+			let columnData = sga.data().find((d) => d._id == e._id)
+			if (toolkit.isDefined(columnData)) {
+				netSales = columnData.PL8A
+			}
+
+			let value = toolkit.sum(rowsForTotal, (d) => d[e.key])
 
 			if ($.trim(value) == '') {
 				value = 0
 			}
 
-			let cell = toolkit.newEl('td')
-				.html(value)
+			let percentage = toolkit.number(value / netSales) * 100
+
+			toolkit.newEl('td')
+				.html(kendo.toString(value, 'n0'))
 				.addClass('align-right')
 				.appendTo(trFooterRight)
+
+			if (sga.putNetSalesPercentage()) {
+				toolkit.newEl('td')
+					.html(kendo.toString(percentage, 'n2') + ' %')
+					.addClass('align-right')
+					.appendTo(trFooterRight)
+			}
 		})
 		
 
@@ -606,6 +711,8 @@ let au = viewModel.allocated
 				param2.groups = rpt.parseGroups([au.breakdownBy()])
 				toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param2, (res2) => {
 					au.data().forEach((d) => {
+						d.PL8A = 0
+							
 						let key = `_id_${toolkit.replace(au.breakdownBy(), '.', '_')}`
 						let target = res2.Data.Data.find((e) => e._id[key] == d._id)
 						if (toolkit.isUndefined(target)) {
@@ -619,8 +726,6 @@ let au = viewModel.allocated
 				}, () => {
 					callback()
 				})
-
-				
 			}, () => {
 				au.emptyGrid()
 				au.contentIsLoading(false)
@@ -971,7 +1076,7 @@ let au = viewModel.allocated
 		})
 
 		console.log("rows", rows)
-		
+
 		let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 		rows.forEach((d, e) => {
 			let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
@@ -980,6 +1085,7 @@ let au = viewModel.allocated
 				TotalPercentage = TotalPercentage * -1 
 			rows[e].Percentage = toolkit.number(TotalPercentage)
 		})
+		
 
 
 
