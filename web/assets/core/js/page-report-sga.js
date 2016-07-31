@@ -220,11 +220,6 @@ var sga = viewModel.sga;(function () {
 							sga.data().forEach(function (d) {
 								d.PL8A = 0;
 
-								var what = groupBy;
-								if (what == 'customer.branchname') {
-									what = groupBy;
-								}
-
 								var key = '_id_' + toolkit.replace(groupBy, '.', '_');
 								var target = res2.Data.Data.find(function (e) {
 									return e._id[key] == d._id;
