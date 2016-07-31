@@ -201,11 +201,6 @@ let sga = viewModel.sga
 						sga.data().forEach((d) => {
 							d.PL8A = 0
 
-							let what = groupBy
-							if (what == 'customer.branchname') {
-								what = groupBy
-							}
-
 							let key = `_id_${toolkit.replace(groupBy, '.', '_')}`
 							let target = res2.Data.Data.find((e) => e._id[key] == d._id)
 							if (toolkit.isUndefined(target)) {
