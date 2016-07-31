@@ -66,6 +66,8 @@ rd.refresh = () => {
 			}
 
 			if (rpt.isEmptyData(res)) {
+				rd.data([])
+				rd.render()
 				rd.contentIsLoading(false)
 				return
 			}
@@ -218,7 +220,7 @@ rd.render = () => {
         categoryAxis: categoryAxis
     }
 
-    rd.configure(config)
+    // rd.configure(config)
 
     $('.report').replaceWith(`<div class="report" style="width: ${width}px;"></div>`)
     $('.report').kendoChart(config)
@@ -240,7 +242,8 @@ rd.getQueryStringValue = (key) => {
 }  
 
 rd.setup = () => {
-	rd.breakdownBy('customer.channelname')
+	// rd.breakdownBy('customer.channelname')
+	rd.breakdownBy("customer.branchname")
 
 	switch (rd.getQueryStringValue('p')) {
 		case 'sales-return-rate': {
