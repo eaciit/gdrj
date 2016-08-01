@@ -43,15 +43,6 @@ rd.hasOutlet = function () {
 	return rd.getParameterByName('p').toLowerCase().indexOf('outlet') > -1;
 };
 
-rd.selectDecimal = function () {
-	var p = rd.getParameterByName('p'),
-	    decimal2 = ['cost-by-sales', 'sga-by-sales', 'marketing-expense-index', 'indirect-expense-index', 'material-type-index', 'direct-labour-index', 'freight-cost-by-sales'];
-	var res = _.filter(p, function (e) {
-		return e == p;
-	});
-	if (res.length > 0) return "n2";else return "n1";
-};
-
 rd.refresh = function () {
 	var param = {};
 	param.pls = [];
@@ -173,17 +164,13 @@ rd.render = function () {
 		o.tooltip = {
 			visible: true,
 			template: function template(e) {
-				var val = kendo.toString(e.value, rd.selectDecimal());
+				var val = kendo.toString(e.value, 'n1');
 				return e.series.name + ' : ' + val;
 			}
 		};
 		o.labels = {
 			visible: true,
-			template: function template(e) {
-				var val = kendo.toString(e.value, rd.selectDecimal());
-				return val;
-				// return `${e.series.name}\n${val}`
-			}
+			format: '{0:n1}'
 		};
 
 		axes.push({
@@ -192,7 +179,7 @@ rd.render = function () {
 			majorGridLines: { color: '#fafafa' },
 			labels: {
 				font: '"Source Sans Pro" 11px',
-				format: "{0:n2}"
+				format: "{0:n1}"
 			},
 			color: color
 		});
@@ -207,7 +194,7 @@ rd.render = function () {
 		field: 'breakdown',
 		labels: {
 			font: '"Source Sans Pro" 11px',
-			format: "{0:n2}"
+			format: "{0:n1}"
 		},
 		majorGridLines: { color: '#fafafa' },
 		axisCrossingValues: [op3.length, 0, 0]
@@ -237,21 +224,43 @@ rd.render = function () {
 		categoryAxis: categoryAxis
 	};
 
-	// rd.configure(config)
+	config.series[2].labels.template = function (e) {
+		var val = kendo.toString(e.value, 'n1');
+		return '' + val;
+	};
+	config.series[2].tooltip.template = function (e) {
+		var val = kendo.toString(e.value, 'n1');
+		return e.series.name + ' : ' + val;
+	};
+
+	rd.configure(config);
 
 	$('.report').replaceWith('<div class="report" style="width: ' + width + 'px;"></div>');
 	$('.report').kendoChart(config);
 };
 
 rd.configure = function (config) {
-	config.series[2].labels.template = function (e) {
-		var val = kendo.toString(e.value, 'n1');
-		return val + ' %';
-	};
-	config.series[2].tooltip.template = function (e) {
-		var val = kendo.toString(e.value, 'n1');
-		return e.series.name + ' : ' + val + ' %';
-	};
+	return app.noop;
+};
+rd.setPercentageOn = function (config, axis, percentage) {
+	var percentageAxis = config.valueAxis.find(function (d) {
+		return d.name == axis;
+	});
+	if (toolkit.isDefined(percentageAxis)) {
+		percentageAxis.labels.format = '{0:n' + percentage + '}';
+	}
+
+	var serie = config.series.find(function (d) {
+		return d.axis == axis;
+	});
+	if (toolkit.isDefined(serie)) {
+		serie.labels.template = undefined;
+		serie.labels.format = '{0:n' + percentage + '}';
+		serie.tooltip.template = function (e) {
+			var val = kendo.toString(e.value, 'n' + percentage);
+			return e.series.name + ' : ' + val;
+		};
+	}
 };
 
 rd.getQueryStringValue = function (key) {
@@ -259,7 +268,6 @@ rd.getQueryStringValue = function (key) {
 };
 
 rd.setup = function () {
-	// rd.breakdownBy('customer.channelname')
 	rd.breakdownBy("customer.branchname");
 
 	switch (rd.getQueryStringValue('p')) {
@@ -291,6 +299,12 @@ rd.setup = function () {
 						return toolkit.number(salesreturn / netsales);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 2);
+					rd.setPercentageOn(config, 'axis3', 3);
+				};
 			}break;
 
 		case 'sales-discount-by-gross-sales':
@@ -328,6 +342,10 @@ rd.setup = function () {
 						return toolkit.number(salesDiscount / grossSales);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis3', 2);
+				};
 			}break;
 
 		case 'gross-sales-by-qty':
@@ -525,6 +543,10 @@ rd.setup = function () {
 						return toolkit.number(freightCost / netSales);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis3', 2);
+				};
 			}break;
 
 		case 'direct-labour-index':
@@ -564,6 +586,10 @@ rd.setup = function () {
 						return toolkit.number(directlabour / cogs);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis3', 2);
+				};
 			}break;
 
 		case 'material-type-index':
@@ -615,6 +641,10 @@ rd.setup = function () {
 						return toolkit.number((material1 + material2 + material3) / cogs);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis3', 2);
+				};
 			}break;
 
 		case 'indirect-expense-index':
@@ -696,6 +726,10 @@ rd.setup = function () {
 						return toolkit.number((indirect1 + indirect2 + indirect3 + indirect4 + indirect5 + indirect6 + indirect7 + indirect8) / cogs);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis3', 2);
+				};
 			}break;
 
 		case 'marketing-expense-index':
@@ -753,6 +787,10 @@ rd.setup = function () {
 						return toolkit.number((marketing1 + marketing2 + marketing3 + marketing4) / netsales);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis3', 2);
+				};
 			}break;
 
 		case 'sga-by-sales':
@@ -792,6 +830,10 @@ rd.setup = function () {
 						return toolkit.number(sga / netsales);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis3', 2);
+				};
 			}break;
 
 		case 'cost-by-sales':
@@ -831,6 +873,10 @@ rd.setup = function () {
 						return toolkit.number(cost / netsales);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis3', 2);
+				};
 			}break;
 
 		case 'sales-by-outlet':
@@ -869,6 +915,15 @@ rd.setup = function () {
 						return toolkit.number(netSales / totaloutlet) / rd.divider();
 					}
 				}]);
+
+				rpt.optionDimensions(rpt.optionDimensions().filter(function (d) {
+					return ['customer.channelname', 'customer.branchname', 'product.brand'].indexOf(d.field) > -1;
+				}));
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 2);
+					rd.setPercentageOn(config, 'axis3', 3);
+				};
 			}break;
 
 		default:

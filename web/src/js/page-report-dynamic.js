@@ -46,15 +46,6 @@ rd.hasOutlet = () => {
 	return rd.getParameterByName('p').toLowerCase().indexOf('outlet') > -1
 }
 
-rd.selectDecimal = () => {
-	let p = rd.getParameterByName('p'), decimal2 = ['cost-by-sales', 'sga-by-sales', 'marketing-expense-index', 'indirect-expense-index', 'material-type-index', 'direct-labour-index', 'freight-cost-by-sales']
-	let res = _.filter(p, (e) => { return e==p })
-	if (res.length > 0)
-		return "n2"
-	else
-		return "n1"
-}
-
 rd.refresh = () => {
 	let param = {}
 	param.pls = []
@@ -165,17 +156,13 @@ rd.render = () => {
 		o.tooltip = {
 			visible: true,
 			template: (e) => {
-				let val = kendo.toString(e.value, rd.selectDecimal())
+				let val = kendo.toString(e.value, 'n1')
 				return `${e.series.name} : ${val}`
 			}
 		}
 		o.labels = {
 			visible: true,
-			template: (e) => {
-				let val = kendo.toString(e.value, rd.selectDecimal())
-				return val
-				// return `${e.series.name}\n${val}`
-			}
+			format: '{0:n1}'
 		}
 
 		axes.push({
@@ -184,7 +171,7 @@ rd.render = () => {
 			majorGridLines: { color: '#fafafa' },
 	        labels: { 
 				font: '"Source Sans Pro" 11px',
-	        	format: "{0:n2}"
+	        	format: "{0:n1}"
 	        },
 	        color: color
 		})
@@ -199,7 +186,7 @@ rd.render = () => {
         field: 'breakdown',
         labels: {
 			font: '"Source Sans Pro" 11px',
-        	format: "{0:n2}"
+        	format: "{0:n1}"
         },
 		majorGridLines: { color: '#fafafa' },
 		axisCrossingValues: [op3.length, 0, 0]
@@ -229,20 +216,36 @@ rd.render = () => {
         categoryAxis: categoryAxis
     }
 
-    // rd.configure(config)
+	config.series[2].labels.template = (e) => {
+		let val = kendo.toString(e.value, 'n1')
+		return `${val}`
+	}
+	config.series[2].tooltip.template = (e) => {
+		let val = kendo.toString(e.value, 'n1')
+		return `${e.series.name} : ${val}`
+	}
+
+    rd.configure(config)
 
     $('.report').replaceWith(`<div class="report" style="width: ${width}px;"></div>`)
     $('.report').kendoChart(config)
 }
 
-rd.configure = (config) => {
-	config.series[2].labels.template = (e) => {
-		let val = kendo.toString(e.value, 'n1')
-		return `${val} %`
+rd.configure = (config) => app.noop
+rd.setPercentageOn = (config, axis, percentage) => {
+	let percentageAxis = config.valueAxis.find((d) => d.name == axis)
+	if (toolkit.isDefined(percentageAxis)) {
+		percentageAxis.labels.format = `{0:n${percentage}}`
 	}
-	config.series[2].tooltip.template = (e) => {
-		let val = kendo.toString(e.value, 'n1')
-		return `${e.series.name} : ${val} %`
+
+	let serie = config.series.find((d) => d.axis == axis)
+	if (toolkit.isDefined(serie)) {
+		serie.labels.template = undefined
+		serie.labels.format = `{0:n${percentage}}`
+		serie.tooltip.template = (e) => {
+			let val = kendo.toString(e.value, `n${percentage}`)
+			return `${e.series.name} : ${val}`
+		}
 	}
 }
 
@@ -251,7 +254,6 @@ rd.getQueryStringValue = (key) => {
 }  
 
 rd.setup = () => {
-	// rd.breakdownBy('customer.channelname')
 	rd.breakdownBy("customer.branchname")
 
 	switch (rd.getQueryStringValue('p')) {
@@ -276,6 +278,12 @@ rd.setup = () => {
 					return toolkit.number(salesreturn / netsales)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
+				rd.setPercentageOn(config, 'axis3', 3)
+			}
 		} break;
 
 
@@ -308,6 +316,10 @@ rd.setup = () => {
 					return toolkit.number(salesDiscount / grossSales)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis3', 2)
+			}
 		} break;
 
 
@@ -472,6 +484,10 @@ rd.setup = () => {
 					return toolkit.number(freightCost / netSales)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis3', 2)
+			}
 		} break;
 
 		case 'direct-labour-index': {
@@ -502,6 +518,10 @@ rd.setup = () => {
 					return toolkit.number(directlabour / cogs)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis3', 2)
+			}
 		} break;
 
 		case 'material-type-index': {
@@ -536,6 +556,10 @@ rd.setup = () => {
 					return toolkit.number((material1+material2+material3) / cogs)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis3', 2)
+			}
 		} break;
 
 		case 'indirect-expense-index': {
@@ -580,6 +604,10 @@ rd.setup = () => {
 					return toolkit.number((indirect1+indirect2+indirect3+indirect4+indirect5+indirect6+indirect7+indirect8) / cogs)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis3', 2)
+			}
 		} break;
 
 		case 'marketing-expense-index': {
@@ -616,6 +644,10 @@ rd.setup = () => {
 					return toolkit.number((marketing1+marketing2+marketing3+marketing4) / netsales)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis3', 2)
+			}
 		} break;
 
 		case 'sga-by-sales': {
@@ -646,6 +678,10 @@ rd.setup = () => {
 					return toolkit.number(sga / netsales)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis3', 2)
+			}
 		} break;
 
 		case 'cost-by-sales': {
@@ -676,6 +712,10 @@ rd.setup = () => {
 					return toolkit.number(cost / netsales)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis3', 2)
+			}
 		} break;
 
 		case 'sales-by-outlet': {
@@ -705,6 +745,13 @@ rd.setup = () => {
 					return toolkit.number(netSales / totaloutlet) / rd.divider()
 				}
 			}])
+
+			rpt.optionDimensions(rpt.optionDimensions().filter((d) => ['customer.channelname', 'customer.branchname', 'product.brand'].indexOf(d.field) > -1))
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
+				rd.setPercentageOn(config, 'axis3', 3)
+			}
 		} break;
 
 

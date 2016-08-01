@@ -336,19 +336,30 @@ kac.render = () => {
 		if (d._id.length > 22)
 			colWidth += 30
 		toolkit.newEl('th')
-			.html(d._id)
+			.html(d._id.replace(/ /g, "&nbsp;"))
 			.addClass('align-right')
 			.appendTo(trContent1)
 			.width(colWidth)
 
 		toolkit.newEl('th')
-			.html('% of N Sales')
+			.html('%&nbsp;of&nbsp;N&nbsp;Sales')
 			.css('font-weight', 'normal')
 			.css('font-style', 'italic')
 			.width(percentageWidth)
 			.addClass('align-right cell-percentage')
 			.appendTo(trContent1)
 			.width(percentageWidth)
+
+		if (rpt.percentOfTotal() == true){
+			toolkit.newEl('th')
+				.html('%&nbsp;of&nbsp;N&nbsp;Total')
+				.css('font-weight', 'normal')
+				.css('font-style', 'italic')
+				.width(percentageWidth)
+				.addClass('align-right cell-percentage')
+				.appendTo(trContent1)
+				.width(percentageWidth)
+		}
 
 		totalWidth += colWidth + percentageWidth
 	})
@@ -414,6 +425,16 @@ kac.render = () => {
 				.html(`${percentage} %`)
 				.addClass('align-right cell-percentage')
 				.appendTo(trContent)
+
+			if (rpt.percentOfTotal() == true){
+				let percentagetotal = 0
+				if (d['PNLTotal'] != 0)
+					percentagetotal = kendo.toString(d[`${key}`]/d['PNLTotal']*100, 'n2')
+				toolkit.newEl('td')
+					.html(`${percentagetotal} %`)
+					.addClass('align-right cell-percentage')
+					.appendTo(trContent)
+			}
 		})
 
 		let boolStatus = false
@@ -534,6 +555,7 @@ rpt.refresh = () => {
 }
 
 $(() => {
+	rpt.percentOfTotal(true)
 	rpt.refresh()
 	rpt.showExport(true)
 })
