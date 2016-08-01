@@ -301,6 +301,8 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 2);
 					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
@@ -914,6 +916,9 @@ rd.setup = function () {
 					}
 				}]);
 
+				rpt.optionDimensions(rpt.optionDimensions().filter(function (d) {
+					return ['customer.channelname', 'customer.branchname', 'product.brand'].indexOf(d.field) > -1;
+				}));
 				rd.configure = function (config) {
 					rd.setPercentageOn(config, 'axis1', 2);
 					rd.setPercentageOn(config, 'axis2', 2);
