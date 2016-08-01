@@ -97,6 +97,7 @@ let sga = viewModel.sga
 
 	sga.optionFilterCostGroups = ko.observableArray([])
 	sga.putNetSalesPercentage = ko.observable(true)
+	sga.title = ko.observable('G&A by Branch')
 
 	rpt.fillFilterCostGroup = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getdatafunction", {}, (res) => {
@@ -104,10 +105,20 @@ let sga = viewModel.sga
 		})
 	}
 
-	sga.changeAndRefresh = (what) => {
+	sga.exportExcel = () => {
+		rpt.export('#sga', `G&A Analysis - ${sga.title()}`, 'header-content')
+	}
+
+	sga.changeAndRefresh = (what, title) => {
+		if ($('.panel-filter').is(':visible')) {
+		    rpt.toggleFilter()
+		}
+
 		if (what == 'CostGroup') {
 			sga.putNetSalesPercentage(false)
 		}
+
+		sga.title(title)
 
 		sga.filterBranch([])
 		sga.filterBranchGroup([])
@@ -271,6 +282,7 @@ let sga = viewModel.sga
 			return
 		}
 
+		$('#au').empty()
 
 		// ========================= TABLE STRUCTURE
 
@@ -318,7 +330,7 @@ let sga = viewModel.sga
 
 		if (sga.putNetSalesPercentage()) {
 			toolkit.newEl('th')
-				.html('% of N Sales')
+				.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 				.css('height', `${rpt.rowHeaderHeight() * sga.level()}px`)
 				.css('vertical-align', 'middle')
 				.css('font-weight', 'normal')
@@ -366,7 +378,7 @@ let sga = viewModel.sga
 
 		data.forEach((lvl1, i) => {
 			let thheader1 = toolkit.newEl('th')
-				.html(lvl1._id)
+				.html(lvl1._id.replace(/\ /g, '&nbsp;'))
 				.attr('colspan', lvl1.count)
 				.addClass('align-center')
 				.css('border-top', 'none')
@@ -378,7 +390,19 @@ let sga = viewModel.sga
 				if (sga.putNetSalesPercentage()) {
 					totalColumnWidth += percentageWidth
 					let thheader1p = toolkit.newEl('th')
-						.html('% of N Sales')
+						.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
+						.width(percentageWidth)
+						.addClass('align-center')
+						.css('font-weight', 'normal')
+						.css('font-style', 'italic')
+						.css('border-top', 'none')
+						.appendTo(trContents[0])
+				}
+
+				if (rpt.showPercentOfTotal()) {
+					totalColumnWidth += percentageWidth
+					toolkit.newEl('th')
+						.html('% of Total'.replace(/\ /g, '&nbsp;'))
 						.width(percentageWidth)
 						.addClass('align-center')
 						.css('font-weight', 'normal')
@@ -402,7 +426,7 @@ let sga = viewModel.sga
 
 					totalColumnWidth += percentageWidth
 					let thheader1p = toolkit.newEl('th')
-						.html('% of N Sales')
+						.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 						.width(percentageWidth)
 						.addClass('align-center')
 						.css('font-weight', 'normal')
@@ -454,8 +478,8 @@ let sga = viewModel.sga
 			})
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
-				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-				percentage = toolkit.number(percentage)
+				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100
 
 				if (d._id != netSalesPLCode) {
 					percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
@@ -465,6 +489,7 @@ let sga = viewModel.sga
 					percentage = percentage * -1
 
 				row[`${breakdown} %`] = percentage
+				row[`${breakdown} %t`] = percentageOfTotal
 			})
 
 			rows.push(row)
@@ -539,6 +564,7 @@ let sga = viewModel.sga
 				let key = e.key
 				let value = kendo.toString(d[key], 'n0')
 				let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
+				let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + '&nbsp;%'
 
 				if ($.trim(value) == '') {
 					value = 0
@@ -550,12 +576,18 @@ let sga = viewModel.sga
 					.appendTo(trContent)
 
 				if (sga.putNetSalesPercentage()) {
-					let cellPercentage = toolkit.newEl('td')
+					toolkit.newEl('td')
 						.html(percentage)
 						.addClass('align-right')
 						.appendTo(trContent)
 				}
 
+				if (sga.putNetSalesPercentage()) {
+					toolkit.newEl('td')
+						.html(percentageOfTotal)
+						.addClass('align-right')
+						.appendTo(trContent)
+				}
 			})
 
 			let boolStatus = false
@@ -626,6 +658,7 @@ let sga = viewModel.sga
 			}
 
 			let percentage = toolkit.number(value / netSales) * 100
+			let percentageOfTotal = toolkit.number(value / pnlTotal) * 100
 
 			toolkit.newEl('td')
 				.html(kendo.toString(value, 'n0'))
@@ -635,6 +668,13 @@ let sga = viewModel.sga
 			if (sga.putNetSalesPercentage()) {
 				toolkit.newEl('td')
 					.html(kendo.toString(percentage, 'n2') + '&nbsp;%')
+					.addClass('align-right')
+					.appendTo(trFooterRight)
+			}
+
+			if (rpt.showPercentOfTotal()) {
+				toolkit.newEl('td')
+					.html(kendo.toString(percentageOfTotal, 'n2') + '&nbsp;%')
 					.addClass('align-right')
 					.appendTo(trFooterRight)
 			}
@@ -917,6 +957,7 @@ let au = viewModel.allocated
 			return
 		}
 
+		$('#sga').empty()
 
 		// ========================= TABLE STRUCTURE
 
@@ -962,7 +1003,7 @@ let au = viewModel.allocated
 			.appendTo(trHeader)
 
 		toolkit.newEl('th')
-			.html('% of N Sales')
+			.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 			.css('height', `${rpt.rowHeaderHeight() * au.level()}px`)
 			.css('vertical-align', 'middle')
 			.css('font-weight', 'normal')
@@ -1020,7 +1061,7 @@ let au = viewModel.allocated
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of N Sales')
+					.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 					.width(percentageWidth)
 					.addClass('align-center')
 					.css('font-weight', 'normal')
@@ -1028,9 +1069,21 @@ let au = viewModel.allocated
 					.css('border-top', 'none')
 					.appendTo(trContents[0])
 
+				if (rpt.showPercentOfTotal()) {
+					totalColumnWidth += percentageWidth
+					toolkit.newEl('th')
+						.html('% of Total'.replace(/\ /g, '&nbsp;'))
+						.width(percentageWidth)
+						.addClass('align-center')
+						.css('font-weight', 'normal')
+						.css('font-style', 'italic')
+						.css('border-top', 'none')
+						.appendTo(trContents[0])
+				}
+
 				return
 			}
-			thheader1.attr('colspan', lvl1.count * 2)
+			thheader1.attr('colspan', lvl1.count * (rpt.showPercentOfTotal() ? 3 : 2))
 		})
 
 		tableContent.css('min-width', totalColumnWidth)
@@ -1075,8 +1128,8 @@ let au = viewModel.allocated
 			})
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
-				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-				percentage = toolkit.number(percentage)
+				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100
 
 				if (d._id != netSalesPLCode) {
 					percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
@@ -1086,6 +1139,7 @@ let au = viewModel.allocated
 					percentage = percentage * -1
 
 				row[`${breakdown} %`] = percentage
+				row[`${breakdown} %t`] = percentageOfTotal
 			})
 
 			if (exceptions.indexOf(row.PLCode) > -1) {
@@ -1154,6 +1208,7 @@ let au = viewModel.allocated
 				let key = e.key
 				let value = kendo.toString(d[key], 'n0')
 				let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
+				let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + '&nbsp;%'
 
 				let cell = toolkit.newEl('td')
 					.html(value)
@@ -1165,9 +1220,12 @@ let au = viewModel.allocated
 					.addClass('align-right')
 					.appendTo(trContent)
 
-				// $([cell, cellPercentage]).on('click', () => {
-				// 	au.renderDetail(d.PLCode, e.breakdowns)
-				// })
+				if (rpt.showPercentOfTotal()) {
+					toolkit.newEl('td')
+						.html(percentageOfTotal)
+						.addClass('align-right')
+						.appendTo(trContent)
+				}
 			})
 
 			let boolStatus = false
@@ -1229,13 +1287,13 @@ let au = viewModel.allocated
 			}
 
 			let value = toolkit.sum(rowsForTotal, (d) => d[e.key])
-			// console.log('------', netSales, value, rowsForTotal)
 
 			if ($.trim(value) == '') {
 				value = 0
 			}
 
 			let percentage = toolkit.number(value / netSales) * 100
+			let percentageOfTotal = toolkit.number(value / pnlTotal) * 100
 
 			toolkit.newEl('td')
 				.html(kendo.toString(value, 'n0'))
@@ -1246,6 +1304,13 @@ let au = viewModel.allocated
 				.html(kendo.toString(percentage, 'n2') + '&nbsp;%')
 				.addClass('align-right')
 				.appendTo(trFooterRight)
+
+			if (rpt.showPercentOfTotal()) {
+				toolkit.newEl('td')
+					.html(kendo.toString(percentageOfTotal, 'n2') + '&nbsp;%')
+					.addClass('align-right')
+					.appendTo(trFooterRight)
+			}
 		})
 		
 

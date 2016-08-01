@@ -14,7 +14,7 @@
 	<div class="col-md-12 col-sm-12 ez panel-content">
 
 	<!-- Nav tabs -->
-	<ul class="nav nav-pills nav-replace-title" role="tablist">
+	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: !me.contentIsLoading()">
 		<li role="presentation" class="active">
 			<a role="tab" data-toggle="tab" onclick="me.show('Marketing Efficiency', 'efficiency', 'v1000000000')">Marketing Efficiency</a>
 		</li>

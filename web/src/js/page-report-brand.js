@@ -256,13 +256,25 @@ brand.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('% of N Sales')
+				.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 				.width(percentageWidth)
 				.addClass('align-center')
 				.css('font-weight', 'normal')
 				.css('font-style', 'italic')
 				.css('border-top', 'none')
 				.appendTo(trContents[0])
+
+			if (rpt.showPercentOfTotal()) {
+				totalColumnWidth += percentageWidth
+				toolkit.newEl('th')
+					.html('% of Total'.replace(/\ /g, '&nbsp;'))
+					.width(percentageWidth)
+					.addClass('align-center')
+					.css('font-weight', 'normal')
+					.css('font-style', 'italic')
+					.css('border-top', 'none')
+					.appendTo(trContents[0])
+			}
 
 			return
 		}
@@ -332,8 +344,8 @@ brand.render = () => {
 		})
 		dataFlat.forEach((e) => {
 			let breakdown = e.key
-			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-			percentage = toolkit.number(percentage)
+			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+			let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100
 
 			if (d._id == discountActivityPLCode) {
 				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
@@ -345,6 +357,7 @@ brand.render = () => {
 				percentage = percentage * -1
 
 			row[`${breakdown} %`] = percentage
+			row[`${breakdown} %t`] = percentageOfTotal
 		})
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -416,6 +429,7 @@ brand.render = () => {
 			let key = e.key
 			let value = kendo.toString(d[key], 'n0')
 			let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
+			let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + ' %'
 
 			if ($.trim(value) == '') {
 				value = 0
@@ -430,6 +444,13 @@ brand.render = () => {
 				.html(percentage)
 				.addClass('align-right')
 				.appendTo(trContent)
+
+			if (rpt.showPercentOfTotal()) {
+				toolkit.newEl('td')
+					.html(percentageOfTotal)
+					.addClass('align-right')
+					.appendTo(trContent)
+			}
 
 			$([cell, cellPercentage]).on('click', () => {
 				brand.renderDetail(d.PLCode, e.breakdowns)

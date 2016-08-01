@@ -7,7 +7,7 @@
 <div>
 
 	<!-- Nav tabs -->
-	<ul class="nav nav-pills nav-replace-title" role="tablist">
+	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: (!v1.contentIsLoading() && !v2.contentIsLoading() && !v3.contentIsLoading())">
 		<li role="presentation" class="active">
 			<a href="#tab0" role="tab" data-toggle="tab" onclick="v1.changeTo('Total Branch & RD',this, v3.refresh)">Total Branch & RD</a>
 		</li>

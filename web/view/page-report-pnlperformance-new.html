@@ -19,7 +19,7 @@
 
 
 	<!-- Nav tabs -->
-	<ul class="nav nav-pills nav-replace-title" role="tablist">
+	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: (!dsbrd.contentIsLoading() && !rank.contentIsLoading() && !bkd.contentIsLoading() && !subchan.contentIsLoading() && !v2.contentIsLoading() && !v1.contentIsLoading())">
 		<li role="presentation">
 			<a href="#summary" role="tab" data-toggle="tab" onclick="subchan.resetFilterVisibility('summary', this); rpt.resetMonthQuarter(); bkd.title('Summary'); dsbrd.refresh();">Summary</a>
 		</li>

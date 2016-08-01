@@ -692,7 +692,7 @@ let bkd = viewModel.breakdown
 			.appendTo(trHeader)
 
 		toolkit.newEl('th')
-			.html('% of N Sales')
+			.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 			.css('height', `${rpt.rowHeaderHeight() * bkd.level()}px`)
 			.css('vertical-align', 'middle')
 			.css('font-weight', 'normal')
@@ -750,7 +750,7 @@ let bkd = viewModel.breakdown
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of N Sales')
+					.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 					.width(percentageWidth)
 					.addClass('align-center')
 					.css('font-weight', 'normal')
@@ -761,7 +761,7 @@ let bkd = viewModel.breakdown
 				if (rpt.showPercentOfTotal()) {
 					totalColumnWidth += percentageWidth
 					let thheader1p = toolkit.newEl('th')
-						.html('% of Total')
+						.html('% of Total'.replace(/\ /g, '&nbsp;'))
 						.width(percentageWidth)
 						.addClass('align-center')
 						.css('font-weight', 'normal')
@@ -785,7 +785,7 @@ let bkd = viewModel.breakdown
 
 					totalColumnWidth += percentageWidth
 					let thheader1p = toolkit.newEl('th')
-						.html('% of N Sales')
+						.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 						.width(percentageWidth)
 						.addClass('align-center')
 						.css('font-weight', 'normal')
@@ -795,7 +795,7 @@ let bkd = viewModel.breakdown
 					if (rpt.showPercentOfTotal()) {
 						totalColumnWidth += percentageWidth
 						toolkit.newEl('th')
-							.html('% of Total')
+							.html('% of Total'.replace(/\ /g, '&nbsp;'))
 							.width(percentageWidth)
 							.addClass('align-center')
 							.css('font-weight', 'normal')
@@ -1288,7 +1288,7 @@ let v2 = viewModel.RDvsBranchView2
 			.appendTo(trHeader)
 
 		toolkit.newEl('th')
-			.html('% of N Sales')
+			.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 			.css('height', `${rpt.rowHeaderHeight() * v2.level()}px`)
 			.css('vertical-align', 'middle')
 			.css('font-weight', 'normal')
@@ -1343,7 +1343,7 @@ let v2 = viewModel.RDvsBranchView2
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
+					.html('% of N Sales'.replace(/\ /g, '&nbsp;').replace(/\ /g, '&nbsp;'))
 					.css('font-weight', 'normal')
 					.css('font-style', 'italic')
 					.width(percentageWidth)
@@ -1354,7 +1354,7 @@ let v2 = viewModel.RDvsBranchView2
 				if (rpt.showPercentOfTotal()) {
 					totalColumnWidth += percentageWidth
 					thheader2p = toolkit.newEl('th')
-						.html('% of Total'.replace(/\ /g, '&nbsp;'))
+						.html('% of Total'.replace(/\ /g, '&nbsp;').replace(/\ /g, '&nbsp;'))
 						.css('font-weight', 'normal')
 						.css('font-style', 'italic')
 						.width(percentageWidth)
@@ -1383,7 +1383,7 @@ let v2 = viewModel.RDvsBranchView2
 
 					totalColumnWidth += percentageWidth
 					let thheader1p = toolkit.newEl('th')
-						.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
+						.html('% of N Sales'.replace(/\ /g, '&nbsp;').replace(/\ /g, '&nbsp;'))
 						.css('font-weight', 'normal')
 						.css('font-style', 'italic')
 						.width(percentageWidth)
@@ -1393,7 +1393,7 @@ let v2 = viewModel.RDvsBranchView2
 					if (rpt.showPercentOfTotal()) {
 						totalColumnWidth += percentageWidth
 						thheader2p = toolkit.newEl('th')
-							.html('% of Total'.replace(/\ /g, '&nbsp;'))
+							.html('% of Total'.replace(/\ /g, '&nbsp;').replace(/\ /g, '&nbsp;'))
 							.css('font-weight', 'normal')
 							.css('font-style', 'italic')
 							.width(percentageWidth)
@@ -1812,7 +1812,7 @@ let v1 = viewModel.RDvsBranchView1
 			.appendTo(trHeader)
 
 		toolkit.newEl('th')
-			.html('% of N Sales')
+			.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 			.css('height', `${rpt.rowHeaderHeight() * v1.level()}px`)
 			.css('vertical-align', 'middle')
 			.css('font-weight', 'normal')
@@ -1877,7 +1877,7 @@ let v1 = viewModel.RDvsBranchView1
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of N Sales')
+					.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 					.css('font-weight', 'normal')
 					.css('font-style', 'italic')
 					.width(percentageWidth)
@@ -1888,7 +1888,7 @@ let v1 = viewModel.RDvsBranchView1
 				if (rpt.showPercentOfTotal()) {
 					totalColumnWidth += percentageWidth
 					thheader2p = toolkit.newEl('th')
-						.html('% of Total')
+						.html('% of Total'.replace(/\ /g, '&nbsp;'))
 						.css('font-weight', 'normal')
 						.css('font-style', 'italic')
 						.width(percentageWidth)
@@ -1915,7 +1915,7 @@ let v1 = viewModel.RDvsBranchView1
 
 					totalColumnWidth += percentageWidth
 					let thheader1p = toolkit.newEl('th')
-						.html('% of N Sales')
+						.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 						.css('font-weight', 'normal')
 						.css('font-style', 'italic')
 						.width(percentageWidth)
@@ -1924,7 +1924,7 @@ let v1 = viewModel.RDvsBranchView1
 					if (rpt.showPercentOfTotal()) {
 						totalColumnWidth += percentageWidth
 						thheader2p = toolkit.newEl('th')
-							.html('% of Total')
+							.html('% of Total'.replace(/\ /g, '&nbsp;'))
 							.css('font-weight', 'normal')
 							.css('font-style', 'italic')
 							.width(percentageWidth)
@@ -2477,7 +2477,7 @@ let kac = viewModel.keyAccount
 			.appendTo(trHeader1)
 
 		toolkit.newEl('th')
-			.html('% of N Sales')
+			.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 			.css('height', `${rpt.rowHeaderHeight()}px`)
 			.css('font-weight', 'normal')
 			.css('font-style', 'italic')
@@ -2510,7 +2510,7 @@ let kac = viewModel.keyAccount
 				.width(colWidth)
 
 			toolkit.newEl('th')
-				.html('% of N Sales')
+				.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 				.css('font-weight', 'normal')
 				.css('font-style', 'italic')
 				.width(percentageWidth)
@@ -3117,7 +3117,7 @@ let subchan = viewModel.subChannel
 			.appendTo(trHeader)
 
 		toolkit.newEl('th')
-			.html('% of N Sales')
+			.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 			.css('height', `${rpt.rowHeaderHeight() * subchan.level()}px`)
 			.css('vertical-align', 'middle')
 			.css('font-weight', 'normal')
@@ -3177,7 +3177,7 @@ let subchan = viewModel.subChannel
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of N Sales')
+					.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 					.width(percentageWidth)
 					.addClass('align-center')
 					.css('font-weight', 'normal')
@@ -3188,7 +3188,7 @@ let subchan = viewModel.subChannel
 				if (rpt.showPercentOfTotal()) {
 					totalColumnWidth += percentageWidth
 					thheader2p = toolkit.newEl('th')
-						.html('% of Total')
+						.html('% of Total'.replace(/\ /g, '&nbsp;'))
 						.width(percentageWidth)
 						.addClass('align-center')
 						.css('font-weight', 'normal')
@@ -3212,7 +3212,7 @@ let subchan = viewModel.subChannel
 
 					totalColumnWidth += percentageWidth
 					let thheader1p = toolkit.newEl('th')
-						.html('% of N Sales')
+						.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 						.width(percentageWidth)
 						.addClass('align-center')
 						.css('font-weight', 'normal')
@@ -3222,7 +3222,7 @@ let subchan = viewModel.subChannel
 					if (rpt.showPercentOfTotal()) {
 						totalColumnWidth += percentageWidth
 						thheader2p = toolkit.newEl('th')
-							.html('% of Total')
+							.html('% of Total'.replace(/\ /g, '&nbsp;'))
 							.width(percentageWidth)
 							.addClass('align-center')
 							.css('font-weight', 'normal')
