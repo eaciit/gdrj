@@ -43,6 +43,15 @@ rd.hasOutlet = function () {
 	return rd.getParameterByName('p').toLowerCase().indexOf('outlet') > -1;
 };
 
+rd.selectDecimal = function () {
+	var p = rd.getParameterByName('p'),
+	    decimal2 = ['cost-by-sales', 'sga-by-sales', 'marketing-expense-index', 'indirect-expense-index', 'material-type-index', 'direct-labour-index', 'freight-cost-by-sales'];
+	var res = _.filter(p, function (e) {
+		return e == p;
+	});
+	if (res.length > 0) return "n2";else return "n1";
+};
+
 rd.refresh = function () {
 	var param = {};
 	param.pls = [];
@@ -164,14 +173,14 @@ rd.render = function () {
 		o.tooltip = {
 			visible: true,
 			template: function template(e) {
-				var val = kendo.toString(e.value, 'n1');
+				var val = kendo.toString(e.value, rd.selectDecimal());
 				return e.series.name + ' : ' + val;
 			}
 		};
 		o.labels = {
 			visible: true,
 			template: function template(e) {
-				var val = kendo.toString(e.value, 'n1');
+				var val = kendo.toString(e.value, rd.selectDecimal());
 				return val;
 				// return `${e.series.name}\n${val}`
 			}

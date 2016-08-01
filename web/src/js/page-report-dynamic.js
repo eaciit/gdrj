@@ -46,6 +46,15 @@ rd.hasOutlet = () => {
 	return rd.getParameterByName('p').toLowerCase().indexOf('outlet') > -1
 }
 
+rd.selectDecimal = () => {
+	let p = rd.getParameterByName('p'), decimal2 = ['cost-by-sales', 'sga-by-sales', 'marketing-expense-index', 'indirect-expense-index', 'material-type-index', 'direct-labour-index', 'freight-cost-by-sales']
+	let res = _.filter(p, (e) => { return e==p })
+	if (res.length > 0)
+		return "n2"
+	else
+		return "n1"
+}
+
 rd.refresh = () => {
 	let param = {}
 	param.pls = []
@@ -156,14 +165,14 @@ rd.render = () => {
 		o.tooltip = {
 			visible: true,
 			template: (e) => {
-				let val = kendo.toString(e.value, 'n1')
+				let val = kendo.toString(e.value, rd.selectDecimal())
 				return `${e.series.name} : ${val}`
 			}
 		}
 		o.labels = {
 			visible: true,
 			template: (e) => {
-				let val = kendo.toString(e.value, 'n1')
+				let val = kendo.toString(e.value, rd.selectDecimal())
 				return val
 				// return `${e.series.name}\n${val}`
 			}
