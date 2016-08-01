@@ -26,7 +26,7 @@
 
 
 	<!-- Nav tabs -->
-	<ul class="nav nav-pills nav-replace-title" role="tablist">
+	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: (!sd.contentIsLoading() && !rve.contentIsLoading())">
 		<li role="presentation" class="active">
 			<a href="#tab1" role="tab" data-toggle="tab" onclick="dsbt.changeTo('Revenue vs EBIT Distribution')">Revenue Vs EBIT Distribution</a>
 		</li>
