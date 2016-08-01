@@ -280,6 +280,8 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
 				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
@@ -316,6 +318,8 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
 				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
@@ -324,7 +328,6 @@ rd.setup = () => {
 
 		case 'gross-sales-by-qty': {
 			vm.currentTitle('Gross Sales / Qty')
-			rd.divideBy('v1000000')
 			rd.series = ko.observableArray([{ 
 				_id: 'grosssales', 
 				plheader: 'Gross Sales',
@@ -346,13 +349,16 @@ rd.setup = () => {
 					return toolkit.number(grossSales / quantity)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis2', 3)
+			}
 		} break;
 
 
 
 		case 'discount-by-qty': {
 			vm.currentTitle('Discount / Qty')
-			rd.divideBy('v1000000')
 			rd.series = ko.observableArray([{ 
 				_id: 'salesdiscount', 
 				plheader: 'Sales Discount',
@@ -382,6 +388,10 @@ rd.setup = () => {
 					return toolkit.number(salesDiscount / quantity)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis2', 3)
+			}
 		} break;
 
 
@@ -484,6 +494,8 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
 				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
@@ -518,6 +530,8 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
 				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
@@ -556,6 +570,8 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
 				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
@@ -604,6 +620,8 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
 				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
@@ -744,6 +762,7 @@ rd.setup = () => {
 				}
 			}])
 
+			rpt.optionDimensions(rpt.optionDimensions().filter((d) => ['customer.channelname', 'customer.branchname', 'product.brand'].indexOf(d.field) > -1))
 			rd.configure = (config) => {
 				rd.setPercentageOn(config, 'axis1', 2)
 				rd.setPercentageOn(config, 'axis2', 2)
