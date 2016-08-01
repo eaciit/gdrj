@@ -233,18 +233,20 @@ rd.render = () => {
 
 	data.forEach((lvl1, i) => {
 		let thheader1 = toolkit.newEl('th')
-			.html(lvl1._id)
+			.html(lvl1._id.replace(/\ /g, '&nbsp;'))
 			.attr('colspan', lvl1.count)
 			.addClass('align-center')
 			.appendTo(trContents[0])
 			.css('border-top', 'none')
+
+		let thheader2p = $('<div />')
 
 		if (rd.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id])
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('% of N Sales')
+				.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 				.width(percentageWidth)
 				.addClass('align-center')
 				.css('font-weight', 'normal')
@@ -253,13 +255,26 @@ rd.render = () => {
 				.appendTo(trContents[0])
 				.css('border-top', 'none')
 
+			if (rpt.showPercentOfTotal()) {
+				totalColumnWidth += percentageWidth
+				thheader2p = toolkit.newEl('th')
+					.html('% of Total'.replace(/\ /g, '&nbsp;'))
+					.width(percentageWidth)
+					.addClass('align-center')
+					.css('font-weight', 'normal')
+					.css('font-style', 'italic')
+					.addClass('align-center')
+					.appendTo(trContents[0])
+					.css('border-top', 'none')
+			}
+
 			return
 		}
-		thheader1.attr('colspan', lvl1.count * 2)
+		thheader1.attr('colspan', lvl1.count * (rpt.showPercentOfTotal() ? 3 : 2))
 
 		lvl1.subs.forEach((lvl2, j) => {
 			let thheader2 = toolkit.newEl('th')
-				.html(lvl2._id)
+				.html(lvl2._id.replace(/\ /g, '&nbsp;'))
 				.addClass('align-center')
 				.appendTo(trContents[1])
 
@@ -268,13 +283,25 @@ rd.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of N Sales')
+					.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 					.width(percentageWidth)
 					.addClass('align-center')
 					.css('font-weight', 'normal')
 					.css('font-style', 'italic')
 					.addClass('align-center')
 					.appendTo(trContents[1])
+
+				if (rpt.showPercentOfTotal()) {
+					totalColumnWidth += percentageWidth
+					thheader2p = toolkit.newEl('th')
+						.html('% of Total'.replace(/\ /g, '&nbsp;'))
+						.width(percentageWidth)
+						.addClass('align-center')
+						.css('font-weight', 'normal')
+						.css('font-style', 'italic')
+						.addClass('align-center')
+						.appendTo(trContents[1])
+				}
 
 				return
 			}
@@ -322,8 +349,8 @@ rd.render = () => {
 		})
 		dataFlat.forEach((e) => {
 			let breakdown = e.key
-			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-			percentage = toolkit.number(percentage)
+			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+			let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100
 
 			if (d._id == discountActivityPLCode) {
 				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
@@ -335,6 +362,7 @@ rd.render = () => {
 				percentage = percentage * -1
 
 			row[`${breakdown} %`] = percentage
+			row[`${breakdown} %t`] = percentageOfTotal
 		})
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -391,7 +419,7 @@ rd.render = () => {
 			.appendTo(trHeader)
 
 		toolkit.newEl('td')
-			.html(kendo.toString(d.Percentage, 'n2') + ' %')
+			.html(kendo.toString(d.Percentage, 'n2') + '&nbsp;%')
 			.addClass('align-right')
 			.appendTo(trHeader)
 
@@ -405,7 +433,8 @@ rd.render = () => {
 		dataFlat.forEach((e, f) => {
 			let key = e.key
 			let value = kendo.toString(d[key], 'n0')
-			let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
+			let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
+			let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + '&nbsp;%'
 
 			if ($.trim(value) == '') {
 				value = 0
@@ -420,6 +449,13 @@ rd.render = () => {
 				.html(percentage)
 				.addClass('align-right')
 				.appendTo(trContent)
+
+			if (rpt.showPercentOfTotal()) {
+				toolkit.newEl('td')
+					.html(percentageOfTotal)
+					.addClass('align-right')
+					.appendTo(trContent)
+			}
 
 			$([cell, cellPercentage]).on('click', () => {
 				rd.renderDetail(d.PLCode, e.breakdowns)

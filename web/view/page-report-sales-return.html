@@ -25,7 +25,7 @@
 <script src="{{BaseUrl}}res/core/js/page-report-sales-return.js?ANTI_CACHE={{.AntiCache}}"></script>
 
 	<!-- Nav tabs -->
-	<ul class="nav nav-pills nav-replace-title" role="tablist">
+	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: !sr.contentIsLoading()">
 		<li role="presentation" class="active">
 			<a href="#pnl" role="tab" data-toggle="tab" onclick="sr.changeTo('customer.channelname', 'Sales Return by Channels')">Channels</a>
 		</li>
