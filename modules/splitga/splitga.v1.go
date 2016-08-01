@@ -30,6 +30,14 @@ var (
 	sgadirectratio  = map[string]float64{}
 )
 
+func getstep(count int) int {
+	v := count / 100
+	if v == 0 {
+		return 1
+	}
+	return v
+}
+
 func main() {
 	setinitialconnection()
 	toolkit.Println("Prepare master for calculate")
@@ -47,6 +55,7 @@ func main() {
 
 	tstart := time.Now()
 	rcount := c.Count()
+	step := getstep(rcount)
 	i := 0
 	for {
 		res := toolkit.M{}
@@ -103,8 +112,10 @@ func main() {
 		//save allocated
 		i += 1
 
-		toolkit.Printfn("Processing %d of %d %s",
-			i, rcount, time.Since(tstart).String())
+		if i%step == 0 {
+			toolkit.Printfn("Processing %d of %d %s",
+				i, rcount, time.Since(tstart).String())
+		}
 	}
 }
 
