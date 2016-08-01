@@ -805,7 +805,7 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.setPercentageOn(config, 'axis3', 2);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
@@ -848,7 +848,7 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.setPercentageOn(config, 'axis3', 2);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
