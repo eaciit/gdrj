@@ -280,6 +280,8 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
 				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
@@ -744,6 +746,7 @@ rd.setup = () => {
 				}
 			}])
 
+			rpt.optionDimensions(rpt.optionDimensions().filter((d) => ['customer.channelname', 'customer.branchname', 'product.brand'].indexOf(d.field) > -1))
 			rd.configure = (config) => {
 				rd.setPercentageOn(config, 'axis1', 2)
 				rd.setPercentageOn(config, 'axis2', 2)
