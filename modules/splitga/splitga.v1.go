@@ -11,7 +11,7 @@ import (
 	"github.com/eaciit/dbox"
 	// "github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
-	"math"
+	// "math"
 )
 
 var conn dbox.IConnection
@@ -32,7 +32,9 @@ var (
 
 func main() {
 	setinitialconnection()
+	toolkit.Println("Prepare master for calculate")
 	prepmastercalc()
+	toolkit.Println("Create ratio data")
 	buildratio()
 
 	qSave := conn.NewQuery().
@@ -109,7 +111,11 @@ func main() {
 func buildratio() {
 	for key, val := range sgacalc {
 		dval := sgasource[key]
-		sgadirectratio[key] = math.Abs(toolkit.Div(dval, val))
+		sgadirectratio[key] = toolkit.Div(dval, val)
+	}
+
+	for k, v := range sgadirectratio {
+		toolkit.Println(k, " : ", v)
 	}
 }
 
