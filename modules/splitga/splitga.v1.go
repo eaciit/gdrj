@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/eaciit/dbox"
-	// "github.com/eaciit/orm/v1"
+	"github.com/eaciit/orm/v1"
 	"github.com/eaciit/toolkit"
 	// "math"
 )
@@ -40,6 +40,8 @@ func getstep(count int) int {
 
 func main() {
 	setinitialconnection()
+	toolkit.Println("Prepare pl for calculate")
+
 	toolkit.Println("Prepare master for calculate")
 	prepmastercalc()
 	toolkit.Println("Create ratio data")
@@ -93,6 +95,7 @@ func main() {
 		tkmdirect.Set("_id", toolkit.Sprintf("%s|Direct", id))
 		dskey.Set("sgaalloc", "Direct")
 		tkmdirect.Set("key", dskey)
+		gdrj.CalcSum(tkmdirect, masters)
 		//save direct
 		err := qSave.Exec(toolkit.M{}.Set("data", tkmdirect))
 		if err != nil {
@@ -104,6 +107,7 @@ func main() {
 		tkmallocated.Set("_id", toolkit.Sprintf("%s|Allocated", id))
 		dskey.Set("sgaalloc", "Allocated")
 		tkmallocated.Set("key", dskey)
+		gdrj.CalcSum(tkmallocated, masters)
 		//save allocated
 		err = qSave.Exec(toolkit.M{}.Set("data", tkmallocated))
 		if err != nil {
@@ -122,11 +126,22 @@ func main() {
 func buildratio() {
 	for key, val := range sgacalc {
 		dval := sgasource[key]
-		sgadirectratio[key] = toolkit.Div(dval, val)
+		if dval != 0 {
+			sgadirectratio[key] = toolkit.Div(dval, val)
+		}
+		ar01k := strings.Split(key, "_")
+		if ar01k[1] == "CD10" {
+			toolkit.Println("calc = ", key, " : ", val)
+			toolkit.Println("source = ", key, " : ", sgadirectratio[key])
+
+		}
 	}
 
 	for k, v := range sgadirectratio {
-		toolkit.Println(k, " : ", v)
+		ar01k := strings.Split(k, "_")
+		if ar01k[1] == "CD10" {
+			toolkit.Println(k, " : ", v)
+		}
 	}
 }
 
@@ -193,4 +208,39 @@ func setinitialconnection() {
 		toolkit.Println("Initial connection found : ", err)
 		os.Exit(1)
 	}
+}
+
+func buildmap(holder interface{},
+	fnModel func() orm.IModel,
+	filter *dbox.Filter,
+	fnIter func(holder interface{}, obj interface{})) interface{} {
+	crx, ecrx := gdrj.Find(fnModel(), filter, nil)
+	if ecrx != nil {
+		toolkit.Printfn("Cursor Error: %s", ecrx.Error())
+		os.Exit(100)
+	}
+	defer crx.Close()
+	for {
+		s := fnModel()
+		e := crx.Fetch(s, 1, false)
+		if e != nil {
+			break
+		}
+		fnIter(holder, s)
+	}
+	return holder
+}
+
+func prepmasterpl() {
+	toolkit.Println("--> PL MODEL")
+	masters.Set("plmodel", buildmap(map[string]*gdrj.PLModel{},
+		func() orm.IModel {
+			return new(gdrj.PLModel)
+		},
+		nil,
+		func(holder, obj interface{}) {
+			h := holder.(map[string]*gdrj.PLModel)
+			o := obj.(*gdrj.PLModel)
+			h[o.ID] = o
+		}).(map[string]*gdrj.PLModel))
 }
