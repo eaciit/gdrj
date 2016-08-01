@@ -31,21 +31,21 @@
 <script src="{{BaseUrl}}res/core/js/page-report-sga.js?ANTI_CACHE={{.AntiCache}}"></script>
 
 	<!-- Nav tabs -->
-	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: !sga.contentIsLoading()">
+	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: (!sga.contentIsLoading() && !au.contentIsLoading())">
 		<li role="presentation" class="active">
-			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchName');">Branch</a>
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchName', 'G&A by Branch');">Branch</a>
 		</li>
 		<!-- <li role="presentation">
 			<a href="#tab1" role="tab" data-toggle="tab" onclick="toolkit.showError('Not ready'); $('.pivot-pnl-branch').empty();">Branch Group</a>
 		</li> -->
 		<li role="presentation">
-			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchGroup');">Branch Group</a>
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchGroup', 'G&A by Branch Group');">Branch Group</a>
 		</li>
 		<li role="presentation">
-			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('CostGroup');">Function</a>
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('CostGroup', 'G&A by Function');">Function</a>
 		</li>
 		<li role="presentation">
-			<a href="#tab2" role="tab" data-toggle="tab" onclick="au.breakdownBranchGroup([]); au.refresh();">Direct & Allocated</a>
+			<a href="#tab2" role="tab" data-toggle="tab" onclick="sga.title('G&A Direct & Allocated'); au.breakdownBranchGroup([]); au.refresh();">Direct & Allocated</a>
 		</li>
 	</ul>
 
@@ -59,13 +59,13 @@
 <div class="col-md-12 col-sm-12 no-padding hardcore">
 	<div class="panel ez no-padding hardcore">
 		<div class="panel-heading">
-			<h3 class="no-margin">&nbsp;</h3>
+			<h3 class="no-margin" data-bind="html: sga.title()">&nbsp;</h3>
 			<div class="panel-nav-button" data-bind="visible: !sga.contentIsLoading()">
 				<div class="form-inline">
 					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: sga.refresh" title="Refresh P&L Analysis">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
-					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#sga', 'G&A Analysis', 'header-content')">
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="sga.exportExcel()">
 						<i class="fa fa-download"></i> Export as Excel
 					</button>
 				</div>
@@ -134,13 +134,13 @@
 <div class="col-md-12 col-sm-12 no-padding hardcore">
 	<div class="panel ez no-padding hardcore">
 		<div class="panel-heading">
-			<h3 class="no-margin">&nbsp;</h3>
+			<h3 class="no-margin">G&A Direct & Allocated</h3>
 			<div class="panel-nav-button" data-bind="visible: !au.contentIsLoading()">
 				<div class="form-inline">
 					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: au.refresh" title="Refresh P&L Analysis">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
-					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#sga', 'G&A Analysis', 'header-content')">
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#au', 'G&A Direct & Allocated', 'header-content')">
 						<i class="fa fa-download"></i> Export as Excel
 					</button>
 					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
