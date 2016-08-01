@@ -41,9 +41,11 @@ func getstep(count int) int {
 func main() {
 	setinitialconnection()
 	toolkit.Println("Prepare pl for calculate")
+	prepmasterpl()
 
 	toolkit.Println("Prepare master for calculate")
 	prepmastercalc()
+
 	toolkit.Println("Create ratio data")
 	buildratio()
 
@@ -71,7 +73,7 @@ func main() {
 		dskey := res.Get("key", toolkit.M{}).(toolkit.M)
 		id := res.GetString("_id")
 
-		key := toolkit.Sprintf("%s_%s", dskey.GetInt("date_fiscal"),
+		key := toolkit.Sprintf("%s_%s", dskey.GetString("date_fiscal"),
 			dskey.GetString("customer_branchid"))
 
 		for k, v := range res {
@@ -131,9 +133,9 @@ func buildratio() {
 		}
 		ar01k := strings.Split(key, "_")
 		if ar01k[1] == "CD10" {
-			toolkit.Println("calc = ", key, " : ", val)
-			toolkit.Println("source = ", key, " : ", sgadirectratio[key])
-
+			toolkit.Println("cal = ", key, " : ", val)
+			toolkit.Println("src = ", key, " : ", sgasource[key])
+			toolkit.Println("rat = ", key, " : ", sgadirectratio[key])
 		}
 	}
 
