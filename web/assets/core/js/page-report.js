@@ -220,6 +220,7 @@ rpt.masterData = {
 	geographi: ko.observableArray([]),
 	subchannel: ko.observableArray([])
 };
+rpt.showPercentOfTotal = ko.observable(true);
 rpt.enableHolder = {};
 rpt.eventChange = {};
 rpt.value = {
