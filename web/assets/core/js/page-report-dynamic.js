@@ -344,6 +344,8 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 2);
 					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
@@ -351,7 +353,6 @@ rd.setup = function () {
 		case 'gross-sales-by-qty':
 			{
 				vm.currentTitle('Gross Sales / Qty');
-				rd.divideBy('v1000000');
 				rd.series = ko.observableArray([{
 					_id: 'grosssales',
 					plheader: 'Gross Sales',
@@ -379,12 +380,15 @@ rd.setup = function () {
 						return toolkit.number(grossSales / quantity);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis2', 3);
+				};
 			}break;
 
 		case 'discount-by-qty':
 			{
 				vm.currentTitle('Discount / Qty');
-				rd.divideBy('v1000000');
 				rd.series = ko.observableArray([{
 					_id: 'salesdiscount',
 					plheader: 'Sales Discount',
@@ -422,6 +426,10 @@ rd.setup = function () {
 						return toolkit.number(salesDiscount / quantity);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis2', 3);
+				};
 			}break;
 
 		case 'net-price-by-qty':
@@ -545,6 +553,8 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 2);
 					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
@@ -588,6 +598,8 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 2);
 					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
@@ -643,6 +655,8 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 2);
 					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
@@ -728,6 +742,8 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 2);
 					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
