@@ -662,7 +662,7 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
-				rd.setPercentageOn(config, 'axis3', 2)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 
@@ -696,7 +696,7 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
-				rd.setPercentageOn(config, 'axis3', 2)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 
