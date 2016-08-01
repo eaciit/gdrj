@@ -232,18 +232,18 @@ rd.render = () => {
 }
 
 rd.configure = (config) => app.noop
-rd.put3DecimalPercentage = (config) => {
-	let percentageAxis = config.valueAxis.find((d) => d.name == 'axis3')
+rd.setPercentageOn = (config, axis, percentage) => {
+	let percentageAxis = config.valueAxis.find((d) => d.name == axis)
 	if (toolkit.isDefined(percentageAxis)) {
-		percentageAxis.labels.format = '{0:n3}'
+		percentageAxis.labels.format = `{0:n${percentage}}`
 	}
 
-	let serie = config.series.find((d) => d.axis == 'axis3')
+	let serie = config.series.find((d) => d.axis == axis)
 	if (toolkit.isDefined(serie)) {
 		serie.labels.template = undefined
-		serie.labels.format = '{0:n3}'
+		serie.labels.format = `{0:n${percentage}}`
 		serie.tooltip.template = (e) => {
-			let val = kendo.toString(e.value, 'n3')
+			let val = kendo.toString(e.value, `n${percentage}`)
 			return `${e.series.name} : ${val}`
 		}
 	}
@@ -280,7 +280,7 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
-				rd.put3DecimalPercentage(config)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 
@@ -316,7 +316,7 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
-				rd.put3DecimalPercentage(config)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 
@@ -484,7 +484,7 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
-				rd.put3DecimalPercentage(config)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 
@@ -518,7 +518,7 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
-				rd.put3DecimalPercentage(config)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 
@@ -556,7 +556,7 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
-				rd.put3DecimalPercentage(config)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 
@@ -604,7 +604,7 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
-				rd.put3DecimalPercentage(config)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 
@@ -644,7 +644,7 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
-				rd.put3DecimalPercentage(config)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 
@@ -678,7 +678,7 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
-				rd.put3DecimalPercentage(config)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 
@@ -712,7 +712,7 @@ rd.setup = () => {
 			}])
 			
 			rd.configure = (config) => {
-				rd.put3DecimalPercentage(config)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 
@@ -745,7 +745,9 @@ rd.setup = () => {
 			}])
 
 			rd.configure = (config) => {
-				rd.put3DecimalPercentage(config)
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 

@@ -242,22 +242,22 @@ rd.render = function () {
 rd.configure = function (config) {
 	return app.noop;
 };
-rd.put3DecimalPercentage = function (config) {
+rd.setPercentageOn = function (config, axis, percentage) {
 	var percentageAxis = config.valueAxis.find(function (d) {
-		return d.name == 'axis3';
+		return d.name == axis;
 	});
 	if (toolkit.isDefined(percentageAxis)) {
-		percentageAxis.labels.format = '{0:n3}';
+		percentageAxis.labels.format = '{0:n' + percentage + '}';
 	}
 
 	var serie = config.series.find(function (d) {
-		return d.axis == 'axis3';
+		return d.axis == axis;
 	});
 	if (toolkit.isDefined(serie)) {
 		serie.labels.template = undefined;
-		serie.labels.format = '{0:n3}';
+		serie.labels.format = '{0:n' + percentage + '}';
 		serie.tooltip.template = function (e) {
-			var val = kendo.toString(e.value, 'n3');
+			var val = kendo.toString(e.value, 'n' + percentage);
 			return e.series.name + ' : ' + val;
 		};
 	}
@@ -301,7 +301,7 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.put3DecimalPercentage(config);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
@@ -342,7 +342,7 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.put3DecimalPercentage(config);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
@@ -543,7 +543,7 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.put3DecimalPercentage(config);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
@@ -586,7 +586,7 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.put3DecimalPercentage(config);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
@@ -641,7 +641,7 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.put3DecimalPercentage(config);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
@@ -726,7 +726,7 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.put3DecimalPercentage(config);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
@@ -787,7 +787,7 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.put3DecimalPercentage(config);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
@@ -830,7 +830,7 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.put3DecimalPercentage(config);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
@@ -873,7 +873,7 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.put3DecimalPercentage(config);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
@@ -915,7 +915,9 @@ rd.setup = function () {
 				}]);
 
 				rd.configure = function (config) {
-					rd.put3DecimalPercentage(config);
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 2);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 
