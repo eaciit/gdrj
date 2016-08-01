@@ -80,9 +80,6 @@ func main() {
 			ar01k := strings.Split(k, "_")
 			if ar01k[0] == "PL33" || ar01k[0] == "PL34" || ar01k[0] == "PL35" {
 				costgroup := ar01k[1]
-				if costgroup == "Other" {
-					costgroup = "OTHER"
-				}
 				skey := toolkit.Sprintf("%s_%s", key, costgroup)
 				vtot64 := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
 				val := sgadirectratio[skey] * vtot64
