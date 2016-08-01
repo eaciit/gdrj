@@ -225,7 +225,12 @@ brand.render = function () {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id]);
 
 			totalColumnWidth += percentageWidth;
-			var thheader1p = toolkit.newEl('th').html('% of N Sales').width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').css('border-top', 'none').appendTo(trContents[0]);
+			var thheader1p = toolkit.newEl('th').html('% of N Sales'.replace(/\ /g, '&nbsp;')).width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').css('border-top', 'none').appendTo(trContents[0]);
+
+			if (rpt.showPercentOfTotal()) {
+				totalColumnWidth += percentageWidth;
+				toolkit.newEl('th').html('% of Total'.replace(/\ /g, '&nbsp;')).width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').css('border-top', 'none').appendTo(trContents[0]);
+			}
 
 			return;
 		}
@@ -287,7 +292,7 @@ brand.render = function () {
 		dataFlat.forEach(function (e) {
 			var breakdown = e.key;
 			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
-			percentage = toolkit.number(percentage);
+			var percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 
 			if (d._id == discountActivityPLCode) {
 				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100;
@@ -298,6 +303,7 @@ brand.render = function () {
 			if (percentage < 0) percentage = percentage * -1;
 
 			row[breakdown + ' %'] = percentage;
+			row[breakdown + ' %t'] = percentageOfTotal;
 		});
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -351,6 +357,7 @@ brand.render = function () {
 			var key = e.key;
 			var value = kendo.toString(d[key], 'n0');
 			var percentage = kendo.toString(d[key + ' %'], 'n2') + ' %';
+			var percentageOfTotal = kendo.toString(d[key + ' %t'], 'n2') + ' %';
 
 			if ($.trim(value) == '') {
 				value = 0;
@@ -359,6 +366,10 @@ brand.render = function () {
 			var cell = toolkit.newEl('td').html(value).addClass('align-right').appendTo(trContent);
 
 			var cellPercentage = toolkit.newEl('td').html(percentage).addClass('align-right').appendTo(trContent);
+
+			if (rpt.showPercentOfTotal()) {
+				toolkit.newEl('td').html(percentageOfTotal).addClass('align-right').appendTo(trContent);
+			}
 
 			$([cell, cellPercentage]).on('click', function () {
 				brand.renderDetail(d.PLCode, e.breakdowns);

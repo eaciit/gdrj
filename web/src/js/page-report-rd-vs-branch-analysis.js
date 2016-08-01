@@ -251,7 +251,7 @@ v1.render = () => {
 
 	data.forEach((lvl1, i) => {
 		let thheader1 = toolkit.newEl('th')
-			.html(lvl1._id)
+			.html(lvl1._id.replace(/\ /g, '&nbsp;'))
 			.attr('colspan', lvl1.count)
 			.addClass('align-center')
 			.appendTo(trContents[0])
@@ -259,12 +259,14 @@ v1.render = () => {
 			.css('color', 'white')
 			.css('border-top', 'none')
 
+		let thheader2p = $('<div />')
+
 		if (v1.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id])
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('% of N Sales')
+				.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 				.css('font-weight', 'normal')
 				.css('font-style', 'italic')
 				.width(percentageWidth)
@@ -274,13 +276,27 @@ v1.render = () => {
 				.css('color', 'white')
 				.css('border-top', 'none')
 
+			if (rpt.showPercentOfTotal()) {
+				totalColumnWidth += percentageWidth
+				thheader2p = toolkit.newEl('th')
+					.html('% of Total'.replace(/\ /g, '&nbsp;'))
+					.css('font-weight', 'normal')
+					.css('font-style', 'italic')
+					.width(percentageWidth)
+					.addClass('align-center')
+					.appendTo(trContents[0])
+					.css('background-color', colors[i])
+					.css('color', 'white')
+					.css('border-top', 'none')
+			}
+
 			return
 		}
-		thheader1.attr('colspan', lvl1.count * 2)
+		thheader1.attr('colspan', lvl1.count * (rpt.showPercentOfTotal() ? 3 : 2))
 
 		lvl1.subs.forEach((lvl2, j) => {
 			let thheader2 = toolkit.newEl('th')
-				.html(lvl2._id)
+				.html(lvl2._id.replace(/\ /g, '&nbsp;'))
 				.addClass('align-center')
 				.appendTo(trContents[1])
 
@@ -294,16 +310,29 @@ v1.render = () => {
 
 				totalColumnWidth += percentageWidth
 				let thheader1p = toolkit.newEl('th')
-					.html('% of N Sales')
+					.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 					.css('font-weight', 'normal')
 					.css('font-style', 'italic')
 					.width(percentageWidth)
 					.addClass('align-center')
 					.appendTo(trContents[1])
 
+				if (rpt.showPercentOfTotal()) {
+					totalColumnWidth += percentageWidth
+					thheader2p = toolkit.newEl('th')
+						.html('% of Total'.replace(/\ /g, '&nbsp;'))
+						.css('font-weight', 'normal')
+						.css('font-style', 'italic')
+						.width(percentageWidth)
+						.addClass('align-center')
+						.appendTo(trContents[1])
+				}
+
 				if (lvl2._id == 'Total') {
 					thheader1p.css('background-color', 'rgb(116, 149, 160)')
 					thheader1p.css('color', 'white')
+					thheader2p.css('background-color', 'rgb(116, 149, 160)')
+					thheader2p.css('color', 'white')
 				}
 
 				return
@@ -352,8 +381,8 @@ v1.render = () => {
 		})
 		dataFlat.forEach((e) => {
 			let breakdown = e.key
-			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-			percentage = toolkit.number(percentage)
+			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+			let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100
 
 			if (d._id == discountActivityPLCode) {
 				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
@@ -362,6 +391,7 @@ v1.render = () => {
 			}
 
 			row[`${breakdown} %`] = percentage
+			row[`${breakdown} %t`] = percentageOfTotal
 		})
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -373,37 +403,17 @@ v1.render = () => {
 
 	console.log("rows", rows)
 
-	let grossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode })
 	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 	rows.forEach((d, e) => {
 		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
 		if (d.PLCode == discountActivityPLCode) {
 			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
-
-			// // ====== hek MODERN TRADE numbah
-			// let grossSalesRedisMT = grossSales[`Regional Distributor_Modern Trade`]
-			// let grossSalesRedisGT = grossSales[`Regional Distributor_Modern Trade`]
-
-			// let discountBranchMTpercent = d[`Branch_Modern Trade %`]
-			// let discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent)
-			// let discountRedisTotal = d[`Regional Distributor_Total`]
-			// let discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated
-			// let discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100
-
-			// d[`Regional Distributor_Modern Trade`] = discountRedisMTCalculated
-			// d[`Regional Distributor_Modern Trade %`] = discountBranchMTpercent
-
-			// d[`Regional Distributor_General Trade`] = discountRedisGTCalculated
-			// d[`Regional Distributor_General Trade %`] = discountRedisGTPercentCalculated
-			
 		}
 
 		if (TotalPercentage < 0)
 			TotalPercentage = TotalPercentage * -1 
 		d.Percentage = toolkit.number(TotalPercentage)
-
-		// ===== ABS %
 
 		for (let p in d) if (d.hasOwnProperty(p)) {
 			if (p.indexOf('%') > -1 || p == "Percentage") {
@@ -442,7 +452,7 @@ v1.render = () => {
 			.appendTo(trHeader)
 
 		toolkit.newEl('td')
-			.html(kendo.toString(d.Percentage, 'n2') + ' %')
+			.html(kendo.toString(d.Percentage, 'n2') + '&nbsp;%')
 			.addClass('align-right')
 			.appendTo(trHeader)
 
@@ -456,7 +466,8 @@ v1.render = () => {
 		dataFlat.forEach((e, f) => {
 			let key = e.key
 			let value = kendo.toString(d[key], 'n0')
-			let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
+			let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
+			let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + '&nbsp;%'
 
 			if ($.trim(value) == '') {
 				value = 0
@@ -471,6 +482,13 @@ v1.render = () => {
 				.html(percentage)
 				.addClass('align-right')
 				.appendTo(trContent)
+
+			if (rpt.showPercentOfTotal()) {
+				toolkit.newEl('td')
+					.html(percentageOfTotal)
+					.addClass('align-right')
+					.appendTo(trContent)
+			}
 		})
 
 		let boolStatus = false
@@ -755,7 +773,9 @@ v2.render = () => {
 			.css('color', 'white')
 			.css('border-top', 'none')
 
-		if (v2.level() == 1) {
+		let thheader2p = $('<div />')
+
+		if (v1.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id])
 
 			totalColumnWidth += percentageWidth
@@ -766,11 +786,27 @@ v2.render = () => {
 				.width(percentageWidth)
 				.addClass('align-center')
 				.appendTo(trContents[0])
+				.css('background-color', colors[i])
+				.css('color', 'white')
 				.css('border-top', 'none')
+
+			if (rpt.showPercentOfTotal()) {
+				totalColumnWidth += percentageWidth
+				thheader2p = toolkit.newEl('th')
+					.html('% of Total'.replace(/\ /g, '&nbsp;'))
+					.css('font-weight', 'normal')
+					.css('font-style', 'italic')
+					.width(percentageWidth)
+					.addClass('align-center')
+					.appendTo(trContents[0])
+					.css('background-color', colors[i])
+					.css('color', 'white')
+					.css('border-top', 'none')
+			}
 
 			return
 		}
-		thheader1.attr('colspan', lvl1.count * 2)
+		thheader1.attr('colspan', lvl1.count * (rpt.showPercentOfTotal() ? 3 : 2))
 
 		lvl1.subs.forEach((lvl2, j) => {
 			let thheader2 = toolkit.newEl('th')
@@ -783,7 +819,7 @@ v2.render = () => {
 				thheader2.css('color', 'white')
 			}
 
-			if (v2.level() == 2) {
+			if (v1.level() == 2) {
 				countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id])
 
 				totalColumnWidth += percentageWidth
@@ -795,9 +831,22 @@ v2.render = () => {
 					.addClass('align-center')
 					.appendTo(trContents[1])
 
+				if (rpt.showPercentOfTotal()) {
+					totalColumnWidth += percentageWidth
+					thheader2p = toolkit.newEl('th')
+						.html('% of Total'.replace(/\ /g, '&nbsp;'))
+						.css('font-weight', 'normal')
+						.css('font-style', 'italic')
+						.width(percentageWidth)
+						.addClass('align-center')
+						.appendTo(trContents[1])
+				}
+
 				if (lvl2._id == 'Total') {
 					thheader1p.css('background-color', 'rgb(116, 149, 160)')
 					thheader1p.css('color', 'white')
+					thheader2p.css('background-color', 'rgb(116, 149, 160)')
+					thheader2p.css('color', 'white')
 				}
 
 				return
@@ -846,8 +895,8 @@ v2.render = () => {
 		})
 		dataFlat.forEach((e) => {
 			let breakdown = e.key
-			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-			percentage = toolkit.number(percentage)
+			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+			let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100
 
 			if (d._id == discountActivityPLCode) {
 				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
@@ -859,6 +908,7 @@ v2.render = () => {
 				percentage = percentage * -1
 
 			row[`${breakdown} %`] = percentage
+			row[`${breakdown} %t`] = percentageOfTotal
 		})
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -870,37 +920,17 @@ v2.render = () => {
 
 	console.log("rows", rows)
 
-	let grossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode })
 	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 	let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 	rows.forEach((d, e) => {
 		let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
 		if (d.PLCode == discountActivityPLCode) {
 			TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
-
-			// // ====== hek MODERN TRADE numbah
-			// let grossSalesRedisMT = grossSales[`Modern Trade_Regional Distributor`]
-			// let grossSalesRedisGT = grossSales[`Modern Trade_Regional Distributor`]
-
-			// let discountBranchMTpercent = d[`Modern Trade_Branch %`]
-			// let discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent)
-			// let discountRedisTotal = d[`General Trade_Total`]
-			// let discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated
-			// let discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100
-
-			// d[`Modern Trade_Regional Distributor`] = discountRedisMTCalculated
-			// d[`Modern Trade_Regional Distributor %`] = discountBranchMTpercent
-
-			// d[`General Trade_Regional Distributor`] = discountRedisGTCalculated
-			// d[`General Trade_Regional Distributor %`] = discountRedisGTPercentCalculated
-			
 		}
 
 		if (TotalPercentage < 0)
 			TotalPercentage = TotalPercentage * -1 
 		d.Percentage = toolkit.number(TotalPercentage)
-
-		// ===== ABS %
 
 		for (let p in d) if (d.hasOwnProperty(p)) {
 			if (p.indexOf('%') > -1 || p == "Percentage") {
@@ -941,7 +971,7 @@ v2.render = () => {
 			.appendTo(trHeader)
 
 		toolkit.newEl('td')
-			.html(kendo.toString(d.Percentage, 'n2') + ' %')
+			.html(kendo.toString(d.Percentage, 'n2') + '&nbsp;%')
 			.addClass('align-right')
 			.appendTo(trHeader)
 
@@ -955,7 +985,8 @@ v2.render = () => {
 		dataFlat.forEach((e, f) => {
 			let key = e.key
 			let value = kendo.toString(d[key], 'n0')
-			let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
+			let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
+			let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + '&nbsp;%'
 
 			if ($.trim(value) == '') {
 				value = 0
@@ -970,6 +1001,13 @@ v2.render = () => {
 				.html(percentage)
 				.addClass('align-right')
 				.appendTo(trContent)
+
+			if (rpt.showPercentOfTotal()) {
+				toolkit.newEl('td')
+					.html(percentageOfTotal)
+					.addClass('align-right')
+					.appendTo(trContent)
+			}
 		})
 
 		let boolStatus = false
@@ -1185,7 +1223,7 @@ v3.render = () => {
 		.appendTo(trHeader)
 
 	toolkit.newEl('th')
-		.html('% of N Sales')
+		.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 		.css('height', `${rpt.rowHeaderHeight() * v3.level()}px`)
 		.css('vertical-align', 'middle')
 		.css('font-weight', 'normal')
@@ -1207,7 +1245,7 @@ v3.render = () => {
 
 	let data = v3.data()
 
-	let columnWidth = 180
+	let columnWidth = 170
 	let totalColumnWidth = 0
 	let pnlTotalSum = 0
 	let dataFlat = []
@@ -1224,7 +1262,7 @@ v3.render = () => {
 
 	data.forEach((lvl1, i) => {
 		let thheader1 = toolkit.newEl('th')
-			.html(lvl1._id)
+			.html(lvl1._id.replace(/\ /g, '&nbsp;'))
 			.attr('colspan', lvl1.count)
 			.addClass('align-right')
 			.appendTo(trContents[0])
@@ -1237,7 +1275,7 @@ v3.render = () => {
 
 			totalColumnWidth += percentageWidth
 			let thheader1p = toolkit.newEl('th')
-				.html('% of N Sales')
+				.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 				.css('font-weight', 'normal')
 				.css('font-style', 'italic')
 				.width(percentageWidth)
@@ -1246,6 +1284,20 @@ v3.render = () => {
 				.css('background-color', colors[i])
 				.css('color', 'white')
 				.css('border-top', 'none')
+
+			if (rpt.showPercentOfTotal()) {
+				totalColumnWidth += percentageWidth
+				toolkit.newEl('th')
+					.html('% of Total'.replace(/\ /g, '&nbsp;'))
+					.css('font-weight', 'normal')
+					.css('font-style', 'italic')
+					.width(percentageWidth)
+					.addClass('align-center')
+					.appendTo(trContents[0])
+					.css('background-color', colors[i])
+					.css('color', 'white')
+					.css('border-top', 'none')
+			}
 
 			return
 		}
@@ -1315,8 +1367,8 @@ v3.render = () => {
 		})
 		dataFlat.forEach((e) => {
 			let breakdown = e.key
-			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-			percentage = toolkit.number(percentage)
+			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+			let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100
 
 			if (d._id == discountActivityPLCode) {
 				percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
@@ -1328,6 +1380,7 @@ v3.render = () => {
 				percentage = percentage * -1
 
 			row[`${breakdown} %`] = percentage
+			row[`${breakdown} %t`] = percentageOfTotal
 		})
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -1384,7 +1437,7 @@ v3.render = () => {
 			.appendTo(trHeader)
 
 		toolkit.newEl('td')
-			.html(kendo.toString(d.Percentage, 'n2') + ' %')
+			.html(kendo.toString(d.Percentage, 'n2') + '&nbsp;%')
 			.addClass('align-right')
 			.appendTo(trHeader)
 
@@ -1398,7 +1451,8 @@ v3.render = () => {
 		dataFlat.forEach((e, f) => {
 			let key = e.key
 			let value = kendo.toString(d[key], 'n0')
-			let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
+			let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
+			let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + '&nbsp;%'
 
 			if ($.trim(value) == '') {
 				value = 0
@@ -1413,6 +1467,13 @@ v3.render = () => {
 				.html(percentage)
 				.addClass('align-right')
 				.appendTo(trContent)
+
+			if (rpt.showPercentOfTotal()) {
+				toolkit.newEl('td')
+					.html(percentageOfTotal)
+					.addClass('align-right')
+					.appendTo(trContent)
+			}
 		})
 
 		let boolStatus = false
