@@ -887,24 +887,42 @@ let au = viewModel.allocated
 
 	au.buildStructure = (data) => {
 		let breakdown = toolkit.replace(au.breakdownBy(), '.', '_')
-		let indirectData = data.filter((d) => d._id._id_sgaalloc != 'Direct')
-		data = data.filter((d) => d._id._id_sgaalloc == 'Direct')
-		data.forEach((d) => {
-			let target = indirectData.find((k) => k._id[`_id_${breakdown}`] == d._id[`_id_${breakdown}`])
-			// console.log('---target', target)
+		let result = []
 
-			for (let p in d) {
-				if (d.hasOwnProperty(p)) {
+		let op1 = _.groupBy(data, (d) => {
+			let g1 = d._id._id_sgaalloc
+			let g2 = d._id[`_id_${breakdown}`]
+			return [g1, g2].join('_')
+		})
+		let op2 = _.map(op1, (v, k) => {
+			let direct = v.find((e) => e._id._id_sgaalloc == 'Direct')
+			let allocated = v.find((e) => e._id._id_sgaalloc != 'Direct')
+			let sample = v[0]
+			let o = { _id: {} }
+			o._id[`_id_${breakdown}`] = sample._id[`_id_${breakdown}`]
+			o._id._id_date_fiscal = sample._id._id_date_fiscal
+
+			for (let p in sample) {
+				if (sample.hasOwnProperty(p)) {
 					if ((p.indexOf('PL33') > -1) || (p.indexOf('PL34') > -1) || (p.indexOf('PL35') > -1) || (p.indexOf('PL94A') > -1)) {
-						if (typeof target !== 'undefined') {
-							d[`${p}_allocated`] = target[p]
+						o[p] = 0
+						o[`${p}_allocated`] = 0
+
+						if (toolkit.isDefined(direct)) {
+							o[p] = direct[p]
+						}
+						if (toolkit.isDefined(allocated)) {
+							o[`${p}_allocated`] = allocated[p]
 						}
 					}
 				}
 			}
-		})
 
-		// console.log('----data', data)
+			return o
+		})
+		data = op2
+
+		console.log('----data', data)
 
 		let groupThenMap = (data, group) => {
 			let op1 = _.groupBy(data, (d) => group(d))

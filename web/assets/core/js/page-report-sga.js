@@ -808,30 +808,46 @@ var au = viewModel.allocated;(function () {
 
 	au.buildStructure = function (data) {
 		var breakdown = toolkit.replace(au.breakdownBy(), '.', '_');
-		var indirectData = data.filter(function (d) {
-			return d._id._id_sgaalloc != 'Direct';
-		});
-		data = data.filter(function (d) {
-			return d._id._id_sgaalloc == 'Direct';
-		});
-		data.forEach(function (d) {
-			var target = indirectData.find(function (k) {
-				return k._id['_id_' + breakdown] == d._id['_id_' + breakdown];
-			});
-			// console.log('---target', target)
+		var result = [];
 
-			for (var p in d) {
-				if (d.hasOwnProperty(p)) {
+		var op1 = _.groupBy(data, function (d) {
+			var g1 = d._id._id_sgaalloc;
+			var g2 = d._id['_id_' + breakdown];
+			return [g1, g2].join('_');
+		});
+		var op2 = _.map(op1, function (v, k) {
+			var direct = v.find(function (e) {
+				return e._id._id_sgaalloc == 'Direct';
+			});
+			var allocated = v.find(function (e) {
+				return e._id._id_sgaalloc != 'Direct';
+			});
+			var sample = v[0];
+			var o = { _id: {} };
+			o._id['_id_' + breakdown] = sample._id['_id_' + breakdown];
+			o._id._id_date_fiscal = sample._id._id_date_fiscal;
+
+			for (var p in sample) {
+				if (sample.hasOwnProperty(p)) {
 					if (p.indexOf('PL33') > -1 || p.indexOf('PL34') > -1 || p.indexOf('PL35') > -1 || p.indexOf('PL94A') > -1) {
-						if (typeof target !== 'undefined') {
-							d[p + '_allocated'] = target[p];
+						o[p] = 0;
+						o[p + '_allocated'] = 0;
+
+						if (toolkit.isDefined(direct)) {
+							o[p] = direct[p];
+						}
+						if (toolkit.isDefined(allocated)) {
+							o[p + '_allocated'] = allocated[p];
 						}
 					}
 				}
 			}
-		});
 
-		// console.log('----data', data)
+			return o;
+		});
+		data = op2;
+
+		console.log('----data', data);
 
 		var groupThenMap = function groupThenMap(data, group) {
 			var op1 = _.groupBy(data, function (d) {
