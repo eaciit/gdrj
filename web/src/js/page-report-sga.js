@@ -523,7 +523,7 @@ let sga = viewModel.sga
 
 			if (sga.putNetSalesPercentage()) {
 				toolkit.newEl('td')
-					.html(kendo.toString(d.Percentage, 'n2') + ' %')
+					.html(kendo.toString(d.Percentage, 'n2') + '&nbsp;%')
 					.addClass('align-right')
 					.appendTo(trHeader)
 			}
@@ -538,7 +538,7 @@ let sga = viewModel.sga
 			dataFlat.forEach((e, f) => {
 				let key = e.key
 				let value = kendo.toString(d[key], 'n0')
-				let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
+				let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
 
 				if ($.trim(value) == '') {
 					value = 0
@@ -560,7 +560,7 @@ let sga = viewModel.sga
 
 			let boolStatus = false
 			trContent.find('td').each((a,e) => {
-				if ($(e).text() != '0' && $(e).text() != '0.00 %') {
+				if ($(e).text() != '0' && $(e).text() != '0.00&nbsp;%') {
 					boolStatus = true
 				}
 			})
@@ -600,7 +600,7 @@ let sga = viewModel.sga
 
 		if (sga.putNetSalesPercentage()) {
 			toolkit.newEl('td')
-				.html(kendo.toString(pnlTotal / netSalesTotal * 100, 'n2') + ' %')
+				.html(kendo.toString(pnlTotal / netSalesTotal * 100, 'n2') + '&nbsp;%')
 				.addClass('align-right')
 				.appendTo(trFooterLeft)
 		}
@@ -634,7 +634,7 @@ let sga = viewModel.sga
 
 			if (sga.putNetSalesPercentage()) {
 				toolkit.newEl('td')
-					.html(kendo.toString(percentage, 'n2') + ' %')
+					.html(kendo.toString(percentage, 'n2') + '&nbsp;%')
 					.addClass('align-right')
 					.appendTo(trFooterRight)
 			}
@@ -895,7 +895,7 @@ let au = viewModel.allocated
 
 		au.level(1)
 		let newParsed = _.orderBy(parsed, (d) => {
-			return rpt.orderByChannel(d._id, d.PL8A)
+			return rpt.orderByChannel(d._id, Math.abs(d.PL94A))
 		}, 'desc')
 		return newParsed
 	}
@@ -1071,7 +1071,7 @@ let au = viewModel.allocated
 					return
 				}
 
-				row.PNLTotal += value
+				row.PNLTotal += toolkit.number(value)
 			})
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
@@ -1139,7 +1139,7 @@ let au = viewModel.allocated
 				.appendTo(trHeader)
 
 			toolkit.newEl('td')
-				.html(kendo.toString(d.Percentage, 'n2') + ' %')
+				.html(kendo.toString(d.Percentage, 'n2') + '&nbsp;%')
 				.addClass('align-right')
 				.appendTo(trHeader)
 
@@ -1153,11 +1153,7 @@ let au = viewModel.allocated
 			dataFlat.forEach((e, f) => {
 				let key = e.key
 				let value = kendo.toString(d[key], 'n0')
-				let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
-
-				if ($.trim(value) == '') {
-					value = 0
-				}
+				let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
 
 				let cell = toolkit.newEl('td')
 					.html(value)
@@ -1176,7 +1172,7 @@ let au = viewModel.allocated
 
 			let boolStatus = false
 			trContent.find('td').each((a,e) => {
-				if ($(e).text() != '0' && $(e).text() != '0.00 %') {
+				if ($(e).text() != '0' && $(e).text() != '0.00&nbsp;%') {
 					boolStatus = true
 				}
 			})
@@ -1214,7 +1210,7 @@ let au = viewModel.allocated
 			.appendTo(trFooterLeft)
 
 		toolkit.newEl('td')
-			.html(kendo.toString(pnlTotal / netSalesTotal * 100, 'n2') + ' %')
+			.html(kendo.toString(pnlTotal / netSalesTotal * 100, 'n2') + '&nbsp;%')
 			.addClass('align-right')
 			.appendTo(trFooterLeft)
 
@@ -1233,7 +1229,7 @@ let au = viewModel.allocated
 			}
 
 			let value = toolkit.sum(rowsForTotal, (d) => d[e.key])
-			console.log('------', netSales, value, rowsForTotal)
+			// console.log('------', netSales, value, rowsForTotal)
 
 			if ($.trim(value) == '') {
 				value = 0
@@ -1247,7 +1243,7 @@ let au = viewModel.allocated
 				.appendTo(trFooterRight)
 
 			toolkit.newEl('td')
-				.html(kendo.toString(percentage, 'n2') + ' %')
+				.html(kendo.toString(percentage, 'n2') + '&nbsp;%')
 				.addClass('align-right')
 				.appendTo(trFooterRight)
 		})
