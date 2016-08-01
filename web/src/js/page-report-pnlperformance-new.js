@@ -739,7 +739,7 @@ let bkd = viewModel.breakdown
 
 		data.forEach((lvl1, i) => {
 			let thheader1 = toolkit.newEl('th')
-				.html(lvl1._id)
+				.html(lvl1._id.replace(/\ /g, '&nbsp;'))
 				.attr('colspan', lvl1.count)
 				.addClass('align-center')
 				.css('border-top', 'none')
@@ -758,13 +758,25 @@ let bkd = viewModel.breakdown
 					.css('border-top', 'none')
 					.appendTo(trContents[0])
 
+				if (rpt.showPercentOfTotal()) {
+					totalColumnWidth += percentageWidth
+					let thheader1p = toolkit.newEl('th')
+						.html('% of Total')
+						.width(percentageWidth)
+						.addClass('align-center')
+						.css('font-weight', 'normal')
+						.css('font-style', 'italic')
+						.css('border-top', 'none')
+						.appendTo(trContents[0])
+				}
+
 				return
 			}
-			thheader1.attr('colspan', lvl1.count * 2)
+			thheader1.attr('colspan', lvl1.count * (rpt.showPercentOfTotal() ? 3 : 2))
 
 			lvl1.subs.forEach((lvl2, j) => {
 				let thheader2 = toolkit.newEl('th')
-					.html(lvl2._id)
+					.html(lvl2._id.replace(/\ /g, '&nbsp;'))
 					.addClass('align-center')
 					.appendTo(trContents[1])
 
@@ -779,6 +791,18 @@ let bkd = viewModel.breakdown
 						.css('font-weight', 'normal')
 						.css('font-style', 'italic')
 						.appendTo(trContents[1])
+
+					if (rpt.showPercentOfTotal()) {
+						totalColumnWidth += percentageWidth
+						toolkit.newEl('th')
+							.html('% of Total')
+							.width(percentageWidth)
+							.addClass('align-center')
+							.css('font-weight', 'normal')
+							.css('font-style', 'italic')
+							.css('border-top', 'none')
+							.appendTo(trContents[1])
+					}
 
 					return
 				}
@@ -827,7 +851,7 @@ let bkd = viewModel.breakdown
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
 				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-				percentage = toolkit.number(percentage)
+				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 
 				if (d._id == discountActivityPLCode) {
 					percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
@@ -839,6 +863,8 @@ let bkd = viewModel.breakdown
 					percentage = percentage * -1
 
 				row[`${breakdown} %`] = percentage
+				row[`${breakdown} %t`] = percentageOfTotal
+
 			})
 
 			if (exceptions.indexOf(row.PLCode) > -1) {
@@ -895,7 +921,7 @@ let bkd = viewModel.breakdown
 				.appendTo(trHeader)
 
 			toolkit.newEl('td')
-				.html(kendo.toString(d.Percentage, 'n2') + ' %')
+				.html(kendo.toString(d.Percentage, 'n2') + '&nbsp;%')
 				.addClass('align-right')
 				.appendTo(trHeader)
 
@@ -909,7 +935,8 @@ let bkd = viewModel.breakdown
 			dataFlat.forEach((e, f) => {
 				let key = e.key
 				let value = kendo.toString(d[key], 'n0')
-				let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
+				let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
+				let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + '&nbsp;%'
 
 				if ($.trim(value) == '') {
 					value = 0
@@ -924,6 +951,13 @@ let bkd = viewModel.breakdown
 					.html(percentage)
 					.addClass('align-right')
 					.appendTo(trContent)
+
+				if (rpt.showPercentOfTotal()) {
+					toolkit.newEl('td')
+						.html(percentageOfTotal)
+						.addClass('align-right')
+						.appendTo(trContent)
+				}
 
 				$([cell, cellPercentage]).on('click', () => {
 					bkd.renderDetail(d.PLCode, e.breakdowns)
@@ -1302,6 +1336,8 @@ let v2 = viewModel.RDvsBranchView2
 				.css('color', 'white')
 				.css('border-top', 'none')
 
+			let thheader2p = $('<div />')
+
 			if (v2.level() == 1) {
 				countWidthThenPush(thheader1, lvl1, [lvl1._id])
 
@@ -1315,9 +1351,21 @@ let v2 = viewModel.RDvsBranchView2
 					.appendTo(trContents[0])
 					.css('border-top', 'none')
 
+				if (rpt.showPercentOfTotal()) {
+					totalColumnWidth += percentageWidth
+					thheader2p = toolkit.newEl('th')
+						.html('% of Total'.replace(/\ /g, '&nbsp;'))
+						.css('font-weight', 'normal')
+						.css('font-style', 'italic')
+						.width(percentageWidth)
+						.addClass('align-center')
+						.appendTo(trContents[0])
+						.css('border-top', 'none')
+				}
+
 				return
 			}
-			thheader1.attr('colspan', lvl1.count * 2)
+			thheader1.attr('colspan', lvl1.count * (rpt.showPercentOfTotal() ? 3 : 2))
 
 			lvl1.subs.forEach((lvl2, j) => {
 				let thheader2 = toolkit.newEl('th')
@@ -1342,9 +1390,22 @@ let v2 = viewModel.RDvsBranchView2
 						.addClass('align-center')
 						.appendTo(trContents[1])
 
+					if (rpt.showPercentOfTotal()) {
+						totalColumnWidth += percentageWidth
+						thheader2p = toolkit.newEl('th')
+							.html('% of Total'.replace(/\ /g, '&nbsp;'))
+							.css('font-weight', 'normal')
+							.css('font-style', 'italic')
+							.width(percentageWidth)
+							.addClass('align-center')
+							.appendTo(trContents[1])
+					}
+
 					if (lvl2._id == 'Total') {
 						thheader1p.css('background-color', 'rgb(116, 149, 160)')
 						thheader1p.css('color', 'white')
+						thheader2p.css('background-color', 'rgb(116, 149, 160)')
+						thheader2p.css('color', 'white')
 					}
 
 					return
@@ -1394,7 +1455,7 @@ let v2 = viewModel.RDvsBranchView2
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
 				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-				percentage = toolkit.number(percentage)
+				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 
 				if (d._id == discountActivityPLCode) {
 					percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
@@ -1406,6 +1467,7 @@ let v2 = viewModel.RDvsBranchView2
 					percentage = percentage * -1
 
 				row[`${breakdown} %`] = percentage
+				row[`${breakdown} %t`] = percentageOfTotal
 			})
 
 			if (exceptions.indexOf(row.PLCode) > -1) {
@@ -1417,37 +1479,17 @@ let v2 = viewModel.RDvsBranchView2
 
 		console.log("rows", rows)
 
-		let grossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode })
 		let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 		let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 		rows.forEach((d, e) => {
 			let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
 			if (d.PLCode == discountActivityPLCode) {
 				TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
-
-				// // ====== hek MODERN TRADE numbah
-				// let grossSalesRedisMT = grossSales[`Modern Trade_Regional Distributor`]
-				// let grossSalesRedisGT = grossSales[`Modern Trade_Regional Distributor`]
-
-				// let discountBranchMTpercent = d[`Modern Trade_Branch %`]
-				// let discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent)
-				// let discountRedisTotal = d[`General Trade_Total`]
-				// let discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated
-				// let discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100
-
-				// d[`Modern Trade_Regional Distributor`] = discountRedisMTCalculated
-				// d[`Modern Trade_Regional Distributor %`] = discountBranchMTpercent
-
-				// d[`General Trade_Regional Distributor`] = discountRedisGTCalculated
-				// d[`General Trade_Regional Distributor %`] = discountRedisGTPercentCalculated
-				
 			}
 
 			if (TotalPercentage < 0)
 				TotalPercentage = TotalPercentage * -1 
 			d.Percentage = toolkit.number(TotalPercentage)
-
-			// ===== ABS %
 
 			for (let p in d) if (d.hasOwnProperty(p)) {
 				if (p.indexOf('%') > -1 || p == "Percentage") {
@@ -1488,7 +1530,7 @@ let v2 = viewModel.RDvsBranchView2
 				.appendTo(trHeader)
 
 			toolkit.newEl('td')
-				.html(kendo.toString(d.Percentage, 'n2') + ' %')
+				.html(kendo.toString(d.Percentage, 'n2') + '&nbsp;%')
 				.addClass('align-right')
 				.appendTo(trHeader)
 
@@ -1502,7 +1544,8 @@ let v2 = viewModel.RDvsBranchView2
 			dataFlat.forEach((e, f) => {
 				let key = e.key
 				let value = kendo.toString(d[key], 'n0')
-				let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
+				let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
+				let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + '&nbsp;%'
 
 				if ($.trim(value) == '') {
 					value = 0
@@ -1517,6 +1560,13 @@ let v2 = viewModel.RDvsBranchView2
 					.html(percentage)
 					.addClass('align-right')
 					.appendTo(trContent)
+
+				if (rpt.showPercentOfTotal()) {
+					toolkit.newEl('td')
+						.html(percentageOfTotal)
+						.addClass('align-right')
+						.appendTo(trContent)
+				}
 			})
 
 			let boolStatus = false
@@ -1537,133 +1587,7 @@ let v2 = viewModel.RDvsBranchView2
 		
 
 		// ========================= CONFIGURE THE HIRARCHY
-		v2.buildGridLevels(container, rows)
-	}
-
-	v2.buildGridLevels = (container, rows) => {
-		let grouppl1 = _.map(_.groupBy(rpt.plmodels(), (d) => {return d.PLHeader1}), (k , v) => { return { data: k, key:v}})
-		let grouppl2 = _.map(_.groupBy(rpt.plmodels(), (d) => {return d.PLHeader2}), (k , v) => { return { data: k, key:v}})
-		let grouppl3 = _.map(_.groupBy(rpt.plmodels(), (d) => {return d.PLHeader3}), (k , v) => { return { data: k, key:v}})
-
-		let $trElem, $columnElem
-		let resg1, resg2, resg3, PLyo, PLyo2, child = 0, parenttr = 0, textPL
-		container.find(".table-header tbody>tr").each(function( i ) {
-			if (i > 0){
-				$trElem = $(this)
-				resg1 = _.find(grouppl1, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
-				resg2 = _.find(grouppl2, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
-				resg3 = _.find(grouppl3, function(o) { return o.key == $trElem.find(`td:eq(0)`).text() })
-
-				let idplyo = _.find(rpt.idarrayhide(), (a) => { return a == $trElem.attr("idheaderpl") })
-				if (idplyo != undefined){
-					$trElem.remove()
-					container.find(`.table-content tr.column${$trElem.attr("idheaderpl")}`).remove()
-				}
-				if (resg1 == undefined && idplyo2 == undefined){
-					if (resg2 != undefined){ 
-						textPL = _.find(resg2.data, function(o) { return o._id == $trElem.attr("idheaderpl") })
-						PLyo = _.find(rows, function(o) { return o.PNL == textPL.PLHeader1 })
-						PLyo2 = _.find(rows, function(o) { return o.PLCode == textPL._id })
-						$trElem.find('td:eq(0)').css('padding-left','40px')
-						$trElem.attr('idparent', PLyo.PLCode)
-						child = container.find(`tr[idparent=${PLyo.PLCode}]`).length
-						$columnElem = container.find(`.table-content tr.column${PLyo2.PLCode}`)
-						$columnElem.attr('idcontparent', PLyo.PLCode)
-						let PLCodeChange = rpt.changeParent($trElem, $columnElem, $columnElem.attr('idpl'))
-						if (PLCodeChange != "")
-							PLyo.PLCode = PLCodeChange
-						if (child > 1){
-							let $parenttr = container.find(`tr[idheaderpl=${PLyo.PLCode}]`)
-							let $parenttrcontent = container.find(`tr[idpl=${PLyo.PLCode}]`)
-							// $trElem.insertAfter($(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-							// $columnElem.insertAfter($(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-							$trElem.insertAfter($parenttr)
-							$columnElem.insertAfter($parenttrcontent)
-						}
-						else{
-							$trElem.insertAfter(container.find(`tr.header${PLyo.PLCode}`))
-							$columnElem.insertAfter(container.find(`tr.column${PLyo.PLCode}`))
-						}
-					} else if (resg2 == undefined){
-						if (resg3 != undefined){
-							PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader2 })
-							PLyo2 = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader3 })
-							$trElem.find('td:eq(0)').css('padding-left','70px')
-							if (PLyo == undefined){
-								PLyo = _.find(rows, function(o) { return o.PNL == resg3.data[0].PLHeader1 })
-								if(PLyo != undefined)
-									$trElem.find('td:eq(0)').css('padding-left','40px')
-							}
-							$trElem.attr('idparent', PLyo.PLCode)
-							child = container.find(`tr[idparent=${PLyo.PLCode}]`).length
-							$columnElem = container.find(`.table-content tr.column${PLyo2.PLCode}`)
-							$columnElem.attr('idcontparent', PLyo.PLCode)
-							let PLCodeChange = rpt.changeParent($trElem, $columnElem, $columnElem.attr('idpl'))
-							if (PLCodeChange != "")
-								PLyo.PLCode = PLCodeChange
-							if (child > 1){
-								// $trElem.insertAfter(container.find(`tr[idparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-								// $columnElem.insertAfter(container.find(`tr[idcontparent=${PLyo.PLCode}]:eq(${(child-1)})`))
-								$trElem.insertAfter(container.find(`tr[idheaderpl=${PLyo.PLCode}]`))
-								$columnElem.insertAfter(container.find(`tr[idpl=${PLyo.PLCode}]`))
-							}
-							else{
-								$trElem.insertAfter(container.find(`tr.header${PLyo.PLCode}`))
-								$columnElem.insertAfter(container.find(`tr.column${PLyo.PLCode}`))
-							}
-							if ($trElem.attr('idparent') == "PL33" || $trElem.attr('idparent') == "PL34" || $trElem.attr('idparent') == "PL35"){
-								let texthtml = $trElem.find('td:eq(0)').text()
-								$trElem.find('td:eq(0)').text(texthtml.substring(5,texthtml.length))
-							}
-						}
-					}
-				}
-
-				let idplyo2 = _.find(rpt.idarrayhide(), (a) => { return a == $trElem.attr("idparent") })
-				if (idplyo2 != undefined){
-					$trElem.removeAttr('idparent')
-					$trElem.addClass('bold')
-					$trElem.css('display','inline-grid')
-					container.find(`.table-content tr.column${$trElem.attr("idheaderpl")}`).removeAttr("idcontparent")
-					container.find(`.table-content tr.column${$trElem.attr("idheaderpl")}`).attr('statusval', 'show')
-					container.find(`.table-content tr.column${$trElem.attr("idheaderpl")}`).attr('statusvaltemp', 'show')
-					container.find(`.table-content tr.column${$trElem.attr("idheaderpl")}`).css('display','inline-grid')
-				}
-			}
-		})
-
-		let countChild = ''
-		container.find(".table-header tbody>tr").each(function( i ) {
-			$trElem = container.find(this)
-			parenttr = container.find(`tr[idparent=${$trElem.attr('idheaderpl')}]`).length
-			if (parenttr>0){
-				$trElem.addClass('dd')
-				$trElem.find(`td:eq(0)>i`)
-					.addClass('fa fa-chevron-right')
-					.css('margin-right', '5px')
-				container.find(`tr[idparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
-				container.find(`tr[idcontparent=${$trElem.attr('idheaderpl')}]`).css('display', 'none')
-				container.find(`tr[idparent=${$trElem.attr('idheaderpl')}]`).each((a,e) => {
-					if (container.find(e).attr('statusval') == 'show'){
-						container.find(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).attr('statusval', 'show')
-						container.find(`tr[idpl=${$trElem.attr('idheaderpl')}]`).attr('statusval', 'show')
-						if (container.find(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).attr('idparent') == undefined) {
-							container.find(`tr[idpl=${$trElem.attr('idheaderpl')}]`).css('display', '')
-							container.find(`tr[idheaderpl=${$trElem.attr('idheaderpl')}]`).css('display', '')
-						}
-					}
-				})
-			} else {
-				countChild = $trElem.attr('idparent')
-				if (countChild == '' || countChild == undefined)
-					$trElem.find(`td:eq(0)`).css('padding-left', '20px')
-			}
-		})
-
-		rpt.showZeroValue(false)
-		container.find(".table-header tr:not([idparent]):not([idcontparent])").addClass('bold')
-		rpt.refreshHeight()
-		rpt.addScrollBottom(container)
+		rpt.buildGridLevels(rows)
 	}
 })()
 
@@ -1940,11 +1864,13 @@ let v1 = viewModel.RDvsBranchView1
 	data.filter((d) => d._id == v1.mode())
 		.forEach((lvl1, i) => {
 			let thheader1 = toolkit.newEl('th')
-				.html(lvl1._id)
+				.html(lvl1._id.replace(/\ /g, '&nbsp;'))
 				.attr('colspan', lvl1.count)
 				.addClass('align-center')
 				.appendTo(trContents[0])
 				.css('border-top', 'none')
+
+			let thheader2p = $('<div />')
 
 			if (v1.level() == 1) {
 				countWidthThenPush(thheader1, lvl1, [lvl1._id])
@@ -1959,13 +1885,25 @@ let v1 = viewModel.RDvsBranchView1
 					.appendTo(trContents[0])
 					.css('border-top', 'none')
 
+				if (rpt.showPercentOfTotal()) {
+					totalColumnWidth += percentageWidth
+					thheader2p = toolkit.newEl('th')
+						.html('% of Total')
+						.css('font-weight', 'normal')
+						.css('font-style', 'italic')
+						.width(percentageWidth)
+						.addClass('align-center')
+						.appendTo(trContents[0])
+						.css('border-top', 'none')
+				}
+
 				return
 			}
-			thheader1.attr('colspan', lvl1.count * 2)
+			thheader1.attr('colspan', lvl1.count * (rpt.showPercentOfTotal() ? 3 : 2))
 
 			lvl1.subs.forEach((lvl2, j) => {
 				let thheader2 = toolkit.newEl('th')
-					.html(lvl2._id)
+					.html(lvl2._id.replace(/\ /g, '&nbsp;'))
 					.addClass('align-center')
 
 				if (lvl2._id != 'Total') {
@@ -1983,8 +1921,22 @@ let v1 = viewModel.RDvsBranchView1
 						.width(percentageWidth)
 						.addClass('align-center')
 
+					if (rpt.showPercentOfTotal()) {
+						totalColumnWidth += percentageWidth
+						thheader2p = toolkit.newEl('th')
+							.html('% of Total')
+							.css('font-weight', 'normal')
+							.css('font-style', 'italic')
+							.width(percentageWidth)
+							.addClass('align-center')
+					}
+
 					if (lvl2._id != 'Total') {
 						thheader1p.appendTo(trContents[1])
+						
+						if (rpt.showPercentOfTotal()) {
+							thheader2p.appendTo(trContents[1])
+						}
 					}
 
 					return
@@ -2034,7 +1986,7 @@ let v1 = viewModel.RDvsBranchView1
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
 				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-				percentage = toolkit.number(percentage)
+				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 
 				if (d._id == discountActivityPLCode) {
 					percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
@@ -2045,6 +1997,7 @@ let v1 = viewModel.RDvsBranchView1
 				} 
 
 				row[`${breakdown} %`] = percentage
+				row[`${breakdown} %t`] = percentageOfTotal
 			})
 
 			if (exceptions.indexOf(row.PLCode) > -1) {
@@ -2057,44 +2010,35 @@ let v1 = viewModel.RDvsBranchView1
 		console.log("rows", rows)
 
 		rows.forEach((d) => {
+			let row = d
 			d.PNLTotal = 0
 
-			for (let p in d) if (d.hasOwnProperty(p) && p.split('_')[0] == v1.mode() && p.toLowerCase().indexOf('total') == -1) {
+			for (let p in d) if (d.hasOwnProperty(p) 
+				&& p.split('_')[0] == v1.mode() 
+				&& p.toLowerCase().indexOf('total') == -1) {
 				d.PNLTotal += d[p]
+			}
+
+			if (rpt.showPercentOfTotal()) {
+				dataFlat.forEach((e) => {
+					let breakdown = e.key
+					let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
+					row[`${breakdown} %t`] = percentageOfTotal
+				})
 			}
 		})
 
-		let grossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode })
 		let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
 		let TotalGrossSales = _.find(rows, (r) => { return r.PLCode == grossSalesPLCode }).PNLTotal
 		rows.forEach((d, e) => {
 			let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
 			if (d.PLCode == discountActivityPLCode) {
 				TotalPercentage = (d.PNLTotal / TotalGrossSales) * 100
-
-				// // ====== hek MODERN TRADE numbah
-				// let grossSalesRedisMT = grossSales[`Regional Distributor_Modern Trade`]
-				// let grossSalesRedisGT = grossSales[`Regional Distributor_Modern Trade`]
-
-				// let discountBranchMTpercent = d[`Branch_Modern Trade %`]
-				// let discountRedisMTCalculated = toolkit.valueXPercent(grossSalesRedisMT, discountBranchMTpercent)
-				// let discountRedisTotal = d[`Regional Distributor_Total`]
-				// let discountRedisGTCalculated = discountRedisTotal - discountRedisMTCalculated
-				// let discountRedisGTPercentCalculated = toolkit.number(discountRedisGTCalculated / grossSalesRedisGT) * 100
-
-				// d[`Regional Distributor_Modern Trade`] = discountRedisMTCalculated
-				// d[`Regional Distributor_Modern Trade %`] = discountBranchMTpercent
-
-				// d[`Regional Distributor_General Trade`] = discountRedisGTCalculated
-				// d[`Regional Distributor_General Trade %`] = discountRedisGTPercentCalculated
-				
 			}
 
 			if (TotalPercentage < 0)
 				TotalPercentage = TotalPercentage * -1 
 			d.Percentage = toolkit.number(TotalPercentage)
-
-			// ===== ABS %
 
 			for (let p in d) if (d.hasOwnProperty(p)) {
 				if (p.indexOf('%') > -1 || p == "Percentage") {
@@ -2133,7 +2077,7 @@ let v1 = viewModel.RDvsBranchView1
 				.appendTo(trHeader)
 
 			toolkit.newEl('td')
-				.html(kendo.toString(d.Percentage, 'n2') + ' %')
+				.html(kendo.toString(d.Percentage, 'n2') + '&nbsp;%')
 				.addClass('align-right')
 				.appendTo(trHeader)
 
@@ -2153,7 +2097,8 @@ let v1 = viewModel.RDvsBranchView1
 
 				let key = e.key
 				let value = kendo.toString(d[key], 'n0')
-				let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
+				let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
+				let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + '&nbsp;%'
 
 				if ($.trim(value) == '') {
 					value = 0
@@ -2168,6 +2113,13 @@ let v1 = viewModel.RDvsBranchView1
 					.html(percentage)
 					.addClass('align-right')
 					.appendTo(trContent)
+
+				if (rpt.showPercentOfTotal()) {
+					toolkit.newEl('td')
+						.html(percentageOfTotal)
+						.addClass('align-right')
+						.appendTo(trContent)
+				}
 			})
 
 			let boolStatus = false
@@ -2189,7 +2141,7 @@ let v1 = viewModel.RDvsBranchView1
 
 		// ========================= CONFIGURE THE HIRARCHY
 		
-		v2.buildGridLevels(container, rows)
+		rpt.buildGridLevels(rows)
 	}
 })()
 
@@ -3212,11 +3164,13 @@ let subchan = viewModel.subChannel
 
 		data.forEach((lvl1, i) => {
 			let thheader1 = toolkit.newEl('th')
-				.html(lvl1._id)
+				.html(lvl1._id.replace(/\ /g, '&nbsp;'))
 				.attr('colspan', lvl1.count)
 				.addClass('align-center')
 				.css('border-top', 'none')
 				.appendTo(trContents[0])
+
+			let thheader2p = $('<div />')
 
 			if (subchan.level() == 1) {
 				countWidthThenPush(thheader1, lvl1, [lvl1._id])
@@ -3231,13 +3185,25 @@ let subchan = viewModel.subChannel
 					.css('border-top', 'none')
 					.appendTo(trContents[0])
 
+				if (rpt.showPercentOfTotal()) {
+					totalColumnWidth += percentageWidth
+					thheader2p = toolkit.newEl('th')
+						.html('% of Total')
+						.width(percentageWidth)
+						.addClass('align-center')
+						.css('font-weight', 'normal')
+						.css('font-style', 'italic')
+						.css('border-top', 'none')
+						.appendTo(trContents[0])
+				}
+
 				return
 			}
-			thheader1.attr('colspan', lvl1.count * 2)
+			thheader1.attr('colspan', lvl1.count * (rpt.showPercentOfTotal() ? 3 : 2))
 
 			lvl1.subs.forEach((lvl2, j) => {
 				let thheader2 = toolkit.newEl('th')
-					.html(lvl2._id)
+					.html(lvl2._id.replace(/\ /g, '&nbsp;'))
 					.addClass('align-center')
 					.appendTo(trContents[1])
 
@@ -3252,6 +3218,18 @@ let subchan = viewModel.subChannel
 						.css('font-weight', 'normal')
 						.css('font-style', 'italic')
 						.appendTo(trContents[1])
+
+					if (rpt.showPercentOfTotal()) {
+						totalColumnWidth += percentageWidth
+						thheader2p = toolkit.newEl('th')
+							.html('% of Total')
+							.width(percentageWidth)
+							.addClass('align-center')
+							.css('font-weight', 'normal')
+							.css('font-style', 'italic')
+							.css('border-top', 'none')
+							.appendTo(trContents[1])
+					}
 
 					return
 				}
@@ -3300,7 +3278,7 @@ let subchan = viewModel.subChannel
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
 				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
-				percentage = toolkit.number(percentage)
+				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 
 				if (d._id == discountActivityPLCode) {
 					percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
@@ -3312,6 +3290,7 @@ let subchan = viewModel.subChannel
 					percentage = percentage * -1
 
 				row[`${breakdown} %`] = percentage
+				row[`${breakdown} %t`] = percentageOfTotal
 			})
 
 			if (exceptions.indexOf(row.PLCode) > -1) {
@@ -3368,7 +3347,7 @@ let subchan = viewModel.subChannel
 				.appendTo(trHeader)
 
 			toolkit.newEl('td')
-				.html(kendo.toString(d.Percentage, 'n2') + ' %')
+				.html(kendo.toString(d.Percentage, 'n2') + '&nbsp;%')
 				.addClass('align-right')
 				.appendTo(trHeader)
 
@@ -3382,7 +3361,8 @@ let subchan = viewModel.subChannel
 			dataFlat.forEach((e, f) => {
 				let key = e.key
 				let value = kendo.toString(d[key], 'n0')
-				let percentage = kendo.toString(d[`${key} %`], 'n2') + ' %'
+				let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
+				let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + '&nbsp;%'
 
 				if ($.trim(value) == '') {
 					value = 0
@@ -3397,6 +3377,13 @@ let subchan = viewModel.subChannel
 					.html(percentage)
 					.addClass('align-right')
 					.appendTo(trContent)
+
+				if (rpt.showPercentOfTotal()) {
+					toolkit.newEl('td')
+						.html(percentageOfTotal)
+						.addClass('align-right')
+						.appendTo(trContent)
+				}
 
 				$([cell, cellPercentage]).on('click', () => {
 					subchan.renderDetail(d.PLCode, e.breakdowns)
