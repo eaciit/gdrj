@@ -199,6 +199,7 @@ rpt.pnlTableHeaderWidth = ko.observable('560px')
 rpt.optionFiscalYears = ko.observableArray(['2014-2015', '2015-2016'])
 rpt.analysisIdeas = ko.observableArray([])
 rpt.data = ko.observableArray([])
+rpt.percentOfTotal = ko.observable(true)
 rpt.optionDimensions = ko.observableArray([
 	// { field: "", name: 'None', title: '' },
 	{ field: "customer.branchname", name: 'Branch/RD', title: 'customer_branchname' },
