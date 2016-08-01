@@ -1,0 +1,28 @@
+[{
+    "tablegroupsetting": {
+    	"all": [
+    		"pl_",
+    		"outlet_number"
+    	],
+    	"allpl": [
+    		"pl_"
+    	],
+    	"alloutlet": [
+    		"outlet_number"
+    	]
+    },
+    "serverlist": {
+    	"ba": {
+    		"host": "go.eaciit.com:27123",
+    		"db": "ecgodrej"
+    	},
+    	"devel": {
+    		"host": "52.220.25.190:27123",
+    		"db": "ecgodrej"
+    	},
+    	"prod": {
+    		"host": "go.eaciit.com:27123",
+    		"db": "ecgodrej_prod"
+    	}
+    }
+}]

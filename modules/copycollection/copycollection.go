@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/eaciit/dbox"
+	_ "github.com/eaciit/dbox/dbc/jsons"
 	_ "github.com/eaciit/dbox/dbc/mongo"
 	"github.com/eaciit/toolkit"
 	"os"
@@ -13,13 +14,14 @@ import (
 )
 
 var (
-	conn           dbox.IConnection
-	tablegroup     string
-	tablename      string
-	source         string
-	dest           string
-	tablegrouplist = []string{"allpl", "alloutlet"}
-	sourcedest     = []string{"devel", "prod", "ba"}
+	conn              dbox.IConnection
+	wd, _             = os.Getwd()
+	tablegroup        string
+	tablename         string
+	source            string
+	dest              string
+	tablegroupsetting = toolkit.M{}
+	serverlist        = toolkit.M{}
 )
 
 func setinitialconnection(hostsource, dbsource string) {
@@ -45,12 +47,44 @@ func setinitialconnection(hostsource, dbsource string) {
 	}
 }
 
+func getConfig() toolkit.M {
+	configconn, err := dbox.NewConnection("jsons",
+		&dbox.ConnectionInfo{filepath.Join(wd, "config"), "", "", "", nil})
+
+	if err != nil {
+		return nil
+	}
+
+	err = configconn.Connect()
+	if err != nil {
+		return nil
+	}
+
+	c, err := configconn.NewQuery().Select().
+		From("configurations").Cursor(nil)
+	if err != nil {
+		return nil
+	}
+
+	data := toolkit.M{}
+	err = c.Fetch(&data, 1, false)
+	if err != nil {
+		return nil
+	}
+
+	return data
+}
+
 func main() {
 	flag.StringVar(&tablegroup, "tablegroup", "", "group of collection")
 	flag.StringVar(&tablename, "tablename", "", "collection name")
 	flag.StringVar(&source, "from", "", "source location of dumped collection")
 	flag.StringVar(&dest, "to", "", "destination location of restored collection")
 	flag.Parse()
+
+	config := getConfig()
+	tablegroupsetting, _ = toolkit.ToM(config["tablegroupsetting"])
+	serverlist, _ = toolkit.ToM(config["serverlist"])
 
 	copycollection()
 }
@@ -66,13 +100,13 @@ func copycollection() {
 		toolkit.Println("\nPlease fill parameter for", errmsg)
 		return
 	} else {
-		if !toolkit.HasMember(sourcedest, strings.ToLower(source)) {
+		if !serverlist.Has(strings.ToLower(source)) {
 			toolkit.Println("\nsource location is not valid, choose the valid parameter below :")
 			toolkit.Println("ba\tto dump collection from go.eaciit.com:27123/ecgodrej")
 			toolkit.Println("devel\tto dump collection from 52.220.25.190:27123/ecgodrej")
 			toolkit.Println("prod\tto dump collection from go.eaciit.com:27123/ecgodrej_prod")
 			return
-		} else if !toolkit.HasMember(sourcedest, strings.ToLower(dest)) {
+		} else if !serverlist.Has(strings.ToLower(dest)) {
 			toolkit.Println("\ndestination location is not valid")
 			toolkit.Println("ba\tto restore collection into go.eaciit.com:27123/ecgodrej")
 			toolkit.Println("devel\tto restore collection into 52.220.25.190:27123/ecgodrej")
@@ -85,7 +119,7 @@ func copycollection() {
 		toolkit.Println("\nPlease fill parameter for tablegroup or tablename")
 		return
 	} else if tablegroup != "" {
-		if !toolkit.HasMember(tablegrouplist, strings.ToLower(tablegroup)) {
+		if !tablegroupsetting.Has(strings.ToLower(tablegroup)) {
 			toolkit.Println("\ntablegroup is not valid, choose the valid parameter below :")
 			toolkit.Println("allpl\t\tto dump-restore all pl collection")
 			toolkit.Println("alloutlet\tto dump-restore all outlet collection")
@@ -94,34 +128,13 @@ func copycollection() {
 		}
 	}
 
-	hostsource := ""
-	dbsource := ""
-	hostdest := ""
-	dbdest := ""
+	sourceserver, _ := toolkit.ToM(serverlist[source])
+	destserver, _ := toolkit.ToM(serverlist[dest])
 
-	switch source {
-	case "ba":
-		hostsource = "go.eaciit.com:27123"
-		dbsource = "ecgodrej"
-	case "devel":
-		hostsource = "52.220.25.190:27123"
-		dbsource = "ecgodrej"
-	case "prod":
-		hostsource = "go.eaciit.com:27123"
-		dbsource = "ecgodrej_prod"
-	}
-
-	switch dest {
-	case "ba":
-		hostdest = "go.eaciit.com:27123"
-		dbdest = "ecgodrej"
-	case "devel":
-		hostdest = "52.220.25.190:27123"
-		dbdest = "ecgodrej"
-	case "prod":
-		hostdest = "go.eaciit.com:27123"
-		dbdest = "ecgodrej_prod"
-	}
+	hostsource := sourceserver.GetString("host")
+	dbsource := sourceserver.GetString("db")
+	hostdest := destserver.GetString("host")
+	dbdest := destserver.GetString("db")
 
 	setinitialconnection(hostsource, dbsource)
 	defer conn.Close()
@@ -144,22 +157,10 @@ func copycollection() {
 	}
 
 	if tablegroup != "" {
-		switch tablegroup {
-		case "allpl":
-			for _, col := range tablelist {
-				if strings.HasPrefix(col, "pl_") {
-					listofcol = append(listofcol, col)
-				}
-			}
-		case "alloutlet":
-			for _, col := range tablelist {
-				if strings.HasPrefix(col, "outlet_number_") {
-					listofcol = append(listofcol, col)
-				}
-			}
-		case "all":
-			for _, col := range tablelist {
-				if strings.HasPrefix(col, "pl_") || strings.HasPrefix(col, "outlet_number_") {
+		prefixlist := tablegroupsetting[tablegroup].([]interface{})
+		for _, col := range tablelist {
+			for _, prefix := range prefixlist {
+				if strings.HasPrefix(col, toolkit.ToString(prefix)) {
 					listofcol = append(listofcol, col)
 				}
 			}
@@ -179,8 +180,7 @@ func copycollection() {
 	toolkit.Printfn("\nPrepare to dump & restore (%d) collections", numcol)
 	toolkit.Printfn("from %s/%s to %s/%s\n",
 		hostsource, dbsource, hostdest, dbdest)
-	var errdump error
-	var errrestore error
+	var errdump, errrestore error
 
 	for i, col := range listofcol {
 		dump := toolkit.Sprintf("mongodump -h %s -d %s -c %s --out %s", hostsource, dbsource, col, location)
