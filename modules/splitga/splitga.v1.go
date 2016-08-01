@@ -141,10 +141,15 @@ func prepmastercalc() {
 		}
 
 		dskey := bg.Get("key", toolkit.M{}).(toolkit.M)
-		fiscal := toolkit.Sprintf("%s-%s", dskey.GetInt("year"), dskey.GetInt("year")+1)
+		fiscal := toolkit.Sprintf("%d-%d", dskey.GetInt("year"), dskey.GetInt("year")+1)
+		costgroup := dskey.GetString("costgroup")
+		if costgroup == "OTHER" {
+			costgroup = "Other"
+		}
+
 		key := toolkit.Sprintf("%s_%s_%s", fiscal,
 			dskey.GetString("branchid"),
-			dskey.GetString("costgroup"))
+			costgroup)
 
 		sgasource[key] += bg.GetFloat64("amount")
 	}
@@ -159,16 +164,14 @@ func prepmastercalc() {
 		}
 
 		dskey := bg.Get("key", toolkit.M{}).(toolkit.M)
-		key := toolkit.Sprintf("%s_%s", dskey.GetInt("date_fiscal"),
+		key := toolkit.Sprintf("%s_%s", dskey.GetString("date_fiscal"),
 			dskey.GetString("customer_branchid"))
 
 		for k, v := range bg {
 			ar01k := strings.Split(k, "_")
 			if ar01k[0] == "PL33" || ar01k[0] == "PL34" || ar01k[0] == "PL35" {
 				costgroup := ar01k[1]
-				if costgroup == "Other" {
-					costgroup = "OTHER"
-				}
+
 				skey := toolkit.Sprintf("%s_%s", key, costgroup)
 				sgacalc[skey] += toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
 			}
