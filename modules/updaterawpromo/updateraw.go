@@ -129,10 +129,10 @@ func main() {
 
 	setinitialconnection()
 
-	// prepdatabranch()
+	prepdatabranch()
 	// prepdatacostcenter()
 	// prepdataaccountgroup()
-	prepdatabranchgroup()
+	// prepdatabranchgroup()
 
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
@@ -237,7 +237,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// }
 
 		branchid := trx.GetString("branchid")
-		branchgroup := masterbranchgroup.Get(branchid, toolkit.M{}).(toolkit.M)
+		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
 		trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
 
 		// accdesc := trx.GetString("accountdescription")
@@ -261,10 +261,6 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		if trx.GetString("branchgroup") == "" {
 			trx.Set("branchgroup", "OTHER")
-		}
-
-		if trx.GetString("costgroup") == "Human Resource" {
-			trx.Set("costgroup", "HR & Common")
 		}
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
