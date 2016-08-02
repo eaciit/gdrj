@@ -54,6 +54,8 @@ func main() {
 
 	// stablename := toolkit.Sprintf("salespls-summary-4cogs")
 
+	toolkit.Printfn("Getting data from %s", tablename)
+
 	setinitialconnection()
 	defer gdrj.CloseDb()
 
@@ -61,7 +63,7 @@ func main() {
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
 	speriode := eperiode.AddDate(-1, 0, 0)
-	speriode = eperiode.AddDate(0, 0, -1)
+	speriode = eperiode.AddDate(0, -1, 0)
 
 	seeds := make([]time.Time, 0, 0)
 	seeds = append(seeds, speriode)
