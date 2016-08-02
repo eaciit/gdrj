@@ -33,7 +33,10 @@
 	<!-- Nav tabs -->
 	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: (!sga.contentIsLoading() && !au.contentIsLoading())">
 		<li role="presentation" class="active">
-			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchName', 'G&A by Branch');">Branch</a>
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchName', 'G&A by Branch Level 1');">Branch Level 1</a>
+		</li>
+		<li role="presentation">
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchName2', 'G&A by Branch Level 2');">Branch Level 2</a>
 		</li>
 		<!-- <li role="presentation">
 			<a href="#tab1" role="tab" data-toggle="tab" onclick="toolkit.showError('Not ready'); $('.pivot-pnl-branch').empty();">Branch Group</a>
