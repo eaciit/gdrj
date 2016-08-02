@@ -440,11 +440,14 @@ rd.setup = function () {
 					_id: 'netprice',
 					plheader: 'Net Price',
 					callback: function callback(v, k) {
-						var amount = Math.abs(toolkit.sum(v, function (e) {
-							return e.netamount;
+						var netAmount = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+						var quantity = Math.abs(toolkit.sum(v, function (e) {
+							return e.salesqty;
 						}));
 
-						return amount / rd.divider();
+						return toolkit.number(netAmount / quantity);
 					}
 				}, {
 					_id: 'salesqty',
@@ -459,16 +462,23 @@ rd.setup = function () {
 					_id: 'prcnt',
 					plheader: vm.currentTitle(),
 					callback: function callback(v, k) {
-						var amount = Math.abs(toolkit.sum(v, function (e) {
-							return e.netamount;
+						var netAmount = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
 						}));
 						var quantity = Math.abs(toolkit.sum(v, function (e) {
 							return e.salesqty;
 						}));
+						var netPrice = toolkit.number(netAmount / quantity);
 
-						return toolkit.number(amount / quantity);
+						var qtyDivided = quantity / rd.divider();
+
+						return toolkit.number(netPrice / qtyDivided);
 					}
 				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis3', 3);
+				};
 			}break;
 
 		case 'btl-by-qty':
