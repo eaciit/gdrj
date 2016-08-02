@@ -952,6 +952,65 @@ rd.setup = function () {
 				};
 			}break;
 
+		case 'net-price-after-btl-qty':
+			{
+				vm.currentTitle('Net Price After BTL / Qty');
+				rd.divideBy('v1000000');
+				rd.series = ko.observableArray([{
+					_id: 'netprice',
+					plheader: 'Net Price',
+					callback: function callback(v, k) {
+						var netAmount = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+						var quantity = Math.abs(toolkit.sum(v, function (e) {
+							return e.salesqty;
+						}));
+
+						return toolkit.number(netAmount / quantity);
+					}
+				}, {
+					_id: 'btlqty',
+					plheader: 'BTL / Qty',
+					callback: function callback(v, k) {
+						var btl = Math.abs(toolkit.sum(v, function (e) {
+							return toolkit.sum(['PL29', 'PL30', 'PL31', 'PL32'], function (f) {
+								return toolkit.number(e[f]);
+							});
+						}));
+						var quantity = Math.abs(toolkit.sum(v, function (e) {
+							return e.salesqty;
+						}));
+						return toolkit.number(btl / quantity);
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var netAmount = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+						var quantity = Math.abs(toolkit.sum(v, function (e) {
+							return e.salesqty;
+						}));
+
+						var btl = Math.abs(toolkit.sum(v, function (e) {
+							return toolkit.sum(['PL29', 'PL30', 'PL31', 'PL32'], function (f) {
+								return toolkit.number(e[f]);
+							});
+						}));
+
+						return toolkit.number(netAmount / quantity / (btl / quantity));
+					}
+				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 2);
+					rd.setPercentageOn(config, 'axis3', 3);
+				};
+			}break;
+
 		default:
 			{
 				location.href = viewModel.appName + "page/report";
