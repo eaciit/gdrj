@@ -97,7 +97,7 @@ let sga = viewModel.sga
 
 	sga.optionFilterCostGroups = ko.observableArray([])
 	sga.putNetSalesPercentage = ko.observable(true)
-	sga.title = ko.observable('G&A by Branch')
+	sga.title = ko.observable('G&A by Branch Level 1')
 
 	rpt.fillFilterCostGroup = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getdatafunction", {}, (res) => {

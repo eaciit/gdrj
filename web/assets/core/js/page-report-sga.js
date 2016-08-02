@@ -111,7 +111,7 @@ var sga = viewModel.sga;(function () {
 
 	sga.optionFilterCostGroups = ko.observableArray([]);
 	sga.putNetSalesPercentage = ko.observable(true);
-	sga.title = ko.observable('G&A by Branch');
+	sga.title = ko.observable('G&A by Branch Level 1');
 
 	rpt.fillFilterCostGroup = function () {
 		toolkit.ajaxPost(viewModel.appName + "report/getdatafunction", {}, function (res) {
