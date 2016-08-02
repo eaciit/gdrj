@@ -199,14 +199,19 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 				}
 
 				let sample = d.subs[0]
+				
 				let percentage = {}
 				percentage._id = '% of N Sales'
 				percentage.count = 1
 				percentage.excludeFromTotal = true
-				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
+				
+				let percentageOfTotal = {}
+				percentageOfTotal._id = '% of Total'
+				percentageOfTotal.count = 1
+				percentageOfTotal.excludeFromTotal = true
 
 				let total = {}
-				total._id = 'Total&nbsp;'
+				total._id = `Total&nbsp;${d._id}`
 				total.count = 1
 				total.excludeFromTotal = true
 
@@ -220,13 +225,21 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 						value = toolkit.number(vTarget / vGrossSales) * 100
 					}
 
-					percentage[p] = `${kendo.toString(value, 'n2')} %`
+					let pot = toolkit.number(vTarget / toolkit.sum(parsed, (h) => h[p])) * 100
+
+					percentage[p] = `${kendo.toString(value, 'n2')}&nbsp;%`
+					percentageOfTotal[p] = `${kendo.toString(pot, 'n2')}&nbsp;%`
 					total[p] = vTarget
 				}
+
+				d.subs = [percentageOfTotal].concat(d.subs)
+				d.count++
+				g.count++
 
 				d.subs = [percentage].concat(d.subs)
 				d.count++
 				g.count++
+
 				d.subs = [total].concat(d.subs)
 				d.count++
 				g.count++
@@ -272,11 +285,16 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 				}
 
 				let sample = d.subs[0]
+				
 				let percentage = {}
 				percentage._id = '% of N Sales'
 				percentage.count = 1
 				percentage.excludeFromTotal = true
-				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
+				
+				let percentageOfTotal = {}
+				percentageOfTotal._id = '% of Total'
+				percentageOfTotal.count = 1
+				percentageOfTotal.excludeFromTotal = true
 
 				let total = {}
 				total._id = 'Total&nbsp;'
@@ -293,29 +311,59 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 						value = toolkit.number(vTarget / vGrossSales) * 100
 					}
 
-					percentage[p] = `${kendo.toString(value, 'n2')} %`
+					let pot = toolkit.number(vTarget / toolkit.sum(parsed, (q) => q[p])) * 100
+
+					percentage[p] = `${kendo.toString(value, 'n2')}&nbsp;%`
+					percentageOfTotal[p] = `${kendo.toString(pot, 'n2')}&nbsp;%`
 					total[p] = vTarget
 				}
 
 				if (d._id == 'Regional Distributor') {
-					toolkit.try(() => { d.subs[0]._id = 'Total&nbsp;' })
-					d.subs.push(percentage)
+					toolkit.try(() => { d.subs[0]._id = 'Total&nbsp;RD' })
+
+					let arrTotal = d.subs.splice(0, 1)
+					let arrContent = d.subs.splice(1)
+
+					arrTotal.push(percentage)
 					d.count++
 					g.count++
+
+					arrTotal.push(percentageOfTotal)
+					d.count++
+					g.count++
+
+					d.subs = arrTotal.concat(arrContent)
 				} else {
 					if (d.subs.length > 0) {
 						if (d.subs[0]._id == 'Non RD') {
-							toolkit.try(() => { d.subs[0]._id = 'Total&nbsp;' })
-							d.subs.push(percentage)
+							let arrTotal = d.subs.splice(0, 1)
+							let arrContent = d.subs.splice(1)
+
+							arrTotal.push(percentage)
 							d.count++
 							g.count++
+
+							arrTotal.push(percentageOfTotal)
+							d.count++
+							g.count++
+
+							d.subs = arrTotal.concat(arrContent)
+
+							toolkit.try(() => { d.subs[0]._id = 'Total&nbsp;Non&nbsp;RD' })
 						} else {
+							d.subs = [percentageOfTotal].concat(d.subs)
+							d.count++
+							g.count++
+
 							d.subs = [percentage].concat(d.subs)
 							d.count++
 							g.count++
+
 							d.subs = [total].concat(d.subs)
 							d.count++
 							g.count++
+
+							toolkit.try(() => { d.subs[0]._id = 'Total&nbsp;Non&nbsp;RD' })
 						}
 					}
 				}
@@ -349,11 +397,16 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 
 		parsed.forEach((d) => {
 			let total = d.subs[0]
+			
 			let percentage = {}
 			percentage._id = '% of N Sales'
 			percentage.count = 1
 			percentage.excludeFromTotal = true
-			// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
+			
+			let percentageOfTotal = {}
+			percentageOfTotal._id = '% of Total'
+			percentageOfTotal.count = 1
+			percentageOfTotal.excludeFromTotal = true
 
 			for (let p in total) if (total.hasOwnProperty(p) && p.indexOf('PL') > -1) {
 				let value = toolkit.number(total[p] / total[netSalesPLCode]) * 100
@@ -361,11 +414,17 @@ ba.buildStructure = (breakdownRD, expand, data) => {
 					value = toolkit.number(total[p] / total[grossSalesPLCode]) * 100
 				}
 
-				percentage[p] = `${kendo.toString(value, 'n2')} %`
+				let pot = toolkit.number(total[p] / toolkit.sum(parsed, (k) => k[p])) * 100
+
+				percentage[p] = `${kendo.toString(value, 'n2')}&nbsp;%`
+				percentageOfTotal[p] = `${kendo.toString(pot, 'n2')}&nbsp;%`
 			}
 
 			d.count++
 			d.subs.splice(1, 0, percentage)
+
+			d.count++
+			d.subs.splice(2, 0, percentageOfTotal)
 		})
 
 		return parsed
@@ -597,7 +656,7 @@ ba.render = () => {
 			}
 		}
 
-		if (each._id == '% of N Sales') {
+		if (each._id.indexOf('% of') > -1) {
 			currentColumnWidth -= 20
 			thheader.css('font-weight', 'normal')
 					.css('font-style', 'italic')
