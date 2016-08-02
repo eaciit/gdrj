@@ -1269,7 +1269,7 @@ func main() {
 	defer gdrj.CloseDb()
 	prepmastercalc()
 
-	prepsalesplssummaryrdwrongsubch()
+	// prepsalesplssummaryrdwrongsubch()
 	// prepsalesplssummarymtwrongsubch()
 	// prepsalesplssummarygtwrongsubch()
 
@@ -1296,7 +1296,7 @@ func main() {
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogs").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -1917,7 +1917,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary").
+		From("salespls-summary-4cogsclean").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1933,7 +1933,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
-		// CalcSalesVDist20142015(trx)
+		CalcSalesVDist20142015(trx)
 		// CalcSgaRev(trx)
 
 		// CleanUpdateCustomerGroupName(trx)
@@ -1951,7 +1951,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
 
-		// CalcSum(trx)
+		CalcSum(trx)
 
 		dtkm, _ := toolkit.ToM(trx.Get("key"))
 		if dtkm.GetString("customer_reportsubchannel") == "R3" {
