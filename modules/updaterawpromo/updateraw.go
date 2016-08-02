@@ -125,11 +125,12 @@ func getstep(count int) int {
 func main() {
 	t0 = time.Now()
 	flag.StringVar(&gtable, "table", "", "tablename")
+	// flag.IntVar(&year, "year", 2014, "2014 year")
 	flag.Parse()
 
 	setinitialconnection()
 
-	prepdatabranch()
+	// prepdatabranch()
 	// prepdatacostcenter()
 	// prepdataaccountgroup()
 	// prepdatabranchgroup()
@@ -138,7 +139,16 @@ func main() {
 	defer workerconn.Close()
 
 	toolkit.Println("Start data query...")
-	csr, _ := workerconn.NewQuery().Select().From(gtable).Cursor(nil)
+	arrfilter := []*dbox.Filter{}
+	for i := 4; i < 10; i++ {
+		toolkit.Printfn("%d - 2014", i)
+		f := dbox.And(dbox.Eq("year", 2014), dbox.Eq("month", i))
+		arrfilter = append(arrfilter, f)
+	}
+
+	f := dbox.Or(arrfilter...)
+
+	csr, _ := workerconn.NewQuery().Select().Where(f).From(gtable).Cursor(nil)
 	defer csr.Close()
 
 	scount := csr.Count()
@@ -196,7 +206,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 	trx := toolkit.M{}
 	for trx = range jobs {
-		key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		// key := trx.Get("key", toolkit.M{}).(toolkit.M)
 		// trx.Set("key", key)
 		// trx.Set("_id", toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|%s", key.GetInt("year"),
 		// 	key.GetString("branchid"),
@@ -221,7 +231,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// trx.Set("accountgroup", "OTHER")
 		// trx.Set("branchgroup", "OTHER")
 
-		key.Set("customer_branchgroup", "OTHER")
+		// key.Set("customer_branchgroup", "OTHER")
 
 		// trx.Set("min_amountinidr", -trx.GetFloat64("amountinidr"))
 
@@ -239,10 +249,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// }
 
 		// branchid := trx.GetString("branchid")
-		branchid := key.GetString("customer_branchid")
+		// branchid := key.GetString("customer_branchid")
 
-		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
-		key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
+		// branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		// key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
 
 		// accdesc := trx.GetString("accountdescription")
 		// trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
@@ -267,11 +277,19 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// 	trx.Set("branchgroup", "OTHER")
 		// }
 
-		if key.GetString("customer_branchgroup") == "" {
-			key.Set("customer_branchgroup", "OTHER")
-		}
+		// if key.GetString("customer_branchgroup") == "" {
+		// 	key.Set("customer_branchgroup", "OTHER")
+		// }
 
-		trx.Set("key", key)
+		// trx.Set("key", key)
+
+		// For cogs consolidate
+		arrstr := []string{"rm_perunit", "lc_perunit", "pf_perunit", "other_perunit", "fixed_perunit", "depre_perunit", "cogs_perunit"}
+		for _, v := range arrstr {
+			xval := trx.GetFloat64(v) * 6
+			trx.Set(v, xval)
+		}
+		// ====================
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
