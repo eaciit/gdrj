@@ -160,9 +160,9 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 				break
 			}
 
-			key := toolkit.Sprintf("%s|%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", spl.Date.Fiscal, spl.Date.QuarterTxt, spl.Date.Month,
+			key := toolkit.Sprintf("%s|%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", spl.Date.Fiscal, spl.Date.QuarterTxt, spl.Date.Month,
 				spl.Date.Year, spl.Customer.BranchID, spl.Customer.BranchName, spl.Customer.KeyAccount, spl.Customer.ChannelID, spl.Customer.ChannelName,
-				spl.Customer.CustomerGroup, spl.Customer.CustomerGroupName, spl.Product.Brand, spl.Product.ID, spl.TrxSrc, spl.Source, spl.Ref)
+				spl.Customer.CustomerGroup, spl.Customer.CustomerGroupName, spl.Product.Brand, spl.Product.ID, spl.Product.Name, spl.TrxSrc, spl.Source, spl.Ref)
 
 			ktkm := toolkit.M{}
 			ktkm.Set("date_fiscal", spl.Date.Fiscal)
@@ -186,6 +186,7 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 
 			ktkm.Set("product_brand", spl.Product.Brand)
 			ktkm.Set("product_skuid", spl.Product.ID)
+			ktkm.Set("product_name", spl.Product.Name)
 
 			ktkm.Set("trxsrc", spl.TrxSrc)
 			ktkm.Set("source", spl.Source)
