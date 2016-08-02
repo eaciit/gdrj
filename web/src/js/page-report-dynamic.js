@@ -403,9 +403,10 @@ rd.setup = () => {
 				_id: 'netprice', 
 				plheader: 'Net Price',
 				callback: (v, k) => {
-					let amount = Math.abs(toolkit.sum(v, (e) => e.netamount))
+					let netAmount = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+					let quantity = Math.abs(toolkit.sum(v, (e) => e.salesqty))
 
-					return amount / rd.divider()
+					return toolkit.number(netAmount / quantity)
 				}
 			}, { 
 				_id: 'salesqty', 
@@ -418,12 +419,19 @@ rd.setup = () => {
 				_id: 'prcnt', 
 				plheader: vm.currentTitle(),
 				callback: (v, k) => {
-					let amount = Math.abs(toolkit.sum(v, (e) => e.netamount))
+					let netAmount = Math.abs(toolkit.sum(v, (e) => e.PL8A))
 					let quantity = Math.abs(toolkit.sum(v, (e) => e.salesqty))
+					let netPrice = toolkit.number(netAmount / quantity)
 
-					return toolkit.number(amount / quantity)
+					let qtyDivided = quantity / rd.divider()
+
+					return toolkit.number(netPrice / qtyDivided)
 				}
 			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis3', 3)
+			}
 		} break;
 
 
