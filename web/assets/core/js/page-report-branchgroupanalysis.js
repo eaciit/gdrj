@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 viewModel.breakdown = new Object();
 var ba = viewModel.breakdown;
 
@@ -188,252 +190,341 @@ ba.buildStructure = function (breakdownRD, expand, data) {
 	};
 
 	if (expand && ba.subBreakdownValue().length > 0) {
-		var _parsed = groupThenMap(data, function (d) {
-			return d._id._id_customer_branchgroup;
-		}).map(function (d) {
-			var subs = groupThenMap(d.subs, function (e) {
-				return e._id._id_customer_channelname;
-			}).map(function (e) {
-				var subs = groupThenMap(e.subs, function (f) {
-					return f._id._id_customer_reportsubchannel;
-				}).map(function (f) {
-					f.count = 1;
-					return f;
-				});
-
-				e.subs = _.orderBy(subs, function (f) {
-					return f.PL8A;
-				}, 'desc');
-				e.count = e.subs.length;
-				return e;
-			});
-
-			d.subs = _.orderBy(subs, function (e) {
-				return e.PL8A;
-			}, 'desc');
-			d.count = toolkit.sum(d.subs, function (e) {
-				return e.count;
-			});
-			return d;
-		});
-
-		ba.level(3);
-		showAsBreakdown(_parsed);
-		_parsed = _.orderBy(_parsed, function (d) {
-			return d.total;
-		}, 'desc');
-
-		_parsed.forEach(function (g) {
-			g.subs.forEach(function (d, i) {
-				if (i == 0) {
-					return;
-				}
-
-				var sample = d.subs[0];
-				var percentage = {};
-				percentage._id = '% of N Sales';
-				percentage.count = 1;
-				percentage.excludeFromTotal = true;
-				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
-
-				var total = {};
-				total._id = 'Total&nbsp;';
-				total.count = 1;
-				total.excludeFromTotal = true;
-
-				var _loop3 = function _loop3(p) {
-					if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
-						var vTarget = toolkit.sum(d.subs, function (h) {
-							return h[p];
-						});
-						var vNetSales = toolkit.sum(d.subs, function (h) {
-							return h[netSalesPLCode];
-						});
-						var vGrossSales = toolkit.sum(d.subs, function (h) {
-							return h[grossSalesPLCode];
-						});
-
-						var value = toolkit.number(vTarget / vNetSales) * 100;
-						if (p == discountActivityPLCode) {
-							value = toolkit.number(vTarget / vGrossSales) * 100;
-						}
-
-						percentage[p] = kendo.toString(value, 'n2') + ' %';
-						total[p] = vTarget;
-					}
-				};
-
-				for (var p in sample) {
-					_loop3(p);
-				}d.subs = [percentage].concat(d.subs);
-				d.count++;
-				g.count++;
-				d.subs = [total].concat(d.subs);
-				d.count++;
-				g.count++;
-			});
-		});
-
-		return _parsed;
-	} else if (expand && ba.subBreakdownValue().length == 0) {
-		var _parsed2 = groupThenMap(data, function (d) {
-			return d._id._id_customer_branchgroup;
-		}).map(function (d) {
-			var subs = groupThenMap(d.subs, function (e) {
-				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
-			}).map(function (e) {
-				var subs = groupThenMap(e.subs, function (f) {
-					return f._id._id_customer_channelname;
-				}).map(function (f) {
-					f.count = 1;
-					return f;
-				});
-
-				e.subs = _.orderBy(subs, function (f) {
-					return f.PL8A;
-				}, 'desc');
-				e.count = e.subs.length;
-				return e;
-			});
-
-			d.subs = _.orderBy(subs, function (e) {
-				return e.PL8A;
-			}, 'desc');
-			d.subs = fixEmptySubs(d); // INJECT THE EMPTY RD / NON RD
-			d.count = toolkit.sum(d.subs, function (e) {
-				return e.count;
-			});
-			return d;
-		});
-
-		ba.level(3);
-		showAsBreakdown(_parsed2);
-		_parsed2 = _.orderBy(_parsed2, function (d) {
-			return d.total;
-		}, 'desc');
-
-		_parsed2.forEach(function (g) {
-			g.subs.forEach(function (d, i) {
-				if (i == 0) {
-					return;
-				}
-
-				var sample = d.subs[0];
-				var percentage = {};
-				percentage._id = '% of N Sales';
-				percentage.count = 1;
-				percentage.excludeFromTotal = true;
-				// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
-
-				var total = {};
-				total._id = 'Total&nbsp;';
-				total.count = 1;
-				total.excludeFromTotal = true;
-
-				var _loop4 = function _loop4(p) {
-					if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
-						var vTarget = toolkit.sum(d.subs, function (h) {
-							return h[p];
-						});
-						var vNetSales = toolkit.sum(d.subs, function (h) {
-							return h[netSalesPLCode];
-						});
-						var vGrossSales = toolkit.sum(d.subs, function (h) {
-							return h[grossSalesPLCode];
-						});
-
-						var value = toolkit.number(vTarget / vNetSales) * 100;
-						if (p == discountActivityPLCode) {
-							value = toolkit.number(vTarget / vGrossSales) * 100;
-						}
-
-						percentage[p] = kendo.toString(value, 'n2') + ' %';
-						total[p] = vTarget;
-					}
-				};
-
-				for (var p in sample) {
-					_loop4(p);
-				}if (d._id == 'Regional Distributor') {
-					toolkit.try(function () {
-						d.subs[0]._id = 'Total&nbsp;';
+		var _ret3 = function () {
+			var parsed = groupThenMap(data, function (d) {
+				return d._id._id_customer_branchgroup;
+			}).map(function (d) {
+				var subs = groupThenMap(d.subs, function (e) {
+					return e._id._id_customer_channelname;
+				}).map(function (e) {
+					var subs = groupThenMap(e.subs, function (f) {
+						return f._id._id_customer_reportsubchannel;
+					}).map(function (f) {
+						f.count = 1;
+						return f;
 					});
-					d.subs.push(percentage);
+
+					e.subs = _.orderBy(subs, function (f) {
+						return f.PL8A;
+					}, 'desc');
+					e.count = e.subs.length;
+					return e;
+				});
+
+				d.subs = _.orderBy(subs, function (e) {
+					return e.PL8A;
+				}, 'desc');
+				d.count = toolkit.sum(d.subs, function (e) {
+					return e.count;
+				});
+				return d;
+			});
+
+			ba.level(3);
+			showAsBreakdown(parsed);
+			parsed = _.orderBy(parsed, function (d) {
+				return d.total;
+			}, 'desc');
+
+			parsed.forEach(function (g) {
+				g.subs.forEach(function (d, i) {
+					if (i == 0) {
+						return;
+					}
+
+					var sample = d.subs[0];
+
+					var percentage = {};
+					percentage._id = '% of N Sales';
+					percentage.count = 1;
+					percentage.excludeFromTotal = true;
+
+					var percentageOfTotal = {};
+					percentageOfTotal._id = '% of Total';
+					percentageOfTotal.count = 1;
+					percentageOfTotal.excludeFromTotal = true;
+
+					var total = {};
+					total._id = 'Total&nbsp;' + d._id;
+					total.count = 1;
+					total.excludeFromTotal = true;
+
+					var _loop3 = function _loop3(p) {
+						if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
+							var vTarget = toolkit.sum(d.subs, function (h) {
+								return h[p];
+							});
+							var vNetSales = toolkit.sum(d.subs, function (h) {
+								return h[netSalesPLCode];
+							});
+							var vGrossSales = toolkit.sum(d.subs, function (h) {
+								return h[grossSalesPLCode];
+							});
+
+							var value = toolkit.number(vTarget / vNetSales) * 100;
+							if (p == discountActivityPLCode) {
+								value = toolkit.number(vTarget / vGrossSales) * 100;
+							}
+
+							var pot = toolkit.number(vTarget / toolkit.sum(parsed, function (h) {
+								return h[p];
+							})) * 100;
+
+							percentage[p] = kendo.toString(value, 'n2') + '&nbsp;%';
+							percentageOfTotal[p] = kendo.toString(pot, 'n2') + '&nbsp;%';
+							total[p] = vTarget;
+						}
+					};
+
+					for (var p in sample) {
+						_loop3(p);
+					}d.subs = [percentageOfTotal].concat(d.subs);
 					d.count++;
 					g.count++;
-				} else {
-					if (d.subs.length > 0) {
-						if (d.subs[0]._id == 'Non RD') {
-							toolkit.try(function () {
-								d.subs[0]._id = 'Total&nbsp;';
+
+					d.subs = [percentage].concat(d.subs);
+					d.count++;
+					g.count++;
+
+					d.subs = [total].concat(d.subs);
+					d.count++;
+					g.count++;
+				});
+			});
+
+			return {
+				v: parsed
+			};
+		}();
+
+		if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
+	} else if (expand && ba.subBreakdownValue().length == 0) {
+		var _ret5 = function () {
+			var parsed = groupThenMap(data, function (d) {
+				return d._id._id_customer_branchgroup;
+			}).map(function (d) {
+				var subs = groupThenMap(d.subs, function (e) {
+					return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
+				}).map(function (e) {
+					var subs = groupThenMap(e.subs, function (f) {
+						return f._id._id_customer_channelname;
+					}).map(function (f) {
+						f.count = 1;
+						return f;
+					});
+
+					e.subs = _.orderBy(subs, function (f) {
+						return f.PL8A;
+					}, 'desc');
+					e.count = e.subs.length;
+					return e;
+				});
+
+				d.subs = _.orderBy(subs, function (e) {
+					return e.PL8A;
+				}, 'desc');
+				d.subs = fixEmptySubs(d); // INJECT THE EMPTY RD / NON RD
+				d.count = toolkit.sum(d.subs, function (e) {
+					return e.count;
+				});
+				return d;
+			});
+
+			ba.level(3);
+			showAsBreakdown(parsed);
+			parsed = _.orderBy(parsed, function (d) {
+				return d.total;
+			}, 'desc');
+
+			parsed.forEach(function (g) {
+				g.subs.forEach(function (d, i) {
+					if (i == 0) {
+						return;
+					}
+
+					var sample = d.subs[0];
+
+					var percentage = {};
+					percentage._id = '% of N Sales';
+					percentage.count = 1;
+					percentage.excludeFromTotal = true;
+
+					var percentageOfTotal = {};
+					percentageOfTotal._id = '% of Total';
+					percentageOfTotal.count = 1;
+					percentageOfTotal.excludeFromTotal = true;
+
+					var total = {};
+					total._id = 'Total&nbsp;';
+					total.count = 1;
+					total.excludeFromTotal = true;
+
+					var _loop4 = function _loop4(p) {
+						if (sample.hasOwnProperty(p) && p.indexOf('PL') > -1) {
+							var vTarget = toolkit.sum(d.subs, function (h) {
+								return h[p];
 							});
-							d.subs.push(percentage);
-							d.count++;
-							g.count++;
-						} else {
-							d.subs = [percentage].concat(d.subs);
-							d.count++;
-							g.count++;
-							d.subs = [total].concat(d.subs);
-							d.count++;
-							g.count++;
+							var vNetSales = toolkit.sum(d.subs, function (h) {
+								return h[netSalesPLCode];
+							});
+							var vGrossSales = toolkit.sum(d.subs, function (h) {
+								return h[grossSalesPLCode];
+							});
+
+							var value = toolkit.number(vTarget / vNetSales) * 100;
+							if (p == discountActivityPLCode) {
+								value = toolkit.number(vTarget / vGrossSales) * 100;
+							}
+
+							var pot = toolkit.number(vTarget / toolkit.sum(parsed, function (q) {
+								return q[p];
+							})) * 100;
+
+							percentage[p] = kendo.toString(value, 'n2') + '&nbsp;%';
+							percentageOfTotal[p] = kendo.toString(pot, 'n2') + '&nbsp;%';
+							total[p] = vTarget;
+						}
+					};
+
+					for (var p in sample) {
+						_loop4(p);
+					}if (d._id == 'Regional Distributor') {
+						toolkit.try(function () {
+							d.subs[0]._id = 'Total&nbsp;RD';
+						});
+
+						var arrTotal = d.subs.splice(0, 1);
+						var arrContent = d.subs.splice(1);
+
+						arrTotal.push(percentage);
+						d.count++;
+						g.count++;
+
+						arrTotal.push(percentageOfTotal);
+						d.count++;
+						g.count++;
+
+						d.subs = arrTotal.concat(arrContent);
+					} else {
+						if (d.subs.length > 0) {
+							if (d.subs[0]._id == 'Non RD') {
+								var _arrTotal = d.subs.splice(0, 1);
+								var _arrContent = d.subs.splice(1);
+
+								_arrTotal.push(percentage);
+								d.count++;
+								g.count++;
+
+								_arrTotal.push(percentageOfTotal);
+								d.count++;
+								g.count++;
+
+								d.subs = _arrTotal.concat(_arrContent);
+
+								toolkit.try(function () {
+									d.subs[0]._id = 'Total&nbsp;Non&nbsp;RD';
+								});
+							} else {
+								d.subs = [percentageOfTotal].concat(d.subs);
+								d.count++;
+								g.count++;
+
+								d.subs = [percentage].concat(d.subs);
+								d.count++;
+								g.count++;
+
+								d.subs = [total].concat(d.subs);
+								d.count++;
+								g.count++;
+
+								toolkit.try(function () {
+									d.subs[0]._id = 'Total&nbsp;Non&nbsp;RD';
+								});
+							}
 						}
 					}
-				}
+				});
 			});
-		});
 
-		return _parsed2;
+			return {
+				v: parsed
+			};
+		}();
+
+		if ((typeof _ret5 === 'undefined' ? 'undefined' : _typeof(_ret5)) === "object") return _ret5.v;
 	} else if (!expand && ba.breakdownRD() == 'All') {
-		var _parsed3 = groupThenMap(data, function (d) {
-			return d._id._id_customer_branchgroup;
-		}).map(function (d) {
-			var subs = groupThenMap(d.subs, function (e) {
-				return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
-			}).map(function (e) {
-				e.subs = [];
-				e.count = 1;
-				return e;
+		var _ret7 = function () {
+			var parsed = groupThenMap(data, function (d) {
+				return d._id._id_customer_branchgroup;
+			}).map(function (d) {
+				var subs = groupThenMap(d.subs, function (e) {
+					return e._id._id_customer_channelid == "I1" ? rdCategories[0] : rdCategories[1];
+				}).map(function (e) {
+					e.subs = [];
+					e.count = 1;
+					return e;
+				});
+
+				d.subs = _.orderBy(subs, function (e) {
+					return e.PL8A;
+				}, 'desc');
+				d.subs = fixEmptySubs(d); // INJECT THE EMPTY RD / NON RD
+				d.count = toolkit.sum(d.subs, function (e) {
+					return e.count;
+				});
+				return d;
 			});
 
-			d.subs = _.orderBy(subs, function (e) {
-				return e.PL8A;
+			ba.level(2);
+			showAsBreakdown(parsed);
+			parsed = _.orderBy(parsed, function (d) {
+				return d.total;
 			}, 'desc');
-			d.subs = fixEmptySubs(d); // INJECT THE EMPTY RD / NON RD
-			d.count = toolkit.sum(d.subs, function (e) {
-				return e.count;
-			});
-			return d;
-		});
 
-		ba.level(2);
-		showAsBreakdown(_parsed3);
-		_parsed3 = _.orderBy(_parsed3, function (d) {
-			return d.total;
-		}, 'desc');
+			parsed.forEach(function (d) {
+				var total = d.subs[0];
 
-		_parsed3.forEach(function (d) {
-			var total = d.subs[0];
-			var percentage = {};
-			percentage._id = '% of N Sales';
-			percentage.count = 1;
-			percentage.excludeFromTotal = true;
-			// percentage.key = [d.key.split('_')[0], 'percentage'].join('_')
+				var percentage = {};
+				percentage._id = '% of N Sales';
+				percentage.count = 1;
+				percentage.excludeFromTotal = true;
 
-			for (var p in total) {
-				if (total.hasOwnProperty(p) && p.indexOf('PL') > -1) {
-					var value = toolkit.number(total[p] / total[netSalesPLCode]) * 100;
-					if (p == discountActivityPLCode) {
-						value = toolkit.number(total[p] / total[grossSalesPLCode]) * 100;
+				var percentageOfTotal = {};
+				percentageOfTotal._id = '% of Total';
+				percentageOfTotal.count = 1;
+				percentageOfTotal.excludeFromTotal = true;
+
+				var _loop5 = function _loop5(p) {
+					if (total.hasOwnProperty(p) && p.indexOf('PL') > -1) {
+						var value = toolkit.number(total[p] / total[netSalesPLCode]) * 100;
+						if (p == discountActivityPLCode) {
+							value = toolkit.number(total[p] / total[grossSalesPLCode]) * 100;
+						}
+
+						var pot = toolkit.number(total[p] / toolkit.sum(parsed, function (k) {
+							return k[p];
+						})) * 100;
+
+						percentage[p] = kendo.toString(value, 'n2') + '&nbsp;%';
+						percentageOfTotal[p] = kendo.toString(pot, 'n2') + '&nbsp;%';
 					}
+				};
 
-					percentage[p] = kendo.toString(value, 'n2') + ' %';
-				}
-			}d.count++;
-			d.subs.splice(1, 0, percentage);
-		});
+				for (var p in total) {
+					_loop5(p);
+				}d.count++;
+				d.subs.splice(1, 0, percentage);
 
-		return _parsed3;
+				d.count++;
+				d.subs.splice(2, 0, percentageOfTotal);
+			});
+
+			return {
+				v: parsed
+			};
+		}();
+
+		if ((typeof _ret7 === 'undefined' ? 'undefined' : _typeof(_ret7)) === "object") return _ret7.v;
 	}
 
 	var parsed = groupThenMap(data, function (d) {
@@ -635,7 +726,7 @@ ba.render = function () {
 			}
 		}
 
-		if (each._id == '% of N Sales') {
+		if (each._id.indexOf('% of') > -1) {
 			currentColumnWidth -= 20;
 			thheader.css('font-weight', 'normal').css('font-style', 'italic');
 		}
