@@ -1068,6 +1068,24 @@ rpt.hideAllChild = (PLCode) => {
 	})
 }
 
+rpt.putStatusVal = (trHeader, trContent) => {
+	let boolStatus = false
+	trContent.find('td').each((a,e) => {
+		let text = $(e).html().replace(/&nbsp;/g, ' ')
+		if (text != '0' && text != '0.00 %') {
+			boolStatus = true
+		}
+	})
+
+	if (boolStatus) {
+		trContent.attr('statusval', 'show')
+		trHeader.attr('statusval', 'show')
+	} else {
+		trContent.attr('statusval', 'hide')
+		trHeader.attr('statusval', 'hide')
+	}
+}
+
 rpt.refreshHeight = (PLCode) => {
 	$(`.table-header tbody>tr[idparent=${PLCode}]`).each(function( i ) {
 		let $trElem = $(this)

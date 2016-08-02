@@ -462,20 +462,7 @@ rd.render = () => {
 			})
 		})
 
-		let boolStatus = false
-		trContent.find('td').each((a,e) => {
-			if ($(e).text() != '0' && $(e).text() != '0.00 %') {
-				boolStatus = true
-			}
-		})
-
-		if (boolStatus) {
-			trContent.attr('statusval', 'show')
-			trHeader.attr('statusval', 'show')
-		} else {
-			trContent.attr('statusval', 'hide')
-			trHeader.attr('statusval', 'hide')
-		}
+		rpt.putStatusVal(trHeader, trContent)
 	})
 	
 
