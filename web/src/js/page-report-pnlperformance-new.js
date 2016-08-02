@@ -964,20 +964,7 @@ let bkd = viewModel.breakdown
 				})
 			})
 
-			let boolStatus = false
-			trContent.find('td').each((a,e) => {
-				if ($(e).text() != '0' && $(e).text() != '0.00 %') {
-					boolStatus = true
-				}
-			})
-
-			if (boolStatus) {
-				trContent.attr('statusval', 'show')
-				trHeader.attr('statusval', 'show')
-			} else {
-				trContent.attr('statusval', 'hide')
-				trHeader.attr('statusval', 'hide')
-			}
+			rpt.putStatusVal(trHeader, trContent)
 		})
 		
 
@@ -1569,20 +1556,7 @@ let v2 = viewModel.RDvsBranchView2
 				}
 			})
 
-			let boolStatus = false
-			trContent.find('td').each((a,e) => {
-				if ($(e).text() != '0' && $(e).text() != '0.00 %') {
-					boolStatus = true
-				}
-			})
-
-			if (boolStatus) {
-				trContent.attr('statusval', 'show')
-				trHeader.attr('statusval', 'show')
-			} else {
-				trContent.attr('statusval', 'hide')
-				trHeader.attr('statusval', 'hide')
-			}
+			rpt.putStatusVal(trHeader, trContent)
 		})
 		
 
@@ -2122,20 +2096,7 @@ let v1 = viewModel.RDvsBranchView1
 				}
 			})
 
-			let boolStatus = false
-			trContent.find('td').each((a,e) => {
-				if ($(e).text() != '0' && $(e).text() != '0.00 %') {
-					boolStatus = true
-				}
-			})
-
-			if (boolStatus) {
-				trContent.attr('statusval', 'show')
-				trHeader.attr('statusval', 'show')
-			} else {
-				trContent.attr('statusval', 'hide')
-				trHeader.attr('statusval', 'hide')
-			}
+			rpt.putStatusVal(trHeader, trContent)
 		})
 		
 
@@ -2584,19 +2545,7 @@ let kac = viewModel.keyAccount
 					.appendTo(trContent)
 			})
 
-			let boolStatus = false
-			trContent.find('td').each((a,e) => {
-				if ($(e).text() != '0' && $(e).text() != '0.00 %') {
-					boolStatus = true
-				}
-			})
-			if (boolStatus) {
-				trContent.attr('statusval', 'show')
-				trHeader.attr('statusval', 'show')
-			} else {
-				trContent.attr('statusval', 'hide')
-				trHeader.attr('statusval', 'hide')
-			}
+			rpt.putStatusVal(trHeader, trContent)
 		})
 
 		rpt.buildGridLevels(rows)
@@ -3390,20 +3339,7 @@ let subchan = viewModel.subChannel
 				})
 			})
 
-			let boolStatus = false
-			trContent.find('td').each((a,e) => {
-				if ($(e).text() != '0' && $(e).text() != '0.00 %') {
-					boolStatus = true
-				}
-			})
-
-			if (boolStatus) {
-				trContent.attr('statusval', 'show')
-				trHeader.attr('statusval', 'show')
-			} else {
-				trContent.attr('statusval', 'hide')
-				trHeader.attr('statusval', 'hide')
-			}
+			rpt.putStatusVal(trHeader, trContent)
 		})
 		
 

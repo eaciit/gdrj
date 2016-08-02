@@ -317,20 +317,7 @@ cbt.render = function () {
 			var cellPercentage = toolkit.newEl('td').html(percentage).addClass('align-right').appendTo(trContent);
 		});
 
-		var boolStatus = false;
-		trContent.find('td').each(function (a, e) {
-			if ($(e).text() != '0' && $(e).text() != '0.00 %') {
-				boolStatus = true;
-			}
-		});
-
-		if (boolStatus) {
-			trContent.attr('statusval', 'show');
-			trHeader.attr('statusval', 'show');
-		} else {
-			trContent.attr('statusval', 'hide');
-			trHeader.attr('statusval', 'hide');
-		}
+		rpt.putStatusVal(trHeader, trContent);
 	});
 
 	// ========================= CONFIGURE THE HIRARCHY

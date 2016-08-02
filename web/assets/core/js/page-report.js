@@ -967,6 +967,24 @@ rpt.hideAllChild = function (PLCode) {
 	});
 };
 
+rpt.putStatusVal = function (trHeader, trContent) {
+	var boolStatus = false;
+	trContent.find('td').each(function (a, e) {
+		var text = $(e).html().replace(/&nbsp;/g, ' ');
+		if (text != '0' && text != '0.00 %') {
+			boolStatus = true;
+		}
+	});
+
+	if (boolStatus) {
+		trContent.attr('statusval', 'show');
+		trHeader.attr('statusval', 'show');
+	} else {
+		trContent.attr('statusval', 'hide');
+		trHeader.attr('statusval', 'hide');
+	}
+};
+
 rpt.refreshHeight = function (PLCode) {
 	$('.table-header tbody>tr[idparent=' + PLCode + ']').each(function (i) {
 		var $trElem = $(this);
