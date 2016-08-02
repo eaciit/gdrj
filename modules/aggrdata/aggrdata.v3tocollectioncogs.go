@@ -94,6 +94,11 @@ func main() {
 	// "customer.channelid", "customer.channelname", "customer.reportchannel", "customer.reportsubchannel",
 	// "customer.zone", "customer.region", "customer.areaname","product.brand"
 	toolkit.Println("Waiting result query...")
+	qSave := conn.NewQuery().
+		From("salespls-summary-4cogs").
+		SetConfig("multiexec", true).
+		Save()
+
 	for i := 1; i <= len(seeds); i++ {
 		a := <-result
 
@@ -108,10 +113,10 @@ func main() {
 			tkm, _ := toolkit.ToM(v)
 			// toolkit.Println(k)
 			tkm.Set("_id", k)
-			_ = conn.NewQuery().
-				From("salespls-summary-4cogs").
-				SetConfig("multiexec", true).
-				Save().Exec(toolkit.M{}.Set("data", tkm))
+			err := qSave.Exec(toolkit.M{}.Set("data", tkm))
+			if err != nil {
+				toolkit.Println("Save, Error found : ", err)
+			}
 		}
 
 		if i%step == 0 {
