@@ -70,6 +70,17 @@ func (m *ReportController) GetDataFunction(r *knot.WebContext) interface{} {
 	return helper.CreateResult(true, res, "")
 }
 
+func (m *ReportController) GetDataMasterBranchLvl2(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+
+	res, err := gdrj.MasterBranchLvl2GetAll()
+	if err != nil {
+		return helper.CreateResult(false, []*gdrj.MasterBranchLvl2{}, err.Error())
+	}
+
+	return helper.CreateResult(true, res, "")
+}
+
 func (m *ReportController) GetDataMasterBranchGroup(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 

@@ -92,9 +92,11 @@ let sga = viewModel.sga
 	sga.level = ko.observable(1)
 
 	sga.filterBranch = ko.observableArray([])
+	sga.filterBranchLvl2 = ko.observableArray([])
 	sga.filterBranchGroup = ko.observableArray([])
 	sga.filterCostGroup = ko.observableArray([])
 
+	sga.optionBranchLvl2 = ko.observableArray([])
 	sga.optionFilterCostGroups = ko.observableArray([])
 	sga.putNetSalesPercentage = ko.observable(true)
 	sga.title = ko.observable('G&A by Branch Level 1')
@@ -102,6 +104,12 @@ let sga = viewModel.sga
 	rpt.fillFilterCostGroup = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getdatafunction", {}, (res) => {
 			sga.optionFilterCostGroups(_.orderBy(res.data, (d) => d.Name))
+		})
+	}
+
+	rpt.fillFilterBranchLvl2 = () => {
+		toolkit.ajaxPost(viewModel.appName + "report/getdatamasterbranchlvl2", {}, (res) => {
+			sga.optionBranchLvl2(_.orderBy(res.data, (d) => d.Name))
 		})
 	}
 
@@ -121,6 +129,7 @@ let sga = viewModel.sga
 		sga.title(title)
 
 		sga.filterBranch([])
+		sga.filterBranchLvl2([])
 		sga.filterBranchGroup([])
 		sga.filterCostGroup([])
 
@@ -134,6 +143,9 @@ let sga = viewModel.sga
 
 		if (sga.filterBranch().length > 0) {
 			param.branchnames = sga.filterBranch()
+		}
+		if (sga.filterBranchLvl2().length > 0) {
+			param.branchlvl2 = sga.filterBranchLvl2()
 		}
 		if (sga.filterBranchGroup().length > 0) {
 			param.branchgroups = sga.filterBranchGroup()
@@ -168,14 +180,23 @@ let sga = viewModel.sga
 				if (sga.putNetSalesPercentage()) {
 					let groups = []
 					let groupBy = ''
+					let groupByForInjectingNetSales = ''
 					switch (sga.breakdownBy()) {
 						case 'BranchName':
-							groupBy = 'customer.branchname';
+							groupBy = 'customer.branchname'
+							groupByForInjectingNetSales = 'customer.branchname'
 							groups.push('customer.branchid')
-						break;
+						break
+						case 'BranchLvl2':
+							groupBy = 'customer.branchlvl2'
+							groupByForInjectingNetSales = 'customer.branchname'
+							groups.push('customer.branchid')
+							groups.push('customer.branchname')
+						break
 						case 'BranchGroup':
-							groupBy = 'customer.branchgroup';
-						break;
+							groupBy = 'customer.branchgroup'
+							groupByForInjectingNetSales = 'customer.branchgroup'
+						break
 					}
 
 					groups.push(groupBy)
@@ -188,7 +209,7 @@ let sga = viewModel.sga
 
 					if (sga.filterBranch().length > 0) {
 						param2.filters.push({
-							Field: 'customer.branchgroup',
+							Field: 'customer.branchname',
 							Op: '$in',
 							Value: sga.filterBranch()
 						})
@@ -212,13 +233,13 @@ let sga = viewModel.sga
 						sga.data().forEach((d) => {
 							d.PL8A = 0
 
-							let key = `_id_${toolkit.replace(groupBy, '.', '_')}`
-							let target = res2.Data.Data.find((e) => e._id[key] == d._id)
-							if (toolkit.isUndefined(target)) {
+							let key = `_id_${toolkit.replace(groupByForInjectingNetSales, '.', '_')}`
+							let target = res2.Data.Data.filter((e) => e._id[key] == d._id)
+							if (target.length == 0) {
 								return
 							}
 
-							d.PL8A = target.PL8A
+							d.PL8A = toolkit.sum(target, (k) => k.PL8A)
 						})
 
 						callback()
@@ -682,6 +703,10 @@ viewModel.allocated = {}
 let au = viewModel.allocated
 
 ;(() => {
+	au.optionDimensions = ko.observableArray([
+		{ field: 'customer.branchname', name: 'Branch Level 1' }, 
+		{ field: 'customer.branchlvl2', name: 'Branch Level 2' }
+	].concat(rpt.optionDimensions().splice(1)))
 	au.contentIsLoading = ko.observable(false)
 	au.breakdownNote = ko.observable('')
 
@@ -1327,6 +1352,7 @@ rpt.refresh = () => {
 
 $(() => {
 	rpt.fillFilterCostGroup()
+	rpt.fillFilterBranchLvl2()
 	rpt.refresh()
 	rpt.showExport(true)
 })
