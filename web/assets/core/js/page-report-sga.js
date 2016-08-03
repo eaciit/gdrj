@@ -106,9 +106,11 @@ var sga = viewModel.sga;(function () {
 	sga.level = ko.observable(1);
 
 	sga.filterBranch = ko.observableArray([]);
+	sga.filterBranchLvl2 = ko.observableArray([]);
 	sga.filterBranchGroup = ko.observableArray([]);
 	sga.filterCostGroup = ko.observableArray([]);
 
+	sga.optionBranchLvl2 = ko.observableArray([]);
 	sga.optionFilterCostGroups = ko.observableArray([]);
 	sga.putNetSalesPercentage = ko.observable(true);
 	sga.title = ko.observable('G&A by Branch Level 1');
@@ -116,6 +118,14 @@ var sga = viewModel.sga;(function () {
 	rpt.fillFilterCostGroup = function () {
 		toolkit.ajaxPost(viewModel.appName + "report/getdatafunction", {}, function (res) {
 			sga.optionFilterCostGroups(_.orderBy(res.data, function (d) {
+				return d.Name;
+			}));
+		});
+	};
+
+	rpt.fillFilterBranchLvl2 = function () {
+		toolkit.ajaxPost(viewModel.appName + "report/getdatamasterbranchlvl2", {}, function (res) {
+			sga.optionBranchLvl2(_.orderBy(res.data, function (d) {
 				return d.Name;
 			}));
 		});
@@ -137,6 +147,7 @@ var sga = viewModel.sga;(function () {
 		sga.title(title);
 
 		sga.filterBranch([]);
+		sga.filterBranchLvl2([]);
 		sga.filterBranchGroup([]);
 		sga.filterCostGroup([]);
 
@@ -152,6 +163,9 @@ var sga = viewModel.sga;(function () {
 
 		if (sga.filterBranch().length > 0) {
 			param.branchnames = sga.filterBranch();
+		}
+		if (sga.filterBranchLvl2().length > 0) {
+			param.branchlvl2 = sga.filterBranchLvl2();
 		}
 		if (sga.filterBranchGroup().length > 0) {
 			param.branchgroups = sga.filterBranchGroup();
@@ -187,13 +201,22 @@ var sga = viewModel.sga;(function () {
 					var _ret = function () {
 						var groups = [];
 						var groupBy = '';
+						var groupByForInjectingNetSales = '';
 						switch (sga.breakdownBy()) {
 							case 'BranchName':
 								groupBy = 'customer.branchname';
+								groupByForInjectingNetSales = 'customer.branchname';
 								groups.push('customer.branchid');
+								break;
+							case 'BranchLvl2':
+								groupBy = 'customer.branchlvl2';
+								groupByForInjectingNetSales = 'customer.branchname';
+								groups.push('customer.branchid');
+								groups.push('customer.branchname');
 								break;
 							case 'BranchGroup':
 								groupBy = 'customer.branchgroup';
+								groupByForInjectingNetSales = 'customer.branchgroup';
 								break;
 						}
 
@@ -207,7 +230,7 @@ var sga = viewModel.sga;(function () {
 
 						if (sga.filterBranch().length > 0) {
 							param2.filters.push({
-								Field: 'customer.branchgroup',
+								Field: 'customer.branchname',
 								Op: '$in',
 								Value: sga.filterBranch()
 							});
@@ -231,15 +254,17 @@ var sga = viewModel.sga;(function () {
 							sga.data().forEach(function (d) {
 								d.PL8A = 0;
 
-								var key = '_id_' + toolkit.replace(groupBy, '.', '_');
-								var target = res2.Data.Data.find(function (e) {
+								var key = '_id_' + toolkit.replace(groupByForInjectingNetSales, '.', '_');
+								var target = res2.Data.Data.filter(function (e) {
 									return e._id[key] == d._id;
 								});
-								if (toolkit.isUndefined(target)) {
+								if (target.length == 0) {
 									return;
 								}
 
-								d.PL8A = target.PL8A;
+								d.PL8A = toolkit.sum(target, function (k) {
+									return k.PL8A;
+								});
 							});
 
 							callback();
@@ -600,6 +625,7 @@ var sga = viewModel.sga;(function () {
 
 viewModel.allocated = {};
 var au = viewModel.allocated;(function () {
+	au.optionDimensions = ko.observableArray([{ field: 'customer.branchname', name: 'Branch Level 1' }, { field: 'customer.branchlvl2', name: 'Branch Level 2' }].concat(rpt.optionDimensions().splice(1)));
 	au.contentIsLoading = ko.observable(false);
 	au.breakdownNote = ko.observable('');
 
@@ -1146,6 +1172,7 @@ rpt.refresh = function () {
 
 $(function () {
 	rpt.fillFilterCostGroup();
+	rpt.fillFilterBranchLvl2();
 	rpt.refresh();
 	rpt.showExport(true);
 });
