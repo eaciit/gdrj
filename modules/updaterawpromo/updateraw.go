@@ -292,6 +292,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 			key.Set("customer_branchgroup", "OTHER")
 		}
 
+		if key.GetString("customer_branchlvl2") == "" {
+			key.Set("customer_branchlvl2", "OTHER")
+		}
+
 		trx.Set("key", key)
 		//============================================
 
