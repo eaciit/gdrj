@@ -50,30 +50,7 @@ func PLModelGetAll(s *PLFinderParam) ([]*PLModel, error) {
 	}
 	cursor.Close()
 
-	hasNetMargin := false
-	for _, each := range result {
-		// put Adv & Promo below the Gross Margin
-		if each.ID == "PL32A" {
-			each.OrderIndex = "PL0027A"
-		}
-
-		// if net margin is not yet added to pnl
-		if each.PLHeader3 == NetMarginPLHeader && !hasNetMargin {
-			hasNetMargin = true
-		}
-	}
-
-	// if net margin is not yet added to pnl
-	// inject fake one, the amount will be calculated from gross sales - a&p
-	if !hasNetMargin {
-		plNetMargin := new(PLModel)
-		plNetMargin.ID = NetMarginPLCode
-		plNetMargin.PLHeader1 = NetMarginPLHeader
-		plNetMargin.PLHeader2 = plNetMargin.PLHeader1
-		plNetMargin.PLHeader3 = plNetMargin.PLHeader1
-		plNetMargin.OrderIndex = "PL0027C"
-		result = append(result, plNetMargin)
-	}
+	/** start - remove child of g&a expenses */
 
 	isSGARequest := false
 	if s != nil {
@@ -92,6 +69,8 @@ func PLModelGetAll(s *PLFinderParam) ([]*PLModel, error) {
 
 		result = parseResult
 	}
+
+	/** end - remove child of g&a expenses */
 
 	return result, nil
 }

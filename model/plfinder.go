@@ -334,6 +334,11 @@ func (s *PLFinderParam) GetTableName() string {
 		return `sgadata`
 	}
 
+	if s.Flag == "cogs" {
+		s.TableKey = "key"
+		return `salespls-summary-4cogscleanperunit`
+	}
+
 	if forceSalesPLSSummary {
 		s.TableKey = "key"
 		return `salespls-summary`
@@ -872,7 +877,17 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		}
 	}
 
+	if s.Flag == "cogs" {
+		plsToFix := []string{"PL14", "PL74A", "PL74", "PL9", "PL74B", "PL14A", "Pl20", "PL21"}
+		for _, pl := range plsToFix {
+			dbfield := fmt.Sprintf("%s_perunit", pl)
+			pdbfield := fmt.Sprintf("$%s", dbfield)
+			groups[dbfield] = bson.M{"$sum": pdbfield}
+		}
+	}
+
 	fmt.Printf("-MATHCES %#v\n", matches)
+	fmt.Printf("-GROUPS %#v\n", groups)
 
 	// groups["totalOutlet"] = bson.M{"$size": "$outlets"}
 	pipe := []bson.M{{"$match": matches}, {"$group": groups}} //, {"$project": projects}} //
