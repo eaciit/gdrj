@@ -1256,6 +1256,43 @@ func prepsalesplssummarygtwrongsubch() {
 	// masters.Set("salesplssummaryrdwrongsubch", salesplssummaryrdwrongsubch)
 }
 
+func prepmastercogsperunit() {
+	cogsmaps := make(map[string]*gdrj.COGSConsolidate, 0)
+	ccogs, _ := gdrj.Find(new(gdrj.COGSConsolidate), nil, nil)
+	defer ccogs.Close()
+
+	for {
+		cog := new(gdrj.COGSConsolidate)
+		e := ccogs.Fetch(cog, 1, false)
+		if e != nil {
+			break
+		}
+
+		key := toolkit.Sprintf("%d_%d_%s", cog.Year, int(cog.Month), cog.SAPCode)
+		// _, exist := cogskeys[key]
+		// if !exist {
+		// 	key = toolkit.Sprintf("%d_%d", o.Year, int(o.Month))
+		// }
+
+		// cog, exist := cogsmaps[key]
+		// if !exist {
+		// 	cog = new(gdrj.COGSConsolidate)
+		// }
+
+		// cog.Year = o.Year
+		// cog.Month = o.Month
+		// cog.COGS_Amount += o.COGS_Amount
+		// cog.RM_Amount += o.RM_Amount
+		// cog.LC_Amount += o.LC_Amount
+		// cog.PF_Amount += o.PF_Amount
+		// cog.Depre_Amount += o.Depre_Amount
+
+		cogsmaps[key] = cog
+	}
+
+	masters.Set("cogs", cogsmaps)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -1292,11 +1329,13 @@ func main() {
 	// prepmasterrollback_adv()
 	// prepmasterrollback_sumbrand()
 
+	prepmastercogsperunit()
+
 	// os.Exit(1)
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogs").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogsclean").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -1912,12 +1951,73 @@ func CleanReportSubChannelBreakdownRD(tkm toolkit.M) {
 	tkm.Set("key", dtkm)
 }
 
+func CalcCogsPerUnit(tkm toolkit.M) (ntkm toolkit.M) {
+	pllist := []string{"PL0", "PL1", "PL7", "PL2", "PL8", "PL3", "PL4", "PL5", "PL6", "PL6A", "PL7A",
+		"PL8A", "PL9", "PL10", "PL11", "PL12", "PL13", "PL14", "PL14A", "PL15",
+		"PL16", "PL17", "PL18", "PL19", "PL20", "PL21", "PL74", "PL74A", "PL74B"}
+
+	inlist := func(str string) bool {
+		for _, v := range pllist {
+			if str == v {
+				return true
+			}
+		}
+		return false
+	}
+
+	ntkm = toolkit.M{}
+	for k, v := range tkm {
+		if k[0:2] != "PL" || inlist(k) {
+			ntkm.Set(k, v)
+		}
+	}
+
+	if !masters.Has("cogs") {
+		return
+	}
+	cogsdatas := masters.Get("cogs").(map[string]*gdrj.COGSConsolidate)
+
+	dtkm, _ := toolkit.ToM(tkm.Get("key"))
+	key := toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"), dtkm.GetString("product_skuid"))
+
+	cogsdata, exist := cogsdatas[key]
+	if !exist {
+		return
+	}
+
+	// RM_PerUnit,LC_PerUnit,PF_PerUnit,Other_PerUnit,Fixed_PerUnit,Depre_PerUnit,COGS_PerUnit
+
+	qty := ntkm.GetFloat64("salesqty")
+	cogssubtotal := cogsdata.COGS_PerUnit * qty
+
+	rmamount := cogsdata.RM_PerUnit * qty
+	lcamount := cogsdata.LC_PerUnit * qty
+	energyamount := cogsdata.PF_PerUnit * qty
+	depreamount := cogsdata.Depre_PerUnit * qty
+	otheramount := cogssubtotal - rmamount - lcamount - energyamount - depreamount
+
+	ntkm.Set("PL9_perunit", -rmamount)
+	ntkm.Set("PL14_perunit", -lcamount)
+	direct := rmamount + lcamount
+	ntkm.Set("PL14A_perunit", -direct)
+
+	ntkm.Set("Pl20_perunit", -otheramount)
+	ntkm.Set("PL21_perunit", -depreamount)
+	ntkm.Set("PL74_perunit", -energyamount)
+	indirect := otheramount + depreamount + energyamount
+	ntkm.Set("PL74A_perunit", -indirect)
+
+	ntkm.Set("PL74B_perunit", -cogssubtotal)
+
+	return
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4cogsclean").
+		From("salespls-summary-4cogscleanperunit").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -1933,7 +2033,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
-		CalcSalesVDist20142015(trx)
+		// CalcSalesVDist20142015(trx)
 		// CalcSgaRev(trx)
 
 		// CleanUpdateCustomerGroupName(trx)
@@ -1951,25 +2051,25 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
 
-		CalcSum(trx)
+		// CalcSum(trx)
+		trx = CalcCogsPerUnit(trx)
+		// dtkm, _ := toolkit.ToM(trx.Get("key"))
+		// if dtkm.GetString("customer_reportsubchannel") == "R3" {
+		// 	dtkm.Set("customer_reportsubchannel", "R3 - Retailer Umum")
+		// }
 
-		dtkm, _ := toolkit.ToM(trx.Get("key"))
-		if dtkm.GetString("customer_reportsubchannel") == "R3" {
-			dtkm.Set("customer_reportsubchannel", "R3 - Retailer Umum")
-		}
+		// if dtkm.GetString("customer_branchgroup") == "" {
+		// 	dtkm.Set("customer_branchgroup", "Other")
+		// }
 
-		if dtkm.GetString("customer_branchgroup") == "" {
-			dtkm.Set("customer_branchgroup", "Other")
-		}
+		// if dtkm.GetString("customer_region") == "" || dtkm.GetString("customer_region") == "Other" {
+		// 	dtkm.Set("customer_region", "OTHER")
+		// }
 
-		if dtkm.GetString("customer_region") == "" || dtkm.GetString("customer_region") == "Other" {
-			dtkm.Set("customer_region", "OTHER")
-		}
-
-		if dtkm.GetString("customer_zone") == "" || dtkm.GetString("customer_zone") == "Other" {
-			dtkm.Set("customer_zone", "OTHER")
-		}
-		trx.Set("key", dtkm)
+		// if dtkm.GetString("customer_zone") == "" || dtkm.GetString("customer_zone") == "Other" {
+		// 	dtkm.Set("customer_zone", "OTHER")
+		// }
+		// trx.Set("key", dtkm)
 
 		// CleanReportSubChannelBreakdownRD(trx)
 		// CleanAreanameNull(trx)
