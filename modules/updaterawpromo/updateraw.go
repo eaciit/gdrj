@@ -139,16 +139,16 @@ func main() {
 	defer workerconn.Close()
 
 	toolkit.Println("Start data query...")
-	arrfilter := []*dbox.Filter{}
-	for i := 4; i < 10; i++ {
-		toolkit.Printfn("%d - 2014", i)
-		f := dbox.And(dbox.Eq("year", 2014), dbox.Eq("month", i))
-		arrfilter = append(arrfilter, f)
-	}
+	// arrfilter := []*dbox.Filter{}
+	// for i := 4; i < 10; i++ {
+	// 	toolkit.Printfn("%d - 2014", i)
+	// 	f := dbox.And(dbox.Eq("year", 2014), dbox.Eq("month", i))
+	// 	arrfilter = append(arrfilter, f)
+	// }
 
-	f := dbox.Or(arrfilter...)
+	// f := dbox.Or(arrfilter...)
 
-	csr, _ := workerconn.NewQuery().Select().Where(f).From(gtable).Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().From(gtable).Cursor(nil)
 	defer csr.Close()
 
 	scount := csr.Count()
