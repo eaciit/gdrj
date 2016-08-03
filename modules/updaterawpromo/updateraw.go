@@ -130,7 +130,7 @@ func main() {
 
 	setinitialconnection()
 
-	// prepdatabranch()
+	prepdatabranch()
 	// prepdatacostcenter()
 	// prepdataaccountgroup()
 	// prepdatabranchgroup()
@@ -206,16 +206,6 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 	trx := toolkit.M{}
 	for trx = range jobs {
-		// key := trx.Get("key", toolkit.M{}).(toolkit.M)
-		// trx.Set("key", key)
-		// trx.Set("_id", toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|%s", key.GetInt("year"),
-		// 	key.GetString("branchid"),
-		// 	key.GetString("branchname"),
-		// 	key.GetString("brancharea"),
-		// 	key.GetString("account"),
-		// 	key.GetString("accountdescription"),
-		// 	key.GetString("costgroup"),
-		// 	key.GetString("src")))
 
 		// tdate := time.Date(trx.GetInt("year"), time.Month(trx.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).
 		// 	AddDate(0, 3, 0)
@@ -249,10 +239,6 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// }
 
 		// branchid := trx.GetString("branchid")
-		// branchid := key.GetString("customer_branchid")
-
-		// branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
-		// key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
 
 		// accdesc := trx.GetString("accountdescription")
 		// trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
@@ -277,18 +263,44 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// 	trx.Set("branchgroup", "OTHER")
 		// }
 
-		// if key.GetString("customer_branchgroup") == "" {
-		// 	key.Set("customer_branchgroup", "OTHER")
+		// For data rawdata mode
+
+		// branchid := trx.GetString("branchid")
+		// branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		// trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
+		// trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
+
+		// if trx.GetString("branchgroup") == "" {
+		// 	trx.Set("branchgroup", "OTHER")
 		// }
 
-		// trx.Set("key", key)
+		// if trx.GetString("branchlvl2") == "" {
+		// 	trx.Set("branchlvl2", "OTHER")
+		// }
+
+		//===========================================
+
+		// For data salespls-summary mode consolidate
+		key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		branchid := key.GetString("customer_branchid")
+
+		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
+		key.Set("customer_branchlvl2", branchgroup.GetString("branchlvl2"))
+
+		if key.GetString("customer_branchgroup") == "" {
+			key.Set("customer_branchgroup", "OTHER")
+		}
+
+		trx.Set("key", key)
+		//============================================
 
 		// For cogs consolidate
-		arrstr := []string{"rm_perunit", "lc_perunit", "pf_perunit", "other_perunit", "fixed_perunit", "depre_perunit", "cogs_perunit"}
-		for _, v := range arrstr {
-			xval := trx.GetFloat64(v) * 6
-			trx.Set(v, xval)
-		}
+		// arrstr := []string{"rm_perunit", "lc_perunit", "pf_perunit", "other_perunit", "fixed_perunit", "depre_perunit", "cogs_perunit"}
+		// for _, v := range arrstr {
+		// 	xval := trx.GetFloat64(v) * 6
+		// 	trx.Set(v, xval)
+		// }
 		// ====================
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
