@@ -100,7 +100,7 @@ cogs.emptyGrid = () => {
 
 cogs.buildPLModels = (plmodels) => {
 	let plsSplittable = ["PL14", "PL74A", "PL74", "PL9", "PL74B", "PL14A", "Pl20", "PL21"]
-	let plsUnsplittable = ["PL1", "PL8A", "PL6A", "PL7A", "PL0", "PL7"]
+	let plsUnsplittable = ["PL1", "PL8A", "PL6A", "PL7A", "PL0", "PL7", "PL2", "PL8", "PL6"]
 
 	plmodels = plmodels.filter((d) => {
 		if (plsSplittable.indexOf(d._id) > -1) {

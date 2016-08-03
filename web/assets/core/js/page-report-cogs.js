@@ -103,7 +103,7 @@ cogs.emptyGrid = function () {
 
 cogs.buildPLModels = function (plmodels) {
 	var plsSplittable = ["PL14", "PL74A", "PL74", "PL9", "PL74B", "PL14A", "Pl20", "PL21"];
-	var plsUnsplittable = ["PL1", "PL8A", "PL6A", "PL7A", "PL0", "PL7"];
+	var plsUnsplittable = ["PL1", "PL8A", "PL6A", "PL7A", "PL0", "PL7", "PL2", "PL8", "PL6"];
 
 	plmodels = plmodels.filter(function (d) {
 		if (plsSplittable.indexOf(d._id) > -1) {

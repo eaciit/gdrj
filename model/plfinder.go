@@ -878,7 +878,7 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	}
 
 	if s.Flag == "cogs" {
-		plsToFix := []string{"PL14", "PL74A", "PL74", "PL9", "PL74B", "PL14A", "Pl20", "PL21"}
+		plsToFix := []string{"PL14", "PL74A", "PL74", "PL9", "PL74B", "PL14A", "Pl20", "PL21", "PL2", "PL8", "PL6"}
 		for _, pl := range plsToFix {
 			dbfield := fmt.Sprintf("%s_perunit", pl)
 			pdbfield := fmt.Sprintf("$%s", dbfield)
