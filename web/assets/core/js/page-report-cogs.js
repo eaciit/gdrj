@@ -3,6 +3,7 @@
 viewModel.cogs = {};
 var cogs = viewModel.cogs;
 
+cogs.optionDimensions = ko.observableArray([{ field: 'product.skuid', name: 'SKU' }].concat(rpt.optionDimensions()));
 cogs.contentIsLoading = ko.observable(false);
 cogs.breakdownBy = ko.observable('customer.channelname');
 cogs.breakdownByFiscalYear = ko.observable('date.fiscal');
