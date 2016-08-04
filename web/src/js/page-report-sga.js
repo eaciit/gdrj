@@ -93,6 +93,7 @@ let sga = viewModel.sga
 	]
 
 	sga.breakdownBy = ko.observable('BranchName')
+	sga.filterBy = ko.observable('BranchName')
 	sga.breakdownValue = ko.observableArray([])
 	sga.breakdownByFiscalYear = ko.observable('date.fiscal')
 
@@ -149,6 +150,7 @@ let sga = viewModel.sga
 		sga.filterCostGroup([])
 
 		sga.breakdownBy(what)
+		sga.filterBy(what)
 		sga.refresh()
 	}
 
@@ -197,25 +199,25 @@ let sga = viewModel.sga
 					let groups = []
 					let groupBy = ''
 					let groupByForInjectingNetSales = ''
-					switch (sga.title()) {
-						case 'G&A by Branch Level 1':
+					switch (sga.breakdownBy()) {
+						case 'BranchName':
 							groupBy = 'customer.branchname'
 							groupByForInjectingNetSales = 'customer.branchname'
 							groups.push('customer.branchid')
-							if (sga.breakdownBy() == 'BranchLvl2')
+							if (sga.filterBy() == 'BranchLvl2')
 								groups.push('customer.branchlvl2')
-							else if (sga.breakdownBy() == 'BranchGroup')
+							else if (sga.filterBy() == 'BranchGroup')
 								groups.push('customer.branchgroup')
 						break
-						case 'G&A by Branch Level 2':
+						case 'BranchLvl2':
 							groupBy = 'customer.branchlvl2'
 							groupByForInjectingNetSales = 'customer.branchname'
 							groups.push('customer.branchid')
 							groups.push('customer.branchname')
-							if (sga.breakdownBy() == 'BranchGroup')
+							if (sga.filterBy() == 'BranchGroup')
 								groups.push('customer.branchgroup')
 						break
-						case 'G&A by Branch Group':
+						case 'BranchGroup':
 							groupBy = 'customer.branchgroup'
 							groupByForInjectingNetSales = 'customer.branchgroup'
 						break
