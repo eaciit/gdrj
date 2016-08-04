@@ -100,6 +100,7 @@ var sga = viewModel.sga;(function () {
 	sga.filterbylv2 = [{ id: "BranchLvl2", title: "Branch Level 2" }, { id: "BranchGroup", title: "Branch Group" }];
 
 	sga.breakdownBy = ko.observable('BranchName');
+	sga.filterBy = ko.observable('BranchName');
 	sga.breakdownValue = ko.observableArray([]);
 	sga.breakdownByFiscalYear = ko.observable('date.fiscal');
 
@@ -160,6 +161,7 @@ var sga = viewModel.sga;(function () {
 		sga.filterCostGroup([]);
 
 		sga.breakdownBy(what);
+		sga.filterBy(what);
 		sga.refresh();
 	};
 
@@ -211,21 +213,21 @@ var sga = viewModel.sga;(function () {
 						var groups = [];
 						var groupBy = '';
 						var groupByForInjectingNetSales = '';
-						switch (sga.title()) {
-							case 'G&A by Branch Level 1':
+						switch (sga.breakdownBy()) {
+							case 'BranchName':
 								groupBy = 'customer.branchname';
 								groupByForInjectingNetSales = 'customer.branchname';
 								groups.push('customer.branchid');
-								if (sga.breakdownBy() == 'BranchLvl2') groups.push('customer.branchlvl2');else if (sga.breakdownBy() == 'BranchGroup') groups.push('customer.branchgroup');
+								if (sga.filterBy() == 'BranchLvl2') groups.push('customer.branchlvl2');else if (sga.filterBy() == 'BranchGroup') groups.push('customer.branchgroup');
 								break;
-							case 'G&A by Branch Level 2':
+							case 'BranchLvl2':
 								groupBy = 'customer.branchlvl2';
 								groupByForInjectingNetSales = 'customer.branchname';
 								groups.push('customer.branchid');
 								groups.push('customer.branchname');
-								if (sga.breakdownBy() == 'BranchGroup') groups.push('customer.branchgroup');
+								if (sga.filterBy() == 'BranchGroup') groups.push('customer.branchgroup');
 								break;
-							case 'G&A by Branch Group':
+							case 'BranchGroup':
 								groupBy = 'customer.branchgroup';
 								groupByForInjectingNetSales = 'customer.branchgroup';
 								break;
