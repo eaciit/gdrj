@@ -61,7 +61,7 @@ func main() {
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
 	speriode := eperiode.AddDate(-1, 0, 0)
-	// speriode = eperiode.AddDate(0, 0, -1)
+	speriode = eperiode.AddDate(0, 0, -1)
 
 	seeds := make([]time.Time, 0, 0)
 	seeds = append(seeds, speriode)
@@ -138,13 +138,17 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 			Cursor(nil)
 
 		scount := csr.Count()
-		step := scount / 100
+		step := scount / 10
 
 		if step == 0 {
 			step = 1
 		}
 
+		i := 0
+		t1 := time.Now()
+
 		for {
+			i++
 			tv := float64(0)
 
 			spl := new(gdrj.SalesPL)
@@ -213,7 +217,13 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 
 			tkm.Set(key, dtkm)
 
+			if i%step == 0 {
+				toolkit.Printfn("GO-%d. Processing %d of %d (%d) in %s", wi, i, scount, (i * 100 / scount), time.Since(t1).String())
+			}
+
 		}
+
+		toolkit.Printfn("GO-%d. Processing done in %s", wi, time.Since(t1).String())
 
 		result <- tkm
 		csr.Close()
