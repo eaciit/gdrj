@@ -160,6 +160,7 @@ var sga = viewModel.sga;(function () {
 
 		var param = {};
 		param.year = parseInt(sga.fiscalYear().split('-')[0], 10);
+		param.groups = [sga.breakdownBy()];
 
 		if (sga.filterBranch().length > 0) {
 			param.branchnames = sga.filterBranch();
@@ -1158,6 +1159,125 @@ var au = viewModel.allocated;(function () {
 
 		// ========================= CONFIGURE THE HIRARCHY
 		rpt.buildGridLevels(rows);
+	};
+})();
+
+viewModel.yoy = {};
+var yoy = viewModel.yoy;(function () {
+	yoy.optionDimensions = ko.observableArray([{ field: 'BranchName', name: 'Branch Level 1' }, { field: 'BranchLvl2', name: 'Branch Level 2' }, { field: 'BranchGroup', name: 'Branch Group' }, { field: 'CostGroup', name: 'Function' }]);
+	yoy.contentIsLoading = ko.observable(false);
+	yoy.breakdownBy = ko.observable('BranchName');
+	yoy.data = ko.observableArray([]);
+	yoy.level = ko.observable(1);
+
+	yoy.refresh = function () {
+		var param = {};
+		param.groups = [yoy.breakdownBy()];
+		yoy.contentIsLoading(true);
+
+		var fetch = function fetch() {
+			toolkit.ajaxPost(viewModel.appName + "report/getdatasga", param, function (res) {
+				yoy.data(res.data);
+				yoy.contentIsLoading(false);
+				yoy.render();
+			}, function () {
+				yoy.contentIsLoading(false);
+			});
+		};
+
+		fetch();
+	};
+
+	yoy.render = function () {
+		var op1 = _.groupBy(yoy.data(), function (d) {
+			return d.AccountGroup;
+		});
+		var op5 = _.map(op1, function (v, k) {
+			return k;
+		});
+		var columnsKey = _.orderBy(op5);
+
+		var op2 = _.groupBy(yoy.data(), function (d) {
+			return d[yoy.breakdownBy()];
+		});
+		var op3 = _.map(op2, function (v, k) {
+			var o = {};
+			o.key = k;
+
+			columnsKey.forEach(function (d, i) {
+				o['col' + i] = {};var k = o['col' + i];
+				k.key = d;
+				k.year2014 = toolkit.sum(_.filter(v, function (e) {
+					return e.Year == 2014 && e.AccountGroup == d;
+				}), function (e) {
+					return e.Amount;
+				});
+				k.year2015 = toolkit.sum(_.filter(v, function (e) {
+					return e.Year == 2015 && e.AccountGroup == d;
+				}), function (e) {
+					return e.Amount;
+				});
+				k.growth = toolkit.number((o['col' + i].year2015 - o['col' + i].year2014) / o['col' + i].year2014) * 100;
+			});
+
+			return o;
+		});
+		var mappedData = _.orderBy(op3, function (d) {
+			return d.key;
+		});
+
+		var firstColumnTitle = yoy.breakdownBy();
+		var breakdownTitleRow = yoy.optionDimensions().find(function (d) {
+			return d.field == firstColumnTitle;
+		});
+		if (toolkit.isDefined(breakdownTitleRow)) {
+			firstColumnTitle = breakdownTitleRow.name;
+		}
+
+		var columns = [{
+			field: 'key',
+			title: firstColumnTitle,
+			width: 200,
+			locked: true,
+			headerAttributes: { style: 'vertical-align: middle; text-align: center; font-weight: bold; border-right: 1px solid #ffffff;' }
+		}].concat(columnsKey.map(function (d, i) {
+			var o = {};
+			o.title = d;
+			o.headerAttributes = { style: 'text-align: center; font-weight: bold; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' };
+			o.columns = [{
+				field: 'col' + i + '.year2015',
+				title: 'FY 2015-2016',
+				width: 100,
+				format: '{0:n0}',
+				attributes: { class: 'align-right' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' }
+			}, {
+				field: 'col' + i + '.year2014',
+				title: 'FY 2014-2015',
+				width: 100,
+				format: '{0:n0}',
+				attributes: { class: 'align-right' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' }
+			}, {
+				field: 'col' + i + '.growth',
+				title: '% Growth',
+				width: 80,
+				format: '{0:n2} %',
+				attributes: { class: 'align-right' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' }
+			}];
+			return o;
+		}));
+
+		var config = {
+			dataSource: {
+				data: mappedData
+			},
+			columns: columns
+		};
+
+		$('#yoy').replaceWith('<div class="breakdown-view ez" id="yoy"></div>');
+		$('#yoy').kendoGrid(config);
 	};
 })();
 
