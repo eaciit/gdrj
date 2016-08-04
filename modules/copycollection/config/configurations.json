@@ -16,6 +16,10 @@
     		"host": "go.eaciit.com:27123",
     		"db": "ecgodrej"
     	},
+        "devel2": {
+            "host": "go.eaciit.com:27123",
+            "db": "ecgodrej_dev2"
+        },
     	"devel": {
     		"host": "52.220.25.190:27123",
     		"db": "ecgodrej"
