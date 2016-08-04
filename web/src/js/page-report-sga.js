@@ -1398,11 +1398,13 @@ let yoy = viewModel.yoy
 	}
 
 	yoy.render = () => {
-		let op1 = _.groupBy(yoy.data(), (d) => d.AccountGroup)
+		let breakdownBy = yoy.breakdownBy()
+
+		let op1 = _.groupBy(yoy.data(), (d) => d[breakdownBy])
 		let op5 = _.map(op1, (v, k) => k)
 		let columnsKey = _.orderBy(op5)
 
-		let op2 = _.groupBy(yoy.data(), (d) => d[yoy.breakdownBy()])
+		let op2 = _.groupBy(yoy.data(), (d) => d.AccountGroup)
 		let op3 = _.map(op2, (v, k) => {
 			let o = {}
 			o.key = k
@@ -1411,10 +1413,10 @@ let yoy = viewModel.yoy
 				o[`col${i}`] = {}; let k = o[`col${i}`]
 				k.key = d
 				k.year2014 = toolkit.sum(_.filter(v, (e) => {
-					return (e.Year == 2014) && (e.AccountGroup == d)
+					return (e.Year == 2014) && (e[breakdownBy] == d)
 				}), (e) => e.Amount)
 				k.year2015 = toolkit.sum(_.filter(v, (e) => {
-					return (e.Year == 2015) && (e.AccountGroup == d)
+					return (e.Year == 2015) && (e[breakdownBy] == d)
 				}), (e) => e.Amount)
 				k.growth = toolkit.number((o[`col${i}`].year2015 - o[`col${i}`].year2014) / o[`col${i}`].year2014) * 100
 			})
@@ -1431,7 +1433,7 @@ let yoy = viewModel.yoy
 
 		let columns = [{
 			field: 'key',
-			title: firstColumnTitle,
+			title: 'P&L',
 			width: 200,
 			locked: true,
 			headerAttributes: { style: 'vertical-align: middle; text-align: center; font-weight: bold; border-right: 1px solid #ffffff;' }
