@@ -274,22 +274,22 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		//=== For data rawdata mode
 
-		branchid := trx.GetString("branchid")
-		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
-		trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
-		trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
-		//trx.Set("addinfo", "Jakarta")
-		if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" {
-			trx.Set("branchgroup", "Jakarta")
-		}
+		// branchid := trx.GetString("branchid")
+		// branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		// trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
+		// trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
+		// //trx.Set("addinfo", "Jakarta")
+		// if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" {
+		// 	trx.Set("branchgroup", "Jakarta")
+		// }
 
-		if trx.GetString("branchgroup") == "" {
-			trx.Set("branchgroup", "OTHER")
-		}
+		// if trx.GetString("branchgroup") == "" {
+		// 	trx.Set("branchgroup", "OTHER")
+		// }
 
-		if trx.GetString("branchlvl2") == "" {
-			trx.Set("branchlvl2", "OTHER")
-		}
+		// if trx.GetString("branchlvl2") == "" {
+		// 	trx.Set("branchlvl2", "OTHER")
+		// }
 
 		//===========================================
 
