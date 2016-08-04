@@ -2049,7 +2049,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
 
-		// CalcSum(trx)
+		CalcSum(trx)
 		trx = CalcCogsPerUnit(trx)
 		// dtkm, _ := toolkit.ToM(trx.Get("key"))
 		// if dtkm.GetString("customer_reportsubchannel") == "R3" {
