@@ -4,6 +4,11 @@
     		"pl_",
     		"outlet_number"
     	],
+        "move": [
+            "raw",
+            "sales",
+            "sga"
+        ],
     	"allpl": [
     		"pl_"
     	],
