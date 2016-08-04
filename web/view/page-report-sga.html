@@ -47,6 +47,9 @@
 		<li role="presentation">
 			<a href="#tab2" role="tab" data-toggle="tab" onclick="sga.title('G&A Direct & Allocated'); au.breakdownBranchGroup([]); au.refresh();">Direct & Allocated</a>
 		</li>
+		<li role="presentation">
+			<a href="#tab3" role="tab" data-toggle="tab" onclick="sga.title('YoY Comparison'); yoy.refresh();">YoY Comparison</a>
+		</li>
 	</ul>
 
 	<!-- Tab panes -->
@@ -202,6 +205,59 @@
 
 
 
+		</div>
+		<div role="tabpanel" class="tab-pane" id="tab3">
+
+
+
+
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin">Year on Year Comparison</h3>
+			<div class="panel-nav-button" data-bind="visible: !au.contentIsLoading()">
+				<div class="form-inline">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: yoy.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#yoy', 'Year on Year Comparison', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div class="filter" data-bind="visible: !yoy.contentIsLoading()">
+				<div class="form-inline pull-right">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Breakdown By</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: yoy.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: yoy.breakdownBy }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+
+			<div data-bind="visible: yoy.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !yoy.contentIsLoading()">
+				<div class="breakdown-view ez" id="yoy"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+	
 		</div>
 	</div>
 	</div>

@@ -140,6 +140,7 @@ let sga = viewModel.sga
 	sga.refresh = (useCache = false) => {
 		let param = {}
 		param.year = parseInt(sga.fiscalYear().split('-')[0], 10)
+		param.groups = [sga.breakdownBy()]
 
 		if (sga.filterBranch().length > 0) {
 			param.branchnames = sga.filterBranch()
@@ -1335,6 +1336,129 @@ let au = viewModel.allocated
 		rpt.buildGridLevels(rows)
 	}
 })()
+
+
+
+
+
+
+
+viewModel.yoy = {}
+let yoy = viewModel.yoy
+
+;(() => {
+	yoy.optionDimensions = ko.observableArray([
+		{ field: 'BranchName', name: 'Branch Level 1' }, 
+		{ field: 'BranchLvl2', name: 'Branch Level 2' }, 
+		{ field: 'BranchGroup', name: 'Branch Group' },
+		{ field: 'CostGroup', name: 'Function' },
+	])
+	yoy.contentIsLoading = ko.observable(false)
+	yoy.breakdownBy = ko.observable('BranchName')
+	yoy.data = ko.observableArray([])
+	yoy.level = ko.observable(1)
+
+	yoy.refresh = () => {
+		let param = {}
+		param.groups = [yoy.breakdownBy()]
+		yoy.contentIsLoading(true)
+
+		let fetch = () => {
+			toolkit.ajaxPost(viewModel.appName + "report/getdatasga", param, (res) => {
+				yoy.data(res.data)
+				yoy.contentIsLoading(false)
+				yoy.render()
+			}, () => {
+				yoy.contentIsLoading(false)
+			})
+		}
+
+		fetch()
+	}
+
+	yoy.render = () => {
+		let op1 = _.groupBy(yoy.data(), (d) => d.AccountGroup)
+		let op5 = _.map(op1, (v, k) => k)
+		let columnsKey = _.orderBy(op5)
+
+		let op2 = _.groupBy(yoy.data(), (d) => d[yoy.breakdownBy()])
+		let op3 = _.map(op2, (v, k) => {
+			let o = {}
+			o.key = k
+
+			columnsKey.forEach((d, i) => {
+				o[`col${i}`] = {}; let k = o[`col${i}`]
+				k.key = d
+				k.year2014 = toolkit.sum(_.filter(v, (e) => {
+					return (e.Year == 2014) && (e.AccountGroup == d)
+				}), (e) => e.Amount)
+				k.year2015 = toolkit.sum(_.filter(v, (e) => {
+					return (e.Year == 2015) && (e.AccountGroup == d)
+				}), (e) => e.Amount)
+				k.growth = toolkit.number((o[`col${i}`].year2015 - o[`col${i}`].year2014) / o[`col${i}`].year2014) * 100
+			})
+
+			return o
+		})
+		let mappedData = _.orderBy(op3, (d) => d.key)
+
+		let firstColumnTitle = yoy.breakdownBy()
+		let breakdownTitleRow = yoy.optionDimensions().find((d) => d.field == firstColumnTitle)
+		if (toolkit.isDefined(breakdownTitleRow)) {
+			firstColumnTitle = breakdownTitleRow.name
+		}
+
+		let columns = [{
+			field: 'key',
+			title: firstColumnTitle,
+			width: 200,
+			locked: true,
+			headerAttributes: { style: 'vertical-align: middle; text-align: center; font-weight: bold; border-right: 1px solid #ffffff;' }
+		}].concat(columnsKey.map((d, i) => {
+			let o = {}
+			o.title = d
+			o.headerAttributes = { style: 'text-align: center; font-weight: bold; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' }
+			o.columns = [{
+				field: `col${i}.year2015`,
+				title: 'FY 2015-2016',
+				width: 100,
+				format: '{0:n0}',
+				attributes: { class: 'align-right' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' }
+			}, {
+				field: `col${i}.year2014`,
+				title: 'FY 2014-2015',
+				width: 100,
+				format: '{0:n0}',
+				attributes: { class: 'align-right' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' }
+			}, {
+				field: `col${i}.growth`,
+				title: '% Growth',
+				width: 80,
+				format: '{0:n2} %',
+				attributes: { class: 'align-right' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' }
+			}]
+			return o
+		}))
+
+		let config = {
+			dataSource: {
+				data: mappedData
+			},
+			columns: columns
+		}
+
+		$('#yoy').replaceWith(`<div class="breakdown-view ez" id="yoy"></div>`)
+		$('#yoy').kendoGrid(config)
+	}
+})()
+
+
+
+
+
 
 
 vm.currentMenu('Analysis')
