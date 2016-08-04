@@ -1952,9 +1952,7 @@ func CleanReportSubChannelBreakdownRD(tkm toolkit.M) {
 }
 
 func CalcCogsPerUnit(tkm toolkit.M) (ntkm toolkit.M) {
-	pllist := []string{"PL0", "PL1", "PL7", "PL2", "PL8", "PL3", "PL4", "PL5", "PL6", "PL6A", "PL7A",
-		"PL8A", "PL9", "PL10", "PL11", "PL12", "PL13", "PL14", "PL14A", "PL15",
-		"PL16", "PL17", "PL18", "PL19", "PL20", "PL21", "PL74", "PL74A", "PL74B"}
+	pllist := []string{"PL0", "PL1", "PL7", "PL2", "PL8", "PL3", "PL4", "PL5", "PL6", "PL6A", "PL7A", "PL8A"}
 
 	inlist := func(str string) bool {
 		for _, v := range pllist {
@@ -1996,18 +1994,18 @@ func CalcCogsPerUnit(tkm toolkit.M) (ntkm toolkit.M) {
 	depreamount := cogsdata.Depre_PerUnit * qty
 	otheramount := cogssubtotal - rmamount - lcamount - energyamount - depreamount
 
-	ntkm.Set("PL9_perunit", -rmamount)
-	ntkm.Set("PL14_perunit", -lcamount)
+	ntkm.Set("PL9", -rmamount)
+	ntkm.Set("PL14", -lcamount)
 	direct := rmamount + lcamount
-	ntkm.Set("PL14A_perunit", -direct)
+	ntkm.Set("PL14A", -direct)
 
-	ntkm.Set("Pl20_perunit", -otheramount)
-	ntkm.Set("PL21_perunit", -depreamount)
-	ntkm.Set("PL74_perunit", -energyamount)
+	ntkm.Set("Pl20", -otheramount)
+	ntkm.Set("PL21", -depreamount)
+	ntkm.Set("PL74", -energyamount)
 	indirect := otheramount + depreamount + energyamount
-	ntkm.Set("PL74A_perunit", -indirect)
+	ntkm.Set("PL74A", -indirect)
 
-	ntkm.Set("PL74B_perunit", -cogssubtotal)
+	ntkm.Set("PL74B", -cogssubtotal)
 
 	return
 }
@@ -2017,7 +2015,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4cogscleanperunit").
+		From("salespls-summary-4cogssgacleanperunit").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -2033,7 +2031,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
-		// CalcSalesVDist20142015(trx)
+		CalcSalesVDist20142015(trx)
 		// CalcSgaRev(trx)
 
 		// CleanUpdateCustomerGroupName(trx)
