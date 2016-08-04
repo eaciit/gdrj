@@ -1199,8 +1199,10 @@ var yoy = viewModel.yoy;(function () {
 	};
 
 	yoy.render = function () {
+		var breakdownBy = yoy.breakdownBy();
+
 		var op1 = _.groupBy(yoy.data(), function (d) {
-			return d.AccountGroup;
+			return d[breakdownBy];
 		});
 		var op5 = _.map(op1, function (v, k) {
 			return k;
@@ -1208,7 +1210,7 @@ var yoy = viewModel.yoy;(function () {
 		var columnsKey = _.orderBy(op5);
 
 		var op2 = _.groupBy(yoy.data(), function (d) {
-			return d[yoy.breakdownBy()];
+			return d.AccountGroup;
 		});
 		var op3 = _.map(op2, function (v, k) {
 			var o = {};
@@ -1218,12 +1220,12 @@ var yoy = viewModel.yoy;(function () {
 				o['col' + i] = {};var k = o['col' + i];
 				k.key = d;
 				k.year2014 = toolkit.sum(_.filter(v, function (e) {
-					return e.Year == 2014 && e.AccountGroup == d;
+					return e.Year == 2014 && e[breakdownBy] == d;
 				}), function (e) {
 					return e.Amount;
 				});
 				k.year2015 = toolkit.sum(_.filter(v, function (e) {
-					return e.Year == 2015 && e.AccountGroup == d;
+					return e.Year == 2015 && e[breakdownBy] == d;
 				}), function (e) {
 					return e.Amount;
 				});
@@ -1246,7 +1248,7 @@ var yoy = viewModel.yoy;(function () {
 
 		var columns = [{
 			field: 'key',
-			title: firstColumnTitle,
+			title: 'P&L',
 			width: 200,
 			locked: true,
 			headerAttributes: { style: 'vertical-align: middle; text-align: center; font-weight: bold; border-right: 1px solid #ffffff;' }
