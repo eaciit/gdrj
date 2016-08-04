@@ -33,22 +33,22 @@
 	<!-- Nav tabs -->
 	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: (!sga.contentIsLoading() && !au.contentIsLoading())">
 		<li role="presentation" class="active">
-			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchName', 'G&A by Branch Level 1');">Branch Level 1</a>
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.resetAllFilters(); sga.changeAndRefresh('BranchName', 'G&A by Branch Level 1');">Branch Level 1</a>
 		</li>
 		<li role="presentation">
-			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchLvl2', 'G&A by Branch Level 2');">Branch Level 2</a>
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.resetAllFilters(); sga.changeAndRefresh('BranchLvl2', 'G&A by Branch Level 2');">Branch Level 2</a>
 		</li>
 		<li role="presentation">
-			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('BranchGroup', 'G&A by Branch Group');">Branch Group</a>
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.resetAllFilters(); sga.changeAndRefresh('BranchGroup', 'G&A by Branch Group');">Branch Group</a>
 		</li>
 		<li role="presentation">
-			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.changeAndRefresh('CostGroup', 'G&A by Function');">Function</a>
+			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.resetAllFilters(); sga.changeAndRefresh('CostGroup', 'G&A by Function');">Function</a>
 		</li>
 		<li role="presentation">
-			<a href="#tab2" role="tab" data-toggle="tab" onclick="sga.title('G&A Direct & Allocated'); au.breakdownBranchGroup([]); au.refresh();">Direct & Allocated</a>
+			<a href="#tab2" role="tab" data-toggle="tab" onclick="sga.resetAllFilters(); au.refresh();">Direct & Allocated</a>
 		</li>
 		<li role="presentation">
-			<a href="#tab3" role="tab" data-toggle="tab" onclick="sga.title('YoY Comparison'); yoy.refresh();">YoY Comparison</a>
+			<a href="#tab3" role="tab" data-toggle="tab" onclick="sga.resetAllFilters(); yoy.refresh();">YoY Comparison</a>
 		</li>
 	</ul>
 
@@ -252,7 +252,15 @@
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 						<span class="input-group-addon align-right">Breakdown By</span>
 						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: yoy.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: yoy.breakdownBy }"></select>
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: yoy.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: yoy.breakdownBy, select: yoy.changeBreakdownBy }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Breakdown Value</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: yoy.optionBreakdownValues, dataValueField: 'Name', dataTextField: 'Name', value: yoy.breakdownValue, placeholder: 'Select breakdown value' }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>

@@ -144,14 +144,19 @@ let sga = viewModel.sga
 
 		sga.title(title)
 
+		sga.breakdownBy(what)
+		sga.filterBy(what)
+		sga.refresh()
+	}
+
+	sga.resetAllFilters = () => {
 		sga.filterBranch([])
 		sga.filterBranchLvl2([])
 		sga.filterBranchGroup([])
 		sga.filterCostGroup([])
-
-		sga.breakdownBy(what)
-		sga.filterBy(what)
-		sga.refresh()
+		au.breakdownBranchGroup([])
+		yoy.breakdownValue([])
+		yoy.changeBreakdownBy()
 	}
 
 	sga.refresh = (useCache = false) => {
@@ -1378,13 +1383,37 @@ let yoy = viewModel.yoy
 	])
 	yoy.contentIsLoading = ko.observable(false)
 	yoy.breakdownBy = ko.observable('BranchName')
+	yoy.optionBreakdownValues = ko.observableArray([])
+	yoy.breakdownValue = ko.observableArray([])
 	yoy.data = ko.observableArray([])
 	yoy.level = ko.observable(1)
+
+	yoy.changeBreakdownBy = () => {
+		toolkit.runAfter(() => {
+			switch (yoy.breakdownBy()) {
+				case 'BranchName': yoy.optionBreakdownValues(rpt.masterData.Branch()); break
+				case 'BranchLvl2': yoy.optionBreakdownValues(sga.optionBranchLvl2()); break
+				case 'BranchGroup': yoy.optionBreakdownValues(rpt.masterData.BranchGroup()); break
+				case 'CostGroup': yoy.optionBreakdownValues(sga.optionFilterCostGroups()); break
+			}
+
+			yoy.breakdownValue([])
+		}, 300)
+	}
 
 	yoy.refresh = () => {
 		let param = {}
 		param.groups = [yoy.breakdownBy()]
 		yoy.contentIsLoading(true)
+
+		if (yoy.breakdownValue().length > 0) {
+			switch (yoy.breakdownBy()) {
+				case 'BranchName': param.branchnames = yoy.breakdownValue(); break
+				case 'BranchLvl2': param.branchlvl2 = yoy.breakdownValue(); break
+				case 'BranchGroup': param.branchgroups = yoy.breakdownValue(); break
+				case 'CostGroup': param.costgroups = yoy.breakdownValue(); break
+			}
+		}
 
 		let fetch = () => {
 			toolkit.ajaxPost(viewModel.appName + "report/getdatasga", param, (res) => {
