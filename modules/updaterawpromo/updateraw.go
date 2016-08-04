@@ -207,7 +207,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 	trx := toolkit.M{}
 	for trx = range jobs {
-		key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		key := trx.Get("_id", toolkit.M{}).(toolkit.M)
 		trx.Set("key", key)
 
 		id := toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|%s", key.GetInt("year"), key.GetString("branchid"),
