@@ -1999,7 +1999,7 @@ func CalcCogsPerUnit(tkm toolkit.M) (ntkm toolkit.M) {
 	direct := rmamount + lcamount
 	ntkm.Set("PL14A", -direct)
 
-	ntkm.Set("Pl20", -otheramount)
+	ntkm.Set("PL20", -otheramount)
 	ntkm.Set("PL21", -depreamount)
 	ntkm.Set("PL74", -energyamount)
 	indirect := otheramount + depreamount + energyamount
