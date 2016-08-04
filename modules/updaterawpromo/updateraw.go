@@ -8,7 +8,7 @@ import (
 	"flag"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
-	"strings"
+	// "strings"
 	"time"
 )
 
@@ -207,6 +207,14 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 	trx := toolkit.M{}
 	for trx = range jobs {
+		key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		trx.Set("key", key)
+
+		id := toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|%s", key.GetInt("year"), key.GetString("branchid"),
+			key.GetString("branchname"), key.GetString("brancharea"), key.GetString("account"),
+			key.GetString("accountdescription"), key.GetString("costgroup"), key.GetString("addinfo"))
+
+		trx.Set("_id", id)
 
 		// tdate := time.Date(trx.GetInt("year"), time.Month(trx.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).
 		// 	AddDate(0, 3, 0)
@@ -322,10 +330,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// }
 		// ====================
 
-		trx.Set("addinfo", "")
-		if trx.GetString("branchid") == "HD11" && strings.Contains(trx.GetString("costcentername"), "Jkt") {
-			trx.Set("addinfo", "Jakarta")
-		}
+		// trx.Set("addinfo", "")
+		// if trx.GetString("branchid") == "HD11" && strings.Contains(trx.GetString("costcentername"), "Jkt") {
+		// 	trx.Set("addinfo", "Jakarta")
+		// }
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
