@@ -89,7 +89,7 @@
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (sga.title() == 'G&A by Branch Level 1')">
 						<span class="input-group-addon align-right">Filter By</span>
 						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: sga.filterbylv1, value: sga.breakdownBy, dataValueField: 'id', dataTextField: 'title', placeholder: 'Select filter', select: sga.selectfilter }"></select>
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: sga.filterbylv1, value: sga.filterBy, dataValueField: 'id', dataTextField: 'title', placeholder: 'Select filter', select: sga.selectfilter }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
@@ -97,12 +97,12 @@
 					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (sga.title() == 'G&A by Branch Level 2')">
 						<span class="input-group-addon align-right">Filter By</span>
 						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: sga.filterbylv2, value: sga.breakdownBy, dataValueField: 'id', dataTextField: 'title', placeholder: 'Select filter', select: sga.selectfilter }"></select>
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: sga.filterbylv2, value: sga.filterBy, dataValueField: 'id', dataTextField: 'title', placeholder: 'Select filter', select: sga.selectfilter }"></select>
 						</div>
 						<div class="clearfix"></div>
 					</div>
 
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (sga.breakdownBy() == 'BranchName')">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (sga.breakdownBy() == 'BranchName' && sga.filterBy() == 'BranchName')">
 						<span class="input-group-addon align-right">Branch Level 1</span>
 						<div class="width-full">
 							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.masterData.Branch, value: sga.filterBranch, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select branches' }"></select>
@@ -110,7 +110,7 @@
 						<div class="clearfix"></div>
 					</div>
 
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (sga.breakdownBy() == 'BranchLvl2')">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: ((sga.breakdownBy() == 'BranchLvl2' && sga.filterBy() == 'BranchLvl2') || (sga.breakdownBy() == 'BranchName'&& sga.filterBy() == 'BranchLvl2'))">
 						<span class="input-group-addon align-right">Branch Level 2</span>
 						<div class="width-full">
 							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: sga.optionBranchLvl2, value: sga.filterBranchLvl2, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select branches' }"></select>
@@ -118,7 +118,7 @@
 						<div class="clearfix"></div>
 					</div>
 
-					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (sga.breakdownBy() == 'BranchGroup')">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: (sga.breakdownBy() == 'BranchGroup' || (sga.filterBy() == 'BranchGroup' && sga.breakdownBy() != 'BranchGroup'))">
 						<span class="input-group-addon align-right">Branch Group</span>
 						<div class="width-full">
 							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.masterData.BranchGroup, value: sga.filterBranchGroup, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select branch groups' }"></select>
@@ -236,7 +236,7 @@
 					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: yoy.refresh" title="Refresh P&L Analysis">
 						<i class="fa fa-refresh"></i> Refresh
 					</button>
-					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#yoy', 'Year on Year Comparison', 'header-content')">
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#yoy', 'Year on Year Comparison', 'kendo')">
 						<i class="fa fa-download"></i> Export as Excel
 					</button>
 					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
