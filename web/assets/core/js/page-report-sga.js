@@ -96,6 +96,8 @@ var sga = viewModel.sga;(function () {
 
 	sga.contentIsLoading = ko.observable(false);
 	sga.breakdownNote = ko.observable('');
+	sga.filterbylv1 = [{ id: "BranchName", title: "Branch Level 1" }, { id: "BranchLvl2", title: "Branch Level 2" }, { id: "BranchGroup", title: "Branch Group" }];
+	sga.filterbylv2 = [{ id: "BranchLvl2", title: "Branch Level 2" }, { id: "BranchGroup", title: "Branch Group" }];
 
 	sga.breakdownBy = ko.observable('BranchName');
 	sga.breakdownValue = ko.observableArray([]);
@@ -129,6 +131,12 @@ var sga = viewModel.sga;(function () {
 				return d.Name;
 			}));
 		});
+	};
+
+	sga.selectfilter = function () {
+		sga.filterBranch([]);
+		sga.filterBranchLvl2([]);
+		sga.filterBranchGroup([]);
 	};
 
 	sga.exportExcel = function () {
@@ -203,19 +211,21 @@ var sga = viewModel.sga;(function () {
 						var groups = [];
 						var groupBy = '';
 						var groupByForInjectingNetSales = '';
-						switch (sga.breakdownBy()) {
-							case 'BranchName':
+						switch (sga.title()) {
+							case 'G&A by Branch Level 1':
 								groupBy = 'customer.branchname';
 								groupByForInjectingNetSales = 'customer.branchname';
 								groups.push('customer.branchid');
+								if (sga.breakdownBy() == 'BranchLvl2') groups.push('customer.branchlvl2');else if (sga.breakdownBy() == 'BranchGroup') groups.push('customer.branchgroup');
 								break;
-							case 'BranchLvl2':
+							case 'G&A by Branch Level 2':
 								groupBy = 'customer.branchlvl2';
 								groupByForInjectingNetSales = 'customer.branchname';
 								groups.push('customer.branchid');
 								groups.push('customer.branchname');
+								if (sga.breakdownBy() == 'BranchGroup') groups.push('customer.branchgroup');
 								break;
-							case 'BranchGroup':
+							case 'G&A by Branch Group':
 								groupBy = 'customer.branchgroup';
 								groupByForInjectingNetSales = 'customer.branchgroup';
 								break;
