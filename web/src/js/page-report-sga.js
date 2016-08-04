@@ -82,6 +82,15 @@ let sga = viewModel.sga
 
 	sga.contentIsLoading = ko.observable(false)
 	sga.breakdownNote = ko.observable('')
+	sga.filterbylv1 = [
+		{ id: "BranchName", title: "Branch Level 1"},
+		{ id: "BranchLvl2", title: "Branch Level 2"},
+		{ id: "BranchGroup", title: "Branch Group"},
+	]
+	sga.filterbylv2 = [
+		{ id: "BranchLvl2", title: "Branch Level 2"},
+		{ id: "BranchGroup", title: "Branch Group"},
+	]
 
 	sga.breakdownBy = ko.observable('BranchName')
 	sga.breakdownValue = ko.observableArray([])
@@ -111,6 +120,12 @@ let sga = viewModel.sga
 		toolkit.ajaxPost(viewModel.appName + "report/getdatamasterbranchlvl2", {}, (res) => {
 			sga.optionBranchLvl2(_.orderBy(res.data, (d) => d.Name))
 		})
+	}
+
+	sga.selectfilter = () => {
+		sga.filterBranch([])
+		sga.filterBranchLvl2([])
+		sga.filterBranchGroup([])
 	}
 
 	sga.exportExcel = () => {
@@ -181,19 +196,25 @@ let sga = viewModel.sga
 					let groups = []
 					let groupBy = ''
 					let groupByForInjectingNetSales = ''
-					switch (sga.breakdownBy()) {
-						case 'BranchName':
+					switch (sga.title()) {
+						case 'G&A by Branch Level 1':
 							groupBy = 'customer.branchname'
 							groupByForInjectingNetSales = 'customer.branchname'
 							groups.push('customer.branchid')
+							if (sga.breakdownBy() == 'BranchLvl2')
+								groups.push('customer.branchlvl2')
+							else if (sga.breakdownBy() == 'BranchGroup')
+								groups.push('customer.branchgroup')
 						break
-						case 'BranchLvl2':
+						case 'G&A by Branch Level 2':
 							groupBy = 'customer.branchlvl2'
 							groupByForInjectingNetSales = 'customer.branchname'
 							groups.push('customer.branchid')
 							groups.push('customer.branchname')
+							if (sga.breakdownBy() == 'BranchGroup')
+								groups.push('customer.branchgroup')
 						break
-						case 'BranchGroup':
+						case 'G&A by Branch Group':
 							groupBy = 'customer.branchgroup'
 							groupByForInjectingNetSales = 'customer.branchgroup'
 						break
