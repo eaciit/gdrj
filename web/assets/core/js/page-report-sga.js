@@ -154,13 +154,18 @@ var sga = viewModel.sga;(function () {
 
 		sga.title(title);
 
+		sga.breakdownBy(what);
+		sga.refresh();
+	};
+
+	sga.resetAllFilters = function () {
 		sga.filterBranch([]);
 		sga.filterBranchLvl2([]);
 		sga.filterBranchGroup([]);
 		sga.filterCostGroup([]);
-
-		sga.breakdownBy(what);
-		sga.refresh();
+		au.breakdownBranchGroup([]);
+		yoy.breakdownValue([]);
+		yoy.changeBreakdownBy();
 	};
 
 	sga.refresh = function () {
@@ -1177,13 +1182,45 @@ var yoy = viewModel.yoy;(function () {
 	yoy.optionDimensions = ko.observableArray([{ field: 'BranchName', name: 'Branch Level 1' }, { field: 'BranchLvl2', name: 'Branch Level 2' }, { field: 'BranchGroup', name: 'Branch Group' }, { field: 'CostGroup', name: 'Function' }]);
 	yoy.contentIsLoading = ko.observable(false);
 	yoy.breakdownBy = ko.observable('BranchName');
+	yoy.optionBreakdownValues = ko.observableArray([]);
+	yoy.breakdownValue = ko.observableArray([]);
 	yoy.data = ko.observableArray([]);
 	yoy.level = ko.observable(1);
+
+	yoy.changeBreakdownBy = function () {
+		toolkit.runAfter(function () {
+			switch (yoy.breakdownBy()) {
+				case 'BranchName':
+					yoy.optionBreakdownValues(rpt.masterData.Branch());break;
+				case 'BranchLvl2':
+					yoy.optionBreakdownValues(sga.optionBranchLvl2());break;
+				case 'BranchGroup':
+					yoy.optionBreakdownValues(rpt.masterData.BranchGroup());break;
+				case 'CostGroup':
+					yoy.optionBreakdownValues(sga.optionFilterCostGroups());break;
+			}
+
+			yoy.breakdownValue([]);
+		}, 300);
+	};
 
 	yoy.refresh = function () {
 		var param = {};
 		param.groups = [yoy.breakdownBy()];
 		yoy.contentIsLoading(true);
+
+		if (yoy.breakdownValue().length > 0) {
+			switch (yoy.breakdownBy()) {
+				case 'BranchName':
+					param.branchnames = yoy.breakdownValue();break;
+				case 'BranchLvl2':
+					param.branchlvl2 = yoy.breakdownValue();break;
+				case 'BranchGroup':
+					param.branchgroups = yoy.breakdownValue();break;
+				case 'CostGroup':
+					param.costgroups = yoy.breakdownValue();break;
+			}
+		}
 
 		var fetch = function fetch() {
 			toolkit.ajaxPost(viewModel.appName + "report/getdatasga", param, function (res) {
