@@ -1374,7 +1374,7 @@ func prepmasternewsgaalloc() {
 
 		year := dtkm.GetInt("date_year")
 		month := dtkm.GetInt("date_month")
-		branchid := dtkm.GetString("customer_branchid")
+		branchgroup := dtkm.GetString("customer_branchgroup")
 		skuid := dtkm.GetString("product_skuid")
 		dproduct := masterproduct.Get(skuid, toolkit.M{}).(toolkit.M)
 		brandcategory := dproduct.GetString("brandcategoryid")
@@ -1382,7 +1382,7 @@ func prepmasternewsgaalloc() {
 			brandcategory = ""
 		}
 
-		dkey := toolkit.Sprintf("%d_%d_%s", year, month, branchid)
+		dkey := toolkit.Sprintf("%d_%d_%s", year, month, branchgroup)
 		akey01 := toolkit.Sprintf("%d_%d_%s", year, month, brandcategory)
 		akey := toolkit.Sprintf("%d_%d", year, month)
 
@@ -1435,8 +1435,8 @@ func prepmasternewsgaalloc() {
 		subtot += tkm.GetFloat64("min_amountinidr")
 		date := time.Date(tkm.GetInt("year"), time.Month(tkm.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 
-		branchid := tkm.GetString("branchid")
-		key := toolkit.Sprintf("%d_%d_%s", date.Year(), date.Month(), branchid)
+		branchgroup := tkm.GetString("branchgroup")
+		key := toolkit.Sprintf("%d_%d_%s", date.Year(), date.Month(), branchgroup)
 
 		plcode := "PL33"
 		grouping := tkm.GetString("grouping")
@@ -1548,6 +1548,38 @@ func prepmasternewsgaalloc() {
 	masters.Set("newsgadirect", newsgadirect)
 	masters.Set("newsgaalloc", newsgaalloc)
 }
+
+/*
+func prepmasternewchannelsgaalloc() {
+	//salespls-summary-4cogssgafinal
+	toolkit.Println("--> Prepare data to for new channel sgaalloc")
+
+	f := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select("key", "PL8A").Where(f).From("salespls-summary-4cogssgafinal").Cursor(nil)
+	defer csr.Close()
+
+	toolkit.Println("--> Read data source allocated : ", csr.Count())
+	sgaallocatedist := map[string]toolkit.M{}
+	sgadirectdist := map[string]toolkit.M{}
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+		// key := toolkit.Sprintf("%s_%d_%s_%s", dtkm.GetString(k))
+
+		for i := 0; i < count; i++ {
+
+		}
+	}
+	toolkit.Println("--> Done read data source allocated : ")
+	masters.Set("sgaallocatedist", sgaallocatedist)
+	masters.Set("sgadirectdist", sgadirectdist)
+}
+*/
 
 func main() {
 	t0 = time.Now()
@@ -2273,7 +2305,7 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 
 	year := dtkm.GetInt("date_year")
 	month := dtkm.GetInt("date_month")
-	branchid := dtkm.GetString("customer_branchid")
+	branchgroup := dtkm.GetString("customer_branchgroup")
 	skuid := dtkm.GetString("product_skuid")
 	dproduct := masterproduct.Get(skuid, toolkit.M{}).(toolkit.M)
 
@@ -2282,7 +2314,7 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 		brandcategory = ""
 	}
 
-	dkey := toolkit.Sprintf("%d_%d_%s", year, month, branchid)
+	dkey := toolkit.Sprintf("%d_%d_%s", year, month, branchgroup)
 	akey01 := toolkit.Sprintf("%d_%d_%s", year, month, brandcategory)
 	akey := toolkit.Sprintf("%d_%d", year, month)
 	//Direct - Allocated
