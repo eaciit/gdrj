@@ -1536,6 +1536,11 @@ func prepmasternewsgaalloc() {
 		}
 	}
 
+	arrstr := []string{"MD01", "MD02", "MD03", "MD05", "MD31", "MD41"}
+	for _, v := range arrstr {
+		toolkit.Println(v, " : ", getlistbrandcategory(v))
+	}
+
 	toolkit.Println("--> Recheck Allocated ::. ", suballocated)
 
 	masters.Set("newsgadirect", newsgadirect)
