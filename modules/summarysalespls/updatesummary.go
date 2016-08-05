@@ -1780,8 +1780,16 @@ func prepmasternewchannelsgaalloc() {
 	masters.Set("sgaallocatedist", sgaallocatedist)
 	masters.Set("sgadirectdist", sgadirectdist)
 
+	arrstr := []string{"I1", "I2", "I3"}
 	subtotal = float64(0)
-	for _, v := range sgaallocatedist {
+	for tk, v := range sgaallocatedist {
+		for _, str := range arrstr {
+			skey := toolkit.Sprintf("%s_%s", tk, str)
+			if !channelratio.Has(skey) {
+				toolkit.Println("ALLOC : ", tk)
+			}
+		}
+
 		for k, _ := range v {
 			subtotal += v.GetFloat64(k)
 		}
@@ -1790,7 +1798,14 @@ func prepmasternewchannelsgaalloc() {
 	toolkit.Printfn("Total Allocated : %v", subtotal)
 
 	subtotal = float64(0)
-	for _, v := range sgadirectdist {
+	for tk, v := range sgadirectdist {
+		for _, str := range arrstr {
+			skey := toolkit.Sprintf("%s_%s", tk, str)
+			if !channelratio.Has(skey) {
+				toolkit.Println("DIRECT : ", tk)
+			}
+		}
+
 		for k, _ := range v {
 			subtotal += v.GetFloat64(k)
 		}
