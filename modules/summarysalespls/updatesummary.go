@@ -2717,7 +2717,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// trx = CalcNewSgaData(trx)
 
-		// CalcNewSgaChannelData(trx)
+		CalcNewSgaChannelData(trx)
 		CalcSum(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
