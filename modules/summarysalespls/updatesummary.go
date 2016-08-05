@@ -1761,7 +1761,9 @@ func prepmasternewchannelsgaalloc() {
 
 			i++
 			if i < 5 {
-				toolkit.Println(channelid, " : ", keysga, " : ", key, " [", sgasubtotalchan, "] ", asgasubtotalchan, " + ", dsgasubtotalchan)
+				toolkit.Println(channelid, " : ", keysga, " : ", key)
+				toolkit.Println("[", sgasubtotalchan, "] ", asgasubtotalchan, " + ", dsgasubtotalchan)
+				toolkit.Println(xsgatotal, " := ", subtotallocated, " + ", subtotdirect)
 			}
 		}
 
