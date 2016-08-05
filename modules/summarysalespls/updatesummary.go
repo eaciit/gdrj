@@ -1608,6 +1608,24 @@ func prepmasternewchannelsgaalloc() {
 
 	toolkit.Println("--> Done read data source allocated : ")
 
+	subtotal := float64(0)
+	for _, v := range sgaallocatedist {
+		for k, _ := range v {
+			subtotal += v.GetFloat64(k)
+		}
+	}
+
+	toolkit.Printfn("Total Allocated : %v", subtotal)
+
+	subtotal = float64(0)
+	for _, v := range sgadirectdist {
+		for k, _ := range v {
+			subtotal += v.GetFloat64(k)
+		}
+	}
+
+	toolkit.Printfn("Total Direct : %v", subtotal)
+
 	totalsga := float64(0)
 	for _, val := range globalsga {
 		totalsga += val
@@ -1716,6 +1734,24 @@ func prepmasternewchannelsgaalloc() {
 
 	masters.Set("sgaallocatedist", sgaallocatedist)
 	masters.Set("sgadirectdist", sgadirectdist)
+
+	subtotal = float64(0)
+	for _, v := range sgaallocatedist {
+		for k, _ := range v {
+			subtotal += v.GetFloat64(k)
+		}
+	}
+
+	toolkit.Printfn("Total Allocated : %v", subtotal)
+
+	subtotal = float64(0)
+	for _, v := range sgadirectdist {
+		for k, _ := range v {
+			subtotal += v.GetFloat64(k)
+		}
+	}
+
+	toolkit.Printfn("Total Direct : %v", subtotal)
 
 	masters.Set("channelratio", channelratio)
 }
@@ -2638,7 +2674,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// trx = CalcNewSgaData(trx)
 
-		CalcNewSgaChannelData(trx)
+		// CalcNewSgaChannelData(trx)
 		CalcSum(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
