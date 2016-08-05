@@ -1378,6 +1378,9 @@ func prepmasternewsgaalloc() {
 		skuid := dtkm.GetString("product_skuid")
 		dproduct := masterproduct.Get(skuid, toolkit.M{}).(toolkit.M)
 		brandcategory := dproduct.GetString("brandcategoryid")
+		if len(brandcategory) < 3 {
+			brandcategory = ""
+		}
 
 		dkey := toolkit.Sprintf("%d_%d_%s", year, month, branchid)
 		akey01 := toolkit.Sprintf("%d_%d_%s", year, month, brandcategory)
@@ -1416,6 +1419,9 @@ func prepmasternewsgaalloc() {
 	newsgaalloc := map[string]toolkit.M{}
 
 	subtot := float64(0)
+	subdirect := float64(0)
+	suballocated := float64(0)
+
 	// tkm.GetFloat64("min_amountinidr")
 	for {
 
@@ -1449,6 +1455,8 @@ func prepmasternewsgaalloc() {
 
 			gnsgatkm := nsgatkm.Get(plcode, toolkit.M{}).(toolkit.M)
 
+			subdirect += tkm.GetFloat64("min_amountinidr")
+
 			val := gnsgatkm.GetFloat64(costgroup) + tkm.GetFloat64("min_amountinidr")
 			gnsgatkm.Set(costgroup, val)
 			nsgatkm.Set(plcode, gnsgatkm)
@@ -1466,8 +1474,11 @@ func prepmasternewsgaalloc() {
 					keylistcategory = append(keylistcategory, v)
 				}
 			}
-
-			val := toolkit.Div(tkm.GetFloat64("min_amountinidr"), toolkit.ToFloat64(len(keylistcategory), 2, toolkit.RoundingAuto))
+			val := tkm.GetFloat64("min_amountinidr")
+			nkey := toolkit.ToFloat64(len(keylistcategory), 2, toolkit.RoundingAuto)
+			if nkey > 0 {
+				val = toolkit.Div(tkm.GetFloat64("min_amountinidr"), nkey)
+			}
 
 			for _, v := range keylistcategory {
 				key = toolkit.Sprintf("%d_%d_%s", date.Year(), date.Month(), v)
@@ -1496,16 +1507,23 @@ func prepmasternewsgaalloc() {
 
 				gnsgatkm := nsgatkm.Get(plcode, toolkit.M{}).(toolkit.M)
 
-				xval := gnsgatkm.GetFloat64(costgroup) + tkm.GetFloat64("min_amountinidr")
+				xval := gnsgatkm.GetFloat64(costgroup) + val
 				gnsgatkm.Set(costgroup, xval)
 				nsgatkm.Set(plcode, gnsgatkm)
 
 				newsgaalloc[key] = nsgatkm
 			}
+
+			if nkey > 0 {
+				suballocated += (nkey * val)
+			} else {
+				suballocated += val
+			}
+
 		}
 	}
 
-	toolkit.Println("--> Done read data rawdatapl-sga ::. ", subtot)
+	toolkit.Println("--> Done read data rawdatapl-sga ::. ", subtot, " = ", subdirect, " + ", suballocated)
 
 	i = 0
 	for k, _ := range newsgaalloc {
@@ -2251,6 +2269,9 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 	dproduct := masterproduct.Get(skuid, toolkit.M{}).(toolkit.M)
 
 	brandcategory := dproduct.GetString("brandcategoryid")
+	if len(brandcategory) < 3 {
+		brandcategory = ""
+	}
 
 	dkey := toolkit.Sprintf("%d_%d_%s", year, month, branchid)
 	akey01 := toolkit.Sprintf("%d_%d_%s", year, month, brandcategory)
