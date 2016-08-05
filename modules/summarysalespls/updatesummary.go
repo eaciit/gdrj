@@ -1791,8 +1791,12 @@ func prepmasternewchannelsgaalloc() {
 			skey := toolkit.Sprintf("%s_%s", tk, str)
 			if !channelratio.Has(skey) {
 				arrkey := strings.Split(tk, "_")
-				tkey = toolkit.Sprintf("%s_%s_%s", arrkey[0], arrkey[2], arrkey[3])
-				skey = toolkit.Sprintf("%s_%s", tkey, str)
+				if len(arrkey) > 3 {
+					tkey = toolkit.Sprintf("%s_%s_%s", arrkey[0], arrkey[2], arrkey[3])
+					skey = toolkit.Sprintf("%s_%s", tkey, str)
+				} else {
+					toolkit.Println(tk)
+				}
 			}
 		}
 
@@ -1824,8 +1828,12 @@ func prepmasternewchannelsgaalloc() {
 			skey := toolkit.Sprintf("%s_%s", tk, str)
 			if !channelratio.Has(skey) {
 				arrkey := strings.Split(tk, "_")
-				tkey = toolkit.Sprintf("%s_%s_%s", arrkey[0], arrkey[2], arrkey[3])
-				skey = toolkit.Sprintf("%s_%s", tkey, str)
+				if len(arrkey) > 3 {
+					tkey = toolkit.Sprintf("%s_%s_%s", arrkey[0], arrkey[2], arrkey[3])
+					skey = toolkit.Sprintf("%s_%s", tkey, str)
+				} else {
+					toolkit.Println(tk)
+				}
 			}
 		}
 
