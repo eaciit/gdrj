@@ -67,11 +67,17 @@ func CalcSum(tkm toolkit.M, masters toolkit.M) {
 		case "G&A Expenses":
 			sga += Amount
 			//Direct - Allocated
+			skey := toolkit.Sprintf("%s_Direct", ar01k[0])
 			if ar01k[1] == "Direct" {
 				sgadirect += Amount
 			} else {
+				skey := toolkit.Sprintf("%s_Allocated", ar01k[0])
 				sgaallocated += Amount
 			}
+
+			tval := Amount + tkm.GetFloat64(skey)
+			tkm.Set(skey, tval)
+
 		case "Non Operating (Income) / Exp":
 			nonoprincome += Amount
 		case "Tax Expense":
