@@ -272,37 +272,37 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// 	trx.Set("branchgroup", "OTHER")
 		// }
 
-		if trx.GetString("accountdescription") == "#N/A" {
-			trx.Set("accountdescription", "CONSUMABLE STORES & SPARES")
-		}
+		// if trx.GetString("accountdescription") == "#N/A" {
+		// 	trx.Set("accountdescription", "CONSUMABLE STORES & SPARES")
+		// }
 
-		if trx.GetString("grouping") == "#N/A" {
-			trx.Set("grouping", "General and administrative expenses")
-		}
+		// if trx.GetString("grouping") == "#N/A" {
+		// 	trx.Set("grouping", "General and administrative expenses")
+		// }
 
 		//=== For data rawdata mode
 
-		branchid := trx.GetString("branchid")
-		if !masterbranch.Has(branchid) {
-			branchid = "CD00"
-		}
+		// branchid := trx.GetString("branchid")
+		// if !masterbranch.Has(branchid) {
+		// 	branchid = "CD00"
+		// }
 
-		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
-		trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
-		trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
-		trx.Set("idbranchlvl2", branchgroup.GetString("idbranchlvl2"))
+		// branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		// trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
+		// trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
+		// trx.Set("idbranchlvl2", branchgroup.GetString("idbranchlvl2"))
 
-		if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" && trx.GetString("ccid") != "HD110313" {
-			trx.Set("branchgroup", "Jakarta")
-		}
+		// if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" && trx.GetString("ccid") != "HD110313" {
+		// 	trx.Set("branchgroup", "Jakarta")
+		// }
 
-		if trx.GetString("branchgroup") == "" {
-			trx.Set("branchgroup", "OTHER")
-		}
+		// if trx.GetString("branchgroup") == "" {
+		// 	trx.Set("branchgroup", "OTHER")
+		// }
 
-		if trx.GetString("branchlvl2") == "" {
-			trx.Set("branchlvl2", "OTHER")
-		}
+		// if trx.GetString("branchlvl2") == "" {
+		// 	trx.Set("branchlvl2", "OTHER")
+		// }
 
 		//idbranchlvl2
 
@@ -310,35 +310,35 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		//=== For data salespls-summary mode consolidate
 
-		// key := trx.Get("key", toolkit.M{}).(toolkit.M)
-		// branchid := key.GetString("customer_branchid")
+		key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		branchid := key.GetString("customer_branchid")
 
-		// branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
-		// key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
-		// key.Set("customer_branchlvl2", branchgroup.GetString("branchlvl2"))
+		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
+		key.Set("customer_branchlvl2", branchgroup.GetString("branchlvl2"))
 
-		// if key.GetString("customer_branchgroup") == "" {
-		// 	key.Set("customer_branchgroup", "OTHER")
-		// }
+		if key.GetString("customer_branchgroup") == "" {
+			key.Set("customer_branchgroup", "OTHER")
+		}
 
-		// if key.GetString("customer_branchlvl2") == "" {
-		// 	key.Set("customer_branchlvl2", "OTHER")
-		// }
+		if key.GetString("customer_branchlvl2") == "" {
+			key.Set("customer_branchlvl2", "OTHER")
+		}
 
-		// /*other fix*/
-		// if key.GetString("customer_reportsubchannel") == "R3" {
-		// 	key.Set("customer_reportsubchannel", "R3 - Retailer Umum")
-		// }
+		/*other fix*/
+		if key.GetString("customer_reportsubchannel") == "R3" {
+			key.Set("customer_reportsubchannel", "R3 - Retailer Umum")
+		}
 
-		// if key.GetString("customer_region") == "" || key.GetString("customer_region") == "Other" {
-		// 	key.Set("customer_region", "OTHER")
-		// }
+		if key.GetString("customer_region") == "" || key.GetString("customer_region") == "Other" {
+			key.Set("customer_region", "OTHER")
+		}
 
-		// if key.GetString("customer_zone") == "" || key.GetString("customer_zone") == "Other" {
-		// 	key.Set("customer_zone", "OTHER")
-		// }
+		if key.GetString("customer_zone") == "" || key.GetString("customer_zone") == "Other" {
+			key.Set("customer_zone", "OTHER")
+		}
 
-		// trx.Set("key", key)
+		trx.Set("key", key)
 		//============================================
 
 		// For cogs consolidate
