@@ -1378,6 +1378,8 @@ func prepmasternewsgaalloc() {
 	newsgadirect := map[string]toolkit.M{}
 	newsgaalloc := map[string]toolkit.M{}
 
+	subtot := float64(0)
+	// tkm.GetFloat64("min_amountinidr")
 	for {
 
 		//For HD11 -> addinfo : Jakarta
@@ -1387,6 +1389,7 @@ func prepmasternewsgaalloc() {
 		if e != nil {
 			break
 		}
+		subtot += tkm.GetFloat64("min_amountinidr")
 		date := time.Date(tkm.GetInt("year"), time.Month(tkm.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 
 		branchid := tkm.GetString("branchid")
@@ -1464,7 +1467,7 @@ func prepmasternewsgaalloc() {
 		}
 	}
 
-	toolkit.Println("--> Done read data rawdatapl-sga ::. ")
+	toolkit.Println("--> Done read data rawdatapl-sga ::. ", subtot)
 
 	masters.Set("newsgadirect", newsgadirect)
 	masters.Set("newsgaalloc", newsgaalloc)
