@@ -1465,7 +1465,7 @@ func prepmasternewsgaalloc() {
 		} else {
 			//list brand category
 			listcategory := []string{}
-			// listcategory := getlistbrandcategory(tkm.GetString("branchid"))
+			listcategory = getlistbrandcategory(tkm.GetString("branchid"))
 			keylistcategory := []string{}
 
 			for _, v := range listcategory {
