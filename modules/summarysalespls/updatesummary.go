@@ -1478,6 +1478,8 @@ func prepmasternewsgaalloc() {
 			nkey := toolkit.ToFloat64(len(keylistcategory), 2, toolkit.RoundingAuto)
 			if nkey > 0 {
 				val = toolkit.Div(tkm.GetFloat64("min_amountinidr"), nkey)
+			} else {
+
 			}
 
 			for _, v := range keylistcategory {
@@ -1494,10 +1496,10 @@ func prepmasternewsgaalloc() {
 				gnsgatkm.Set(costgroup, xval)
 				nsgatkm.Set(plcode, gnsgatkm)
 
-				newsgadirect[key] = nsgatkm
+				newsgaalloc[key] = nsgatkm
 			}
 
-			if len(keylistcategory) == 0 {
+			if nkey == 0 {
 				key = toolkit.Sprintf("%d_%d", date.Year(), date.Month())
 
 				nsgatkm, exist := newsgaalloc[key]
@@ -1536,10 +1538,10 @@ func prepmasternewsgaalloc() {
 		}
 	}
 
-	arrstr := []string{"MD01", "MD02", "MD03", "MD05", "MD31", "MD41"}
-	for _, v := range arrstr {
-		toolkit.Println(v, " : ", getlistbrandcategory(v))
-	}
+	// arrstr := []string{"MD01", "MD02", "MD03", "MD05", "MD31", "MD41"}
+	// for _, v := range arrstr {
+	// 	toolkit.Println(v, " : ", getlistbrandcategory(v))
+	// }
 
 	toolkit.Println("--> Recheck Allocated ::. ", suballocated)
 
