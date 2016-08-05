@@ -1801,6 +1801,7 @@ func prepmasternewchannelsgaalloc() {
 		}
 
 		if tkey != "" {
+			delete(sgaallocatedist, tk)
 			tkm, exist := sgaallocatedist[tkey]
 			if !exist {
 				tkm = toolkit.M{}
@@ -1839,6 +1840,7 @@ func prepmasternewchannelsgaalloc() {
 		}
 
 		if tkey != "" {
+			delete(sgadirectdist, tk)
 			tkm, exist := sgadirectdist[tkey]
 			if !exist {
 				tkm = toolkit.M{}
