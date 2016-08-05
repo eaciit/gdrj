@@ -1709,9 +1709,9 @@ func prepmasternewchannelsgaalloc() {
 				dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
 
 			netsales := tkm.GetFloat64("PL8A")
-			sgasubtotalchan := netsales * 0.1
+			sgasubtotalchan := -netsales * 0.1
 			if channelid == "I6" {
-				sgasubtotalchan = netsales * 0.08
+				sgasubtotalchan = -netsales * 0.08
 			}
 
 			subtotallocated := float64(0)
@@ -1761,9 +1761,9 @@ func prepmasternewchannelsgaalloc() {
 
 			i++
 			if i < 5 {
-				toolkit.Println(channelid, " : ", keysga, " : ", key)
-				toolkit.Println("[", sgasubtotalchan, "] ", asgasubtotalchan, " + ", dsgasubtotalchan)
-				toolkit.Println(xsgatotal, " := ", subtotallocated, " + ", subtotdirect)
+				// toolkit.Println(channelid, " : ", keysga, " : ", key)
+				// toolkit.Println("[", sgasubtotalchan, "] ", asgasubtotalchan, " + ", dsgasubtotalchan)
+				// toolkit.Println(xsgatotal, " := ", subtotallocated, " + ", subtotdirect)
 			}
 		}
 
