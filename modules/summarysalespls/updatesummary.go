@@ -1485,7 +1485,7 @@ func prepmasternewsgaalloc() {
 			for _, v := range keylistcategory {
 				key = toolkit.Sprintf("%d_%d_%s", date.Year(), date.Month(), v)
 
-				nsgatkm, exist := newsgadirect[key]
+				nsgatkm, exist := newsgaalloc[key]
 				if !exist {
 					nsgatkm = toolkit.M{}
 				}
