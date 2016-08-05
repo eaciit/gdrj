@@ -1569,6 +1569,9 @@ func prepmasternewchannelsgaalloc() {
 	globalsga := map[string]float64{}
 
 	for {
+
+		iscount++
+
 		tkm := toolkit.M{}
 		e := csr.Fetch(&tkm, 1, false)
 		if e != nil {
