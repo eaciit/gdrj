@@ -1859,6 +1859,97 @@ func prepmasternewchannelsgaalloc() {
 	}
 	toolkit.Printfn("Total Direct : %v", subtotaldirect)
 
+	//RD 0.21 I1
+	fi := dbox.And(f, dbox.Eq("key.customer_channelid", "I1"))
+	i1csr, _ := conn.NewQuery().Select().Where(fi).From("salespls-summary-res2").Cursor(nil)
+	defer i1csr.Close()
+
+	scount = i1csr.Count()
+	toolkit.Println("--> Read data salespls-summary-res2 for I1 allocated : ", scount)
+	iscount = 0
+	step = getstep(scount) * 20
+
+	majorsgatotal := subtotalallocated + subtotaldirect
+	majorsgatotalI1 := majorsgatotal * 0.21
+
+	// avsubtotalallocated := float64(0)
+	// avsubtotaldirect := float64(0)
+	avsubtotal := float64(0)
+	for k, _ := range channelratio["I1"] {
+		_, exist := sgadirectdist[k]
+		if exist {
+			for xk, _ := range sgadirectdist[k] {
+				avsubtotal += sgadirectdist[k].GetFloat64(xk)
+			}
+		}
+
+		_, exist = sgaallocatedist[k]
+		if exist {
+			for xk, _ := range sgaallocatedist[k] {
+				avsubtotal += sgaallocatedist[k].GetFloat64(xk)
+			}
+		}
+	}
+
+	// avsubtotal := avsubtotalallocated + avsubtotaldirect
+	ratiotoav := toolkit.Div(majorsgatotalI1, avsubtotal)
+
+	for {
+
+		iscount++
+
+		tkm := toolkit.M{}
+		e := i1csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+		// channelid := dtkm.GetString("customer_channelid")
+		keysga := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
+
+		netsales := tkm.GetFloat64("PL8A")
+		ratiobynetsales := toolkit.Div(netsales, channelratio["I1"].GetFloat64(keysga))
+
+		//////================
+		tkmsgaalloc, exist := sgaallocatedist[keysga]
+		if !exist {
+			tkmsgaalloc = toolkit.M{}
+		}
+
+		for k, _ := range tkmsgaalloc {
+			val := tkmsgaalloc.GetFloat64(k) * ratiotoav * ratiobynetsales
+			tkm.Set(k, val)
+		}
+
+		tkmsgadirect, exist := sgadirectdist[keysga]
+		if !exist {
+			tkmsgadirect = toolkit.M{}
+		}
+
+		for k, _ := range tkmsgadirect {
+			val := tkmsgadirect.GetFloat64(k) * ratiotoav * ratiobynetsales
+			tkm.Set(k, val)
+		}
+
+		_ = qSave.Exec(toolkit.M{}.Set("data", tkm))
+
+		if iscount%step == 0 {
+			toolkit.Printfn("Sending %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t0).String())
+		}
+	}
+
+	//================MT 0.49 I3
+	fi = dbox.And(f, dbox.Eq("key.customer_channelid", "I3"))
+	i3csr, _ := conn.NewQuery().Select().Where(fi).From("salespls-summary-res2").Cursor(nil)
+	defer i3csr.Close()
+
+	//================GT 0.30 I2
+	fi = dbox.And(f, dbox.Eq("key.customer_channelid", "I2"))
+	i2csr, _ := conn.NewQuery().Select().Where(fi).From("salespls-summary-res2").Cursor(nil)
+	defer i2csr.Close()
+
 	masters.Set("sgaallocatedist", sgaallocatedist)
 	masters.Set("sgadirectdist", sgadirectdist)
 
