@@ -1356,6 +1356,16 @@ func prepmasternewsgaalloc() {
 		keys.Set(akey, val)
 	}
 
+	i := 0
+	// toolkit.Println(dkey, " : ", akey, " : ", akey01)
+	for k, v := range keys {
+		i++
+		if i > 15 {
+			break
+		}
+		toolkit.Println(k, " : ", v)
+	}
+
 	masters.Set("ratio4sga", keys)
 
 	toolkit.Println("--> Done read data keys ::. ")
@@ -2200,6 +2210,16 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 	netsales := tkm.GetFloat64("PL8A")
 	ratio4sga := masters.Get("ratio4sga", toolkit.M{}).(toolkit.M)
 
+	i := 0
+	toolkit.Println(dkey, " : ", akey, " : ", akey01)
+	for k, v := range ratio4sga {
+		i++
+		if i > 15 {
+			break
+		}
+		toolkit.Println(k, " : ", v)
+	}
+
 	newsgadirect := masters.Get("newsgadirect", map[string]toolkit.M{}).(map[string]toolkit.M)
 	newsgaalloc := masters.Get("newsgaalloc", map[string]toolkit.M{}).(map[string]toolkit.M)
 	// masters.Set("newsgaalloc", newsgaalloc)
@@ -2208,7 +2228,7 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 		directtkm, _ := toolkit.ToM(val)
 		for xkey, xval := range directtkm {
 			plcode := toolkit.Sprintf("%s_Direct_%s", key, xkey)
-			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * netsales / ratio4sga.GetFloat64(dkey)) + tkm.GetFloat64(plcode)
+			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * toolkit.Div(netsales, ratio4sga.GetFloat64(dkey))) + tkm.GetFloat64(plcode)
 			tkm.Set(plcode, val)
 		}
 	}
