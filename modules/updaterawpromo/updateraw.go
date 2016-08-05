@@ -355,7 +355,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// }
 
 		// i := 1
-		ratio := float64(3337787021) / float64(207883342760)
+		ratio := float64(3337787.02099609) / float64(207880004972.979)
 		key := trx.Get("key", toolkit.M{}).(toolkit.M)
 		if key.GetString("date_fiscal") == "2014-2015" {
 			for k, _ := range trx {
