@@ -697,15 +697,15 @@ rpt.hardcodePLGA = function (data, plmodels) {
 rpt.showExpandAll = function (a) {
 	if (a == true) {
 		$('tr.dd').find('i').removeClass('fa-chevron-right');
-		$('tr.dd[idheaderpl=\'PL0\']').find('i').addClass('fa-chevron-up');
-		$('tr.dd[idheaderpl!=\'PL0\']').find('i').addClass('fa-chevron-down');
+		$('tr.dd[idheaderpl=\'PL0\']').find('i').addClass('fa fa-chevron-up');
+		$('tr.dd[idheaderpl!=\'PL0\']').find('i').addClass('fa fa-chevron-down');
 		$('tr[idparent]').css('display', '');
 		$('tr[idcontparent]').css('display', '');
 		$('tr[statusvaltemp=hide]').css('display', 'none');
 	} else {
 		$('tr.dd').find('i').removeClass('fa-chevron-up');
 		$('tr.dd').find('i').removeClass('fa-chevron-down');
-		$('tr.dd').find('i').addClass('fa-chevron-right');
+		$('tr.dd').find('i').addClass('fa fa-chevron-right');
 		$('tr[idparent]').css('display', 'none');
 		$('tr[idcontparent]').css('display', 'none');
 		$('tr[statusvaltemp=hide]').css('display', 'none');
@@ -940,6 +940,11 @@ rpt.buildGridLevels = function (rows) {
 							$trElem.insertAfter($('tr[idheaderpl=' + PLyo.PLCode + ']'));
 							$columnElem.insertAfter($('tr[idpl=' + PLyo.PLCode + ']'));
 						}
+
+						if ($trElem.attr('idparent') == "PL33" || $trElem.attr('idparent') == "PL34" || $trElem.attr('idparent') == "PL35" || $trElem.attr('idparent') == 'PL33_allocated' || $trElem.attr('idparent') == 'PL34_allocated' || $trElem.attr('idparent') == 'PL35_allocated') {
+							var texthtml = $trElem.find('td:eq(0)').text();
+							$trElem.find('td:eq(0)').text(texthtml.substring(5, texthtml.length));
+						}
 					}
 				}
 			}
@@ -1025,7 +1030,7 @@ rpt.hideAllChild = function (PLCode) {
 		if (child > 0) {
 			var $c = $('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']');
 			$($c).find('i').removeClass('fa-chevron-up');
-			$($c).find('i').addClass('fa-chevron-right');
+			$($c).find('i').addClass('fa fa-chevron-right');
 			$('tr[idparent=' + $c.attr('idheaderpl') + ']').css('display', 'none');
 			$('tr[idcontparent=' + $c.attr('idheaderpl') + ']').css('display', 'none');
 			rpt.hideAllChild($c.attr('idheaderpl'));
@@ -1392,7 +1397,7 @@ rpt.clickExpand = function (container, e) {
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right');
-		if (e.attr('idheaderpl') == 'PL0') $(e).find('i').addClass('fa-chevron-up');else $(e).find('i').addClass('fa-chevron-down');
+		if (e.attr('idheaderpl') == 'PL0') $(e).find('i').addClass('fa fa-chevron-up');else $(e).find('i').addClass('fa fa-chevron-down');
 		container.find('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		container.find('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		container.find('tr[statusvaltemp=hide]').css('display', 'none');
@@ -1407,7 +1412,7 @@ rpt.clickExpand = function (container, e) {
 
 		$(e).find('i').removeClass('fa-chevron-up');
 		$(e).find('i').removeClass('fa-chevron-down');
-		$(e).find('i').addClass('fa-chevron-right');
+		$(e).find('i').addClass('fa fa-chevron-right');
 		container.find('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
 		container.find('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
 		rpt.hideAllChild(e.attr('idheaderpl'));

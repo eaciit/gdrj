@@ -705,6 +705,8 @@ var au = viewModel.allocated;(function () {
 					rpt.prepareEvents();
 
 					$('#au [idheaderpl="PL94A"],[idheaderpl="PL94A_allocated"]').find('.fa').trigger('click');
+					$('#au [idheaderpl="PL94A_allocated"]').find('td:eq(0)').css('padding-left', '');
+					$('#au [idheaderpl="PL94A_allocated"]').find('td:eq(0) i').css('margin-right', 5);
 				};
 
 				var param2 = {};
