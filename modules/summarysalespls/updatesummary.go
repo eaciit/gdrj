@@ -1456,7 +1456,8 @@ func prepmasternewsgaalloc() {
 			newsgadirect[key] = nsgatkm
 		} else {
 			//list brand category
-			listcategory := getlistbrandcategory(tkm.GetString("branchid"))
+			listcategory := []string{}
+			// listcategory := getlistbrandcategory(tkm.GetString("branchid"))
 			keylistcategory := []string{}
 
 			for _, v := range listcategory {
@@ -1512,7 +1513,7 @@ func prepmasternewsgaalloc() {
 		if i > 15 {
 			break
 		}
-		toolkit.Println(k, " : ", v)
+		toolkit.Println(k, " : ")
 	}
 
 	masters.Set("newsgadirect", newsgadirect)
