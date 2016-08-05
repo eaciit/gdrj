@@ -291,9 +291,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
 		trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
 		trx.Set("idbranchlvl2", branchgroup.GetString("idbranchlvl2"))
-		//trx.Set("addinfo", "Jakarta")
 
-		if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" {
+		if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" && trx.GetString("ccid") != "HD110313" {
 			trx.Set("branchgroup", "Jakarta")
 		}
 
