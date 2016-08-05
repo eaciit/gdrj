@@ -942,7 +942,7 @@ func prepsalesplssummaryrdwrongsubch() {
 
 	filter := dbox.Eq("date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	csr, _ := conn.NewQuery().Select().Where(filter).
-		From("salespls-summary-rdsum4wrongsubch").
+		From("salespls-summary-res2-rdsum4wrongsubch").
 		Order("-gross").
 		Cursor(nil)
 
@@ -974,7 +974,7 @@ func prepsalesplssummaryrdwrongsubch() {
 	csr.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary").
+		From("salespls-summary-res2").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -983,7 +983,7 @@ func prepsalesplssummaryrdwrongsubch() {
 		dbox.Gt("PL7A", 0))
 
 	csr, _ = conn.NewQuery().Select().Where(filter).
-		From("salespls-summary-rdwrongsubch").
+		From("salespls-summary-res2-rdwrongsubch").
 		Order("-PL7A").
 		Cursor(nil)
 
@@ -1028,7 +1028,7 @@ func prepsalesplssummaryrdwrongsubch() {
 		dbox.Lte("PL7A", 0))
 
 	csr, _ = conn.NewQuery().Select().Where(filter).
-		From("salespls-summary-rdwrongsubch").
+		From("salespls-summary-res2-rdwrongsubch").
 		Order("PL7A").
 		Cursor(nil)
 	defer csr.Close()
@@ -2013,7 +2013,7 @@ func prepmasternewchannelsgaalloc() {
 		}
 	}
 
-	// avsubtotal := avsubtotalallocated + avsubtotaldirect
+	// avsubtotal = avsubtotalallocated + avsubtotaldirect
 	ratiotoav = toolkit.Div(majorsgatotalI1, avsubtotal)
 	toolkit.Println("Ratio AV MT : ", ratiotoav, " : ", avsubtotal)
 	for {
@@ -2192,12 +2192,12 @@ func main() {
 	// prepmasterrollback_sumbrand()
 
 	// prepmastercogsperunit()
+	prepsalesplssummaryrdwrongsubch()
+	os.Exit(1)
 
-	// os.Exit(1)
-
-	prepmasterproduct()
+	// prepmasterproduct()
 	// prepmasternewsgaalloc()
-	prepmasternewchannelsgaalloc()
+	// prepmasternewchannelsgaalloc()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
@@ -3101,7 +3101,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// trx = CalcNewSgaData(trx)
 
 		// CalcNewSgaChannelData(trx)
-		CalcSum(trx)
+		// CalcSum(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
