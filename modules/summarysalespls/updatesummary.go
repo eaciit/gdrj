@@ -1930,12 +1930,11 @@ func prepmasternewchannelsgaalloc() {
 			tkmsgaalloc = toolkit.M{}
 		}
 
-		sgaallocatedist_min[keysga] = toolkit.M{}
 		for k, _ := range tkmsgaalloc {
 			val := tkmsgaalloc.GetFloat64(k) * ratiotoav * ratiobynetsales
 			tkm.Set(k, val)
 			//==
-			xval := tkmsgaalloc.GetFloat64(k) - val
+			xval := sgaallocatedist_min[keysga].GetFloat64(k) - val
 			sgaallocatedist_min[keysga].Set(k, xval)
 		}
 
@@ -1949,7 +1948,7 @@ func prepmasternewchannelsgaalloc() {
 			val := tkmsgadirect.GetFloat64(k) * ratiotoav * ratiobynetsales
 			tkm.Set(k, val)
 			//==
-			xval := tkmsgadirect.GetFloat64(k) - val
+			xval := sgadirectdist_min[keysga].GetFloat64(k) - val
 			sgadirectdist_min[keysga].Set(k, xval)
 		}
 
@@ -2048,7 +2047,7 @@ func prepmasternewchannelsgaalloc() {
 			val := tkmsgaalloc.GetFloat64(k) * ratiotoav * ratiobynetsales
 			tkm.Set(k, val)
 			//==
-			xval := tkmsgaalloc.GetFloat64(k) - val
+			xval := sgaallocatedist_min[keysga].GetFloat64(k) - val
 			sgaallocatedist_min[keysga].Set(k, xval)
 		}
 
@@ -2061,7 +2060,7 @@ func prepmasternewchannelsgaalloc() {
 			val := tkmsgadirect.GetFloat64(k) * ratiotoav * ratiobynetsales
 			tkm.Set(k, val)
 			//==
-			xval := tkmsgadirect.GetFloat64(k) - val
+			xval := sgadirectdist_min[keysga].GetFloat64(k) - val
 			sgadirectdist_min[keysga].Set(k, xval)
 		}
 
