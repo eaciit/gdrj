@@ -148,8 +148,8 @@ func main() {
 	// }
 
 	// f := dbox.Or(arrfilter...)
-
-	csr, _ := workerconn.NewQuery().Select().From(gtable).Cursor(nil)
+	f := dbox.Eq("key.date_fiscal", "2014-2015")
+	csr, _ := workerconn.NewQuery().Select().Where(f).From(gtable).Cursor(nil)
 	defer csr.Close()
 
 	scount := csr.Count()
