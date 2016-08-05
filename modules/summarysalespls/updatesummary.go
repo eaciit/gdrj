@@ -2031,7 +2031,7 @@ func prepmasternewchannelsgaalloc() {
 		keysga := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
 
 		netsales := tkm.GetFloat64("PL8A")
-		ratiobynetsales := toolkit.Div(netsales, channelratio["I1"].GetFloat64(keysga))
+		ratiobynetsales := toolkit.Div(netsales, channelratio["I3"].GetFloat64(keysga))
 
 		//////================
 		tkmsgaalloc, exist := sgaallocatedist[keysga]
@@ -2096,6 +2096,58 @@ func prepmasternewchannelsgaalloc() {
 	fi = dbox.And(f, dbox.Eq("key.customer_channelid", "I2"))
 	i2csr, _ := conn.NewQuery().Select().Where(fi).From("salespls-summary-res2").Cursor(nil)
 	defer i2csr.Close()
+
+	for {
+
+		iscount++
+
+		tkm := toolkit.M{}
+		e := i2csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+		// channelid := dtkm.GetString("customer_channelid")
+		keysga := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
+
+		netsales := tkm.GetFloat64("PL8A")
+		ratiobynetsales := toolkit.Div(netsales, channelratio["I2"].GetFloat64(keysga))
+
+		//////================
+		tkmsgaalloc, exist := sgaallocatedist[keysga]
+		if !exist {
+			tkmsgaalloc = toolkit.M{}
+		}
+
+		for k, _ := range tkmsgaalloc {
+			val := tkmsgaalloc.GetFloat64(k) * ratiobynetsales
+			tkm.Set(k, val)
+			//==
+			xval := tkmsgaalloc.GetFloat64(k) - val
+			sgaallocatedist_min[keysga].Set(k, xval)
+		}
+
+		tkmsgadirect, exist := sgadirectdist[keysga]
+		if !exist {
+			tkmsgadirect = toolkit.M{}
+		}
+
+		for k, _ := range tkmsgadirect {
+			val := tkmsgadirect.GetFloat64(k) * ratiobynetsales
+			tkm.Set(k, val)
+			//==
+			xval := tkmsgadirect.GetFloat64(k) - val
+			sgadirectdist_min[keysga].Set(k, xval)
+		}
+
+		_ = qSave.Exec(toolkit.M{}.Set("data", tkm))
+
+		if iscount%step == 0 {
+			toolkit.Printfn("Sending %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t0).String())
+		}
+	}
 
 	masters.Set("sgaallocatedist", sgaallocatedist)
 	masters.Set("sgadirectdist", sgadirectdist)
