@@ -1870,9 +1870,9 @@ func prepmasternewchannelsgaalloc() {
 	toolkit.Printfn("Total Direct : %v", subtotaldirect)
 
 	// =====================================================================
-	subtotalchannelmajor := subtotalchannel["I1"] + subtotalchannel["I2"] + subtotalchannel["I3"]
+	// subtotalchannelmajor := subtotalchannel["I1"] + subtotalchannel["I2"] + subtotalchannel["I3"]
 	//RD 0.21 I1
-	ratiocurrchannel := subtotalchannel["I1"] / subtotalchannelmajor
+	ratiocurrchannel := 0.21
 	fi := dbox.And(f, dbox.Eq("key.customer_channelid", "I1"))
 	i1csr, _ := conn.NewQuery().Select().Where(fi).From("salespls-summary-res2").Cursor(nil)
 	defer i1csr.Close()
@@ -1984,7 +1984,7 @@ func prepmasternewchannelsgaalloc() {
 	}
 	toolkit.Printfn("Total Direct After I1: %v", subtotaldirect)
 	//================MT 0.49 I3
-	ratiocurrchannel = subtotalchannel["I3"] / (subtotalchannel["I3"] + subtotalchannel["I2"])
+	ratiocurrchannel = 0.49 / 0.79
 	fi = dbox.And(f, dbox.Eq("key.customer_channelid", "I3"))
 	i3csr, _ := conn.NewQuery().Select().Where(fi).From("salespls-summary-res2").Cursor(nil)
 	defer i3csr.Close()
@@ -2096,7 +2096,7 @@ func prepmasternewchannelsgaalloc() {
 	toolkit.Printfn("Total Direct After I3: %v", subtotaldirect)
 
 	//================GT 0.30 I2
-	ratiocurrchannel = subtotalchannel["I2"] / subtotalchannelmajor
+	// ratiocurrchannel = subtotalchannel["I2"] / subtotalchannelmajor
 	fi = dbox.And(f, dbox.Eq("key.customer_channelid", "I2"))
 	i2csr, _ := conn.NewQuery().Select().Where(fi).From("salespls-summary-res2").Cursor(nil)
 	defer i2csr.Close()
