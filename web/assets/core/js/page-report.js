@@ -592,61 +592,120 @@ rpt.prepareEvents = function () {
 };
 
 rpt.hardcodePLGA = function (data, plmodels) {
-	// don't hardcode the GNA
-	var pl33 = plmodels.find(function (d) {
-		return d._id == "PL33";
-	});
-	if (typeof pl33 === 'undefined') {
+	if (data.length == 0) {
 		return { Data: data, PLModels: plmodels };
 	}
 
-	var dataChildGa = ["PL33", "PL34", "PL35"],
-	    searchPL = void 0,
-	    replaceKey = "";
-	for (var i in data) {
-		for (var key in data[i]) {
-			replaceKey = key.replace(/ /g, '').replace('&', '');
-			if (key.substring(0, 4) == "PL33") {
-				searchPL = _.find(plmodels, function (e) {
-					return e._id == replaceKey;
-				});
-				if (searchPL == undefined) plmodels.push({ Amount: 0, GLReff: "", OrderIndex: "PL0000", PLHeader1: "G&A Expenses", PLHeader2: "Personnel  Exp - Office", PLHeader3: key.replace('&', ''), _id: replaceKey });
-				data[i]["PL33"] += data[i][key];
-				data[i][replaceKey] = data[i][key];
-			}
-			if (key.substring(0, 4) == "PL34") {
-				searchPL = _.find(plmodels, function (e) {
-					return e._id == replaceKey;
-				});
-				if (searchPL == undefined) plmodels.push({ Amount: 0, GLReff: "", OrderIndex: "PL0000", PLHeader1: "G&A Expenses", PLHeader2: "General Exp - Office", PLHeader3: key.replace('&', ''), _id: replaceKey });
-				data[i]["PL34"] += data[i][key];
-				data[i][replaceKey] = data[i][key];
-			}
-			if (key.substring(0, 4) == "PL35") {
-				searchPL = _.find(plmodels, function (e) {
-					return e._id == replaceKey;
-				});
-				if (searchPL == undefined) plmodels.push({ Amount: 0, GLReff: "", OrderIndex: "PL0000", PLHeader1: "G&A Expenses", PLHeader2: "Depr & A Exp - Office", PLHeader3: key.replace('&', ''), _id: replaceKey });
-				data[i]["PL35"] += data[i][key];
-				data[i][replaceKey] = data[i][key];
-			}
-		}
+	if (document.URL.indexOf('gnaanalysis') > -1) {
+		return { Data: data, PLModels: plmodels };
 	}
+
+	if (document.URL.indexOf('cogsanalysis') > -1) {
+		return { Data: data, PLModels: plmodels };
+	}
+
+	var sgaLvl1 = ['Direct', 'Allocated'];
+	var sgaLvl2 = [{ _id: 'PL33', header: 'Personnel Exp - Office' }, { _id: 'PL34', header: 'General Exp - Office' }, { _id: 'PL35', header: 'Depr & A Exp - Office' }];
+	// 'R&D',
+	var sgaLvl3 = ['Sales', 'General Service', 'General Management', 'Manufacturing', 'Finance', 'Marketing', 'Logistic Overhead', 'Human Resource', 'Other'];
+
+	var gnaExpenses = plmodels.find(function (d) {
+		return d._id == 'PL94A';
+	});
+	var plprev = gnaExpenses._id;
+	var gnaChildren = [];
+	var wrap = function wrap(what, i) {
+		if (i == 0) {
+			return what;
+		}
+
+		return what + ' ';
+	};
+
+	sgaLvl1.forEach(function (d, i) {
+		var plTop1 = {};
+		plTop1._id = [gnaExpenses._id, d].join('_').replace(/\ /g, '_');
+		plTop1.OrderIndex = [gnaExpenses.OrderIndex, i].join('');
+		plTop1.PLHeader1 = ['G&A Expenses', d].join(' - ');
+		plTop1.PLHeader2 = plTop1.PLHeader1;
+		plTop1.PLHeader3 = plTop1.PLHeader1;
+		plTop1.parent = '';
+		plTop1.prev = plprev;
+
+		gnaChildren.push(plTop1);
+		plprev = plTop1._id;
+
+		sgaLvl2.forEach(function (e, j) {
+			var plTop2 = {};
+			plTop2._id = [e._id, d].join('_').replace(/\ /g, '_');
+			plTop2.OrderIndex = [gnaExpenses.OrderIndex, i, j].join(''); // [plTop1.OrderIndex, j].join('')
+			plTop2.PLHeader1 = ['G&A Expenses', d].join(' - ');
+			plTop2.PLHeader2 = wrap([d, e.header].join('_'), i);
+			plTop2.PLHeader3 = plTop2.PLHeader2;
+			plTop2.parent = plTop1._id;
+			plTop2.prev = plprev;
+
+			gnaChildren.push(plTop2);
+			plprev = plTop2._id;
+
+			sgaLvl3.forEach(function (f, k) {
+				var plTop3 = {};
+				plTop3._id = [e._id, d, f].join('_').replace(/\ /g, '_');
+				plTop3.OrderIndex = [gnaExpenses.OrderIndex, i, j, k].join(''); // [plTop1.OrderIndex, k].join('')
+				plTop3.PLHeader1 = ['G&A Expenses', d].join(' - ');
+				plTop3.PLHeader2 = plTop2.PLHeader2;
+				plTop3.PLHeader3 = wrap([d, e._id, f].join('_'), i);
+				plTop3.parent = plTop2._id;
+				plTop3.prev = plprev;
+
+				gnaChildren.push(plTop3);
+				plprev = plTop3._id;
+			});
+		});
+	});
+
+	console.log('gnaChildren', gnaChildren);
+	plmodels = plmodels.concat(gnaChildren);
+
+	rpt.arrChangeParent(rpt.arrChangeParentOriginal().slice(0));
+	var direct = gnaChildren.filter(function (d) {
+		return d.PLHeader1.indexOf('G&A Expenses - Direct') > -1;
+	});
+	direct.forEach(function (d, i) {
+		var o = {};
+		o.idfrom = d._id;
+		o.idto = d.parent;
+		o.after = d.prev;
+
+		rpt.arrChangeParent.push(o);
+	});
+
+	var allocated = gnaChildren.filter(function (d) {
+		return d.PLHeader1.indexOf('G&A Expenses - Allocated') > -1;
+	});
+	allocated.forEach(function (d, i) {
+		var o = {};
+		o.idfrom = d._id;
+		o.idto = d.parent;
+		o.after = d.prev;
+		rpt.arrChangeParent.push(o);
+	});
+
 	return { Data: data, PLModels: plmodels };
 };
 
 rpt.showExpandAll = function (a) {
 	if (a == true) {
 		$('tr.dd').find('i').removeClass('fa-chevron-right');
-		$('tr.dd[idheaderpl=\'PL0\']').find('i').addClass('fa-chevron-up');
-		$('tr.dd[idheaderpl!=\'PL0\']').find('i').addClass('fa-chevron-down');
+		$('tr.dd[idheaderpl=\'PL0\']').find('i').addClass('fa fa-chevron-up');
+		$('tr.dd[idheaderpl!=\'PL0\']').find('i').addClass('fa fa-chevron-down');
 		$('tr[idparent]').css('display', '');
 		$('tr[idcontparent]').css('display', '');
 		$('tr[statusvaltemp=hide]').css('display', 'none');
 	} else {
 		$('tr.dd').find('i').removeClass('fa-chevron-up');
 		$('tr.dd').find('i').removeClass('fa-chevron-down');
-		$('tr.dd').find('i').addClass('fa-chevron-right');
+		$('tr.dd').find('i').addClass('fa fa-chevron-right');
 		$('tr[idparent]').css('display', 'none');
 		$('tr[idcontparent]').css('display', 'none');
 		$('tr[statusvaltemp=hide]').css('display', 'none');
@@ -697,7 +756,8 @@ rpt.showZeroValue = function (a) {
 	}
 };
 
-rpt.arrChangeParent = ko.observableArray([{ idfrom: 'PL1', idto: 'PL0', after: 'PL0' }, { idfrom: 'PL7', idto: 'PL0', after: 'PL1' }, { idfrom: 'PL2', idto: 'PL0', after: 'PL7' }, { idfrom: 'PL8', idto: 'PL0', after: 'PL2' }, { idfrom: 'PL6', idto: 'PL0', after: 'PL8' }, { idfrom: 'PL7A', idto: '', after: 'PL6' }]);
+rpt.arrChangeParentOriginal = ko.observableArray([{ idfrom: 'PL1', idto: 'PL0', after: 'PL0' }, { idfrom: 'PL7', idto: 'PL0', after: 'PL1' }, { idfrom: 'PL2', idto: 'PL0', after: 'PL7' }, { idfrom: 'PL8', idto: 'PL0', after: 'PL2' }, { idfrom: 'PL6', idto: 'PL0', after: 'PL8' }, { idfrom: 'PL7A', idto: '', after: 'PL6' }]);
+rpt.arrChangeParent = ko.observableArray(rpt.arrChangeParentOriginal().slice(0));
 
 // rpt.arrFormulaPL = ko.observableArray([
 // 	{ id: "PL0", formula: ["PL1","PL2","PL3","PL4","PL5","PL6"], cal: "sum"},
@@ -816,6 +876,11 @@ rpt.buildGridLevels = function (rows) {
 				$trElem.remove();
 				$('.table-content tr.column' + $trElem.attr("idheaderpl")).remove();
 			}
+
+			var idplyo2 = _.find(rpt.idarrayhide(), function (a) {
+				return a == $trElem.attr("idparent");
+			});
+
 			if (resg1 == undefined && idplyo2 == undefined) {
 				if (resg2 != undefined) {
 					textPL = _.find(resg2.data, function (o) {
@@ -875,6 +940,7 @@ rpt.buildGridLevels = function (rows) {
 							$trElem.insertAfter($('tr[idheaderpl=' + PLyo.PLCode + ']'));
 							$columnElem.insertAfter($('tr[idpl=' + PLyo.PLCode + ']'));
 						}
+
 						if ($trElem.attr('idparent') == "PL33" || $trElem.attr('idparent') == "PL34" || $trElem.attr('idparent') == "PL35" || $trElem.attr('idparent') == 'PL33_allocated' || $trElem.attr('idparent') == 'PL34_allocated' || $trElem.attr('idparent') == 'PL35_allocated') {
 							var texthtml = $trElem.find('td:eq(0)').text();
 							$trElem.find('td:eq(0)').text(texthtml.substring(5, texthtml.length));
@@ -883,9 +949,6 @@ rpt.buildGridLevels = function (rows) {
 				}
 			}
 
-			var idplyo2 = _.find(rpt.idarrayhide(), function (a) {
-				return a == $trElem.attr("idparent");
-			});
 			if (idplyo2 != undefined) {
 				$trElem.removeAttr('idparent');
 				$trElem.addClass('bold');
@@ -895,6 +958,14 @@ rpt.buildGridLevels = function (rows) {
 				$('.table-content tr.column' + $trElem.attr("idheaderpl")).attr('statusvaltemp', 'show');
 				$('.table-content tr.column' + $trElem.attr("idheaderpl")).css('display', 'inline-grid');
 			}
+
+			$trElem.find('td:eq(0)')[0].childNodes.forEach(function (g) {
+				if (g.nodeName == '#text') {
+					if (g.nodeValue.indexOf('_') > -1) {
+						g.nodeValue = g.nodeValue.split('_').reverse()[0];
+					}
+				}
+			});
 		}
 	});
 
@@ -959,7 +1030,7 @@ rpt.hideAllChild = function (PLCode) {
 		if (child > 0) {
 			var $c = $('tr[idheaderpl=' + $trElem.attr('idheaderpl') + ']');
 			$($c).find('i').removeClass('fa-chevron-up');
-			$($c).find('i').addClass('fa-chevron-right');
+			$($c).find('i').addClass('fa fa-chevron-right');
 			$('tr[idparent=' + $c.attr('idheaderpl') + ']').css('display', 'none');
 			$('tr[idcontparent=' + $c.attr('idheaderpl') + ']').css('display', 'none');
 			rpt.hideAllChild($c.attr('idheaderpl'));
@@ -1326,7 +1397,7 @@ rpt.clickExpand = function (container, e) {
 		}
 
 		$(e).find('i').removeClass('fa-chevron-right');
-		if (e.attr('idheaderpl') == 'PL0') $(e).find('i').addClass('fa-chevron-up');else $(e).find('i').addClass('fa-chevron-down');
+		if (e.attr('idheaderpl') == 'PL0') $(e).find('i').addClass('fa fa-chevron-up');else $(e).find('i').addClass('fa fa-chevron-down');
 		container.find('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		container.find('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', '');
 		container.find('tr[statusvaltemp=hide]').css('display', 'none');
@@ -1341,7 +1412,7 @@ rpt.clickExpand = function (container, e) {
 
 		$(e).find('i').removeClass('fa-chevron-up');
 		$(e).find('i').removeClass('fa-chevron-down');
-		$(e).find('i').addClass('fa-chevron-right');
+		$(e).find('i').addClass('fa fa-chevron-right');
 		container.find('tr[idparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
 		container.find('tr[idcontparent=' + e.attr('idheaderpl') + ']').css('display', 'none');
 		rpt.hideAllChild(e.attr('idheaderpl'));
