@@ -1813,12 +1813,13 @@ func prepmasternewchannelsgaalloc() {
 
 			sgaallocatedist[tkey] = tkm
 		}
+	}
 
+	for _, v := range sgaallocatedist {
 		for k, _ := range v {
 			subtotal += v.GetFloat64(k)
 		}
 	}
-
 	toolkit.Printfn("Total Allocated : %v", subtotal)
 
 	subtotal = float64(0)
@@ -1850,12 +1851,13 @@ func prepmasternewchannelsgaalloc() {
 
 			sgadirectdist[tkey] = tkm
 		}
+	}
 
+	for _, v := range sgadirectdist {
 		for k, _ := range v {
 			subtotal += v.GetFloat64(k)
 		}
 	}
-
 	toolkit.Printfn("Total Direct : %v", subtotal)
 
 	masters.Set("sgaallocatedist", sgaallocatedist)
