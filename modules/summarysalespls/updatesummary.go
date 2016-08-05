@@ -1447,7 +1447,7 @@ func prepmasternewsgaalloc() {
 		}
 
 		costgroup := tkm.GetString("costgroup")
-		if keys.Has(key) {
+		if keys.Has(key) && branchgroup != "Central Expense" {
 			nsgatkm, exist := newsgadirect[key]
 			if !exist {
 				nsgatkm = toolkit.M{}
