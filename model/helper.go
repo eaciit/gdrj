@@ -71,7 +71,7 @@ func CalcSum(tkm toolkit.M, masters toolkit.M) {
 			if ar01k[1] == "Direct" {
 				sgadirect += Amount
 			} else {
-				skey := toolkit.Sprintf("%s_Allocated", ar01k[0])
+				skey = toolkit.Sprintf("%s_Allocated", ar01k[0])
 				sgaallocated += Amount
 			}
 
