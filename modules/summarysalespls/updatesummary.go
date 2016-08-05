@@ -1419,7 +1419,8 @@ func prepmasternewsgaalloc() {
 			newsgadirect[key] = nsgatkm
 		} else {
 			//list brand category
-			listcategory := []string{"047", "301", "302"}
+			// listcategory := []string{"047", "301", "302"}
+			listcategory := []string{}
 			keylistcategory := []string{}
 
 			for _, v := range listcategory {
