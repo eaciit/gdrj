@@ -1983,7 +1983,7 @@ func prepmasternewchannelsgaalloc() {
 	}
 	toolkit.Printfn("Total Direct After I1: %v", subtotaldirect)
 	//================MT 0.49 I3
-	ratiocurrchannel = 0.49 / 0.79
+	ratiocurrchannel = float64(0.620253164556962)
 	fi = dbox.And(f, dbox.Eq("key.customer_channelid", "I3"))
 	i3csr, _ := conn.NewQuery().Select().Where(fi).From("salespls-summary-res2").Cursor(nil)
 	defer i3csr.Close()
@@ -2015,7 +2015,7 @@ func prepmasternewchannelsgaalloc() {
 
 	// avsubtotal := avsubtotalallocated + avsubtotaldirect
 	ratiotoav = toolkit.Div(majorsgatotalI1, avsubtotal)
-
+	toolkit.Println("Ratio AV MT : ", ratiotoav, " : ", avsubtotal)
 	for {
 
 		iscount++
