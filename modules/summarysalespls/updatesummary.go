@@ -1314,6 +1314,44 @@ func prepmasterproduct() {
 	masters.Set("masterproduct", masterproduct)
 }
 
+func getlistbrandcategory(str string) (res []string) {
+	res = []string{}
+
+	listcategories := map[string]string{}
+
+	listcategories["MD01"] = "047,301,308,309,315,316,317,318,319,320,321,322,323,333,353,343,047,317,339,353,372"
+	listcategories["MD02"] = "336"
+	listcategories["MD03"] = "301,302,303,304,305,373,047,307,309,310,311,312,313,314,333,334,315,337,337,343,339,341,342,344,345"
+	listcategories["MD05"] = "047,301,308,309,315,316,317,318,319,320,321,322,323,333,353,343,047,317,339,353,372"
+	listcategories["MD31"] = "323"
+	listcategories["MD41"] = "047,303,308,309,315,316,317,318,319,320,321,322,323,372,333"
+	rawstr, exist := listcategories[str]
+
+	if !exist {
+		return
+	}
+
+	inlist := func(str string) bool {
+
+		for _, val := range res {
+			if val == str {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	arrlist := strings.Split(rawstr, ",")
+	for _, val := range arrlist {
+		if !inlist(val) {
+			res = append(res, val)
+		}
+	}
+
+	return
+}
+
 func prepmasternewsgaalloc() {
 	toolkit.Println("--> Prepare data to for new sgaalloc")
 
@@ -1357,7 +1395,6 @@ func prepmasternewsgaalloc() {
 	}
 
 	i := 0
-	// toolkit.Println(dkey, " : ", akey, " : ", akey01)
 	for k, v := range keys {
 		i++
 		if i > 15 {
@@ -1419,8 +1456,7 @@ func prepmasternewsgaalloc() {
 			newsgadirect[key] = nsgatkm
 		} else {
 			//list brand category
-			// listcategory := []string{"047", "301", "302"}
-			listcategory := []string{}
+			listcategory := getlistbrandcategory(tkm.GetString("branchid"))
 			keylistcategory := []string{}
 
 			for _, v := range listcategory {
@@ -1430,7 +1466,7 @@ func prepmasternewsgaalloc() {
 				}
 			}
 
-			val := tkm.GetFloat64("min_amountinidr") / toolkit.ToFloat64(len(keylistcategory), 2, toolkit.RoundingAuto)
+			val := toolkit.Div(tkm.GetFloat64("min_amountinidr"), toolkit.ToFloat64(len(keylistcategory), 2, toolkit.RoundingAuto))
 
 			for _, v := range keylistcategory {
 				key = toolkit.Sprintf("%d_%d_%s", date.Year(), date.Month(), v)
@@ -1469,6 +1505,15 @@ func prepmasternewsgaalloc() {
 	}
 
 	toolkit.Println("--> Done read data rawdatapl-sga ::. ", subtot)
+
+	i = 0
+	for k, v := range newsgaalloc {
+		i++
+		if i > 15 {
+			break
+		}
+		toolkit.Println(k, " : ", v)
+	}
 
 	masters.Set("newsgadirect", newsgadirect)
 	masters.Set("newsgaalloc", newsgaalloc)
@@ -2286,7 +2331,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4cogssgafinal").
+		From("salespls-summary-4cogssgafinal2").
 		SetConfig("multiexec", true).
 		Save()
 
