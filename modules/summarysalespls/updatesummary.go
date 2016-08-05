@@ -1943,7 +1943,6 @@ func prepmasternewchannelsgaalloc() {
 			tkmsgadirect = toolkit.M{}
 		}
 
-		sgadirectdist_min[keysga] = toolkit.M{}
 		for k, _ := range tkmsgadirect {
 			val := tkmsgadirect.GetFloat64(k) * ratiotoav * ratiobynetsales
 			tkm.Set(k, val)
@@ -2039,9 +2038,6 @@ func prepmasternewchannelsgaalloc() {
 		if !exist {
 			tkmsgaalloc = toolkit.M{}
 		}
-
-		sgaallocatedist_min[keysga] = toolkit.M{}
-		sgadirectdist_min[keysga] = toolkit.M{}
 
 		for k, _ := range tkmsgaalloc {
 			val := tkmsgaalloc.GetFloat64(k) * ratiotoav * ratiobynetsales
