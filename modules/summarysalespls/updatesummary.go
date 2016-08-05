@@ -1320,7 +1320,7 @@ func prepmasternewsgaalloc() {
 	toolkit.Println("--> Read data keys")
 	keys := toolkit.M{}
 	f := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csrkey, _ := conn.NewQuery().Select("key").Where(f).From("salespls-summary-4cogssgacleanperunit").Cursor(nil)
+	csrkey, _ := conn.NewQuery().Select("key", "PL8A").Where(f).From("salespls-summary-4cogssgacleanperunit").Cursor(nil)
 	defer csrkey.Close()
 
 	toolkit.Println("--> Read data keys : ", csrkey.Count())
@@ -1347,7 +1347,7 @@ func prepmasternewsgaalloc() {
 
 		netsales := tkm.GetFloat64("PL8A")
 		val := keys.GetFloat64(dkey) + netsales
-		keys.Set(dkey, val)
+		keys.Set(dkey, keys.GetFloat64(dkey)+netsales)
 
 		val = keys.GetFloat64(akey01) + netsales
 		keys.Set(akey01, val)
@@ -2210,15 +2210,15 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 	netsales := tkm.GetFloat64("PL8A")
 	ratio4sga := masters.Get("ratio4sga", toolkit.M{}).(toolkit.M)
 
-	i := 0
-	toolkit.Println(dkey, " : ", akey, " : ", akey01)
-	for k, v := range ratio4sga {
-		i++
-		if i > 15 {
-			break
-		}
-		toolkit.Println(k, " : ", v)
-	}
+	// i := 0
+	// toolkit.Println(dkey, " : ", akey, " : ", akey01)
+	// for k, v := range ratio4sga {
+	// 	i++
+	// 	if i > 15 {
+	// 		break
+	// 	}
+	// 	toolkit.Println(k, " : ", v)
+	// }
 
 	newsgadirect := masters.Get("newsgadirect", map[string]toolkit.M{}).(map[string]toolkit.M)
 	newsgaalloc := masters.Get("newsgaalloc", map[string]toolkit.M{}).(map[string]toolkit.M)
