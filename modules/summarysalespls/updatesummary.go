@@ -1695,8 +1695,7 @@ func prepmasternewchannelsgaalloc() {
 		channelratio.Set(key, val)
 		// }
 
-		tkey := toolkit.Sprintf("%s_%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("product_brand"),
-			dtkm.GetString("customer_branchgroup"), dtkm.GetString("customer_channelid"))
+		tkey := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("customer_branchgroup"), dtkm.GetString("customer_channelid"))
 
 		val = tkm.GetFloat64("PL8A") + channelratio.GetFloat64(tkey)
 		channelratio.Set(tkey, val)
@@ -1792,7 +1791,7 @@ func prepmasternewchannelsgaalloc() {
 			if !channelratio.Has(skey) {
 				arrkey := strings.Split(tk, "_")
 				if len(arrkey) > 3 {
-					tkey = toolkit.Sprintf("%s_%s_%s", arrkey[0], arrkey[2], arrkey[3])
+					tkey = toolkit.Sprintf("%s_%s", arrkey[0], arrkey[3])
 					skey = toolkit.Sprintf("%s_%s", tkey, str)
 				} else {
 					toolkit.Println(tk)
@@ -1831,7 +1830,7 @@ func prepmasternewchannelsgaalloc() {
 			if !channelratio.Has(skey) {
 				arrkey := strings.Split(tk, "_")
 				if len(arrkey) > 3 {
-					tkey = toolkit.Sprintf("%s_%s_%s", arrkey[0], arrkey[2], arrkey[3])
+					tkey = toolkit.Sprintf("%s_%s", arrkey[0], arrkey[3])
 					skey = toolkit.Sprintf("%s_%s", tkey, str)
 				} else {
 					toolkit.Println(tk)
@@ -2698,11 +2697,9 @@ func CalcNewSgaChannelData(tkm toolkit.M) {
 	keysga := toolkit.Sprintf("%s_%d_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
 		dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
 
-	tkeyratio := toolkit.Sprintf("%s_%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("product_brand"),
-		dtkm.GetString("customer_branchgroup"), channelid)
+	tkeyratio := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("customer_branchgroup"), channelid)
 
-	tkeysga := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("product_brand"),
-		dtkm.GetString("customer_branchgroup"))
+	tkeysga := toolkit.Sprintf("%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("customer_branchgroup"))
 
 	netsales := tkm.GetFloat64("PL8A")
 	ratiobychannel := toolkit.Div(netsales, channelratio.GetFloat64(keyratio))
