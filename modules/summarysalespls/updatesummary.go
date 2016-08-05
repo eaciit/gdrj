@@ -81,6 +81,7 @@ func prepmastercalc() {
 			o := obj.(*gdrj.PLModel)
 			h[o.ID] = o
 		}).(map[string]*gdrj.PLModel))
+	toolkit.Println("--> End PL MODEL")
 }
 
 func prepmasterrevadv() {
@@ -989,7 +990,7 @@ func prepsalesplssummaryrdwrongsubch() {
 
 	// salesplssummaryrdwrongsubch := []toolkit.M{} plus value
 	scount = csr.Count()
-	step := getstep(scount)
+	step := getstep(scount) * 20
 	toolkit.Println("PLUS COUNT : ", scount)
 
 	i := int(0)
@@ -1035,7 +1036,7 @@ func prepsalesplssummaryrdwrongsubch() {
 
 	// salesplssummaryrdwrongsubch := []toolkit.M{} minus value
 	scount = csr.Count()
-	step = getstep(scount)
+	step = getstep(scount) * 20
 	toolkit.Println("COUNT : ", scount)
 
 	i = int(0)
