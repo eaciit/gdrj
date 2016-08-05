@@ -1690,8 +1690,10 @@ func prepmasternewchannelsgaalloc() {
 		key := toolkit.Sprintf("%s_%d_%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
 			dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"), dtkm.GetString("customer_channelid"))
 
-		val := tkm.GetFloat64("PL8A") + channelratio.GetFloat64(key)
-		channelratio.Set(key, val)
+		if dtkm.GetString("product_brand") != "AKC" {
+			val := tkm.GetFloat64("PL8A") + channelratio.GetFloat64(key)
+			channelratio.Set(key, val)
+		}
 
 		for k, _ := range tkm {
 			arrstr := strings.Split(k, "_")
@@ -2616,15 +2618,15 @@ func CalcNewSgaChannelData(tkm toolkit.M) {
 		return
 	}
 
-	cratio := float64(0.3)
-	if channelid == "I3" {
+	cratio := float64(0.3) //GT
+	if channelid == "I3" { //MT
 		cratio = float64(0.49)
 	} else if channelid == "I1" {
 		cratio = float64(0.21)
 	}
 
 	keyratio := toolkit.Sprintf("%s_%d_%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
-		dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"), dtkm.GetString("customer_channelid"))
+		dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"), channelid)
 
 	keysga := toolkit.Sprintf("%s_%d_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
 		dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
