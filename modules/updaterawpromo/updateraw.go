@@ -8,7 +8,7 @@ import (
 	"flag"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
-	// "strings"
+	"strings"
 	"time"
 )
 
@@ -310,35 +310,35 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		//=== For data salespls-summary mode consolidate
 
-		key := trx.Get("key", toolkit.M{}).(toolkit.M)
-		branchid := key.GetString("customer_branchid")
+		// key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		// branchid := key.GetString("customer_branchid")
 
-		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
-		key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
-		key.Set("customer_branchlvl2", branchgroup.GetString("branchlvl2"))
+		// branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		// key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
+		// key.Set("customer_branchlvl2", branchgroup.GetString("branchlvl2"))
 
-		if key.GetString("customer_branchgroup") == "" {
-			key.Set("customer_branchgroup", "OTHER")
-		}
+		// if key.GetString("customer_branchgroup") == "" {
+		// 	key.Set("customer_branchgroup", "OTHER")
+		// }
 
-		if key.GetString("customer_branchlvl2") == "" {
-			key.Set("customer_branchlvl2", "OTHER")
-		}
+		// if key.GetString("customer_branchlvl2") == "" {
+		// 	key.Set("customer_branchlvl2", "OTHER")
+		// }
 
-		/*other fix*/
-		if key.GetString("customer_reportsubchannel") == "R3" {
-			key.Set("customer_reportsubchannel", "R3 - Retailer Umum")
-		}
+		// /*other fix*/
+		// if key.GetString("customer_reportsubchannel") == "R3" {
+		// 	key.Set("customer_reportsubchannel", "R3 - Retailer Umum")
+		// }
 
-		if key.GetString("customer_region") == "" || key.GetString("customer_region") == "Other" {
-			key.Set("customer_region", "OTHER")
-		}
+		// if key.GetString("customer_region") == "" || key.GetString("customer_region") == "Other" {
+		// 	key.Set("customer_region", "OTHER")
+		// }
 
-		if key.GetString("customer_zone") == "" || key.GetString("customer_zone") == "Other" {
-			key.Set("customer_zone", "OTHER")
-		}
+		// if key.GetString("customer_zone") == "" || key.GetString("customer_zone") == "Other" {
+		// 	key.Set("customer_zone", "OTHER")
+		// }
 
-		trx.Set("key", key)
+		// trx.Set("key", key)
 		//============================================
 
 		// For cogs consolidate
@@ -353,6 +353,19 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// if trx.GetString("branchid") == "HD11" && strings.Contains(trx.GetString("costcentername"), "Jkt") {
 		// 	trx.Set("addinfo", "Jakarta")
 		// }
+
+		ratio := float64(3337787021 / 207883342760)
+		key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		if key.GetString("date_fiscal") == "2014-2015" {
+			for k, _ := range trx {
+				arrk := strings.Split(k, "_")
+				if arrk[1] == "Allocated" || k == "PL94A" {
+					val := trx.GetFloat64(k)
+					xval := val + (val * ratio)
+					trx.Set(k, xval)
+				}
+			}
+		}
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
