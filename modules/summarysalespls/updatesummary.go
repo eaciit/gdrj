@@ -1319,7 +1319,7 @@ func getlistbrandcategory(str string) (res []string) {
 
 	listcategories := map[string]string{}
 
-	listcategories["MD01"] = "047,301,308,309,315,316,317,318,319,320,321,322,323,333,353,343,047,317,339,353,372"
+	listcategories["MD01"] = "047,301,308,309,315,316,318,319,320,321,322,323,333,353,343,317,339,353,372"
 	listcategories["MD02"] = "336"
 	listcategories["MD03"] = "301,302,303,304,305,373,047,307,309,310,311,312,313,314,333,334,315,337,337,343,339,341,342,344,345"
 	listcategories["MD05"] = "047,301,308,309,315,316,317,318,319,320,321,322,323,333,353,343,047,317,339,353,372"
@@ -1526,13 +1526,17 @@ func prepmasternewsgaalloc() {
 	toolkit.Println("--> Done read data rawdatapl-sga ::. ", subtot, " = ", subdirect, " + ", suballocated)
 
 	i = 0
-	for k, _ := range newsgaalloc {
-		i++
-		if i > 15 {
-			break
+	suballocated = float64(0)
+	for _, val := range newsgaalloc {
+		for xk, _ := range val {
+			tkmval := val.Get(xk, toolkit.M{}).(toolkit.M)
+			for xxk, _ := range tkmval {
+				suballocated += tkmval.GetFloat64(xxk)
+			}
 		}
-		toolkit.Println(k, " : ")
 	}
+
+	toolkit.Println("--> Recheck Allocated ::. ", suballocated)
 
 	masters.Set("newsgadirect", newsgadirect)
 	masters.Set("newsgaalloc", newsgaalloc)
@@ -1914,7 +1918,6 @@ func CleanUpdateCOGSAdjustRdtoMt(tkm toolkit.M) {
 }
 
 func CalcSum(tkm toolkit.M) {
-
 	gdrj.CalcSum(tkm, masters)
 	/*
 		var netsales, cogs, grossmargin, sellingexpense,
@@ -2044,7 +2047,6 @@ func CalcSum(tkm toolkit.M) {
 		tkm.Set("PL44E", ebitsga)
 		tkm.Set("PL44F", ebitsgaroyalty)
 	*/
-
 }
 
 // masters.Set("totdiscactivity", totdiscactivity)
@@ -2281,26 +2283,15 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 	netsales := tkm.GetFloat64("PL8A")
 	ratio4sga := masters.Get("ratio4sga", toolkit.M{}).(toolkit.M)
 
-	// i := 0
-	// toolkit.Println(dkey, " : ", akey, " : ", akey01)
-	// for k, v := range ratio4sga {
-	// 	i++
-	// 	if i > 15 {
-	// 		break
-	// 	}
-	// 	toolkit.Println(k, " : ", v)
-	// }
-
 	newsgadirect := masters.Get("newsgadirect", map[string]toolkit.M{}).(map[string]toolkit.M)
 	newsgaalloc := masters.Get("newsgaalloc", map[string]toolkit.M{}).(map[string]toolkit.M)
-	// masters.Set("newsgaalloc", newsgaalloc)
 
 	for key, val := range newsgadirect[dkey] {
 		directtkm, _ := toolkit.ToM(val)
 		for xkey, xval := range directtkm {
 			plcode := toolkit.Sprintf("%s_Direct_%s", key, xkey)
-			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * toolkit.Div(netsales, ratio4sga.GetFloat64(dkey))) + tkm.GetFloat64(plcode)
-			tkm.Set(plcode, val)
+			xxval := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * toolkit.Div(netsales, ratio4sga.GetFloat64(dkey))) + tkm.GetFloat64(plcode)
+			tkm.Set(plcode, xxval)
 		}
 	}
 
@@ -2308,8 +2299,8 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 		alloctkm, _ := toolkit.ToM(val)
 		for xkey, xval := range alloctkm {
 			plcode := toolkit.Sprintf("%s_Allocated_%s", key, xkey)
-			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * netsales / ratio4sga.GetFloat64(akey01)) + tkm.GetFloat64(plcode)
-			tkm.Set(plcode, val)
+			xxval := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * toolkit.Div(netsales, ratio4sga.GetFloat64(akey01))) + tkm.GetFloat64(plcode)
+			tkm.Set(plcode, xxval)
 		}
 	}
 
@@ -2317,8 +2308,8 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 		alloctkm, _ := toolkit.ToM(val)
 		for xkey, xval := range alloctkm {
 			plcode := toolkit.Sprintf("%s_Allocated_%s", key, xkey)
-			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * netsales / ratio4sga.GetFloat64(akey)) + tkm.GetFloat64(plcode)
-			tkm.Set(plcode, val)
+			xxval := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * toolkit.Div(netsales, ratio4sga.GetFloat64(akey))) + tkm.GetFloat64(plcode)
+			tkm.Set(plcode, xxval)
 		}
 	}
 
