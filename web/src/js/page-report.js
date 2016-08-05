@@ -726,7 +726,18 @@ rpt.prepareEvents = () => {
 }
 
 rpt.hardcodePLGA = (data, plmodels) => {
-	// don't hardcode the GNA if not found
+	if (data.length == 0) {
+		return {Data: data, PLModels: plmodels}
+	}
+
+	if (document.URL.indexOf('gnaanalysis') > -1) {
+		return {Data: data, PLModels: plmodels}
+	}
+
+	if (document.URL.indexOf('cogsanalysis') > -1) {
+		return {Data: data, PLModels: plmodels}
+	}
+
 	let sgaLvl1 = ['Direct', 'Allocated']
 	let sgaLvl2 = [
 		{ _id: 'PL33', header: 'Personnel Exp - Office' },
