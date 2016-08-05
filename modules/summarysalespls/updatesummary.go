@@ -1718,7 +1718,7 @@ func prepmasternewchannelsgaalloc() {
 			subtotdirect := float64(0)
 
 			tkmallocated, exist := sgaallocatedist[keysga]
-			if exist {
+			if !exist {
 				tkmallocated = toolkit.M{}
 			}
 
@@ -1727,7 +1727,7 @@ func prepmasternewchannelsgaalloc() {
 			}
 
 			tkmdirect, exist := sgadirectdist[keysga]
-			if exist {
+			if !exist {
 				tkmdirect = toolkit.M{}
 			}
 
