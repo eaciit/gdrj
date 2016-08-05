@@ -329,6 +329,9 @@ func (s *PLFinderParam) GetTableName() string {
 		return tableName
 	}
 
+	// s.TableKey = "key"
+	// return `salespls-summary-4cogssgafinal`
+
 	if s.Flag == "gna" {
 		s.TableKey = "key"
 		return `sgadata`
@@ -866,15 +869,27 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		groups[other] = bson.M{"$sum": field}
 	}
 
+	sgapl := []string{"PL33", "PL34", "PL35"}
+	sgasupergroups := []string{"Direct", "Allocated"}
 	sgagroups := []string{"R&D", "Sales", "General Service", "General Management", "Manufacturing",
 		"Finance", "Marketing", "Logistic Overhead", "Human Resource", "Other"}
-	sgapl := []string{"PL33", "PL34", "PL35"}
-	for _, sga := range sgagroups {
-		for _, pl := range sgapl {
-			dbfield := fmt.Sprintf("%s_%s", pl, sga)
-			pdbfield := fmt.Sprintf("$%s", dbfield)
-			groups[dbfield] = bson.M{"$sum": pdbfield}
+	for _, pl := range sgapl {
+		for _, sgasupergroup := range sgasupergroups {
+			dbfieldTop := fmt.Sprintf("%s_%s", pl, sgasupergroup)
+			pdbfieldTop := fmt.Sprintf("$%s", dbfieldTop)
+			groups[strings.Replace(dbfieldTop, " ", "_", -1)] = bson.M{"$sum": pdbfieldTop}
+
+			for _, sga := range sgagroups {
+				dbfield := fmt.Sprintf("%s_%s_%s", pl, sgasupergroup, sga)
+				pdbfield := fmt.Sprintf("$%s", dbfield)
+				groups[strings.Replace(dbfield, " ", "_", -1)] = bson.M{"$sum": pdbfield}
+			}
 		}
+	}
+	for _, sgasupergroup := range sgasupergroups {
+		dbfieldTop := fmt.Sprintf("PL94A_%s", sgasupergroup)
+		pdbfieldTop := fmt.Sprintf("$%s", dbfieldTop)
+		groups[strings.Replace(dbfieldTop, " ", "_", -1)] = bson.M{"$sum": pdbfieldTop}
 	}
 
 	if s.Flag == "cogs" {

@@ -175,7 +175,7 @@ let bkd = viewModel.breakdown
 
 		bkd.oldBreakdownBy(bkd.breakdownBy())
 		bkd.contentIsLoading(true)
-
+		
 		let fetch = () => {
 			subchan.injectFilters(param.filters)
 			rpt.injectMonthQuarterFilter(param.filters)
@@ -873,7 +873,7 @@ let bkd = viewModel.breakdown
 
 			rows.push(row)
 		})
-
+		
 		console.log("rows", rows)
 		
 		let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
