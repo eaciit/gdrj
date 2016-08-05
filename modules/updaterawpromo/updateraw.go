@@ -354,20 +354,20 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// 	trx.Set("addinfo", "Jakarta")
 		// }
 
-		i := 1
-		ratio := float64(3337787021 / 207883342760)
+		// i := 1
+		ratio := float64(3337787021) / float64(207883342760)
 		key := trx.Get("key", toolkit.M{}).(toolkit.M)
 		if key.GetString("date_fiscal") == "2014-2015" {
 			for k, _ := range trx {
 				arrk := strings.Split(k, "_")
 				if (len(arrk) > 1 && arrk[1] == "Allocated") || k == "PL94A" {
-					i++
+					// i++
 					val := trx.GetFloat64(k)
 					xval := val + (val * ratio)
 					trx.Set(k, xval)
-					if i < 20 {
-						toolkit.Println(k, " : ", val, " - > ", xval, " || ", ratio)
-					}
+					// if i < 20 {
+					// 	toolkit.Println(k, " : ", val, " - > ", xval, " || ", ratio)
+					// }
 				}
 			}
 		}
