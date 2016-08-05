@@ -1676,6 +1676,7 @@ func prepmasternewchannelsgaalloc() {
 	step = getstep(scount) * 20
 
 	channelratio := map[string]toolkit.M{}
+	subtotalchannel := map[string]float64{}
 	for {
 
 		iscount++
@@ -1696,7 +1697,10 @@ func prepmasternewchannelsgaalloc() {
 			channelratio[channelid] = toolkit.M{}
 		}
 
-		val := tkm.GetFloat64("PL8A") + channelratio[channelid].GetFloat64(key)
+		netsales := tkm.GetFloat64("PL8A")
+		subtotalchannel[channelid] += netsales
+
+		val := netsales + channelratio[channelid].GetFloat64(key)
 		channelratio[channelid].Set(key, val)
 
 		for k, _ := range tkm {
@@ -1780,6 +1784,8 @@ func prepmasternewchannelsgaalloc() {
 		}
 	}
 
+	sgaallocatedist_min := map[string]toolkit.M{}
+	sgadirectdist_min := map[string]toolkit.M{}
 	// arrstr := []string{"I1", "I2", "I3"}
 	subtotalallocated := float64(0)
 	/*	for tk, v := range sgaallocatedist {
@@ -1813,9 +1819,11 @@ func prepmasternewchannelsgaalloc() {
 			}
 		}
 	*/
-	for _, v := range sgaallocatedist {
+	for tk, v := range sgaallocatedist {
+		sgaallocatedist_min[tk] = toolkit.M{}
 		for k, _ := range v {
 			subtotalallocated += v.GetFloat64(k)
+			sgaallocatedist_min[tk].Set(k, v.GetFloat64(k))
 		}
 	}
 	toolkit.Printfn("Total Allocated : %v", subtotalallocated)
@@ -1852,14 +1860,19 @@ func prepmasternewchannelsgaalloc() {
 			}
 		}
 	*/
-	for _, v := range sgadirectdist {
+	for tk, v := range sgadirectdist {
+		sgadirectdist_min[tk] = toolkit.M{}
 		for k, _ := range v {
 			subtotaldirect += v.GetFloat64(k)
+			sgadirectdist_min[tk].Set(k, v.GetFloat64(k))
 		}
 	}
 	toolkit.Printfn("Total Direct : %v", subtotaldirect)
 
+	// =====================================================================
+	subtotalchannelmajor := subtotalchannel["I1"] + subtotalchannel["I2"] + subtotalchannel["I3"]
 	//RD 0.21 I1
+	ratiocurrchannel := subtotalchannel["I1"] / subtotalchannelmajor
 	fi := dbox.And(f, dbox.Eq("key.customer_channelid", "I1"))
 	i1csr, _ := conn.NewQuery().Select().Where(fi).From("salespls-summary-res2").Cursor(nil)
 	defer i1csr.Close()
@@ -1870,7 +1883,7 @@ func prepmasternewchannelsgaalloc() {
 	step = getstep(scount) * 20
 
 	majorsgatotal := subtotalallocated + subtotaldirect
-	majorsgatotalI1 := majorsgatotal * 0.21
+	majorsgatotalI1 := majorsgatotal * ratiocurrchannel
 
 	// avsubtotalallocated := float64(0)
 	// avsubtotaldirect := float64(0)
@@ -1920,6 +1933,9 @@ func prepmasternewchannelsgaalloc() {
 		for k, _ := range tkmsgaalloc {
 			val := tkmsgaalloc.GetFloat64(k) * ratiotoav * ratiobynetsales
 			tkm.Set(k, val)
+			//==
+			xval := tkmsgaalloc.GetFloat64(k) - val
+			sgaallocatedist_min[keysga].Set(k, xval)
 		}
 
 		tkmsgadirect, exist := sgadirectdist[keysga]
@@ -1930,6 +1946,9 @@ func prepmasternewchannelsgaalloc() {
 		for k, _ := range tkmsgadirect {
 			val := tkmsgadirect.GetFloat64(k) * ratiotoav * ratiobynetsales
 			tkm.Set(k, val)
+			//==
+			xval := tkmsgadirect.GetFloat64(k) - val
+			sgadirectdist_min[keysga].Set(k, xval)
 		}
 
 		_ = qSave.Exec(toolkit.M{}.Set("data", tkm))
@@ -1940,12 +1959,140 @@ func prepmasternewchannelsgaalloc() {
 		}
 	}
 
+	//=============End Of Channel I1
+	sgaallocatedist = map[string]toolkit.M{}
+	sgadirectdist = map[string]toolkit.M{}
+
+	subtotalallocated = float64(0)
+	for tk, v := range sgaallocatedist_min {
+		sgaallocatedist[tk] = toolkit.M{}
+		for k, _ := range v {
+			subtotalallocated += v.GetFloat64(k)
+			sgaallocatedist[tk].Set(k, v.GetFloat64(k))
+		}
+	}
+	toolkit.Printfn("Total Allocated After I1: %v", subtotalallocated)
+
+	subtotaldirect = float64(0)
+	for tk, v := range sgadirectdist_min {
+		sgadirectdist[tk] = toolkit.M{}
+		for k, _ := range v {
+			subtotaldirect += v.GetFloat64(k)
+			sgadirectdist[tk].Set(k, v.GetFloat64(k))
+		}
+	}
+	toolkit.Printfn("Total Direct After I1: %v", subtotaldirect)
 	//================MT 0.49 I3
+	ratiocurrchannel = subtotalchannel["I3"] / (subtotalchannel["I3"] + subtotalchannel["I2"])
 	fi = dbox.And(f, dbox.Eq("key.customer_channelid", "I3"))
 	i3csr, _ := conn.NewQuery().Select().Where(fi).From("salespls-summary-res2").Cursor(nil)
 	defer i3csr.Close()
 
+	scount = i3csr.Count()
+	toolkit.Println("--> Read data salespls-summary-res2 for I3 allocated : ", scount)
+	iscount = 0
+	step = getstep(scount) * 20
+
+	majorsgatotal = subtotalallocated + subtotaldirect
+	majorsgatotalI1 = majorsgatotal * ratiocurrchannel
+
+	avsubtotal = float64(0)
+	for k, _ := range channelratio["I3"] {
+		_, exist := sgadirectdist[k]
+		if exist {
+			for xk, _ := range sgadirectdist[k] {
+				avsubtotal += sgadirectdist[k].GetFloat64(xk)
+			}
+		}
+
+		_, exist = sgaallocatedist[k]
+		if exist {
+			for xk, _ := range sgaallocatedist[k] {
+				avsubtotal += sgaallocatedist[k].GetFloat64(xk)
+			}
+		}
+	}
+
+	// avsubtotal := avsubtotalallocated + avsubtotaldirect
+	ratiotoav = toolkit.Div(majorsgatotalI1, avsubtotal)
+
+	for {
+
+		iscount++
+
+		tkm := toolkit.M{}
+		e := i3csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+		// channelid := dtkm.GetString("customer_channelid")
+		keysga := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
+
+		netsales := tkm.GetFloat64("PL8A")
+		ratiobynetsales := toolkit.Div(netsales, channelratio["I1"].GetFloat64(keysga))
+
+		//////================
+		tkmsgaalloc, exist := sgaallocatedist[keysga]
+		if !exist {
+			tkmsgaalloc = toolkit.M{}
+		}
+
+		for k, _ := range tkmsgaalloc {
+			val := tkmsgaalloc.GetFloat64(k) * ratiotoav * ratiobynetsales
+			tkm.Set(k, val)
+			//==
+			xval := tkmsgaalloc.GetFloat64(k) - val
+			sgaallocatedist_min[keysga].Set(k, xval)
+		}
+
+		tkmsgadirect, exist := sgadirectdist[keysga]
+		if !exist {
+			tkmsgadirect = toolkit.M{}
+		}
+
+		for k, _ := range tkmsgadirect {
+			val := tkmsgadirect.GetFloat64(k) * ratiotoav * ratiobynetsales
+			tkm.Set(k, val)
+			//==
+			xval := tkmsgadirect.GetFloat64(k) - val
+			sgadirectdist_min[keysga].Set(k, xval)
+		}
+
+		_ = qSave.Exec(toolkit.M{}.Set("data", tkm))
+
+		if iscount%step == 0 {
+			toolkit.Printfn("Sending %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t0).String())
+		}
+	}
+
+	sgaallocatedist = map[string]toolkit.M{}
+	sgadirectdist = map[string]toolkit.M{}
+
+	subtotalallocated = float64(0)
+	for tk, v := range sgaallocatedist_min {
+		sgaallocatedist[tk] = toolkit.M{}
+		for k, _ := range v {
+			subtotalallocated += v.GetFloat64(k)
+			sgaallocatedist[tk].Set(k, v.GetFloat64(k))
+		}
+	}
+	toolkit.Printfn("Total Allocated After I3: %v", subtotalallocated)
+
+	subtotaldirect = float64(0)
+	for tk, v := range sgadirectdist_min {
+		sgadirectdist[tk] = toolkit.M{}
+		for k, _ := range v {
+			subtotaldirect += v.GetFloat64(k)
+			sgadirectdist[tk].Set(k, v.GetFloat64(k))
+		}
+	}
+	toolkit.Printfn("Total Direct After I3: %v", subtotaldirect)
+
 	//================GT 0.30 I2
+	ratiocurrchannel = subtotalchannel["I2"] / subtotalchannelmajor
 	fi = dbox.And(f, dbox.Eq("key.customer_channelid", "I2"))
 	i2csr, _ := conn.NewQuery().Select().Where(fi).From("salespls-summary-res2").Cursor(nil)
 	defer i2csr.Close()
