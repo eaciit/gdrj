@@ -1549,18 +1549,20 @@ func prepmasternewsgaalloc() {
 	masters.Set("newsgaalloc", newsgaalloc)
 }
 
-/*
 func prepmasternewchannelsgaalloc() {
 	//salespls-summary-4cogssgafinal
 	toolkit.Println("--> Prepare data to for new channel sgaalloc")
 
 	f := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select("key", "PL8A").Where(f).From("salespls-summary-4cogssgafinal").Cursor(nil)
+	csr, _ := conn.NewQuery().Select().Where(f).From("salespls-summary-4cogssgafinal2").Cursor(nil)
 	defer csr.Close()
 
 	toolkit.Println("--> Read data source allocated : ", csr.Count())
 	sgaallocatedist := map[string]toolkit.M{}
 	sgadirectdist := map[string]toolkit.M{}
+
+	globalsga := map[string]float64{}
+
 	for {
 		tkm := toolkit.M{}
 		e := csr.Fetch(&tkm, 1, false)
@@ -1569,17 +1571,154 @@ func prepmasternewchannelsgaalloc() {
 		}
 
 		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
-		// key := toolkit.Sprintf("%s_%d_%s_%s", dtkm.GetString(k))
+		key := toolkit.Sprintf("%s_%d_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
+			dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
 
-		for i := 0; i < count; i++ {
-
+		tkmallocated, exist := sgaallocatedist[key]
+		if !exist {
+			tkmallocated = toolkit.M{}
 		}
+
+		tkmdirect, exist := sgadirectdist[key]
+		if !exist {
+			tkmdirect = toolkit.M{}
+		}
+
+		for k, _ := range tkm {
+			arrk := strings.Split(k, "_")
+			if len(arrk) < 3 {
+				continue
+			}
+
+			nval := tkm.GetFloat64(k)
+			globalsga[k] += nval
+
+			if arrk[1] == "Allocated" {
+				val := tkmallocated.GetFloat64(k) + nval
+				tkmallocated.Set(k, val)
+			} else {
+				val := tkmdirect.GetFloat64(k) + nval
+				tkmdirect.Set(k, val)
+			}
+		}
+
+		sgaallocatedist[key] = tkmallocated
+		sgadirectdist[key] = tkmdirect
 	}
+
 	toolkit.Println("--> Done read data source allocated : ")
+
+	totalsga := float64(0)
+	for _, val := range globalsga {
+		totalsga += val
+	}
+	masters.Set("globalsga", globalsga)
+	masters.Set("totalsga", totalsga)
+
+	//save
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
+
+	qSave := workerconn.NewQuery().
+		From("salespls-summary-res2").
+		SetConfig("multiexec", true).
+		Save()
+
+	// f := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	xcsr, _ := conn.NewQuery().Select().Where(f).From("salespls-summary-res").Cursor(nil)
+	defer xcsr.Close()
+
+	toolkit.Println("--> Read data salespls-summary-res allocated : ", csr.Count())
+
+	channelratio := toolkit.M{}
+	for {
+		tkm := toolkit.M{}
+		e := xcsr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+		key := toolkit.Sprintf("%s_%d_%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
+			dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"), dtkm.GetString("customer_channelid"))
+
+		val := tkm.GetFloat64("PL8A") + channelratio.GetFloat64(key)
+		channelratio.Set(key, val)
+
+		for k, _ := range tkm {
+			arrstr := strings.Split(k, "_")
+			if arrstr[0] == "PL33" || arrstr[0] == "PL34" || arrstr[0] == "PL35" || arrstr[0] == "PL94" || arrstr[0] == "PL94A" {
+				tkm.Unset(k)
+			}
+		}
+
+		//SGA
+		channelid := dtkm.GetString("customer_channelid")
+		//I4 Industrial, I6 Motorist
+		if channelid == "I4" || channelid == "I6" || channelid == "EXP" {
+			keysga := toolkit.Sprintf("%s_%d_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
+				dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
+
+			netsales := tkm.GetFloat64("PL8A")
+			sgasubtotalchan := netsales * 0.1
+			if channelid == "I6" {
+				sgasubtotalchan = netsales * 0.08
+			}
+
+			subtotallocated := float64(0)
+			subtotdirect := float64(0)
+
+			tkmallocated, exist := sgaallocatedist[keysga]
+			if exist {
+				tkmallocated = toolkit.M{}
+			}
+
+			for k, _ := range tkmallocated {
+				subtotallocated += tkmallocated.GetFloat64(k)
+			}
+
+			tkmdirect, exist := sgadirectdist[keysga]
+			if exist {
+				tkmdirect = toolkit.M{}
+			}
+
+			for k, _ := range tkmdirect {
+				subtotdirect += tkmdirect.GetFloat64(k)
+			}
+
+			xsgatotal := subtotallocated + subtotdirect
+			asgasubtotalchan := sgasubtotalchan * toolkit.Div(subtotallocated, xsgatotal)
+			dsgasubtotalchan := sgasubtotalchan - asgasubtotalchan
+
+			// allocate value sga to particular channel
+			for k, _ := range tkmallocated {
+				xv := tkmallocated.GetFloat64(k)
+				mv := asgasubtotalchan * toolkit.Div(xv, subtotallocated)
+				xv = xv - mv
+				tkm.Set(k, mv)
+				tkmallocated.Set(k, xv)
+			}
+
+			for k, _ := range tkmdirect {
+				xv := tkmdirect.GetFloat64(k)
+				mv := dsgasubtotalchan * toolkit.Div(xv, subtotdirect)
+				xv = xv - mv
+				tkm.Set(k, mv)
+				tkmdirect.Set(k, xv)
+			}
+
+			sgaallocatedist[key] = tkmallocated
+			sgadirectdist[key] = tkmdirect
+		}
+
+		_ = qSave.Exec(toolkit.M{}.Set("data", tkm))
+	}
+
 	masters.Set("sgaallocatedist", sgaallocatedist)
 	masters.Set("sgadirectdist", sgadirectdist)
+
+	masters.Set("channelratio", channelratio)
 }
-*/
 
 func main() {
 	t0 = time.Now()
@@ -1622,11 +1761,12 @@ func main() {
 	// os.Exit(1)
 
 	prepmasterproduct()
-	prepmasternewsgaalloc()
+	// prepmasternewsgaalloc()
+	prepmasternewchannelsgaalloc()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssgacleanperunit").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-res2").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -2378,12 +2518,68 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 	return
 }
 
+func CalcNewSgaChannelData(tkm toolkit.M) {
+	sgaallocatedist := masters.Get("sgaallocatedist", map[string]toolkit.M{}).(map[string]toolkit.M)
+	sgadirectdist := masters.Get("sgadirectdist", map[string]toolkit.M{}).(map[string]toolkit.M)
+
+	channelratio := masters.Get("channelratio", toolkit.M{}).(toolkit.M)
+	// masters.Set("sgadirectdist", sgadirectdist)
+
+	// masters.Set("channelratio", channelratio)
+
+	// val := tkm.GetFloat64("PL8A") + channelratio.GetFloat64(key)
+	// 	channelratio.Set(key, val)
+
+	dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+	channelid := dtkm.GetString("customer_channelid")
+	//I4 Industrial, I6 Motorist
+	if channelid == "I4" || channelid == "I6" || channelid == "EXP" {
+		return
+	}
+
+	cratio := float64(0.3)
+	if channelid == "I3" {
+		cratio = float64(0.49)
+	} else if channelid == "I1" {
+		cratio = float64(0.21)
+	}
+
+	keyratio := toolkit.Sprintf("%s_%d_%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
+		dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"), dtkm.GetString("customer_channelid"))
+
+	keysga := toolkit.Sprintf("%s_%d_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
+		dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
+
+	netsales := tkm.GetFloat64("PL8A")
+	ratiobychannel := toolkit.Div(netsales, channelratio.GetFloat64(keyratio))
+
+	tkmsgaalloc, exist := sgaallocatedist[keysga]
+	if !exist {
+		tkmsgaalloc = toolkit.M{}
+	}
+
+	for k, _ := range tkmsgaalloc {
+		val := tkmsgaalloc.GetFloat64(k) * cratio * ratiobychannel
+		tkm.Set(k, val)
+	}
+
+	tkmsgadirect, exist := sgadirectdist[keysga]
+	if !exist {
+		tkmsgadirect = toolkit.M{}
+	}
+
+	for k, _ := range tkmsgadirect {
+		val := tkmsgadirect.GetFloat64(k) * cratio * ratiobychannel
+		tkm.Set(k, val)
+	}
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4cogssgafinal2").
+		From("salespls-summary-res2").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -2417,7 +2613,6 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
 
-		// CalcSum(trx)
 		// trx = CalcCogsPerUnit(trx)
 
 		// dtkm, _ := toolkit.ToM(trx.Get("key"))
@@ -2441,8 +2636,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CleanReportSubChannelBreakdownRD(trx)
 		// CleanAreanameNull(trx)
 
-		trx = CalcNewSgaData(trx)
+		// trx = CalcNewSgaData(trx)
 
+		CalcNewSgaChannelData(trx)
+		CalcSum(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
