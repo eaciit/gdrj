@@ -1293,6 +1293,173 @@ func prepmastercogsperunit() {
 	masters.Set("cogs", cogsmaps)
 }
 
+func prepmasterproduct() {
+	toolkit.Println("--> Prepare data to for product")
+
+	csr, _ := conn.NewQuery().Select().From("product").Cursor(nil)
+	defer csr.Close()
+
+	masterproduct := toolkit.M{}
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		masterproduct.Set(tkm.GetString("_id"), tkm)
+	}
+
+	masters.Set("masterproduct", masterproduct)
+}
+
+func prepmasternewsgaalloc() {
+	toolkit.Println("--> Prepare data to for new sgaalloc")
+
+	toolkit.Println("--> Read data keys")
+	keys := toolkit.M{}
+	f := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csrkey, _ := conn.NewQuery().Select("key").Where(f).From("salespls-summary-4cogssgacleanperunit").Cursor(nil)
+	defer csrkey.Close()
+
+	toolkit.Println("--> Read data keys : ", csrkey.Count())
+	for {
+		tkm := toolkit.M{}
+		e := csrkey.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+		masterproduct := masters.Get("masterproduct", toolkit.M{}).(toolkit.M)
+
+		year := dtkm.GetInt("date_year")
+		month := dtkm.GetInt("date_month")
+		branchid := dtkm.GetString("customer_branchid")
+		skuid := dtkm.GetString("product_skuid")
+		dproduct := masterproduct.Get(skuid, toolkit.M{}).(toolkit.M)
+		brandcategory := dproduct.GetString("brandcategoryid")
+
+		dkey := toolkit.Sprintf("%d_%d_%s", year, month, branchid)
+		akey01 := toolkit.Sprintf("%d_%d_%s", year, month, brandcategory)
+		akey := toolkit.Sprintf("%d_%d", year, month)
+
+		netsales := tkm.GetFloat64("PL8A")
+		val := keys.GetFloat64(dkey) + netsales
+		keys.Set(dkey, val)
+
+		val = keys.GetFloat64(akey01) + netsales
+		keys.Set(akey01, val)
+
+		val = keys.GetFloat64(akey) + netsales
+		keys.Set(akey, val)
+	}
+
+	masters.Set("ratio4sga", keys)
+
+	toolkit.Println("--> Done read data keys ::. ")
+
+	f = dbox.Eq("year", fiscalyear-1)
+	csr, _ := conn.NewQuery().Select().Where(f).From("rawdatapl-sga-4analysis-res").Cursor(nil)
+	defer csr.Close()
+
+	toolkit.Println("--> Read data rawdatapl-sga : ", csr.Count())
+	newsgadirect := map[string]toolkit.M{}
+	newsgaalloc := map[string]toolkit.M{}
+
+	for {
+
+		//For HD11 -> addinfo : Jakarta
+
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+		date := time.Date(tkm.GetInt("year"), time.Month(tkm.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
+
+		branchid := tkm.GetString("branchid")
+		key := toolkit.Sprintf("%d_%d_%s", date.Year(), date.Month(), branchid)
+
+		plcode := "PL33"
+		grouping := tkm.GetString("grouping")
+		if grouping == "General and administrative expenses" {
+			plcode = "PL34"
+		} else if grouping == "Depr & Amort. Exp. -  Office" {
+			plcode = "PL35"
+		}
+
+		costgroup := tkm.GetString("costgroup")
+		if keys.Has(key) {
+			nsgatkm, exist := newsgadirect[key]
+			if !exist {
+				nsgatkm = toolkit.M{}
+			}
+
+			gnsgatkm := nsgatkm.Get(plcode, toolkit.M{}).(toolkit.M)
+
+			val := gnsgatkm.GetFloat64(costgroup) + tkm.GetFloat64("min_amountinidr")
+			gnsgatkm.Set(costgroup, val)
+			nsgatkm.Set(plcode, gnsgatkm)
+
+			newsgadirect[key] = nsgatkm
+		} else {
+			//list brand category
+			listcategory := []string{"047", "301", "302"}
+			keylistcategory := []string{}
+
+			for _, v := range listcategory {
+				key = toolkit.Sprintf("%d_%d_%s", date.Year(), date.Month(), v)
+				if keys.Has(key) {
+					keylistcategory = append(keylistcategory, v)
+				}
+			}
+
+			val := tkm.GetFloat64("min_amountinidr") / toolkit.ToFloat64(len(keylistcategory), 2, toolkit.RoundingAuto)
+
+			for _, v := range keylistcategory {
+				key = toolkit.Sprintf("%d_%d_%s", date.Year(), date.Month(), v)
+
+				nsgatkm, exist := newsgadirect[key]
+				if !exist {
+					nsgatkm = toolkit.M{}
+				}
+
+				gnsgatkm := nsgatkm.Get(plcode, toolkit.M{}).(toolkit.M)
+
+				xval := gnsgatkm.GetFloat64(costgroup) + val
+				gnsgatkm.Set(costgroup, xval)
+				nsgatkm.Set(plcode, gnsgatkm)
+
+				newsgadirect[key] = nsgatkm
+			}
+
+			if len(keylistcategory) == 0 {
+				key = toolkit.Sprintf("%d_%d", date.Year(), date.Month())
+
+				nsgatkm, exist := newsgaalloc[key]
+				if !exist {
+					nsgatkm = toolkit.M{}
+				}
+
+				gnsgatkm := nsgatkm.Get(plcode, toolkit.M{}).(toolkit.M)
+
+				xval := gnsgatkm.GetFloat64(costgroup) + tkm.GetFloat64("min_amountinidr")
+				gnsgatkm.Set(costgroup, xval)
+				nsgatkm.Set(plcode, gnsgatkm)
+
+				newsgaalloc[key] = nsgatkm
+			}
+		}
+	}
+
+	toolkit.Println("--> Done read data rawdatapl-sga ::. ")
+
+	masters.Set("newsgadirect", newsgadirect)
+	masters.Set("newsgaalloc", newsgaalloc)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -1329,13 +1496,16 @@ func main() {
 	// prepmasterrollback_adv()
 	// prepmasterrollback_sumbrand()
 
-	prepmastercogsperunit()
+	// prepmastercogsperunit()
 
 	// os.Exit(1)
 
+	prepmasterproduct()
+	prepmasternewsgaalloc()
+
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssgacleanperunit").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -2010,12 +2180,89 @@ func CalcCogsPerUnit(tkm toolkit.M) (ntkm toolkit.M) {
 	return
 }
 
+func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
+	dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+	masterproduct := masters.Get("masterproduct", toolkit.M{}).(toolkit.M)
+
+	year := dtkm.GetInt("date_year")
+	month := dtkm.GetInt("date_month")
+	branchid := dtkm.GetString("customer_branchid")
+	skuid := dtkm.GetString("product_skuid")
+	dproduct := masterproduct.Get(skuid, toolkit.M{}).(toolkit.M)
+
+	brandcategory := dproduct.GetString("brandcategoryid")
+
+	dkey := toolkit.Sprintf("%d_%d_%s", year, month, branchid)
+	akey01 := toolkit.Sprintf("%d_%d_%s", year, month, brandcategory)
+	akey := toolkit.Sprintf("%d_%d", year, month)
+	//Direct - Allocated
+
+	netsales := tkm.GetFloat64("PL8A")
+	ratio4sga := masters.Get("ratio4sga", toolkit.M{}).(toolkit.M)
+
+	newsgadirect := masters.Get("newsgadirect", map[string]toolkit.M{}).(map[string]toolkit.M)
+	newsgaalloc := masters.Get("newsgaalloc", map[string]toolkit.M{}).(map[string]toolkit.M)
+	// masters.Set("newsgaalloc", newsgaalloc)
+
+	for key, val := range newsgadirect[dkey] {
+		directtkm, _ := toolkit.ToM(val)
+		for xkey, xval := range directtkm {
+			plcode := toolkit.Sprintf("%s_Direct_%s", key, xkey)
+			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * netsales / ratio4sga.GetFloat64(dkey)) + tkm.GetFloat64(plcode)
+			tkm.Set(plcode, val)
+		}
+	}
+
+	for key, val := range newsgaalloc[akey01] {
+		alloctkm, _ := toolkit.ToM(val)
+		for xkey, xval := range alloctkm {
+			plcode := toolkit.Sprintf("%s_Allocated_%s", key, xkey)
+			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * netsales / ratio4sga.GetFloat64(dkey)) + tkm.GetFloat64(plcode)
+			tkm.Set(plcode, val)
+		}
+	}
+
+	for key, val := range newsgaalloc[akey] {
+		alloctkm, _ := toolkit.ToM(val)
+		for xkey, xval := range alloctkm {
+			plcode := toolkit.Sprintf("%s_Allocated_%s", key, xkey)
+			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * netsales / ratio4sga.GetFloat64(dkey)) + tkm.GetFloat64(plcode)
+			tkm.Set(plcode, val)
+		}
+	}
+
+	CalcSum(tkm)
+
+	pllist := []string{"PL0", "PL1", "PL7", "PL2", "PL8", "PL3", "PL4", "PL5", "PL6", "PL6A", "PL7A", "PL8A",
+		"PL9", "PL10", "PL11", "PL12", "PL13", "PL14", "PL14A", "PL15", "PL16", "PL17",
+		"PL18", "PL19", "PL20", "PL21", "PL74", "PL74A", "PL74B", "PL33", "PL34", "PL35", "PL94A"}
+
+	inlist := func(str string) bool {
+		ar01k := strings.Split(str, "_")
+		for _, v := range pllist {
+			if ar01k[0] == v {
+				return true
+			}
+		}
+		return false
+	}
+
+	ntkm = toolkit.M{}
+	for k, v := range tkm {
+		if k[0:2] != "PL" || inlist(k) {
+			ntkm.Set(k, v)
+		}
+	}
+
+	return
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4cogssgacleanperunit").
+		From("salespls-summary-4cogssgafinal").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -2031,7 +2278,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
-		CalcSalesVDist20142015(trx)
+		// CalcSalesVDist20142015(trx)
 		// CalcSgaRev(trx)
 
 		// CleanUpdateCustomerGroupName(trx)
@@ -2049,8 +2296,9 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
 
-		CalcSum(trx)
-		trx = CalcCogsPerUnit(trx)
+		// CalcSum(trx)
+		// trx = CalcCogsPerUnit(trx)
+
 		// dtkm, _ := toolkit.ToM(trx.Get("key"))
 		// if dtkm.GetString("customer_reportsubchannel") == "R3" {
 		// 	dtkm.Set("customer_reportsubchannel", "R3 - Retailer Umum")
@@ -2071,6 +2319,9 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CleanReportSubChannelBreakdownRD(trx)
 		// CleanAreanameNull(trx)
+
+		trx = CalcNewSgaData(trx)
+
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
