@@ -1579,7 +1579,7 @@ func prepmasternewchannelsgaalloc() {
 		}
 
 		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
-		key := toolkit.Sprintf("%s_%d_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
+		key := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"),
 			dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
 
 		tkmallocated, exist := sgaallocatedist[key]
@@ -1675,7 +1675,7 @@ func prepmasternewchannelsgaalloc() {
 	iscount = 0
 	step = getstep(scount) * 20
 
-	channelratio := toolkit.M{}
+	channelratio := map[string]toolkit.M{}
 	for {
 
 		iscount++
@@ -1687,18 +1687,17 @@ func prepmasternewchannelsgaalloc() {
 		}
 
 		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
-		key := toolkit.Sprintf("%s_%d_%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
-			dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"), dtkm.GetString("customer_channelid"))
+		channelid := dtkm.GetString("customer_channelid")
 
-		// if dtkm.GetString("product_brand") != "AKC" {
-		val := tkm.GetFloat64("PL8A") + channelratio.GetFloat64(key)
-		channelratio.Set(key, val)
-		// }
+		key := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
 
-		tkey := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("customer_branchgroup"), dtkm.GetString("customer_channelid"))
+		_, exist := channelratio[channelid]
+		if !exist {
+			channelratio[channelid] = toolkit.M{}
+		}
 
-		val = tkm.GetFloat64("PL8A") + channelratio.GetFloat64(tkey)
-		channelratio.Set(tkey, val)
+		val := tkm.GetFloat64("PL8A") + channelratio[channelid].GetFloat64(key)
+		channelratio[channelid].Set(key, val)
 
 		for k, _ := range tkm {
 			arrstr := strings.Split(k, "_")
@@ -1708,11 +1707,10 @@ func prepmasternewchannelsgaalloc() {
 		}
 
 		//SGA
-		channelid := dtkm.GetString("customer_channelid")
 		//I4 Industrial, I6 Motorist
 		if channelid == "I4" || channelid == "I6" || channelid == "EXP" {
 
-			keysga := toolkit.Sprintf("%s_%d_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
+			keysga := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"),
 				dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
 
 			netsales := tkm.GetFloat64("PL8A")
@@ -1782,84 +1780,84 @@ func prepmasternewchannelsgaalloc() {
 		}
 	}
 
-	arrstr := []string{"I1", "I2", "I3"}
-	subtotal = float64(0)
-	for tk, v := range sgaallocatedist {
-		tkey := ""
-		for _, str := range arrstr {
-			skey := toolkit.Sprintf("%s_%s", tk, str)
-			if !channelratio.Has(skey) {
-				arrkey := strings.Split(tk, "_")
-				if len(arrkey) > 3 {
-					tkey = toolkit.Sprintf("%s_%s", arrkey[0], arrkey[3])
-					skey = toolkit.Sprintf("%s_%s", tkey, str)
-				} else {
-					toolkit.Println(tk)
+	// arrstr := []string{"I1", "I2", "I3"}
+	subtotalallocated := float64(0)
+	/*	for tk, v := range sgaallocatedist {
+			tkey := ""
+			for _, str := range arrstr {
+				skey := toolkit.Sprintf("%s_%s", tk, str)
+				if !channelratio.Has(skey) {
+					arrkey := strings.Split(tk, "_")
+					if len(arrkey) > 3 {
+						tkey = toolkit.Sprintf("%s_%s", arrkey[0], arrkey[3])
+						skey = toolkit.Sprintf("%s_%s", tkey, str)
+					} else {
+						toolkit.Println(tk)
+					}
 				}
 			}
-		}
 
-		if tkey != "" {
-			delete(sgaallocatedist, tk)
-			tkm, exist := sgaallocatedist[tkey]
-			if !exist {
-				tkm = toolkit.M{}
+			if tkey != "" {
+				delete(sgaallocatedist, tk)
+				tkm, exist := sgaallocatedist[tkey]
+				if !exist {
+					tkm = toolkit.M{}
+				}
+
+				for k, _ := range v {
+					val := tkm.GetFloat64(k) + v.GetFloat64(k)
+					tkm.Set(k, val)
+				}
+
+				sgaallocatedist[tkey] = tkm
 			}
-
-			for k, _ := range v {
-				val := tkm.GetFloat64(k) + v.GetFloat64(k)
-				tkm.Set(k, val)
-			}
-
-			sgaallocatedist[tkey] = tkm
 		}
-	}
-
+	*/
 	for _, v := range sgaallocatedist {
 		for k, _ := range v {
-			subtotal += v.GetFloat64(k)
+			subtotalallocated += v.GetFloat64(k)
 		}
 	}
-	toolkit.Printfn("Total Allocated : %v", subtotal)
+	toolkit.Printfn("Total Allocated : %v", subtotalallocated)
 
-	subtotal = float64(0)
-	for tk, v := range sgadirectdist {
-		tkey := ""
-		for _, str := range arrstr {
-			skey := toolkit.Sprintf("%s_%s", tk, str)
-			if !channelratio.Has(skey) {
-				arrkey := strings.Split(tk, "_")
-				if len(arrkey) > 3 {
-					tkey = toolkit.Sprintf("%s_%s", arrkey[0], arrkey[3])
-					skey = toolkit.Sprintf("%s_%s", tkey, str)
-				} else {
-					toolkit.Println(tk)
+	subtotaldirect := float64(0)
+	/*	for tk, v := range sgadirectdist {
+			tkey := ""
+			for _, str := range arrstr {
+				skey := toolkit.Sprintf("%s_%s", tk, str)
+				if !channelratio.Has(skey) {
+					arrkey := strings.Split(tk, "_")
+					if len(arrkey) > 3 {
+						tkey = toolkit.Sprintf("%s_%s", arrkey[0], arrkey[3])
+						skey = toolkit.Sprintf("%s_%s", tkey, str)
+					} else {
+						toolkit.Println(tk)
+					}
 				}
 			}
-		}
 
-		if tkey != "" {
-			delete(sgadirectdist, tk)
-			tkm, exist := sgadirectdist[tkey]
-			if !exist {
-				tkm = toolkit.M{}
+			if tkey != "" {
+				delete(sgadirectdist, tk)
+				tkm, exist := sgadirectdist[tkey]
+				if !exist {
+					tkm = toolkit.M{}
+				}
+
+				for k, _ := range v {
+					val := tkm.GetFloat64(k) + v.GetFloat64(k)
+					tkm.Set(k, val)
+				}
+
+				sgadirectdist[tkey] = tkm
 			}
-
-			for k, _ := range v {
-				val := tkm.GetFloat64(k) + v.GetFloat64(k)
-				tkm.Set(k, val)
-			}
-
-			sgadirectdist[tkey] = tkm
 		}
-	}
-
+	*/
 	for _, v := range sgadirectdist {
 		for k, _ := range v {
-			subtotal += v.GetFloat64(k)
+			subtotaldirect += v.GetFloat64(k)
 		}
 	}
-	toolkit.Printfn("Total Direct : %v", subtotal)
+	toolkit.Printfn("Total Direct : %v", subtotaldirect)
 
 	masters.Set("sgaallocatedist", sgaallocatedist)
 	masters.Set("sgadirectdist", sgadirectdist)
@@ -2812,7 +2810,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// trx = CalcNewSgaData(trx)
 
-		CalcNewSgaChannelData(trx)
+		// CalcNewSgaChannelData(trx)
 		CalcSum(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
