@@ -1690,10 +1690,16 @@ func prepmasternewchannelsgaalloc() {
 		key := toolkit.Sprintf("%s_%d_%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
 			dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"), dtkm.GetString("customer_channelid"))
 
-		if dtkm.GetString("product_brand") != "AKC" {
-			val := tkm.GetFloat64("PL8A") + channelratio.GetFloat64(key)
-			channelratio.Set(key, val)
-		}
+		// if dtkm.GetString("product_brand") != "AKC" {
+		val := tkm.GetFloat64("PL8A") + channelratio.GetFloat64(key)
+		channelratio.Set(key, val)
+		// }
+
+		tkey := toolkit.Sprintf("%s_%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("product_brand"),
+			dtkm.GetString("customer_branchgroup"), dtkm.GetString("customer_channelid"))
+
+		val = tkm.GetFloat64("PL8A") + channelratio.GetFloat64(tkey)
+		channelratio.Set(tkey, val)
 
 		for k, _ := range tkm {
 			arrstr := strings.Split(k, "_")
@@ -1777,17 +1783,31 @@ func prepmasternewchannelsgaalloc() {
 		}
 	}
 
-	masters.Set("sgaallocatedist", sgaallocatedist)
-	masters.Set("sgadirectdist", sgadirectdist)
-
 	arrstr := []string{"I1", "I2", "I3"}
 	subtotal = float64(0)
 	for tk, v := range sgaallocatedist {
+		tkey := ""
 		for _, str := range arrstr {
 			skey := toolkit.Sprintf("%s_%s", tk, str)
 			if !channelratio.Has(skey) {
-				toolkit.Println("ALLOC : ", tk)
+				arrkey := strings.Split(tk, "_")
+				tkey = toolkit.Sprintf("%s_%s_%s", arrkey[0], arrkey[2], arrkey[3])
+				skey = toolkit.Sprintf("%s_%s", tkey, str)
 			}
+		}
+
+		if tkey != "" {
+			tkm, exist := sgaallocatedist[tkey]
+			if !exist {
+				tkm = toolkit.M{}
+			}
+
+			for k, _ := range v {
+				val := tkm.GetFloat64(k) + v.GetFloat64(k)
+				tkm.Set(k, val)
+			}
+
+			sgaallocatedist[tkey] = tkm
 		}
 
 		for k, _ := range v {
@@ -1799,11 +1819,28 @@ func prepmasternewchannelsgaalloc() {
 
 	subtotal = float64(0)
 	for tk, v := range sgadirectdist {
+		tkey := ""
 		for _, str := range arrstr {
 			skey := toolkit.Sprintf("%s_%s", tk, str)
 			if !channelratio.Has(skey) {
-				toolkit.Println("DIRECT : ", tk)
+				arrkey := strings.Split(tk, "_")
+				tkey = toolkit.Sprintf("%s_%s_%s", arrkey[0], arrkey[2], arrkey[3])
+				skey = toolkit.Sprintf("%s_%s", tkey, str)
 			}
+		}
+
+		if tkey != "" {
+			tkm, exist := sgadirectdist[tkey]
+			if !exist {
+				tkm = toolkit.M{}
+			}
+
+			for k, _ := range v {
+				val := tkm.GetFloat64(k) + v.GetFloat64(k)
+				tkm.Set(k, val)
+			}
+
+			sgadirectdist[tkey] = tkm
 		}
 
 		for k, _ := range v {
@@ -1812,6 +1849,9 @@ func prepmasternewchannelsgaalloc() {
 	}
 
 	toolkit.Printfn("Total Direct : %v", subtotal)
+
+	masters.Set("sgaallocatedist", sgaallocatedist)
+	masters.Set("sgadirectdist", sgadirectdist)
 
 	masters.Set("channelratio", channelratio)
 }
@@ -2646,9 +2686,17 @@ func CalcNewSgaChannelData(tkm toolkit.M) {
 	keysga := toolkit.Sprintf("%s_%d_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
 		dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
 
+	tkeyratio := toolkit.Sprintf("%s_%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("product_brand"),
+		dtkm.GetString("customer_branchgroup"), channelid)
+
+	tkeysga := toolkit.Sprintf("%s_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetString("product_brand"),
+		dtkm.GetString("customer_branchgroup"))
+
 	netsales := tkm.GetFloat64("PL8A")
 	ratiobychannel := toolkit.Div(netsales, channelratio.GetFloat64(keyratio))
+	tratiobychannel := toolkit.Div(netsales, channelratio.GetFloat64(tkeyratio))
 
+	// ====================================================
 	tkmsgaalloc, exist := sgaallocatedist[keysga]
 	if !exist {
 		tkmsgaalloc = toolkit.M{}
@@ -2666,6 +2714,27 @@ func CalcNewSgaChannelData(tkm toolkit.M) {
 
 	for k, _ := range tkmsgadirect {
 		val := tkmsgadirect.GetFloat64(k) * cratio * ratiobychannel
+		tkm.Set(k, val)
+	}
+
+	// ====================================================
+	tkmsgaalloc, exist = sgaallocatedist[tkeysga]
+	if !exist {
+		tkmsgaalloc = toolkit.M{}
+	}
+
+	for k, _ := range tkmsgaalloc {
+		val := (tkmsgaalloc.GetFloat64(k) * cratio * tratiobychannel) + tkm.GetFloat64(k)
+		tkm.Set(k, val)
+	}
+
+	tkmsgadirect, exist = sgadirectdist[tkeysga]
+	if !exist {
+		tkmsgadirect = toolkit.M{}
+	}
+
+	for k, _ := range tkmsgadirect {
+		val := (tkmsgadirect.GetFloat64(k) * cratio * tratiobychannel) + tkm.GetFloat64(k)
 		tkm.Set(k, val)
 	}
 }
