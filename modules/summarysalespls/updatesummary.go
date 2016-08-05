@@ -2237,7 +2237,7 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 		alloctkm, _ := toolkit.ToM(val)
 		for xkey, xval := range alloctkm {
 			plcode := toolkit.Sprintf("%s_Allocated_%s", key, xkey)
-			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * netsales / ratio4sga.GetFloat64(dkey)) + tkm.GetFloat64(plcode)
+			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * netsales / ratio4sga.GetFloat64(akey01)) + tkm.GetFloat64(plcode)
 			tkm.Set(plcode, val)
 		}
 	}
@@ -2246,7 +2246,7 @@ func CalcNewSgaData(tkm toolkit.M) (ntkm toolkit.M) {
 		alloctkm, _ := toolkit.ToM(val)
 		for xkey, xval := range alloctkm {
 			plcode := toolkit.Sprintf("%s_Allocated_%s", key, xkey)
-			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * netsales / ratio4sga.GetFloat64(dkey)) + tkm.GetFloat64(plcode)
+			val := (toolkit.ToFloat64(xval, 6, toolkit.RoundingAuto) * netsales / ratio4sga.GetFloat64(akey)) + tkm.GetFloat64(plcode)
 			tkm.Set(plcode, val)
 		}
 	}
