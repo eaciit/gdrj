@@ -20,7 +20,8 @@ func CalcSum(tkm toolkit.M, masters toolkit.M) {
 
 	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL39A", "PL41A", "PL44A",
 		"PL74B", "PL74C", "PL74D", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
-		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31", "PL94A"}
+		"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31", "PL94A", "PL33_Direct", "PL34_Direct", "PL35_Direct",
+		"PL33_Allocated", "PL34_Allocated", "PL35_Allocated"}
 
 	plmodels := masters.Get("plmodel").(map[string]*PLModel)
 
@@ -42,6 +43,10 @@ func CalcSum(tkm toolkit.M, masters toolkit.M) {
 		ar01k := strings.Split(k, "_")
 
 		if inexclude(ar01k[0]) {
+			continue
+		}
+
+		if inexclude(k) {
 			continue
 		}
 
