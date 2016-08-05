@@ -1557,7 +1557,12 @@ func prepmasternewchannelsgaalloc() {
 	csr, _ := conn.NewQuery().Select().Where(f).From("salespls-summary-4cogssgafinal2").Cursor(nil)
 	defer csr.Close()
 
-	toolkit.Println("--> Read data source allocated : ", csr.Count())
+	scount := csr.Count()
+	toolkit.Println("--> Read data salespls-summary-4cogssgafinal2 allocated : ", scount)
+
+	iscount := 0
+	step := getstep(scount) * 20
+
 	sgaallocatedist := map[string]toolkit.M{}
 	sgadirectdist := map[string]toolkit.M{}
 
@@ -1604,12 +1609,22 @@ func prepmasternewchannelsgaalloc() {
 
 		sgaallocatedist[key] = tkmallocated
 		sgadirectdist[key] = tkmdirect
+
+		if iscount%step == 0 {
+			toolkit.Printfn("Sending %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t0).String())
+		}
 	}
 
 	toolkit.Println("--> Done read data source allocated : ")
 
 	subtotal := float64(0)
-	for _, v := range sgaallocatedist {
+	i := 0
+	for tk, v := range sgaallocatedist {
+		i++
+		if i < 5 {
+			toolkit.Println(tk)
+		}
 		for k, _ := range v {
 			subtotal += v.GetFloat64(k)
 		}
@@ -1618,7 +1633,12 @@ func prepmasternewchannelsgaalloc() {
 	toolkit.Printfn("Total Allocated : %v", subtotal)
 
 	subtotal = float64(0)
-	for _, v := range sgadirectdist {
+	i = 0
+	for tk, v := range sgadirectdist {
+		i++
+		if i < 5 {
+			toolkit.Println(tk)
+		}
 		for k, _ := range v {
 			subtotal += v.GetFloat64(k)
 		}
@@ -1646,10 +1666,17 @@ func prepmasternewchannelsgaalloc() {
 	xcsr, _ := conn.NewQuery().Select().Where(f).From("salespls-summary-res").Cursor(nil)
 	defer xcsr.Close()
 
-	toolkit.Println("--> Read data salespls-summary-res allocated : ", csr.Count())
+	scount = xcsr.Count()
+	toolkit.Println("--> Read data salespls-summary-res allocated : ", scount)
+	i = 0
+	iscount = 0
+	step = getstep(scount) * 20
 
 	channelratio := toolkit.M{}
 	for {
+
+		iscount++
+
 		tkm := toolkit.M{}
 		e := xcsr.Fetch(&tkm, 1, false)
 		if e != nil {
@@ -1674,6 +1701,7 @@ func prepmasternewchannelsgaalloc() {
 		channelid := dtkm.GetString("customer_channelid")
 		//I4 Industrial, I6 Motorist
 		if channelid == "I4" || channelid == "I6" || channelid == "EXP" {
+
 			keysga := toolkit.Sprintf("%s_%d_%s_%s", dtkm.GetString("date_fiscal"), dtkm.GetInt("date_month"),
 				dtkm.GetString("product_brand"), dtkm.GetString("customer_branchgroup"))
 
@@ -1727,9 +1755,19 @@ func prepmasternewchannelsgaalloc() {
 
 			sgaallocatedist[key] = tkmallocated
 			sgadirectdist[key] = tkmdirect
+
+			i++
+			if i < 5 {
+				toolkit.Println(channelid, " : ", keysga, " : ", key, " [", sgasubtotalchan, "] ", asgasubtotalchan, " + ", dsgasubtotalchan)
+			}
 		}
 
 		_ = qSave.Exec(toolkit.M{}.Set("data", tkm))
+
+		if iscount%step == 0 {
+			toolkit.Printfn("Sending %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t0).String())
+		}
 	}
 
 	masters.Set("sgaallocatedist", sgaallocatedist)
@@ -1814,7 +1852,7 @@ func main() {
 	}
 
 	iscount = 0
-	step := getstep(scount) * 5
+	step := getstep(scount) * 10
 
 	for {
 		iscount++
