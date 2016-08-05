@@ -1508,7 +1508,7 @@ func prepmasternewsgaalloc() {
 	toolkit.Println("--> Done read data rawdatapl-sga ::. ", subtot)
 
 	i = 0
-	for k, v := range newsgaalloc {
+	for k, _ := range newsgaalloc {
 		i++
 		if i > 15 {
 			break
