@@ -359,7 +359,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		if key.GetString("date_fiscal") == "2014-2015" {
 			for k, _ := range trx {
 				arrk := strings.Split(k, "_")
-				if arrk[1] == "Allocated" || k == "PL94A" {
+				if (len(arrk) > 1 && arrk[1] == "Allocated") || k == "PL94A" {
 					val := trx.GetFloat64(k)
 					xval := val + (val * ratio)
 					trx.Set(k, xval)
