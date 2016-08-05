@@ -1756,8 +1756,8 @@ func prepmasternewchannelsgaalloc() {
 				tkmdirect.Set(k, xv)
 			}
 
-			sgaallocatedist[key] = tkmallocated
-			sgadirectdist[key] = tkmdirect
+			sgaallocatedist[keysga] = tkmallocated
+			sgadirectdist[keysga] = tkmdirect
 
 			i++
 			if i < 5 {
