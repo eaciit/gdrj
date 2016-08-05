@@ -362,12 +362,12 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 				arrk := strings.Split(k, "_")
 				if (len(arrk) > 1 && arrk[1] == "Allocated") || k == "PL94A" {
 					i++
-					if i < 20 {
-						toolkit.Println(k)
-					}
 					val := trx.GetFloat64(k)
 					xval := val + (val * ratio)
 					trx.Set(k, xval)
+					if i < 20 {
+						toolkit.Println(k, " : ", val, " - > ", xval, " || ", ratio)
+					}
 				}
 			}
 		}
