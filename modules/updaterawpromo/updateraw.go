@@ -249,8 +249,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// branchid := trx.GetString("branchid")
 
-		accdesc := trx.GetString("accountdescription")
-		trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
+		// accdesc := trx.GetString("accountdescription")
+		// trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
 
 		// if trx.GetString("costgroup") == "" {
 		// 	trx.Set("costgroup", "OTHER")
@@ -272,24 +272,40 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// 	trx.Set("branchgroup", "OTHER")
 		// }
 
+		if trx.GetString("accountdescription") == "#N/A" {
+			trx.Set("accountdescription", "CONSUMABLE STORES & SPARES")
+		}
+
+		if trx.GetString("grouping") == "#N/A" {
+			trx.Set("grouping", "General and administrative expenses")
+		}
+
 		//=== For data rawdata mode
 
-		// branchid := trx.GetString("branchid")
-		// branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
-		// trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
-		// trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
-		// //trx.Set("addinfo", "Jakarta")
-		// if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" {
-		// 	trx.Set("branchgroup", "Jakarta")
-		// }
+		branchid := trx.GetString("branchid")
+		if !masterbranch.Has(branchid) {
+			branchid = "CD00"
+		}
 
-		// if trx.GetString("branchgroup") == "" {
-		// 	trx.Set("branchgroup", "OTHER")
-		// }
+		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
+		trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
+		trx.Set("idbranchlvl2", branchgroup.GetString("idbranchlvl2"))
+		//trx.Set("addinfo", "Jakarta")
 
-		// if trx.GetString("branchlvl2") == "" {
-		// 	trx.Set("branchlvl2", "OTHER")
-		// }
+		if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" {
+			trx.Set("branchgroup", "Jakarta")
+		}
+
+		if trx.GetString("branchgroup") == "" {
+			trx.Set("branchgroup", "OTHER")
+		}
+
+		if trx.GetString("branchlvl2") == "" {
+			trx.Set("branchlvl2", "OTHER")
+		}
+
+		//idbranchlvl2
 
 		//===========================================
 
