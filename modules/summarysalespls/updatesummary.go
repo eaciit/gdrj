@@ -3050,7 +3050,7 @@ func CalcScaleSgaAllocatedChannelData(tkm toolkit.M) {
 
 	channelid := key.GetString("date_fiscal")
 
-	ratio := float64(0)
+	ratio := float64(0.00000000000000001)
 
 	if channelid == "I2" {
 		ratio = GT
@@ -3060,6 +3060,7 @@ func CalcScaleSgaAllocatedChannelData(tkm toolkit.M) {
 		return
 	}
 
+	// toolkit.Println(ratio)
 	for k, _ := range tkm {
 		arrk := strings.Split(k, "_")
 		if len(arrk) > 1 && arrk[1] == "Allocated" {
