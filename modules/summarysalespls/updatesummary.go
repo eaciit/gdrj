@@ -3048,7 +3048,7 @@ func CalcScaleSgaAllocatedChannelData(tkm toolkit.M) {
 		MT = float64(0.900262029270844)
 	}
 
-	channelid := key.GetString("date_fiscal")
+	channelid := key.GetString("customer_channelid")
 
 	ratio := float64(0.00000000000000001)
 
