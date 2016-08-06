@@ -2157,6 +2157,48 @@ func prepmasternewchannelsgaalloc() {
 	masters.Set("channelratio", channelratio)
 }
 
+func prepmastersubtotalsallocatedsga() {
+	subtotalsallocated := map[string]float64{}
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-res2").Cursor(nil)
+	defer csr.Close()
+
+	scount := csr.Count()
+	toolkit.Println("--> Read data salespls-summary-res2 for get ratio : ", scount)
+
+	iscount := 0
+	step := getstep(scount) * 20
+
+	for {
+
+		iscount++
+
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+		channelname := dtkm.GetString("customer_channelname")
+
+		for k, _ := range tkm {
+			arrk := strings.Split(k, "_")
+			if len(arrk) > 2 && arrk[1] == "Allocated" {
+				subtotalsallocated[channelname] += tkm.GetFloat64(k)
+			}
+		}
+
+		if iscount%step == 0 {
+			toolkit.Printfn("Read %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t0).String())
+		}
+	}
+
+	masters.Set("subtotalsallocated", subtotalsallocated)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -2200,6 +2242,8 @@ func main() {
 	// prepmasterproduct()
 	// prepmasternewsgaalloc()
 	// prepmasternewchannelsgaalloc()
+
+	prepmastersubtotalsallocatedsga()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
@@ -3040,35 +3084,35 @@ func CalcNewSgaChannelData(tkm toolkit.M) {
 
 func CalcScaleSgaAllocatedChannelData(tkm toolkit.M) {
 
+	subtotalsallocated := masters.Get("subtotalsallocated", map[string]float64{}).(map[string]float64)
 	key := tkm.Get("key", toolkit.M{}).(toolkit.M)
-	GT := float64(81779683602.34) / float64(80614643893.1042)
-	MT := float64(125249923797.18) / float64(133899398916.009)
 
-	if key.GetString("date_fiscal") == "2014-2015" {
-		GT = float64(1.1068282278563)
-		MT = float64(0.900262029270844)
+	distvalue := toolkit.M{}.Set("EXPORT", float64(0.00)).
+		Set("GT", float64(6045116340.04)).
+		Set("INDUSTRIAL", float64(0.00)).
+		Set("MOTORIST", float64(0.00)).
+		Set("MT", float64(-10125960941.17)).
+		Set("RD", float64(1281694.57))
+
+	if key.GetString("date_fiscal") == "2015-2016" {
+		distvalue.Set("EXPORT", float64(19000856.10)).
+			Set("GT", float64(1159339452.41)).
+			Set("INDUSTRIAL", float64(0.00)).
+			Set("MOTORIST", float64(0.00)).
+			Set("MT", float64(-8658785538.32)).
+			Set("RD", float64(-3279277.61))
 	}
 
-	channelid := key.GetString("customer_channelid")
-
-	ratio := float64(0.00000000000000001)
-
-	if channelid == "I2" {
-		ratio = GT
-	} else if channelid == "I3" {
-		ratio = MT
-	} else {
-		return
-	}
+	channelname := key.GetString("customer_channelname")
 
 	// toolkit.Println(ratio)
 	// i := 1
+
 	for k, _ := range tkm {
 		arrk := strings.Split(k, "_")
-		if len(arrk) > 1 && arrk[1] == "Allocated" {
-			// i++
+		if len(arrk) > 2 && arrk[1] == "Allocated" {
 			val := tkm.GetFloat64(k)
-			xval := val * ratio
+			xval := val + (distvalue.GetFloat64(channelname) * toolkit.Div(val, subtotalsallocated[channelname]))
 			tkm.Set(k, xval)
 
 			// if i < 10 {
