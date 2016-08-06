@@ -941,8 +941,9 @@ func prepsalesplssummaryrdwrongsubch() {
 	total := float64(0)
 	arrsubch := make([]rdlist, 0, 0)
 
+	toolkit.Println("--> Get data to salespls-summary-res2-rdsum4wrongsubch")
 	filter := dbox.Eq("date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select().Where(filter).
+	csr, _ := workerconn.NewQuery().Select().Where(filter).
 		From("salespls-summary-res2-rdsum4wrongsubch").
 		Order("-gross").
 		Cursor(nil)
@@ -964,7 +965,7 @@ func prepsalesplssummaryrdwrongsubch() {
 
 		total += tkm.GetFloat64("gross")
 	}
-
+	toolkit.Println("--> End from salespls-summary-res2-rdsum4wrongsubch")
 	ratio := math.Abs(toolkit.Div(57300800361.49201, total))
 	if fiscalyear == 2016 {
 		ratio = math.Abs(toolkit.Div(62236716264.63395, total))
@@ -2193,8 +2194,8 @@ func main() {
 	// prepmasterrollback_sumbrand()
 
 	// prepmastercogsperunit()
-	prepsalesplssummaryrdwrongsubch()
-	os.Exit(1)
+	// prepsalesplssummaryrdwrongsubch()
+	// os.Exit(1)
 
 	// prepmasterproduct()
 	// prepmasternewsgaalloc()
@@ -3037,12 +3038,44 @@ func CalcNewSgaChannelData(tkm toolkit.M) {
 	}
 }
 
+func CalcScaleSgaAllocatedChannelData(tkm toolkit.M) {
+
+	key := tkm.Get("key", toolkit.M{}).(toolkit.M)
+	GT := float64(1.01445196124393)
+	MT := float64(0.935403181874968)
+	if key.GetString("date_fiscal") == "2014-2015" {
+		GT = float64(1.1068282278563)
+		MT = float64(0.900262029270844)
+	}
+
+	channelid := key.GetString("date_fiscal")
+
+	ratio := float64(0)
+
+	if channelid == "I2" {
+		ratio = GT
+	} else if channelid == "I3" {
+		ratio = MT
+	} else {
+		return
+	}
+
+	for k, _ := range tkm {
+		arrk := strings.Split(k, "_")
+		if len(arrk) > 1 && arrk[1] == "Allocated" {
+			val := tkm.GetFloat64(k)
+			xval := val * ratio
+			tkm.Set(k, xval)
+		}
+	}
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-res2").
+		From("salespls-summary-res2mod").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -3102,7 +3135,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// trx = CalcNewSgaData(trx)
 
 		// CalcNewSgaChannelData(trx)
-		// CalcSum(trx)
+		CalcScaleSgaAllocatedChannelData(trx)
+		CalcSum(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
