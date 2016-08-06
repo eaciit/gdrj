@@ -3041,8 +3041,9 @@ func CalcNewSgaChannelData(tkm toolkit.M) {
 func CalcScaleSgaAllocatedChannelData(tkm toolkit.M) {
 
 	key := tkm.Get("key", toolkit.M{}).(toolkit.M)
-	GT := float64(1.01445196124393)
-	MT := float64(0.935403181874968)
+	GT := float64(81779683602.34) / float64(80614643893.1042)
+	MT := float64(125249923797.18) / float64(133899398916.009)
+
 	if key.GetString("date_fiscal") == "2014-2015" {
 		GT = float64(1.1068282278563)
 		MT = float64(0.900262029270844)
