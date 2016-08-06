@@ -8,7 +8,7 @@ import (
 	"flag"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
-	"strings"
+	// "strings"
 	"time"
 )
 
@@ -207,14 +207,14 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 	trx := toolkit.M{}
 	for trx = range jobs {
-		// key := trx.Get("_id", toolkit.M{}).(toolkit.M)
-		// trx.Set("key", key)
+		key := trx.Get("_id", toolkit.M{}).(toolkit.M)
+		trx.Set("key", key)
 
-		// id := toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|%s", key.GetInt("year"), key.GetString("branchid"),
-		// 	key.GetString("branchname"), key.GetString("brancharea"), key.GetString("account"),
-		// 	key.GetString("accountdescription"), key.GetString("costgroup"), key.GetString("addinfo"))
+		id := toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|%s", key.GetInt("year"), key.GetString("branchid"),
+			key.GetString("branchname"), key.GetString("brancharea"), key.GetString("account"),
+			key.GetString("accountdescription"), key.GetString("costgroup"), key.GetString("addinfo"))
 
-		// trx.Set("_id", id)
+		trx.Set("_id", id)
 
 		// tdate := time.Date(trx.GetInt("year"), time.Month(trx.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).
 		// 	AddDate(0, 3, 0)
@@ -249,8 +249,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// branchid := trx.GetString("branchid")
 
-		// accdesc := trx.GetString("accountdescription")
-		// trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
+		accdesc := trx.GetString("accountdescription")
+		trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
 
 		// if trx.GetString("costgroup") == "" {
 		// 	trx.Set("costgroup", "OTHER")
@@ -264,9 +264,9 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// 	trx.Set("brancharea", "OTHER")
 		// }
 
-		// if trx.GetString("accountgroup") == "" {
-		// 	trx.Set("accountgroup", "OTHER")
-		// }
+		if trx.GetString("accountgroup") == "" {
+			trx.Set("accountgroup", "OTHER")
+		}
 
 		// if trx.GetString("branchgroup") == "" {
 		// 	trx.Set("branchgroup", "OTHER")
@@ -355,22 +355,18 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// }
 
 		// i := 1
-		ratio := float64(3337787.02099609) / float64(207880004972.979)
-		key := trx.Get("key", toolkit.M{}).(toolkit.M)
-		if key.GetString("date_fiscal") == "2014-2015" {
-			for k, _ := range trx {
-				arrk := strings.Split(k, "_")
-				if (len(arrk) > 1 && arrk[1] == "Allocated") || k == "PL94A" {
-					// i++
-					val := trx.GetFloat64(k)
-					xval := val + (val * ratio)
-					trx.Set(k, xval)
-					// if i < 20 {
-					// 	toolkit.Println(k, " : ", val, " - > ", xval, " || ", ratio)
-					// }
-				}
-			}
-		}
+		// ratio := float64(3337787.02099609) / float64(207880004972.979)
+		// key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		// if key.GetString("date_fiscal") == "2014-2015" {
+		// 	for k, _ := range trx {
+		// 		arrk := strings.Split(k, "_")
+		// 		if (len(arrk) > 1 && arrk[1] == "Allocated") || k == "PL94A" {
+		// 			val := trx.GetFloat64(k)
+		// 			xval := val + (val * ratio)
+		// 			trx.Set(k, xval)
+		// 		}
+		// 	}
+		// }
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
