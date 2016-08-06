@@ -976,7 +976,7 @@ func prepsalesplssummaryrdwrongsubch() {
 	csr.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-res2").
+		From("salespls-summary").
 		SetConfig("multiexec", true).
 		Save()
 
