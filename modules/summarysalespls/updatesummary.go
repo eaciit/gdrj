@@ -3112,7 +3112,7 @@ func CalcScaleSgaAllocatedChannelData(tkm toolkit.M) {
 		arrk := strings.Split(k, "_")
 		if len(arrk) > 2 && arrk[1] == "Allocated" {
 			val := tkm.GetFloat64(k)
-			xval := val + (distvalue.GetFloat64(channelname) * toolkit.Div(val, subtotalsallocated[channelname]))
+			xval := val - (distvalue.GetFloat64(channelname) * toolkit.Div(val, subtotalsallocated[channelname]))
 			tkm.Set(k, xval)
 
 			// if i < 10 {
