@@ -3061,12 +3061,18 @@ func CalcScaleSgaAllocatedChannelData(tkm toolkit.M) {
 	}
 
 	// toolkit.Println(ratio)
+	i := 1
 	for k, _ := range tkm {
 		arrk := strings.Split(k, "_")
 		if len(arrk) > 1 && arrk[1] == "Allocated" {
+			i++
 			val := tkm.GetFloat64(k)
 			xval := val * ratio
 			tkm.Set(k, xval)
+
+			if i < 10 {
+				toolkit.Println(xval, " := ", val, " * ", ratio)
+			}
 		}
 	}
 }
