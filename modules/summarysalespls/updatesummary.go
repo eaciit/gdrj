@@ -941,10 +941,10 @@ func prepsalesplssummaryrdwrongsubch() {
 	total := float64(0)
 	arrsubch := make([]rdlist, 0, 0)
 
-	toolkit.Println("--> Get data to salespls-summary-res2-rdsum4wrongsubch")
+	toolkit.Println("--> Get data to salespls-summary-rdsum4wrongsubch")
 	filter := dbox.Eq("date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	csr, _ := workerconn.NewQuery().Select().Where(filter).
-		From("salespls-summary-res2-rdsum4wrongsubch").
+		From("salespls-summary-rdsum4wrongsubch").
 		Order("-gross").
 		Cursor(nil)
 
@@ -965,7 +965,7 @@ func prepsalesplssummaryrdwrongsubch() {
 
 		total += tkm.GetFloat64("gross")
 	}
-	toolkit.Println("--> End from salespls-summary-res2-rdsum4wrongsubch")
+	toolkit.Println("--> End from salespls-summary-rdsum4wrongsubch")
 	ratio := math.Abs(toolkit.Div(57300800361.49201, total))
 	if fiscalyear == 2016 {
 		ratio = math.Abs(toolkit.Div(62236716264.63395, total))
@@ -985,7 +985,7 @@ func prepsalesplssummaryrdwrongsubch() {
 		dbox.Gt("PL7A", 0))
 
 	csr, _ = conn.NewQuery().Select().Where(filter).
-		From("salespls-summary-res2-rdwrongsubch").
+		From("salespls-summary-rdwrongsubch").
 		Order("-PL7A").
 		Cursor(nil)
 
@@ -1030,7 +1030,7 @@ func prepsalesplssummaryrdwrongsubch() {
 		dbox.Lte("PL7A", 0))
 
 	csr, _ = conn.NewQuery().Select().Where(filter).
-		From("salespls-summary-res2-rdwrongsubch").
+		From("salespls-summary-rdwrongsubch").
 		Order("PL7A").
 		Cursor(nil)
 	defer csr.Close()
@@ -2236,14 +2236,14 @@ func main() {
 	// prepmasterrollback_sumbrand()
 
 	// prepmastercogsperunit()
-	// prepsalesplssummaryrdwrongsubch()
-	// os.Exit(1)
+	prepsalesplssummaryrdwrongsubch()
+	os.Exit(1)
 
 	// prepmasterproduct()
 	// prepmasternewsgaalloc()
 	// prepmasternewchannelsgaalloc()
 
-	prepmastersubtotalsallocatedsga()
+	// prepmastersubtotalsallocatedsga()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
