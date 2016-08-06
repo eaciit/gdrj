@@ -989,9 +989,8 @@ rpt.buildGridLevels = (rows) => {
 				$trElem.remove()
 				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).remove()
 			}
-
-			let idplyo2 = _.find(rpt.idarrayhide(), (a) => { return a == $trElem.attr("idparent") })
 			
+			let idplyo2 = _.find(rpt.idarrayhide(), (a) => { return a == $trElem.attr("idparent") })
 			if (resg1 == undefined && idplyo2 == undefined){
 				if (resg2 != undefined){ 
 					textPL = _.find(resg2.data, function(o) { return o._id == $trElem.attr("idheaderpl") })
@@ -1100,6 +1099,29 @@ rpt.buildGridLevels = (rows) => {
 				$trElem.find(`td:eq(0)`).css('padding-left', '20px')
 		}
 	})
+
+
+	let prev = rpt.arrChangeParent()[rpt.arrChangeParent().length - 1].idfrom
+	if (prev.indexOf('_Allocated') > -1 || prev.indexOf('_Direct') > -1) {
+		let under = ['PL94B', 'PL44B', 'PL44C', 'PL44E', 'PL44D', 'PL44F']
+		under.forEach((d) => {
+			let headerFrom = $(`[idheaderpl="${d}"]`)
+			let headerTo = $(`[idheaderpl="${prev}"]`)
+
+			if (headerFrom.size() == 0 || headerTo.size() == 0) {
+				return
+			}
+
+			headerFrom.insertAfter(headerTo)
+
+			let contentFrom = $(`[idpl="${d}"]`)
+			let contentTo = $(`[idpl="${prev}"]`)
+			contentFrom.insertAfter(contentTo)
+
+			prev = d
+		})
+	}
+
 	rpt.showZeroValue(false)
 	rpt.hideSubGrowthValue()
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold')

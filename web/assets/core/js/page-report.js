@@ -880,7 +880,6 @@ rpt.buildGridLevels = function (rows) {
 			var idplyo2 = _.find(rpt.idarrayhide(), function (a) {
 				return a == $trElem.attr("idparent");
 			});
-
 			if (resg1 == undefined && idplyo2 == undefined) {
 				if (resg2 != undefined) {
 					textPL = _.find(resg2.data, function (o) {
@@ -993,6 +992,28 @@ rpt.buildGridLevels = function (rows) {
 			if (countChild == '' || countChild == undefined) $trElem.find('td:eq(0)').css('padding-left', '20px');
 		}
 	});
+
+	var prev = rpt.arrChangeParent()[rpt.arrChangeParent().length - 1].idfrom;
+	if (prev.indexOf('_Allocated') > -1 || prev.indexOf('_Direct') > -1) {
+		var under = ['PL94B', 'PL44B', 'PL44C', 'PL44E', 'PL44D', 'PL44F'];
+		under.forEach(function (d) {
+			var headerFrom = $('[idheaderpl="' + d + '"]');
+			var headerTo = $('[idheaderpl="' + prev + '"]');
+
+			if (headerFrom.size() == 0 || headerTo.size() == 0) {
+				return;
+			}
+
+			headerFrom.insertAfter(headerTo);
+
+			var contentFrom = $('[idpl="' + d + '"]');
+			var contentTo = $('[idpl="' + prev + '"]');
+			contentFrom.insertAfter(contentTo);
+
+			prev = d;
+		});
+	}
+
 	rpt.showZeroValue(false);
 	rpt.hideSubGrowthValue();
 	$(".pivot-pnl .table-header tr:not([idparent]):not([idcontparent])").addClass('bold');
