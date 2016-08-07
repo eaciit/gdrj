@@ -274,6 +274,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 			trx.Set("addinfo", "Jakarta")
 		}
 
+		trx.Set("iselimination", false)
+		if trx.GetString("src") == "ELIMINATION_SGA" {
+			trx.Set("iselimination", true)
+		}
 		//=== For data rawdata mode
 
 		branchid := trx.GetString("branchid")
