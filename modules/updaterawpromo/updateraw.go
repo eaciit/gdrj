@@ -132,7 +132,7 @@ func main() {
 	setinitialconnection()
 
 	prepdatabranch()
-	// prepdatacostcenter()
+	prepdatacostcenter()
 	prepdataaccountgroup()
 	// prepdatabranchgroup()
 
@@ -161,7 +161,7 @@ func main() {
 	}
 
 	iscount := 0
-	step := getstep(scount) * 5
+	step := getstep(scount) * 10
 
 	for {
 		iscount++
@@ -222,7 +222,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// trx.Set("gdrjdate", gdrjdate)
 
-		// cc := trx.GetString("ccid")
+		cc := trx.GetString("ccid")
 		// trx.Set("branchid", "CD00")
 		// trx.Set("branchname", "OTHER")
 		// trx.Set("brancharea", "OTHER")
@@ -232,77 +232,66 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// key.Set("customer_branchgroup", "OTHER")
 
-		// trx.Set("min_amountinidr", -trx.GetFloat64("amountinidr"))
+		trx.Set("min_amountinidr", -trx.GetFloat64("amountinidr"))
 
-		// if mastercostcenter.Has(cc) {
-		// 	mcc := mastercostcenter[cc].(toolkit.M)
-		// 	brid := mcc.GetString("branchid")
+		if mastercostcenter.Has(cc) {
+			mcc := mastercostcenter[cc].(toolkit.M)
+			brid := mcc.GetString("branchid")
 
-		// 	trx.Set("branchid", brid)
-		// 	trx.Set("costgroup", mcc.GetString("costgroup01"))
+			trx.Set("branchid", brid)
+			trx.Set("costgroup", mcc.GetString("costgroup01"))
 
-		// 	if masterbranch.Has(brid) {
-		// 		trx.Set("branchname", masterbranch[brid].(toolkit.M).GetString("name"))
-		// 		trx.Set("brancharea", masterbranch[brid].(toolkit.M).GetString("area"))
-		// 	}
-		// }
+			if masterbranch.Has(brid) {
+				trx.Set("branchname", masterbranch[brid].(toolkit.M).GetString("name"))
+				trx.Set("brancharea", masterbranch[brid].(toolkit.M).GetString("area"))
+			}
+		}
 
 		// branchid := trx.GetString("branchid")
+		if trx.GetString("accountdescription") == "#N/A" {
+			trx.Set("accountdescription", "CONSUMABLE STORES & SPARES")
+		}
+
+		if trx.GetString("grouping") == "#N/A" {
+			trx.Set("grouping", "General and administrative expenses")
+		}
 
 		accdesc := trx.GetString("accountdescription")
 		trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
 
-		// if trx.GetString("costgroup") == "" {
-		// 	trx.Set("costgroup", "OTHER")
-		// }
-
-		// if trx.GetString("branchname") == "" {
-		// 	trx.Set("branchname", "OTHER")
-		// }
-
-		// if trx.GetString("brancharea") == "" {
-		// 	trx.Set("brancharea", "OTHER")
-		// }
-
-		if trx.GetString("accountgroup") == "" {
-			trx.Set("accountgroup", "OTHER")
+		arrstrcheck := []string{"branchid", "branchname", "brancharea", "costgroup", "accountgroup", "branchgroup"}
+		for _, v := range arrstrcheck {
+			if trx.GetString(v) == "" {
+				trx.Set(v, "OTHER")
+				if v == "branchid" {
+					trx.Set(v, "CD00")
+				}
+			}
 		}
-
-		// if trx.GetString("branchgroup") == "" {
-		// 	trx.Set("branchgroup", "OTHER")
-		// }
-
-		// if trx.GetString("accountdescription") == "#N/A" {
-		// 	trx.Set("accountdescription", "CONSUMABLE STORES & SPARES")
-		// }
-
-		// if trx.GetString("grouping") == "#N/A" {
-		// 	trx.Set("grouping", "General and administrative expenses")
-		// }
 
 		//=== For data rawdata mode
 
-		// branchid := trx.GetString("branchid")
-		// if !masterbranch.Has(branchid) {
-		// 	branchid = "CD00"
-		// }
+		branchid := trx.GetString("branchid")
+		if !masterbranch.Has(branchid) {
+			branchid = "CD00"
+		}
 
-		// branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
-		// trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
-		// trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
-		// trx.Set("idbranchlvl2", branchgroup.GetString("idbranchlvl2"))
+		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
+		trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
+		trx.Set("idbranchlvl2", branchgroup.GetString("idbranchlvl2"))
 
-		// if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" && trx.GetString("ccid") != "HD110313" {
-		// 	trx.Set("branchgroup", "Jakarta")
-		// }
+		if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" && trx.GetString("ccid") != "HD110313" {
+			trx.Set("branchgroup", "Jakarta")
+		}
 
-		// if trx.GetString("branchgroup") == "" {
-		// 	trx.Set("branchgroup", "OTHER")
-		// }
+		if trx.GetString("branchgroup") == "" {
+			trx.Set("branchgroup", "OTHER")
+		}
 
-		// if trx.GetString("branchlvl2") == "" {
-		// 	trx.Set("branchlvl2", "OTHER")
-		// }
+		if trx.GetString("branchlvl2") == "" {
+			trx.Set("branchlvl2", "OTHER")
+		}
 
 		//idbranchlvl2
 
