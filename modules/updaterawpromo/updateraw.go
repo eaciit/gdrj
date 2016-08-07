@@ -269,6 +269,11 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 			}
 		}
 
+		trx.Set("addinfo", "")
+		if trx.GetString("branchid") == "HD11" && strings.Contains(trx.GetString("costcentername"), "Jkt") {
+			trx.Set("addinfo", "Jakarta")
+		}
+
 		//=== For data rawdata mode
 
 		branchid := trx.GetString("branchid")
@@ -337,11 +342,6 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// 	trx.Set(v, xval)
 		// }
 		// ====================
-
-		// trx.Set("addinfo", "")
-		// if trx.GetString("branchid") == "HD11" && strings.Contains(trx.GetString("costcentername"), "Jkt") {
-		// 	trx.Set("addinfo", "Jakarta")
-		// }
 
 		// i := 1
 		// ratio := float64(3337787.02099609) / float64(207880004972.979)
