@@ -149,6 +149,7 @@ var sga = viewModel.sga;(function () {
 			rpt.toggleFilter();
 		}
 
+		sga.putNetSalesPercentage(true);
 		if (what == 'CostGroup') {
 			sga.putNetSalesPercentage(false);
 		}
@@ -357,8 +358,6 @@ var sga = viewModel.sga;(function () {
 			return;
 		}
 
-		$('#sga').empty();
-
 		// ========================= TABLE STRUCTURE
 
 		var container = $('#sga');
@@ -566,7 +565,7 @@ var sga = viewModel.sga;(function () {
 					toolkit.newEl('td').html(percentage).addClass('align-right').appendTo(trContent);
 				}
 
-				if (sga.putNetSalesPercentage()) {
+				if (rpt.showPercentOfTotal()) {
 					toolkit.newEl('td').html(percentageOfTotal).addClass('align-right').appendTo(trContent);
 				}
 			});
@@ -641,7 +640,6 @@ var sga = viewModel.sga;(function () {
 
 viewModel.allocated = {};
 var au = viewModel.allocated;(function () {
-	$('.breakdown-view:not(#au)').replaceWith();
 	au.optionDimensions = ko.observableArray([{ field: 'customer.branchname', name: 'Branch Level 1' }, { field: 'customer.branchlvl2', name: 'Branch Level 2' }].concat(rpt.optionDimensions().splice(1)));
 	au.contentIsLoading = ko.observable(false);
 	au.breakdownNote = ko.observable('');

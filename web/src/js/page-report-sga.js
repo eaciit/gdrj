@@ -138,6 +138,7 @@ let sga = viewModel.sga
 		    rpt.toggleFilter()
 		}
 
+		sga.putNetSalesPercentage(true)
 		if (what == 'CostGroup') {
 			sga.putNetSalesPercentage(false)
 		}
@@ -329,8 +330,6 @@ let sga = viewModel.sga
 			$('#sga').html('No data found.')
 			return
 		}
-
-		$('#sga').empty()
 
 		// ========================= TABLE STRUCTURE
 
@@ -630,7 +629,7 @@ let sga = viewModel.sga
 						.appendTo(trContent)
 				}
 
-				if (sga.putNetSalesPercentage()) {
+				if (rpt.showPercentOfTotal()) {
 					toolkit.newEl('td')
 						.html(percentageOfTotal)
 						.addClass('align-right')
@@ -730,7 +729,6 @@ viewModel.allocated = {}
 let au = viewModel.allocated
 
 ;(() => {
-	$(`.breakdown-view:not(#au)`).replaceWith()
 	au.optionDimensions = ko.observableArray([
 		{ field: 'customer.branchname', name: 'Branch Level 1' }, 
 		{ field: 'customer.branchlvl2', name: 'Branch Level 2' }
