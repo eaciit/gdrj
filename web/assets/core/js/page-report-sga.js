@@ -645,6 +645,7 @@ var au = viewModel.allocated;(function () {
 	au.breakdownNote = ko.observable('');
 
 	au.breakdownBy = ko.observable('customer.channelname');
+	au.breakdownByBackup = ko.observable(au.breakdownBy());
 	au.breakdownSGA = ko.observable('sgaalloc');
 	au.breakdownByFiscalYear = ko.observable('date.fiscal');
 	au.breakdownBranchGroup = ko.observableArray([]);
@@ -652,6 +653,24 @@ var au = viewModel.allocated;(function () {
 	au.data = ko.observableArray([]);
 	au.fiscalYear = ko.observable(rpt.value.FiscalYear());
 	au.level = ko.observable(1);
+
+	au.isUseBreakdownBy = ko.observable(false);
+	au.changeBreakdownBy = function (d) {
+		setTimeout(function () {
+			au.breakdownByBackup(au.breakdownBy());
+		});
+	};
+
+	au.changeTo = function (d) {
+		if (d == 'only-channel') {
+			au.isUseBreakdownBy(false);
+			au.breakdownBy('customer.channelname');
+			return;
+		}
+
+		au.isUseBreakdownBy(true);
+		au.breakdownBy(au.breakdownByBackup());
+	};
 
 	au.refresh = function () {
 		var useCache = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];

@@ -737,6 +737,7 @@ let au = viewModel.allocated
 	au.breakdownNote = ko.observable('')
 
 	au.breakdownBy = ko.observable('customer.channelname')
+	au.breakdownByBackup = ko.observable(au.breakdownBy())
 	au.breakdownSGA = ko.observable('sgaalloc')
 	au.breakdownByFiscalYear = ko.observable('date.fiscal')
 	au.breakdownBranchGroup = ko.observableArray([])
@@ -744,6 +745,24 @@ let au = viewModel.allocated
 	au.data = ko.observableArray([])
 	au.fiscalYear = ko.observable(rpt.value.FiscalYear())
 	au.level = ko.observable(1)
+
+	au.isUseBreakdownBy = ko.observable(false)
+	au.changeBreakdownBy = (d) => {
+		setTimeout(() => {
+			au.breakdownByBackup(au.breakdownBy())
+		})
+	}
+
+	au.changeTo = (d) => {
+		if (d == 'only-channel') {
+			au.isUseBreakdownBy(false)
+			au.breakdownBy('customer.channelname')
+			return
+		}
+		
+		au.isUseBreakdownBy(true)
+		au.breakdownBy(au.breakdownByBackup())
+	}
 
 	au.refresh = (useCache = false) => {
 		let param = {}
