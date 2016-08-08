@@ -1376,22 +1376,59 @@ var el = viewModel.elimination;(function () {
 					return;
 				}
 
-				var groupLvl1 = _.map(_.groupBy(res.data, function (e) {
+				var grouper = _.map(_.groupBy(res.data, function (e) {
 					return e.AccountGroup;
 				}), function (v, k) {
-					return k;
+					var o = {};
+					o.key = el.getAlphaNumeric(k);
+					o.subs = _.map(_.groupBy(v, function (e) {
+						return e.AccountDescription;
+					}), function (v, k) {
+						var p = {};
+						p.key = el.getAlphaNumeric(k);
+
+						return p;
+					});
+
+					return o;
 				});
-				var groupLvl2 = _.map(_.groupBy(res.data, function (e) {
-					return e.AccountDescription;
-				}), function (v, k) {
-					return k;
-				});
+
+				console.log('grouper', grouper);
 
 				el.constructData(res.data);
 				el.data(el.buildStructure(el.data()));
 				el.emptyGrid();
 
 				var callback = function callback() {
+					el.data().forEach(function (d) {
+						var total = {};
+						total._id = 'Total ' + d._id;
+
+						grouper.forEach(function (e) {
+							e.subs.forEach(function (f) {
+								var field1 = 'PL8A';
+								var field2 = e.key;
+								var field3 = [f.key, e.key].join('');
+								var fields = [field1, field2, field3];
+
+								fields.forEach(function (h) {
+									if (total.hasOwnProperty(h)) {
+										total[h] = 0;
+									}
+									total[h] = toolkit.sum(d.subs, function (g) {
+										return toolkit.number(g[h]);
+									});
+									console.log('-- total', h, toolkit.sum(d.subs, function (g) {
+										return toolkit.number(g[h]);
+									}));
+								});
+							});
+						});
+
+						d.subs = [total].concat(d.subs);
+						d.count++;
+					});
+
 					el.contentIsLoading(false);
 					el.render();
 					rpt.prepareEvents();
@@ -1471,15 +1508,17 @@ var el = viewModel.elimination;(function () {
 									});
 								});
 
-								groupLvl1.forEach(function (e) {
-									groupLvl2.forEach(function (f) {
+								grouper.forEach(function (e) {
+									e.subs.forEach(function (f) {
 										var field1 = 'PL8A';
-										var field2 = f;
-										var field3 = [e, f].join('');
+										var field2 = e.key;
+										var field3 = [f.key, e.key].join('');
 										var fields = [field1, field2, field3];
 
 										fields.forEach(function (h) {
-											if (d.hasOwnProperty(h)) d[h] = 0;
+											if (d.hasOwnProperty(h)) {
+												d[h] = 0;
+											}
 											d[h] = toolkit.sum(d.subs, function (g) {
 												return toolkit.number(g[h]);
 											});
@@ -1543,7 +1582,7 @@ var el = viewModel.elimination;(function () {
 		};
 
 		var parsed = groupThenMap(data, function (d) {
-			return d._id._id_IsElimination ? 'Elimination' : 'Non Elimination';
+			return d._id._id_IsElimination ? 'Elimination' : 'Without Elimination';
 		}).map(function (d) {
 			var subs = groupThenMap(d.subs, function (e) {
 				return e._id['_id_' + toolkit.replace(el.breakdownBy(), '.', '_')];
@@ -1563,7 +1602,7 @@ var el = viewModel.elimination;(function () {
 
 		el.level(2);
 		var newParsed = _.orderBy(parsed, function (d) {
-			return d._id == 'Non Elimination' ? 1 : 2;
+			return d._id == 'Without Elimination' ? 1 : 2;
 		}, 'asc');
 		return parsed;
 	};
@@ -1636,6 +1675,8 @@ var el = viewModel.elimination;(function () {
 			thheader1.attr('colspan', lvl1.count * (el.putNetSalesPercentage() ? 3 : 2));
 
 			lvl1.subs.forEach(function (lvl2, j) {
+				var thheader1p = $('<div />');
+				var thheader2p = $('<div />');
 				var thheader2 = toolkit.newEl('th').html(lvl2._id).addClass('align-center').appendTo(trContents[1]);
 
 				if (el.level() == 2) {
@@ -1643,12 +1684,20 @@ var el = viewModel.elimination;(function () {
 
 					if (el.putNetSalesPercentage()) {
 						totalColumnWidth += percentageWidth;
-						var thheader1p = toolkit.newEl('th').html('% of N Sales'.replace(/\ /g, '&nbsp;')).width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').css('border-top', 'none').appendTo(trContents[1]);
+						thheader1p = toolkit.newEl('th').html('% of N Sales'.replace(/\ /g, '&nbsp;')).width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').css('border-top', 'none').appendTo(trContents[1]);
 					}
 
 					if (rpt.showPercentOfTotal()) {
 						totalColumnWidth += percentageWidth;
-						toolkit.newEl('th').html('% of Total'.replace(/\ /g, '&nbsp;')).width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').css('border-top', 'none').appendTo(trContents[1]);
+						thheader2p = toolkit.newEl('th').html('% of Total'.replace(/\ /g, '&nbsp;')).width(percentageWidth).addClass('align-center').css('font-weight', 'normal').css('font-style', 'italic').css('border-top', 'none').appendTo(trContents[1]);
+					}
+
+					if (lvl2._id.indexOf('Total') > -1) {
+						var target = [thheader1p, thheader2p, thheader2];
+						target.forEach(function (d) {
+							d.css('background-color', '#337ab7');
+							d.css('color', 'white');
+						});
 					}
 
 					return;
@@ -1850,18 +1899,12 @@ vm.currentMenu('Analysis');
 vm.currentTitle('&nbsp;');
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Analysis', href: '#' }, { title: 'G&A Analysis', href: '#' }]);
 
-rpt.refresh = function () {
-	// sga.refresh()
-	// au.refresh()
-	el.refresh();
-};
-
 $(function () {
 	setTimeout(function () {
 		rpt.fillFilterCostGroup();
 		rpt.fillFilterBranchLvl2();
 	}, 300);
 
-	rpt.refresh();
+	sga.refresh();
 	rpt.showExport(true);
 });

@@ -563,7 +563,7 @@ let sga = viewModel.sga
 
 		// ========================= PLOT DATA
 
-		_.orderBy(rows, (d) => {
+		_.orderBy(rows, (d) =>  {
 			if (d.PLCode == netSalesPLCode) {
 				return -10000000000000
 			}
@@ -1548,14 +1548,49 @@ let el = viewModel.elimination
 					return
 				}
 
-				let groupLvl1 = _.map(_.groupBy(res.data, (e) => e.AccountGroup), (v, k) => k)
-				let groupLvl2 = _.map(_.groupBy(res.data, (e) => e.AccountDescription), (v, k) => k)
+				let grouper = _.map(_.groupBy(res.data, (e) => e.AccountGroup), (v, k) => {
+					let o = {}
+					o.key = el.getAlphaNumeric(k)
+					o.subs = _.map(_.groupBy(v, (e) => e.AccountDescription), (v, k) => {
+						let p = {}
+						p.key = el.getAlphaNumeric(k)
+
+						return p
+					})
+
+					return o
+				})
+
+				console.log('grouper', grouper)
 
 				el.constructData(res.data)
 				el.data(el.buildStructure(el.data()))
 				el.emptyGrid()
 
 				let callback = () => {
+					el.data().forEach((d) => {
+						let total = {}
+						total._id = `Total ${d._id}`
+
+						grouper.forEach((e) => {
+							e.subs.forEach((f) => {
+								let field1 = 'PL8A'
+								let field2 = e.key
+								let field3 = [f.key, e.key].join('')
+								let fields = [field1, field2, field3]
+
+								fields.forEach((h) => {
+									if (total.hasOwnProperty(h)) { total[h] = 0 }
+									total[h] = toolkit.sum(d.subs, (g) => toolkit.number(g[h]))
+									console.log('-- total', h, toolkit.sum(d.subs, (g) => toolkit.number(g[h])))
+								})
+							})
+						})
+
+						d.subs = [total].concat(d.subs)
+						d.count++
+					})
+
 					el.contentIsLoading(false)
 					el.render()
 					rpt.prepareEvents()
@@ -1634,16 +1669,16 @@ let el = viewModel.elimination
 								e.PL8A = toolkit.sum(target, (k) => k.PL8A)
 							})
 
-							groupLvl1.forEach((e) => {
-								groupLvl2.forEach((f) => {
+							grouper.forEach((e) => {
+								e.subs.forEach((f) => {
 									let field1 = 'PL8A'
-									let field2 = f
-									let field3 = [e, f].join('')
+									let field2 = e.key
+									let field3 = [f.key, e.key].join('')
 									let fields = [field1, field2, field3]
 
 									fields.forEach((h) => {
-										if (d.hasOwnProperty(h)) d[h] = 0
-											d[h] = toolkit.sum(d.subs, (g) => toolkit.number(g[h]))
+										if (d.hasOwnProperty(h)) { d[h] = 0 }
+										d[h] = toolkit.sum(d.subs, (g) => toolkit.number(g[h]))
 									})
 								})
 							})
@@ -1691,7 +1726,7 @@ let el = viewModel.elimination
 		}
 
 		let parsed = groupThenMap(data, (d) => {
-			return d._id._id_IsElimination ? 'Elimination' : 'Non Elimination'
+			return d._id._id_IsElimination ? 'Elimination' : 'Without Elimination'
 		}).map((d) => {
 			let subs = groupThenMap(d.subs, (e) => {
 				return e._id[`_id_${toolkit.replace(el.breakdownBy(), '.', '_')}`]
@@ -1708,7 +1743,7 @@ let el = viewModel.elimination
 		})
 	
 		el.level(2)
-		let newParsed = _.orderBy(parsed, (d) => (d._id == 'Non Elimination') ? 1 : 2, 'asc')
+		let newParsed = _.orderBy(parsed, (d) => (d._id == 'Without Elimination') ? 1 : 2, 'asc')
 		return parsed
 	}
 
@@ -1821,6 +1856,8 @@ let el = viewModel.elimination
 			thheader1.attr('colspan', lvl1.count * (el.putNetSalesPercentage() ? 3 : 2))
 
 			lvl1.subs.forEach((lvl2, j) => {
+				let thheader1p = $('<div />')
+				let thheader2p = $('<div />')
 				let thheader2 = toolkit.newEl('th')
 					.html(lvl2._id)
 					.addClass('align-center')
@@ -1831,7 +1868,7 @@ let el = viewModel.elimination
 
 					if (el.putNetSalesPercentage()) {
 						totalColumnWidth += percentageWidth
-						let thheader1p = toolkit.newEl('th')
+						thheader1p = toolkit.newEl('th')
 							.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
 							.width(percentageWidth)
 							.addClass('align-center')
@@ -1843,7 +1880,7 @@ let el = viewModel.elimination
 
 					if (rpt.showPercentOfTotal()) {
 						totalColumnWidth += percentageWidth
-						toolkit.newEl('th')
+						thheader2p = toolkit.newEl('th')
 							.html('% of Total'.replace(/\ /g, '&nbsp;'))
 							.width(percentageWidth)
 							.addClass('align-center')
@@ -1851,6 +1888,14 @@ let el = viewModel.elimination
 							.css('font-style', 'italic')
 							.css('border-top', 'none')
 							.appendTo(trContents[1])
+					}
+
+					if (lvl2._id.indexOf('Total') > -1) {
+						let target = [thheader1p, thheader2p, thheader2]
+						target.forEach((d) => {
+							d.css('background-color', '#337ab7')
+							d.css('color', 'white')
+						})
 					}
 
 					return
@@ -2107,18 +2152,12 @@ vm.breadcrumb([
 	{ title: 'G&A Analysis', href: '#' }
 ])
 
-rpt.refresh = () => {
-	// sga.refresh()
-	// au.refresh()
-	el.refresh()
-}
-
 $(() => {
 	setTimeout(() => {
 		rpt.fillFilterCostGroup()
 		rpt.fillFilterBranchLvl2()
 	}, 300)
 
-	rpt.refresh()
+	sga.refresh()
 	rpt.showExport(true)
 })
