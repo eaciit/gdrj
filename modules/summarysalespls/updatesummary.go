@@ -2161,11 +2161,11 @@ func prepmastersubtotalsallocatedsga() {
 	subtotalsallocated := map[string]float64{}
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-res2").Cursor(nil)
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
 
 	scount := csr.Count()
-	toolkit.Println("--> Read data salespls-summary-res2 for get ratio : ", scount)
+	toolkit.Println("--> Read data salespls-summary for get ratio : ", scount)
 
 	iscount := 0
 	step := getstep(scount) * 20
