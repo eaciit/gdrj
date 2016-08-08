@@ -596,18 +596,13 @@ rpt.hardcodePLGA = function (data, plmodels) {
 		return { Data: data, PLModels: plmodels };
 	}
 
-	if (document.URL.indexOf('gnaanalysis') > -1) {
-		return { Data: data, PLModels: plmodels };
-	}
-
 	if (document.URL.indexOf('cogsanalysis') > -1) {
 		return { Data: data, PLModels: plmodels };
 	}
 
 	var sgaLvl1 = ['Direct', 'Allocated'];
 	var sgaLvl2 = [{ _id: 'PL33', header: 'Personnel Exp - Office' }, { _id: 'PL34', header: 'General Exp - Office' }, { _id: 'PL35', header: 'Depr & A Exp - Office' }];
-	// 'R&D',
-	var sgaLvl3 = ['Sales', 'General Service', 'General Management', 'Manufacturing', 'Finance', 'Marketing', 'Logistic Overhead', 'Human Resource', 'Other'];
+	var sgaLvl3 = ['RD', 'Sales', 'General Service', 'General Management', 'Manufacturing', 'Finance', 'Marketing', 'Logistic Overhead', 'Human Resource', 'OTHER'];
 
 	var gnaExpenses = plmodels.find(function (d) {
 		return d._id == 'PL94A';
@@ -958,12 +953,14 @@ rpt.buildGridLevels = function (rows) {
 				$('.table-content tr.column' + $trElem.attr("idheaderpl")).css('display', 'inline-grid');
 			}
 
-			$trElem.find('td:eq(0)')[0].childNodes.forEach(function (g) {
-				if (g.nodeName == '#text') {
-					if (g.nodeValue.indexOf('_') > -1) {
-						g.nodeValue = g.nodeValue.split('_').reverse()[0];
+			toolkit.try(function () {
+				$trElem.find('td:eq(0)')[0].childNodes.forEach(function (g) {
+					if (g.nodeName == '#text') {
+						if (g.nodeValue.indexOf('_') > -1) {
+							g.nodeValue = g.nodeValue.split('_').reverse()[0];
+						}
 					}
-				}
+				});
 			});
 		}
 	});
@@ -1311,7 +1308,11 @@ rpt.export = function (target, title, mode) {
 };
 
 rpt.addScrollBottom = function (container) {
-	if (container == undefined) container = $(".breakdown-view");
+	$('.scroll-grid-bottom-yo').remove();
+	$('.scroll-grid-bottom').remove();
+
+	if (container == undefined) container = $(".breakdown-view:visible");
+
 	toolkit.newEl('div').addClass('scroll-grid-bottom-yo').appendTo(container.find(".pivot-pnl"));
 
 	var tableContent = toolkit.newEl('div').addClass('scroll-grid-bottom').appendTo(container.find(".pivot-pnl"));

@@ -872,7 +872,7 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	sgapl := []string{"PL33", "PL34", "PL35"}
 	sgasupergroups := []string{"Direct", "Allocated"}
 	sgagroups := []string{"R&D", "Sales", "General Service", "General Management", "Manufacturing",
-		"Finance", "Marketing", "Logistic Overhead", "Human Resource", "Other"}
+		"Finance", "Marketing", "Logistic Overhead", "Human Resource", "OTHER"}
 	for _, pl := range sgapl {
 		for _, sgasupergroup := range sgasupergroups {
 			dbfieldTop := fmt.Sprintf("%s_%s", pl, sgasupergroup)
@@ -882,6 +882,9 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 			for _, sga := range sgagroups {
 				dbfield := fmt.Sprintf("%s_%s_%s", pl, sgasupergroup, sga)
 				pdbfield := fmt.Sprintf("$%s", dbfield)
+				if strings.Contains(dbfield, "&") {
+					dbfield = strings.Replace(dbfield, "&", "", -1)
+				}
 				groups[strings.Replace(dbfield, " ", "_", -1)] = bson.M{"$sum": pdbfield}
 			}
 		}

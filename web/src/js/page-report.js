@@ -730,10 +730,6 @@ rpt.hardcodePLGA = (data, plmodels) => {
 		return {Data: data, PLModels: plmodels}
 	}
 
-	if (document.URL.indexOf('gnaanalysis') > -1) {
-		return {Data: data, PLModels: plmodels}
-	}
-
 	if (document.URL.indexOf('cogsanalysis') > -1) {
 		return {Data: data, PLModels: plmodels}
 	}
@@ -744,8 +740,7 @@ rpt.hardcodePLGA = (data, plmodels) => {
 		{ _id: 'PL34', header: 'General Exp - Office' },
 		{ _id: 'PL35', header: 'Depr & A Exp - Office' },
 	]
-	// 'R&D', 
-	let sgaLvl3 = ['Sales', 'General Service', 'General Management', 'Manufacturing', 'Finance', 'Marketing', 'Logistic Overhead', 'Human Resource', 'Other']
+	let sgaLvl3 = ['RD', 'Sales', 'General Service', 'General Management', 'Manufacturing', 'Finance', 'Marketing', 'Logistic Overhead', 'Human Resource', 'OTHER']
 
 	let gnaExpenses = plmodels.find((d) => d._id == 'PL94A')
 	let plprev = gnaExpenses._id
@@ -1062,12 +1057,14 @@ rpt.buildGridLevels = (rows) => {
 				$(`.table-content tr.column${$trElem.attr("idheaderpl")}`).css('display','inline-grid')
 			}
 
-			$trElem.find('td:eq(0)')[0].childNodes.forEach((g) => {
-				if (g.nodeName == '#text') {
-					if (g.nodeValue.indexOf('_') > -1) {
-						g.nodeValue = g.nodeValue.split('_').reverse()[0]
+			toolkit.try(() => {
+				$trElem.find('td:eq(0)')[0].childNodes.forEach((g) => {
+					if (g.nodeName == '#text') {
+						if (g.nodeValue.indexOf('_') > -1) {
+							g.nodeValue = g.nodeValue.split('_').reverse()[0]
+						}
 					}
-				}
+				})
 			})
 		}
 	})
@@ -1439,8 +1436,12 @@ rpt.export = (target, title, mode) => {
 }
 
 rpt.addScrollBottom = (container) => {
+	$('.scroll-grid-bottom-yo').remove()
+	$('.scroll-grid-bottom').remove()
+
 	if (container == undefined)
-		container = $(".breakdown-view")
+		container = $(".breakdown-view:visible")
+	
 	toolkit.newEl('div')
 		.addClass('scroll-grid-bottom-yo')
 		.appendTo(container.find(".pivot-pnl"))
