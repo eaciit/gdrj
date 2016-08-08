@@ -3330,6 +3330,11 @@ func CalcDistSgaBasedOnFunctionData(tkm toolkit.M) {
 		for _, xk := range arrfunction {
 			skey := toolkit.Sprintf("%s_%s", k, xk)
 			val := v * simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, skey)) / simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, k))
+			toolkit.Sprintf("%s|%s", simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, skey)), simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, k)))
+			toolkit.Sprintf("%v := %v * %v / %v",
+				val, v, simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, skey)),
+				simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, k)))
+
 			tkm.Set(skey, val)
 		}
 	}
@@ -3403,7 +3408,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcNewSgaChannelData(trx)
 		// CalcScaleSgaAllocatedChannelData(trx)
 		CalcDistSgaBasedOnFunctionData(trx)
-		// CalcSum(trx)
+		CalcSum(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
