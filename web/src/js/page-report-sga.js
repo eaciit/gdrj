@@ -108,7 +108,7 @@ let sga = viewModel.sga
 
 	sga.optionBranchLvl2 = ko.observableArray([])
 	sga.optionFilterCostGroups = ko.observableArray([])
-	sga.putNetSalesPercentage = ko.observable(true)
+	sga.putNetSalesPercentage = ko.observable(false)
 	sga.title = ko.observable('G&A by Branch Level 1')
 
 	rpt.fillFilterCostGroup = () => {
@@ -141,7 +141,7 @@ let sga = viewModel.sga
 		}
 
 		sga.putNetSalesPercentage(true)
-		if (what == 'CostGroup') {
+		if (what == 'CostGroup' || what == 'BranchName') {
 			sga.putNetSalesPercentage(false)
 		}
 
