@@ -3333,7 +3333,7 @@ func CalcDistSgaBasedOnFunctionData(tkm toolkit.M) {
 		tarr := strings.Split(k, "_")
 		tk := toolkit.Sprintf("%d_%d_%s", key.GetInt("date_year"), key.GetInt("date_month"), key.GetString("customer_branchgroup"))
 		if tarr[1] == "Allocated" {
-			tk = toolkit.Sprintf("%d_%d_%s", key.GetInt("date_year"), key.GetInt("date_month"))
+			tk = toolkit.Sprintf("%d_%d", key.GetInt("date_year"), key.GetInt("date_month"))
 		}
 		for _, xk := range arrfunction {
 			skey := toolkit.Sprintf("%s_%s", k, xk)
