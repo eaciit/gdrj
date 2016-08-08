@@ -35,6 +35,10 @@ func CalcSum(tkm toolkit.M, masters toolkit.M) {
 		return false
 	}
 
+	for _, k := range exclude {
+		tkm.Unset(k)
+	}
+
 	for k, v := range tkm {
 		if k == "_id" || k == "key" {
 			continue

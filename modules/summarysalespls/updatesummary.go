@@ -2236,18 +2236,18 @@ func main() {
 	// prepmasterrollback_sumbrand()
 
 	// prepmastercogsperunit()
-	prepsalesplssummaryrdwrongsubch()
-	os.Exit(1)
+	// prepsalesplssummaryrdwrongsubch()
+	// os.Exit(1)
 
 	// prepmasterproduct()
 	// prepmasternewsgaalloc()
 	// prepmasternewchannelsgaalloc()
 
-	// prepmastersubtotalsallocatedsga()
+	prepmastersubtotalsallocatedsga()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-res2").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -3087,20 +3087,36 @@ func CalcScaleSgaAllocatedChannelData(tkm toolkit.M) {
 	subtotalsallocated := masters.Get("subtotalsallocated", map[string]float64{}).(map[string]float64)
 	key := tkm.Get("key", toolkit.M{}).(toolkit.M)
 
+	// distvalue := toolkit.M{}.Set("EXPORT", float64(0.00)).
+	// 	Set("GT", float64(6045116340.04)).
+	// 	Set("INDUSTRIAL", float64(0.00)).
+	// 	Set("MOTORIST", float64(0.00)).
+	// 	Set("MT", float64(-10125960941.17)).
+	// 	Set("RD", float64(1281694.57))
+
+	// if key.GetString("date_fiscal") == "2015-2016" {
+	// 	distvalue.Set("EXPORT", float64(19000856.10)).
+	// 		Set("GT", float64(1159339452.41)).
+	// 		Set("INDUSTRIAL", float64(0.00)).
+	// 		Set("MOTORIST", float64(0.00)).
+	// 		Set("MT", float64(-8658785538.32)).
+	// 		Set("RD", float64(-3279277.61))
+	// }
+
 	distvalue := toolkit.M{}.Set("EXPORT", float64(0.00)).
-		Set("GT", float64(6045116340.04)).
+		Set("GT", float64(-551411.645614624)).
 		Set("INDUSTRIAL", float64(0.00)).
 		Set("MOTORIST", float64(0.00)).
-		Set("MT", float64(-10125960941.17)).
-		Set("RD", float64(1281694.57))
+		Set("MT", float64(-900639.016815186)).
+		Set("RD", float64(-385988.14692688))
 
 	if key.GetString("date_fiscal") == "2015-2016" {
-		distvalue.Set("EXPORT", float64(19000856.10)).
-			Set("GT", float64(1159339452.41)).
+		distvalue = toolkit.M{}.Set("EXPORT", float64(0.00)).
+			Set("GT", float64(0.00)).
 			Set("INDUSTRIAL", float64(0.00)).
 			Set("MOTORIST", float64(0.00)).
-			Set("MT", float64(-8658785538.32)).
-			Set("RD", float64(-3279277.61))
+			Set("MT", float64(0.00)).
+			Set("RD", float64(0.00))
 	}
 
 	channelname := key.GetString("customer_channelname")
@@ -3127,7 +3143,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-res2mod").
+		From("salespls-summary-1mod").
 		SetConfig("multiexec", true).
 		Save()
 
