@@ -1275,6 +1275,15 @@ func prepmastercogsperunit() {
 		cogsmaps[key] = cog
 	}
 
+	i := 0
+	for k, v := range cogsmaps {
+		i++
+		toolkit.Println("COGS : ", k, " : ", v.COGS_Amount)
+		if i > 15 {
+			break
+		}
+	}
+
 	masters.Set("cogs", cogsmaps)
 }
 
@@ -1297,6 +1306,15 @@ func prepmasterratio4cogsperunit() {
 		key := toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"), dtkm.GetString("product_skuid"))
 		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL8A")
 		ratio.Set(key, v)
+	}
+
+	i := 0
+	for k, v := range ratio {
+		i++
+		toolkit.Println("RATIO : ", k, " : ", v)
+		if i > 15 {
+			break
+		}
 	}
 
 	masters.Set("ratio", ratio)
@@ -2286,6 +2304,10 @@ func main() {
 				time.Since(t0).String())
 		}
 
+		if iscount > 15 {
+			break
+		}
+
 	}
 
 	close(jobs)
@@ -2950,7 +2972,7 @@ func CalcCogsPerUnitBasedSales(tkm toolkit.M) {
 	}
 
 	// RM_PerUnit,LC_PerUnit,PF_PerUnit,Other_PerUnit,Fixed_PerUnit,Depre_PerUnit,COGS_PerUnit
-
+	toolkit.Printfn("%s|%v|%v(%v/%v)", key, cogsdata.COGS_Amount, tratio, netsales, subtotnetsales)
 	cogssubtotal := cogsdata.COGS_Amount * tratio
 
 	rmamount := cogsdata.RM_Amount * tratio
