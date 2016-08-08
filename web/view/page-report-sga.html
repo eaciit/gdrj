@@ -1,16 +1,19 @@
 <style>
-	#sga .pivot-pnl .table-header {
+	#sga .pivot-pnl .table-header,
+	#el .pivot-pnl .table-header {
 		width: 470px;
 	}
-	#sga .pivot-pnl .table-content {
+	#sga .pivot-pnl .table-content,
+	#sga .scroll-grid-bottom,
+	#el .pivot-pnl .table-content,
+	#el .scroll-grid-bottom {
 		margin-left: 470px;
 	}
-	#sga .scroll-grid-bottom {
-	    margin-left: 470px;
-	}
-	#sga .scroll-grid-bottom.viewscrollfix.arrow {
+	#sga .scroll-grid-bottom.viewscrollfix.arrow,
+	#el .scroll-grid-bottom.viewscrollfix.arrow {
 		margin-left: 446px;
 	}
+
 	.pivot-pnl table tr.footerTotal td {
 		background-color: #F0F3F4;
 		border-color: #f0f3f4;
@@ -31,8 +34,8 @@
 <script src="{{BaseUrl}}res/core/js/page-report-sga.js?ANTI_CACHE={{.AntiCache}}"></script>
 
 	<!-- Nav tabs -->
-	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: (!sga.contentIsLoading() && !au.contentIsLoading())">
-		<li role="presentation" class="active">
+	<ul class="nav nav-pills nav-replace-title" role="tablist" data-bind="visible: (!sga.contentIsLoading() && !au.contentIsLoading() && !el.contentIsLoading())">
+		<li role="presentation">
 			<a href="#tab1" role="tab" data-toggle="tab" onclick="sga.resetAllFilters(); sga.changeAndRefresh('BranchName', 'G&A by Branch Level 1');">Branch Level 1</a>
 		</li>
 		<li role="presentation">
@@ -53,11 +56,14 @@
 		<li role="presentation">
 			<a href="#tab3" role="tab" data-toggle="tab" onclick="sga.resetAllFilters(); yoy.refresh();">YoY Comparison</a>
 		</li>
+		<li role="presentation" class="active">
+			<a href="#tab4" role="tab" data-toggle="tab" onclick="sga.resetAllFilters(); sga.title('Elimination & Non Elimination') el.refresh();">Elimination & Non Elimination</a>
+		</li>
 	</ul>
 
 	<!-- Tab panes -->
 	<div class="tab-content">
-		<div role="tabpanel" class="tab-pane active" id="tab1">
+		<div role="tabpanel" class="tab-pane" id="tab1">
 
 
 
@@ -285,6 +291,80 @@
 
 
 	
+		</div>
+		<div role="tabpanel" class="tab-pane active" id="tab4">
+
+
+
+
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin" data-bind="html: sga.title()">&nbsp;</h3>
+			<div class="panel-nav-button" data-bind="visible: !el.contentIsLoading()">
+				<div class="form-inline">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: el.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="el.exportExcel()">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div class="filter" data-bind="visible: !el.contentIsLoading()">
+				<div class="form-inline pull-right">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: el.fiscalYear }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Breakdown By</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: el.optionDimensions, value: el.breakdownBy, dataValueField: 'field', dataTextField: 'name', placeholder: 'Select filter' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" >
+						<span class="input-group-addon align-right">Filter By</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: el.optionDimensions, value: el.filterBy, dataValueField: 'field', dataTextField: 'name', placeholder: 'Select filter', select: el.selectfilter }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Filter Value</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: el.optionBreakdownValues, value: el.filterValue, dataValueField: '_id', dataTextField: 'Name', placeholder: 'Select filter', select: el.selectfilter }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+
+			<div data-bind="visible: el.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !el.contentIsLoading()">
+				<div class="breakdown-view ez" id="el"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
 		</div>
 	</div>
 	</div>
