@@ -1352,7 +1352,7 @@ let yoy = viewModel.yoy
 
 		let total = {
 			title: 'Total',
-			headerAttributes: { style: 'text-align: center; font-weight: bold; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff; border-right: 1px solid #ffffff;' },
+			headerAttributes: { style: 'text-align: center; font-weight: bold; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' },
 			columns: [{
 				field: `total.year2015`,
 				title: 'FY 2015-2016',
@@ -1372,8 +1372,8 @@ let yoy = viewModel.yoy
 				title: '% Growth',
 				width: 90,
 				format: '{0:n2} %',
-				attributes: { class: 'align-right', style: 'font-weight: bold; border-right: 1px solid #ffffff;' },
-				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff; font-weight: bold; border-right: 1px solid #f0f3f4;' }
+				attributes: { class: 'align-right', style: 'font-weight: bold;' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff; font-weight: bold;' }
 			}]
 		}
 
