@@ -113,12 +113,14 @@ let sga = viewModel.sga
 
 	rpt.fillFilterCostGroup = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getdatafunction", {}, (res) => {
+			sga.optionFilterCostGroups(res.data)
 			sga.optionFilterCostGroups(_.orderBy(res.data, (d) => d.Name))
 		})
 	}
 
 	rpt.fillFilterBranchLvl2 = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getdatamasterbranchlvl2", {}, (res) => {
+			sga.optionBranchLvl2(res.data)
 			sga.optionBranchLvl2(_.orderBy(res.data, (d) => d.Name))
 		})
 	}
@@ -158,6 +160,7 @@ let sga = viewModel.sga
 		au.breakdownBranchGroup([])
 		yoy.breakdownValue([])
 		yoy.changeBreakdownBy()
+		el.filterValue([])
 	}
 
 	sga.refresh = (useCache = false) => {
@@ -178,6 +181,7 @@ let sga = viewModel.sga
 			param.costgroups = sga.filterCostGroup()
 		}
 
+		$('.breakdown-view:not(#sga)').empty()
 		sga.contentIsLoading(true)
 
 		let fetch = () => {
@@ -560,7 +564,7 @@ let sga = viewModel.sga
 
 		// ========================= PLOT DATA
 
-		_.orderBy(rows, (d) => {
+		_.orderBy(rows, (d) =>  {
 			if (d.PLCode == netSalesPLCode) {
 				return -10000000000000
 			}
@@ -759,7 +763,7 @@ let au = viewModel.allocated
 			au.breakdownBy('customer.channelname')
 			return
 		}
-		
+
 		au.isUseBreakdownBy(true)
 		au.breakdownBy(au.breakdownByBackup())
 	}
@@ -814,6 +818,7 @@ let au = viewModel.allocated
 			})
 		}
 
+		$('.breakdown-view:not(#au)').empty()
 		au.contentIsLoading(true)
 		fetch()
 	}
@@ -1296,6 +1301,7 @@ let yoy = viewModel.yoy
 			})
 		}
 
+		$('.breakdown-view:not(#yo)').empty()
 		fetch()
 	}
 
@@ -1311,6 +1317,12 @@ let yoy = viewModel.yoy
 			let o = {}
 			o.key = k
 
+			o.total = {}; let total = o.total
+			total.key = 'total'
+			total.year2014 = 0
+			total.year2015 = 0
+			total.growth = 0
+
 			columnsKey.forEach((d, i) => {
 				o[`col${i}`] = {}; let k = o[`col${i}`]
 				k.key = d
@@ -1321,7 +1333,12 @@ let yoy = viewModel.yoy
 					return (e.Year == 2015) && (e[breakdownBy] == d)
 				}), (e) => e.Amount)
 				k.growth = toolkit.number((o[`col${i}`].year2015 - o[`col${i}`].year2014) / o[`col${i}`].year2014) * 100
+
+				total.year2014 += k.year2014
+				total.year2015 += k.year2015
 			})
+
+			total.growth = toolkit.number((total.year2015 - total.year2014) / total.year2014) * 100
 
 			return o
 		})
@@ -1333,13 +1350,40 @@ let yoy = viewModel.yoy
 			firstColumnTitle = breakdownTitleRow.name
 		}
 
+		let total = {
+			title: 'Total',
+			headerAttributes: { style: 'text-align: center; font-weight: bold; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' },
+			columns: [{
+				field: `total.year2015`,
+				title: 'FY 2015-2016',
+				width: 130,
+				format: '{0:n0}',
+				attributes: { class: 'align-right', style: 'font-weight: bold;' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff; font-weight: bold;' }
+			}, {
+				field: `total.year2014`,
+				title: 'FY 2014-2015',
+				width: 130,
+				format: '{0:n0}',
+				attributes: { class: 'align-right', style: 'font-weight: bold;' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff; font-weight: bold;' }
+			}, {
+				field: `total.growth`,
+				title: '% Growth',
+				width: 90,
+				format: '{0:n2} %',
+				attributes: { class: 'align-right', style: 'font-weight: bold;' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff; font-weight: bold;' }
+			}]
+		}
+
 		let columns = [{
 			field: 'key',
 			title: 'P&L',
 			width: 200,
 			locked: true,
 			headerAttributes: { style: 'vertical-align: middle; text-align: center; font-weight: bold; border-right: 1px solid #ffffff;' }
-		}].concat(columnsKey.map((d, i) => {
+		}].concat(total).concat(columnsKey.map((d, i) => {
 			let o = {}
 			o.title = d
 			o.headerAttributes = { style: 'text-align: center; font-weight: bold; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' }
@@ -1386,6 +1430,759 @@ let yoy = viewModel.yoy
 
 
 
+viewModel.elimination = {}
+let el = viewModel.elimination
+
+;(() => {
+	// ========== PARSE ======
+	el.getAlphaNumeric = (what) => what.replace(/\W/g, '')
+
+	el.constructData = (raw) => {
+		el.data([])
+
+		let op1 = _.groupBy(raw, (d) => [d.AccountDescription, d.AccountGroup].join('|'))
+		let op2 = _.map(op1, (v, k) => ({
+			_id: el.getAlphaNumeric(k),
+			PLHeader1: v[0].AccountGroup,
+			PLHeader2: v[0].AccountGroup,
+			PLHeader3: v[0].AccountDescription,
+		}))
+
+		let oq1 = _.groupBy(raw, (d) => d.AccountGroup)
+		let oq2 = _.map(oq1, (v, k) => ({
+			_id: el.getAlphaNumeric(k),
+			PLHeader1: v[0].AccountGroup,
+			PLHeader2: v[0].AccountGroup,
+			PLHeader3: v[0].AccountGroup,
+		}))
+		rpt.plmodels(op2.concat(oq2))
+
+		// let oq1 = _.groupBy(raw, (d) => d.AccountDescription)
+		// let oq2 = _.map(oq1, (v, k) => ({
+		// 	_id: el.getAlphaNumeric(k),
+		// 	PLHeader1: v[0].AccountDescription,
+		// 	PLHeader2: v[0].AccountDescription,
+		// 	PLHeader3: v[0].AccountDescription,
+		// }))
+		// rpt.plmodels(oq2)
+
+		let key = el.breakdownBy()
+		let cache = {}
+		let rawData = []
+		raw.forEach((d) => {
+			let breakdown = d[key]
+			let o = cache[breakdown]
+			if (typeof o === 'undefined') {
+				o = {}
+				o._id = {}
+				o._id[`_id_${key}`] = breakdown
+				o._id[`_id_IsElimination`] = d.IsElimination
+				rawData.push(o)
+			}
+			cache[breakdown] = o
+
+			let plID = el.getAlphaNumeric([d.AccountDescription, d.AccountGroup].join('|'))
+			let plmodel = rpt.plmodels().find((e) => e._id == plID)
+			if (o.hasOwnProperty(plmodel._id)) {
+				o[plmodel._id] += d.Amount
+			} else {
+				o[plmodel._id] = d.Amount
+			}
+
+			let plIDHeader = el.getAlphaNumeric(d.AccountGroup)
+			let plmodelHeader = rpt.plmodels().find((e) => e._id == plIDHeader)
+			if (o.hasOwnProperty(plmodelHeader._id)) {
+				o[plmodelHeader._id] += d.Amount
+			} else {
+				o[plmodelHeader._id] = d.Amount
+			}
+
+			// let plID = el.getAlphaNumeric(d.AccountDescription)
+			// let plmodel = rpt.plmodels().find((e) => e._id == plID)
+			// if (o.hasOwnProperty(plmodel._id)) {
+			// 	o[plmodel._id] += d.Amount
+			// } else {
+			// 	o[plmodel._id] = d.Amount
+			// }
+		})
+		el.data(rawData)
+		console.log('rawData', rawData)
+	}
+
+	// ==========
+
+
+
+	el.contentIsLoading = ko.observable(false)
+
+	el.breakdownBy = ko.observable('BranchName')
+	el.filterBy = ko.observable('BranchName')
+	el.filterValue = ko.observableArray([])
+	el.breakdownByFiscalYear = ko.observable('date.fiscal')
+
+	el.optionDimensions = ko.observableArray([
+		{ field: 'BranchName', name: 'Branch Level 1' },
+		{ field: 'BranchLvl2', name: 'Branch Level 2' },
+		{ field: 'BranchGroup', name: 'Branch Group' },
+		{ field: 'CostGroup', name: 'Function' }
+	])
+	el.optionBreakdownValues = ko.computed(() => {
+		switch (el.filterBy()) {
+			case 'BranchName': return rpt.masterData.Branch(); break
+			case 'BranchLvl2': return sga.optionBranchLvl2(); break
+			case 'BranchGroup': return rpt.masterData.BranchGroup(); break
+			case 'CostGroup': return sga.optionFilterCostGroups(); break
+		}
+	}, el.filterBy)
+
+	el.data = ko.observableArray([])
+	el.fiscalYear = ko.observable(rpt.value.FiscalYear())
+	el.level = ko.observable(2)
+
+	el.putNetSalesPercentage = ko.observable(true)
+
+	el.selectfilter = () => {
+		el.filterValue([])
+	}
+
+	el.exportExcel = () => {
+		rpt.export('#el', `G&A Analysis - Elimination & Without Elimination`, 'header-content')
+	}
+
+	el.changeAndRefresh = (what, title) => {
+		if ($('.panel-filter').is(':visible')) {
+		    rpt.toggleFilter()
+		}
+
+		el.putNetSalesPercentage(true)
+		if (what == 'CostGroup') {
+			el.putNetSalesPercentage(false)
+		}
+
+		el.title(title)
+
+		el.breakdownBy(what)
+		el.filterBy(what)
+		el.refresh()
+	}
+
+	el.refresh = (useCache = false) => {
+		let param = {}
+		param.year = parseInt(el.fiscalYear().split('-')[0], 10)
+		param.groups = [el.breakdownBy(), 'IsElimination']
+
+		if (el.filterValue().length > 0) {
+			param[el.filterBy()] = el.filterValue()
+		}
+
+		$('.breakdown-view:not(#el)').empty()
+		el.contentIsLoading(true)
+
+		let fetch = () => {
+			toolkit.ajaxPost(viewModel.appName + "report/getdatasga", param, (res) => {
+				if (res.Status == "NOK") {
+					setTimeout(() => {
+						fetch()
+					}, 1000 * 5)
+					return
+				}
+
+				let grouper = _.map(_.groupBy(res.data, (e) => e.AccountGroup), (v, k) => {
+					let o = {}
+					o.key = el.getAlphaNumeric(k)
+					o.subs = _.map(_.groupBy(v, (e) => e.AccountDescription), (v, k) => {
+						let p = {}
+						p.key = el.getAlphaNumeric(k)
+
+						return p
+					})
+
+					return o
+				})
+
+				console.log('grouper', grouper)
+
+				el.constructData(res.data)
+				el.data(el.buildStructure(el.data()))
+				el.emptyGrid()
+
+				let callback = () => {
+					el.data().forEach((d) => {
+						let total = {}
+						total._id = `Total ${d._id}`
+
+						grouper.forEach((e) => {
+							e.subs.forEach((f) => {
+								let field1 = 'PL8A'
+								let field2 = e.key
+								let field3 = [f.key, e.key].join('')
+								let fields = [field1, field2, field3]
+
+								fields.forEach((h) => {
+									if (total.hasOwnProperty(h)) { total[h] = 0 }
+									total[h] = toolkit.sum(d.subs, (g) => toolkit.number(g[h]))
+									console.log('-- total', h, toolkit.sum(d.subs, (g) => toolkit.number(g[h])))
+								})
+							})
+						})
+
+						d.subs = [total].concat(d.subs)
+						d.count++
+					})
+
+					el.contentIsLoading(false)
+					el.render()
+					rpt.prepareEvents()
+				}
+
+				if (el.breakdownBy() == 'CostGroup') {
+					el.putNetSalesPercentage(false)
+					callback()
+					return
+				}
+
+				el.putNetSalesPercentage(true)
+
+				if (el.putNetSalesPercentage()) {
+					let groups = []
+					let groupBy = ''
+					let groupByForInjectingNetSales = ''
+					switch (el.breakdownBy()) {
+						case 'BranchName':
+							groupBy = 'customer.branchname'
+							groupByForInjectingNetSales = 'customer.branchname'
+							groups.push('customer.branchid')
+							if (el.filterBy() == 'BranchLvl2')
+								groups.push('customer.branchlvl2')
+							else if (el.filterBy() == 'BranchGroup')
+								groups.push('customer.branchgroup')
+						break
+						case 'BranchLvl2':
+							groupBy = 'customer.branchlvl2'
+							groupByForInjectingNetSales = 'customer.branchname'
+							groups.push('customer.branchid')
+							groups.push('customer.branchname')
+							if (el.filterBy() == 'BranchGroup')
+								groups.push('customer.branchgroup')
+						break
+						case 'BranchGroup':
+							groupBy = 'customer.branchgroup'
+							groupByForInjectingNetSales = 'customer.branchgroup'
+						break
+					}
+
+					groups.push(groupBy)
+
+					let param2 = {}
+					param2.pls = []
+					param2.aggr = 'sum'
+					param2.filters = rpt.getFilterValue(false, el.fiscalYear)
+					param2.groups = rpt.parseGroups(groups)
+
+					if (['BranchName', 'BranchGroup'].indexOf(el.filterBy()) > -1) {
+						param2.filters.push({
+							Field: 'customer.branchname',
+							Op: '$in',
+							Value: el.filterValue()
+						})
+					}
+					
+					toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param2, (res2) => {
+						rpt.plmodels([{
+							PLHeader1: 'Net Sales',
+							PLHeader2: 'Net Sales',
+							PLHeader3: 'Net Sales',
+							_id: 'PL8A'
+						}].concat(rpt.plmodels()))
+
+						el.data().forEach((d) => {
+							d.subs.forEach((e) => {
+								e.PL8A = 0
+
+								let key = `_id_${toolkit.replace(groupByForInjectingNetSales, '.', '_')}`
+								let target = res2.Data.Data.filter((f) => f._id[key] == e._id)
+								if (target.length == 0) {
+									return
+								}
+
+								e.PL8A = toolkit.sum(target, (k) => k.PL8A)
+							})
+
+							grouper.forEach((e) => {
+								e.subs.forEach((f) => {
+									let field1 = 'PL8A'
+									let field2 = e.key
+									let field3 = [f.key, e.key].join('')
+									let fields = [field1, field2, field3]
+
+									fields.forEach((h) => {
+										if (d.hasOwnProperty(h)) { d[h] = 0 }
+										d[h] = toolkit.sum(d.subs, (g) => toolkit.number(g[h]))
+									})
+								})
+							})
+						})
+
+						callback()
+					}, () => {
+						callback()
+					})
+
+					return
+				}
+
+				callback()
+			}, () => {
+				el.emptyGrid()
+				el.contentIsLoading(false)
+			})
+		}
+
+		fetch()
+	}
+
+	el.emptyGrid = () => {
+		$('#el').replaceWith(`<div class="breakdown-view ez" id="el"></div>`)
+	}
+
+	el.buildStructure = (data) => {
+		let groupThenMap = (data, group) => {
+			let op1 = _.groupBy(data, (d) => group(d))
+			let op2 = _.map(op1, (v, k) => {
+				let key = { _id: k, subs: v }
+				let sample = v[0]
+
+				for (let prop in sample) {
+					if (sample.hasOwnProperty(prop) && prop != '_id') {
+						key[prop] = toolkit.sum(v, (d) => d[prop])
+					}
+				}
+
+				return key
+			})
+
+			return op2
+		}
+
+		let parsed = groupThenMap(data, (d) => {
+			return d._id._id_IsElimination ? 'Elimination' : 'Without Elimination'
+		}).map((d) => {
+			let subs = groupThenMap(d.subs, (e) => {
+				return e._id[`_id_${toolkit.replace(el.breakdownBy(), '.', '_')}`]
+			}).map((e) => {
+				e.breakdowns = e.subs[0]._id
+				d.count = 1
+				return e
+			})
+
+			d.subs = _.orderBy(subs, (e) => toolkit.number(e.SalariesAllowance), 'desc')
+			d.breakdowns = d.subs[0]._id
+			d.count = d.subs.length
+			return d
+		})
+	
+		el.level(2)
+		let newParsed = _.orderBy(parsed, (d) => (d._id == 'Without Elimination') ? 1 : 2, 'asc')
+		return parsed
+	}
+
+	el.render = () => {
+		if (el.data().length == 0) {
+			$('#el').html('No data found.')
+			return
+		}
+
+		// ========================= TABLE STRUCTURE
+
+		let container = $('#el')
+		let percentageWidth = 100
+
+		let wrapper = toolkit.newEl('div')
+			.addClass('pivot-pnl-branch pivot-pnl')
+			.appendTo(container)
+
+		let tableHeaderWrap = toolkit.newEl('div')
+			.addClass('table-header')
+			.appendTo(wrapper)
+
+		let tableHeader = toolkit.newEl('table')
+			.addClass('table')
+			.appendTo(tableHeaderWrap)
+
+		let tableContentWrap = toolkit.newEl('div')
+			.appendTo(wrapper)
+			.addClass('table-content')
+
+		let tableContent = toolkit.newEl('table')
+			.addClass('table')
+			.appendTo(tableContentWrap)
+
+		let trHeader = toolkit.newEl('tr')
+			.appendTo(tableHeader)
+
+		toolkit.newEl('th')
+			.html('P&L')
+			.css('height', `${rpt.rowHeaderHeight() * el.level()}px`)
+			.attr('data-rowspan', el.level())
+			.css('vertical-align', 'middle')
+			.addClass('cell-percentage-header')
+			.appendTo(trHeader)
+
+		toolkit.newEl('th')
+			.html('Total')
+			.css('height', `${rpt.rowHeaderHeight() * el.level()}px`)
+			.attr('data-rowspan', el.level())
+			.css('vertical-align', 'middle')
+			.addClass('cell-percentage-header align-right')
+			.appendTo(trHeader)
+
+		if (el.putNetSalesPercentage()) {
+			toolkit.newEl('th')
+				.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
+				.css('height', `${rpt.rowHeaderHeight() * el.level()}px`)
+				.css('vertical-align', 'middle')
+				.css('font-weight', 'normal')
+				.css('font-style', 'italic')
+				.width(percentageWidth - 20)
+				.attr('data-rowspan', el.level())
+				.addClass('cell-percentage-header align-right')
+				.appendTo(trHeader)
+		}
+
+		let trContents = []
+		for (let i = 0; i < el.level(); i++) {
+			trContents.push(toolkit.newEl('tr')
+				.appendTo(tableContent)
+				.css('height', `${rpt.rowHeaderHeight()}px`))
+		}
+
+
+
+		// ========================= BUILD HEADER
+
+		let data = el.data()
+
+		let columnWidth = 130
+		let totalColumnWidth = 0
+		let pnlTotalSum = 0
+		let dataFlat = []
+
+		let countWidthThenPush = (thheader, each, key) => {
+			let currentColumnWidth = each._id.length * 10
+			if (currentColumnWidth < columnWidth) {
+				currentColumnWidth = columnWidth
+			}
+
+			if (each.hasOwnProperty('width')) {
+				currentColumnWidth = each.width
+			}
+
+			each.key = key.join('_')
+			dataFlat.push(each)
+
+			totalColumnWidth += currentColumnWidth
+			thheader.width(currentColumnWidth)
+		}
+
+		data.forEach((lvl1, i) => {
+			let thheader1 = toolkit.newEl('th')
+				.html(lvl1._id.replace(/\ /g, '&nbsp;'))
+				.attr('colspan', lvl1.count)
+				.addClass('align-center')
+				.css('border-top', 'none')
+				.appendTo(trContents[0])
+
+			thheader1.attr('colspan', lvl1.count * (el.putNetSalesPercentage() ? 3 : 2))
+
+			lvl1.subs.forEach((lvl2, j) => {
+				let thheader1p = $('<div />')
+				let thheader2p = $('<div />')
+				let thheader2 = toolkit.newEl('th')
+					.html(lvl2._id)
+					.addClass('align-center')
+					.appendTo(trContents[1])
+
+				if (el.level() == 2) {
+					countWidthThenPush(thheader2, lvl2, [lvl1._id, lvl2._id])
+
+					if (el.putNetSalesPercentage()) {
+						totalColumnWidth += percentageWidth
+						thheader1p = toolkit.newEl('th')
+							.html('% of N Sales'.replace(/\ /g, '&nbsp;'))
+							.width(percentageWidth)
+							.addClass('align-center')
+							.css('font-weight', 'normal')
+							.css('font-style', 'italic')
+							.css('border-top', 'none')
+							.appendTo(trContents[1])
+					}
+
+					if (rpt.showPercentOfTotal()) {
+						totalColumnWidth += percentageWidth
+						thheader2p = toolkit.newEl('th')
+							.html('% of Total'.replace(/\ /g, '&nbsp;'))
+							.width(percentageWidth)
+							.addClass('align-center')
+							.css('font-weight', 'normal')
+							.css('font-style', 'italic')
+							.css('border-top', 'none')
+							.appendTo(trContents[1])
+					}
+
+					if (lvl2._id.indexOf('Total') > -1) {
+						let target = [thheader1p, thheader2p, thheader2]
+						target.forEach((d) => {
+							d.css('background-color', '#337ab7')
+							d.css('color', 'white')
+						})
+					}
+
+					return
+				}
+				thheader2.attr('colspan', lvl2.count)
+			})
+		})
+
+		tableContent.css('min-width', totalColumnWidth)
+
+
+
+		// ========================= CONSTRUCT DATA
+		
+		let plmodels = rpt.plmodels()
+		let netSalesPLCode = 'PL8A'
+		let netSalesRow = {}
+		let grossSalesPLCode = 'PL0'
+		let grossSalesRow = {}
+		let discountActivityPLCode = 'PL7A'
+		let rows = []
+
+		rpt.fixRowValue(dataFlat)
+
+		console.log("dataFlat", dataFlat)
+
+		dataFlat.forEach((e) => {
+			let breakdown = e.key
+			netSalesRow[breakdown] = e[netSalesPLCode]
+			grossSalesRow[breakdown] = e[grossSalesPLCode]
+		})
+
+		plmodels.forEach((d) => {
+			let row = { PNL: d.PLHeader3, PLCode: d._id, PNLTotal: 0, Percentage: 0 }
+			dataFlat.forEach((e) => {
+				let breakdown = e.key
+				let value = e[`${d._id}`]; 
+				row[breakdown] = value
+
+				if (toolkit.isDefined(e.excludeFromTotal)) {
+					return
+				}
+
+				row.PNLTotal += toolkit.number(value)
+			})
+			dataFlat.forEach((e) => {
+				let breakdown = e.key
+				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+
+				if (d._id != netSalesPLCode) {
+					percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
+				}
+
+				if (percentage < 0)
+					percentage = percentage * -1
+
+				row[`${breakdown} %`] = percentage
+				row[`${breakdown} %t`] = percentageOfTotal
+			})
+
+			rows.push(row)
+		})
+
+		console.log("rows", rows)
+		
+		if (el.putNetSalesPercentage()) {
+			let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
+			rows.forEach((d, e) => {
+				let TotalPercentage = (d.PNLTotal / TotalNetSales) * 100
+
+				if (TotalPercentage < 0)
+					TotalPercentage = TotalPercentage * -1 
+				rows[e].Percentage = toolkit.number(TotalPercentage)
+			})
+		}
+
+
+
+
+		// ========================= PLOT DATA
+
+		_.orderBy(rows, (d) => {
+			if (d.PLCode == netSalesPLCode) {
+				return -10000000000000
+			}
+
+			return d.PNLTotal
+		}, 'asc').forEach((d, i) => {
+		// rows.forEach((d, i) => {
+			pnlTotalSum += d.PNLTotal
+
+			let PL = d.PLCode
+			PL = PL.replace(/\s+/g, '')
+			let trHeader = toolkit.newEl('tr')
+				.addClass(`header${PL}`)
+				.attr(`idheaderpl`, PL)
+				.attr(`data-row`, `row-${i}`)
+				.css('height', `${rpt.rowContentHeight()}px`)
+				.appendTo(tableHeader)
+
+			trHeader.on('click', () => {
+				rpt.clickExpand(container, trHeader)
+			})
+
+			toolkit.newEl('td')
+				.html('<i></i>' + d.PNL)
+				.appendTo(trHeader)
+
+			let pnlTotal = kendo.toString(d.PNLTotal, 'n0')
+			toolkit.newEl('td')
+				.html(pnlTotal)
+				.addClass('align-right')
+				.appendTo(trHeader)
+
+			if (el.putNetSalesPercentage()) {
+				toolkit.newEl('td')
+					.html(kendo.toString(d.Percentage, 'n2') + '&nbsp;%')
+					.addClass('align-right')
+					.appendTo(trHeader)
+			}
+
+			let trContent = toolkit.newEl('tr')
+				.addClass(`column${PL}`)
+				.attr(`idpl`, PL)
+				.attr(`data-row`, `row-${i}`)
+				.css('height', `${rpt.rowContentHeight()}px`)
+				.appendTo(tableContent)
+
+			dataFlat.forEach((e, f) => {
+				let key = e.key
+				let value = kendo.toString(d[key], 'n0')
+				let percentage = kendo.toString(d[`${key} %`], 'n2') + '&nbsp;%'
+				let percentageOfTotal = kendo.toString(d[`${key} %t`], 'n2') + '&nbsp;%'
+
+				if ($.trim(value) == '') {
+					value = 0
+				}
+
+				let cell = toolkit.newEl('td')
+					.html(value)
+					.addClass('align-right')
+					.appendTo(trContent)
+
+				if (el.putNetSalesPercentage()) {
+					toolkit.newEl('td')
+						.html(percentage)
+						.addClass('align-right')
+						.appendTo(trContent)
+				}
+
+				if (rpt.showPercentOfTotal()) {
+					toolkit.newEl('td')
+						.html(percentageOfTotal)
+						.addClass('align-right')
+						.appendTo(trContent)
+				}
+			})
+
+			rpt.putStatusVal(trHeader, trContent)
+		})
+
+
+		// ======= TOTAL
+
+		let keys = _.map(_.groupBy(rpt.plmodels(), (d) => d.PLHeader1), (v, k) => k)
+		let rowsForTotal = rows.filter((d) => keys.indexOf(d.PNL) > -1 && d.PLCode !== 'PL8A')
+
+		let trFooterLeft = toolkit.newEl('tr')
+			.addClass(`footerTotal`)
+			.attr(`idheaderpl`, 'Total')
+			.attr(`data-row`, `row-${rows.length}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
+			.appendTo(tableHeader)
+
+		toolkit.newEl('td')
+			.html('<i></i> Total G&A')
+			.appendTo(trFooterLeft)
+
+		let pnlTotal = toolkit.sum(rowsForTotal, (d) => d.PNLTotal)
+		let netSalesTotal = toolkit.sum(el.data(), (d) => d.PL8A)
+		toolkit.newEl('td')
+			.html(kendo.toString(pnlTotal, 'n0'))
+			.addClass('align-right')
+			.appendTo(trFooterLeft)
+
+		if (el.putNetSalesPercentage()) {
+			toolkit.newEl('td')
+				.html(kendo.toString(pnlTotal / netSalesTotal * 100, 'n2') + '&nbsp;%')
+				.addClass('align-right')
+				.appendTo(trFooterLeft)
+		}
+
+		let trFooterRight = toolkit.newEl('tr')
+			.addClass(`footerTotal`)
+			.attr(`idpl`, 'Total')	
+			.attr(`data-row`, `row-${rows.length}`)
+			.css('height', `${rpt.rowContentHeight()}px`)
+			.appendTo(tableContent)
+
+		dataFlat.forEach((e, f) => {
+			let netSales = 0 
+			let columnData = el.data().find((d) => d._id == e._id)
+			if (toolkit.isDefined(columnData)) {
+				netSales = columnData.PL8A
+			}
+
+			let value = toolkit.sum(rowsForTotal, (d) => d[e.key])
+
+			if ($.trim(value) == '') {
+				value = 0
+			}
+
+			let percentage = toolkit.number(value / netSales) * 100
+			let percentageOfTotal = toolkit.number(value / pnlTotal) * 100
+
+			toolkit.newEl('td')
+				.html(kendo.toString(value, 'n0'))
+				.addClass('align-right')
+				.appendTo(trFooterRight)
+
+			if (el.putNetSalesPercentage()) {
+				toolkit.newEl('td')
+					.html(kendo.toString(percentage, 'n2') + '&nbsp;%')
+					.addClass('align-right')
+					.appendTo(trFooterRight)
+			}
+
+			if (rpt.showPercentOfTotal()) {
+				toolkit.newEl('td')
+					.html(kendo.toString(percentageOfTotal, 'n2') + '&nbsp;%')
+					.addClass('align-right')
+					.appendTo(trFooterRight)
+			}
+		})
+		
+
+		// ========================= CONFIGURE THE HIRARCHY
+		rpt.buildGridLevels(rows)
+	}
+})()
+
+
+
+
+
+
+
 vm.currentMenu('Analysis')
 vm.currentTitle('&nbsp;')
 vm.breadcrumb([
@@ -1394,14 +2191,12 @@ vm.breadcrumb([
 	{ title: 'G&A Analysis', href: '#' }
 ])
 
-rpt.refresh = () => {
-	sga.refresh()
-	// au.refresh()
-}
-
 $(() => {
-	rpt.fillFilterCostGroup()
-	rpt.fillFilterBranchLvl2()
-	rpt.refresh()
+	setTimeout(() => {
+		rpt.fillFilterCostGroup()
+		rpt.fillFilterBranchLvl2()
+	}, 300)
+
+	sga.refresh()
 	rpt.showExport(true)
 })

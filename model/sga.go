@@ -33,6 +33,7 @@ type SGA struct {
 	CostGroup          string
 	Year               int
 	Amount             float64
+	IsElimination      bool
 }
 
 func (b *SGA) RecordID() interface{} {
