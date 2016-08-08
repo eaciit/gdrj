@@ -171,6 +171,7 @@ var sga = viewModel.sga;(function () {
 		au.breakdownBranchGroup([]);
 		yoy.breakdownValue([]);
 		yoy.changeBreakdownBy();
+		el.filterValue([]);
 	};
 
 	sga.refresh = function () {
@@ -1131,6 +1132,12 @@ var yoy = viewModel.yoy;(function () {
 			var o = {};
 			o.key = k;
 
+			o.total = {};var total = o.total;
+			total.key = 'total';
+			total.year2014 = 0;
+			total.year2015 = 0;
+			total.growth = 0;
+
 			columnsKey.forEach(function (d, i) {
 				o['col' + i] = {};var k = o['col' + i];
 				k.key = d;
@@ -1145,7 +1152,12 @@ var yoy = viewModel.yoy;(function () {
 					return e.Amount;
 				});
 				k.growth = toolkit.number((o['col' + i].year2015 - o['col' + i].year2014) / o['col' + i].year2014) * 100;
+
+				total.year2014 += k.year2014;
+				total.year2015 += k.year2015;
 			});
+
+			total.growth = toolkit.number((total.year2015 - total.year2014) / total.year2014) * 100;
 
 			return o;
 		});
@@ -1161,13 +1173,40 @@ var yoy = viewModel.yoy;(function () {
 			firstColumnTitle = breakdownTitleRow.name;
 		}
 
+		var total = {
+			title: 'Total',
+			headerAttributes: { style: 'text-align: center; font-weight: bold; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff; border-right: 1px solid #ffffff;' },
+			columns: [{
+				field: 'total.year2015',
+				title: 'FY 2015-2016',
+				width: 130,
+				format: '{0:n0}',
+				attributes: { class: 'align-right', style: 'font-weight: bold;' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff; font-weight: bold;' }
+			}, {
+				field: 'total.year2014',
+				title: 'FY 2014-2015',
+				width: 130,
+				format: '{0:n0}',
+				attributes: { class: 'align-right', style: 'font-weight: bold;' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff; font-weight: bold;' }
+			}, {
+				field: 'total.growth',
+				title: '% Growth',
+				width: 90,
+				format: '{0:n2} %',
+				attributes: { class: 'align-right', style: 'font-weight: bold; border-right: 1px solid #ffffff;' },
+				headerAttributes: { style: 'text-align: center; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff; font-weight: bold; border-right: 1px solid #f0f3f4;' }
+			}]
+		};
+
 		var columns = [{
 			field: 'key',
 			title: 'P&L',
 			width: 200,
 			locked: true,
 			headerAttributes: { style: 'vertical-align: middle; text-align: center; font-weight: bold; border-right: 1px solid #ffffff;' }
-		}].concat(columnsKey.map(function (d, i) {
+		}].concat(total).concat(columnsKey.map(function (d, i) {
 			var o = {};
 			o.title = d;
 			o.headerAttributes = { style: 'text-align: center; font-weight: bold; border-right: 1px solid #ffffff; border-bottom: 1px solid #ffffff;' };
