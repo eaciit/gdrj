@@ -2304,10 +2304,6 @@ func main() {
 				time.Since(t0).String())
 		}
 
-		if iscount > 15 {
-			break
-		}
-
 	}
 
 	close(jobs)
@@ -2962,7 +2958,7 @@ func CalcCogsPerUnitBasedSales(tkm toolkit.M) {
 
 	cogsdatas := masters.Get("cogs").(map[string]*gdrj.COGSConsolidate)
 	ratiosdata := masters.Get("ratio", toolkit.M{}).(toolkit.M) //ratio
-	netsales := masters.GetFloat64("PL8A")
+	netsales := tkm.GetFloat64("PL8A")
 	subtotnetsales := ratiosdata.GetFloat64(key)
 	tratio := toolkit.Div(netsales, subtotnetsales)
 
@@ -2972,7 +2968,7 @@ func CalcCogsPerUnitBasedSales(tkm toolkit.M) {
 	}
 
 	// RM_PerUnit,LC_PerUnit,PF_PerUnit,Other_PerUnit,Fixed_PerUnit,Depre_PerUnit,COGS_PerUnit
-	toolkit.Printfn("%s|%v|%v(%v/%v)", key, cogsdata.COGS_Amount, tratio, netsales, subtotnetsales)
+	// toolkit.Printfn("%s|%v|%v(%v/%v)", key, cogsdata.COGS_Amount, tratio, netsales, subtotnetsales)
 	cogssubtotal := cogsdata.COGS_Amount * tratio
 
 	rmamount := cogsdata.RM_Amount * tratio
