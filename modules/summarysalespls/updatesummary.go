@@ -2260,11 +2260,15 @@ func prepmastersimplesgafuncratio() {
 		amount := tkm.GetFloat64("min_amountinidr")
 
 		key := toolkit.Sprintf("%d_%d_%s_%s_%s", date.Year(), date.Month(), branchgroup, plcode, allocdirect)
+		if allocdirect == "Allocated" {
+			key = toolkit.Sprintf("%d_%d_%s_%s", date.Year(), date.Month(), plcode, allocdirect)
+		}
+
 		val := amount + simplesgafuncratio.GetFloat64(key)
 		simplesgafuncratio.Set(key, val)
 
 		costgroup := tkm.GetString("costgroup")
-		key = toolkit.Sprintf("%d_%d_%s_%s_%s_%s", date.Year(), date.Month(), branchgroup, plcode, allocdirect, costgroup)
+		key = toolkit.Sprintf("%s_%s", key, costgroup)
 		val = amount + simplesgafuncratio.GetFloat64(key)
 		simplesgafuncratio.Set(key, val)
 
@@ -3325,8 +3329,12 @@ func CalcDistSgaBasedOnFunctionData(tkm toolkit.M) {
 		arrsubtotals[skey] = tkm.GetFloat64(skey)
 	}
 
-	tk := toolkit.Sprintf("%d_%d_%s", key.GetInt("date_year"), key.GetInt("date_month"), key.GetString("customer_branchgroup"))
 	for k, v := range arrsubtotals {
+		tarr := strings.Split(k, "_")
+		tk := toolkit.Sprintf("%d_%d_%s", key.GetInt("date_year"), key.GetInt("date_month"), key.GetString("customer_branchgroup"))
+		if tarr[1] == "Allocated" {
+			tk = toolkit.Sprintf("%d_%d_%s", key.GetInt("date_year"), key.GetInt("date_month"))
+		}
 		for _, xk := range arrfunction {
 			skey := toolkit.Sprintf("%s_%s", k, xk)
 			rratio := toolkit.Div(simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, skey)), simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, k)))
