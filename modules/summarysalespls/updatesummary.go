@@ -3330,8 +3330,8 @@ func CalcDistSgaBasedOnFunctionData(tkm toolkit.M) {
 		for _, xk := range arrfunction {
 			skey := toolkit.Sprintf("%s_%s", k, xk)
 			val := v * simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, skey)) / simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, k))
-			toolkit.Sprintf("%s|%s", simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, skey)), simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, k)))
-			toolkit.Sprintf("%v := %v * %v / %v",
+			toolkit.Printfn("%s|%s", simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, skey)), simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, k)))
+			toolkit.Printfn("%v := %v * %v / %v",
 				val, v, simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, skey)),
 				simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, k)))
 
