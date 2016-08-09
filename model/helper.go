@@ -16,7 +16,7 @@ func CalcSum(tkm toolkit.M, masters toolkit.M) {
 		royaltiestrademark, advtpromoexpense, operatingexpense,
 		freightexpense, nonoprincome, ebt, taxexpense,
 		percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga,
-		grosssales, discount, advexp, promoexp, spgexp, netmargin, sgadirect, sgaallocated float64
+		grosssales, discount, advexp, promoexp, spgexp, netmargin float64 //, sgadirect, sgaallocated float64
 
 	exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL39A", "PL41A", "PL44A",
 		"PL74B", "PL74C", "PL74D", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
@@ -72,16 +72,16 @@ func CalcSum(tkm toolkit.M, masters toolkit.M) {
 		case "G&A Expenses":
 			sga += Amount
 			//Direct - Allocated
-			skey := toolkit.Sprintf("%s_Direct", ar01k[0])
-			if ar01k[1] == "Direct" {
-				sgadirect += Amount
-			} else {
-				skey = toolkit.Sprintf("%s_Allocated", ar01k[0])
-				sgaallocated += Amount
-			}
+			// skey := toolkit.Sprintf("%s_Direct", ar01k[0])
+			// if ar01k[1] == "Direct" {
+			// 	sgadirect += Amount
+			// } else {
+			// 	skey = toolkit.Sprintf("%s_Allocated", ar01k[0])
+			// 	sgaallocated += Amount
+			// }
 
-			tval := Amount + tkm.GetFloat64(skey)
-			tkm.Set(skey, tval)
+			// tval := Amount + tkm.GetFloat64(skey)
+			// tkm.Set(skey, tval)
 
 		case "Non Operating (Income) / Exp":
 			nonoprincome += Amount
@@ -136,8 +136,8 @@ func CalcSum(tkm toolkit.M, masters toolkit.M) {
 	tkm.Set("PL32A", advtpromoexpense)
 	tkm.Set("PL94A", sga)
 	//Direct - Allocated
-	tkm.Set("PL94A_Direct", sgadirect)
-	tkm.Set("PL94A_Allocated", sgaallocated)
+	// tkm.Set("PL94A_Direct", sgadirect)
+	// tkm.Set("PL94A_Allocated", sgaallocated)
 
 	tkm.Set("PL39A", nonoprincome)
 	tkm.Set("PL41A", taxexpense)
