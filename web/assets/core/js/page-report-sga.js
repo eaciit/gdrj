@@ -1442,6 +1442,7 @@ var el = viewModel.elimination;(function () {
 					el.data().forEach(function (d) {
 						var total = {};
 						total._id = 'Total ' + d._id;
+						total.excludeFromTotal = true;
 
 						grouper.forEach(function (e) {
 							e.subs.forEach(function (f) {
