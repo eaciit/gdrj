@@ -1255,87 +1255,42 @@ var el = viewModel.elimination;(function () {
 	};
 
 	el.constructData = function (raw) {
-		el.data([]);
-
 		var op1 = _.groupBy(raw, function (d) {
-			return [d.AccountDescription, d.AccountGroup].join('|');
+			return [d.BranchName, String(d.IsElimination)].join('');
 		});
 		var op2 = _.map(op1, function (v, k) {
-			return {
-				_id: el.getAlphaNumeric(k),
-				PLHeader1: v[0].AccountGroup,
-				PLHeader2: v[0].AccountGroup,
-				PLHeader3: v[0].AccountDescription
-			};
-		});
+			var o = {};
+			o._id = {};
+			o._id['_id_' + el.breakdownBy()] = v[0][el.breakdownBy()];
+			o._id._id_IsElimination = v[0].IsElimination;
 
-		var oq1 = _.groupBy(raw, function (d) {
-			return d.AccountGroup;
-		});
-		var oq2 = _.map(oq1, function (v, k) {
-			return {
-				_id: el.getAlphaNumeric(k),
-				PLHeader1: v[0].AccountGroup,
-				PLHeader2: v[0].AccountGroup,
-				PLHeader3: v[0].AccountGroup
-			};
-		});
-		rpt.plmodels(op2.concat(oq2));
-
-		// let oq1 = _.groupBy(raw, (d) => d.AccountDescription)
-		// let oq2 = _.map(oq1, (v, k) => ({
-		// 	_id: el.getAlphaNumeric(k),
-		// 	PLHeader1: v[0].AccountDescription,
-		// 	PLHeader2: v[0].AccountDescription,
-		// 	PLHeader3: v[0].AccountDescription,
-		// }))
-		// rpt.plmodels(oq2)
-
-		var key = el.breakdownBy();
-		var cache = {};
-		var rawData = [];
-		raw.forEach(function (d) {
-			var breakdown = d[key];
-			var o = cache[breakdown];
-			if (typeof o === 'undefined') {
-				o = {};
-				o._id = {};
-				o._id['_id_' + key] = breakdown;
-				o._id['_id_IsElimination'] = d.IsElimination;
-				rawData.push(o);
-			}
-			cache[breakdown] = o;
-
-			var plID = el.getAlphaNumeric([d.AccountDescription, d.AccountGroup].join('|'));
-			var plmodel = rpt.plmodels().find(function (e) {
-				return e._id == plID;
+			var os1 = _.groupBy(v, function (e) {
+				return e.AccountGroup;
 			});
-			if (o.hasOwnProperty(plmodel._id)) {
-				o[plmodel._id] += d.Amount;
-			} else {
-				o[plmodel._id] = d.Amount;
-			}
+			var os2 = _.map(os1, function (w, l) {
+				o[el.getAlphaNumeric(l)] = toolkit.sum(w, function (e) {
+					return e.Amount;
+				});
 
-			var plIDHeader = el.getAlphaNumeric(d.AccountGroup);
-			var plmodelHeader = rpt.plmodels().find(function (e) {
-				return e._id == plIDHeader;
+				var og1 = _.groupBy(w, function (f) {
+					return f.AccountDescription;
+				});
+				var og2 = _.map(og1, function (x, m) {
+					o[el.getAlphaNumeric([m, l].join(''))] = toolkit.sum(x, function (e) {
+						return e.Amount;
+					});
+
+					return;
+				});
+
+				return null;
 			});
-			if (o.hasOwnProperty(plmodelHeader._id)) {
-				o[plmodelHeader._id] += d.Amount;
-			} else {
-				o[plmodelHeader._id] = d.Amount;
-			}
 
-			// let plID = el.getAlphaNumeric(d.AccountDescription)
-			// let plmodel = rpt.plmodels().find((e) => e._id == plID)
-			// if (o.hasOwnProperty(plmodel._id)) {
-			// 	o[plmodel._id] += d.Amount
-			// } else {
-			// 	o[plmodel._id] = d.Amount
-			// }
+			return o;
 		});
-		el.data(rawData);
-		console.log('rawData', rawData);
+
+		el.data(op2);
+		console.log('rawData', el.data());
 	};
 
 	// ==========
@@ -1415,6 +1370,10 @@ var el = viewModel.elimination;(function () {
 					return;
 				}
 
+				el.constructData(res.data);
+				el.data(el.buildStructure(el.data()));
+				el.emptyGrid();
+
 				var grouper = _.map(_.groupBy(res.data, function (e) {
 					return e.AccountGroup;
 				}), function (v, k) {
@@ -1433,10 +1392,6 @@ var el = viewModel.elimination;(function () {
 				});
 
 				console.log('grouper', grouper);
-
-				el.constructData(res.data);
-				el.data(el.buildStructure(el.data()));
-				el.emptyGrid();
 
 				var callback = function callback() {
 					el.data().forEach(function (d) {

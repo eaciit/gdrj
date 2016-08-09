@@ -1438,75 +1438,32 @@ let el = viewModel.elimination
 	el.getAlphaNumeric = (what) => what.replace(/\W/g, '')
 
 	el.constructData = (raw) => {
-		el.data([])
+		let op1 = _.groupBy(raw, (d) => [d.BranchName, String(d.IsElimination)].join(''))
+		let op2 = _.map(op1, (v, k) => {
+			let o = {}
+			o._id = {}
+			o._id[`_id_${el.breakdownBy()}`] = v[0][el.breakdownBy()]
+			o._id._id_IsElimination = v[0].IsElimination
 
-		let op1 = _.groupBy(raw, (d) => [d.AccountDescription, d.AccountGroup].join('|'))
-		let op2 = _.map(op1, (v, k) => ({
-			_id: el.getAlphaNumeric(k),
-			PLHeader1: v[0].AccountGroup,
-			PLHeader2: v[0].AccountGroup,
-			PLHeader3: v[0].AccountDescription,
-		}))
+			let os1 = _.groupBy(v, (e) => e.AccountGroup)
+			let os2 = _.map(os1, (w, l) => {
+				o[el.getAlphaNumeric(l)] = toolkit.sum(w, (e) => e.Amount)
 
-		let oq1 = _.groupBy(raw, (d) => d.AccountGroup)
-		let oq2 = _.map(oq1, (v, k) => ({
-			_id: el.getAlphaNumeric(k),
-			PLHeader1: v[0].AccountGroup,
-			PLHeader2: v[0].AccountGroup,
-			PLHeader3: v[0].AccountGroup,
-		}))
-		rpt.plmodels(op2.concat(oq2))
+				let og1 = _.groupBy(w, (f) => f.AccountDescription)
+				let og2 = _.map(og1, (x, m) => {
+					o[el.getAlphaNumeric([m, l].join(''))] = toolkit.sum(x, (e) => e.Amount)
 
-		// let oq1 = _.groupBy(raw, (d) => d.AccountDescription)
-		// let oq2 = _.map(oq1, (v, k) => ({
-		// 	_id: el.getAlphaNumeric(k),
-		// 	PLHeader1: v[0].AccountDescription,
-		// 	PLHeader2: v[0].AccountDescription,
-		// 	PLHeader3: v[0].AccountDescription,
-		// }))
-		// rpt.plmodels(oq2)
+					return
+				})
 
-		let key = el.breakdownBy()
-		let cache = {}
-		let rawData = []
-		raw.forEach((d) => {
-			let breakdown = d[key]
-			let o = cache[breakdown]
-			if (typeof o === 'undefined') {
-				o = {}
-				o._id = {}
-				o._id[`_id_${key}`] = breakdown
-				o._id[`_id_IsElimination`] = d.IsElimination
-				rawData.push(o)
-			}
-			cache[breakdown] = o
+				return null
+			})
 
-			let plID = el.getAlphaNumeric([d.AccountDescription, d.AccountGroup].join('|'))
-			let plmodel = rpt.plmodels().find((e) => e._id == plID)
-			if (o.hasOwnProperty(plmodel._id)) {
-				o[plmodel._id] += d.Amount
-			} else {
-				o[plmodel._id] = d.Amount
-			}
-
-			let plIDHeader = el.getAlphaNumeric(d.AccountGroup)
-			let plmodelHeader = rpt.plmodels().find((e) => e._id == plIDHeader)
-			if (o.hasOwnProperty(plmodelHeader._id)) {
-				o[plmodelHeader._id] += d.Amount
-			} else {
-				o[plmodelHeader._id] = d.Amount
-			}
-
-			// let plID = el.getAlphaNumeric(d.AccountDescription)
-			// let plmodel = rpt.plmodels().find((e) => e._id == plID)
-			// if (o.hasOwnProperty(plmodel._id)) {
-			// 	o[plmodel._id] += d.Amount
-			// } else {
-			// 	o[plmodel._id] = d.Amount
-			// }
+			return o
 		})
-		el.data(rawData)
-		console.log('rawData', rawData)
+
+		el.data(op2)
+		console.log('rawData', el.data())
 	}
 
 	// ==========
@@ -1587,6 +1544,10 @@ let el = viewModel.elimination
 					return
 				}
 
+				el.constructData(res.data)
+				el.data(el.buildStructure(el.data()))
+				el.emptyGrid()
+
 				let grouper = _.map(_.groupBy(res.data, (e) => e.AccountGroup), (v, k) => {
 					let o = {}
 					o.key = el.getAlphaNumeric(k)
@@ -1601,10 +1562,6 @@ let el = viewModel.elimination
 				})
 
 				console.log('grouper', grouper)
-
-				el.constructData(res.data)
-				el.data(el.buildStructure(el.data()))
-				el.emptyGrid()
 
 				let callback = () => {
 					el.data().forEach((d) => {
