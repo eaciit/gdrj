@@ -224,14 +224,16 @@ rd.render = function () {
 		categoryAxis: categoryAxis
 	};
 
-	config.series[2].labels.template = function (e) {
-		var val = kendo.toString(e.value, 'n1');
-		return '' + val;
-	};
-	config.series[2].tooltip.template = function (e) {
-		var val = kendo.toString(e.value, 'n1');
-		return e.series.name + ' : ' + val;
-	};
+	if (config.series.length > 1) {
+		config.series[2].labels.template = function (e) {
+			var val = kendo.toString(e.value, 'n1');
+			return '' + val;
+		};
+		config.series[2].tooltip.template = function (e) {
+			var val = kendo.toString(e.value, 'n1');
+			return e.series.name + ' : ' + val;
+		};
+	}
 
 	rd.configure(config);
 
@@ -1011,9 +1013,32 @@ rd.setup = function () {
 				};
 			}break;
 
+		case 'number-of-outlets':
+			{
+				$('.filter-unit').remove();
+				vm.currentTitle('Number of Outlets');
+				rd.series = ko.observableArray([{
+					_id: 'totaloutlet',
+					plheader: 'Total Outlet',
+					callback: function callback(v, k) {
+						var totaloutlet = Math.abs(toolkit.sum(v, function (e) {
+							return e.totaloutlet;
+						}));
+						return totaloutlet;
+					}
+				}]);
+
+				rpt.optionDimensions(rpt.optionDimensions().filter(function (d) {
+					return ['customer.channelname', 'customer.branchname', 'product.brand'].indexOf(d.field) > -1;
+				}));
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 0);
+				};
+			}break;
+
 		default:
 			{
-				location.href = viewModel.appName + "page/report";
+				location.href = viewModel.appName + "page/reportdynamic";
 			}break;
 	}
 };
