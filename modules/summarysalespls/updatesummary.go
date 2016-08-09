@@ -2241,7 +2241,7 @@ func prepmastersimplesgafuncratio() {
 			break
 		}
 
-		date := time.Date(tkm.GetInt("year"), time.Month(tkm.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
+		// date := time.Date(tkm.GetInt("year"), time.Month(tkm.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 3, 0)
 		branchgroup := tkm.GetString("branchgroup")
 
 		plcode := "PL33"
@@ -2259,9 +2259,9 @@ func prepmastersimplesgafuncratio() {
 
 		amount := tkm.GetFloat64("min_amountinidr")
 
-		key := toolkit.Sprintf("%d_%d_%s_%s_%s", date.Year(), date.Month(), branchgroup, plcode, allocdirect)
+		key := toolkit.Sprintf("%s_%s_%s", branchgroup, plcode, allocdirect)
 		if allocdirect == "Allocated" {
-			key = toolkit.Sprintf("%d_%d_%s_%s", date.Year(), date.Month(), plcode, allocdirect)
+			key = toolkit.Sprintf("_%s_%s", plcode, allocdirect)
 		}
 
 		val := amount + simplesgafuncratio.GetFloat64(key)
@@ -3282,43 +3282,6 @@ func CalcDistSgaBasedOnFunctionData(tkm toolkit.M) {
 		"R&D",
 		"Sales"}
 
-	// alltotal := float64(-322357846910)
-	// distvalue := toolkit.M{}.
-	// 	Set("Finance", float64(-40403095728.3885)).
-	// 	Set("General Management", float64(-4858189359.08)).
-	// 	Set("General Service", float64(-18051573960.97)).
-	// 	Set("Human Resource", float64(-144799587434.042)).
-	// 	Set("Logistic Overhead", float64(-8908750136.44)).
-	// 	Set("Manufacturing", float64(-39993641548.6199)).
-	// 	Set("Marketing", float64(-2382958682.37)).
-	// 	Set("OTHER", float64(-59870260659.1194)).
-	// 	Set("R&D", float64(-5118236)).
-	// 	Set("Sales", float64(-3084671164.96999))
-
-	// if key.GetString("date_fiscal") == "2015-2016" {
-	// 	alltotal = float64(-412948439831.369)
-	// 	distvalue = toolkit.M{}.
-	// 		Set("Finance", float64(-43254636684.6898)).
-	// 		Set("General Management", float64(-5304414333.19)).
-	// 		Set("General Service", float64(-19043779670.3799)).
-	// 		Set("Human Resource", float64(-199744979926.57)).
-	// 		Set("Logistic Overhead", float64(-10048064614.8699)).
-	// 		Set("Manufacturing", float64(-51145356204.6899)).
-	// 		Set("Marketing", float64(-3373352463.98)).
-	// 		Set("OTHER", float64(-79493482171.7296)).
-	// 		Set("R&D", float64(-7846052)).
-	// 		Set("Sales", float64(-1532527709.27))
-	// }
-
-	// key := toolkit.Sprintf("%d_%d_%s_%s_%s", date.Year(), date.Month(), branchgroup, plcode, allocdirect)
-	// val := amount + simplesgafuncratio.GetFloat64(key)
-	// simplesgafuncratio.Set(key, val)
-
-	// costgroup := tkm.GetString("costgroup")
-	// key = toolkit.Sprintf("%d_%d_%s_%s_%s_%s", date.Year(), date.Month(), branchgroup, plcode, allocdirect, costgroup)
-	// val = amount + simplesgafuncratio.GetFloat64(key)
-	// simplesgafuncratio.Set(key, val)
-
 	arrsubtotals := map[string]float64{}
 	arrplstr := []string{"PL33", "PL34", "PL35"}
 	for _, v := range arrplstr {
@@ -3331,18 +3294,14 @@ func CalcDistSgaBasedOnFunctionData(tkm toolkit.M) {
 
 	for k, v := range arrsubtotals {
 		tarr := strings.Split(k, "_")
-		tk := toolkit.Sprintf("%d_%d_%s", key.GetInt("date_year"), key.GetInt("date_month"), key.GetString("customer_branchgroup"))
-		if tarr[1] == "Allocated" {
-			tk = toolkit.Sprintf("%d_%d", key.GetInt("date_year"), key.GetInt("date_month"))
+		tk := ""
+		if tarr[1] == "Direct" {
+			tk = toolkit.Sprintf("%s", key.GetString("customer_branchgroup"))
 		}
 		for _, xk := range arrfunction {
 			skey := toolkit.Sprintf("%s_%s", k, xk)
 			rratio := toolkit.Div(simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, skey)), simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, k)))
 			val := v * rratio
-			// toolkit.Printfn("%s|%s", simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, skey)), simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, k)))
-			// toolkit.Printfn("%v := %v * %v / %v",
-			// 	val, v, simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, skey)),
-			// 	simplesgafuncratio.GetFloat64(toolkit.Sprintf("%s_%s", tk, k)))
 
 			tkm.Set(skey, val)
 		}
