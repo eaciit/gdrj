@@ -216,14 +216,16 @@ rd.render = () => {
         categoryAxis: categoryAxis
     }
 
-	config.series[2].labels.template = (e) => {
-		let val = kendo.toString(e.value, 'n1')
-		return `${val}`
-	}
-	config.series[2].tooltip.template = (e) => {
-		let val = kendo.toString(e.value, 'n1')
-		return `${e.series.name} : ${val}`
-	}
+    if (config.series.length > 1) {
+		config.series[2].labels.template = (e) => {
+			let val = kendo.toString(e.value, 'n1')
+			return `${val}`
+		}
+		config.series[2].tooltip.template = (e) => {
+			let val = kendo.toString(e.value, 'n1')
+			return `${e.series.name} : ${val}`
+		}
+    }
 
     rd.configure(config)
 
@@ -286,8 +288,6 @@ rd.setup = () => {
 			}
 		} break;
 
-
-
 		case 'sales-discount-by-gross-sales': {
 			vm.currentTitle('Sales Discount by Gross Sales')
 			rd.series = ko.observableArray([{ 
@@ -324,8 +324,6 @@ rd.setup = () => {
 			}
 		} break;
 
-
-
 		case 'gross-sales-by-qty': {
 			vm.currentTitle('Gross Sales / Qty')
 			rd.series = ko.observableArray([{ 
@@ -354,8 +352,6 @@ rd.setup = () => {
 				rd.setPercentageOn(config, 'axis2', 3)
 			}
 		} break;
-
-
 
 		case 'discount-by-qty': {
 			vm.currentTitle('Discount / Qty')
@@ -393,8 +389,6 @@ rd.setup = () => {
 				rd.setPercentageOn(config, 'axis2', 3)
 			}
 		} break;
-
-
 
 		case 'net-price-by-qty': {
 			vm.currentTitle('Net Price / Qty')
@@ -434,8 +428,6 @@ rd.setup = () => {
 			}
 		} break;
 
-
-
 		case 'btl-by-qty': {
 			vm.currentTitle('BTL / Qty')
 			rd.divideBy('v1000000')
@@ -469,8 +461,6 @@ rd.setup = () => {
 				}
 			}])
 		} break;
-
-
 
 		case 'freight-cost-by-sales': {
 			vm.currentTitle('Freight Cost by Sales')
@@ -822,10 +812,26 @@ rd.setup = () => {
 			}
 		} break;
 
+		case 'number-of-outlets': {
+			$('.filter-unit').remove()
+			vm.currentTitle('Number of Outlets')
+			rd.series = ko.observableArray([{ 
+				_id: 'totaloutlet', 
+				plheader: 'Total Outlet',
+				callback: (v, k) => {
+					let totaloutlet = Math.abs(toolkit.sum(v, (e) => e.totaloutlet))
+					return totaloutlet
+				}
+			}])
 
+			rpt.optionDimensions(rpt.optionDimensions().filter((d) => ['customer.channelname', 'customer.branchname', 'product.brand'].indexOf(d.field) > -1))
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 0)
+			}
+		} break;
 
 		default: {
-			location.href = viewModel.appName + "page/report"
+			location.href = viewModel.appName + "page/reportdynamic"
 		} break;
 	}
 }
