@@ -2315,7 +2315,7 @@ func main() {
 
 	// prepmastercogsperunit()
 	// prepmasterratio4cogsperunit()
-	// prepmastercogsperunit()
+	prepmastercogsperunit()
 	// prepsalesplssummaryrdwrongsubch()
 	// os.Exit(1)
 
@@ -2324,11 +2324,11 @@ func main() {
 	// prepmasternewchannelsgaalloc()
 
 	// prepmastersubtotalsallocatedsga()
-	prepmastersimplesgafuncratio()
+	// prepmastersimplesgafuncratio()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -2943,7 +2943,9 @@ func CleanReportSubChannelBreakdownRD(tkm toolkit.M) {
 }
 
 func CalcCogsPerUnit(tkm toolkit.M) (ntkm toolkit.M) {
-	pllist := []string{"PL0", "PL1", "PL7", "PL2", "PL8", "PL3", "PL4", "PL5", "PL6", "PL6A", "PL7A", "PL8A"}
+	pllist := []string{"PL0", "PL1", "PL7", "PL2", "PL8", "PL3", "PL4", "PL5", "PL6", "PL6A", "PL7A",
+		"PL8A", "PL9", "PL10", "PL11", "PL12", "PL13", "PL14", "PL14A",
+		"PL15", "PL16", "PL17", "PL18", "PL19", "PL20", "PL21", "PL74", "PL74A", "PL74B"}
 
 	inlist := func(str string) bool {
 		for _, v := range pllist {
@@ -2974,9 +2976,12 @@ func CalcCogsPerUnit(tkm toolkit.M) (ntkm toolkit.M) {
 		return
 	}
 
-	// RM_PerUnit,LC_PerUnit,PF_PerUnit,Other_PerUnit,Fixed_PerUnit,Depre_PerUnit,COGS_PerUnit
-
 	qty := ntkm.GetFloat64("salesqty")
+
+	if qty == 0 {
+		return
+	}
+
 	cogssubtotal := cogsdata.COGS_PerUnit * qty
 
 	rmamount := cogsdata.RM_PerUnit * qty
@@ -3285,6 +3290,7 @@ func CalcDistSgaBasedOnFunctionData(tkm toolkit.M) {
 	arrsubtotals := map[string]float64{}
 	arrplstr := []string{"PL33", "PL34", "PL35"}
 	for _, v := range arrplstr {
+		tkm.Unset(v)
 		skey := toolkit.Sprintf("%s_Allocated", v)
 		arrsubtotals[skey] = tkm.GetFloat64(skey)
 
@@ -3313,7 +3319,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-1").
+		From("salespls-summary-4cogssga-1").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -3347,7 +3353,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
 
-		// trx = CalcCogsPerUnit(trx)
+		trx = CalcCogsPerUnit(trx)
 		// CalcCogsPerUnitBasedSales(trx)
 
 		// dtkm, _ := toolkit.ToM(trx.Get("key"))
@@ -3375,8 +3381,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CalcNewSgaChannelData(trx)
 		// CalcScaleSgaAllocatedChannelData(trx)
-		CalcDistSgaBasedOnFunctionData(trx)
-		CalcSum(trx)
+		// CalcDistSgaBasedOnFunctionData(trx)
+		// CalcSum(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
