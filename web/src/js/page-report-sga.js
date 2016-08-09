@@ -1888,9 +1888,10 @@ let el = viewModel.elimination
 					}
 
 					if (lvl2._id.indexOf('Total') > -1) {
-						let target = [thheader1p, thheader2p, thheader2]
+						let colors = ['#337ab7', '#74B841']
+						let target = [thheader1, thheader1p, thheader2p, thheader2]
 						target.forEach((d) => {
-							d.css('background-color', '#337ab7')
+							d.css('background-color', colors[i])
 							d.css('color', 'white')
 						})
 					}

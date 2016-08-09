@@ -1688,11 +1688,14 @@ var el = viewModel.elimination;(function () {
 					}
 
 					if (lvl2._id.indexOf('Total') > -1) {
-						var target = [thheader1p, thheader2p, thheader2];
-						target.forEach(function (d) {
-							d.css('background-color', '#337ab7');
-							d.css('color', 'white');
-						});
+						(function () {
+							var colors = ['#337ab7', '#74B841'];
+							var target = [thheader1, thheader1p, thheader2p, thheader2];
+							target.forEach(function (d) {
+								d.css('background-color', colors[i]);
+								d.css('color', 'white');
+							});
+						})();
 					}
 
 					return;
