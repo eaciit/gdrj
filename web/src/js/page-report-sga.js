@@ -1610,6 +1610,7 @@ let el = viewModel.elimination
 					el.data().forEach((d) => {
 						let total = {}
 						total._id = `Total ${d._id}`
+						total.excludeFromTotal = true
 
 						grouper.forEach((e) => {
 							e.subs.forEach((f) => {
