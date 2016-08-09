@@ -1287,11 +1287,44 @@ func prepmastercogsperunit() {
 	masters.Set("cogs", cogsmaps)
 }
 
+func prepmaster4cogsperunitcontribperunit() {
+	toolkit.Println("--> Master Ratio 4cogsperunit")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga-1").Cursor(nil)
+	defer csr.Close()
+	ratio := toolkit.M{}
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		key := toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"), dtkm.GetString("product_skuid"))
+		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL74B")
+		ratio.Set(key, v)
+	}
+
+	i := 0
+	for k, v := range ratio {
+		i++
+		toolkit.Println("RATIO : ", k, " : ", v)
+		if i > 15 {
+			break
+		}
+	}
+
+	masters.Set("ratiocogscontrib", ratio)
+}
+
 func prepmasterratio4cogsperunit() {
 	toolkit.Println("--> Master Ratio 4cogsperunit")
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssgacleanperunit").Cursor(nil)
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga-1").Cursor(nil)
 	defer csr.Close()
 	ratio := toolkit.M{}
 
@@ -2316,6 +2349,7 @@ func main() {
 	// prepmastercogsperunit()
 	// prepmasterratio4cogsperunit()
 	prepmastercogsperunit()
+	prepmaster4cogsperunitcontribperunit()
 	// prepsalesplssummaryrdwrongsubch()
 	// os.Exit(1)
 
@@ -2328,7 +2362,7 @@ func main() {
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga-1").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -2897,7 +2931,6 @@ func CleanUpperBranchnameJakarta(tkm toolkit.M) {
 	tkm.Set("key", dtkm)
 }
 
-//customer_areaname
 func CleanAreanameNull(tkm toolkit.M) {
 	dtkm, _ := toolkit.ToM(tkm.Get("key"))
 	if dtkm.GetString("customer_areaname") == "" {
@@ -3006,7 +3039,8 @@ func CalcCogsPerUnit(tkm toolkit.M) (ntkm toolkit.M) {
 	return
 }
 
-func CalcCogsPerUnitBasedSales(tkm toolkit.M) {
+//masters.Set("ratiocogscontrib", ratio)
+func CalcCogsPerUnitBasedcogscontrib(tkm toolkit.M) {
 
 	if !masters.Has("cogs") {
 		return
@@ -3016,38 +3050,39 @@ func CalcCogsPerUnitBasedSales(tkm toolkit.M) {
 	key := toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"), dtkm.GetString("product_skuid"))
 
 	cogsdatas := masters.Get("cogs").(map[string]*gdrj.COGSConsolidate)
-	ratiosdata := masters.Get("ratio", toolkit.M{}).(toolkit.M) //ratio
-	netsales := tkm.GetFloat64("PL8A")
-	subtotnetsales := ratiosdata.GetFloat64(key)
-	tratio := toolkit.Div(netsales, subtotnetsales)
+	ratiocogscontrib := masters.Get("ratiocogscontrib", toolkit.M{}).(toolkit.M) //ratio
+	// totcogs := tkm.GetFloat64("PL74B")
+	subtotcogsskuid := ratiocogscontrib.GetFloat64(key)
 
 	cogsdata, exist := cogsdatas[key]
 	if !exist {
 		return
 	}
 
+	tratio := toolkit.Div(cogsdata.COGS_Amount, subtotcogsskuid)
+
 	// RM_PerUnit,LC_PerUnit,PF_PerUnit,Other_PerUnit,Fixed_PerUnit,Depre_PerUnit,COGS_PerUnit
 	// toolkit.Printfn("%s|%v|%v(%v/%v)", key, cogsdata.COGS_Amount, tratio, netsales, subtotnetsales)
-	cogssubtotal := cogsdata.COGS_Amount * tratio
+	cogssubtotal := tkm.GetFloat64("PL74B") * tratio
 
-	rmamount := cogsdata.RM_Amount * tratio
-	lcamount := cogsdata.LC_Amount * tratio
-	energyamount := cogsdata.PF_Amount * tratio
-	depreamount := cogsdata.Depre_Amount * tratio
+	rmamount := tkm.GetFloat64("PL9") * tratio
+	lcamount := tkm.GetFloat64("PL14") * tratio
+	energyamount := tkm.GetFloat64("PL74") * tratio
+	depreamount := tkm.GetFloat64("PL21") * tratio
 	otheramount := cogssubtotal - rmamount - lcamount - energyamount - depreamount
 
-	tkm.Set("_PL9", -rmamount)
-	tkm.Set("_PL14", -lcamount)
+	tkm.Set("PL9", rmamount)
+	tkm.Set("PL14", lcamount)
 	direct := rmamount + lcamount
-	tkm.Set("_PL14A", -direct)
+	tkm.Set("PL14A", direct)
 
-	tkm.Set("_PL20", -otheramount)
-	tkm.Set("_PL21", -depreamount)
-	tkm.Set("_PL74", -energyamount)
+	tkm.Set("PL20", otheramount)
+	tkm.Set("PL21", depreamount)
+	tkm.Set("PL74", energyamount)
 	indirect := otheramount + depreamount + energyamount
-	tkm.Set("_PL74A", -indirect)
+	tkm.Set("PL74A", indirect)
 
-	tkm.Set("_PL74B", -cogssubtotal)
+	tkm.Set("PL74B", cogssubtotal)
 
 	return
 }
@@ -3319,7 +3354,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4cogssga-1").
+		From("salespls-summary-4cogssga-1.1").
 		SetConfig("multiexec", true).
 		Save()
 
