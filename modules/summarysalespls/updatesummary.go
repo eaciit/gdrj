@@ -3388,7 +3388,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// RollbackSalesplsSga(trx)
 		// CalcSalesReturnMinusDiscount(trx)
 
-		trx = CalcCogsPerUnit(trx)
+		// trx = CalcCogsPerUnit(trx)
 		// CalcCogsPerUnitBasedSales(trx)
 
 		// dtkm, _ := toolkit.ToM(trx.Get("key"))
@@ -3418,6 +3418,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcScaleSgaAllocatedChannelData(trx)
 		// CalcDistSgaBasedOnFunctionData(trx)
 		// CalcSum(trx)
+		CalcCogsPerUnitBasedcogscontrib(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
