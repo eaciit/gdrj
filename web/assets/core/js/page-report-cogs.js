@@ -44,6 +44,18 @@ cogs.refresh = function () {
 	param.flag = 'cogs';
 	param.filters = rpt.getFilterValue(false, cogs.fiscalYear);
 
+	param.filters.push({
+		Field: "customer.channelname",
+		Op: "$in",
+		Value: rpt.masterData.Channel().map(function (d) {
+			return d._id;
+		}).filter(function (d) {
+			return d != "EXP";
+		}).filter(function (d) {
+			return d != "I1";
+		})
+	});
+
 	if (cogs.breakdownBy() == 'product.skuid') {
 		param.groups.push('product.name');
 	}
