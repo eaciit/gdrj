@@ -321,7 +321,7 @@ v1.render = function () {
 		});
 		dataFlat.forEach(function (e) {
 			var breakdown = e.key;
-			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
+			var percentage = 100;
 			var percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 
 			if (d._id == discountActivityPLCode) {
@@ -732,7 +732,7 @@ v2.render = function () {
 		});
 		dataFlat.forEach(function (e) {
 			var breakdown = e.key;
-			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
+			var percentage = 100;
 			var percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 
 			if (d._id == discountActivityPLCode) {
@@ -1090,7 +1090,7 @@ v3.render = function () {
 		});
 		dataFlat.forEach(function (e) {
 			var breakdown = e.key;
-			var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
+			var percentage = 100;
 			var percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 
 			if (d._id == discountActivityPLCode) {
