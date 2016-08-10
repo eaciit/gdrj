@@ -1,26 +1,58 @@
 viewModel.cogs = {}
 let cogs = viewModel.cogs
 
+cogs.contentIsLoading = ko.observable(false)
+cogs.breakdownBy = ko.observable('customer.channelname')
+cogs.data = ko.observableArray([])
+cogs.fiscalYear = ko.observable(rpt.value.FiscalYear())
+cogs.breakdownValue = ko.observableArray([])
+cogs.level = ko.observable(1)
+cogs.breakdownBranchGroup = ko.observableArray([])
+cogs.breakdownByClean = ko.computed(() => {
+	if (cogs.breakdownBy() == 'product.skuid') {
+		return 'product.name'
+	}
+
+	return cogs.breakdownBy()
+})
+
 cogs.optionDimensions = ko.observableArray([
 	{ field: 'product.skuid', name: 'SKU' }
 ].concat(rpt.optionDimensions()))
-cogs.contentIsLoading = ko.observable(false)
-cogs.breakdownBy = ko.observable('customer.channelname')
-cogs.breakdownByFiscalYear = ko.observable('date.fiscal')
-cogs.data = ko.observableArray([])
-cogs.fiscalYear = ko.observable(rpt.value.FiscalYear())
-cogs.level = ko.observable(1)
+
+cogs.buildPLModels = (plmodels) => {
+	return plmodels.filter((d) => {
+		if (['Direct Expense', 'Indirect Expense'].indexOf(d.PLHeader1) > -1) {
+		    return true
+		}
+
+		if (["PL1", "PL7", "PL2", "PL8", "PL6", "PL0", "PL7A", "PL8A"].indexOf(d._id) > -1) {
+		    return true
+		}
+
+		return false
+	})
+}
 
 cogs.refresh = (useCache = false) => {
 	let param = {}
 	param.pls = []
+	param.groups = rpt.parseGroups([cogs.breakdownBy()])
 	param.aggr = 'sum'
 	param.flag = 'cogs'
 	param.filters = rpt.getFilterValue(false, cogs.fiscalYear)
-	let groups = [cogs.breakdownBy()]
 
-	param.groups = rpt.parseGroups(groups)
-	cogs.contentIsLoading(true)
+	if (cogs.breakdownBy() == 'product.skuid') {
+		param.groups.push('product.name')
+	}
+
+	if (cogs.breakdownBranchGroup().length > 0) {
+		param.filters.push({
+			Field: 'customer.branchgroup',
+			Op: '$in',
+			Value: cogs.breakdownBranchGroup()
+		})
+	}
 
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
@@ -36,6 +68,8 @@ cogs.refresh = (useCache = false) => {
 				return
 			}
 
+			let date = moment(res.time).format("dddd, DD MMMM YYYY HH:mm:ss")
+
 			res.Data = rpt.hardcodePLGA(res.Data.Data, res.Data.PLModels)
 			cogs.data(cogs.buildStructure(res.Data.Data))
 			rpt.plmodels(cogs.buildPLModels(res.Data.PLModels))
@@ -43,16 +77,16 @@ cogs.refresh = (useCache = false) => {
 			cogs.contentIsLoading(false)
 			cogs.render()
 			rpt.prepareEvents()
-			
-			$('.columnPL891_perunit,.columnPL891').each((i, e) => $(e).find('td').empty())
-			$('.headerPL891_perunit,.headerPL891').each((i, e) => $(e).find('td:last').empty())
-			$('.headerPL891_perunit,.headerPL891').each((i, e) => $(e).find('td:first').trigger('click'))
+			$('.headerPL14A,.headerPL74A').trigger('click')
 		}, () => {
 			cogs.emptyGrid()
 			cogs.contentIsLoading(false)
+		}, {
+			cache: (useCache == true) ? 'breakdown chart' : false
 		})
 	}
 
+	cogs.contentIsLoading(true)
 	fetch()
 }
 
@@ -98,81 +132,6 @@ cogs.emptyGrid = () => {
 	$('#cogs').replaceWith(`<div class="breakdown-view ez" id="cogs"></div>`)
 }
 
-cogs.buildPLModels = (plmodels) => {
-	let plsSplittable = ["PL14", "PL74A", "PL74", "PL9", "PL74B", "PL14A", "Pl20", "PL21"]
-	let plsUnsplittable = ["PL1", "PL8A", "PL6A", "PL7A", "PL0", "PL7", "PL2", "PL8", "PL6"]
-
-	plmodels = plmodels.filter((d) => {
-		if (plsSplittable.indexOf(d._id) > -1) {
-			return true
-		}
-		if (plsUnsplittable.indexOf(d._id) > -1) {
-			return true
-		}
-		return false
-	})
-
-	// let plSpecials = ['Cost of Goods Sold', 'Indirect Expense', 'Direct Expense']
-	// let plmodelsNew = []
-	// plmodels.forEach((d) => {
-	// 	if (plsSplittable.indexOf(d._id) > -1) {
-	// 		let e = toolkit.clone(d)
-	// 		e._id = `${d._id}_perunit`
-	// 		e.PLHeader1 = d.PLHeader1
-	// 		e.PLHeader2 = d.PLHeader2
-	// 		e.PLHeader3 = d.PLHeader3
-
-	// 		;['PLHeader1', 'PLHeader2', 'PLHeader3'].forEach((f) => {
-	// 			if (plSpecials.indexOf(e[f]) > -1) {
-	// 				e[f] = `${e[f]} (Per Unit)`
-	// 			}
-
-	// 			e[f] = `${e[f]} `
-	// 		})
-
-	// 		plmodelsNew.push(e)
-	// 	}
-
-	// 	plmodelsNew.push(d)
-	// })
-
-	let plParents = ['Original', 'Per Unit']
-	let plmodelsNew = []
-	plmodels.forEach((d) => {
-		if (plsSplittable.indexOf(d._id) > -1) {
-			let e = toolkit.clone(d)
-			e._id = `${d._id}_perunit`
-			e.OrderIndex = d.OrderIndex
-			e.PLHeader3 = `${d.PLHeader3} `
-			e.PLHeader2 = `${d.PLHeader1} `
-			e.PLHeader1 = plParents[1]
-			plmodelsNew.push(e)
-
-			d.PLHeader2 = d.PLHeader1
-			d.PLHeader1 = plParents[0]
-		}
-
-		plmodelsNew.push(d)
-	})
-
-	plParents.forEach((d, i) => {
-		let o = {}
-		o._id = 'PL891'
-		o.OrderIndex = 'PL0027'
-		o.PLHeader1 = d
-		o.PLHeader2 = d
-		o.PLHeader3 = d
-
-		if (i == 1) {
-			o._id = `${o._id}_perunit`
-		}
-
-		plmodelsNew.push(o)
-	})
-
-	return plmodelsNew
-}
-
 cogs.buildStructure = (data) => {
 	let groupThenMap = (data, group) => {
 		let op1 = _.groupBy(data, (d) => group(d))
@@ -193,7 +152,7 @@ cogs.buildStructure = (data) => {
 	}
 
 	let parsed = groupThenMap(data, (d) => {
-		return d._id[`_id_${toolkit.replace(cogs.breakdownBy(), '.', '_')}`]
+		return d._id[`_id_${toolkit.replace(cogs.breakdownByClean(), '.', '_')}`]
 	}).map((d) => {
 		d.breakdowns = d.subs[0]._id
 		d.count = 1
@@ -211,7 +170,6 @@ cogs.render = () => {
 		$('#cogs').html('No data found.')
 		return
 	}
-
 
 	// ========================= TABLE STRUCTURE
 
@@ -286,7 +244,7 @@ cogs.render = () => {
 	let dataFlat = []
 
 	let countWidthThenPush = (thheader, each, key) => {
-		let currentColumnWidth = each._id.length * ((cogs.breakdownBy() == 'customer.channelname') ? 7 : 10)
+		let currentColumnWidth = each._id.length * ((cogs.breakdownByClean() == 'customer.channelname') ? 7 : 10)
 		if (currentColumnWidth < columnWidth) {
 			currentColumnWidth = columnWidth
 		}
@@ -310,8 +268,6 @@ cogs.render = () => {
 			.css('border-top', 'none')
 			.appendTo(trContents[0])
 
-		let thheader2p = $('<div />')
-
 		if (cogs.level() == 1) {
 			countWidthThenPush(thheader1, lvl1, [lvl1._id])
 
@@ -327,7 +283,7 @@ cogs.render = () => {
 
 			if (rpt.showPercentOfTotal()) {
 				totalColumnWidth += percentageWidth
-				thheader2p = toolkit.newEl('th')
+				let thheader1p = toolkit.newEl('th')
 					.html('% of Total'.replace(/\ /g, '&nbsp;'))
 					.width(percentageWidth)
 					.addClass('align-center')
@@ -361,7 +317,7 @@ cogs.render = () => {
 
 				if (rpt.showPercentOfTotal()) {
 					totalColumnWidth += percentageWidth
-					thheader2p = toolkit.newEl('th')
+					toolkit.newEl('th')
 						.html('% of Total'.replace(/\ /g, '&nbsp;'))
 						.width(percentageWidth)
 						.addClass('align-center')
@@ -431,6 +387,7 @@ cogs.render = () => {
 
 			row[`${breakdown} %`] = percentage
 			row[`${breakdown} %t`] = percentageOfTotal
+
 		})
 
 		if (exceptions.indexOf(row.PLCode) > -1) {
@@ -439,7 +396,7 @@ cogs.render = () => {
 
 		rows.push(row)
 	})
-
+	
 	console.log("rows", rows)
 	
 	let TotalNetSales = _.find(rows, (r) => { return r.PLCode == netSalesPLCode }).PNLTotal
