@@ -26,7 +26,7 @@ cogs.buildPLModels = function (plmodels) {
 			return true;
 		}
 
-		if (["PL1", "PL7", "PL2", "PL8", "PL6", "PL0", "PL7A", "PL8A"].indexOf(d._id) > -1) {
+		if (["PL1", "PL7", "PL2", "PL8", "PL6", "PL0", "PL7A", "PL8A", "PL74B"].indexOf(d._id) > -1) {
 			return true;
 		}
 
