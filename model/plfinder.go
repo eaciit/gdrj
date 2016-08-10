@@ -339,7 +339,7 @@ func (s *PLFinderParam) GetTableName() string {
 
 	if s.Flag == "cogs" {
 		s.TableKey = "key"
-		return `salespls-summary-4cogscleanperunit`
+		return `salespls-summary-4cogssga-1.1`
 	}
 
 	if forceSalesPLSSummary {
@@ -1018,14 +1018,14 @@ func (p *PLFinderDetail) GetData() ([]*toolkit.M, error) {
 
 	col := db.C(new(SalesPL).TableName())
 
-	fmt.Printf("----- %#v\n", filters)
+	// fmt.Printf("----- %#v\n", filters)
 
 	data := []*toolkit.M{}
 	err = col.Find(filters).Limit(p.Take).Skip(p.Skip).All(&data)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("----- %#v\n", data)
+	// fmt.Printf("----- %#v\n", data)
 
 	return data, nil
 }
