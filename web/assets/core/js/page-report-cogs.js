@@ -417,7 +417,9 @@ cogs.fillProductData = function () {
 		cogs.optionFilterProduct(res.data.map(function (d) {
 			var o = {};
 			o._id = d._id;
-			o.Name = o._id + ' - ' + o.Name;
+			o.Name = d._id + ' - ' + d.Name;
+
+			return o;
 		}));
 	});
 };
