@@ -971,6 +971,8 @@ var au = viewModel.allocated;(function () {
     	percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
     } else */if (d._id != netSalesPLCode) {
 					percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100;
+				} else {
+					percentage = 100;
 				}
 
 				if (percentage < 0) percentage = percentage * -1;
@@ -1263,6 +1265,7 @@ var el = viewModel.elimination;(function () {
 			o._id = {};
 			o._id['_id_' + el.breakdownBy()] = v[0][el.breakdownBy()];
 			o._id._id_IsElimination = v[0].IsElimination;
+			o.total = 0;
 
 			var os1 = _.groupBy(v, function (e) {
 				return e.AccountGroup;
@@ -1271,6 +1274,7 @@ var el = viewModel.elimination;(function () {
 				o[el.getAlphaNumeric(l)] = toolkit.sum(w, function (e) {
 					return e.Amount;
 				});
+				o.total += o[el.getAlphaNumeric(l)];
 
 				var og1 = _.groupBy(w, function (f) {
 					return f.AccountDescription;
@@ -1289,7 +1293,9 @@ var el = viewModel.elimination;(function () {
 			return o;
 		});
 
-		el.data(op2);
+		el.data(_.orderBy(op2, function (d) {
+			return d.total;
+		}, 'asc'));
 		console.log('rawData', el.data());
 	};
 
@@ -1370,6 +1376,7 @@ var el = viewModel.elimination;(function () {
 					return;
 				}
 
+				el.data([]);
 				el.constructData(res.data);
 				el.data(el.buildStructure(el.data()));
 				el.emptyGrid();
@@ -1427,6 +1434,8 @@ var el = viewModel.elimination;(function () {
 					el.contentIsLoading(false);
 					el.render();
 					rpt.prepareEvents();
+					$('#el .headerPL8A:gt(0)').remove();
+					$('#el .columnPL8A:gt(0)').remove();
 				};
 
 				if (el.breakdownBy() == 'CostGroup') {
@@ -1587,9 +1596,8 @@ var el = viewModel.elimination;(function () {
 				return e;
 			});
 
-			d.subs = _.orderBy(subs, function (e) {
-				return toolkit.number(e.SalariesAllowance);
-			}, 'desc');
+			// d.subs = _.orderBy(subs, (e) => toolkit.number(e.SalariesAllowance), 'desc')
+			d.subs = subs;
 			d.breakdowns = d.subs[0]._id;
 			d.count = d.subs.length;
 			return d;
