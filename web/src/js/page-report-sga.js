@@ -1125,6 +1125,8 @@ let au = viewModel.allocated
 					percentage = toolkit.number(row[breakdown] / grossSalesRow[breakdown]) * 100
 				} else */ if (d._id != netSalesPLCode) {
 					percentage = toolkit.number(row[breakdown] / netSalesRow[breakdown]) * 100
+				} else {
+					percentage = 100
 				}
 
 				if (percentage < 0)
@@ -1444,10 +1446,12 @@ let el = viewModel.elimination
 			o._id = {}
 			o._id[`_id_${el.breakdownBy()}`] = v[0][el.breakdownBy()]
 			o._id._id_IsElimination = v[0].IsElimination
+			o.total = 0
 
 			let os1 = _.groupBy(v, (e) => e.AccountGroup)
 			let os2 = _.map(os1, (w, l) => {
 				o[el.getAlphaNumeric(l)] = toolkit.sum(w, (e) => e.Amount)
+				o.total += o[el.getAlphaNumeric(l)]
 
 				let og1 = _.groupBy(w, (f) => f.AccountDescription)
 				let og2 = _.map(og1, (x, m) => {
@@ -1462,7 +1466,7 @@ let el = viewModel.elimination
 			return o
 		})
 
-		el.data(op2)
+		el.data(_.orderBy(op2, (d) => d.total, 'asc'))
 		console.log('rawData', el.data())
 	}
 
@@ -1544,6 +1548,7 @@ let el = viewModel.elimination
 					return
 				}
 
+				el.data([])
 				el.constructData(res.data)
 				el.data(el.buildStructure(el.data()))
 				el.emptyGrid()
@@ -1591,6 +1596,8 @@ let el = viewModel.elimination
 					el.contentIsLoading(false)
 					el.render()
 					rpt.prepareEvents()
+					$('#el .headerPL8A:gt(0)').remove()
+					$('#el .columnPL8A:gt(0)').remove()
 				}
 
 				if (el.breakdownBy() == 'CostGroup') {
@@ -1733,7 +1740,8 @@ let el = viewModel.elimination
 				return e
 			})
 
-			d.subs = _.orderBy(subs, (e) => toolkit.number(e.SalariesAllowance), 'desc')
+			// d.subs = _.orderBy(subs, (e) => toolkit.number(e.SalariesAllowance), 'desc')
+			d.subs = subs
 			d.breakdowns = d.subs[0]._id
 			d.count = d.subs.length
 			return d
