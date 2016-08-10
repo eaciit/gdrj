@@ -26,7 +26,7 @@ cogs.buildPLModels = function (plmodels) {
 			return true;
 		}
 
-		if (["PL1", "PL7", "PL2", "PL8", "PL6", "PL0", "PL7A", "PL8A"].indexOf(d._id) > -1) {
+		if (["PL1", "PL7", "PL2", "PL8", "PL6", "PL0", "PL7A", "PL8A", "PL74B"].indexOf(d._id) > -1) {
 			return true;
 		}
 
@@ -43,6 +43,18 @@ cogs.refresh = function () {
 	param.aggr = 'sum';
 	param.flag = 'cogs';
 	param.filters = rpt.getFilterValue(false, cogs.fiscalYear);
+
+	param.filters.push({
+		Field: "customer.channelname",
+		Op: "$in",
+		Value: rpt.masterData.Channel().map(function (d) {
+			return d._id;
+		}).filter(function (d) {
+			return d != "EXP";
+		}).filter(function (d) {
+			return d != "I1";
+		})
+	});
 
 	if (cogs.breakdownBy() == 'product.skuid') {
 		param.groups.push('product.name');
