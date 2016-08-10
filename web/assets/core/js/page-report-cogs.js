@@ -24,9 +24,9 @@ cogs.optionDimensions = ko.observableArray([{ field: 'product.skuid', name: 'SKU
 
 cogs.buildPLModels = function (plmodels) {
 	return plmodels.filter(function (d) {
-		if (['Direct Expense', 'Indirect Expense'].indexOf(d.PLHeader1) > -1) {
-			return true;
-		}
+		// if (['Direct Expense', 'Indirect Expense'].indexOf(d.PLHeader1) > -1) {
+		//     return true
+		// }
 
 		if (["PL1", "PL7", "PL2", "PL8", "PL6", "PL0", "PL7A", "PL8A", "PL74B"].indexOf(d._id) > -1) {
 			return true;
