@@ -133,6 +133,11 @@ func prepmaster4cogsperunitcontribperunit() {
 	defer csr.Close()
 	ratio := toolkit.M{}
 
+	scount := csr.Count()
+	iscount := 0
+	step := getstep(scount) * 20
+
+	t1 := time.Now()
 	for {
 		tkm := toolkit.M{}
 		e := csr.Fetch(&tkm, 1, false)
@@ -144,6 +149,12 @@ func prepmaster4cogsperunitcontribperunit() {
 		key := toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"), dtkm.GetString("product_skuid"))
 		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL74B")
 		ratio.Set(key, v)
+
+		iscount++
+		if iscount%step == 0 {
+			toolkit.Printfn("Reading %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t1).String())
+		}
 	}
 
 	i := 0
@@ -408,6 +419,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		}
 
 		ntrx := toolkit.M{}
+		ntrx.Set("_id", key)
 		ntrx.Set("c_cogs", trx.GetInt("year"))
 		ntrx.Set("c_cogs", trx.GetInt("month"))
 		ntrx.Set("c_cogs", trx.GetString("sapcode"))
