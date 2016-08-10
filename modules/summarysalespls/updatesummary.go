@@ -1342,7 +1342,10 @@ func prepmastersimplecogscontribdest() {
 		}
 
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
-		key := toolkit.Sprintf("%s", dtkm.GetString("customer_channelid"))
+		key := dtkm.GetString("customer_channelid")
+		if key != "I1" && key != "EXP" {
+			key = "branch"
+		}
 		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL74B")
 		ratio.Set(key, v)
 
@@ -1386,7 +1389,10 @@ func prepmastersimplecogscontribsource() {
 		}
 
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
-		key := toolkit.Sprintf("%s", dtkm.GetString("customer_channelid"))
+		key := dtkm.GetString("customer_channelid")
+		if key != "I1" && key != "EXP" {
+			key = "branch"
+		}
 		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL74B")
 		ratio.Set(key, v)
 
@@ -3447,6 +3453,9 @@ func CalcScaleCogsBasedOnOldChannel(tkm toolkit.M) {
 
 	key := tkm.Get("key", toolkit.M{}).(toolkit.M)
 	channelid := key.GetString("customer_channelid")
+	if channelid != "I1" && channelid != "EXP" {
+		channelid = "branch"
+	}
 
 	source := ratiocogscontribsource.GetFloat64(channelid)
 	current := ratiocogscontribdest.GetFloat64(channelid)
@@ -3482,7 +3491,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4cogssga-1.1Final").
+		From("salespls-summary-4cogssga-1.2Final").
 		SetConfig("multiexec", true).
 		Save()
 
