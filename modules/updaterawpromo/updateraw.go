@@ -418,11 +418,14 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 			salesexist = true
 		}
 
+		date := gdrj.NewDate(trx.GetInt("year"), trx.GetInt("month"), 1)
+
 		ntrx := toolkit.M{}
 		ntrx.Set("_id", key)
-		ntrx.Set("c_cogs", trx.GetInt("year"))
-		ntrx.Set("c_cogs", trx.GetInt("month"))
-		ntrx.Set("c_cogs", trx.GetString("sapcode"))
+		ntrx.Set("gdrj_fiscal", date.Fiscal)
+		ntrx.Set("c_year", trx.GetInt("year"))
+		ntrx.Set("c_month", trx.GetInt("month"))
+		ntrx.Set("c_skuid", trx.GetString("sapcode"))
 		ntrx.Set("c_cogs", trx.GetFloat64("cogs_amount"))
 		ntrx.Set("salesexist", salesexist)
 		ntrx.Set("cogscontrib", ratiocogscontrib.GetFloat64(key))
