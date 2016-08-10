@@ -248,7 +248,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From(toolkit.Sprintf("%s-rescom", gtable)).
+		From(toolkit.Sprintf("%s-rescom.1", gtable)).
 		SetConfig("multiexec", true).
 		Save()
 
@@ -421,7 +421,8 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		date := gdrj.NewDate(trx.GetInt("year"), trx.GetInt("month"), 1)
 
 		ntrx := toolkit.M{}
-		ntrx.Set("_id", key)
+		ntrx.Set("_id", toolkit.Sprintf("%s-%s", key, toolkit.RandomString(5)))
+		ntrx.Set("key", key)
 		ntrx.Set("gdrj_fiscal", date.Fiscal)
 		ntrx.Set("c_year", trx.GetInt("year"))
 		ntrx.Set("c_month", trx.GetInt("month"))
