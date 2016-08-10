@@ -12,6 +12,7 @@ vm.menu = ko.observableArray([
 		{"title":"Branch Group Analysis","icon":"bar-chart-o","href":"/web/page/branchgroupanalysis","submenu":[]},
 		{"title":"Branch vs RD Analysis","icon":"bar-chart-o","href":"/web/page/rdvsbranchanalysis","submenu":[]},
 		{"title":"Brand Analysis","icon":"bar-chart-o","href":"/web/page/brandanalysis","submenu":[]},
+		{"title":"COGS Analysis","icon":"bar-chart-o","href":"/web/page/cogsanalysis","submenu":[]},
 		{"title":"Contribution Analysis","icon":"bar-chart-o","href":"/web/page/contributionanalysis","submenu":[]},
 		{"title":"Custom Analysis","icon":"bar-chart-o","href":"/web/page/customanalysis","submenu":[]},
 		{"title":"Distribution Analysis","icon":"bar-chart-o","href":"/web/page/distributionanalysis","submenu":[]},
