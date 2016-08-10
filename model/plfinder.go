@@ -339,7 +339,7 @@ func (s *PLFinderParam) GetTableName() string {
 
 	if s.Flag == "cogs" {
 		s.TableKey = "key"
-		return `salespls-summary-4cogssga-1.1`
+		return `salespls-summary-4cogpersku`
 	}
 
 	if forceSalesPLSSummary {
