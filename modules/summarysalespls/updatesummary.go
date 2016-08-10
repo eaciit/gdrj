@@ -2479,15 +2479,14 @@ func prepmaster4remapcogssource() {
 		}
 
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
-		key := toolkit.Sprintf("pattern", dtkm.GetString("date_fiscal"),
+		key := toolkit.Sprintf("%s_%d_%s_%s_%s_%s_%s_%s", dtkm.GetString("date_fiscal"),
 			dtkm.GetInt("date_month"),
 			dtkm.GetString("customer_branchid"),
 			dtkm.GetString("customer_keyaccount"),
 			dtkm.GetString("customer_channelid"),
 			dtkm.GetString("customer_customergroup"),
 			dtkm.GetString("customer_custtype"),
-			dtkm.GetString("product_brand"),
-		)
+			dtkm.GetString("product_brand"))
 
 		arrcogspl := []string{"PL9", "PL14", "PL14A", "PL20", "PL21", "PL74", "PL74A", "PL74B"}
 		// v := ratio.GetFloat64(key) + tkm.GetFloat64("PL8A")
@@ -2539,15 +2538,14 @@ func prepmaster4remapcogsdest() {
 		}
 
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
-		key := toolkit.Sprintf("pattern", dtkm.GetString("date_fiscal"),
+		key := toolkit.Sprintf("%s_%d_%s_%s_%s_%s_%s_%s", dtkm.GetString("date_fiscal"),
 			dtkm.GetInt("date_month"),
 			dtkm.GetString("customer_branchid"),
 			dtkm.GetString("customer_keyaccount"),
 			dtkm.GetString("customer_channelid"),
 			dtkm.GetString("customer_customergroup"),
 			dtkm.GetString("customer_custtype"),
-			dtkm.GetString("product_brand"),
-		)
+			dtkm.GetString("product_brand"))
 
 		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL8A")
 
@@ -2593,15 +2591,14 @@ func prepmaster4remapnetsalesdest() {
 		}
 
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
-		key := toolkit.Sprintf("pattern", dtkm.GetString("date_fiscal"),
+		key := toolkit.Sprintf("%s_%d_%s_%s_%s_%s_%s_%s", dtkm.GetString("date_fiscal"),
 			dtkm.GetInt("date_month"),
 			dtkm.GetString("customer_branchid"),
 			dtkm.GetString("customer_keyaccount"),
 			dtkm.GetString("customer_channelid"),
 			dtkm.GetString("customer_customergroup"),
 			dtkm.GetString("customer_custtype"),
-			dtkm.GetString("product_brand"),
-		)
+			dtkm.GetString("product_brand"))
 
 		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL8A")
 
@@ -3717,15 +3714,14 @@ func CalcRemapedCogs(tkm toolkit.M) {
 	remapcogsratiodest := masters.Get("remapcogsratiodest", toolkit.M{}).(toolkit.M)
 
 	dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
-	key := toolkit.Sprintf("pattern", dtkm.GetString("date_fiscal"),
+	key := toolkit.Sprintf("%s_%d_%s_%s_%s_%s_%s_%s", dtkm.GetString("date_fiscal"),
 		dtkm.GetInt("date_month"),
 		dtkm.GetString("customer_branchid"),
 		dtkm.GetString("customer_keyaccount"),
 		dtkm.GetString("customer_channelid"),
 		dtkm.GetString("customer_customergroup"),
 		dtkm.GetString("customer_custtype"),
-		dtkm.GetString("product_brand"),
-	)
+		dtkm.GetString("product_brand"))
 
 	source := remapcogsratiosrc.Get(key, toolkit.M{}).(toolkit.M)
 	subtotalsales := remapcogsratiodest.GetFloat64(key)
