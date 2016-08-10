@@ -42,6 +42,15 @@ cogs.refresh = (useCache = false) => {
 	param.flag = 'cogs'
 	param.filters = rpt.getFilterValue(false, cogs.fiscalYear)
 
+	param.filters.push({
+		Field: "customer.channelname",
+		Op: "$in",
+		Value: rpt.masterData.Channel()
+			.map((d) => d._id)
+			.filter((d) => d != "EXP")
+			.filter((d) => d != "I1")
+	})
+
 	if (cogs.breakdownBy() == 'product.skuid') {
 		param.groups.push('product.name')
 	}
