@@ -8,7 +8,7 @@ import (
 	"flag"
 	"github.com/eaciit/dbox"
 	"github.com/eaciit/toolkit"
-	"strings"
+	// "strings"
 	"time"
 )
 
@@ -19,6 +19,8 @@ var (
 	t0     time.Time
 	gtable string
 )
+
+var masters = toolkit.M{}
 
 var mastercostcenter = toolkit.M{}
 var masterbranch = toolkit.M{}
@@ -123,6 +125,40 @@ func getstep(count int) int {
 	return v
 }
 
+func prepmaster4cogsperunitcontribperunit() {
+	toolkit.Println("--> Master Ratio salespls-summary-4cogssga-1.1")
+
+	// filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().From("salespls-summary-4cogssga-1.1").Cursor(nil)
+	defer csr.Close()
+	ratio := toolkit.M{}
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		key := toolkit.Sprintf("%d_%d_%s", dtkm.GetInt("date_year"), dtkm.GetInt("date_month"), dtkm.GetString("product_skuid"))
+		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL74B")
+		ratio.Set(key, v)
+	}
+
+	i := 0
+	for k, v := range ratio {
+		i++
+		toolkit.Println("RATIO : ", k, " : ", v)
+		if i > 15 {
+			break
+		}
+	}
+
+	masters.Set("ratiocogscontrib", ratio)
+
+}
+
 func main() {
 	t0 = time.Now()
 	flag.StringVar(&gtable, "table", "", "tablename")
@@ -130,10 +166,10 @@ func main() {
 	flag.Parse()
 
 	setinitialconnection()
-
-	prepdatabranch()
-	prepdatacostcenter()
-	prepdataaccountgroup()
+	prepmaster4cogsperunitcontribperunit()
+	// prepdatabranch()
+	// prepdatacostcenter()
+	// prepdataaccountgroup()
 	// prepdatabranchgroup()
 
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
@@ -201,167 +237,185 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From(toolkit.Sprintf("%s-res", gtable)).
+		From(toolkit.Sprintf("%s-rescom", gtable)).
 		SetConfig("multiexec", true).
 		Save()
 
 	trx := toolkit.M{}
 	for trx = range jobs {
-		// key := trx.Get("_id", toolkit.M{}).(toolkit.M)
-		// trx.Set("key", key)
+		// date := gdrj.NewDate(trx.GetInt("Year"), trx.GetInt("Month"), 1)
+		// trx.Set("gdrj_fiscal", date.Fiscal)
+		// // key := trx.Get("_id", toolkit.M{}).(toolkit.M)
+		// // trx.Set("key", key)
 
-		// id := toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|%s", key.GetInt("year"), key.GetString("branchid"),
-		// 	key.GetString("branchname"), key.GetString("brancharea"), key.GetString("account"),
-		// 	key.GetString("accountdescription"), key.GetString("costgroup"), key.GetString("addinfo"))
+		// // id := toolkit.Sprintf("%d|%s|%s|%s|%s|%s|%s|%s", key.GetInt("year"), key.GetString("branchid"),
+		// // 	key.GetString("branchname"), key.GetString("brancharea"), key.GetString("account"),
+		// // 	key.GetString("accountdescription"), key.GetString("costgroup"), key.GetString("addinfo"))
 
-		// trx.Set("_id", id)
+		// // trx.Set("_id", id)
 
-		// tdate := time.Date(trx.GetInt("year"), time.Month(trx.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).
-		// 	AddDate(0, 3, 0)
-		// gdrjdate := gdrj.SetDate(tdate)
+		// // tdate := time.Date(trx.GetInt("year"), time.Month(trx.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).
+		// // 	AddDate(0, 3, 0)
+		// // gdrjdate := gdrj.SetDate(tdate)
 
-		// trx.Set("gdrjdate", gdrjdate)
+		// // trx.Set("gdrjdate", gdrjdate)
 
-		cc := trx.GetString("ccid")
-		// trx.Set("branchid", "CD00")
-		// trx.Set("branchname", "OTHER")
-		// trx.Set("brancharea", "OTHER")
-		// trx.Set("costgroup", "OTHER")
-		// trx.Set("accountgroup", "OTHER")
-		// trx.Set("branchgroup", "OTHER")
+		// cc := trx.GetString("ccid")
+		// // trx.Set("branchid", "CD00")
+		// // trx.Set("branchname", "OTHER")
+		// // trx.Set("brancharea", "OTHER")
+		// // trx.Set("costgroup", "OTHER")
+		// // trx.Set("accountgroup", "OTHER")
+		// // trx.Set("branchgroup", "OTHER")
 
-		// key.Set("customer_branchgroup", "OTHER")
+		// // key.Set("customer_branchgroup", "OTHER")
 
-		trx.Set("min_amountinidr", -trx.GetFloat64("amountinidr"))
+		// trx.Set("min_amountinidr", -trx.GetFloat64("amountinidr"))
 
-		if mastercostcenter.Has(cc) {
-			mcc := mastercostcenter[cc].(toolkit.M)
-			brid := mcc.GetString("branchid")
+		// if mastercostcenter.Has(cc) {
+		// 	mcc := mastercostcenter[cc].(toolkit.M)
+		// 	brid := mcc.GetString("branchid")
 
-			trx.Set("branchid", brid)
-			trx.Set("costgroup", mcc.GetString("costgroup01"))
+		// 	trx.Set("branchid", brid)
+		// 	trx.Set("costgroup", mcc.GetString("costgroup01"))
 
-			if masterbranch.Has(brid) {
-				trx.Set("branchname", masterbranch[brid].(toolkit.M).GetString("name"))
-				trx.Set("brancharea", masterbranch[brid].(toolkit.M).GetString("area"))
-			}
-		}
-
-		// branchid := trx.GetString("branchid")
-		if trx.GetString("accountdescription") == "#N/A" {
-			trx.Set("accountdescription", "CONSUMABLE STORES & SPARES")
-		}
-
-		if trx.GetString("grouping") == "#N/A" {
-			trx.Set("grouping", "General and administrative expenses")
-		}
-
-		accdesc := trx.GetString("accountdescription")
-		trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
-
-		arrstrcheck := []string{"branchid", "branchname", "brancharea", "costgroup", "accountgroup", "branchgroup"}
-		for _, v := range arrstrcheck {
-			if trx.GetString(v) == "" {
-				trx.Set(v, "OTHER")
-				if v == "branchid" {
-					trx.Set(v, "CD00")
-				}
-			}
-		}
-
-		trx.Set("addinfo", "")
-		if trx.GetString("branchid") == "HD11" && strings.Contains(trx.GetString("costcentername"), "Jkt") {
-			trx.Set("addinfo", "Jakarta")
-		}
-
-		trx.Set("iselimination", false)
-		if trx.GetString("src") == "ELIMINATION_SGA" {
-			trx.Set("iselimination", true)
-		}
-		//=== For data rawdata mode
-
-		branchid := trx.GetString("branchid")
-		if !masterbranch.Has(branchid) {
-			branchid = "CD00"
-		}
-
-		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
-		trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
-		trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
-		trx.Set("idbranchlvl2", branchgroup.GetString("idbranchlvl2"))
-
-		if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" && trx.GetString("ccid") != "HD110313" {
-			trx.Set("branchgroup", "Jakarta")
-		}
-
-		if trx.GetString("branchgroup") == "" {
-			trx.Set("branchgroup", "OTHER")
-		}
-
-		if trx.GetString("branchlvl2") == "" {
-			trx.Set("branchlvl2", "OTHER")
-		}
-
-		//idbranchlvl2
-
-		//===========================================
-
-		//=== For data salespls-summary mode consolidate
-
-		// key := trx.Get("key", toolkit.M{}).(toolkit.M)
-		// branchid := key.GetString("customer_branchid")
-
-		// branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
-		// key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
-		// key.Set("customer_branchlvl2", branchgroup.GetString("branchlvl2"))
-
-		// if key.GetString("customer_branchgroup") == "" {
-		// 	key.Set("customer_branchgroup", "OTHER")
+		// 	if masterbranch.Has(brid) {
+		// 		trx.Set("branchname", masterbranch[brid].(toolkit.M).GetString("name"))
+		// 		trx.Set("brancharea", masterbranch[brid].(toolkit.M).GetString("area"))
+		// 	}
 		// }
 
-		// if key.GetString("customer_branchlvl2") == "" {
-		// 	key.Set("customer_branchlvl2", "OTHER")
+		// // branchid := trx.GetString("branchid")
+		// if trx.GetString("accountdescription") == "#N/A" {
+		// 	trx.Set("accountdescription", "CONSUMABLE STORES & SPARES")
 		// }
 
-		// /*other fix*/
-		// if key.GetString("customer_reportsubchannel") == "R3" {
-		// 	key.Set("customer_reportsubchannel", "R3 - Retailer Umum")
+		// if trx.GetString("grouping") == "#N/A" {
+		// 	trx.Set("grouping", "General and administrative expenses")
 		// }
 
-		// if key.GetString("customer_region") == "" || key.GetString("customer_region") == "Other" {
-		// 	key.Set("customer_region", "OTHER")
-		// }
+		// accdesc := trx.GetString("accountdescription")
+		// trx.Set("accountgroup", masteraccountgroup.GetString(accdesc))
 
-		// if key.GetString("customer_zone") == "" || key.GetString("customer_zone") == "Other" {
-		// 	key.Set("customer_zone", "OTHER")
-		// }
-
-		// trx.Set("key", key)
-		//============================================
-
-		// For cogs consolidate
-		// arrstr := []string{"rm_perunit", "lc_perunit", "pf_perunit", "other_perunit", "fixed_perunit", "depre_perunit", "cogs_perunit"}
-		// for _, v := range arrstr {
-		// 	xval := trx.GetFloat64(v) * 6
-		// 	trx.Set(v, xval)
-		// }
-		// ====================
-
-		// i := 1
-		// ratio := float64(3337787.02099609) / float64(207880004972.979)
-		// key := trx.Get("key", toolkit.M{}).(toolkit.M)
-		// if key.GetString("date_fiscal") == "2014-2015" {
-		// 	for k, _ := range trx {
-		// 		arrk := strings.Split(k, "_")
-		// 		if (len(arrk) > 1 && arrk[1] == "Allocated") || k == "PL94A" {
-		// 			val := trx.GetFloat64(k)
-		// 			xval := val + (val * ratio)
-		// 			trx.Set(k, xval)
+		// arrstrcheck := []string{"branchid", "branchname", "brancharea", "costgroup", "accountgroup", "branchgroup"}
+		// for _, v := range arrstrcheck {
+		// 	if trx.GetString(v) == "" {
+		// 		trx.Set(v, "OTHER")
+		// 		if v == "branchid" {
+		// 			trx.Set(v, "CD00")
 		// 		}
 		// 	}
 		// }
 
-		err := qSave.Exec(toolkit.M{}.Set("data", trx))
+		// trx.Set("addinfo", "")
+		// if trx.GetString("branchid") == "HD11" && strings.Contains(trx.GetString("costcentername"), "Jkt") {
+		// 	trx.Set("addinfo", "Jakarta")
+		// }
+
+		// trx.Set("iselimination", false)
+		// if trx.GetString("src") == "ELIMINATION_SGA" {
+		// 	trx.Set("iselimination", true)
+		// }
+		// //=== For data rawdata mode
+
+		// branchid := trx.GetString("branchid")
+		// if !masterbranch.Has(branchid) {
+		// 	branchid = "CD00"
+		// }
+
+		// branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		// trx.Set("branchgroup", branchgroup.GetString("branchgroup"))
+		// trx.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
+		// trx.Set("idbranchlvl2", branchgroup.GetString("idbranchlvl2"))
+
+		// if branchid == "HD11" && trx.GetString("addinfo") == "Jakarta" && trx.GetString("ccid") != "HD110313" {
+		// 	trx.Set("branchgroup", "Jakarta")
+		// }
+
+		// if trx.GetString("branchgroup") == "" {
+		// 	trx.Set("branchgroup", "OTHER")
+		// }
+
+		// if trx.GetString("branchlvl2") == "" {
+		// 	trx.Set("branchlvl2", "OTHER")
+		// }
+
+		// //idbranchlvl2
+
+		// //===========================================
+
+		// //=== For data salespls-summary mode consolidate
+
+		// // key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		// // branchid := key.GetString("customer_branchid")
+
+		// // branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		// // key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
+		// // key.Set("customer_branchlvl2", branchgroup.GetString("branchlvl2"))
+
+		// // if key.GetString("customer_branchgroup") == "" {
+		// // 	key.Set("customer_branchgroup", "OTHER")
+		// // }
+
+		// // if key.GetString("customer_branchlvl2") == "" {
+		// // 	key.Set("customer_branchlvl2", "OTHER")
+		// // }
+
+		// // /*other fix*/
+		// // if key.GetString("customer_reportsubchannel") == "R3" {
+		// // 	key.Set("customer_reportsubchannel", "R3 - Retailer Umum")
+		// // }
+
+		// // if key.GetString("customer_region") == "" || key.GetString("customer_region") == "Other" {
+		// // 	key.Set("customer_region", "OTHER")
+		// // }
+
+		// // if key.GetString("customer_zone") == "" || key.GetString("customer_zone") == "Other" {
+		// // 	key.Set("customer_zone", "OTHER")
+		// // }
+
+		// // trx.Set("key", key)
+		// //============================================
+
+		// // For cogs consolidate
+		// // arrstr := []string{"rm_perunit", "lc_perunit", "pf_perunit", "other_perunit", "fixed_perunit", "depre_perunit", "cogs_perunit"}
+		// // for _, v := range arrstr {
+		// // 	xval := trx.GetFloat64(v) * 6
+		// // 	trx.Set(v, xval)
+		// // }
+		// // ====================
+
+		// // i := 1
+		// // ratio := float64(3337787.02099609) / float64(207880004972.979)
+		// // key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		// // if key.GetString("date_fiscal") == "2014-2015" {
+		// // 	for k, _ := range trx {
+		// // 		arrk := strings.Split(k, "_")
+		// // 		if (len(arrk) > 1 && arrk[1] == "Allocated") || k == "PL94A" {
+		// // 			val := trx.GetFloat64(k)
+		// // 			xval := val + (val * ratio)
+		// // 			trx.Set(k, xval)
+		// // 		}
+		// // 	}
+		// // }
+
+		ratiocogscontrib := masters.Get("ratiocogscontrib", toolkit.M{}).(toolkit.M)
+		key := toolkit.Sprintf("%d_%d_%s", trx.GetInt("year"), trx.GetInt("month"), trx.GetString("sapcode"))
+
+		salesexist := false
+		if ratiocogscontrib.Has(key) {
+			salesexist = true
+		}
+
+		ntrx := toolkit.M{}
+		ntrx.Set("c_cogs", trx.GetInt("year"))
+		ntrx.Set("c_cogs", trx.GetInt("month"))
+		ntrx.Set("c_cogs", trx.GetString("sapcode"))
+		ntrx.Set("c_cogs", trx.GetFloat64("cogs_amount"))
+		ntrx.Set("salesexist", salesexist)
+		ntrx.Set("cogscontrib", ratiocogscontrib.GetFloat64(key))
+
+		err := qSave.Exec(toolkit.M{}.Set("data", ntrx))
 		if err != nil {
 			toolkit.Println(err)
 		}
