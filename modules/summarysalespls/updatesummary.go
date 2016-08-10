@@ -1320,6 +1320,95 @@ func prepmaster4cogsperunitcontribperunit() {
 	masters.Set("ratiocogscontrib", ratio)
 }
 
+func prepmastersimplecogscontribdest() {
+	// salespls-summary-4cogssga-1.1
+	toolkit.Println("--> Master Ratio 4cogsperunit")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga-1.1").Cursor(nil)
+	defer csr.Close()
+	ratio := toolkit.M{}
+
+	scount := csr.Count()
+	iscount := 0
+	step := getstep(scount) * 20
+	t1 := time.Now()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		key := toolkit.Sprintf("%s", dtkm.GetString("customer_channelid"))
+		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL74B")
+		ratio.Set(key, v)
+
+		iscount++
+		if iscount%step == 0 {
+			toolkit.Printfn("Reading %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t1).String())
+		}
+	}
+
+	i := 0
+	for k, v := range ratio {
+		i++
+		toolkit.Println("RATIO : ", k, " : ", v)
+		if i > 15 {
+			break
+		}
+	}
+
+	masters.Set("ratiocogscontribdest", ratio)
+}
+
+func prepmastersimplecogscontribsource() {
+	toolkit.Println("--> Master Ratio 4cogsperunit")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	defer csr.Close()
+	ratio := toolkit.M{}
+
+	scount := csr.Count()
+	iscount := 0
+	step := getstep(scount) * 20
+	t1 := time.Now()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		key := toolkit.Sprintf("%s", dtkm.GetString("customer_channelid"))
+		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL74B")
+		ratio.Set(key, v)
+
+		iscount++
+		if iscount%step == 0 {
+			toolkit.Printfn("Reading %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t1).String())
+		}
+	}
+
+	i := 0
+	for k, v := range ratio {
+		i++
+		toolkit.Println("RATIO : ", k, " : ", v)
+		if i > 15 {
+			break
+		}
+	}
+
+	masters.Set("ratiocogscontribsource", ratio)
+}
+
 func prepmasterratio4cogsperunit() {
 	toolkit.Println("--> Master Ratio 4cogsperunit")
 
@@ -2348,8 +2437,8 @@ func main() {
 
 	// prepmastercogsperunit()
 	// prepmasterratio4cogsperunit()
-	prepmastercogsperunit()
-	prepmaster4cogsperunitcontribperunit()
+	// prepmastercogsperunit()
+	// prepmaster4cogsperunitcontribperunit()
 	// prepsalesplssummaryrdwrongsubch()
 	// os.Exit(1)
 
@@ -2360,9 +2449,12 @@ func main() {
 	// prepmastersubtotalsallocatedsga()
 	// prepmastersimplesgafuncratio()
 
+	prepmastersimplecogscontribdest()
+	prepmastersimplecogscontribsource()
+
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga-1").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga-1.1").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -3349,12 +3441,48 @@ func CalcDistSgaBasedOnFunctionData(tkm toolkit.M) {
 	}
 }
 
+func CalcScaleCogsBasedOnOldChannel(tkm toolkit.M) {
+	ratiocogscontribdest := masters.Get("ratiocogscontribdest", toolkit.M{}).(toolkit.M)
+	ratiocogscontribsource := masters.Get("ratiocogscontribsource", toolkit.M{}).(toolkit.M)
+
+	key := tkm.Get("key", toolkit.M{}).(toolkit.M)
+	channelid := key.GetString("customer_channelid")
+
+	source := ratiocogscontribsource.GetFloat64(channelid)
+	current := ratiocogscontribdest.GetFloat64(channelid)
+
+	dist := source - current
+
+	cogssubtotal := tkm.GetFloat64("PL74B") + (dist * tkm.GetFloat64("PL74B") / current)
+
+	rmamount := tkm.GetFloat64("PL9") + (dist * tkm.GetFloat64("PL9") / current)
+	lcamount := tkm.GetFloat64("PL14") + (dist * tkm.GetFloat64("PL14") / current)
+	energyamount := tkm.GetFloat64("PL74") + (dist * tkm.GetFloat64("PL74") / current)
+	depreamount := tkm.GetFloat64("PL21") + (dist * tkm.GetFloat64("PL21") / current)
+	otheramount := cogssubtotal - rmamount - lcamount - energyamount - depreamount
+
+	tkm.Set("PL9", rmamount)
+	tkm.Set("PL14", lcamount)
+	direct := rmamount + lcamount
+	tkm.Set("PL14A", direct)
+
+	tkm.Set("PL20", otheramount)
+	tkm.Set("PL21", depreamount)
+	tkm.Set("PL74", energyamount)
+	indirect := otheramount + depreamount + energyamount
+	tkm.Set("PL74A", indirect)
+
+	tkm.Set("PL74B", cogssubtotal)
+
+	return
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4cogssga-1.1").
+		From("salespls-summary-4cogssga-1.1Final").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -3418,7 +3546,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcScaleSgaAllocatedChannelData(trx)
 		// CalcDistSgaBasedOnFunctionData(trx)
 		// CalcSum(trx)
-		CalcCogsPerUnitBasedcogscontrib(trx)
+		CalcScaleCogsBasedOnOldChannel(trx)
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
