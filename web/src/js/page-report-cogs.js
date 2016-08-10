@@ -8,6 +8,8 @@ cogs.fiscalYear = ko.observable(rpt.value.FiscalYear())
 cogs.breakdownValue = ko.observableArray([])
 cogs.level = ko.observable(1)
 cogs.breakdownBranchGroup = ko.observableArray([])
+cogs.optionFilterProduct = ko.observableArray([])
+cogs.filterProduct = ko.observableArray([])
 cogs.breakdownByClean = ko.computed(() => {
 	if (cogs.breakdownBy() == 'product.skuid') {
 		return 'product.name'
@@ -55,11 +57,11 @@ cogs.refresh = (useCache = false) => {
 		param.groups.push('product.name')
 	}
 
-	if (cogs.breakdownBranchGroup().length > 0) {
+	if (cogs.filterProduct().length > 0) {
 		param.filters.push({
-			Field: 'customer.branchgroup',
+			Field: 'product.skuid',
 			Op: '$in',
-			Value: cogs.breakdownBranchGroup()
+			Value: cogs.filterProduct()
 		})
 	}
 
@@ -504,6 +506,11 @@ cogs.render = () => {
 	rpt.buildGridLevels(rows)
 }
 
+cogs.fillProductData = () => {
+	toolkit.ajaxPost(viewModel.appName + "report/getdataproduct", {}, (res) => {
+		cogs.optionFilterProduct(res.data)
+	})
+}
 
 
 vm.currentMenu('Analysis')
@@ -516,5 +523,6 @@ vm.breadcrumb([
 
 $(() => {
 	cogs.refresh()
+	cogs.fillProductData()
 	rpt.showExport(true)
 })
