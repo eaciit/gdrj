@@ -44,13 +44,13 @@
 						<div class="clearfix"></div>
 					</div>
 
-					<!-- <div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-						<span class="input-group-addon align-right">Branch Group</span>
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">SKU ID</span>
 						<div class="width-full">
-							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: rpt.masterData.BranchGroup, value: cogs.breakdownBranchGroup, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select branch groups' }"></select>
+							<select type="text" style="width: 150px;" data-bind="kendoMultiSelect: { data: cogs.optionFilterProduct, value: cogs.filterProduct, dataValueField: '_id', dataTextField: 'Name', placeholder: 'Select SKU ID', filter: 'contains' }"></select>
 						</div>
 						<div class="clearfix"></div>
-					</div> -->
+					</div>
 				</div>
 				<div class="clearfix"></div>
 			</div>
