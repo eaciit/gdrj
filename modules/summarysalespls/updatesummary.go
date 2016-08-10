@@ -2405,6 +2405,227 @@ func prepmastersimplesgafuncratio() {
 	masters.Set("simplesgafuncratio", simplesgafuncratio)
 }
 
+func prepmaster4remapcogsratio() {
+	toolkit.Println("--> Master Ratio 4cogsperunit")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	defer csr.Close()
+	ratio := toolkit.M{}
+
+	scount := csr.Count()
+	iscount := 0
+	step := getstep(scount) * 20
+	t1 := time.Now()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		key := toolkit.Sprintf("pattern", dtkm.GetString("date_fiscal"),
+			dtkm.GetInt("date_month"),
+			dtkm.GetString("customer_branchid"),
+			dtkm.GetString("customer_keyaccount"),
+			dtkm.GetString("customer_channelid"),
+			dtkm.GetString("customer_customergroup"),
+			dtkm.GetString("customer_custtype"),
+			dtkm.GetString("product_brand"),
+		)
+
+		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL8A")
+		ratio.Set(key, v)
+
+		iscount++
+		if iscount%step == 0 {
+			toolkit.Printfn("Reading %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t1).String())
+		}
+	}
+
+	i := 0
+	for k, v := range ratio {
+		i++
+		toolkit.Println("RATIO : ", k, " : ", v)
+		if i > 15 {
+			break
+		}
+	}
+
+	masters.Set("remapcogsratio", ratio)
+}
+
+func prepmaster4remapcogssource() {
+	toolkit.Println("--> Master Ratio 4cogsperunit")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4cogpersku").Cursor(nil)
+	defer csr.Close()
+	ratio := toolkit.M{}
+
+	scount := csr.Count()
+	iscount := 0
+	step := getstep(scount) * 20
+	t1 := time.Now()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		key := toolkit.Sprintf("pattern", dtkm.GetString("date_fiscal"),
+			dtkm.GetInt("date_month"),
+			dtkm.GetString("customer_branchid"),
+			dtkm.GetString("customer_keyaccount"),
+			dtkm.GetString("customer_channelid"),
+			dtkm.GetString("customer_customergroup"),
+			dtkm.GetString("customer_custtype"),
+			dtkm.GetString("product_brand"),
+		)
+
+		arrcogspl := []string{"PL9", "PL14", "PL14A", "PL20", "PL21", "PL74", "PL74A", "PL74B"}
+		// v := ratio.GetFloat64(key) + tkm.GetFloat64("PL8A")
+		tempdetail := ratio.Get(key, toolkit.M{}).(toolkit.M)
+		for _, pl := range arrcogspl {
+			val := tempdetail.GetFloat64(pl) + tkm.GetFloat64(pl)
+			tempdetail.Set(pl, val)
+		}
+
+		ratio.Set(key, tempdetail)
+
+		iscount++
+		if iscount%step == 0 {
+			toolkit.Printfn("Reading %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t1).String())
+		}
+	}
+
+	i := 0
+	for k, v := range ratio {
+		i++
+		toolkit.Println("RATIO : ", k, " : ", v)
+		if i > 15 {
+			break
+		}
+	}
+
+	masters.Set("remapcogsratiosrc", ratio)
+}
+
+func prepmaster4remapcogsdest() {
+	toolkit.Println("--> Master Ratio 4cogsperunit")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	defer csr.Close()
+	ratio := toolkit.M{}
+
+	scount := csr.Count()
+	iscount := 0
+	step := getstep(scount) * 20
+	t1 := time.Now()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		key := toolkit.Sprintf("pattern", dtkm.GetString("date_fiscal"),
+			dtkm.GetInt("date_month"),
+			dtkm.GetString("customer_branchid"),
+			dtkm.GetString("customer_keyaccount"),
+			dtkm.GetString("customer_channelid"),
+			dtkm.GetString("customer_customergroup"),
+			dtkm.GetString("customer_custtype"),
+			dtkm.GetString("product_brand"),
+		)
+
+		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL8A")
+
+		ratio.Set(key, v)
+
+		iscount++
+		if iscount%step == 0 {
+			toolkit.Printfn("Reading %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t1).String())
+		}
+	}
+
+	i := 0
+	for k, v := range ratio {
+		i++
+		toolkit.Println("RATIO : ", k, " : ", v)
+		if i > 15 {
+			break
+		}
+	}
+
+	masters.Set("remapcogsratiodest", ratio)
+}
+
+func prepmaster4remapnetsalesdest() {
+	toolkit.Println("--> Master Ratio net sales salespls-summary")
+
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4cogpersku").Cursor(nil)
+	defer csr.Close()
+	ratio := toolkit.M{}
+
+	scount := csr.Count()
+	iscount := 0
+	step := getstep(scount) * 20
+	t1 := time.Now()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		key := toolkit.Sprintf("pattern", dtkm.GetString("date_fiscal"),
+			dtkm.GetInt("date_month"),
+			dtkm.GetString("customer_branchid"),
+			dtkm.GetString("customer_keyaccount"),
+			dtkm.GetString("customer_channelid"),
+			dtkm.GetString("customer_customergroup"),
+			dtkm.GetString("customer_custtype"),
+			dtkm.GetString("product_brand"),
+		)
+
+		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL8A")
+
+		ratio.Set(key, v)
+
+		iscount++
+		if iscount%step == 0 {
+			toolkit.Printfn("Reading %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t1).String())
+		}
+	}
+
+	i := 0
+	for k, v := range ratio {
+		i++
+		toolkit.Println("RATIO : ", k, " : ", v)
+		if i > 15 {
+			break
+		}
+	}
+
+	masters.Set("remapnetsalesratiodest", ratio)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -2455,12 +2676,16 @@ func main() {
 	// prepmastersubtotalsallocatedsga()
 	// prepmastersimplesgafuncratio()
 
-	prepmastersimplecogscontribdest()
-	prepmastersimplecogscontribsource()
+	// prepmastersimplecogscontribdest()
+	// prepmastersimplecogscontribsource()
+
+	prepmaster4remapcogssource()
+	prepmaster4remapcogsdest()
+	// prepmaster4remapnetsalesdest()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga-1.1").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -3486,12 +3711,43 @@ func CalcScaleCogsBasedOnOldChannel(tkm toolkit.M) {
 	return
 }
 
+func CalcRemapedCogs(tkm toolkit.M) {
+
+	remapcogsratiosrc := masters.Get("remapcogsratiosrc", toolkit.M{}).(toolkit.M)
+	remapcogsratiodest := masters.Get("remapcogsratiodest", toolkit.M{}).(toolkit.M)
+
+	dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+	key := toolkit.Sprintf("pattern", dtkm.GetString("date_fiscal"),
+		dtkm.GetInt("date_month"),
+		dtkm.GetString("customer_branchid"),
+		dtkm.GetString("customer_keyaccount"),
+		dtkm.GetString("customer_channelid"),
+		dtkm.GetString("customer_customergroup"),
+		dtkm.GetString("customer_custtype"),
+		dtkm.GetString("product_brand"),
+	)
+
+	source := remapcogsratiosrc.Get(key, toolkit.M{}).(toolkit.M)
+	subtotalsales := remapcogsratiodest.GetFloat64(key)
+
+	netsales := tkm.GetFloat64("PL8A")
+	tratio := toolkit.Div(netsales, subtotalsales)
+
+	arrcogspl := []string{"PL9", "PL14", "PL14A", "PL20", "PL21", "PL74", "PL74A", "PL74B"}
+	for _, pl := range arrcogspl {
+		val := source.GetFloat64(pl) * tratio
+		tkm.Set(pl, val)
+	}
+
+	return
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4cogssga-1.2Final").
+		From("salespls-summary-1.0cogs").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -3555,7 +3811,11 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcScaleSgaAllocatedChannelData(trx)
 		// CalcDistSgaBasedOnFunctionData(trx)
 		// CalcSum(trx)
-		CalcScaleCogsBasedOnOldChannel(trx)
+		// CalcScaleCogsBasedOnOldChannel(trx)
+
+		CalcRemapedCogs(trx)
+		CalcSum(trx)
+
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
