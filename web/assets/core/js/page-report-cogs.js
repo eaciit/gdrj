@@ -414,7 +414,13 @@ cogs.render = function () {
 
 cogs.fillProductData = function () {
 	toolkit.ajaxPost(viewModel.appName + "report/getdataproduct", {}, function (res) {
-		cogs.optionFilterProduct(res.data);
+		cogs.optionFilterProduct(res.data.map(function (d) {
+			var o = {};
+			o._id = d._id;
+			o.Name = d._id + ' - ' + d.Name;
+
+			return o;
+		}));
 	});
 };
 

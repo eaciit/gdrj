@@ -508,7 +508,13 @@ cogs.render = () => {
 
 cogs.fillProductData = () => {
 	toolkit.ajaxPost(viewModel.appName + "report/getdataproduct", {}, (res) => {
-		cogs.optionFilterProduct(res.data)
+		cogs.optionFilterProduct(res.data.map((d) => {
+			let o = {}
+			o._id = d._id
+			o.Name = `${d._id} - ${d.Name}`
+
+			return o
+		}))
 	})
 }
 
