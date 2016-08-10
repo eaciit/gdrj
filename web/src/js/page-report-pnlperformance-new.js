@@ -850,7 +850,7 @@ let bkd = viewModel.breakdown
 			})
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
-				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
+				let percentage = 100
 				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 
 				if (d._id == discountActivityPLCode) {
@@ -1441,7 +1441,7 @@ let v2 = viewModel.RDvsBranchView2
 			})
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
-				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
+				let percentage = 100
 				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 
 				if (d._id == discountActivityPLCode) {
@@ -1959,7 +1959,7 @@ let v1 = viewModel.RDvsBranchView1
 			})
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
-				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
+				let percentage = 100
 				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 
 				if (d._id == discountActivityPLCode) {
@@ -2366,7 +2366,7 @@ let kac = viewModel.keyAccount
 			})
 			data.forEach((e) => {
 				let breakdown = e._id
-				let percentage = toolkit.number(e[`${d._id}`] / row.PNLTotal) * 100; 
+				let percentage = 100
 				percentage = toolkit.number(percentage)
 
 				if (d._id == discountActivityPLCode) {
@@ -3226,7 +3226,7 @@ let subchan = viewModel.subChannel
 			})
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
-				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
+				let percentage = 100
 				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 
 				if (d._id == discountActivityPLCode) {

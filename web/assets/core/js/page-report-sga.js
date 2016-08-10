@@ -490,7 +490,7 @@ var sga = viewModel.sga;(function () {
 			});
 			dataFlat.forEach(function (e) {
 				var breakdown = e.key;
-				var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
+				var percentage = 100;
 				var percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 
 				if (d._id != netSalesPLCode) {
@@ -964,7 +964,7 @@ var au = viewModel.allocated;(function () {
 			});
 			dataFlat.forEach(function (e) {
 				var breakdown = e.key;
-				var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
+				var percentage = 100;
 				var percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 
 				/** if (d._id == discountActivityPLCode) {
@@ -1749,7 +1749,7 @@ var el = viewModel.elimination;(function () {
 			});
 			dataFlat.forEach(function (e) {
 				var breakdown = e.key;
-				var percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
+				var percentage = 100;
 				var percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100;
 
 				if (d._id != netSalesPLCode) {

@@ -529,7 +529,7 @@ let sga = viewModel.sga
 			})
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
-				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+				let percentage = 100
 				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100
 
 				if (d._id != netSalesPLCode) {
@@ -1118,7 +1118,7 @@ let au = viewModel.allocated
 			})
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
-				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
+				let percentage = 100
 				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100; 
 
 				/** if (d._id == discountActivityPLCode) {
@@ -1949,7 +1949,7 @@ let el = viewModel.elimination
 			})
 			dataFlat.forEach((e) => {
 				let breakdown = e.key
-				let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+				let percentage = 100
 				let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100
 
 				if (d._id != netSalesPLCode) {

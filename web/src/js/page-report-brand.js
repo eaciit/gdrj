@@ -344,7 +344,7 @@ brand.render = () => {
 		})
 		dataFlat.forEach((e) => {
 			let breakdown = e.key
-			let percentage = toolkit.number(row[breakdown] / row.PNLTotal) * 100
+			let percentage = 100
 			let percentageOfTotal = toolkit.number(row[breakdown] / row.PNLTotal) * 100
 
 			if (d._id == discountActivityPLCode) {
