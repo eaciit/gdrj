@@ -2623,6 +2623,58 @@ func prepmaster4remapnetsalesdest() {
 	masters.Set("remapnetsalesratiodest", ratio)
 }
 
+func prepmaster4wrongchannelRDmappednetsalesdest() {
+	toolkit.Println("--> prepmaster4wrongchannelRDmappednetsalesdest net sales salespls-summary")
+
+	filter := dbox.And(dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear)),
+		dbox.Eq("key.customer_channelid", "I1"))
+
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	defer csr.Close()
+	rdnetsales := toolkit.M{}
+	rdcogs := toolkit.M{}
+
+	scount := csr.Count()
+	iscount := 0
+	step := getstep(scount) * 20
+	t1 := time.Now()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm, _ := toolkit.ToM(tkm.Get("key"))
+		key := dtkm.GetString("customer_reportsubchannel")
+
+		v := rdnetsales.GetFloat64(key) + tkm.GetFloat64("PL8A")
+		rdnetsales.Set(key, v)
+
+		v = rdcogs.GetFloat64(key) + tkm.GetFloat64("PL74B")
+		rdcogs.Set(key, v)
+
+		iscount++
+		if iscount%step == 0 {
+			toolkit.Printfn("Reading %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t1).String())
+		}
+	}
+
+	i := 0
+	for k, v := range rdnetsales {
+		i++
+		toolkit.Println("RATIO : ", k, " : ", v)
+		if i > 15 {
+			break
+		}
+	}
+
+	masters.Set("rdnetsales", rdnetsales)
+	masters.Set("rdcogs", rdcogs)
+}
+
 func main() {
 	t0 = time.Now()
 	data = make(map[string]float64)
@@ -2673,16 +2725,18 @@ func main() {
 	// prepmastersubtotalsallocatedsga()
 	// prepmastersimplesgafuncratio()
 
-	prepmastersimplecogscontribdest()
-	prepmastersimplecogscontribsource()
+	// prepmastersimplecogscontribdest()
+	// prepmastersimplecogscontribsource()
 
 	// prepmaster4remapcogssource()
 	// prepmaster4remapcogsdest()
 	// prepmaster4remapnetsalesdest()
 
+	prepmaster4wrongchannelRDmappednetsalesdest()
+
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogpersku").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -3014,134 +3068,6 @@ func CleanUpdateCOGSAdjustRdtoMt(tkm toolkit.M) {
 
 func CalcSum(tkm toolkit.M) {
 	gdrj.CalcSum(tkm, masters)
-	/*
-		var netsales, cogs, grossmargin, sellingexpense,
-			sga, opincome, directexpense, indirectexpense,
-			royaltiestrademark, advtpromoexpense, operatingexpense,
-			freightexpense, nonoprincome, ebt, taxexpense,
-			percentpbt, eat, totdepreexp, damagegoods, ebitda, ebitdaroyalties, ebitsga,
-			grosssales, discount, advexp, promoexp, spgexp float64
-
-		exclude := []string{"PL8A", "PL14A", "PL74A", "PL26A", "PL32A", "PL39A", "PL41A", "PL44A",
-			"PL74B", "PL74C", "PL32B", "PL94B", "PL94C", "PL39B", "PL41B", "PL41C", "PL44B", "PL44C", "PL44D", "PL44E",
-			"PL44F", "PL6A", "PL0", "PL28", "PL29A", "PL31", "PL94A"}
-
-		plmodels := masters.Get("plmodel").(map[string]*gdrj.PLModel)
-
-		inexclude := func(f string) bool {
-			for _, v := range exclude {
-				if v == f {
-					return true
-				}
-			}
-
-			return false
-		}
-
-		for k, v := range tkm {
-			if k == "_id" || k == "key" {
-				continue
-			}
-
-			ar01k := strings.Split(k, "_")
-
-			if inexclude(ar01k[0]) {
-				continue
-			}
-
-			plmodel, exist := plmodels[ar01k[0]]
-			if !exist {
-				// toolkit.Println(k)
-				continue
-			}
-			Amount := toolkit.ToFloat64(v, 6, toolkit.RoundingAuto)
-			switch plmodel.PLHeader1 {
-			case "Net Sales":
-				netsales += Amount
-			case "Direct Expense":
-				directexpense += Amount
-			case "Indirect Expense":
-				indirectexpense += Amount
-			case "Freight Expense":
-				freightexpense += Amount
-			case "Royalties & Trademark Exp":
-				royaltiestrademark += Amount
-			case "Advt & Promo Expenses":
-				advtpromoexpense += Amount
-			case "G&A Expenses":
-				sga += Amount
-			case "Non Operating (Income) / Exp":
-				nonoprincome += Amount
-			case "Tax Expense":
-				taxexpense += Amount
-			case "Total Depreciation Exp":
-				if plmodel.PLHeader2 == "Damaged Goods" {
-					damagegoods += Amount
-				} else {
-					totdepreexp += Amount
-				}
-			}
-
-			// switch v.Group2 {
-			switch plmodel.PLHeader2 {
-			case "Gross Sales":
-				grosssales += Amount
-			case "Discount":
-				discount += Amount
-			case "Advertising Expenses":
-				advexp += Amount
-			case "Promotions Expenses":
-				promoexp += Amount
-			case "SPG Exp / Export Cost":
-				spgexp += Amount
-			}
-		}
-
-		cogs = directexpense + indirectexpense
-		grossmargin = netsales + cogs
-		sellingexpense = freightexpense + royaltiestrademark + advtpromoexpense
-		operatingexpense = sellingexpense + sga
-		opincome = grossmargin + operatingexpense
-		ebt = opincome + nonoprincome //asume nonopriceincome already minus
-		percentpbt = 0
-		if ebt != 0 {
-			percentpbt = taxexpense / ebt * 100
-		}
-		eat = ebt + taxexpense
-		ebitda = totdepreexp + damagegoods + opincome
-		ebitdaroyalties = ebitda - royaltiestrademark
-		ebitsga = opincome - sga
-		ebitsgaroyalty := ebitsga - royaltiestrademark
-
-		tkm.Set("PL0", grosssales)
-		tkm.Set("PL6A", discount)
-		tkm.Set("PL8A", netsales)
-		tkm.Set("PL14A", directexpense)
-		tkm.Set("PL74A", indirectexpense)
-		tkm.Set("PL26A", royaltiestrademark)
-		tkm.Set("PL32A", advtpromoexpense)
-		tkm.Set("PL94A", sga)
-		tkm.Set("PL39A", nonoprincome)
-		tkm.Set("PL41A", taxexpense)
-		tkm.Set("PL44A", totdepreexp)
-
-		tkm.Set("PL28", advexp)
-		tkm.Set("PL29A", promoexp)
-		tkm.Set("PL31", spgexp)
-		tkm.Set("PL74B", cogs)
-		tkm.Set("PL74C", grossmargin)
-		tkm.Set("PL32B", sellingexpense)
-		tkm.Set("PL94B", operatingexpense)
-		tkm.Set("PL94C", opincome)
-		tkm.Set("PL39B", ebt)
-		tkm.Set("PL41B", percentpbt)
-		tkm.Set("PL41C", eat)
-		tkm.Set("PL44B", opincome)
-		tkm.Set("PL44C", ebitda)
-		tkm.Set("PL44D", ebitdaroyalties)
-		tkm.Set("PL44E", ebitsga)
-		tkm.Set("PL44F", ebitsgaroyalty)
-	*/
 }
 
 // masters.Set("totdiscactivity", totdiscactivity)
@@ -3738,12 +3664,62 @@ func CalcRemapedCogs(tkm toolkit.M) {
 	return
 }
 
+func wrongchannelmapped(tkm toolkit.M) {
+	dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+
+	rdnetsales := masters.Get("rdnetsales", toolkit.M{}).(toolkit.M)
+	rdcogs := masters.Get("rdcogs", toolkit.M{}).(toolkit.M)
+
+	channelid := dtkm.GetString("customer_channelid")
+	channelname := dtkm.GetString("customer_channelname")
+
+	cogsratio := 0.57
+	reportsubchannel := "PT.BINTANG SRIWIJAYA"
+	if dtkm.GetString("date_fiscal") == "2015-2016" {
+		cogsratio = 0.55
+		reportsubchannel = "PT. EVERBRIGHT"
+	}
+
+	if channelid == "I2" && channelname == "MT" {
+		dtkm.Set("customer_channelid_ori", channelid).
+			Set("customer_reportchannel_ori", "GT").
+			Set("customer_channelid", "I3").
+			Set("customer_reportchannel", "MT").
+			Set("customer_reportsubchannel", "Mini")
+	}
+
+	if channelid == "I3" && channelname == "RD" {
+
+		for k, _ := range rdcogs {
+			currratio := toolkit.Div(rdcogs.GetFloat64(k), rdnetsales.GetFloat64(k))
+			if currratio < cogsratio {
+				reportsubchannel = k
+			} else {
+				rdcogs.Unset(k)
+				rdnetsales.Unset(k)
+			}
+		}
+
+		dtkm.Set("customer_channelid_ori", channelid).
+			Set("customer_reportchannel_ori", "MT").
+			Set("customer_reportsubchannel_ori", "Hyper").
+			Set("customer_channelid", "I1").
+			Set("customer_reportchannel", "RD").
+			Set("customer_reportsubchannel", reportsubchannel)
+
+		val := rdcogs.GetFloat64(reportsubchannel) + tkm.GetFloat64("PL74B")
+		rdcogs.Set(reportsubchannel, val)
+	}
+
+	tkm.Set("key", dtkm)
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4cogpersku-1.0").
+		From("salespls-summary-1.0").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -3807,10 +3783,12 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcScaleSgaAllocatedChannelData(trx)
 		// CalcDistSgaBasedOnFunctionData(trx)
 		// CalcSum(trx)
-		CalcScaleCogsBasedOnOldChannel(trx)
+		// CalcScaleCogsBasedOnOldChannel(trx)
 
 		// CalcRemapedCogs(trx)
 		// CalcSum(trx)
+
+		wrongchannelmapped(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
