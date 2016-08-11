@@ -2662,6 +2662,7 @@ func prepmaster4wrongchannelRDmappednetsalesdest() {
 		}
 	}
 
+	toolkit.Println("--> read salespls-summary for saving")
 	i := 0
 	for k, v := range rdnetsales {
 		i++
@@ -2671,8 +2672,83 @@ func prepmaster4wrongchannelRDmappednetsalesdest() {
 		}
 	}
 
-	masters.Set("rdnetsales", rdnetsales)
-	masters.Set("rdcogs", rdcogs)
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	qSave := workerconn.NewQuery().
+		From("salespls-summary").
+		SetConfig("multiexec", true).
+		Save()
+
+	csr.ResetFetch()
+	iscount = 0
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
+
+		// rdnetsales := masters.Get("rdnetsales", toolkit.M{}).(toolkit.M)
+		// rdcogs := masters.Get("rdcogs", toolkit.M{}).(toolkit.M)
+
+		channelid := dtkm.GetString("customer_channelid")
+		channelname := dtkm.GetString("customer_channelname")
+
+		cogsratio := 0.57
+		reportsubchannel := "PT.BINTANG SRIWIJAYA"
+		if dtkm.GetString("date_fiscal") == "2015-2016" {
+			cogsratio = 0.55
+			reportsubchannel = "PT. EVERBRIGHT"
+		}
+
+		if channelid == "I2" && channelname == "MT" {
+			dtkm.Set("customer_channelid_ori", channelid).
+				Set("customer_reportchannel_ori", "GT").
+				Set("customer_channelid", "I3").
+				Set("customer_reportchannel", "MT").
+				Set("customer_reportsubchannel", "Mini")
+		}
+
+		if channelid == "I3" && channelname == "RD" {
+
+			for k, _ := range rdcogs {
+				currratio := toolkit.Div(rdcogs.GetFloat64(k), rdnetsales.GetFloat64(k))
+				if currratio < cogsratio {
+					reportsubchannel = k
+					break
+				} else {
+					rdcogs.Unset(k)
+				}
+			}
+
+			val := rdcogs.GetFloat64(reportsubchannel) + tkm.GetFloat64("PL74B")
+			rdcogs.Set(reportsubchannel, val)
+
+			dtkm.Set("customer_channelid_ori", channelid).
+				Set("customer_reportchannel_ori", "MT").
+				Set("customer_reportsubchannel_ori", "Hyper").
+				Set("customer_channelid", "I1").
+				Set("customer_reportchannel", "RD").
+				Set("customer_reportsubchannel", reportsubchannel)
+		}
+
+		tkm.Set("key", dtkm)
+
+		err := qSave.Exec(toolkit.M{}.Set("data", tkm))
+		if err != nil {
+			toolkit.Println(err)
+		}
+
+		iscount++
+		if iscount%step == 0 {
+			toolkit.Printfn("Saving %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t1).String())
+		}
+	}
+
+	toolkit.Println("--> done for saving")
+	os.Exit(1)
 }
 
 func main() {
@@ -3713,6 +3789,7 @@ func wrongchannelmapped(tkm toolkit.M) {
 	}
 
 	tkm.Set("key", dtkm)
+
 }
 
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
