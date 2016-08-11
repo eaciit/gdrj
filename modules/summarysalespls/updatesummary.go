@@ -3711,6 +3711,8 @@ func wrongchannelmapped(tkm toolkit.M) {
 		rdcogs.Set(reportsubchannel, val)
 	}
 
+	masters.Set("rdnetsales", rdnetsales)
+	masters.Set("rdcogs", rdcogs)
 	tkm.Set("key", dtkm)
 }
 
