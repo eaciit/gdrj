@@ -1322,7 +1322,7 @@ func prepmaster4cogsperunitcontribperunit() {
 
 func prepmastersimplecogscontribdest() {
 	// salespls-summary-4cogssga-1.1
-	toolkit.Println("--> Master Ratio salespls-summary dest")
+	toolkit.Println("--> Master Ratio salespls-summary-4cogpersku dest")
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4cogpersku").Cursor(nil)
@@ -1343,7 +1343,7 @@ func prepmastersimplecogscontribdest() {
 
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
 		key := dtkm.GetString("customer_channelname")
-		if key != "RD" && key != "EXP" {
+		if key != "RD" && key != "EXPORT" {
 			key = "branch"
 		}
 		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL74B")
@@ -1390,7 +1390,7 @@ func prepmastersimplecogscontribsource() {
 
 		dtkm, _ := toolkit.ToM(tkm.Get("key"))
 		key := dtkm.GetString("customer_channelname")
-		if key != "RD" && key != "EXP" {
+		if key != "RD" && key != "EXPORT" {
 			key = "branch"
 		}
 		v := ratio.GetFloat64(key) + tkm.GetFloat64("PL74B")
@@ -3675,7 +3675,7 @@ func CalcScaleCogsBasedOnOldChannel(tkm toolkit.M) {
 
 	key := tkm.Get("key", toolkit.M{}).(toolkit.M)
 	channelid := key.GetString("customer_channelname")
-	if channelid != "RD" && channelid != "EXP" {
+	if channelid != "RD" && channelid != "EXPORT" {
 		channelid = "branch"
 	}
 
