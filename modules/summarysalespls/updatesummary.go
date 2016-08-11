@@ -2674,7 +2674,7 @@ func prepmaster4wrongchannelRDmappednetsalesdest() {
 
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	qSave := workerconn.NewQuery().
-		From("salespls-summary").
+		From("salespls-summary-1.0").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -2688,9 +2688,6 @@ func prepmaster4wrongchannelRDmappednetsalesdest() {
 		}
 
 		dtkm := tkm.Get("key", toolkit.M{}).(toolkit.M)
-
-		// rdnetsales := masters.Get("rdnetsales", toolkit.M{}).(toolkit.M)
-		// rdcogs := masters.Get("rdcogs", toolkit.M{}).(toolkit.M)
 
 		channelid := dtkm.GetString("customer_channelid")
 		channelname := dtkm.GetString("customer_channelname")
