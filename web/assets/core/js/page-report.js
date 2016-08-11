@@ -992,7 +992,7 @@ rpt.buildGridLevels = function (rows) {
 
 	var prev = rpt.arrChangeParent()[rpt.arrChangeParent().length - 1].idfrom;
 	if (prev.indexOf('_Allocated') > -1 || prev.indexOf('_Direct') > -1) {
-		var under = ['PL94B', 'PL44B', 'PL44C', 'PL44E', 'PL44D', 'PL44F'];
+		var under = ['PL44A', 'PL42', 'PL43', 'PL44', 'PL94B', 'PL44B', 'PL44C', 'PL44E', 'PL44D', 'PL44F'];
 		under.forEach(function (d) {
 			var headerFrom = $('[idheaderpl="' + d + '"]');
 			var headerTo = $('[idheaderpl="' + prev + '"]');
