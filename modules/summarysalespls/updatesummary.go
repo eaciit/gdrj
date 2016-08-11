@@ -3690,15 +3690,19 @@ func wrongchannelmapped(tkm toolkit.M) {
 
 	if channelid == "I3" && channelname == "RD" {
 
+		rdcogsadj := masters.Get("rdcogsadj", toolkit.M{}).(toolkit.M)
+
 		for k, _ := range rdcogs {
-			currratio := toolkit.Div(rdcogs.GetFloat64(k), rdnetsales.GetFloat64(k))
+			currratio := toolkit.Div((rdcogs.GetFloat64(k) + rdcogsadj.GetFloat64(k)), rdnetsales.GetFloat64(k))
 			if currratio < cogsratio {
 				reportsubchannel = k
-			} else {
-				rdcogs.Unset(k)
-				rdnetsales.Unset(k)
+				break
 			}
 		}
+
+		val := rdcogsadj.GetFloat64(reportsubchannel) + tkm.GetFloat64("PL74B")
+		rdcogsadj.Set(reportsubchannel, val)
+		masters.Set("rdcogsadj", rdcogsadj)
 
 		dtkm.Set("customer_channelid_ori", channelid).
 			Set("customer_reportchannel_ori", "MT").
@@ -3706,13 +3710,8 @@ func wrongchannelmapped(tkm toolkit.M) {
 			Set("customer_channelid", "I1").
 			Set("customer_reportchannel", "RD").
 			Set("customer_reportsubchannel", reportsubchannel)
-
-		val := rdcogs.GetFloat64(reportsubchannel) + tkm.GetFloat64("PL74B")
-		rdcogs.Set(reportsubchannel, val)
 	}
 
-	masters.Set("rdnetsales", rdnetsales)
-	masters.Set("rdcogs", rdcogs)
 	tkm.Set("key", dtkm)
 }
 
