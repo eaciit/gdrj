@@ -2626,8 +2626,7 @@ func prepmaster4remapnetsalesdest() {
 func prepmaster4wrongchannelRDmappednetsalesdest() {
 	toolkit.Println("--> prepmaster4wrongchannelRDmappednetsalesdest net sales salespls-summary")
 
-	filter := dbox.And(dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear)),
-		dbox.Eq("key.customer_channelid", "I1"))
+	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
 
 	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
 	defer csr.Close()
