@@ -1325,7 +1325,7 @@ func prepmastersimplecogscontribdest() {
 	toolkit.Println("--> Master Ratio 4cogsperunit")
 
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga-1.1").Cursor(nil)
+	csr, _ := conn.NewQuery().Select().Where(filter).From("salespls-summary-4cogpersku").Cursor(nil)
 	defer csr.Close()
 	ratio := toolkit.M{}
 
@@ -2673,16 +2673,16 @@ func main() {
 	// prepmastersubtotalsallocatedsga()
 	// prepmastersimplesgafuncratio()
 
-	// prepmastersimplecogscontribdest()
-	// prepmastersimplecogscontribsource()
+	prepmastersimplecogscontribdest()
+	prepmastersimplecogscontribsource()
 
-	prepmaster4remapcogssource()
-	prepmaster4remapcogsdest()
+	// prepmaster4remapcogssource()
+	// prepmaster4remapcogsdest()
 	// prepmaster4remapnetsalesdest()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogpersku").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -3743,7 +3743,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-1.0cogs").
+		From("salespls-summary-4cogpersku-1.0").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -3807,10 +3807,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcScaleSgaAllocatedChannelData(trx)
 		// CalcDistSgaBasedOnFunctionData(trx)
 		// CalcSum(trx)
-		// CalcScaleCogsBasedOnOldChannel(trx)
+		CalcScaleCogsBasedOnOldChannel(trx)
 
-		CalcRemapedCogs(trx)
-		CalcSum(trx)
+		// CalcRemapedCogs(trx)
+		// CalcSum(trx)
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
