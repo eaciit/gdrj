@@ -323,9 +323,29 @@ rd.getQueryStringValue = (key) => {
 	return unescape(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + escape(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"))
 }  
 
+rd.pageIs = ko.computed(() => {
+	return rd.getQueryStringValue('p')
+}, rd)
+rd.sgaCostOptionBranchLvl2 = ko.observableArray([])
+rd.sgaCostOptionCostGroup = ko.observableArray([])
+rd.sgaCostBranchName = ko.observableArray([])
+rd.sgaCostBranchLvl2 = ko.observableArray([])
+rd.sgaCostBranchGroup = ko.observableArray([])
+rd.sgaCostCostGroup = ko.observableArray([])
+
 rd.refreshTruckAdequateIndex = () => {
 	let param = {}
 	param.fiscalYear = rd.fiscalYear()
+
+	if (rd.sgaCostBranchName().length > 0) {
+		param.branchnames = rd.sgaCostBranchName()
+	}
+	if (rd.sgaCostBranchLvl2().length > 0) {
+		param.branchlvl2 = rd.sgaCostBranchLvl2()
+	}
+	if (rd.sgaCostBranchGroup().length > 0) {
+		param.branchgroups = rd.sgaCostBranchGroup()
+	}
 
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/gettruckoutletdata", param, (res) => {
@@ -367,15 +387,6 @@ rd.refreshTruckAdequateIndex = () => {
 	fetch()
 }
 
-rd.pageIs = ko.computed(() => {
-	return rd.getQueryStringValue('p')
-}, rd)
-rd.sgaCostOptionBranchLvl2 = ko.observableArray([])
-rd.sgaCostOptionCostGroup = ko.observableArray([])
-rd.sgaCostBranchName = ko.observableArray([])
-rd.sgaCostBranchLvl2 = ko.observableArray([])
-rd.sgaCostBranchGroup = ko.observableArray([])
-rd.sgaCostCostGroup = ko.observableArray([])
 rd.refreshSGACostRatio = () => {
 	let param = {}
 	param.groups = ['CostGroup']
@@ -1059,7 +1070,7 @@ rd.setup = () => {
 
 		case 'truck-adequate-index': {
 			$('.filter-unit').remove()
-			$('.filter-button').remove()
+			$('.panel-filter:not(.for-truck-cost)').remove()
 
 			vm.currentTitle('Truck Adequate Index')
 			
@@ -1101,6 +1112,12 @@ rd.setup = () => {
 				rd.setPercentageOn(config, 'axis2', 0)
 				rd.setPercentageOn(config, 'axis3', 3)
 			}
+
+			rpt.toggleFilter()
+
+			toolkit.ajaxPost("/web/report/getdatamasterbranchlvl2", {}, (res) => {
+				rd.sgaCostOptionBranchLvl2(_.orderBy(res.data, (d) => d.Name))
+			})
 		} break;
 
 		case 'sga-cost-ratio': {
