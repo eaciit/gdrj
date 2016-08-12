@@ -1015,7 +1015,7 @@ rd.setup = () => {
 					return netSales / rd.divider()
 				}
 			}, { 
-				_id: 'invoice', 
+				_id: 'salescount', 
 				plheader: 'Number of Invoices',
 				callback: (v, k) => {
 					let salescount = Math.abs(toolkit.sum(v, (e) => e.salescount))

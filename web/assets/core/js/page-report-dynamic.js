@@ -1240,7 +1240,7 @@ rd.setup = function () {
 						return netSales / rd.divider();
 					}
 				}, {
-					_id: 'invoice',
+					_id: 'salescount',
 					plheader: 'Number of Invoices',
 					callback: function callback(v, k) {
 						var salescount = Math.abs(toolkit.sum(v, function (e) {
