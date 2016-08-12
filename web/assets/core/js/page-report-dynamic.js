@@ -53,6 +53,10 @@ rd.refresh = function () {
 		param.flag = "hasoutlet";
 	}
 
+	if (rd.getQueryStringValue('p') == 'sales-invoice') {
+		param.flag = 'sales-invoice';
+	}
+
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
@@ -1217,6 +1221,51 @@ rd.setup = function () {
 					rd.setPercentageOn(config, 'axis1', 2);
 					rd.setPercentageOn(config, 'axis2', 2);
 					rd.setPercentageOn(config, 'axis3', 3);
+				};
+			}break;
+
+		case 'sales-invoice':
+			{
+				vm.currentTitle('Sales / Invoice');
+				rd.series = ko.observableArray([{
+					_id: 'sales',
+					plheader: 'Net Sales',
+					callback: function callback(v, k) {
+						var netSales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+
+						return netSales / rd.divider();
+					}
+				}, {
+					_id: 'invoice',
+					plheader: 'Number of Invoices',
+					callback: function callback(v, k) {
+						var salescount = Math.abs(toolkit.sum(v, function (e) {
+							return e.salescount;
+						}));
+
+						return salescount;
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var netSales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+						var salescount = Math.abs(toolkit.sum(v, function (e) {
+							return e.salescount;
+						}));
+
+						return toolkit.number(netSales / salescount);
+					}
+				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 0);
+					rd.setPercentageOn(config, 'axis3', 2);
 				};
 			}break;
 

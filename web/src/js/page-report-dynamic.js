@@ -56,6 +56,10 @@ rd.refresh = () => {
 		param.flag = "hasoutlet"
 	}
 
+	if (rd.getQueryStringValue('p') == 'sales-invoice') {
+		param.flag = 'sales-invoice'
+	}
+
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
@@ -993,6 +997,42 @@ rd.setup = () => {
 				rd.setPercentageOn(config, 'axis1', 2)
 				rd.setPercentageOn(config, 'axis2', 2)
 				rd.setPercentageOn(config, 'axis3', 3)
+			}
+		} break;
+
+		case 'sales-invoice': {
+			vm.currentTitle('Sales / Invoice')
+			rd.series = ko.observableArray([{ 
+				_id: 'sales', 
+				plheader: 'Net Sales',
+				callback: (v, k) => {
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+
+					return netSales / rd.divider()
+				}
+			}, { 
+				_id: 'invoice', 
+				plheader: 'Number of Invoices',
+				callback: (v, k) => {
+					let salescount = Math.abs(toolkit.sum(v, (e) => e.salescount))
+
+					return salescount
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+					let salescount = Math.abs(toolkit.sum(v, (e) => e.salescount))
+
+					return toolkit.number(netSales / salescount)
+				}
+			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 0)
+				rd.setPercentageOn(config, 'axis3', 2)
 			}
 		} break;
 
