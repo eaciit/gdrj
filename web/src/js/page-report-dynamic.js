@@ -1034,6 +1034,9 @@ rd.setup = () => {
 				rd.setPercentageOn(config, 'axis2', 0)
 				rd.setPercentageOn(config, 'axis3', 2)
 			}
+			rpt.optionDimensions(rpt.optionDimensions().filter((d) => {
+				return ['product.brand', 'customer.branchgroup'].indexOf(d.field) == -1
+			}))
 		} break;
 
 		default: {

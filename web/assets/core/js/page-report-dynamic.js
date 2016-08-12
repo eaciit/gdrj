@@ -1267,6 +1267,9 @@ rd.setup = function () {
 					rd.setPercentageOn(config, 'axis2', 0);
 					rd.setPercentageOn(config, 'axis3', 2);
 				};
+				rpt.optionDimensions(rpt.optionDimensions().filter(function (d) {
+					return ['product.brand', 'customer.branchgroup'].indexOf(d.field) == -1;
+				}));
 			}break;
 
 		default:
