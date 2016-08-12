@@ -216,7 +216,7 @@ rd.render = () => {
         categoryAxis: categoryAxis
     }
 
-    if (config.series.length > 1) {
+    if (config.series.length > 2) {
 		config.series[2].labels.template = (e) => {
 			let val = kendo.toString(e.value, 'n1')
 			return `${val}`
@@ -254,6 +254,89 @@ rd.setPercentageOn = (config, axis, percentage) => {
 rd.getQueryStringValue = (key) => {
 	return unescape(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + escape(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"))
 }  
+
+rd.refreshTruckAdequateIndex = () => {
+	let param = {}
+	param.fiscalYear = rd.fiscalYear()
+
+	let fetch = () => {
+		toolkit.ajaxPost(viewModel.appName + "report/gettruckoutletdata", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
+			}
+
+			let dataMapped = res.Data.DataValue.map((d) => {
+				let o = {}
+				o._id = {}
+				o._id._id_branchname = d.BranchName
+				o._id._id_branclvl2 = d.BranchLvl2
+				o._id._id_brancGroup = d.BranchGroup
+				o._id._id_date_fiscal = d.Key.Fiscal
+				o.numoutlet = d.NumOutlet
+				o.numtruct = d.NumTruct
+				return o
+			})
+
+			if (dataMapped.length == 0) {
+				rd.data([])
+				rd.render()
+				rd.contentIsLoading(false)
+				return
+			}
+
+			rd.contentIsLoading(false)
+			rd.data(dataMapped)
+			rd.render()
+		}, () => {
+			rd.contentIsLoading(false)
+		})
+	}
+
+	rd.contentIsLoading(true)
+	fetch()
+}
+
+rd.refreshSGACostRatio = () => {
+	let param = {}
+	param.groups = ['CostGroup']
+	param.year = parseInt(rd.fiscalYear().split('-')[0], 10)
+
+	let fetch = () => {
+		toolkit.ajaxPost(viewModel.appName + "report/getdatasga", param, (res) => {
+			if (res.data.length == 0) {
+				rd.data([])
+				rd.render()
+				rd.contentIsLoading(false)
+				return
+			}
+
+			let op1 = _.groupBy(res.data, (d) => d.CostGroup)
+			let op2 = _.map(op1, (v, k) => {
+				let o = {}
+				o._id = {}
+				o._id._id_costgroup = k
+				o.amount = toolkit.sum(v, (e) => e.Amount) * -1
+				return o
+			})
+			let op3 = _.map(op2, (d) => {
+				d.total = toolkit.sum(op2, (d) => d.amount)
+				return d
+			})
+
+			rd.contentIsLoading(false)
+			rd.data(op3)
+			rd.render()
+		}, () => {
+			rd.contentIsLoading(false)
+		})
+	}
+
+	rd.contentIsLoading(true)
+	fetch()
+}
 
 rd.setup = () => {
 	rd.breakdownBy("customer.branchname")
@@ -827,6 +910,89 @@ rd.setup = () => {
 			rpt.optionDimensions(rpt.optionDimensions().filter((d) => ['customer.channelname', 'customer.branchname', 'product.brand'].indexOf(d.field) > -1))
 			rd.configure = (config) => {
 				rd.setPercentageOn(config, 'axis1', 0)
+			}
+		} break;
+
+		case 'truck-adequate-index': {
+			$('.filter-unit').remove()
+			vm.currentTitle('Truck Adequate Index')
+			rd.series = ko.observableArray([{ 
+				_id: 'numtruct', 
+				plheader: 'Number of Truck',
+				callback: (v, k) => {
+					let numtruct = Math.abs(toolkit.sum(v, (e) => e.numtruct))
+					return numtruct
+				}
+			}, { 
+				_id: 'numoutlet', 
+				plheader: 'Number of Outlet',
+				callback: (v, k) => {
+					let numoutlet = Math.abs(toolkit.sum(v, (e) => e.numoutlet))
+					return numoutlet
+				}
+			}, { 
+				_id: 'percentage', 
+				plheader: 'Truck / Outlet',
+				callback: (v, k) => {
+					let numtruct = Math.abs(toolkit.sum(v, (e) => e.numtruct))
+					let numoutlet = Math.abs(toolkit.sum(v, (e) => e.numoutlet))
+
+					return toolkit.safeDiv(numtruct, numoutlet)
+				}
+			}])
+
+			rpt.optionDimensions([
+				{ field: 'branchname', name: 'Branch Level 1' },
+				{ field: 'branchlvl2', name: 'Branch Level 2' },
+				{ field: 'brancgroup', name: 'Branch Group' },
+			])
+			rd.breakdownBy('branchname')
+			rd.refresh = rd.refreshTruckAdequateIndex
+
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 0)
+				rd.setPercentageOn(config, 'axis2', 0)
+				rd.setPercentageOn(config, 'axis3', 3)
+			}
+		} break;
+
+		case 'sga-cost-ratio': {
+			vm.currentTitle('SGA Cost Ratio Adequate Index')
+			rd.series = ko.observableArray([{ 
+				_id: 'sgacost', 
+				plheader: 'SGA Cost',
+				callback: (v, k) => {
+					let sgacost = Math.abs(toolkit.sum(v, (e) => e.amount)) / rd.divider()
+					return sgacost
+				}
+			}, { 
+				_id: 'total', 
+				plheader: 'Total SGA Cost',
+				callback: (v, k) => {
+					let total = 0; toolkit.try(() => { total = v[0].total / rd.divider() })
+					return total
+				}
+			}, { 
+				_id: 'percentage', 
+				plheader: 'SGA Cost / Total',
+				callback: (v, k) => {
+					let sgacost = Math.abs(toolkit.sum(v, (e) => e.amount))
+					let total = 0; toolkit.try(() => { total = v[0].total })
+
+					return toolkit.safeDiv(sgacost, total)
+				}
+			}])
+
+			rpt.optionDimensions([
+				{ field: 'costgroup', name: 'Function' },
+			])
+			rd.breakdownBy('costgroup')
+			rd.refresh = rd.refreshSGACostRatio
+
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
+				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
 

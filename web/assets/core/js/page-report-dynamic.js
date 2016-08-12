@@ -224,7 +224,7 @@ rd.render = function () {
 		categoryAxis: categoryAxis
 	};
 
-	if (config.series.length > 1) {
+	if (config.series.length > 2) {
 		config.series[2].labels.template = function (e) {
 			var val = kendo.toString(e.value, 'n1');
 			return '' + val;
@@ -267,6 +267,95 @@ rd.setPercentageOn = function (config, axis, percentage) {
 
 rd.getQueryStringValue = function (key) {
 	return unescape(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + escape(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+};
+
+rd.refreshTruckAdequateIndex = function () {
+	var param = {};
+	param.fiscalYear = rd.fiscalYear();
+
+	var fetch = function fetch() {
+		toolkit.ajaxPost(viewModel.appName + "report/gettruckoutletdata", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			var dataMapped = res.Data.DataValue.map(function (d) {
+				var o = {};
+				o._id = {};
+				o._id._id_branchname = d.BranchName;
+				o._id._id_branclvl2 = d.BranchLvl2;
+				o._id._id_brancGroup = d.BranchGroup;
+				o._id._id_date_fiscal = d.Key.Fiscal;
+				o.numoutlet = d.NumOutlet;
+				o.numtruct = d.NumTruct;
+				return o;
+			});
+
+			if (dataMapped.length == 0) {
+				rd.data([]);
+				rd.render();
+				rd.contentIsLoading(false);
+				return;
+			}
+
+			rd.contentIsLoading(false);
+			rd.data(dataMapped);
+			rd.render();
+		}, function () {
+			rd.contentIsLoading(false);
+		});
+	};
+
+	rd.contentIsLoading(true);
+	fetch();
+};
+
+rd.refreshSGACostRatio = function () {
+	var param = {};
+	param.groups = ['CostGroup'];
+	param.year = parseInt(rd.fiscalYear().split('-')[0], 10);
+
+	var fetch = function fetch() {
+		toolkit.ajaxPost(viewModel.appName + "report/getdatasga", param, function (res) {
+			if (res.data.length == 0) {
+				rd.data([]);
+				rd.render();
+				rd.contentIsLoading(false);
+				return;
+			}
+
+			var op1 = _.groupBy(res.data, function (d) {
+				return d.CostGroup;
+			});
+			var op2 = _.map(op1, function (v, k) {
+				var o = {};
+				o._id = {};
+				o._id._id_costgroup = k;
+				o.amount = toolkit.sum(v, function (e) {
+					return e.Amount;
+				}) * -1;
+				return o;
+			});
+			var op3 = _.map(op2, function (d) {
+				d.total = toolkit.sum(op2, function (d) {
+					return d.amount;
+				});
+				return d;
+			});
+
+			rd.contentIsLoading(false);
+			rd.data(op3);
+			rd.render();
+		}, function () {
+			rd.contentIsLoading(false);
+		});
+	};
+
+	rd.contentIsLoading(true);
+	fetch();
 };
 
 rd.setup = function () {
@@ -1033,6 +1122,101 @@ rd.setup = function () {
 				}));
 				rd.configure = function (config) {
 					rd.setPercentageOn(config, 'axis1', 0);
+				};
+			}break;
+
+		case 'truck-adequate-index':
+			{
+				$('.filter-unit').remove();
+				vm.currentTitle('Truck Adequate Index');
+				rd.series = ko.observableArray([{
+					_id: 'numtruct',
+					plheader: 'Number of Truck',
+					callback: function callback(v, k) {
+						var numtruct = Math.abs(toolkit.sum(v, function (e) {
+							return e.numtruct;
+						}));
+						return numtruct;
+					}
+				}, {
+					_id: 'numoutlet',
+					plheader: 'Number of Outlet',
+					callback: function callback(v, k) {
+						var numoutlet = Math.abs(toolkit.sum(v, function (e) {
+							return e.numoutlet;
+						}));
+						return numoutlet;
+					}
+				}, {
+					_id: 'percentage',
+					plheader: 'Truck / Outlet',
+					callback: function callback(v, k) {
+						var numtruct = Math.abs(toolkit.sum(v, function (e) {
+							return e.numtruct;
+						}));
+						var numoutlet = Math.abs(toolkit.sum(v, function (e) {
+							return e.numoutlet;
+						}));
+
+						return toolkit.safeDiv(numtruct, numoutlet);
+					}
+				}]);
+
+				rpt.optionDimensions([{ field: 'branchname', name: 'Branch Level 1' }, { field: 'branchlvl2', name: 'Branch Level 2' }, { field: 'brancgroup', name: 'Branch Group' }]);
+				rd.breakdownBy('branchname');
+				rd.refresh = rd.refreshTruckAdequateIndex;
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 0);
+					rd.setPercentageOn(config, 'axis2', 0);
+					rd.setPercentageOn(config, 'axis3', 3);
+				};
+			}break;
+
+		case 'sga-cost-ratio':
+			{
+				vm.currentTitle('SGA Cost Ratio Adequate Index');
+				rd.series = ko.observableArray([{
+					_id: 'sgacost',
+					plheader: 'SGA Cost',
+					callback: function callback(v, k) {
+						var sgacost = Math.abs(toolkit.sum(v, function (e) {
+							return e.amount;
+						})) / rd.divider();
+						return sgacost;
+					}
+				}, {
+					_id: 'total',
+					plheader: 'Total SGA Cost',
+					callback: function callback(v, k) {
+						var total = 0;toolkit.try(function () {
+							total = v[0].total / rd.divider();
+						});
+						return total;
+					}
+				}, {
+					_id: 'percentage',
+					plheader: 'SGA Cost / Total',
+					callback: function callback(v, k) {
+						var sgacost = Math.abs(toolkit.sum(v, function (e) {
+							return e.amount;
+						}));
+						var total = 0;toolkit.try(function () {
+							total = v[0].total;
+						});
+
+						return toolkit.safeDiv(sgacost, total);
+					}
+				}]);
+
+				rpt.optionDimensions([{ field: 'costgroup', name: 'Function' }]);
+				rd.breakdownBy('costgroup');
+				rd.refresh = rd.refreshSGACostRatio;
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 2);
+					rd.setPercentageOn(config, 'axis3', 3);
 				};
 			}break;
 

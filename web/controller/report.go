@@ -610,3 +610,26 @@ func (d *ReportController) GetPNLDetail(r *knot.WebContext) interface{} {
 
 	return res
 }
+
+func (d *ReportController) GetTruckOutletData(r *knot.WebContext) interface{} {
+	r.Config.OutputType = knot.OutputJson
+	res := new(toolkit.Result)
+	payload := new(gdrj.TruckOutletPayload)
+
+	if err := r.GetPayload(payload); err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	data, err := payload.TruckOutletGetAll()
+	if err != nil {
+		res.SetError(err)
+		return res
+	}
+
+	o := toolkit.M{}
+	o.Set("DataValue", data)
+	res.SetData(o)
+
+	return res
+}
