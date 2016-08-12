@@ -3887,13 +3887,11 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		trx = CleanExceptSales(trx)
 
 		dkey := trx.Get("key", toolkit.M{}).(toolkit.M)
-		if dkey.GetString("customer_channelid") == "I1" || dkey.GetString("customer_channelid") == "EXP" {
-			continue
-		}
-
-		err := qSave.Exec(toolkit.M{}.Set("data", trx))
-		if err != nil {
-			toolkit.Println(err)
+		if dkey.GetString("customer_channelid") != "I1" && dkey.GetString("customer_channelid") != "EXP" {
+			err := qSave.Exec(toolkit.M{}.Set("data", trx))
+			if err != nil {
+				toolkit.Println(err)
+			}
 		}
 
 		result <- 1
