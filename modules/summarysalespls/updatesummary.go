@@ -2808,7 +2808,7 @@ func main() {
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4custinv_count").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogpersku").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -3097,6 +3097,8 @@ func CalcSalesVDist20142015(tkm toolkit.M) {
 		return
 	}
 
+	netsales := tkm.GetFloat64("PL8A") - tkm.GetFloat64("PL7") - tkm.GetFloat64("PL8")
+
 	if dtkm.GetString("customer_channelid") == "I1" {
 		v := tkm.GetFloat64("discountamount")
 		tkm.Set("PL8", -v)
@@ -3104,6 +3106,10 @@ func CalcSalesVDist20142015(tkm toolkit.M) {
 		v := tkm.GetFloat64("discountamount")
 		tkm.Set("PL7", -v)
 	}
+
+	netsales = netsales + tkm.GetFloat64("PL7") + tkm.GetFloat64("PL8")
+	tkm.Set("PL8A", netsales)
+
 }
 
 func CalcSgaRev(tkm toolkit.M) {
@@ -3814,7 +3820,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4custinv_count-1.0").
+		From("salespls-summary-4cogpersku-1.0").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -3881,10 +3887,10 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcScaleCogsBasedOnOldChannel(trx)
 
 		// CalcRemapedCogs(trx)
-		CalcSum(trx)
+		// CalcSum(trx)
 		// wrongchannelmapped(trx)
 
-		trx = CleanExceptSales(trx)
+		// trx = CleanExceptSales(trx)
 
 		dkey := trx.Get("key", toolkit.M{}).(toolkit.M)
 		if dkey.GetString("customer_channelid") != "I1" && dkey.GetString("customer_channelid") != "EXP" {
