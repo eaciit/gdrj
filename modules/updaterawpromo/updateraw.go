@@ -170,6 +170,121 @@ func prepmaster4cogsperunitcontribperunit() {
 
 }
 
+func generatedata4tructanalysis() {
+
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
+	t0 := time.Now()
+
+	toolkit.Println("Start data query...")
+	csr, _ := workerconn.NewQuery().Select().From(gtable).Cursor(nil)
+	defer csr.Close()
+
+	scount := csr.Count()
+
+	iscount := 0
+	step := getstep(scount) * 10
+
+	dataresults := toolkit.M{}
+	listkey := []toolkit.M{toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}, toolkit.M{}}
+
+	for {
+
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			toolkit.Println("EOF")
+			break
+		}
+
+		date := tkm.Get("date", time.Time{}).(time.Time)
+		gdrjdate := gdrj.NewDate(date.Year(), int(date.Month()), date.Day())
+		branchid := tkm.GetString("branchid")
+
+		// key := toolkit.M{}.Set("branchid", branchid).
+		// 	Set("fiscal", gdrjdate.Fiscal).
+		// 	Set("month", date.Month()).
+		// 	Set("year", date.Year())
+
+		arrid := []string{toolkit.Sprintf("%s_%s_%d_%d", branchid, gdrjdate.Fiscal, date.Month(), date.Year()),
+			toolkit.Sprintf("%s_%d_%d", gdrjdate.Fiscal, date.Month(), date.Year()),
+			toolkit.Sprintf("%s_%s", branchid, gdrjdate.Fiscal),
+			toolkit.Sprintf("%s", branchid),
+			toolkit.Sprintf("%s", gdrjdate.Fiscal),
+		}
+
+		arrkey := []toolkit.M{toolkit.M{}.Set("branchid", branchid).Set("fiscal", gdrjdate.Fiscal).Set("month", date.Month()).Set("year", date.Year()),
+			toolkit.M{}.Set("fiscal", gdrjdate.Fiscal).Set("month", date.Month()).Set("year", date.Year()),
+			toolkit.M{}.Set("branchid", branchid).Set("fiscal", gdrjdate.Fiscal),
+			toolkit.M{}.Set("branchid", branchid),
+			toolkit.M{}.Set("fiscal", gdrjdate.Fiscal),
+		}
+
+		for i, _ := range arrid {
+			tdata := dataresults.Get(arrid[i], toolkit.M{}).(toolkit.M)
+			toutlet := tdata.Get("outlet", toolkit.M{}).(toolkit.M)
+			ttruct := tdata.Get("truct", toolkit.M{}).(toolkit.M)
+
+			outletid := toolkit.Sprintf("%s_%s", branchid, tkm.GetString("outletid"))
+			truckid := tkm.GetString("truckid")
+
+			toutlet.Set(outletid, 1)
+			ttruct.Set(truckid, 1)
+
+			tdata.Set("key", arrkey[i])
+			tdata.Set("outlet", toutlet)
+			tdata.Set("truct", ttruct)
+			dataresults.Set(arrid[i], tdata)
+
+			listkey[i].Set(arrid[i], 1)
+		}
+
+		iscount++
+		if iscount%step == 0 {
+			toolkit.Printfn("Read %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+				time.Since(t0).String())
+		}
+
+	}
+
+	scount = len(dataresults)
+	iscount = 0
+	step = getstep(scount) * 10
+	for k, arrkey := range listkey {
+		qSave := workerconn.NewQuery().
+			From(toolkit.Sprintf("%s-4analysisidea-%d", gtable, k)).
+			SetConfig("multiexec", true).
+			Save()
+
+		for key, _ := range arrkey {
+			tdataresult := dataresults.Get(key, toolkit.M{}).(toolkit.M)
+			toutlet := tdataresult.Get("outlet", toolkit.M{}).(toolkit.M)
+			ttruct := tdataresult.Get("truct", toolkit.M{}).(toolkit.M)
+			tkey := tdataresult.Get("key", toolkit.M{}).(toolkit.M)
+
+			tkm := toolkit.M{}
+			tkm.Set("_id", key)
+			tkm.Set("key", tkey)
+			tkm.Set("numoutlet", len(toutlet))
+			tkm.Set("numtruct", len(ttruct))
+
+			err := qSave.Exec(toolkit.M{}.Set("data", tkm))
+			if err != nil {
+				toolkit.Println(err)
+			}
+
+			iscount++
+			if iscount%step == 0 {
+				toolkit.Printfn("Saved %d of %d (%d) in %s", iscount, scount, iscount*100/scount,
+					time.Since(t0).String())
+			}
+		}
+	}
+
+	toolkit.Println("Generated Done in : ", time.Since(t0).String())
+	os.Exit(1)
+}
+
 func main() {
 	t0 = time.Now()
 	flag.StringVar(&gtable, "table", "", "tablename")
@@ -177,11 +292,11 @@ func main() {
 	flag.Parse()
 
 	setinitialconnection()
-	prepmaster4cogsperunitcontribperunit()
-	// prepdatabranch()
+	prepdatabranch()
 	// prepdatacostcenter()
 	// prepdataaccountgroup()
 	// prepdatabranchgroup()
+	generatedata4tructanalysis()
 
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
@@ -248,7 +363,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From(toolkit.Sprintf("%s-rescom.1", gtable)).
+		From(toolkit.Sprintf("%s-4analysisidea", gtable)).
 		SetConfig("multiexec", true).
 		Save()
 
@@ -410,28 +525,33 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// // 	}
 		// // }
 
-		ratiocogscontrib := masters.Get("ratiocogscontrib", toolkit.M{}).(toolkit.M)
-		key := toolkit.Sprintf("%d_%d_%s", trx.GetInt("year"), trx.GetInt("month"), trx.GetString("sapcode"))
+		// ============================================================================
+		// ============================================================================
+		// ============================================================================
+		// ratiocogscontrib := masters.Get("ratiocogscontrib", toolkit.M{}).(toolkit.M)
+		// key := toolkit.Sprintf("%d_%d_%s", trx.GetInt("year"), trx.GetInt("month"), trx.GetString("sapcode"))
 
-		salesexist := false
-		if ratiocogscontrib.Has(key) {
-			salesexist = true
-		}
+		// salesexist := false
+		// if ratiocogscontrib.Has(key) {
+		// 	salesexist = true
+		// }
 
-		date := gdrj.NewDate(trx.GetInt("year"), trx.GetInt("month"), 1)
+		// date := gdrj.NewDate(trx.GetInt("year"), trx.GetInt("month"), 1)
 
-		ntrx := toolkit.M{}
-		ntrx.Set("_id", toolkit.Sprintf("%s-%s", key, toolkit.RandomString(5)))
-		ntrx.Set("key", key)
-		ntrx.Set("gdrj_fiscal", date.Fiscal)
-		ntrx.Set("c_year", trx.GetInt("year"))
-		ntrx.Set("c_month", trx.GetInt("month"))
-		ntrx.Set("c_skuid", trx.GetString("sapcode"))
-		ntrx.Set("c_cogs", trx.GetFloat64("cogs_amount"))
-		ntrx.Set("salesexist", salesexist)
-		ntrx.Set("cogscontrib", ratiocogscontrib.GetFloat64(key))
+		// ntrx := toolkit.M{}
+		// ntrx.Set("_id", toolkit.Sprintf("%s-%s", key, toolkit.RandomString(5)))
+		// ntrx.Set("key", key)
+		// ntrx.Set("gdrj_fiscal", date.Fiscal)
+		// ntrx.Set("c_year", trx.GetInt("year"))
+		// ntrx.Set("c_month", trx.GetInt("month"))
+		// ntrx.Set("c_skuid", trx.GetString("sapcode"))
+		// ntrx.Set("c_cogs", trx.GetFloat64("cogs_amount"))
+		// ntrx.Set("salesexist", salesexist)
+		// ntrx.Set("cogscontrib", ratiocogscontrib.GetFloat64(key))
+		// ============================================================================
+		// ============================================================================
 
-		err := qSave.Exec(toolkit.M{}.Set("data", ntrx))
+		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
 			toolkit.Println(err)
 		}
