@@ -28,6 +28,8 @@ rd.useLimit = ko.computed(() => {
 	}
 }, rd.breakdownBy)
 rd.isFilterShown = ko.observable(true)
+rd.orderBy = ko.observable('')
+
 rd.doToggleAnalysisFilter = (which) => {
 	if (which) {
 		$('.list-analysis').slideDown(300, () => {
@@ -134,7 +136,9 @@ rd.render = () => {
 
 		return o
 	})
-	let op3 = _.orderBy(op2, (d) => d[rd.series()[0]._id], 'desc')
+	let op3 = _.orderBy(op2, (d) => {
+		return (rd.orderBy() == '') ? d[rd.series()[0]._id] : d[rd.orderBy()]
+	}, 'desc')
 	if (rd.limit() != 0 && rd.useLimit()) {
 		op3 = _.take(op3, rd.limit())
 	}
@@ -1037,6 +1041,7 @@ rd.setup = () => {
 			rpt.optionDimensions(rpt.optionDimensions().filter((d) => {
 				return ['product.brand', 'customer.branchgroup'].indexOf(d.field) == -1
 			}))
+			rd.orderBy('salescount')
 		} break;
 
 		default: {

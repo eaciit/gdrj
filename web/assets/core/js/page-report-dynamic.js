@@ -25,6 +25,8 @@ rd.useLimit = ko.computed(function () {
 	}
 }, rd.breakdownBy);
 rd.isFilterShown = ko.observable(true);
+rd.orderBy = ko.observable('');
+
 rd.doToggleAnalysisFilter = function (which) {
 	if (which) {
 		$('.list-analysis').slideDown(300, function () {
@@ -141,7 +143,7 @@ rd.render = function () {
 		return o;
 	});
 	var op3 = _.orderBy(op2, function (d) {
-		return d[rd.series()[0]._id];
+		return rd.orderBy() == '' ? d[rd.series()[0]._id] : d[rd.orderBy()];
 	}, 'desc');
 	if (rd.limit() != 0 && rd.useLimit()) {
 		op3 = _.take(op3, rd.limit());
@@ -1270,6 +1272,7 @@ rd.setup = function () {
 				rpt.optionDimensions(rpt.optionDimensions().filter(function (d) {
 					return ['product.brand', 'customer.branchgroup'].indexOf(d.field) == -1;
 				}));
+				rd.orderBy('salescount');
 			}break;
 
 		default:
