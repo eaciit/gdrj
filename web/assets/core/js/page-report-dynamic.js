@@ -318,9 +318,29 @@ rd.getQueryStringValue = function (key) {
 	return unescape(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + escape(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
 };
 
+rd.pageIs = ko.computed(function () {
+	return rd.getQueryStringValue('p');
+}, rd);
+rd.sgaCostOptionBranchLvl2 = ko.observableArray([]);
+rd.sgaCostOptionCostGroup = ko.observableArray([]);
+rd.sgaCostBranchName = ko.observableArray([]);
+rd.sgaCostBranchLvl2 = ko.observableArray([]);
+rd.sgaCostBranchGroup = ko.observableArray([]);
+rd.sgaCostCostGroup = ko.observableArray([]);
+
 rd.refreshTruckAdequateIndex = function () {
 	var param = {};
 	param.fiscalYear = rd.fiscalYear();
+
+	if (rd.sgaCostBranchName().length > 0) {
+		param.branchnames = rd.sgaCostBranchName();
+	}
+	if (rd.sgaCostBranchLvl2().length > 0) {
+		param.branchlvl2 = rd.sgaCostBranchLvl2();
+	}
+	if (rd.sgaCostBranchGroup().length > 0) {
+		param.branchgroups = rd.sgaCostBranchGroup();
+	}
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/gettruckoutletdata", param, function (res) {
@@ -362,15 +382,6 @@ rd.refreshTruckAdequateIndex = function () {
 	fetch();
 };
 
-rd.pageIs = ko.computed(function () {
-	return rd.getQueryStringValue('p');
-}, rd);
-rd.sgaCostOptionBranchLvl2 = ko.observableArray([]);
-rd.sgaCostOptionCostGroup = ko.observableArray([]);
-rd.sgaCostBranchName = ko.observableArray([]);
-rd.sgaCostBranchLvl2 = ko.observableArray([]);
-rd.sgaCostBranchGroup = ko.observableArray([]);
-rd.sgaCostCostGroup = ko.observableArray([]);
 rd.refreshSGACostRatio = function () {
 	var param = {};
 	param.groups = ['CostGroup'];
@@ -1253,7 +1264,7 @@ rd.setup = function () {
 		case 'truck-adequate-index':
 			{
 				$('.filter-unit').remove();
-				$('.filter-button').remove();
+				$('.panel-filter:not(.for-truck-cost)').remove();
 
 				vm.currentTitle('Truck Adequate Index');
 
@@ -1299,6 +1310,14 @@ rd.setup = function () {
 					rd.setPercentageOn(config, 'axis2', 0);
 					rd.setPercentageOn(config, 'axis3', 3);
 				};
+
+				rpt.toggleFilter();
+
+				toolkit.ajaxPost("/web/report/getdatamasterbranchlvl2", {}, function (res) {
+					rd.sgaCostOptionBranchLvl2(_.orderBy(res.data, function (d) {
+						return d.Name;
+					}));
+				});
 			}break;
 
 		case 'sga-cost-ratio':

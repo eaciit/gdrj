@@ -176,6 +176,65 @@
 		</div>
 	</div>
 
+	<div class="col-md-3 col-sm-3 ez panel-filter for-truck-cost" data-bind="visible: (rd.pageIs() == 'truck-adequate-index')">
+		<div class="panel ez no-padding hardcore panel-fix">
+			<div class="panel-heading">
+				<h3 class="no-margin">Filter</h3>
+			</div>
+			<div class="panel-body">
+				<div class="from-filter">
+					<p>Click each section below to show respective filter.</p>
+					<div class="wrapper">
+						<div class="panel-group ez-collapse">
+							<div class="panel">
+								<div class="panel-heading" role="tab" id="h-0">
+						            <h4 class="panel-title">
+										<a role="button" data-toggle="collapse" data-parent=".ez-collapse" href="#c-0">
+											<span class="pull-left">Base Filter</span>
+											<span class="pull-right">
+												<i class="fa fa-angle-left"></i>
+												<i class="fa fa-angle-down"></i>
+											</span>
+											<span class="clearfix"></span>
+										</a>
+									</h4>
+						        </div>
+						        <div class="panel-collapse collapse in" role="tabpanel" id="c-0">
+						        	<div class="panel-body">
+						        		<div class="form-group">
+						                    <div class="input-group input-group-sm ez width-full">
+						                        <span class="input-group-addon width-80 align-right">Branch Level 1</span>
+						                        <div class="width-full">
+						                        	<select data-bind="kendoMultiSelect: { data: rpt.masterData.Branch, value: rd.sgaCostBranchName, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select branches' }"></select>
+						                        </div>
+						                    </div>
+						                </div>
+						        		<div class="form-group">
+						                    <div class="input-group input-group-sm ez width-full">
+						                        <span class="input-group-addon width-80 align-right">Branch Level 2</span>
+						                        <div class="width-full">
+						                        	<select data-bind="kendoMultiSelect: { data: rd.sgaCostOptionBranchLvl2, value: rd.sgaCostBranchLvl2, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select branches' }"></select>
+						                        </div>
+						                    </div>
+						                </div>
+						        		<div class="form-group">
+						                    <div class="input-group input-group-sm ez width-full">
+						                        <span class="input-group-addon width-80 align-right">Branch Group</span>
+						                        <div class="width-full">
+						                        	<select data-bind="kendoMultiSelect: { data: rpt.masterData.BranchGroup, value: rd.sgaCostBranchGroup, dataValueField: 'Name', dataTextField: 'Name', placeholder: 'Select branches' }"></select>
+						                        </div>
+						                    </div>
+						                </div>
+						        	</div>
+						        </div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	{{template "_filter.html"}}
 </div>
 
