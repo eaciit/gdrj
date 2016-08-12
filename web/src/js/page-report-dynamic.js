@@ -1,6 +1,29 @@
 viewModel.dynamic = new Object()
 let rd = viewModel.dynamic
 
+rd.menu = ko.observableArray(_.orderBy([
+	{ id: 'sales-by-outlet', title: 'Sales by Outlet' },
+	{ id: 'sales-return-rate', title: 'Sales Return Rate' },
+	{ id: 'sales-discount-by-gross-sales', title: 'Sales Discount by Gross Sales' },
+	{ id: 'gross-sales-by-qty', title: 'Gross Sales / Quantity' },
+	{ id: 'discount-by-qty', title: 'Discount / Quantity' },
+	{ id: 'net-price-by-qty', title: 'Net Price / Quantity' },
+	{ id: 'btl-by-qty', title: 'BTL / Quantity' },
+	{ id: 'net-price-after-btl-qty', title: 'Net Price After BTL / Qty' },
+	{ id: 'freight-cost-by-sales', title: 'Freight Cost by Sales' },
+	{ id: 'direct-labour-index', title: 'Direct Labour Index' },
+	{ id: 'material-type-index', title: 'Material Type Index' },
+	{ id: 'indirect-expense-index', title: 'Indirect Expense Index' },
+	{ id: 'marketing-expense-index', title: 'Marketing Expense Index' },
+	{ id: 'sga-by-sales', title: 'SGA by Sales' },
+	{ id: 'cost-by-sales', title: 'Cost by Sales' },
+	{ id: 'number-of-outlets', title: 'Number of Outlets' },
+	{ id: 'truck-adequate-index', title: 'Truck Adequate Index' },
+	{ id: 'sga-cost-ratio', title: 'SGA Cost Ratio' },
+	{ id: 'sales-invoice', title: 'Sales / Invoice' },
+	{ id: 'sales-velocity-index', title: 'Sales Velocity Index' },
+], (d) => d.title))
+
 rd.optionDivide = ko.observableArray([
 	{ field: 'v1', name: 'Actual' },
 	{ field: 'v1000', name: 'Hundreds' },
@@ -28,6 +51,19 @@ rd.useLimit = ko.computed(() => {
 	}
 }, rd.breakdownBy)
 rd.isFilterShown = ko.observable(true)
+rd.orderBy = ko.observable('')
+rd.useFilterMonth = ko.observable(false)
+rd.optionFilterMonths = ko.computed(() => {
+	let year = parseInt(rd.fiscalYear().split('-')[0], 10)
+	let res = []
+	for (var month = 1; month <= 12; month++) {
+		let yearMonth = moment(new Date(year, month, 1)).format('MMM YYYY')
+		res.push({ field: month, name: yearMonth })
+	}
+	return res
+}, rd.fiscalYear)
+rd.filterMonth = ko.observable(1)
+
 rd.doToggleAnalysisFilter = (which) => {
 	if (which) {
 		$('.list-analysis').slideDown(300, () => {
@@ -56,6 +92,22 @@ rd.refresh = () => {
 		param.flag = "hasoutlet"
 	}
 
+	if (rd.getQueryStringValue('p') == 'sales-invoice') {
+		param.flag = 'sales-invoice'
+	}
+
+	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+		param.flag = 'sales-invoice'
+	}
+
+	if (rd.useFilterMonth()) {
+		param.filters.push({
+			Field: 'date.month',
+			Op: "$eq",
+			Value: rd.filterMonth()
+		})
+	}
+
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
@@ -79,11 +131,13 @@ rd.refresh = () => {
 			} else {
 				rd.data(res.Data.Data)
 			}
-			rd.render()
 
-			// if ($('.list-analysis').is(':visible')) {
-			// 	rd.doToggleAnalysisFilter(false)
-			// }
+			if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+				rd.refreshSalesVelocity()
+				return
+			}
+
+			rd.render()
 		}, () => {
 			rd.contentIsLoading(false)
 		})
@@ -130,17 +184,30 @@ rd.render = () => {
 
 		return o
 	})
-	let op3 = _.orderBy(op2, (d) => d[rd.series()[0]._id], 'desc')
+	let op3 = []
+	if (rd.orderBy() == 'date.month') {
+		op2.forEach((d) => {
+			let year = parseInt(rd.fiscalYear().split('-')[0], 10)
+			let month = parseInt(d.breakdown, 10)
+			d.breakdown = moment(new Date(year, month + 3, 1)).format('MMM YYYY')
+			d.yearmonth = String(year) + String(month)
+		})
+		op3 = _.orderBy(op2, (d) => d.yearmonth, 'asc')
+	} else {
+		op3 = _.orderBy(op2, (d) => {
+			return (rd.orderBy() == '') ? d[rd.series()[0]._id] : d[rd.orderBy()]
+		}, 'desc')
+	}
 	if (rd.limit() != 0 && rd.useLimit()) {
 		op3 = _.take(op3, rd.limit())
 	}
 
-	let width = $('#tab1').width()
-	if (_.min([rd.limit(), op3.length]) > 6) {
-		width = 160 * rd.limit()
+	let width = $('#tab2').width()
+	if (op3.length > 6) {
+		width = 160 * op3.length
 	}
-	if (width == $('#tab1').width()) {
-		width = `${width - 22}px`
+	if (width == $('#tab2').width()) {
+		width = width - 22
 	}
 
 	let axes = []
@@ -229,6 +296,7 @@ rd.render = () => {
 
     rd.configure(config)
 
+    console.log('----', `${width}px;`)
     $('.report').replaceWith(`<div class="report" style="width: ${width}px;"></div>`)
     $('.report').kendoChart(config)
 }
@@ -328,6 +396,60 @@ rd.refreshSGACostRatio = () => {
 
 			rd.contentIsLoading(false)
 			rd.data(op3)
+			rd.render()
+		}, () => {
+			rd.contentIsLoading(false)
+		})
+	}
+
+	rd.contentIsLoading(true)
+	fetch()
+}
+
+rd.refreshSalesVelocity = () => {
+	let param = {}
+	param.pls = []
+	param.groups = rpt.parseGroups([rd.breakdownBy()])
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue(false, rd.fiscalYear)
+	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+		param.flag = 'sales-velocity'
+	}
+
+	if (rd.useFilterMonth()) {
+		param.filters.push({
+			Field: 'date.month',
+			Op: "$eq",
+			Value: rd.filterMonth()
+		})
+	}
+
+	let fetch = () => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
+			}
+
+			if (rpt.isEmptyData(res)) {
+				rd.data([])
+				rd.render()
+				rd.contentIsLoading(false)
+				return
+			}
+
+			rd.data().forEach((d) => {
+				let dataFreq = res.Data.Data.find((e) =>
+					e._id._id_date_month == d._id._id_date_month
+				)
+				if (toolkit.isDefined(dataFreq)) {
+					d.frequency = dataFreq.salescount
+				}
+			})
+
+			rd.contentIsLoading(false)
 			rd.render()
 		}, () => {
 			rd.contentIsLoading(false)
@@ -994,6 +1116,89 @@ rd.setup = () => {
 				rd.setPercentageOn(config, 'axis2', 2)
 				rd.setPercentageOn(config, 'axis3', 3)
 			}
+		} break;
+
+		case 'sales-invoice': {
+			vm.currentTitle('Sales / Invoice')
+			rd.series = ko.observableArray([{ 
+				_id: 'sales', 
+				plheader: 'Net Sales',
+				callback: (v, k) => {
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+
+					return netSales / rd.divider()
+				}
+			}, { 
+				_id: 'salescount', 
+				plheader: 'Number of Invoices',
+				callback: (v, k) => {
+					let salescount = Math.abs(toolkit.sum(v, (e) => e.salescount))
+
+					return salescount
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+					let salescount = Math.abs(toolkit.sum(v, (e) => e.salescount))
+
+					return toolkit.number(netSales / salescount)
+				}
+			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 0)
+				rd.setPercentageOn(config, 'axis3', 2)
+			}
+			rpt.optionDimensions(rpt.optionDimensions().filter((d) => {
+				return ['product.brand', 'customer.branchgroup'].indexOf(d.field) == -1
+			}))
+			rd.orderBy('salescount')
+		} break;
+
+		case 'sales-velocity-index': {
+			vm.currentTitle('Sales Velocity Index')
+			rd.series = ko.observableArray([{ 
+				_id: 'avgsales', 
+				plheader: 'Avg Sales',
+				callback: (v, k) => {
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+					let salescount = Math.abs(toolkit.sum(v, (e) => e.salescount))
+
+					return toolkit.number(netSales / salescount)
+				}
+			}, { 
+				_id: 'frequency', 
+				plheader: 'Sales Frequency',
+				callback: (v, k) => {
+					let frequency = Math.abs(toolkit.sum(v, (e) => e.frequency))
+
+					return frequency
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+					let salescount = Math.abs(toolkit.sum(v, (e) => e.salescount))
+					let avgSales = toolkit.number(netSales / salescount)
+
+					let frequency = Math.abs(toolkit.sum(v, (e) => e.frequency))
+
+					return toolkit.number(avgSales / frequency)
+				}
+			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 0)
+				rd.setPercentageOn(config, 'axis3', 2)
+			}
+			rd.breakdownBy('customer.channelname')
+			rd.orderBy('customer.channelname')
+			rd.useFilterMonth(true)
 		} break;
 
 		default: {
