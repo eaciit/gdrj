@@ -367,10 +367,32 @@ rd.refreshTruckAdequateIndex = () => {
 	fetch()
 }
 
+rd.pageIs = ko.computed(() => {
+	return rd.getQueryStringValue('p')
+}, rd)
+rd.sgaCostOptionBranchLvl2 = ko.observableArray([])
+rd.sgaCostOptionCostGroup = ko.observableArray([])
+rd.sgaCostBranchName = ko.observableArray([])
+rd.sgaCostBranchLvl2 = ko.observableArray([])
+rd.sgaCostBranchGroup = ko.observableArray([])
+rd.sgaCostCostGroup = ko.observableArray([])
 rd.refreshSGACostRatio = () => {
 	let param = {}
 	param.groups = ['CostGroup']
 	param.year = parseInt(rd.fiscalYear().split('-')[0], 10)
+
+	if (rd.sgaCostBranchName().length > 0) {
+		param.branchnames = rd.sgaCostBranchName()
+	}
+	if (rd.sgaCostBranchLvl2().length > 0) {
+		param.branchlvl2 = rd.sgaCostBranchLvl2()
+	}
+	if (rd.sgaCostBranchGroup().length > 0) {
+		param.branchgroups = rd.sgaCostBranchGroup()
+	}
+	if (rd.sgaCostCostGroup().length > 0) {
+		param.costgroups = rd.sgaCostCostGroup()
+	}
 
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getdatasga", param, (res) => {
@@ -1037,7 +1059,10 @@ rd.setup = () => {
 
 		case 'truck-adequate-index': {
 			$('.filter-unit').remove()
+			$('.filter-button').remove()
+
 			vm.currentTitle('Truck Adequate Index')
+			
 			rd.series = ko.observableArray([{ 
 				_id: 'numtruct', 
 				plheader: 'Number of Truck',
@@ -1079,6 +1104,8 @@ rd.setup = () => {
 		} break;
 
 		case 'sga-cost-ratio': {
+			$('.panel-filter:not(.for-sga)').remove()
+
 			vm.currentTitle('SGA Cost Ratio Adequate Index')
 			rd.series = ko.observableArray([{ 
 				_id: 'sgacost', 
@@ -1116,6 +1143,15 @@ rd.setup = () => {
 				rd.setPercentageOn(config, 'axis2', 2)
 				rd.setPercentageOn(config, 'axis3', 3)
 			}
+
+			rpt.toggleFilter()
+
+			toolkit.ajaxPost("/web/report/getdatamasterbranchlvl2", {}, (res) => {
+				rd.sgaCostOptionBranchLvl2(_.orderBy(res.data, (d) => d.Name))
+			})
+			toolkit.ajaxPost("/web/report/getdatafunction", {}, (res) => {
+				rd.sgaCostOptionCostGroup(_.orderBy(res.data, (d) => d.Name))
+			})
 		} break;
 
 		case 'sales-invoice': {
