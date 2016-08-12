@@ -268,6 +268,15 @@ func generatedata4tructanalysis() {
 			tkm.Set("numoutlet", len(toutlet))
 			tkm.Set("numtruct", len(ttruct))
 
+			branchid := tkey.GetString("branchid")
+			if branchid != "" {
+				branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+				tkm.Set("branchname", branchgroup.GetString("name"))
+				tkm.Set("branchgroup", branchgroup.GetString("branchgroup"))
+				tkm.Set("branchlvl2", branchgroup.GetString("branchlvl2"))
+				tkm.Set("idbranchlvl2", branchgroup.GetString("idbranchlvl2"))
+			}
+
 			err := qSave.Exec(toolkit.M{}.Set("data", tkm))
 			if err != nil {
 				toolkit.Println(err)
