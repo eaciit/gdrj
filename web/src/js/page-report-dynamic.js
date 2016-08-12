@@ -216,7 +216,7 @@ rd.render = () => {
         categoryAxis: categoryAxis
     }
 
-    if (config.series.length > 1) {
+    if (config.series.length > 2) {
 		config.series[2].labels.template = (e) => {
 			let val = kendo.toString(e.value, 'n1')
 			return `${val}`
@@ -289,6 +289,45 @@ rd.refreshTruckAdequateIndex = () => {
 
 			rd.contentIsLoading(false)
 			rd.data(dataMapped)
+			rd.render()
+		}, () => {
+			rd.contentIsLoading(false)
+		})
+	}
+
+	rd.contentIsLoading(true)
+	fetch()
+}
+
+rd.refreshSGACostRatio = () => {
+	let param = {}
+	param.groups = ['CostGroup']
+	param.year = parseInt(rd.fiscalYear().split('-')[0], 10)
+
+	let fetch = () => {
+		toolkit.ajaxPost(viewModel.appName + "report/getdatasga", param, (res) => {
+			if (res.data.length == 0) {
+				rd.data([])
+				rd.render()
+				rd.contentIsLoading(false)
+				return
+			}
+
+			let op1 = _.groupBy(res.data, (d) => d.CostGroup)
+			let op2 = _.map(op1, (v, k) => {
+				let o = {}
+				o._id = {}
+				o._id._id_costgroup = k
+				o.amount = toolkit.sum(v, (e) => e.Amount) * -1
+				return o
+			})
+			let op3 = _.map(op2, (d) => {
+				d.total = toolkit.sum(op2, (d) => d.amount)
+				return d
+			})
+
+			rd.contentIsLoading(false)
+			rd.data(op3)
 			rd.render()
 		}, () => {
 			rd.contentIsLoading(false)
@@ -897,7 +936,7 @@ rd.setup = () => {
 				callback: (v, k) => {
 					let numtruct = Math.abs(toolkit.sum(v, (e) => e.numtruct))
 					let numoutlet = Math.abs(toolkit.sum(v, (e) => e.numoutlet))
-					console.log(numtruct, numoutlet)
+
 					return toolkit.safeDiv(numtruct, numoutlet)
 				}
 			}])
@@ -913,6 +952,46 @@ rd.setup = () => {
 			rd.configure = (config) => {
 				rd.setPercentageOn(config, 'axis1', 0)
 				rd.setPercentageOn(config, 'axis2', 0)
+				rd.setPercentageOn(config, 'axis3', 3)
+			}
+		} break;
+
+		case 'sga-cost-ratio': {
+			vm.currentTitle('SGA Cost Ratio Adequate Index')
+			rd.series = ko.observableArray([{ 
+				_id: 'sgacost', 
+				plheader: 'SGA Cost',
+				callback: (v, k) => {
+					let sgacost = Math.abs(toolkit.sum(v, (e) => e.amount)) / rd.divider()
+					return sgacost
+				}
+			}, { 
+				_id: 'total', 
+				plheader: 'Total SGA Cost',
+				callback: (v, k) => {
+					let total = 0; toolkit.try(() => { total = v[0].total / rd.divider() })
+					return total
+				}
+			}, { 
+				_id: 'percentage', 
+				plheader: 'SGA Cost / Total',
+				callback: (v, k) => {
+					let sgacost = Math.abs(toolkit.sum(v, (e) => e.amount))
+					let total = 0; toolkit.try(() => { total = v[0].total })
+
+					return toolkit.safeDiv(sgacost, total)
+				}
+			}])
+
+			rpt.optionDimensions([
+				{ field: 'costgroup', name: 'Function' },
+			])
+			rd.breakdownBy('costgroup')
+			rd.refresh = rd.refreshSGACostRatio
+
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 2)
 				rd.setPercentageOn(config, 'axis3', 3)
 			}
 		} break;
