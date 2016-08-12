@@ -3,6 +3,10 @@
 viewModel.dynamic = new Object();
 var rd = viewModel.dynamic;
 
+rd.menu = ko.observableArray(_.orderBy([{ id: 'sales-by-outlet', title: 'Sales by Outlet' }, { id: 'sales-return-rate', title: 'Sales Return Rate' }, { id: 'sales-discount-by-gross-sales', title: 'Sales Discount by Gross Sales' }, { id: 'gross-sales-by-qty', title: 'Gross Sales / Quantity' }, { id: 'discount-by-qty', title: 'Discount / Quantity' }, { id: 'net-price-by-qty', title: 'Net Price / Quantity' }, { id: 'btl-by-qty', title: 'BTL / Quantity' }, { id: 'net-price-after-btl-qty', title: 'Net Price After BTL / Qty' }, { id: 'freight-cost-by-sales', title: 'Freight Cost by Sales' }, { id: 'direct-labour-index', title: 'Direct Labour Index' }, { id: 'material-type-index', title: 'Material Type Index' }, { id: 'indirect-expense-index', title: 'Indirect Expense Index' }, { id: 'marketing-expense-index', title: 'Marketing Expense Index' }, { id: 'sga-by-sales', title: 'SGA by Sales' }, { id: 'cost-by-sales', title: 'Cost by Sales' }, { id: 'number-of-outlets', title: 'Number of Outlets' }, { id: 'truck-adequate-index', title: 'Truck Adequate Index' }, { id: 'sga-cost-ratio', title: 'SGA Cost Ratio' }, { id: 'sales-invoice', title: 'Sales / Invoice' }, { id: 'sales-velocity-index', title: 'Sales Velocity Index' }], function (d) {
+	return d.title;
+}));
+
 rd.optionDivide = ko.observableArray([{ field: 'v1', name: 'Actual' }, { field: 'v1000', name: 'Hundreds' }, { field: 'v1000000', name: 'Millions' }, { field: 'v1000000000', name: 'Billions' }]);
 rd.divideBy = ko.observable('v1000000000');
 rd.divider = function () {
@@ -25,6 +29,19 @@ rd.useLimit = ko.computed(function () {
 	}
 }, rd.breakdownBy);
 rd.isFilterShown = ko.observable(true);
+rd.orderBy = ko.observable('');
+rd.useFilterMonth = ko.observable(false);
+rd.optionFilterMonths = ko.computed(function () {
+	var year = parseInt(rd.fiscalYear().split('-')[0], 10);
+	var res = [];
+	for (var month = 1; month <= 12; month++) {
+		var yearMonth = moment(new Date(year, month, 1)).format('MMM YYYY');
+		res.push({ field: month, name: yearMonth });
+	}
+	return res;
+}, rd.fiscalYear);
+rd.filterMonth = ko.observable(1);
+
 rd.doToggleAnalysisFilter = function (which) {
 	if (which) {
 		$('.list-analysis').slideDown(300, function () {
@@ -53,6 +70,22 @@ rd.refresh = function () {
 		param.flag = "hasoutlet";
 	}
 
+	if (rd.getQueryStringValue('p') == 'sales-invoice') {
+		param.flag = 'sales-invoice';
+	}
+
+	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+		param.flag = 'sales-invoice';
+	}
+
+	if (rd.useFilterMonth()) {
+		param.filters.push({
+			Field: 'date.month',
+			Op: "$eq",
+			Value: rd.filterMonth()
+		});
+	}
+
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
@@ -76,11 +109,13 @@ rd.refresh = function () {
 			} else {
 				rd.data(res.Data.Data);
 			}
-			rd.render();
 
-			// if ($('.list-analysis').is(':visible')) {
-			// 	rd.doToggleAnalysisFilter(false)
-			// }
+			if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+				rd.refreshSalesVelocity();
+				return;
+			}
+
+			rd.render();
 		}, function () {
 			rd.contentIsLoading(false);
 		});
@@ -136,19 +171,32 @@ rd.render = function () {
 
 		return o;
 	});
-	var op3 = _.orderBy(op2, function (d) {
-		return d[rd.series()[0]._id];
-	}, 'desc');
+	var op3 = [];
+	if (rd.orderBy() == 'date.month') {
+		op2.forEach(function (d) {
+			var year = parseInt(rd.fiscalYear().split('-')[0], 10);
+			var month = parseInt(d.breakdown, 10);
+			d.breakdown = moment(new Date(year, month + 3, 1)).format('MMM YYYY');
+			d.yearmonth = String(year) + String(month);
+		});
+		op3 = _.orderBy(op2, function (d) {
+			return d.yearmonth;
+		}, 'asc');
+	} else {
+		op3 = _.orderBy(op2, function (d) {
+			return rd.orderBy() == '' ? d[rd.series()[0]._id] : d[rd.orderBy()];
+		}, 'desc');
+	}
 	if (rd.limit() != 0 && rd.useLimit()) {
 		op3 = _.take(op3, rd.limit());
 	}
 
-	var width = $('#tab1').width();
-	if (_.min([rd.limit(), op3.length]) > 6) {
-		width = 160 * rd.limit();
+	var width = $('#tab2').width();
+	if (op3.length > 6) {
+		width = 160 * op3.length;
 	}
-	if (width == $('#tab1').width()) {
-		width = width - 22 + 'px';
+	if (width == $('#tab2').width()) {
+		width = width - 22;
 	}
 
 	var axes = [];
@@ -237,6 +285,7 @@ rd.render = function () {
 
 	rd.configure(config);
 
+	console.log('----', width + 'px;');
 	$('.report').replaceWith('<div class="report" style="width: ' + width + 'px;"></div>');
 	$('.report').kendoChart(config);
 };
@@ -269,9 +318,29 @@ rd.getQueryStringValue = function (key) {
 	return unescape(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + escape(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
 };
 
+rd.pageIs = ko.computed(function () {
+	return rd.getQueryStringValue('p');
+}, rd);
+rd.sgaCostOptionBranchLvl2 = ko.observableArray([]);
+rd.sgaCostOptionCostGroup = ko.observableArray([]);
+rd.sgaCostBranchName = ko.observableArray([]);
+rd.sgaCostBranchLvl2 = ko.observableArray([]);
+rd.sgaCostBranchGroup = ko.observableArray([]);
+rd.sgaCostCostGroup = ko.observableArray([]);
+
 rd.refreshTruckAdequateIndex = function () {
 	var param = {};
 	param.fiscalYear = rd.fiscalYear();
+
+	if (rd.sgaCostBranchName().length > 0) {
+		param.branchnames = rd.sgaCostBranchName();
+	}
+	if (rd.sgaCostBranchLvl2().length > 0) {
+		param.branchlvl2 = rd.sgaCostBranchLvl2();
+	}
+	if (rd.sgaCostBranchGroup().length > 0) {
+		param.branchgroups = rd.sgaCostBranchGroup();
+	}
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/gettruckoutletdata", param, function (res) {
@@ -318,6 +387,19 @@ rd.refreshSGACostRatio = function () {
 	param.groups = ['CostGroup'];
 	param.year = parseInt(rd.fiscalYear().split('-')[0], 10);
 
+	if (rd.sgaCostBranchName().length > 0) {
+		param.branchnames = rd.sgaCostBranchName();
+	}
+	if (rd.sgaCostBranchLvl2().length > 0) {
+		param.branchlvl2 = rd.sgaCostBranchLvl2();
+	}
+	if (rd.sgaCostBranchGroup().length > 0) {
+		param.branchgroups = rd.sgaCostBranchGroup();
+	}
+	if (rd.sgaCostCostGroup().length > 0) {
+		param.costgroups = rd.sgaCostCostGroup();
+	}
+
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/getdatasga", param, function (res) {
 			if (res.data.length == 0) {
@@ -348,6 +430,60 @@ rd.refreshSGACostRatio = function () {
 
 			rd.contentIsLoading(false);
 			rd.data(op3);
+			rd.render();
+		}, function () {
+			rd.contentIsLoading(false);
+		});
+	};
+
+	rd.contentIsLoading(true);
+	fetch();
+};
+
+rd.refreshSalesVelocity = function () {
+	var param = {};
+	param.pls = [];
+	param.groups = rpt.parseGroups([rd.breakdownBy()]);
+	param.aggr = 'sum';
+	param.filters = rpt.getFilterValue(false, rd.fiscalYear);
+	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+		param.flag = 'sales-velocity';
+	}
+
+	if (rd.useFilterMonth()) {
+		param.filters.push({
+			Field: 'date.month',
+			Op: "$eq",
+			Value: rd.filterMonth()
+		});
+	}
+
+	var fetch = function fetch() {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			if (rpt.isEmptyData(res)) {
+				rd.data([]);
+				rd.render();
+				rd.contentIsLoading(false);
+				return;
+			}
+
+			rd.data().forEach(function (d) {
+				var dataFreq = res.Data.Data.find(function (e) {
+					return e._id._id_date_month == d._id._id_date_month;
+				});
+				if (toolkit.isDefined(dataFreq)) {
+					d.frequency = dataFreq.salescount;
+				}
+			});
+
+			rd.contentIsLoading(false);
 			rd.render();
 		}, function () {
 			rd.contentIsLoading(false);
@@ -1128,7 +1264,10 @@ rd.setup = function () {
 		case 'truck-adequate-index':
 			{
 				$('.filter-unit').remove();
+				$('.panel-filter:not(.for-truck-cost)').remove();
+
 				vm.currentTitle('Truck Adequate Index');
+
 				rd.series = ko.observableArray([{
 					_id: 'numtruct',
 					plheader: 'Number of Truck',
@@ -1171,10 +1310,20 @@ rd.setup = function () {
 					rd.setPercentageOn(config, 'axis2', 0);
 					rd.setPercentageOn(config, 'axis3', 3);
 				};
+
+				rpt.toggleFilter();
+
+				toolkit.ajaxPost("/web/report/getdatamasterbranchlvl2", {}, function (res) {
+					rd.sgaCostOptionBranchLvl2(_.orderBy(res.data, function (d) {
+						return d.Name;
+					}));
+				});
 			}break;
 
 		case 'sga-cost-ratio':
 			{
+				$('.panel-filter:not(.for-sga)').remove();
+
 				vm.currentTitle('SGA Cost Ratio Adequate Index');
 				rd.series = ko.observableArray([{
 					_id: 'sgacost',
@@ -1218,6 +1367,124 @@ rd.setup = function () {
 					rd.setPercentageOn(config, 'axis2', 2);
 					rd.setPercentageOn(config, 'axis3', 3);
 				};
+
+				rpt.toggleFilter();
+
+				toolkit.ajaxPost("/web/report/getdatamasterbranchlvl2", {}, function (res) {
+					rd.sgaCostOptionBranchLvl2(_.orderBy(res.data, function (d) {
+						return d.Name;
+					}));
+				});
+				toolkit.ajaxPost("/web/report/getdatafunction", {}, function (res) {
+					rd.sgaCostOptionCostGroup(_.orderBy(res.data, function (d) {
+						return d.Name;
+					}));
+				});
+			}break;
+
+		case 'sales-invoice':
+			{
+				vm.currentTitle('Sales / Invoice');
+				rd.series = ko.observableArray([{
+					_id: 'sales',
+					plheader: 'Net Sales',
+					callback: function callback(v, k) {
+						var netSales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+
+						return netSales / rd.divider();
+					}
+				}, {
+					_id: 'salescount',
+					plheader: 'Number of Invoices',
+					callback: function callback(v, k) {
+						var salescount = Math.abs(toolkit.sum(v, function (e) {
+							return e.salescount;
+						}));
+
+						return salescount;
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var netSales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+						var salescount = Math.abs(toolkit.sum(v, function (e) {
+							return e.salescount;
+						}));
+
+						return toolkit.number(netSales / salescount);
+					}
+				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 0);
+					rd.setPercentageOn(config, 'axis3', 2);
+				};
+				rpt.optionDimensions(rpt.optionDimensions().filter(function (d) {
+					return ['product.brand', 'customer.branchgroup'].indexOf(d.field) == -1;
+				}));
+				rd.orderBy('salescount');
+			}break;
+
+		case 'sales-velocity-index':
+			{
+				vm.currentTitle('Sales Velocity Index');
+				rd.series = ko.observableArray([{
+					_id: 'avgsales',
+					plheader: 'Avg Sales',
+					callback: function callback(v, k) {
+						var netSales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+						var salescount = Math.abs(toolkit.sum(v, function (e) {
+							return e.salescount;
+						}));
+
+						return toolkit.number(netSales / salescount);
+					}
+				}, {
+					_id: 'frequency',
+					plheader: 'Sales Frequency',
+					callback: function callback(v, k) {
+						var frequency = Math.abs(toolkit.sum(v, function (e) {
+							return e.frequency;
+						}));
+
+						return frequency;
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var netSales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+						var salescount = Math.abs(toolkit.sum(v, function (e) {
+							return e.salescount;
+						}));
+						var avgSales = toolkit.number(netSales / salescount);
+
+						var frequency = Math.abs(toolkit.sum(v, function (e) {
+							return e.frequency;
+						}));
+
+						return toolkit.number(avgSales / frequency);
+					}
+				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 0);
+					rd.setPercentageOn(config, 'axis3', 2);
+				};
+				rd.breakdownBy('customer.channelname');
+				rd.orderBy('customer.channelname');
+				rd.useFilterMonth(true);
 			}break;
 
 		default:

@@ -329,8 +329,15 @@ func (s *PLFinderParam) GetTableName() string {
 		return tableName
 	}
 
-	// s.TableKey = "key"
-	// return `salespls-summary-4cogssgafinal`
+	if s.Flag == "sales-velocity" {
+		s.TableKey = "key"
+		return `salespls-summary-invcust4salesfreq`
+	}
+
+	if s.Flag == "sales-invoice" {
+		s.TableKey = "key"
+		return `salespls-summary-invcust4salesinvoice`
+	}
 
 	if s.Flag == "gna" {
 		s.TableKey = "key"
@@ -794,7 +801,7 @@ func (s *PLFinderParam) GetOutletData() ([]*toolkit.M, error) {
 	groups["_id"] = groupIds
 	groups["qty"] = bson.M{"$sum": "$qty"}
 
-	fmt.Printf("-MATHCES %#v\n", matches)
+	// fmt.Printf("-MATHCES %#v\n", matches)
 
 	pipe := []bson.M{{"$match": matches}, {"$group": groups}}
 
@@ -861,7 +868,13 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		"taxamount",
 		"netamount",
 		"salesreturn",
-		// "totaloutlet",
+	}
+
+	if s.Flag == "sales-invoice" {
+		fields = append(fields, "salescount")
+	}
+	if s.Flag == "sales-velocity" {
+		fields = append(fields, "salescount")
 	}
 
 	for _, other := range fields {
@@ -904,10 +917,6 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 		}
 	}
 
-	fmt.Printf("-MATHCES %#v\n", matches)
-	fmt.Printf("-GROUPS %#v\n", groups)
-
-	// groups["totalOutlet"] = bson.M{"$size": "$outlets"}
 	pipe := []bson.M{{"$match": matches}, {"$group": groups}} //, {"$project": projects}} //
 
 	res := []*toolkit.M{}
@@ -972,17 +981,9 @@ func (s *PLFinderParam) GeneratePLData() error {
 		group[key] = bson.M{"$sum": field}
 	}
 
-	group["outlets"] = bson.M{"$addToSet": "$customer._id"}
-	// project := bson.M{"totaloutlet": bson.M{"$size": "$outlets"}}
-	// for key := range group {
-	// 	if key == "_id" {
-	// 		continue
-	// 	}
+	fmt.Printf("---group %#v\n", group)
 
-	// 	project[key] = 1
-	// }
-
-	pipes := []bson.M{{"$group": group} /**{"$project": project}, */, {"$out": tableName}}
+	pipes := []bson.M{{"$group": group}, {"$out": tableName}}
 	pipe := col.Pipe(pipes)
 
 	res := []*toolkit.M{}
