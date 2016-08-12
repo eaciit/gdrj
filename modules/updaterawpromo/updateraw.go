@@ -28,6 +28,7 @@ var masterbranch = toolkit.M{}
 // var masterbranchgroup = toolkit.M{}
 var masterbranchgroup = toolkit.M{}
 var masteraccountgroup = toolkit.M{}
+var mastercustomer = toolkit.M{}
 
 func prepdatacostcenter() {
 	toolkit.Println("--> Get Data cost center")
@@ -62,6 +63,24 @@ func prepdatabranch() {
 		}
 
 		masterbranch.Set(tkm.GetString("_id"), tkm)
+	}
+}
+
+func prepdatacustomer() {
+	toolkit.Println("--> Get branch center")
+
+	// filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
+	csr, _ := conn.NewQuery().Select().From("customer").Cursor(nil)
+	defer csr.Close()
+
+	for {
+		tkm := toolkit.M{}
+		e := csr.Fetch(&tkm, 1, false)
+		if e != nil {
+			break
+		}
+
+		mastercustomer.Set(tkm.GetString("_id"), tkm.GetString("name"))
 	}
 }
 
@@ -304,6 +323,7 @@ func main() {
 
 	setinitialconnection()
 	prepdatabranch()
+	prepdatacustomer()
 	// prepdatacostcenter()
 	// prepdataaccountgroup()
 	// prepdatabranchgroup()
@@ -382,18 +402,18 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	for trx = range jobs {
 		// date := gdrj.NewDate(trx.GetInt("Year"), trx.GetInt("Month"), 1)
 		// trx.Set("gdrj_fiscal", date.Fiscal)
-		// key := trx.Get("key", toolkit.M{}).(toolkit.M)
-		// trx.Set("key", key)
+		key := trx.Get("_id", toolkit.M{}).(toolkit.M)
+		trx.Set("key", key)
 
-		// id := toolkit.Sprintf("%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", key.GetString("date_fiscal"),
-		// 	key.GetInt("date_month"), key.GetInt("date_year"), key.GetString("customer_branchid"),
-		// 	key.GetString("customer_branchname"), key.GetString("customer_channelid"),
-		// 	key.GetString("customer_custtype"), key.GetString("customer_reportsubchannel"), key.GetString("customer_channelname"), key.GetString("customer_reportchannel"),
-		// 	key.GetString("customer_keyaccount"), key.GetString("customer_customergroupname"), key.GetString("customer_customergroup"),
-		// 	key.GetString("customer_areaname"), key.GetString("customer_region"), key.GetString("customer_zone"),
-		// 	key.GetString("trxsrc"), key.GetString("source"), key.GetString("ref"), key.GetString("customer_customerid")) //customer_customerid
+		id := toolkit.Sprintf("%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", key.GetString("date_fiscal"),
+			key.GetInt("date_month"), key.GetInt("date_year"), key.GetString("customer_branchid"),
+			key.GetString("customer_branchname"), key.GetString("customer_channelid"),
+			key.GetString("customer_custtype"), key.GetString("customer_reportsubchannel"), key.GetString("customer_channelname"), key.GetString("customer_reportchannel"),
+			key.GetString("customer_keyaccount"), key.GetString("customer_customergroupname"), key.GetString("customer_customergroup"),
+			key.GetString("customer_areaname"), key.GetString("customer_region"), key.GetString("customer_zone"),
+			key.GetString("trxsrc"), key.GetString("source"), key.GetString("ref"), key.GetString("customer_customerid")) //customer_customerid
 
-		// trx.Set("_id", id)
+		trx.Set("_id", id)
 
 		// // tdate := time.Date(trx.GetInt("year"), time.Month(trx.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).
 		// // 	AddDate(0, 3, 0)
@@ -487,7 +507,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// //=== For data salespls-summary mode consolidate
 
-		key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		key = trx.Get("key", toolkit.M{}).(toolkit.M)
 		branchid := key.GetString("customer_branchid")
 
 		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
@@ -501,6 +521,9 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		if key.GetString("customer_branchlvl2") == "" {
 			key.Set("customer_branchlvl2", "OTHER")
 		}
+
+		customerid := key.GetString("customer_customerid")
+		key.Set("customer_customername", mastercustomer.GetString(customerid))
 
 		// /*other fix*/
 		// if key.GetString("customer_reportsubchannel") == "R3" {
