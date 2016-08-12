@@ -1,6 +1,29 @@
 viewModel.dynamic = new Object()
 let rd = viewModel.dynamic
 
+rd.menu = ko.observableArray(_.orderBy([
+	{ id: 'sales-by-outlet', title: 'Sales by Outlet' },
+	{ id: 'sales-return-rate', title: 'Sales Return Rate' },
+	{ id: 'sales-discount-by-gross-sales', title: 'Sales Discount by Gross Sales' },
+	{ id: 'gross-sales-by-qty', title: 'Gross Sales / Quantity' },
+	{ id: 'discount-by-qty', title: 'Discount / Quantity' },
+	{ id: 'net-price-by-qty', title: 'Net Price / Quantity' },
+	{ id: 'btl-by-qty', title: 'BTL / Quantity' },
+	{ id: 'net-price-after-btl-qty', title: 'Net Price After BTL / Qty' },
+	{ id: 'freight-cost-by-sales', title: 'Freight Cost by Sales' },
+	{ id: 'direct-labour-index', title: 'Direct Labour Index' },
+	{ id: 'material-type-index', title: 'Material Type Index' },
+	{ id: 'indirect-expense-index', title: 'Indirect Expense Index' },
+	{ id: 'marketing-expense-index', title: 'Marketing Expense Index' },
+	{ id: 'sga-by-sales', title: 'SGA by Sales' },
+	{ id: 'cost-by-sales', title: 'Cost by Sales' },
+	{ id: 'number-of-outlets', title: 'Number of Outlets' },
+	{ id: 'truck-adequate-index', title: 'Truck Adequate Index' },
+	{ id: 'sga-cost-ratio', title: 'SGA Cost Ratio' },
+	{ id: 'sales-invoice', title: 'Sales / Invoice' },
+	{ id: 'sales-velocity-index', title: 'Sales Velocity Index' },
+], (d) => d.title))
+
 rd.optionDivide = ko.observableArray([
 	{ field: 'v1', name: 'Actual' },
 	{ field: 'v1000', name: 'Hundreds' },
@@ -29,6 +52,17 @@ rd.useLimit = ko.computed(() => {
 }, rd.breakdownBy)
 rd.isFilterShown = ko.observable(true)
 rd.orderBy = ko.observable('')
+rd.useFilterMonth = ko.observable(false)
+rd.optionFilterMonths = ko.computed(() => {
+	let year = parseInt(rd.fiscalYear().split('-')[0], 10)
+	let res = []
+	for (var month = 1; month <= 12; month++) {
+		let yearMonth = moment(new Date(year, month, 1)).format('MMM YYYY')
+		res.push({ field: month, name: yearMonth })
+	}
+	return res
+}, rd.fiscalYear)
+rd.filterMonth = ko.observable(1)
 
 rd.doToggleAnalysisFilter = (which) => {
 	if (which) {
@@ -64,6 +98,14 @@ rd.refresh = () => {
 
 	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
 		param.flag = 'sales-invoice'
+	}
+
+	if (rd.useFilterMonth()) {
+		param.filters.push({
+			Field: 'date.month',
+			Op: "$eq",
+			Value: rd.filterMonth()
+		})
 	}
 
 	let fetch = () => {
@@ -372,6 +414,14 @@ rd.refreshSalesVelocity = () => {
 	param.filters = rpt.getFilterValue(false, rd.fiscalYear)
 	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
 		param.flag = 'sales-velocity'
+	}
+
+	if (rd.useFilterMonth()) {
+		param.filters.push({
+			Field: 'date.month',
+			Op: "$eq",
+			Value: rd.filterMonth()
+		})
 	}
 
 	let fetch = () => {
@@ -1146,9 +1196,9 @@ rd.setup = () => {
 				rd.setPercentageOn(config, 'axis2', 0)
 				rd.setPercentageOn(config, 'axis3', 2)
 			}
-			rpt.optionDimensions([{ 'field': 'date.month', name: 'Month' }])
-			rd.breakdownBy('date.month')
-			rd.orderBy('date.month')
+			rd.breakdownBy('customer.channelname')
+			rd.orderBy('customer.channelname')
+			rd.useFilterMonth(true)
 		} break;
 
 		default: {

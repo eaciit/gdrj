@@ -15,189 +15,18 @@
 			</div>
 		</div>
 
-		<div class="list-analysis" style="margin: 5px 0px; margin: 5px 0px; margin-right: 58px;">
+		<div class="list-analysis" data-bind="foreach: rd.menu" style="margin: 5px 0px; margin: 5px 0px; margin-right: 58px;">
 			<div class="col-md-3">
 				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=sales-by-outlet' }">
+					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=' + $data.id }">
 						<span class="fa fa-file-text-o"></span>
 						&nbsp;&nbsp;
-						Sales by Outlet
+						<span data-bind="html: $data.title"></span>
 					</a>
 				</div>
 			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=sales-return-rate' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Sales Return Rate
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=sales-discount-by-gross-sales' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Sales Discount by Gross Sales
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=gross-sales-by-qty' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Gross Sales / Quantity
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=discount-by-qty' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Discount / Quantity
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=net-price-by-qty' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Net Price / Quantity
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=btl-by-qty' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						BTL / Quantity
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=net-price-after-btl-qty' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Net Price After BTL / Qty
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=freight-cost-by-sales' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Freight Cost by Sales
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=direct-labour-index' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Direct Labour Index
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=material-type-index' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Material Type Index
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=indirect-expense-index' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Indirect Expense Index
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=marketing-expense-index' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Marketing Expense Index
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=sga-by-sales' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						SGA by Sales
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=cost-by-sales' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Cost by Sales
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=number-of-outlets' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Number of Outlets
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=truck-adequate-index' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Truck Adequate Index
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=sga-cost-ratio' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						SGA Cost Ratio
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=sales-invoice' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Sales / Invoice
-					</a>
-				</div>
-			</div>
-			<div class="col-md-3">
-				<div class="wrapper">
-					<a class="color-base listcolor-active" href="#" data-bind="attr: { 'href': '{{BaseUrl}}page/reportdynamic?p=sales-velocity-index' }">
-						<span class="fa fa-file-text-o"></span>
-						&nbsp;&nbsp;
-						Sales Velocity Index
-					</a>
-				</div>
-			</div>
-			<div class="clearfix"></div>
 		</div>
+		<div class="clearfix"></div>
 	</div>
 </div>
 	</div>
@@ -205,70 +34,78 @@
 
 	<div class="col-md-12 col-sm-12 ez panel-content">
 
-<script src="{{BaseUrl}}res/core/js/page-report.js?ANTI_CACHE={{.AntiCache}}"></script>
-<script src="{{BaseUrl}}res/core/js/page-report-dynamic.js?ANTI_CACHE={{.AntiCache}}"></script>
+	<script src="{{BaseUrl}}res/core/js/page-report.js?ANTI_CACHE={{.AntiCache}}"></script>
+	<script src="{{BaseUrl}}res/core/js/page-report-dynamic.js?ANTI_CACHE={{.AntiCache}}"></script>
 
-	<div class="tab-content">
-		<div role="tabpanel" class="tab-pane active" id="tab2">
-<div class="panel ez no-padding hardcore">
-	<div class="panel-heading">
-		<h3 class="no-margin">&nbsp;</h3>
-		<div class="panel-nav-button" data-bind="visible: !rd.contentIsLoading()">
-			<div class="form-inline">
-				<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rd.refresh" title="Refresh P&L Analysis">
-					<i class="fa fa-refresh"></i> Refresh
-				</button>
-				<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
-					<i class="fa fa-server"></i> Show Filter
-				</button>
+		<div class="tab-content">
+			<div role="tabpanel" class="tab-pane active" id="tab2">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin">&nbsp;</h3>
+			<div class="panel-nav-button" data-bind="visible: !rd.contentIsLoading()">
+				<div class="form-inline">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: rd.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div class="filter" data-bind="visible: !rd.contentIsLoading()">
+				<div class="form-inline pull-right">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: rd.fiscalYear }"></select>
+						</div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5 filter-unit" data-bind="visible: rd.useFilterMonth">
+						<span class="input-group-addon width-100 align-right">Month</span>
+						<div class="width-full">
+							<select style="width: 150px;" data-bind="kendoDropDownList: { data: rd.optionFilterMonths, dataTextField: 'name', dataValueField: 'field', value: rd.filterMonth }"></select>
+						</div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon width-100 align-right">Breakdown By</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: rd.breakdownBy }"></select>
+						</div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5 filter-unit">
+						<span class="input-group-addon width-100 align-right">Unit</span>
+						<div class="width-full">
+							<select style="width: 150px;" data-bind="kendoDropDownList: { data: rd.optionDivide, dataTextField: 'name', dataValueField: 'field', value: rd.divideBy }"></select>
+						</div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: rd.useLimit">
+						<span class="input-group-addon width-100 align-right">Limit</span>
+						<div class="width-full">
+							<input type="text" style="width: 150px;" data-bind="kendoNumericTextBox: { value: rd.limit, format: '#' }" />
+						</div>
+					</div>
+				</div>
+
+				<div class="clearfix"></div>
+			</div>
+
+			<div data-bind="visible: rd.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !rd.contentIsLoading()" style="overflow-x: scroll; padding-bottom: 10px;">
+				<div class="report"></div>
 			</div>
 		</div>
 	</div>
-
-	<div class="panel-body">
-		<div class="filter" data-bind="visible: !rd.contentIsLoading()">
-			<div class="form-inline pull-right">
-				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-					<span class="input-group-addon width-100 align-right">Fiscal Year</span>
-					<div class="width-full">
-						<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: rd.fiscalYear }"></select>
-					</div>
-				</div>
-
-				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
-					<span class="input-group-addon width-100 align-right">Breakdown By</span>
-					<div class="width-full">
-						<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: rd.breakdownBy }"></select>
-					</div>
-				</div>
-
-				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5 filter-unit">
-					<span class="input-group-addon width-100 align-right">Unit</span>
-					<div class="width-full">
-						<select style="width: 150px;" data-bind="kendoDropDownList: { data: rd.optionDivide, dataTextField: 'name', dataValueField: 'field', value: rd.divideBy }"></select>
-					</div>
-				</div>
-
-				<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5" data-bind="visible: rd.useLimit">
-					<span class="input-group-addon width-100 align-right">Limit</span>
-					<div class="width-full">
-						<input type="text" style="width: 150px;" data-bind="kendoNumericTextBox: { value: rd.limit, format: '#' }" />
-					</div>
-				</div>
 			</div>
-
-			<div class="clearfix"></div>
-		</div>
-
-		<div data-bind="visible: rd.contentIsLoading">
-			{{template "_loader.html"}}
-		</div>
-
-		<div data-bind="visible: !rd.contentIsLoading()" style="overflow-x: scroll; padding-bottom: 10px;">
-			<div class="report"></div>
-		</div>
-	</div>
-</div>
 		</div>
 	</div>
 
