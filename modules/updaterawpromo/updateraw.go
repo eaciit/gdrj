@@ -300,7 +300,7 @@ func main() {
 	// flag.IntVar(&year, "year", 2014, "2014 year")
 	flag.Parse()
 
-	gtable = "salespls-summary-4custinv_count-1.0-salesinvoice"
+	gtable = "salespls-summary-4custinv_count-1.0-salesfreq"
 
 	setinitialconnection()
 	prepdatabranch()
@@ -385,13 +385,13 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		key := trx.Get("_id", toolkit.M{}).(toolkit.M)
 		trx.Set("key", key)
 
-		id := toolkit.Sprintf("%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", key.GetString("date_fiscal"),
+		id := toolkit.Sprintf("%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", key.GetString("date_fiscal"),
 			key.GetInt("date_month"), key.GetInt("date_year"), key.GetString("customer_branchid"),
 			key.GetString("customer_branchname"), key.GetString("customer_channelid"),
 			key.GetString("customer_custtype"), key.GetString("customer_reportsubchannel"), key.GetString("customer_channelname"), key.GetString("customer_reportchannel"),
 			key.GetString("customer_keyaccount"), key.GetString("customer_customergroupname"), key.GetString("customer_customergroup"),
 			key.GetString("customer_areaname"), key.GetString("customer_region"), key.GetString("customer_zone"),
-			key.GetString("trxsrc"), key.GetString("source"), key.GetString("ref"))
+			key.GetString("trxsrc"), key.GetString("source"), key.GetString("ref"), key.GetString("customer_customerid")) //customer_customerid
 
 		trx.Set("_id", id)
 
