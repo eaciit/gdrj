@@ -300,7 +300,7 @@ func main() {
 	// flag.IntVar(&year, "year", 2014, "2014 year")
 	flag.Parse()
 
-	gtable = "salespls-summary-4custinv_count-1.0-salesfreq"
+	// gtable = "salespls-summary-4custinv_count-1.0-salesfreq"
 
 	setinitialconnection()
 	prepdatabranch()
@@ -374,7 +374,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From(toolkit.Sprintf("%s-mv", gtable)).
+		From(toolkit.Sprintf("%s-res", gtable)).
 		SetConfig("multiexec", true).
 		Save()
 
@@ -382,18 +382,18 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	for trx = range jobs {
 		// date := gdrj.NewDate(trx.GetInt("Year"), trx.GetInt("Month"), 1)
 		// trx.Set("gdrj_fiscal", date.Fiscal)
-		key := trx.Get("_id", toolkit.M{}).(toolkit.M)
-		trx.Set("key", key)
+		// key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		// trx.Set("key", key)
 
-		id := toolkit.Sprintf("%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", key.GetString("date_fiscal"),
-			key.GetInt("date_month"), key.GetInt("date_year"), key.GetString("customer_branchid"),
-			key.GetString("customer_branchname"), key.GetString("customer_channelid"),
-			key.GetString("customer_custtype"), key.GetString("customer_reportsubchannel"), key.GetString("customer_channelname"), key.GetString("customer_reportchannel"),
-			key.GetString("customer_keyaccount"), key.GetString("customer_customergroupname"), key.GetString("customer_customergroup"),
-			key.GetString("customer_areaname"), key.GetString("customer_region"), key.GetString("customer_zone"),
-			key.GetString("trxsrc"), key.GetString("source"), key.GetString("ref"), key.GetString("customer_customerid")) //customer_customerid
+		// id := toolkit.Sprintf("%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", key.GetString("date_fiscal"),
+		// 	key.GetInt("date_month"), key.GetInt("date_year"), key.GetString("customer_branchid"),
+		// 	key.GetString("customer_branchname"), key.GetString("customer_channelid"),
+		// 	key.GetString("customer_custtype"), key.GetString("customer_reportsubchannel"), key.GetString("customer_channelname"), key.GetString("customer_reportchannel"),
+		// 	key.GetString("customer_keyaccount"), key.GetString("customer_customergroupname"), key.GetString("customer_customergroup"),
+		// 	key.GetString("customer_areaname"), key.GetString("customer_region"), key.GetString("customer_zone"),
+		// 	key.GetString("trxsrc"), key.GetString("source"), key.GetString("ref"), key.GetString("customer_customerid")) //customer_customerid
 
-		trx.Set("_id", id)
+		// trx.Set("_id", id)
 
 		// // tdate := time.Date(trx.GetInt("year"), time.Month(trx.GetInt("period")), 1, 0, 0, 0, 0, time.UTC).
 		// // 	AddDate(0, 3, 0)
@@ -487,35 +487,35 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// //=== For data salespls-summary mode consolidate
 
-		// // key := trx.Get("key", toolkit.M{}).(toolkit.M)
-		// // branchid := key.GetString("customer_branchid")
+		key := trx.Get("key", toolkit.M{}).(toolkit.M)
+		branchid := key.GetString("customer_branchid")
 
-		// // branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
-		// // key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
-		// // key.Set("customer_branchlvl2", branchgroup.GetString("branchlvl2"))
+		branchgroup := masterbranch.Get(branchid, toolkit.M{}).(toolkit.M)
+		key.Set("customer_branchgroup", branchgroup.GetString("branchgroup"))
+		key.Set("customer_branchlvl2", branchgroup.GetString("branchlvl2"))
 
-		// // if key.GetString("customer_branchgroup") == "" {
-		// // 	key.Set("customer_branchgroup", "OTHER")
-		// // }
+		if key.GetString("customer_branchgroup") == "" {
+			key.Set("customer_branchgroup", "OTHER")
+		}
 
-		// // if key.GetString("customer_branchlvl2") == "" {
-		// // 	key.Set("customer_branchlvl2", "OTHER")
-		// // }
+		if key.GetString("customer_branchlvl2") == "" {
+			key.Set("customer_branchlvl2", "OTHER")
+		}
 
-		// // /*other fix*/
-		// // if key.GetString("customer_reportsubchannel") == "R3" {
-		// // 	key.Set("customer_reportsubchannel", "R3 - Retailer Umum")
-		// // }
+		// /*other fix*/
+		// if key.GetString("customer_reportsubchannel") == "R3" {
+		// 	key.Set("customer_reportsubchannel", "R3 - Retailer Umum")
+		// }
 
-		// // if key.GetString("customer_region") == "" || key.GetString("customer_region") == "Other" {
-		// // 	key.Set("customer_region", "OTHER")
-		// // }
+		// if key.GetString("customer_region") == "" || key.GetString("customer_region") == "Other" {
+		// 	key.Set("customer_region", "OTHER")
+		// }
 
-		// // if key.GetString("customer_zone") == "" || key.GetString("customer_zone") == "Other" {
-		// // 	key.Set("customer_zone", "OTHER")
-		// // }
+		// if key.GetString("customer_zone") == "" || key.GetString("customer_zone") == "Other" {
+		// 	key.Set("customer_zone", "OTHER")
+		// }
 
-		// // trx.Set("key", key)
+		trx.Set("key", key)
 		// //============================================
 
 		// // For cogs consolidate
