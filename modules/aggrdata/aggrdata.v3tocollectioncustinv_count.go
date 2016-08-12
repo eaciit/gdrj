@@ -61,7 +61,7 @@ func main() {
 
 	eperiode := time.Date(fiscalyear, 4, 1, 0, 0, 0, 0, time.UTC)
 	speriode := eperiode.AddDate(-1, 0, 0)
-	// speriode = eperiode.AddDate(0, 0, -1)
+	speriode = eperiode.AddDate(0, 0, -1)
 
 	seeds := make([]time.Time, 0, 0)
 	seeds = append(seeds, speriode)
@@ -243,7 +243,7 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 			tv = spl.SalesQty + dtkm.GetFloat64("salesqty")
 			dtkm.Set("salesqty", tv)
 
-			tkm.Set("salescount", 1)
+			dtkm.Set("salescount", 1)
 			// dtkm.Set("salescount", tv)
 
 			for k, v := range spl.PLDatas {
