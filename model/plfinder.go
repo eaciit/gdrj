@@ -329,6 +329,11 @@ func (s *PLFinderParam) GetTableName() string {
 		return tableName
 	}
 
+	if s.Flag == "sales-velocity" {
+		s.TableKey = "key"
+		return `salespls-summary-invcust4salesfreq`
+	}
+
 	if s.Flag == "sales-invoice" {
 		s.TableKey = "key"
 		return `salespls-summary-invcust4salesinvoice`
@@ -866,6 +871,9 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	}
 
 	if s.Flag == "sales-invoice" {
+		fields = append(fields, "salescount")
+	}
+	if s.Flag == "sales-velocity" {
 		fields = append(fields, "salescount")
 	}
 

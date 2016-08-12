@@ -59,6 +59,10 @@ rd.refresh = function () {
 		param.flag = 'sales-invoice';
 	}
 
+	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+		param.flag = 'sales-invoice';
+	}
+
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
 			if (res.Status == "NOK") {
@@ -82,11 +86,13 @@ rd.refresh = function () {
 			} else {
 				rd.data(res.Data.Data);
 			}
-			rd.render();
 
-			// if ($('.list-analysis').is(':visible')) {
-			// 	rd.doToggleAnalysisFilter(false)
-			// }
+			if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+				rd.refreshSalesVelocity();
+				return;
+			}
+
+			rd.render();
 		}, function () {
 			rd.contentIsLoading(false);
 		});
@@ -142,19 +148,32 @@ rd.render = function () {
 
 		return o;
 	});
-	var op3 = _.orderBy(op2, function (d) {
-		return rd.orderBy() == '' ? d[rd.series()[0]._id] : d[rd.orderBy()];
-	}, 'desc');
+	var op3 = [];
+	if (rd.orderBy() == 'date.month') {
+		op2.forEach(function (d) {
+			var year = parseInt(rd.fiscalYear().split('-')[0], 10);
+			var month = parseInt(d.breakdown, 10);
+			d.breakdown = moment(new Date(year, month + 3, 1)).format('MMM YYYY');
+			d.yearmonth = String(year) + String(month);
+		});
+		op3 = _.orderBy(op2, function (d) {
+			return d.yearmonth;
+		}, 'asc');
+	} else {
+		op3 = _.orderBy(op2, function (d) {
+			return rd.orderBy() == '' ? d[rd.series()[0]._id] : d[rd.orderBy()];
+		}, 'desc');
+	}
 	if (rd.limit() != 0 && rd.useLimit()) {
 		op3 = _.take(op3, rd.limit());
 	}
 
-	var width = $('#tab1').width();
-	if (_.min([rd.limit(), op3.length]) > 6) {
-		width = 160 * rd.limit();
+	var width = $('#tab2').width();
+	if (op3.length > 6) {
+		width = 160 * op3.length;
 	}
-	if (width == $('#tab1').width()) {
-		width = width - 22 + 'px';
+	if (width == $('#tab2').width()) {
+		width = width - 22;
 	}
 
 	var axes = [];
@@ -243,6 +262,7 @@ rd.render = function () {
 
 	rd.configure(config);
 
+	console.log('----', width + 'px;');
 	$('.report').replaceWith('<div class="report" style="width: ' + width + 'px;"></div>');
 	$('.report').kendoChart(config);
 };
@@ -354,6 +374,52 @@ rd.refreshSGACostRatio = function () {
 
 			rd.contentIsLoading(false);
 			rd.data(op3);
+			rd.render();
+		}, function () {
+			rd.contentIsLoading(false);
+		});
+	};
+
+	rd.contentIsLoading(true);
+	fetch();
+};
+
+rd.refreshSalesVelocity = function () {
+	var param = {};
+	param.pls = [];
+	param.groups = rpt.parseGroups([rd.breakdownBy()]);
+	param.aggr = 'sum';
+	param.filters = rpt.getFilterValue(false, rd.fiscalYear);
+	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+		param.flag = 'sales-velocity';
+	}
+
+	var fetch = function fetch() {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
+			if (res.Status == "NOK") {
+				setTimeout(function () {
+					fetch();
+				}, 1000 * 5);
+				return;
+			}
+
+			if (rpt.isEmptyData(res)) {
+				rd.data([]);
+				rd.render();
+				rd.contentIsLoading(false);
+				return;
+			}
+
+			rd.data().forEach(function (d) {
+				var dataFreq = res.Data.Data.find(function (e) {
+					return e._id._id_date_month == d._id._id_date_month;
+				});
+				if (toolkit.isDefined(dataFreq)) {
+					d.frequency = dataFreq.salescount;
+				}
+			});
+
+			rd.contentIsLoading(false);
 			rd.render();
 		}, function () {
 			rd.contentIsLoading(false);
@@ -1273,6 +1339,62 @@ rd.setup = function () {
 					return ['product.brand', 'customer.branchgroup'].indexOf(d.field) == -1;
 				}));
 				rd.orderBy('salescount');
+			}break;
+
+		case 'sales-velocity-index':
+			{
+				vm.currentTitle('Sales Velocity Index');
+				rd.series = ko.observableArray([{
+					_id: 'avgsales',
+					plheader: 'Avg Sales',
+					callback: function callback(v, k) {
+						var netSales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+						var salescount = Math.abs(toolkit.sum(v, function (e) {
+							return e.salescount;
+						}));
+
+						return toolkit.number(netSales / salescount);
+					}
+				}, {
+					_id: 'frequency',
+					plheader: 'Sales Frequency',
+					callback: function callback(v, k) {
+						var frequency = Math.abs(toolkit.sum(v, function (e) {
+							return e.frequency;
+						}));
+
+						return frequency;
+					}
+				}, {
+					_id: 'prcnt',
+					plheader: vm.currentTitle(),
+					callback: function callback(v, k) {
+						var netSales = Math.abs(toolkit.sum(v, function (e) {
+							return e.PL8A;
+						}));
+						var salescount = Math.abs(toolkit.sum(v, function (e) {
+							return e.salescount;
+						}));
+						var avgSales = toolkit.number(netSales / salescount);
+
+						var frequency = Math.abs(toolkit.sum(v, function (e) {
+							return e.frequency;
+						}));
+
+						return toolkit.number(avgSales / frequency);
+					}
+				}]);
+
+				rd.configure = function (config) {
+					rd.setPercentageOn(config, 'axis1', 2);
+					rd.setPercentageOn(config, 'axis2', 0);
+					rd.setPercentageOn(config, 'axis3', 2);
+				};
+				rpt.optionDimensions([{ 'field': 'date.month', name: 'Month' }]);
+				rd.breakdownBy('date.month');
+				rd.orderBy('date.month');
 			}break;
 
 		default:

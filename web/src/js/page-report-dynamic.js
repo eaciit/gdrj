@@ -62,6 +62,10 @@ rd.refresh = () => {
 		param.flag = 'sales-invoice'
 	}
 
+	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+		param.flag = 'sales-invoice'
+	}
+
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
 			if (res.Status == "NOK") {
@@ -85,11 +89,13 @@ rd.refresh = () => {
 			} else {
 				rd.data(res.Data.Data)
 			}
-			rd.render()
 
-			// if ($('.list-analysis').is(':visible')) {
-			// 	rd.doToggleAnalysisFilter(false)
-			// }
+			if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+				rd.refreshSalesVelocity()
+				return
+			}
+
+			rd.render()
 		}, () => {
 			rd.contentIsLoading(false)
 		})
@@ -136,19 +142,30 @@ rd.render = () => {
 
 		return o
 	})
-	let op3 = _.orderBy(op2, (d) => {
-		return (rd.orderBy() == '') ? d[rd.series()[0]._id] : d[rd.orderBy()]
-	}, 'desc')
+	let op3 = []
+	if (rd.orderBy() == 'date.month') {
+		op2.forEach((d) => {
+			let year = parseInt(rd.fiscalYear().split('-')[0], 10)
+			let month = parseInt(d.breakdown, 10)
+			d.breakdown = moment(new Date(year, month + 3, 1)).format('MMM YYYY')
+			d.yearmonth = String(year) + String(month)
+		})
+		op3 = _.orderBy(op2, (d) => d.yearmonth, 'asc')
+	} else {
+		op3 = _.orderBy(op2, (d) => {
+			return (rd.orderBy() == '') ? d[rd.series()[0]._id] : d[rd.orderBy()]
+		}, 'desc')
+	}
 	if (rd.limit() != 0 && rd.useLimit()) {
 		op3 = _.take(op3, rd.limit())
 	}
 
-	let width = $('#tab1').width()
-	if (_.min([rd.limit(), op3.length]) > 6) {
-		width = 160 * rd.limit()
+	let width = $('#tab2').width()
+	if (op3.length > 6) {
+		width = 160 * op3.length
 	}
-	if (width == $('#tab1').width()) {
-		width = `${width - 22}px`
+	if (width == $('#tab2').width()) {
+		width = width - 22
 	}
 
 	let axes = []
@@ -237,6 +254,7 @@ rd.render = () => {
 
     rd.configure(config)
 
+    console.log('----', `${width}px;`)
     $('.report').replaceWith(`<div class="report" style="width: ${width}px;"></div>`)
     $('.report').kendoChart(config)
 }
@@ -336,6 +354,52 @@ rd.refreshSGACostRatio = () => {
 
 			rd.contentIsLoading(false)
 			rd.data(op3)
+			rd.render()
+		}, () => {
+			rd.contentIsLoading(false)
+		})
+	}
+
+	rd.contentIsLoading(true)
+	fetch()
+}
+
+rd.refreshSalesVelocity = () => {
+	let param = {}
+	param.pls = []
+	param.groups = rpt.parseGroups([rd.breakdownBy()])
+	param.aggr = 'sum'
+	param.filters = rpt.getFilterValue(false, rd.fiscalYear)
+	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+		param.flag = 'sales-velocity'
+	}
+
+	let fetch = () => {
+		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
+			if (res.Status == "NOK") {
+				setTimeout(() => {
+					fetch()
+				}, 1000 * 5)
+				return
+			}
+
+			if (rpt.isEmptyData(res)) {
+				rd.data([])
+				rd.render()
+				rd.contentIsLoading(false)
+				return
+			}
+
+			rd.data().forEach((d) => {
+				let dataFreq = res.Data.Data.find((e) =>
+					e._id._id_date_month == d._id._id_date_month
+				)
+				if (toolkit.isDefined(dataFreq)) {
+					d.frequency = dataFreq.salescount
+				}
+			})
+
+			rd.contentIsLoading(false)
 			rd.render()
 		}, () => {
 			rd.contentIsLoading(false)
@@ -1042,6 +1106,49 @@ rd.setup = () => {
 				return ['product.brand', 'customer.branchgroup'].indexOf(d.field) == -1
 			}))
 			rd.orderBy('salescount')
+		} break;
+
+		case 'sales-velocity-index': {
+			vm.currentTitle('Sales Velocity Index')
+			rd.series = ko.observableArray([{ 
+				_id: 'avgsales', 
+				plheader: 'Avg Sales',
+				callback: (v, k) => {
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+					let salescount = Math.abs(toolkit.sum(v, (e) => e.salescount))
+
+					return toolkit.number(netSales / salescount)
+				}
+			}, { 
+				_id: 'frequency', 
+				plheader: 'Sales Frequency',
+				callback: (v, k) => {
+					let frequency = Math.abs(toolkit.sum(v, (e) => e.frequency))
+
+					return frequency
+				}
+			}, { 
+				_id: 'prcnt', 
+				plheader: vm.currentTitle(),
+				callback: (v, k) => {
+					let netSales = Math.abs(toolkit.sum(v, (e) => e.PL8A))
+					let salescount = Math.abs(toolkit.sum(v, (e) => e.salescount))
+					let avgSales = toolkit.number(netSales / salescount)
+
+					let frequency = Math.abs(toolkit.sum(v, (e) => e.frequency))
+
+					return toolkit.number(avgSales / frequency)
+				}
+			}])
+			
+			rd.configure = (config) => {
+				rd.setPercentageOn(config, 'axis1', 2)
+				rd.setPercentageOn(config, 'axis2', 0)
+				rd.setPercentageOn(config, 'axis3', 2)
+			}
+			rpt.optionDimensions([{ 'field': 'date.month', name: 'Month' }])
+			rd.breakdownBy('date.month')
+			rd.orderBy('date.month')
 		} break;
 
 		default: {
