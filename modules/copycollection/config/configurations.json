@@ -14,7 +14,10 @@
     	],
     	"alloutlet": [
     		"outlet_number"
-    	]
+    	],
+        "truck": [
+            "truck_"
+        ]
     },
     "serverlist": {
     	"ba": {
