@@ -2,7 +2,11 @@
     "tablegroupsetting": {
     	"all": [
     		"pl_",
-    		"outlet_number"
+    		"outlet_number",
+            "salespls-summary-invcust4salesfreq",
+            "salespls-summary-invcust4salesinvoice",
+            "rawdatapl-sga-sum4analysis",
+            "salespls-summary-4cogpersku"
     	],
         "move": [
             "raw",
@@ -17,7 +21,19 @@
     	],
         "truck": [
             "truck_"
-        ]
+        ],
+        "cogs": [
+            "salespls-summary-4cogpersku"
+        ],
+        "sga": [
+            "rawdatapl-sga-sum4analysis"
+        ],
+        "allanalysis": [
+            "truck_",
+            "outlet_number",
+            "salespls-summary-invcust4salesfreq",
+            "salespls-summary-invcust4salesinvoice"
+        ],
     },
     "serverlist": {
     	"ba": {
