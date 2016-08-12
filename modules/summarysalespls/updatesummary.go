@@ -2804,11 +2804,11 @@ func main() {
 	// prepmaster4remapcogsdest()
 	// prepmaster4remapnetsalesdest()
 
-	prepmaster4wrongchannelRDmappednetsalesdest()
+	// prepmaster4wrongchannelRDmappednetsalesdest()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4custinv_count").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -3788,12 +3788,33 @@ func wrongchannelmapped(tkm toolkit.M) {
 
 }
 
+func CleanExceptSales(tkm toolkit.M) (ntkm toolkit.M) {
+	arrpl := []string{"PL0", "PL1", "PL7", "PL2", "PL8", "PL3", "PL4", "PL5", "PL6", "PL6A", "PL7A", "PL8A"}
+	inlist := func(str string) bool {
+		for _, v := range arrpl {
+			if v == str {
+				return true
+			}
+		}
+		return false
+	}
+
+	ntkm = toolkit.M{}
+	for k, v := range tkm {
+		if k[0:2] != "PL" || inlist(k) {
+			ntkm.Set(k, v)
+		}
+	}
+
+	return
+}
+
 func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	workerconn, _ := modules.GetDboxIConnection("db_godrej")
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-1.0").
+		From("salespls-summary-4custinv_count-1.0").
 		SetConfig("multiexec", true).
 		Save()
 
@@ -3809,7 +3830,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 
 		// CalcAdvertisementsRev(trx)
 		// CalcRoyalties(trx)
-		// CalcSalesVDist20142015(trx)
+		CalcSalesVDist20142015(trx)
 		// CalcSgaRev(trx)
 
 		// CleanUpdateCustomerGroupName(trx)
@@ -3860,9 +3881,15 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 		// CalcScaleCogsBasedOnOldChannel(trx)
 
 		// CalcRemapedCogs(trx)
-		// CalcSum(trx)
+		CalcSum(trx)
+		// wrongchannelmapped(trx)
 
-		wrongchannelmapped(trx)
+		trx = CleanExceptSales(trx)
+
+		dkey := trx.Get("key", toolkit.M{}).(toolkit.M)
+		if dkey.GetString("customer_channelid") == "I1" || dkey.GetString("customer_channelid") == "EXP" {
+			continue
+		}
 
 		err := qSave.Exec(toolkit.M{}.Set("data", trx))
 		if err != nil {
