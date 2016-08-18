@@ -50,6 +50,7 @@ rd.useLimit = ko.computed(() => {
 			return true
 	}
 }, rd.breakdownBy)
+rd.useBreakdownBy = ko.observable(true)
 rd.isFilterShown = ko.observable(true)
 rd.orderBy = ko.observable('')
 rd.useFilterMonth = ko.observable(false)
@@ -97,7 +98,9 @@ rd.refresh = () => {
 	}
 
 	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
-		param.flag = 'sales-invoice'
+		param.flag = 'sales-velocity'
+		param.limit = rd.limit()
+		param.orderBy = "salescount"
 	}
 
 	if (rd.useFilterMonth()) {
@@ -130,11 +133,6 @@ rd.refresh = () => {
 				rd.data(addoutlet)
 			} else {
 				rd.data(res.Data.Data)
-			}
-
-			if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
-				rd.refreshSalesVelocity()
-				return
 			}
 
 			rd.render()
@@ -257,6 +255,10 @@ rd.render = () => {
         },
 		majorGridLines: { color: '#fafafa' },
 		axisCrossingValues: [op3.length, 0, 0]
+	}
+
+	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
+		categoryAxis.labels.rotation = 10
 	}
 
 	let config = {
@@ -429,60 +431,6 @@ rd.refreshSGACostRatio = () => {
 
 			rd.contentIsLoading(false)
 			rd.data(op3)
-			rd.render()
-		}, () => {
-			rd.contentIsLoading(false)
-		})
-	}
-
-	rd.contentIsLoading(true)
-	fetch()
-}
-
-rd.refreshSalesVelocity = () => {
-	let param = {}
-	param.pls = []
-	param.groups = rpt.parseGroups([rd.breakdownBy()])
-	param.aggr = 'sum'
-	param.filters = rpt.getFilterValue(false, rd.fiscalYear)
-	if (rd.getQueryStringValue('p') == 'sales-velocity-index') {
-		param.flag = 'sales-velocity'
-	}
-
-	if (rd.useFilterMonth()) {
-		param.filters.push({
-			Field: 'date.month',
-			Op: "$eq",
-			Value: rd.filterMonth()
-		})
-	}
-
-	let fetch = () => {
-		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
-			if (res.Status == "NOK") {
-				setTimeout(() => {
-					fetch()
-				}, 1000 * 5)
-				return
-			}
-
-			if (rpt.isEmptyData(res)) {
-				rd.data([])
-				rd.render()
-				rd.contentIsLoading(false)
-				return
-			}
-
-			rd.data().forEach((d) => {
-				let dataFreq = res.Data.Data.find((e) =>
-					e._id._id_date_month == d._id._id_date_month
-				)
-				if (toolkit.isDefined(dataFreq)) {
-					d.frequency = dataFreq.salescount
-				}
-			})
-
-			rd.contentIsLoading(false)
 			rd.render()
 		}, () => {
 			rd.contentIsLoading(false)
@@ -1251,12 +1199,13 @@ rd.setup = () => {
 				rd.setPercentageOn(config, 'axis2', 0)
 				rd.setPercentageOn(config, 'axis3', 2)
 			}
-			rpt.optionDimensions(rpt.optionDimensions().concat([
+			rpt.optionDimensions([// rpt.optionDimensions().concat([
 				{ field: 'customer.customername', name: 'Customer Name' }
-			]))
-			rd.breakdownBy('customer.channelname')
-			rd.orderBy('customer.channelname')
+			])// )
+			rd.breakdownBy('customer.customername')
+			rd.orderBy('customer.customername')
 			rd.useFilterMonth(true)
+			rd.useBreakdownBy(false)
 		} break;
 
 		default: {

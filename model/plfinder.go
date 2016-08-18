@@ -68,6 +68,8 @@ type PLFinderParam struct {
 	Flag                        string    `json:"flag"`
 	TableKey                    string    `json:"tablekey"`
 	WhenEmptyUseSalesPLSSummary bool
+	Limit                       int
+	OrderBy                     string
 }
 
 func (s *PLFinderParam) GetPLCollections() ([]*toolkit.M, error) {
@@ -331,12 +333,17 @@ func (s *PLFinderParam) GetTableName() string {
 
 	if s.Flag == "sales-velocity" {
 		s.TableKey = "key"
+		return `salespls-summary-invcust4sfi`
+	}
+
+	if s.Flag == "sales-velocity-invoice" {
+		s.TableKey = "key"
 		return `salespls-summary-invcust4salesfreq`
 	}
 
 	if s.Flag == "sales-invoice" {
 		s.TableKey = "key"
-		return `salespls-summary-invcust4sfi`
+		return "salespls-summary-invcust4salesinvoice"
 	}
 
 	if s.Flag == "gna" {
@@ -876,6 +883,9 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 	if s.Flag == "sales-velocity" {
 		fields = append(fields, "salescount")
 	}
+	if s.Flag == "sales-velocity-invoice" {
+		fields = append(fields, "salescount")
+	}
 
 	for _, other := range fields {
 		field := fmt.Sprintf("$%s", other)
@@ -919,14 +929,66 @@ func (s *PLFinderParam) GetPLData() ([]*toolkit.M, error) {
 
 	pipe := []bson.M{{"$match": matches}, {"$group": groups}} //, {"$project": projects}} //
 
+	if s.Flag == "sales-velocity" {
+		pipe = append(pipe, bson.M{"$sort": bson.M{s.OrderBy: -1}})
+		pipe = append(pipe, bson.M{"$limit": s.Limit})
+	}
+
 	res := []*toolkit.M{}
 	err = db.C(tableName).Pipe(pipe).AllowDiskUse().All(&res)
 	if err != nil {
 		return nil, err
 	}
 
+	if s.Flag == "sales-velocity" {
+		res, err = s.TakeTop4FromCustomerDataBy(res)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	resFinal := *(s.CalculatePL(&res))
 	return resFinal, nil
+}
+
+func (s *PLFinderParam) TakeTop4FromCustomerDataBy(salesInvoices []*toolkit.M) ([]*toolkit.M, error) {
+	groupFieldName := strings.Replace(fmt.Sprintf("_id_%s", s.Breakdowns[0]), ".", "_", -1)
+	names := []interface{}{}
+	for _, each := range salesInvoices {
+		name := each.Get("_id").(toolkit.M).GetString(groupFieldName)
+		names = append(names, name)
+	}
+	if len(names) > 0 {
+		s.Filters = append(s.Filters, &Filter{s.Breakdowns[0], "$in", names})
+	}
+
+	s.Flag = "sales-velocity-invoice"
+	res2, err := s.GetPLData()
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("------- salesInvoices ------ sales-velocity", len(salesInvoices))
+	fmt.Println("------- res2 ------ sales-velocity-invoice", len(res2))
+
+	for _, each := range salesInvoices {
+	loop2:
+		for _, each2 := range res2 {
+			fiscalLeft := each.Get("_id").(toolkit.M).GetString("_id_date_fiscal")
+			fiscalRight := each2.Get("_id").(toolkit.M).GetString("_id_date_fiscal")
+
+			groupLeft := each.Get("_id").(toolkit.M).GetString(strings.Replace(fmt.Sprintf("_id_%s", s.Breakdowns[0]), ".", "_", -1))
+			groupRight := each2.Get("_id").(toolkit.M).GetString(strings.Replace(fmt.Sprintf("_id_%s", s.Breakdowns[0]), ".", "_", -1))
+
+			// fmt.Println("compare", fiscalLeft, fiscalRight, groupLeft, groupRight)
+			if (fiscalLeft == fiscalRight) && (groupLeft == groupRight) {
+				each.Set("frequency", each2.Get("salescount"))
+				break loop2
+			}
+		}
+	}
+
+	return salesInvoices, nil
 }
 
 func (s *PLFinderParam) GeneratePLData() error {
