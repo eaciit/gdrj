@@ -1207,7 +1207,9 @@ rd.setup = () => {
 			}
 			rpt.optionDimensions(rpt.optionDimensions().filter((d) => {
 				return ['product.brand', 'customer.branchgroup'].indexOf(d.field) == -1
-			}))
+			}).concat([
+				{ field: 'customer.customername', name: 'Customer Name' }
+			]))
 			rd.orderBy('salescount')
 		} break;
 
@@ -1249,6 +1251,9 @@ rd.setup = () => {
 				rd.setPercentageOn(config, 'axis2', 0)
 				rd.setPercentageOn(config, 'axis3', 2)
 			}
+			rpt.optionDimensions(rpt.optionDimensions().concat([
+				{ field: 'customer.customername', name: 'Customer Name' }
+			]))
 			rd.breakdownBy('customer.channelname')
 			rd.orderBy('customer.channelname')
 			rd.useFilterMonth(true)

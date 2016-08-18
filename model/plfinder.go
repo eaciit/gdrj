@@ -336,7 +336,7 @@ func (s *PLFinderParam) GetTableName() string {
 
 	if s.Flag == "sales-invoice" {
 		s.TableKey = "key"
-		return `salespls-summary-invcust4salesinvoice`
+		return `salespls-summary-invcust4sfi`
 	}
 
 	if s.Flag == "gna" {
