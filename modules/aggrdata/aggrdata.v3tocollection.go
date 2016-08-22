@@ -93,6 +93,7 @@ func main() {
 	// "date.fiscal","date.quartertxt","date.month", "customer.branchname", "customer.keyaccount",
 	// "customer.channelid", "customer.channelname", "customer.reportchannel", "customer.reportsubchannel",
 	// "customer.zone", "customer.region", "customer.areaname","product.brand"
+	// totaldata := int(0)
 	toolkit.Println("Waiting result query...")
 	for i := 1; i <= len(seeds); i++ {
 		a := <-result
@@ -103,15 +104,31 @@ func main() {
 		}
 
 		t1 := time.Now()
+		totaldata := len(a)
+
+		sresult := make(chan int, totaldata)
+		sdata := make(chan toolkit.M, totaldata)
+		for i := 0; i < 10; i++ {
+			go workersave(i, sdata, sresult)
+		}
 
 		for k, v := range a {
 			tkm, _ := toolkit.ToM(v)
-			// toolkit.Println(k)
 			tkm.Set("_id", k)
-			_ = conn.NewQuery().
-				From("salespls-summary-4cogssga").
-				SetConfig("multiexec", true).
-				Save().Exec(toolkit.M{}.Set("data", tkm))
+			sdata <- tkm
+		}
+
+		xstep := totaldata / 5
+		if xstep == 0 {
+			xstep = 1
+		}
+		for ix := 1; ix <= totaldata; ix++ {
+			<-sresult
+
+			if ix%xstep == 0 {
+				toolkit.Printfn("Data %d of %d (%d), saved in %s",
+					ix, totaldata, (ix * 100 / totaldata), time.Since(t0).String())
+			}
 		}
 
 		if i%step == 0 {
@@ -158,10 +175,10 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 			}
 
 			key := toolkit.Sprintf("%s|%s|%d|%d|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s", spl.Date.Fiscal, spl.Date.QuarterTxt, spl.Date.Month,
-				spl.Date.Year, spl.Customer.BranchID, spl.Customer.BranchName, spl.Customer.KeyAccount, spl.Customer.ChannelID, spl.Customer.ChannelName,
+				spl.Date.Year, spl.Customer.ID, spl.Customer.BranchID, spl.Customer.BranchName, spl.Customer.KeyAccount, spl.Customer.ChannelID, spl.Customer.ChannelName,
 				spl.Customer.ReportChannel, spl.Customer.ReportSubChannel, spl.Customer.Zone, spl.Customer.Region,
 				spl.Customer.AreaName, spl.Customer.CustomerGroup, spl.Customer.CustomerGroupName, spl.Customer.CustType,
-				spl.Product.ID, spl.Product.Name, spl.Product.Brand, spl.TrxSrc, spl.Source, spl.Ref)
+				spl.Product.Name, spl.Product.Brand, spl.TrxSrc, spl.Source, spl.Ref)
 
 			ktkm := toolkit.M{}
 			ktkm.Set("date_fiscal", spl.Date.Fiscal)
@@ -169,6 +186,8 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 			ktkm.Set("date_month", spl.Date.Month)
 			ktkm.Set("date_year", spl.Date.Year)
 
+			ktkm.Set("customer_customerid", spl.Customer.ID)
+			ktkm.Set("customer_customername", spl.Customer.Name)
 			ktkm.Set("customer_branchid", spl.Customer.BranchID)
 			ktkm.Set("customer_branchname", spl.Customer.BranchName)
 			ktkm.Set("customer_keyaccount", spl.Customer.KeyAccount)
@@ -184,7 +203,7 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 			ktkm.Set("customer_custtype", spl.Customer.CustType)
 
 			ktkm.Set("product_brand", spl.Product.Brand)
-			ktkm.Set("product_skuid", spl.Product.ID)
+			// ktkm.Set("product_skuid", spl.Product.ID)
 			ktkm.Set("product_name", spl.Product.Name)
 
 			ktkm.Set("trxsrc", spl.TrxSrc)
@@ -218,14 +237,36 @@ func workerproc(wi int, filters <-chan *dbox.Filter, result chan<- toolkit.M) {
 			tkm.Set(key, dtkm)
 
 			if i%step == 0 {
-				toolkit.Printfn("GO-%d. Processing %d of %d (%d) in %s", wi, i, scount, (i * 100 / scount), time.Since(t1).String())
+				toolkit.Printfn("GO-%d. Reading %d of %d (%d) in %s", wi, i, scount, (i * 100 / scount), time.Since(t1).String())
 			}
 
 		}
 
-		toolkit.Printfn("GO-%d. Processing done in %s", wi, time.Since(t1).String())
+		toolkit.Printfn("GO-%d. Reading done in %s", wi, time.Since(t1).String())
 
 		result <- tkm
 		csr.Close()
+	}
+}
+
+func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
+	workerconn, _ := modules.GetDboxIConnection("db_godrej")
+	defer workerconn.Close()
+
+	qSave := workerconn.NewQuery().
+		From("salespls-summary-4cogssga_try").
+		SetConfig("multiexec", true).
+		Save()
+
+	trx := toolkit.M{}
+	for trx = range jobs {
+
+		err := qSave.Exec(toolkit.M{}.Set("data", trx))
+
+		if err != nil {
+			toolkit.Println(err)
+		}
+
+		result <- 1
 	}
 }
