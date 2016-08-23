@@ -21,19 +21,7 @@ var (
 	fiscalyear, iscount, scount int
 	data                        map[string]float64
 	masters                     = toolkit.M{}
-
-	alloc = map[string]float64{
-		"I1": 0.17,
-		"I3": 0.51,
-		"I2": 0.32,
-	}
 )
-
-type sgaalloc struct {
-	ChannelID                                    string
-	TotalNow, TotalExpect, RatioNow, RatioExpect float64
-	TotalSales                                   float64
-}
 
 func buildmap(holder interface{},
 	fnModel func() orm.IModel,
@@ -171,7 +159,7 @@ func main() {
 
 	prepmastercalc()
 	prepdatacogsfinal()
-	prepdatasgafinal()
+	// prepdatasgafinal()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
@@ -325,7 +313,7 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	trx := toolkit.M{}
 	for trx = range jobs {
 		RemapCogs(trx)
-		RemapSga(trx)
+		// RemapSga(trx)
 		CalcSalesVDist20142015(trx)
 		CalcSum(trx)
 
