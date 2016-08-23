@@ -158,12 +158,13 @@ func main() {
 	defer gdrj.CloseDb()
 
 	prepmastercalc()
-	prepdatacogsfinal()
-	// prepdatasgafinal()
+	// prepdatacogsfinal()
+	prepdatasgafinal()
 
 	toolkit.Println("Start data query...")
 	filter := dbox.Eq("key.date_fiscal", toolkit.Sprintf("%d-%d", fiscalyear-1, fiscalyear))
-	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga").Cursor(nil)
+	// csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga").Cursor(nil)
+	csr, _ := workerconn.NewQuery().Select().Where(filter).From("salespls-summary-4cogssga-ebit-1.0").Cursor(nil)
 	defer csr.Close()
 
 	scount = csr.Count()
@@ -306,14 +307,14 @@ func workersave(wi int, jobs <-chan toolkit.M, result chan<- int) {
 	defer workerconn.Close()
 
 	qSave := workerconn.NewQuery().
-		From("salespls-summary-4cogssga-ebit-1.0").
+		From("salespls-summary-4cogssga-ebit-1.1").
 		SetConfig("multiexec", true).
 		Save()
 
 	trx := toolkit.M{}
 	for trx = range jobs {
-		RemapCogs(trx)
-		// RemapSga(trx)
+		// RemapCogs(trx)
+		RemapSga(trx)
 		CalcSalesVDist20142015(trx)
 		CalcSum(trx)
 
