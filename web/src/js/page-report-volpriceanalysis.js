@@ -120,7 +120,16 @@ vpa.render = () => {
 		let o = {}
 		o.dimension = k.replace(/ /g, '&nbsp;')
 		o.sorter = 0
-
+		
+		if (o.dimension != 'total') {
+			let tdim = o.dimension
+			o.dimension = _.find(vpa.optionFilterProductBrandCategory(), function(e){ return e._id==tdim}).Name
+			if (tdim == '') {
+				o.dimension = 'OTHER'
+			}
+		}
+		//var a = _.find(vpa.optionFilterProductBrandCategory(), function(e){ return e._id=='315'}).Name
+		// console.log(o.dimension)
 		let data2015 = v.filter((e) => e._id._id_date_fiscal === '2015-2016')
 		let data2014 = v.filter((e) => e._id._id_date_fiscal === '2014-2015')
 
@@ -192,7 +201,7 @@ vpa.render = () => {
 	console.log('total', total)
 
 
-	let dimensionWidth = 140
+	let dimensionWidth = 170
 	if (vpa.breakdownBy() == 'customer.region') {
 		dimensionWidth = 160
 	}
@@ -203,7 +212,7 @@ vpa.render = () => {
 	
 	let columns = [{
 		title: 'Brand Category<br />( '+vpa.brand()+' )',
-		template: (d) => d.dimension,
+		field: 'dimension',
 		headerAttributes: { style: 'vertical-align: middle;' },
 		footerTemplate: 'Total',
 		width: dimensionWidth,

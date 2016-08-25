@@ -20,7 +20,9 @@ vm.menu = ko.observableArray([
 		{"title":"Growth Analysis","icon":"bar-chart-o","href":"/web/page/growthanalysis","submenu":[]},
 		// {"title":"Key Account Analysis","icon":"bar-chart-o","href":"/web/page/keyaccountanalysis","submenu":[]},
 		{"title":"RD Analysis","icon":"bar-chart-o","href":"/web/page/rdanalysis","submenu":[]},
-		{"title":"Sales Return Analysis","icon":"bar-chart-o","href":"/web/page/salesreturnanalysis","submenu":[]}
+		{"title":"Sales Return Analysis","icon":"bar-chart-o","href":"/web/page/salesreturnanalysis","submenu":[]},
+		{"title":"Ebit Per-SKU Analysis","icon":"bar-chart-o","href":"/web/page/ebitpersku","submenu":[]},
+		{"title":"Volume and Price Analysis","icon":"bar-chart-o","href":"/web/page/volpriceanalysis","submenu":[]}
 	] },
 	{ title: 'Analysis Ideas', icon: 'bar-chart-o', href: viewModel.appName + 'page/reportdynamic?p=sales-by-outlet', submenu: [] },
 	// { title: 'Report', icon: 'file-text-o', href: viewModel.appName + 'page/report/list', submenu: [] },
