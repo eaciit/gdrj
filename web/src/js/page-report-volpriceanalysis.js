@@ -3,7 +3,7 @@ let vpa = viewModel.volPriceAnalysis
 
 vpa.title = ko.observable('Volume and Price Analysis')
 vpa.breakdownBy = ko.observable('product.brandcategoryid')
-vpa.brand = ko.observable('HIT')
+vpa.brand = ko.observable('')
 vpa.contentIsLoading = ko.observable(false)
 vpa.data = ko.observableArray([])
 vpa.flag = ko.observable('')
@@ -50,12 +50,22 @@ vpa.refresh = () => {
 			.filter((d) => d != "I1")
 	})
 
+	if (vpa.brand().length > 0) {
+		param.filters.push({
+			Field: 'product.brand',
+			Op: '$eq',
+			Value: vpa.brand()
+		})
+	}
 
-	param.filters.push({
-		Field: 'product.brand',
-		Op: '$eq',
-		Value: vpa.brand()
-	})
+	if (vpa.filterOutletID().length > 0) {
+		param.filters.push({
+			Field: 'customer_customerid',
+			Op: '$eq',
+			Value: vpa.filterOutletID()
+		})
+	}
+
 
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
@@ -327,10 +337,7 @@ vm.breadcrumb([
 	{ title: 'Volume Price Analysis', href: '#' }
 ])
 
-// vpa.optionFilterProductBrand = ko.observableArray([])
-// vpa.optionFilterProductBrandCategory = ko.observableArray([])
-// vpa.optionFilterOutletID = ko.observableArray([])
-vpa.fillProductBrandData = () => {
+vpa.fillProductBrandData = (callback) => {
 	toolkit.ajaxPost(viewModel.appName + "report/getdatabrand", {}, (res) => {
 		vpa.optionFilterProductBrand(res.data.map((d) => {
 			let o = {}
@@ -339,7 +346,11 @@ vpa.fillProductBrandData = () => {
 
 			return o
 		}))
-		$('input.filterBrand').data('kendoDropDownList').select(0)
+
+		vpa.brand('HIT')
+		if (typeof callback === 'function') {
+			callback()
+		}
 	})
 }
 
@@ -356,7 +367,8 @@ vpa.fillProductBrandCategory = () => {
 }
 
 vpa.fillCustomerData = () => {
-	toolkit.ajaxPost(viewModel.appName + "report/getdatacustomer", {}, (res) => {
+	let param = { keyword: '' }
+	toolkit.ajaxPost(viewModel.appName + "report/getdatacustomer", param, (res) => {
 		vpa.optionFilterOutletID(res.data.map((d) => {
 			let o = {}
 			o._id = d._id
@@ -368,11 +380,12 @@ vpa.fillCustomerData = () => {
 }
 
 $(() => {
-	vpa.fillProductBrandData()
+	vpa.fillProductBrandData(function () {
+		vpa.refresh()
+	})
 	vpa.fillProductBrandCategory()
 	vpa.fillCustomerData()
 	
-	vpa.refresh()
 	rpt.showExport(true)
 })
 

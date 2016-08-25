@@ -5,7 +5,7 @@ var vpa = viewModel.volPriceAnalysis;
 
 vpa.title = ko.observable('Volume and Price Analysis');
 vpa.breakdownBy = ko.observable('product.brandcategoryid');
-vpa.brand = ko.observable('HIT');
+vpa.brand = ko.observable('');
 vpa.contentIsLoading = ko.observable(false);
 vpa.data = ko.observableArray([]);
 vpa.flag = ko.observable('');
@@ -50,11 +50,21 @@ vpa.refresh = function () {
 		})
 	});
 
-	param.filters.push({
-		Field: 'product.brand',
-		Op: '$eq',
-		Value: vpa.brand()
-	});
+	if (vpa.brand().length > 0) {
+		param.filters.push({
+			Field: 'product.brand',
+			Op: '$eq',
+			Value: vpa.brand()
+		});
+	}
+
+	if (vpa.filterOutletID().length > 0) {
+		param.filters.push({
+			Field: 'customer_customerid',
+			Op: '$eq',
+			Value: vpa.filterOutletID()
+		});
+	}
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
@@ -369,10 +379,7 @@ vm.currentMenu('Analysis');
 vm.currentTitle('Volume Price Analysis');
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Analysis', href: '#' }, { title: 'Volume Price Analysis', href: '#' }]);
 
-// vpa.optionFilterProductBrand = ko.observableArray([])
-// vpa.optionFilterProductBrandCategory = ko.observableArray([])
-// vpa.optionFilterOutletID = ko.observableArray([])
-vpa.fillProductBrandData = function () {
+vpa.fillProductBrandData = function (callback) {
 	toolkit.ajaxPost(viewModel.appName + "report/getdatabrand", {}, function (res) {
 		vpa.optionFilterProductBrand(res.data.map(function (d) {
 			var o = {};
@@ -381,7 +388,11 @@ vpa.fillProductBrandData = function () {
 
 			return o;
 		}));
-		$('input.filterBrand').data('kendoDropDownList').select(0);
+
+		vpa.brand('HIT');
+		if (typeof callback === 'function') {
+			callback();
+		}
 	});
 };
 
@@ -398,7 +409,8 @@ vpa.fillProductBrandCategory = function () {
 };
 
 vpa.fillCustomerData = function () {
-	toolkit.ajaxPost(viewModel.appName + "report/getdatacustomer", {}, function (res) {
+	var param = { keyword: '' };
+	toolkit.ajaxPost(viewModel.appName + "report/getdatacustomer", param, function (res) {
 		vpa.optionFilterOutletID(res.data.map(function (d) {
 			var o = {};
 			o._id = d._id;
@@ -410,11 +422,12 @@ vpa.fillCustomerData = function () {
 };
 
 $(function () {
-	vpa.fillProductBrandData();
+	vpa.fillProductBrandData(function () {
+		vpa.refresh();
+	});
 	vpa.fillProductBrandCategory();
 	vpa.fillCustomerData();
 
-	vpa.refresh();
 	rpt.showExport(true);
 });
 

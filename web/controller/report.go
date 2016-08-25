@@ -199,7 +199,8 @@ func (m *ReportController) GetDataCustomer(r *knot.WebContext) interface{} {
 	}{}
 
 	if err := r.GetForms(&param); err != nil {
-		return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
+		fmt.Println("GetDataCustomer", err.Error())
+		// return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
 	}
 
 	res, err := gdrj.CustomerGetContains(param.Keyword)
