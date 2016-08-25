@@ -1,0 +1,70 @@
+
+<div>
+	<div class="col-md-12 col-sm-12 ez panel-content">
+
+<script src="{{BaseUrl}}res/core/js/page-report.js?ANTI_CACHE={{.AntiCache}}"></script>
+<script src="{{BaseUrl}}res/core/js/page-report-ebitpersku.js?ANTI_CACHE={{.AntiCache}}"></script>
+
+<div class="col-md-12 col-sm-12 no-padding hardcore">
+	<div class="panel ez no-padding hardcore">
+		<div class="panel-heading">
+			<h3 class="no-margin">&nbsp;</h3>
+			<div class="panel-nav-button" data-bind="visible: !ebitsku.contentIsLoading()">
+				<div class="form-inline">
+					<button class="btn btn-sm btn-primary tooltipster" data-bind="click: ebitsku.refresh" title="Refresh P&L Analysis">
+						<i class="fa fa-refresh"></i> Refresh
+					</button>
+					<button class="btn btn-sm btn-warning tootipster" data-bind="visible: rpt.showExport" onclick="rpt.export('#ebitsku', 'Ebit Per SKU Analysis', 'header-content')">
+						<i class="fa fa-download"></i> Export as Excel
+					</button>
+					<button class="btn btn-sm btn-info tooltipster" data-bind="click: rpt.toggleFilter" title="Toggle Advanced Filter">
+						<i class="fa fa-server"></i> Show Filter
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-body">
+			<div class="filter" data-bind="visible: !ebitsku.contentIsLoading()">
+				<div class="form-inline pull-right">
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Fiscal Year</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: rpt.optionFiscalYears, value: ebitsku.fiscalYear }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">Breakdown By</span>
+						<div class="width-full">
+							<select type="text" style="width: 150px;" data-bind="kendoDropDownList: { data: ebitsku.optionDimensions, dataValueField: 'field', dataTextField: 'name', value: ebitsku.breakdownBy }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+						<span class="input-group-addon align-right">SKU ID</span>
+						<div class="width-full">
+							<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: ebitsku.optionFilterProduct, value: ebitsku.filterProduct, dataValueField: '_id', dataTextField: 'Name', placeholder: 'Select SKU ID', filter: 'contains' }"></select>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+
+			<div data-bind="visible: ebitsku.contentIsLoading">
+				{{template "_loader.html"}}
+			</div>
+
+			<div data-bind="visible: !ebitsku.contentIsLoading()">
+				<div class="breakdown-view ez" id="ebitsku"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+	</div>
+	{{template "_filter.html"}}
+</div>

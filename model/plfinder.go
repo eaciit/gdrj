@@ -356,6 +356,16 @@ func (s *PLFinderParam) GetTableName() string {
 		return `salespls-summary-4cogpersku`
 	}
 
+	if s.Flag == "ebitpersku" {
+		s.TableKey = "_id"
+		return `salespls-summary-4cogssga-ebit-1.1-out02`
+	}
+
+	if s.Flag == "volpriceanalysis" {
+		s.TableKey = "_id"
+		return `salespls-summary-4pva-1.1-out02`
+	}
+
 	if forceSalesPLSSummary {
 		s.TableKey = "key"
 		return `salespls-summary`

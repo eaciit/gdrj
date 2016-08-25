@@ -320,3 +320,21 @@ func (w *PageController) COGSAnalysis(r *knot.WebContext) interface{} {
 
 	return w.GetParams()
 }
+
+func (w *PageController) EbitPerSKU(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.ViewName = "page-report-ebitpersku.html"
+
+	return w.GetParams()
+}
+
+func (w *PageController) VolPriceAnalysis(r *knot.WebContext) interface{} {
+	gocore.WriteLog(r.Session("sessionid", ""), "access", r.Request.URL.String())
+	r.Config.OutputType = knot.OutputTemplate
+	r.Config.LayoutTemplate = LayoutFile
+	r.Config.ViewName = "page-report-volpriceanalysis.html"
+
+	return w.GetParams()
+}
