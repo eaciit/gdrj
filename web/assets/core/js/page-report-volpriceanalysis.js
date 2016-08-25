@@ -61,7 +61,7 @@ vpa.refresh = function () {
 	if (vpa.filterOutletID().length > 0) {
 		param.filters.push({
 			Field: 'customer_customerid',
-			Op: '$eq',
+			Op: '$in',
 			Value: vpa.filterOutletID()
 		});
 	}
