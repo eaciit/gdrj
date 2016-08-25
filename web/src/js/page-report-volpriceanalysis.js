@@ -18,9 +18,6 @@ vpa.optionUnit = ko.observableArray([
 vpa.optionFilterProductBrand = ko.observableArray([])
 vpa.optionFilterProductBrandCategory = ko.observableArray([])
 
-vpa.optionFilterOutletID = ko.observableArray([])
-vpa.filterOutletID = ko.observableArray([])
-
 vpa.getDivider = () => {
 	return parseInt(vpa.unit().replace(/v/g, ''), 10)
 }
@@ -58,11 +55,12 @@ vpa.refresh = () => {
 		})
 	}
 
-	if (vpa.filterOutletID().length > 0) {
+	let outlets = $('select.outlet-filter').data('kendoMultiSelect').value()
+	if (outlets.length > 0) {
 		param.filters.push({
-			Field: 'customer_customerid',
+			Field: 'customer.customerid',
 			Op: '$in',
-			Value: vpa.filterOutletID()
+			Value: outlets
 		})
 	}
 
@@ -366,16 +364,30 @@ vpa.fillProductBrandCategory = () => {
 	})
 }
 
-vpa.fillCustomerData = () => {
-	let param = { keyword: '' }
-	toolkit.ajaxPost(viewModel.appName + "report/getdatacustomer", param, (res) => {
-		vpa.optionFilterOutletID(res.data.map((d) => {
-			let o = {}
-			o._id = d._id
-			o.Name = `${d._id} - ${d.Name}`
-
-			return o
-		}))
+vpa.initCustomerFilter = () => {
+	$('select.outlet-filter').kendoMultiSelect({
+	    dataSource: {
+	        type: "json",
+	        serverFiltering: true,
+	        transport: {
+	        	read: (options) => {
+	        		let url = viewModel.appName + "report/getdatacustomer"
+	        		let param = { Keyword: '' }
+	        		toolkit.try(() => {
+	        			param.Keyword = options.data.filter.filters[0].value
+	        			console.log(options.data.filter.filters[0].value, options)
+	        		})
+	        		toolkit.ajaxPost(url, param, function (res) {
+	        			options.success(res.data);
+	        		})
+		        }
+	        }
+	    },
+		dataValueField: '_id',
+		dataTextField: 'Name',
+		placeholder: 'Select Outlet',
+		filter: "startswith",
+		min: 3
 	})
 }
 
@@ -384,7 +396,7 @@ $(() => {
 		vpa.refresh()
 	})
 	vpa.fillProductBrandCategory()
-	vpa.fillCustomerData()
+	vpa.initCustomerFilter()
 	
 	rpt.showExport(true)
 })

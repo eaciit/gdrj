@@ -198,9 +198,8 @@ func (m *ReportController) GetDataCustomer(r *knot.WebContext) interface{} {
 		Keyword string `json:"keyword"`
 	}{}
 
-	if err := r.GetForms(&param); err != nil {
-		fmt.Println("GetDataCustomer", err.Error())
-		// return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
+	if err := r.GetPayload(&param); err != nil {
+		return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
 	}
 
 	res, err := gdrj.CustomerGetContains(param.Keyword)

@@ -15,9 +15,6 @@ vpa.optionUnit = ko.observableArray([{ _id: 'v1', Name: 'Actual', suffix: '' }, 
 vpa.optionFilterProductBrand = ko.observableArray([]);
 vpa.optionFilterProductBrandCategory = ko.observableArray([]);
 
-vpa.optionFilterOutletID = ko.observableArray([]);
-vpa.filterOutletID = ko.observableArray([]);
-
 vpa.getDivider = function () {
 	return parseInt(vpa.unit().replace(/v/g, ''), 10);
 };
@@ -58,11 +55,12 @@ vpa.refresh = function () {
 		});
 	}
 
-	if (vpa.filterOutletID().length > 0) {
+	var outlets = $('select.outlet-filter').data('kendoMultiSelect').value();
+	if (outlets.length > 0) {
 		param.filters.push({
-			Field: 'customer_customerid',
+			Field: 'customer.customerid',
 			Op: '$in',
-			Value: vpa.filterOutletID()
+			Value: outlets
 		});
 	}
 
@@ -408,16 +406,30 @@ vpa.fillProductBrandCategory = function () {
 	});
 };
 
-vpa.fillCustomerData = function () {
-	var param = { keyword: '' };
-	toolkit.ajaxPost(viewModel.appName + "report/getdatacustomer", param, function (res) {
-		vpa.optionFilterOutletID(res.data.map(function (d) {
-			var o = {};
-			o._id = d._id;
-			o.Name = d._id + ' - ' + d.Name;
-
-			return o;
-		}));
+vpa.initCustomerFilter = function () {
+	$('select.outlet-filter').kendoMultiSelect({
+		dataSource: {
+			type: "json",
+			serverFiltering: true,
+			transport: {
+				read: function read(options) {
+					var url = viewModel.appName + "report/getdatacustomer";
+					var param = { Keyword: '' };
+					toolkit.try(function () {
+						param.Keyword = options.data.filter.filters[0].value;
+						console.log(options.data.filter.filters[0].value, options);
+					});
+					toolkit.ajaxPost(url, param, function (res) {
+						options.success(res.data);
+					});
+				}
+			}
+		},
+		dataValueField: '_id',
+		dataTextField: 'Name',
+		placeholder: 'Select Outlet',
+		filter: "startswith",
+		min: 3
 	});
 };
 
@@ -426,7 +438,7 @@ $(function () {
 		vpa.refresh();
 	});
 	vpa.fillProductBrandCategory();
-	vpa.fillCustomerData();
+	vpa.initCustomerFilter();
 
 	rpt.showExport(true);
 });
