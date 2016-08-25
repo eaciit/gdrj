@@ -5,7 +5,7 @@ var vpa = viewModel.volPriceAnalysis;
 
 vpa.title = ko.observable('Volume and Price Analysis');
 vpa.breakdownBy = ko.observable('product.brandcategoryid');
-vpa.brand = ko.observable('HIT');
+vpa.brand = ko.observable('');
 vpa.contentIsLoading = ko.observable(false);
 vpa.data = ko.observableArray([]);
 vpa.flag = ko.observable('');
@@ -14,9 +14,6 @@ vpa.optionUnit = ko.observableArray([{ _id: 'v1', Name: 'Actual', suffix: '' }, 
 
 vpa.optionFilterProductBrand = ko.observableArray([]);
 vpa.optionFilterProductBrandCategory = ko.observableArray([]);
-
-vpa.optionFilterOutletID = ko.observableArray([]);
-vpa.filterOutletID = ko.observableArray([]);
 
 vpa.getDivider = function () {
 	return parseInt(vpa.unit().replace(/v/g, ''), 10);
@@ -50,11 +47,22 @@ vpa.refresh = function () {
 		})
 	});
 
-	param.filters.push({
-		Field: 'product.brand',
-		Op: '$eq',
-		Value: vpa.brand()
-	});
+	if (vpa.brand().length > 0) {
+		param.filters.push({
+			Field: 'product.brand',
+			Op: '$eq',
+			Value: vpa.brand()
+		});
+	}
+
+	var outlets = $('select.outlet-filter').data('kendoMultiSelect').value();
+	if (outlets.length > 0) {
+		param.filters.push({
+			Field: 'customer.customerid',
+			Op: '$in',
+			Value: outlets
+		});
+	}
 
 	var fetch = function fetch() {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, function (res) {
@@ -369,10 +377,7 @@ vm.currentMenu('Analysis');
 vm.currentTitle('Volume Price Analysis');
 vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Analysis', href: '#' }, { title: 'Volume Price Analysis', href: '#' }]);
 
-// vpa.optionFilterProductBrand = ko.observableArray([])
-// vpa.optionFilterProductBrandCategory = ko.observableArray([])
-// vpa.optionFilterOutletID = ko.observableArray([])
-vpa.fillProductBrandData = function () {
+vpa.fillProductBrandData = function (callback) {
 	toolkit.ajaxPost(viewModel.appName + "report/getdatabrand", {}, function (res) {
 		vpa.optionFilterProductBrand(res.data.map(function (d) {
 			var o = {};
@@ -381,7 +386,11 @@ vpa.fillProductBrandData = function () {
 
 			return o;
 		}));
-		$('input.filterBrand').data('kendoDropDownList').select(0);
+
+		vpa.brand('HIT');
+		if (typeof callback === 'function') {
+			callback();
+		}
 	});
 };
 
@@ -397,24 +406,40 @@ vpa.fillProductBrandCategory = function () {
 	});
 };
 
-vpa.fillCustomerData = function () {
-	toolkit.ajaxPost(viewModel.appName + "report/getdatacustomer", {}, function (res) {
-		vpa.optionFilterOutletID(res.data.map(function (d) {
-			var o = {};
-			o._id = d._id;
-			o.Name = d._id + ' - ' + d.Name;
-
-			return o;
-		}));
+vpa.initCustomerFilter = function () {
+	$('select.outlet-filter').kendoMultiSelect({
+		dataSource: {
+			type: "json",
+			serverFiltering: true,
+			transport: {
+				read: function read(options) {
+					var url = viewModel.appName + "report/getdatacustomer";
+					var param = { Keyword: '' };
+					toolkit.try(function () {
+						param.Keyword = options.data.filter.filters[0].value;
+						console.log(options.data.filter.filters[0].value, options);
+					});
+					toolkit.ajaxPost(url, param, function (res) {
+						options.success(res.data);
+					});
+				}
+			}
+		},
+		dataValueField: '_id',
+		dataTextField: 'Name',
+		placeholder: 'Select Outlet',
+		filter: "startswith",
+		min: 3
 	});
 };
 
 $(function () {
-	vpa.fillProductBrandData();
+	vpa.fillProductBrandData(function () {
+		vpa.refresh();
+	});
 	vpa.fillProductBrandCategory();
-	vpa.fillCustomerData();
+	vpa.initCustomerFilter();
 
-	vpa.refresh();
 	rpt.showExport(true);
 });
 

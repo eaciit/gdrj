@@ -3,7 +3,7 @@ let vpa = viewModel.volPriceAnalysis
 
 vpa.title = ko.observable('Volume and Price Analysis')
 vpa.breakdownBy = ko.observable('product.brandcategoryid')
-vpa.brand = ko.observable('HIT')
+vpa.brand = ko.observable('')
 vpa.contentIsLoading = ko.observable(false)
 vpa.data = ko.observableArray([])
 vpa.flag = ko.observable('')
@@ -17,9 +17,6 @@ vpa.optionUnit = ko.observableArray([
 
 vpa.optionFilterProductBrand = ko.observableArray([])
 vpa.optionFilterProductBrandCategory = ko.observableArray([])
-
-vpa.optionFilterOutletID = ko.observableArray([])
-vpa.filterOutletID = ko.observableArray([])
 
 vpa.getDivider = () => {
 	return parseInt(vpa.unit().replace(/v/g, ''), 10)
@@ -50,12 +47,23 @@ vpa.refresh = () => {
 			.filter((d) => d != "I1")
 	})
 
+	if (vpa.brand().length > 0) {
+		param.filters.push({
+			Field: 'product.brand',
+			Op: '$eq',
+			Value: vpa.brand()
+		})
+	}
 
-	param.filters.push({
-		Field: 'product.brand',
-		Op: '$eq',
-		Value: vpa.brand()
-	})
+	let outlets = $('select.outlet-filter').data('kendoMultiSelect').value()
+	if (outlets.length > 0) {
+		param.filters.push({
+			Field: 'customer.customerid',
+			Op: '$in',
+			Value: outlets
+		})
+	}
+
 
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
@@ -327,10 +335,7 @@ vm.breadcrumb([
 	{ title: 'Volume Price Analysis', href: '#' }
 ])
 
-// vpa.optionFilterProductBrand = ko.observableArray([])
-// vpa.optionFilterProductBrandCategory = ko.observableArray([])
-// vpa.optionFilterOutletID = ko.observableArray([])
-vpa.fillProductBrandData = () => {
+vpa.fillProductBrandData = (callback) => {
 	toolkit.ajaxPost(viewModel.appName + "report/getdatabrand", {}, (res) => {
 		vpa.optionFilterProductBrand(res.data.map((d) => {
 			let o = {}
@@ -339,7 +344,11 @@ vpa.fillProductBrandData = () => {
 
 			return o
 		}))
-		$('input.filterBrand').data('kendoDropDownList').select(0)
+
+		vpa.brand('HIT')
+		if (typeof callback === 'function') {
+			callback()
+		}
 	})
 }
 
@@ -355,24 +364,40 @@ vpa.fillProductBrandCategory = () => {
 	})
 }
 
-vpa.fillCustomerData = () => {
-	toolkit.ajaxPost(viewModel.appName + "report/getdatacustomer", {}, (res) => {
-		vpa.optionFilterOutletID(res.data.map((d) => {
-			let o = {}
-			o._id = d._id
-			o.Name = `${d._id} - ${d.Name}`
-
-			return o
-		}))
+vpa.initCustomerFilter = () => {
+	$('select.outlet-filter').kendoMultiSelect({
+	    dataSource: {
+	        type: "json",
+	        serverFiltering: true,
+	        transport: {
+	        	read: (options) => {
+	        		let url = viewModel.appName + "report/getdatacustomer"
+	        		let param = { Keyword: '' }
+	        		toolkit.try(() => {
+	        			param.Keyword = options.data.filter.filters[0].value
+	        			console.log(options.data.filter.filters[0].value, options)
+	        		})
+	        		toolkit.ajaxPost(url, param, function (res) {
+	        			options.success(res.data);
+	        		})
+		        }
+	        }
+	    },
+		dataValueField: '_id',
+		dataTextField: 'Name',
+		placeholder: 'Select Outlet',
+		filter: "startswith",
+		min: 3
 	})
 }
 
 $(() => {
-	vpa.fillProductBrandData()
+	vpa.fillProductBrandData(function () {
+		vpa.refresh()
+	})
 	vpa.fillProductBrandCategory()
-	vpa.fillCustomerData()
+	vpa.initCustomerFilter()
 	
-	vpa.refresh()
 	rpt.showExport(true)
 })
 
