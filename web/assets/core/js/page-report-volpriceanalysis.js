@@ -142,6 +142,19 @@ vpa.render = function () {
 		o.dimension = k.replace(/ /g, '&nbsp;');
 		o.sorter = 0;
 
+		if (o.dimension != 'total') {
+			(function () {
+				var tdim = o.dimension;
+				o.dimension = _.find(vpa.optionFilterProductBrandCategory(), function (e) {
+					return e._id == tdim;
+				}).Name;
+				if (tdim == '') {
+					o.dimension = 'OTHER';
+				}
+			})();
+		}
+		//var a = _.find(vpa.optionFilterProductBrandCategory(), function(e){ return e._id=='315'}).Name
+		// console.log(o.dimension)
 		var data2015 = v.filter(function (e) {
 			return e._id._id_date_fiscal === '2015-2016';
 		});
@@ -239,7 +252,7 @@ vpa.render = function () {
 
 	console.log('total', total);
 
-	var dimensionWidth = 140;
+	var dimensionWidth = 170;
 	if (vpa.breakdownBy() == 'customer.region') {
 		dimensionWidth = 160;
 	}
@@ -250,9 +263,7 @@ vpa.render = function () {
 
 	var columns = [{
 		title: 'Brand Category<br />( ' + vpa.brand() + ' )',
-		template: function template(d) {
-			return d.dimension;
-		},
+		field: 'dimension',
 		headerAttributes: { style: 'vertical-align: middle;' },
 		footerTemplate: 'Total',
 		width: dimensionWidth,
