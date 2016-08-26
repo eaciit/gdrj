@@ -95,7 +95,7 @@ vpa.render = () => {
 		dimensionTitle = rpt.optionDimensions().find((d) => d.field == vpa.breakdownBy()).name
 	})
 
-	let plGrossSales = 'PL0'
+	let plGrossSales = 'PL8A'
 	let codeSalesQty = 'salesqty'
 
 	let total2015_netSales = toolkit.sum(vpa.data().filter((d) => d._id._id_date_fiscal === '2015-2016'), (d) => d[plGrossSales])
@@ -171,7 +171,12 @@ vpa.render = () => {
 		toolkit.try(() => { o.v2015_price_var = deltaprice * o.v2015_nsal_qty })		
 
 		toolkit.try(() => { o.v2014_vol_var = deltavolume * o.v2014_price_value })
-		toolkit.try(() => { o.v2014_price_var = deltaprice * o.v2015_nsal_qty })
+		toolkit.try(() => { o.v2014_price_var = deltaprice * o.v2014_nsal_qty })
+
+		o.vol_var = 0
+		o.price_var = 0
+		toolkit.try(() => { o.v_vol_var = deltavolume * o.v2014_price_value })
+		toolkit.try(() => { o.v_price_var = deltaprice * o.v2015_nsal_qty })
 
 		return o
 	})
@@ -217,50 +222,17 @@ vpa.render = () => {
 		footerTemplate: 'Total',
 		width: dimensionWidth,
 		locked: true
-	}, {
-		title: 'FY 2014-2015',
-		headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
-		columns: [{
-			headerTemplate: 'Sales Qty',
-			field: 'v2014_nsal_qty',
-			format: `{0:n0}`,
-			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_nsal_qty, 'n0')}</div>`,
-			width: widthQty,
-		}, {
-			headerTemplate: 'Price',
-			field: 'v2014_price_value',
-			format: `{0:n0}`,
-			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_price_value, 'n0')}</div>`,
-			width: widthQty,
-		},
-		{
-			headerTemplate: 'Gross Sales',
-			field: 'v2014_nsal_value',
-			format: `{0:n0}`,
-			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_nsal_value, 'n0')}</div>`,
-			width: widthValue,
-		}, {
-			headerTemplate: 'Volume<br />Variance',
-			headerAttributes: { style: 'vertical-align: middle !important;' },
-			field: 'v2014_vol_var',
-			format: `{0:n0}`,
-			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_vol_var, 'n0')}</div>`,
-			width: widthValue,
-		}, {
-			headerTemplate: 'Price<br />Variance',
-			field: 'v2014_price_var',
-			format: `{0:n0}`,
-			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_price_var, 'n0')}</div>`,
-			width: widthValue,
-		}]
-	}, {
+	},{
 		title: 'FY 2015-2016',
-		columns: [{
+		columns: [
+		{
+			headerTemplate: 'Net Sales',
+			field: 'v2015_nsal_value',
+			format: `{0:n0}`,
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_value, 'n0')}</div>`,
+			width: widthValue,
+		},{
 			headerTemplate: 'Sales Qty',
 			field: 'v2015_nsal_qty',
 			format: `{0:n0}`,
@@ -268,36 +240,88 @@ vpa.render = () => {
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_qty, 'n0')}</div>`,
 			width: widthQty,
 		}, {
-			headerTemplate: 'Price',
+			headerTemplate: 'Unit Price',
 			field: 'v2015_price_value',
 			format: `{0:n0}`,
 			attributes: { class: 'align-right' },
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_price_value, 'n0')}</div>`,
 			width: widthQty,
-		},
-		{
-			headerTemplate: 'Gross Sales',
-			field: 'v2015_nsal_value',
+		}
+		// ,{
+		// 	headerTemplate: 'Volume<br />Variance',
+		// 	headerAttributes: { style: 'vertical-align: middle !important;' },
+		// 	field: 'v2015_vol_var',
+		// 	format: `{0:n0}`,
+		// 	attributes: { class: 'align-right' },
+		// 	footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n0')}</div>`,
+		// 	width: widthValue,
+		// }, {
+		// 	headerTemplate: 'Price<br />Variance',
+		// 	field: 'v2015_price_var',
+		// 	format: `{0:n0}`,
+		// 	attributes: { class: 'align-right' },
+		// 	footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_price_var, 'n0')}</div>`,
+		// 	width: widthValue,
+		// }
+		]
+	},{
+		title: 'FY 2014-2015',
+		headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		columns: [{
+			headerTemplate: 'Net Sales',
+			field: 'v2014_nsal_value',
 			format: `{0:n0}`,
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_value, 'n0')}</div>`,
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_nsal_value, 'n0')}</div>`,
 			width: widthValue,
+		},{
+			headerTemplate: 'Sales Qty',
+			field: 'v2014_nsal_qty',
+			format: `{0:n0}`,
+			attributes: { class: 'align-right' },
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_nsal_qty, 'n0')}</div>`,
+			width: widthQty,
 		}, {
-			headerTemplate: 'Volume<br />Variance',
-			headerAttributes: { style: 'vertical-align: middle !important;' },
-			field: 'v2015_vol_var',
+			headerTemplate: 'Unit Price',
+			field: 'v2014_price_value',
 			format: `{0:n0}`,
 			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n0')}</div>`,
-			width: widthValue,
-		}, {
-			headerTemplate: 'Price<br />Variance',
-			field: 'v2015_price_var',
-			format: `{0:n0}`,
-			attributes: { class: 'align-right' },
-			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_price_var, 'n0')}</div>`,
-			width: widthValue,
-		}]
+			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_price_value, 'n0')}</div>`,
+			width: widthQty,
+		}
+		// ,{
+		// 	headerTemplate: 'Volume<br />Variance',
+		// 	headerAttributes: { style: 'vertical-align: middle !important;' },
+		// 	field: 'v2014_vol_var',
+		// 	format: `{0:n0}`,
+		// 	attributes: { class: 'align-right' },
+		// 	footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_vol_var, 'n0')}</div>`,
+		// 	width: widthValue,
+		// }, {
+		// 	headerTemplate: 'Price<br />Variance',
+		// 	field: 'v2014_price_var',
+		// 	format: `{0:n0}`,
+		// 	attributes: { class: 'align-right' },
+		// 	footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_price_var, 'n0')}</div>`,
+		// 	width: widthValue,
+		// }
+		]
+	},{
+		headerTemplate: 'Volume<br />Variance',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'v_vol_var',
+		format: `{0:n0}`,
+		attributes: { class: 'align-right' },
+		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n0')}</div>`,
+		width: widthValue,
+	},{
+		headerTemplate: 'Price<br />Variance',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'v_price_var',
+		format: `{0:n0}`,
+		attributes: { class: 'align-right' },
+		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_price_var, 'n0')}</div>`,
+		width: widthValue,
 	}]
 
 	let config = {
@@ -407,7 +431,7 @@ $(() => {
 	vpa.fillProductBrandCategory()
 	vpa.initCustomerFilter()
 	
-	rpt.showExport(true)
+	rpt.showExport(false)
 })
 
 
