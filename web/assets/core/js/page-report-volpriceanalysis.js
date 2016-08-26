@@ -271,15 +271,22 @@ vpa.render = function () {
 	var tableWidth = 1200;
 
 	var columns = [{
-		title: 'Brand Category<br />( ' + vpa.brand() + ' )',
-		field: 'dimension',
+		// title: 'Brand Category ( '+vpa.brand()+' )',
+		// headerTemplate: 'Brand Category<br />( '+vpa.brand()+' )',
+		// field: 'dimension',
+		title: 'Brand Category <br /> ( ' + vpa.brand() + ' )',
+		template: function template(d) {
+			return d.dimension;
+		},
 		headerAttributes: { style: 'vertical-align: middle;' },
 		footerTemplate: 'Total',
 		width: dimensionWidth,
 		locked: true
 	}, {
 		title: 'FY 2015-2016',
+		headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		columns: [{
+			title: 'Net Sales',
 			headerTemplate: 'Net Sales',
 			field: 'v2015_nsal_value',
 			format: '{0:n0}',
@@ -287,6 +294,7 @@ vpa.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_value, 'n0') + '</div>',
 			width: widthValue
 		}, {
+			title: 'Sales Qty',
 			headerTemplate: 'Sales Qty',
 			field: 'v2015_nsal_qty',
 			format: '{0:n0}',
@@ -294,6 +302,7 @@ vpa.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_nsal_qty, 'n0') + '</div>',
 			width: widthQty
 		}, {
+			title: 'Unit Price',
 			headerTemplate: 'Unit Price',
 			field: 'v2015_price_value',
 			format: '{0:n0}',
@@ -322,6 +331,7 @@ vpa.render = function () {
 		title: 'FY 2014-2015',
 		headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		columns: [{
+			title: 'Net Sales',
 			headerTemplate: 'Net Sales',
 			field: 'v2014_nsal_value',
 			format: '{0:n0}',
@@ -329,6 +339,7 @@ vpa.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_nsal_value, 'n0') + '</div>',
 			width: widthValue
 		}, {
+			title: 'Sales Qty',
 			headerTemplate: 'Sales Qty',
 			field: 'v2014_nsal_qty',
 			format: '{0:n0}',
@@ -336,6 +347,7 @@ vpa.render = function () {
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_nsal_qty, 'n0') + '</div>',
 			width: widthQty
 		}, {
+			title: 'Unit Price',
 			headerTemplate: 'Unit Price',
 			field: 'v2014_price_value',
 			format: '{0:n0}',
@@ -361,6 +373,7 @@ vpa.render = function () {
 		// }
 		]
 	}, {
+		title: 'Volume Variance',
 		headerTemplate: 'Volume<br />Variance',
 		headerAttributes: { style: 'vertical-align: middle !important;' },
 		field: 'v_vol_var',
@@ -369,6 +382,7 @@ vpa.render = function () {
 		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_vol_var, 'n0') + '</div>',
 		width: widthValue
 	}, {
+		title: 'Price Variance',
 		headerTemplate: 'Price<br />Variance',
 		headerAttributes: { style: 'vertical-align: middle !important;' },
 		field: 'v_price_var',
@@ -384,21 +398,21 @@ vpa.render = function () {
 		},
 		columns: columns,
 		dataBound: function dataBound() {
-			var sel = '#year-comparison .k-grid-content-locked tr, #year-comparison .k-grid-content tr';
+			var sel = '#volume-price-analysis .k-grid-content-locked tr, #volume-price-analysis .k-grid-content tr';
 
 			$(sel).on('mouseenter', function () {
 				var index = $(this).index();
-				var elh = $('#year-comparison .k-grid-content-locked tr:eq(' + index + ')').addClass('hover');
-				var elc = $('#year-comparison .k-grid-content tr:eq(' + index + ')').addClass('hover');
+				var elh = $('#volume-price-analysis .k-grid-content-locked tr:eq(' + index + ')').addClass('hover');
+				var elc = $('#volume-price-analysis .k-grid-content tr:eq(' + index + ')').addClass('hover');
 			});
 			$(sel).on('mouseleave', function () {
-				$('#year-comparison tr.hover').removeClass('hover');
+				$('#volume-price-analysis tr.hover').removeClass('hover');
 			});
 		}
 	};
 
-	$('#year-comparison').replaceWith('<div class="breakdown-view ez" id="year-comparison"></div>');
-	$('#year-comparison').kendoGrid(config);
+	$('#volume-price-analysis').replaceWith('<div class="breakdown-view ez" id="volume-price-analysis"></div>');
+	$('#volume-price-analysis').kendoGrid(config);
 };
 
 vpa.changeDimension = function (title, args) {
@@ -480,7 +494,7 @@ $(function () {
 	vpa.fillProductBrandCategory();
 	vpa.initCustomerFilter();
 
-	rpt.showExport(false);
+	rpt.showExport(true);
 });
 
 /**
