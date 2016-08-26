@@ -242,6 +242,7 @@ yc.render = () => {
 		title: 'FY 2015-2016',
 		headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		columns: [{
+			title: 'Net Sales Value',
 			headerTemplate: 'Net Sales<br />Value',
 			field: 'v2015_nsal_value',
 			format: `{0:n0}`,
@@ -249,6 +250,7 @@ yc.render = () => {
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_nsal_value, 'n0')}</div>`,
 			width: widthValue,
 		}, {
+			title: 'Net Sales Growth',
 			headerTemplate: 'Net Sales<br />Growth',
 			field: 'v2015_nsal_growth',
 			format: '{0:n2} %',
@@ -258,6 +260,7 @@ yc.render = () => {
 		},
 
 		{
+			title: 'GM Value',
 			headerTemplate: 'GM<br />Value',
 			field: 'v2015_gs_value',
 			format: `{0:n0}`,
@@ -265,6 +268,7 @@ yc.render = () => {
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_gs_value, 'n0')}</div>`,
 			width: widthValue,
 		}, {
+			title: 'GM %',
 			headerTemplate: 'GM %',
 			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: 'v2015_gs_ctb_value',
@@ -273,6 +277,7 @@ yc.render = () => {
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_gs_ctb_value, 'n2')} %</div>`,
 			width: widthPrcnt,
 		}, {
+			title: 'GM Growth',
 			headerTemplate: 'GM<br />Growth',
 			field: 'v2015_gs_growth',
 			format: '{0:n2} %',
@@ -282,6 +287,7 @@ yc.render = () => {
 		},
 
 		{
+			title: 'EBIT Value',
 			headerTemplate: 'EBIT<br />Value',
 			field: 'v2015_ebit_value',
 			format: `{0:n0}`,
@@ -289,6 +295,7 @@ yc.render = () => {
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_value, 'n0')}</div>`,
 			width: widthValue,
 		}, {
+			title: 'EBIT %',
 			headerTemplate: 'EBIT %',
 			headerAttributes: { style: 'vertical-align: middle !important;' },
 			field: 'v2015_ebit_ctb_value',
@@ -297,6 +304,7 @@ yc.render = () => {
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_ebit_ctb_value, 'n2')} %</div>`,
 			width: widthPrcnt,
 		}, {
+			title: 'EBIT Growth',
 			headerTemplate: 'EBIT<br />Growth',
 			field: 'v2015_ebit_growth',
 			format: '{0:n2} %',
@@ -309,6 +317,7 @@ yc.render = () => {
 	}, {
 		title: 'FY 2014-2015',
 		columns: [{
+			title: 'Net Sales Value',
 			headerTemplate: 'Net Sales<br />Value',
 			field: 'v2014_nsal_value',
 			format: `{0:n0}`,
@@ -316,6 +325,7 @@ yc.render = () => {
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_nsal_value, 'n0')}</div>`,
 			width: widthValue,
 		}, {
+			title: 'GM Value',
 			headerTemplate: 'GM<br />Value',
 			field: 'v2014_gs_value',
 			format: `{0:n0}`,
@@ -331,6 +341,7 @@ yc.render = () => {
 			footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_gs_ctb_value, 'n2')} %</div>`,
 			width: widthPrcnt,
 		}, {
+			title: 'EBIT Value',
 			headerTemplate: 'EBIT<br />Value',
 			field: 'v2014_ebit_value',
 			format: `{0:n0}`,

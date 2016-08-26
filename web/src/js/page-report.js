@@ -1189,7 +1189,7 @@ rpt.refreshHeight = (PLCode) => {
 }
 
 rpt.showExport = ko.observable(false)
-rpt.export = (target, title, mode) => {
+rpt.export = (target, title, mode, rowspanHarcore = -1) => {
 	target = toolkit.$(target)
 
 	if (mode == 'kendo') {
@@ -1210,6 +1210,10 @@ rpt.export = (target, title, mode) => {
 						cellval['rowSpan'] = parseInt($(e).attr('rowspan')) + 1
 					else
 						cellval['rowSpan'] = parseInt($(e).attr('rowspan'))
+
+					if (rowspanHarcore > -1) {
+						cellval['rowSpan'] = rowspanHarcore
+					}
 				}
 				if ($(e).attr('colspan'))
 					cellval['colSpan'] = parseInt($(e).attr('colspan'))
@@ -1240,6 +1244,8 @@ rpt.export = (target, title, mode) => {
 				cellval = {}
 				headertype = parseFloat($(e).html().replace(/,/g , ""))
 				if (isNaN(parseFloat(headertype)) == true)
+					headertype = $(e).html()
+				if ($(e).html().match(/[a-z]/i))
 					headertype = $(e).html()
 				cellval['value'] = headertype
 				cells.push(cellval)

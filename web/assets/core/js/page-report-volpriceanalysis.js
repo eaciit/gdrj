@@ -274,7 +274,8 @@ vpa.render = function () {
 		// title: 'Brand Category ( '+vpa.brand()+' )',
 		// headerTemplate: 'Brand Category<br />( '+vpa.brand()+' )',
 		// field: 'dimension',
-		title: 'Brand Category <br /> ( ' + vpa.brand() + ' )',
+		title: 'Brand Category ( ' + vpa.brand() + ' )',
+		headerTemplate: 'Brand Category <br /> ( ' + vpa.brand() + ' )',
 		template: function template(d) {
 			return d.dimension;
 		},
