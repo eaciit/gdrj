@@ -1083,6 +1083,8 @@ rpt.refreshHeight = function (PLCode) {
 
 rpt.showExport = ko.observable(false);
 rpt.export = function (target, title, mode) {
+	var rowspanHarcore = arguments.length <= 3 || arguments[3] === undefined ? -1 : arguments[3];
+
 	target = toolkit.$(target);
 
 	if (mode == 'kendo') {
@@ -1104,6 +1106,10 @@ rpt.export = function (target, title, mode) {
 					cellval['value'] = $(e).attr('data-title');
 					if ($(e).attr('rowspan')) {
 						if (title == 'Distribution Analysis') cellval['rowSpan'] = parseInt($(e).attr('rowspan')) + 2;else if (title == 'Summary P&L Analysis') cellval['rowSpan'] = parseInt($(e).attr('rowspan')) + 1;else cellval['rowSpan'] = parseInt($(e).attr('rowspan'));
+
+						if (rowspanHarcore > -1) {
+							cellval['rowSpan'] = rowspanHarcore;
+						}
 					}
 					if ($(e).attr('colspan')) cellval['colSpan'] = parseInt($(e).attr('colspan'));
 					cells.push(cellval);
@@ -1127,6 +1133,7 @@ rpt.export = function (target, title, mode) {
 					cellval = {};
 					headertype = parseFloat($(e).html().replace(/,/g, ""));
 					if (isNaN(parseFloat(headertype)) == true) headertype = $(e).html();
+					if ($(e).html().match(/[a-z]/i)) headertype = $(e).html();
 					cellval['value'] = headertype;
 					cells.push(cellval);
 				});
