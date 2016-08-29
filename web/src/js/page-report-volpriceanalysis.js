@@ -181,6 +181,11 @@ vpa.render = () => {
 		o.TotalSalesDiff = 0
 		toolkit.try(() => { o.TotalSalesDiff = o.v2015_nsal_value - o.v2014_nsal_value })
 
+		o.vol_var_percent = 0
+		o.price_var_percent = 0
+		toolkit.try(() => { o.vol_var_percent = o.v_vol_var * 100 / o.TotalSalesDiff })
+		toolkit.try(() => { o.price_var_percent = o.v_price_var * 100 / o.TotalSalesDiff })
+
 		return o
 	})
 	
@@ -217,7 +222,8 @@ vpa.render = () => {
 	let widthValue = 105
 	let widthQty = 90
 	let tableWidth = 1200
-	
+	let widthPrcnt = 90
+
 	let columns = [{
 		title: 'Brand Category ( '+vpa.brand()+' )',
 		headerTemplate: 'Brand Category <br /> ( '+vpa.brand()+' )',
@@ -336,6 +342,16 @@ vpa.render = () => {
 		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n0')}</div>`,
 		width: widthValue,
 	},{
+		title: '% Sales Different',
+		headerTemplate: '% Sales<br />Different',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'vol_var_percent',
+		format: '{0:n2} %',
+		attributes: { class: 'align-right' },
+		footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n2')}</div>`,
+		width: widthPrcnt,
+	},{
 		title: 'Price Variance',
 		headerTemplate: 'Price<br />Variance',
 		headerAttributes: { style: 'vertical-align: middle !important;' },
@@ -344,6 +360,16 @@ vpa.render = () => {
 		attributes: { class: 'align-right' },
 		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_price_var, 'n0')}</div>`,
 		width: widthValue,
+	},{
+		title: '% Sales Different',
+		headerTemplate: '% Sales<br /> Different',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'price_var_percent',
+		format: '{0:n2} %',
+		attributes: { class: 'align-right' },
+		footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n2')}</div>`,
+		width: widthPrcnt,
 	}]
 
 	let config = {

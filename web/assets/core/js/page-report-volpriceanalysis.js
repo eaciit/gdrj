@@ -241,6 +241,15 @@ vpa.render = function () {
 			o.TotalSalesDiff = o.v2015_nsal_value - o.v2014_nsal_value;
 		});
 
+		o.vol_var_percent = 0;
+		o.price_var_percent = 0;
+		toolkit.try(function () {
+			o.vol_var_percent = o.v_vol_var * 100 / o.TotalSalesDiff;
+		});
+		toolkit.try(function () {
+			o.price_var_percent = o.v_price_var * 100 / o.TotalSalesDiff;
+		});
+
 		return o;
 	});
 
@@ -274,6 +283,7 @@ vpa.render = function () {
 	var widthValue = 105;
 	var widthQty = 90;
 	var tableWidth = 1200;
+	var widthPrcnt = 90;
 
 	var columns = [{
 		title: 'Brand Category ( ' + vpa.brand() + ' )',
@@ -394,6 +404,16 @@ vpa.render = function () {
 		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_vol_var, 'n0') + '</div>',
 		width: widthValue
 	}, {
+		title: '% Sales Different',
+		headerTemplate: '% Sales<br />Different',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'vol_var_percent',
+		format: '{0:n2} %',
+		attributes: { class: 'align-right' },
+		footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_vol_var, 'n2') + '</div>',
+		width: widthPrcnt
+	}, {
 		title: 'Price Variance',
 		headerTemplate: 'Price<br />Variance',
 		headerAttributes: { style: 'vertical-align: middle !important;' },
@@ -402,6 +422,16 @@ vpa.render = function () {
 		attributes: { class: 'align-right' },
 		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_price_var, 'n0') + '</div>',
 		width: widthValue
+	}, {
+		title: '% Sales Different',
+		headerTemplate: '% Sales<br /> Different',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'price_var_percent',
+		format: '{0:n2} %',
+		attributes: { class: 'align-right' },
+		footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_vol_var, 'n2') + '</div>',
+		width: widthPrcnt
 	}];
 
 	var config = {
