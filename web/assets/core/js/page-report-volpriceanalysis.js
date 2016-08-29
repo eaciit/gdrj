@@ -236,6 +236,11 @@ vpa.render = function () {
 			o.v_price_var = deltaprice * o.v2015_nsal_qty;
 		});
 
+		o.TotalSalesDiff = 0;
+		toolkit.try(function () {
+			o.TotalSalesDiff = o.v2015_nsal_value - o.v2014_nsal_value;
+		});
+
 		return o;
 	});
 
@@ -271,9 +276,6 @@ vpa.render = function () {
 	var tableWidth = 1200;
 
 	var columns = [{
-		// title: 'Brand Category ( '+vpa.brand()+' )',
-		// headerTemplate: 'Brand Category<br />( '+vpa.brand()+' )',
-		// field: 'dimension',
 		title: 'Brand Category ( ' + vpa.brand() + ' )',
 		headerTemplate: 'Brand Category <br /> ( ' + vpa.brand() + ' )',
 		template: function template(d) {
@@ -373,6 +375,15 @@ vpa.render = function () {
 		// 	width: widthValue,
 		// }
 		]
+	}, {
+		title: 'Total Sales Different',
+		headerTemplate: 'Total Sales<br />Different',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'TotalSalesDiff',
+		format: '{0:n0}',
+		attributes: { class: 'align-right' },
+		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_vol_var, 'n0') + '</div>',
+		width: widthValue
 	}, {
 		title: 'Volume Variance',
 		headerTemplate: 'Volume<br />Variance',
