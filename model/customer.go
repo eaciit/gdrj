@@ -44,6 +44,7 @@ type Customer struct {
 	AreaID            string
 	AreaName          string
 	VDIST_ID          string
+	OptionName        string
 }
 
 func (c *Customer) RecordID() interface{} {
@@ -106,7 +107,11 @@ func CustomerGetContains(keyword string, otherparam toolkit.M) ([]*Customer, err
 		return nil, err
 	}
 	cursor.Close()
-
+	//OptionName
+	for i, val := range result {
+		val.OptionName = toolkit.Sprintf("%s.%s", val.ID, val.Name)
+		result[i] = val
+	}
 	return result, nil
 }
 

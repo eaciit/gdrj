@@ -480,9 +480,11 @@ vpa.initCustomerFilter = () => {
 	        			param.Keyword = options.data.filter.filters[0].value
 	        			console.log(options.data.filter.filters[0].value, options)
 	        		})
+	        		
 	        		toolkit.try(() => {
 	        			param.Custgroup = vpa.filterCustGroup()
 	        		})
+
 	        		toolkit.ajaxPost(url, param, function (res) {
 	        			options.success(res.data);
 	        		})
@@ -490,7 +492,7 @@ vpa.initCustomerFilter = () => {
 	        }
 	    },
 		dataValueField: '_id',
-		dataTextField: 'Name',
+		dataTextField: 'OptionName' ,
 		placeholder: 'Select Outlet',
 		filter: "startswith",
 		min: 3
