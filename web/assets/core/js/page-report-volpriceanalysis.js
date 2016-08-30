@@ -12,7 +12,7 @@ vpa.flag = ko.observable('');
 vpa.unit = ko.observable('v1000000000');
 vpa.optionUnit = ko.observableArray([{ _id: 'v1', Name: 'Actual', suffix: '' }, { _id: 'v1000', Name: 'Hundreds', suffix: 'K' }, { _id: 'v1000000', Name: 'Millions', suffix: 'M' }, { _id: 'v1000000000', Name: 'Billions', suffix: 'B' }]);
 
-vpa.optionFilterProductBrand = ko.observableArray([]);
+vpa.optionFilterProductBrand = ko.observableArray([{ _id: "All", Name: "All" }]);
 vpa.optionFilterProductBrandCategory = ko.observableArray([]);
 
 vpa.getDivider = function () {
@@ -47,7 +47,7 @@ vpa.refresh = function () {
 		})
 	});
 
-	if (vpa.brand().length > 0) {
+	if (vpa.brand().length > 0 && vpa.brand() != "ALL") {
 		param.filters.push({
 			Field: 'product.brand',
 			Op: '$eq',
@@ -145,9 +145,12 @@ vpa.render = function () {
 		if (o.dimension != 'total') {
 			(function () {
 				var tdim = o.dimension;
-				o.dimension = _.find(vpa.optionFilterProductBrandCategory(), function (e) {
+				var yoi = _.find(vpa.optionFilterProductBrandCategory(), function (e) {
 					return e._id == tdim;
-				}).Name;
+				});
+
+				if (!yoi) o.dimension = tdim;else o.dimension = yoi.Name;
+
 				if (tdim == '') {
 					o.dimension = 'OTHER';
 				}
@@ -297,7 +300,7 @@ vpa.render = function () {
 		locked: true
 	}, {
 		title: 'FY 2015-2016',
-		headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		// headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		columns: [{
 			title: 'Net Sales',
 			headerTemplate: 'Net Sales',
@@ -342,7 +345,7 @@ vpa.render = function () {
 		]
 	}, {
 		title: 'FY 2014-2015',
-		headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		// headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		columns: [{
 			title: 'Net Sales',
 			headerTemplate: 'Net Sales',
@@ -410,7 +413,7 @@ vpa.render = function () {
 		field: 'vol_var_percent',
 		format: '{0:n2} %',
 		attributes: { class: 'align-right' },
-		footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		// footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_vol_var, 'n2') + '</div>',
 		width: widthPrcnt
 	}, {
@@ -429,7 +432,7 @@ vpa.render = function () {
 		field: 'price_var_percent',
 		format: '{0:n2} %',
 		attributes: { class: 'align-right' },
-		footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		// footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_vol_var, 'n2') + '</div>',
 		width: widthPrcnt
 	}];
@@ -475,6 +478,10 @@ vm.breadcrumb([{ title: 'Godrej', href: '#' }, { title: 'Analysis', href: '#' },
 
 vpa.fillProductBrandData = function (callback) {
 	toolkit.ajaxPost(viewModel.appName + "report/getdatabrand", {}, function (res) {
+
+		// vpa.optionFilterProductBrand([])
+		// vpa.optionFilterProductBrand.push({ _id: "All", Name: "All" })
+
 		vpa.optionFilterProductBrand(res.data.map(function (d) {
 			var o = {};
 			o._id = d._id;
@@ -482,6 +489,8 @@ vpa.fillProductBrandData = function (callback) {
 
 			return o;
 		}));
+
+		vpa.optionFilterProductBrand.unshift({ _id: "ALL", Name: "ALL" });
 
 		vpa.brand('HIT');
 		if (typeof callback === 'function') {

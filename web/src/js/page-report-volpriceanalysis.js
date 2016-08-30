@@ -15,7 +15,7 @@ vpa.optionUnit = ko.observableArray([
 	{ _id: 'v1000000000', Name: 'Billions', suffix: 'B' },
 ])
 
-vpa.optionFilterProductBrand = ko.observableArray([])
+vpa.optionFilterProductBrand = ko.observableArray([{ _id: "All", Name: "All" }])
 vpa.optionFilterProductBrandCategory = ko.observableArray([])
 
 vpa.getDivider = () => {
@@ -47,7 +47,7 @@ vpa.refresh = () => {
 			.filter((d) => d != "I1")
 	})
 
-	if (vpa.brand().length > 0) {
+	if (vpa.brand().length > 0 && vpa.brand() != "ALL" ) {
 		param.filters.push({
 			Field: 'product.brand',
 			Op: '$eq',
@@ -123,7 +123,13 @@ vpa.render = () => {
 		
 		if (o.dimension != 'total') {
 			let tdim = o.dimension
-			o.dimension = _.find(vpa.optionFilterProductBrandCategory(), function(e){ return e._id==tdim}).Name
+			let yoi = _.find(vpa.optionFilterProductBrandCategory(), function(e){ return e._id==tdim})
+
+			if (!yoi)
+				o.dimension = tdim
+			else
+				o.dimension = yoi.Name
+
 			if (tdim == '') {
 				o.dimension = 'OTHER'
 			}
@@ -234,7 +240,7 @@ vpa.render = () => {
 		locked: true
 	},{
 		title: 'FY 2015-2016',
-		headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		// headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		columns: [
 		{
 			title: 'Net Sales',
@@ -280,7 +286,7 @@ vpa.render = () => {
 		]
 	},{
 		title: 'FY 2014-2015',
-		headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		// headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		columns: [{
 			title: 'Net Sales',
 			headerTemplate: 'Net Sales',
@@ -348,7 +354,7 @@ vpa.render = () => {
 		field: 'vol_var_percent',
 		format: '{0:n2} %',
 		attributes: { class: 'align-right' },
-		footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		// footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n2')}</div>`,
 		width: widthPrcnt,
 	},{
@@ -367,7 +373,7 @@ vpa.render = () => {
 		field: 'price_var_percent',
 		format: '{0:n2} %',
 		attributes: { class: 'align-right' },
-		footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		// footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n2')}</div>`,
 		width: widthPrcnt,
 	}]
@@ -418,6 +424,10 @@ vm.breadcrumb([
 
 vpa.fillProductBrandData = (callback) => {
 	toolkit.ajaxPost(viewModel.appName + "report/getdatabrand", {}, (res) => {
+		
+		// vpa.optionFilterProductBrand([])
+		// vpa.optionFilterProductBrand.push({ _id: "All", Name: "All" })
+
 		vpa.optionFilterProductBrand(res.data.map((d) => {
 			let o = {}
 			o._id = d._id
@@ -425,6 +435,8 @@ vpa.fillProductBrandData = (callback) => {
 
 			return o
 		}))
+
+		vpa.optionFilterProductBrand.unshift({ _id: "ALL", Name: "ALL" })
 
 		vpa.brand('HIT')
 		if (typeof callback === 'function') {
