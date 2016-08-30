@@ -76,8 +76,19 @@ func CustomerGetAll() ([]*Customer, error) {
 	return result, nil
 }
 
-func CustomerGetContains(keyword string) ([]*Customer, error) {
+func CustomerGetContains(keyword string, otherparam toolkit.M) ([]*Customer, error) {
 	filter := []*dbox.Filter{dbox.Or(dbox.Contains("_id", keyword), dbox.Contains("name", keyword))}
+	if otherparam.Has("custgroup") {
+		custgroup := []interface{}{}
+		for _, val := range otherparam.Get("custgroup", []string{}).([]string) {
+			custgroup = append(custgroup, val)
+		}
+
+		// filter = []*dbox.Filter{dbox.And(dbox.Or(dbox.Contains("_id", keyword), dbox.Contains("name", keyword)),
+		// 	dbox.In("customergroup", custgroup...))}
+		filter = append(filter, dbox.In("customergroup", custgroup...))
+	}
+
 	param := toolkit.M{}.Set("where", filter)
 
 	if len(keyword) < 6 {

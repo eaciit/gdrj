@@ -55,6 +55,14 @@
 						</div>
 
 						<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
+							<span class="input-group-addon align-right">Customer Group</span>
+							<div class="width-full">
+								<select type="text" style="width: 200px;" data-bind="kendoMultiSelect: { data: vpa.optionFilterCustGroup, value: vpa.filterCustGroup, dataValueField: '_id', dataTextField: 'Name', placeholder: 'Select Customer Group', filter: 'contains', change: vpa.changeCustGroup }"></select>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+
+						<div class="input-group input-group-sm ez margin-bottom-10 margin-right-5">
 							<span class="input-group-addon align-right">Outlet </span>
 							<div class="width-full">
 								<select class="outlet-filter" type="text" style="width: 200px;"></select>

@@ -543,4 +543,6 @@ $(() => {
 	ebitsku.refresh()
 	ebitsku.fillProductData()
 	rpt.showExport(false)
+
+	$('#c-0 .form-group:eq(1)').remove()
 })

@@ -32,6 +32,7 @@ ebitsku.optionDimensions = ko.observableArray([{ field: 'product.skuid', name: '
 // 	}
 // }
 
+
 ebitsku.buildPLModels = function (plmodels) {
 	return plmodels.filter(function (d) {
 		if (['Direct Expense', 'Indirect Expense'].indexOf(d.PLHeader1) > -1) {
@@ -446,4 +447,6 @@ $(function () {
 	ebitsku.refresh();
 	ebitsku.fillProductData();
 	rpt.showExport(false);
+
+	$('#c-0 .form-group:eq(1)').remove();
 });

@@ -18,6 +18,10 @@ vpa.optionUnit = ko.observableArray([
 vpa.optionFilterProductBrand = ko.observableArray([{ _id: "All", Name: "All" }])
 vpa.optionFilterProductBrandCategory = ko.observableArray([])
 
+vpa.optionFilterCustGroup = ko.observableArray([])
+vpa.filterCustGroup = ko.observableArray([])
+// vpa.currCustGroup = ko.observableArray([])
+
 vpa.getDivider = () => {
 	return parseInt(vpa.unit().replace(/v/g, ''), 10)
 }
@@ -64,6 +68,13 @@ vpa.refresh = () => {
 		})
 	}
 
+	if (vpa.filterCustGroup().length > 0) {
+		param.filters.push({
+			Field: 'customer.customergroup',
+			Op: '$in',
+			Value: vpa.filterCustGroup()
+		})	
+	}
 
 	let fetch = () => {
 		toolkit.ajaxPost(viewModel.appName + "report/getpnldatanew", param, (res) => {
@@ -239,6 +250,53 @@ vpa.render = () => {
 		width: dimensionWidth,
 		locked: true
 	},{
+		title: 'Sales Growth',
+		headerTemplate: 'Sales<br />Growth',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'TotalSalesDiff',
+		format: `{0:n0}`,
+		attributes: { class: 'align-right' },
+		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n0')}</div>`,
+		width: widthValue,
+	},{
+		title: 'Volume Growth',
+		headerTemplate: 'Volume<br />Growth',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'v_vol_var',
+		format: `{0:n0}`,
+		attributes: { class: 'align-right' },
+		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n0')}</div>`,
+		width: widthValue,
+	},{
+		title: 'Volume Contribution',
+		headerTemplate: 'Volume<br />Contribution',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'vol_var_percent',
+		format: '{0:n2} %',
+		attributes: { class: 'align-right' },
+		// footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n2')}</div>`,
+		width: widthPrcnt,
+	},{
+		title: 'Price Growth',
+		headerTemplate: 'Price<br />Growth',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'v_price_var',
+		format: `{0:n0}`,
+		attributes: { class: 'align-right' },
+		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_price_var, 'n0')}</div>`,
+		width: widthValue,
+	},{
+		title: 'Price Contribution',
+		headerTemplate: 'Price<br /> Contribution',
+		headerAttributes: { style: 'vertical-align: middle !important;' },
+		field: 'price_var_percent',
+		format: '{0:n2} %',
+		attributes: { class: 'align-right' },
+		// footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
+		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n2')}</div>`,
+		width: widthPrcnt,
+	},{
 		title: 'FY 2015-2016',
 		// headerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
 		columns: [
@@ -329,53 +387,6 @@ vpa.render = () => {
 		// 	width: widthValue,
 		// }
 		]
-	},{
-		title: 'Total Sales Different',
-		headerTemplate: 'Total Sales<br />Different',
-		headerAttributes: { style: 'vertical-align: middle !important;' },
-		field: 'TotalSalesDiff',
-		format: `{0:n0}`,
-		attributes: { class: 'align-right' },
-		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n0')}</div>`,
-		width: widthValue,
-	},{
-		title: 'Volume Variance',
-		headerTemplate: 'Volume<br />Variance',
-		headerAttributes: { style: 'vertical-align: middle !important;' },
-		field: 'v_vol_var',
-		format: `{0:n0}`,
-		attributes: { class: 'align-right' },
-		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n0')}</div>`,
-		width: widthValue,
-	},{
-		title: '% Sales Different',
-		headerTemplate: '% Sales<br />Different',
-		headerAttributes: { style: 'vertical-align: middle !important;' },
-		field: 'vol_var_percent',
-		format: '{0:n2} %',
-		attributes: { class: 'align-right' },
-		// footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
-		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n2')}</div>`,
-		width: widthPrcnt,
-	},{
-		title: 'Price Variance',
-		headerTemplate: 'Price<br />Variance',
-		headerAttributes: { style: 'vertical-align: middle !important;' },
-		field: 'v_price_var',
-		format: `{0:n0}`,
-		attributes: { class: 'align-right' },
-		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_price_var, 'n0')}</div>`,
-		width: widthValue,
-	},{
-		title: '% Sales Different',
-		headerTemplate: '% Sales<br /> Different',
-		headerAttributes: { style: 'vertical-align: middle !important;' },
-		field: 'price_var_percent',
-		format: '{0:n2} %',
-		attributes: { class: 'align-right' },
-		// footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
-		footerTemplate: `<div class="align-right">${kendo.toString(total.v2015_vol_var, 'n2')}</div>`,
-		width: widthPrcnt,
 	}]
 
 	let config = {
@@ -412,7 +423,6 @@ vpa.changeDimension = (title, args) => {
 
 	vpa.refresh()
 }
-
 
 vm.currentMenu('Analysis')
 vm.currentTitle('Volume Price Analysis')
@@ -465,10 +475,13 @@ vpa.initCustomerFilter = () => {
 	        transport: {
 	        	read: (options) => {
 	        		let url = viewModel.appName + "report/getdatacustomer"
-	        		let param = { Keyword: '' }
+	        		let param = { Keyword: '', Custgroup : [] }
 	        		toolkit.try(() => {
 	        			param.Keyword = options.data.filter.filters[0].value
 	        			console.log(options.data.filter.filters[0].value, options)
+	        		})
+	        		toolkit.try(() => {
+	        			param.Custgroup = vpa.filterCustGroup()
 	        		})
 	        		toolkit.ajaxPost(url, param, function (res) {
 	        			options.success(res.data);
@@ -484,14 +497,57 @@ vpa.initCustomerFilter = () => {
 	})
 }
 
+vpa.fillCustGroup = () => {
+	toolkit.ajaxPost(viewModel.appName + "report/getdatacustomergroup", {}, (res) => {
+		vpa.optionFilterCustGroup(res.data.map((d) => {
+			let o = {}
+			o._id = d._id
+			o.Name = `${d._id} - ${d.Name}`
+
+			return o
+		}))
+	})
+}
+
+vpa.changeCustGroup = function () {
+	// console.log(this.value())
+
+	// vpa.currCustGroup.push(this.value())
+	// $('select.outlet-filter').data('kendoMultiSelect').dataSource.read();
+}
+
+vpa.filterCustGroup.subscribe(
+		function(){
+			$('select.outlet-filter').data('kendoMultiSelect').dataSource.read();
+		}
+	)
+//.getKendoMultiSelect().value(["1", "2"])
+
+// vpa.changeCustGroup = function () {
+// 	var param = {
+// 		custgrops: vpa.filterCustGroup()
+// 	}
+// 	ajax(url, param, function (res) {
+// 		$('select.outlet-filter').data('kendoMultiSelect').setDataSource(new kendo.data.DataSource({
+// 			data: res.data
+// 		}))
+
+		
+// 	})
+// }
+
 $(() => {
 	vpa.fillProductBrandData(function () {
 		vpa.refresh()
 	})
+	vpa.fillCustGroup()
 	vpa.fillProductBrandCategory()
 	vpa.initCustomerFilter()
 	
 	rpt.showExport(true)
+
+	$('#c-0 .form-group:eq(1)').remove()
+	$('#c-2 .form-group:eq(1)').remove()
 })
 
 
