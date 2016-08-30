@@ -195,14 +195,20 @@ func (m *ReportController) GetDataCustomer(r *knot.WebContext) interface{} {
 	r.Config.OutputType = knot.OutputJson
 
 	param := struct {
-		Keyword string `json:"keyword"`
+		Keyword   string   `json:"keyword"`
+		Custgroup []string `json:"Custgroup"`
 	}{}
 
 	if err := r.GetPayload(&param); err != nil {
 		return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
 	}
 
-	res, err := gdrj.CustomerGetContains(param.Keyword)
+	oparam := toolkit.M{}
+	if len(param.Custgroup) > 0 {
+		oparam.Set("custgroup", param.Custgroup)
+	}
+
+	res, err := gdrj.CustomerGetContains(param.Keyword, oparam)
 	if err != nil {
 		return helper.CreateResult(false, []*gdrj.Customer{}, err.Error())
 	}
