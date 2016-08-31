@@ -470,6 +470,8 @@ vpa.render = function () {
 
 	$('#volume-price-analysis').replaceWith('<div class="breakdown-view ez" id="volume-price-analysis"></div>');
 	$('#volume-price-analysis').kendoGrid(config);
+
+	$(".k-grid-footer").insertAfter(".k-grid-header");
 };
 
 vpa.changeDimension = function (title, args) {

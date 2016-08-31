@@ -128,7 +128,7 @@ vpa.render = () => {
 	}
 
 	let total = {}
-	
+
 	total.TotalSalesDiff = 0
 	total.v_vol_var = 0
 	total.v_price_var = 0
@@ -405,6 +405,8 @@ vpa.render = () => {
 
 	$('#volume-price-analysis').replaceWith(`<div class="breakdown-view ez" id="volume-price-analysis"></div>`)
 	$('#volume-price-analysis').kendoGrid(config)
+
+	$(".k-grid-footer").insertAfter(".k-grid-header")
 }
 
 vpa.changeDimension = (title, args) => {
