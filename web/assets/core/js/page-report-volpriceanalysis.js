@@ -147,6 +147,12 @@ vpa.render = function () {
 		return toolkit.number((v2015 - v2014) / v2014) * 100;
 	};
 
+	var total = {};
+
+	total.TotalSalesDiff = 0;
+	total.v_vol_var = 0;
+	total.v_price_var = 0;
+
 	var op1 = vpa.groupMap(vpa.data(), function (d) {
 		return d._id[vpa.breakdownKey()];
 	}, function (v, k) {
@@ -250,11 +256,14 @@ vpa.render = function () {
 		toolkit.try(function () {
 			o.v_price_var = deltaprice * o.v2015_nsal_qty;
 		});
+		total.v_vol_var += o.v_vol_var;
+		total.v_price_var += o.v_price_var;
 
 		o.TotalSalesDiff = 0;
 		toolkit.try(function () {
 			o.TotalSalesDiff = o.v2015_nsal_value - o.v2014_nsal_value;
 		});
+		total.TotalSalesDiff += o.TotalSalesDiff;
 
 		o.vol_var_percent = 0;
 		o.price_var_percent = 0;
@@ -273,7 +282,6 @@ vpa.render = function () {
 	}, 'desc');
 	var dataParsed = op2;
 
-	var total = {};
 	total.dimension = 'Total';
 
 	total.v2015_nsal_value = total2015_netSales;
@@ -287,6 +295,15 @@ vpa.render = function () {
 	total.v2014_price_value = '-';
 	total.v2014_vol_var = '-';
 	total.v2014_price_var = '-';
+
+	total.vol_var_percent = 0;
+	total.price_var_percent = 0;
+	toolkit.try(function () {
+		total.vol_var_percent = total.v_vol_var * 100 / total.TotalSalesDiff;
+	});
+	toolkit.try(function () {
+		total.price_var_percent = total.v_price_var * 100 / total.TotalSalesDiff;
+	});
 
 	console.log('total', total);
 
@@ -317,7 +334,7 @@ vpa.render = function () {
 		field: 'TotalSalesDiff',
 		format: '{0:n0}',
 		attributes: { class: 'align-right' },
-		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_vol_var, 'n0') + '</div>',
+		footerTemplate: '<div class="align-right">' + kendo.toString(total.TotalSalesDiff, 'n0') + '</div>',
 		width: widthValue
 	}, {
 		title: 'Volume Growth',
@@ -326,7 +343,7 @@ vpa.render = function () {
 		field: 'v_vol_var',
 		format: '{0:n0}',
 		attributes: { class: 'align-right' },
-		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_vol_var, 'n0') + '</div>',
+		footerTemplate: '<div class="align-right">' + kendo.toString(total.v_vol_var, 'n0') + '</div>',
 		width: widthValue
 	}, {
 		title: 'Volume Contribution',
@@ -336,7 +353,7 @@ vpa.render = function () {
 		format: '{0:n2} %',
 		attributes: { class: 'align-right' },
 		// footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
-		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_vol_var, 'n2') + '</div>',
+		footerTemplate: '<div class="align-right">' + kendo.toString(total.vol_var_percent, 'n2') + '</div>',
 		width: widthPrcnt
 	}, {
 		title: 'Price Growth',
@@ -345,7 +362,7 @@ vpa.render = function () {
 		field: 'v_price_var',
 		format: '{0:n0}',
 		attributes: { class: 'align-right' },
-		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_price_var, 'n0') + '</div>',
+		footerTemplate: '<div class="align-right">' + kendo.toString(total.v_price_var, 'n0') + '</div>',
 		width: widthValue
 	}, {
 		title: 'Price Contribution',
@@ -355,7 +372,7 @@ vpa.render = function () {
 		format: '{0:n2} %',
 		attributes: { class: 'align-right' },
 		// footerAttributes: { style: 'border-right: 2px solid rgba(0, 0, 0, 0.64);' },
-		footerTemplate: '<div class="align-right">' + kendo.toString(total.v2015_vol_var, 'n2') + '</div>',
+		footerTemplate: '<div class="align-right">' + kendo.toString(total.price_var_percent, 'n2') + '</div>',
 		width: widthPrcnt
 	}, {
 		title: 'FY 2015-2016',
@@ -429,24 +446,7 @@ vpa.render = function () {
 			attributes: { class: 'align-right' },
 			footerTemplate: '<div class="align-right">' + kendo.toString(total.v2014_price_value, 'n0') + '</div>',
 			width: widthQty
-		}
-		// ,{
-		// 	headerTemplate: 'Volume<br />Variance',
-		// 	headerAttributes: { style: 'vertical-align: middle !important;' },
-		// 	field: 'v2014_vol_var',
-		// 	format: `{0:n0}`,
-		// 	attributes: { class: 'align-right' },
-		// 	footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_vol_var, 'n0')}</div>`,
-		// 	width: widthValue,
-		// }, {
-		// 	headerTemplate: 'Price<br />Variance',
-		// 	field: 'v2014_price_var',
-		// 	format: `{0:n0}`,
-		// 	attributes: { class: 'align-right' },
-		// 	footerTemplate: `<div class="align-right">${kendo.toString(total.v2014_price_var, 'n0')}</div>`,
-		// 	width: widthValue,
-		// }
-		]
+		}]
 	}];
 
 	var config = {
