@@ -422,7 +422,7 @@ vpa.changeDimension = (title, args) => {
 }
 
 vm.currentMenu('Analysis')
-vm.currentTitle('Volume Price Analysis')
+vm.currentTitle('Volume Price Analysis (Based on Primary Sales data)')
 vm.breadcrumb([
 	{ title: 'Godrej', href: '#' },
 	{ title: 'Analysis', href: '#' },
