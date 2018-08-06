@@ -3,7 +3,7 @@
  1. ssh to `go.eaciit.com`, go to dev path
 
 	```bash
-	ssh developer@go.eaciit.com -i ~/Downloads/developer.pem
+	ssh toserver
 	cd $GOPATH/src/eaciit/gdrj
 	```
 
@@ -24,7 +24,7 @@
  1. ssh to `go.eaciit.com`, go to dev path
 
 	```bash
-	ssh developer@go.eaciit.com -i ~/Downloads/developer.pem
+	ssh toserver
 	cd $GOPATH/src/eaciit/gdrjprod
 	```
 
